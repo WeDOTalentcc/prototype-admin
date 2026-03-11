@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "ctFn_rmUfm-JFxktf6cLZ"
+uri = "file://docs/proposta-skill-document-factory.md"
+type = "text"
+title = "Proposta: Skill Document Factory — Fábrica de Documentos & Cards Autocontidos"
