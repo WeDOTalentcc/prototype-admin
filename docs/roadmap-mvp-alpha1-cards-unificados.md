@@ -19,6 +19,7 @@
 8. [Cards Completos — VGM Gestão de Vagas](#8-cards-completos--vgm-gestão-de-vagas-vgm)
 9. [Cards Completos — AUD Auditoria e Compliance (WT-1505→WT-1512)](#9-cards-completos--aud-auditoria-e-compliance-wt-1505wt-1512)
 10. [Tabela de Dependências Cross-Épico](#10-tabela-de-dependências-cross-épico)
+11. [Cards Completos — É35 Arquitetura de IA: Agentes, Tools, Serviços e Automações (AGT)](#11-cards-completos--é35-arquitetura-de-ia-agentes-tools-serviços-e-automações-agt)
 
 ---
 
@@ -143,6 +144,36 @@
 
 ---
 
+**Épico [WT-1558](https://wedotalent.atlassian.net/browse/WT-1558) — É35: Arquitetura de IA: Agentes, Tools, Serviços e Automações**
+
+| Card | Jira Key | Título | SP | Classificação | Sprint |
+|------|----------|--------|----|:-------------:|:------:|
+| AGT-000 | [WT-1559](https://wedotalent.atlassian.net/browse/WT-1559) | Padronização & Setup Base — 4-File Pattern + Checklist 18 Itens | 5 | 🟢 MVP CRÍTICO | S0 |
+| AGT-002 | [WT-1560](https://wedotalent.atlassian.net/browse/WT-1560) | Infraestrutura Compartilhada — BaseAgent + FairnessGuard + PII + Audit | 21 | 🟢 MVP CRÍTICO | S0 |
+| AGT-001 | [WT-1561](https://wedotalent.atlassian.net/browse/WT-1561) | MainOrchestrator — CascadedRouter 6-Tier + HITL + 9 Agentes | 13 | 🟢 MVP CRÍTICO | S0 |
+| AGT-003 | [WT-1562](https://wedotalent.atlassian.net/browse/WT-1562) | ATSIntegrationService — Integração Bidirecional (Gupy) | 8 | 🟢 MVP CRÍTICO | S0 |
+| AGT-004 | [WT-1563](https://wedotalent.atlassian.net/browse/WT-1563) | SourcingReActAgent — 14 Tools (ES + PGVector + WRF + Pearch) | 13 | 🟡 MVP SUPORTE | S1 |
+| AGT-005 | [WT-1564](https://wedotalent.atlassian.net/browse/WT-1564) | CommunicationService + Adapters (Email + WhatsApp + Teams) | 13 | 🟢 MVP CRÍTICO | S1 |
+| AGT-006 | [WT-1565](https://wedotalent.atlassian.net/browse/WT-1565) | JD Generator Service — LLM + FairnessGuard | 5 | 🟡 MVP SUPORTE | S1 |
+| AGT-017 | [WT-1566](https://wedotalent.atlassian.net/browse/WT-1566) | HiringPolicyService — 4 Tools como Serviço | 5 | 🟡 MVP SUPORTE | S1 |
+| AGT-015 | [WT-1567](https://wedotalent.atlassian.net/browse/WT-1567) | PipelineGateService — Gate 1 + Gate 2 + HITL | 8 | 🟢 MVP CRÍTICO | S1 |
+| AGT-007 | [WT-1568](https://wedotalent.atlassian.net/browse/WT-1568) | WSIInterviewGraph — 7 Blocos + 15 Serviços + Scoring Determinístico | 21 | 🟢 MVP CRÍTICO | S2 |
+| AGT-008 | [WT-1569](https://wedotalent.atlassian.net/browse/WT-1569) | CVScreeningReActAgent — 8 Tools (CV Parsing + Matching) | 8 | 🟡 MVP SUPORTE | S2 |
+| AGT-009 | [WT-1570](https://wedotalent.atlassian.net/browse/WT-1570) | Chat Web Canal — WebSocket Backend + PromptInjectionGuard | 8 | 🟢 MVP CRÍTICO | S2 |
+| AGT-016 | [WT-1571](https://wedotalent.atlassian.net/browse/WT-1571) | EventRetryOrchestrator — Celery Scheduler + DLQ | 8 | 🟡 MVP SUPORTE | S2 |
+| AGT-010 | [WT-1572](https://wedotalent.atlassian.net/browse/WT-1572) | Follow-up 7d + Email Tracking | 8 | 🟡 MVP SUPORTE | S2 |
+| AGT-FE-001 | [WT-1573](https://wedotalent.atlassian.net/browse/WT-1573) | Chat Web UI — Interface Candidato (Mobile-First + LGPD) | 8 | 🟢 MVP CRÍTICO | S2 |
+| AGT-FE-002 | [WT-1574](https://wedotalent.atlassian.net/browse/WT-1574) | HITLConfirmCard — Aprovação do Consultor (5 Estados) | 5 | 🟢 MVP CRÍTICO | S2 |
+| AGT-011 | [WT-1575](https://wedotalent.atlassian.net/browse/WT-1575) | Gate HITL Wiring — Interrupt → Approve → Resume (Redis + PG) | 8 | 🟢 MVP CRÍTICO | S3 |
+| AGT-012 | [WT-1576](https://wedotalent.atlassian.net/browse/WT-1576) | SchedulingGraph — LangGraph 6 Nós (MS Graph + Calendar) | 13 | 🔵 PÓS-MVP | S3 |
+| AGT-013 | [WT-1577](https://wedotalent.atlassian.net/browse/WT-1577) | Triagem Abandonada Monitor — Celery Beat 48h | 5 | 🔵 PÓS-MVP | S3 |
+| AGT-014 | [WT-1578](https://wedotalent.atlassian.net/browse/WT-1578) | Teams/Slack Notifications — 3 Tipos Adaptive Cards | 3 | 🔵 PÓS-MVP | S3 |
+| AGT-FE-003 | [WT-1579](https://wedotalent.atlassian.net/browse/WT-1579) | Pipeline Status UI — Dashboard Consultor | 5 | 🔵 PÓS-MVP | S3 |
+
+**Subtotal É35 AGT:** 21 cards · 191 SPs
+
+---
+
 ### 1.4 — Totais Consolidados
 
 | Épico | Prefixo | Cards | SPs | Fase |
@@ -154,7 +185,8 @@
 | É34 Voz | VOZ | 4 | 16 | Alpha 1 |
 | VGM Vagas | VGM | 10 | 53 | Alpha 1 |
 | WT-1505 Auditoria | AUD/WT | 7 | 15 | Alpha 1 |
-| **TOTAL** | | **44** | **222** | |
+| É35 Arquitetura IA | AGT | 21 | 191 | Alpha 1 + Alpha 1.1 |
+| **TOTAL** | | **65** | **413** | |
 
 ---
 
@@ -5877,14 +5909,15 @@ agent_circuit_breaker_state{circuit}
 
 ## Resumo Executivo
 
-| Sprint | Cards | SPs | Entregável Principal |
-|--------|-------|-----|----------------------|
-| **S1 — Fundação** | 17 | 74 | Modelos de dados, APIs base, VGM S1, TRI-008 proxy, AUD P0/P1 |
-| **S2 — Fluxo Completo** | 23 | 131 | Inscrição → Chat Web Triagem → Comunicação |
-| **S3 — Refinamentos** | 4 | 17 | AUD observabilidade, VGM-010 |
-| **TOTAL** | **44** | **222** | MVP Alpha 1 completo em S1+S2 |
+| Sprint | Cards (Épicos 30-34+AUD) | Cards (É35 AGT) | SPs Total | Entregável Principal |
+|--------|:------------------------:|:----------------:|:---------:|----------------------|
+| **S0 — Infra IA** | — | 4 (AGT-000,001,002,003) | 47 | Padronização, BaseAgent, Orchestrator, ATS |
+| **S1 — Fundação** | 17 | 5 (AGT-004,005,006,015,017) | 118 | APIs base, VGM S1, Sourcing, Communication, Gates |
+| **S2 — Fluxo Completo** | 23 | 7 (AGT-007,008,009,010,016,FE-001,FE-002) | 205 | Chat Web Triagem + WSI + CV Screening + HITL UI |
+| **S3 — Refinamentos** | 4 | 5 (AGT-011,012,013,014,FE-003) | 51 | HITL Wiring, Scheduling, Monitores, Pipeline UI |
+| **TOTAL** | **44** | **21** | **413** | MVP Alpha 1 completo (65 cards · 8 épicos) |
 
-**Caminho crítico do MVP Alpha 1:**
+**Caminho crítico do MVP Alpha 1 (funcionalidade):**
 ```
 SAT-001 → INS-003 → INS-001 → SAT-007
 COM-001 → SAT-005 → COM-004
@@ -5893,6 +5926,891 @@ VGM-001 → VGM-005 → VGM-006 (Vaga publicada)
 AUD-001 → AUD-002 → AUD-003 (Auditoria mínima ativa)
 ```
 
+**Caminho crítico da Arquitetura de IA (É35 AGT):**
+```
+AGT-002 → AGT-015 → AGT-011 → AGT-FE-002 (HITL end-to-end)
+AGT-003 → AGT-007 → AGT-009 → AGT-FE-001 (Triagem WSI end-to-end)
+```
+
 ---
 
-*Documento v5.0 — 11/março/2026. Cards PIP removidos (v3.0), SendGrid→Mailgun (v4.0). v5.0: Bloco global de referência IA expandido com 15 seções — Tools Registry (91 tools Alpha 1), NFRs (latência/disponibilidade/rate limits), Env vars por épico, LLM Cascade (6 tiers), HITL map (14 ações), Prompt templates (9 YAMLs), Limites operacionais (12 recursos), Anti-patterns (8 regras), Migrations Alembic, Production templates (11 templates), Webhooks (8 integrações), Checklist de impacto (12 dimensões feature-impact), Checklist de conformidade IA (18 itens), Shared tools (8 tools cross-agent), Infraestrutura compartilhada (12 componentes obrigatórios). Referências cruzadas: `diagnostico-agentes-mvp.md` (§0B, §8, §13, §13B, §14, §20, §21), `feature-impact` skill (12 dimensões), código real do Replit (70+ arquivos). Total: 44 cards · 222 SPs.*
+## 11. Cards Completos — É35 Arquitetura de IA: Agentes, Tools, Serviços e Automações (AGT)
+
+### Épico [WT-1558](https://wedotalent.atlassian.net/browse/WT-1558) — É35: Arquitetura de IA
+
+> **Escopo:** 21 cards cobrindo a camada de inteligência artificial da Plataforma LIA — agentes Python (LangGraph + LangChain), orquestrador central, serviços de IA, infraestrutura compartilhada (BaseAgent, FairnessGuard, PII Masking, AuditCallback), automações (Celery Beat), HITL e interfaces frontend. Fonte: `diagnostico-agentes-mvp.md` §17–§21.
+
+> **Stack:** LangGraph + LangChain · Claude Sonnet (primário) → OpenAI → Gemini (fallback) · Celery Beat + RabbitMQ · PostgresSaver · Redis · PGVector + Elasticsearch · WebSocket · React/Next.js
+
+> **Sobreposições complementares:** AGT-005↔COM-001, AGT-007↔TRI-005, AGT-009↔TRI-002, AGT-FE-001↔TRI-002, AGT-015↔SAT-007. São camadas complementares — os cards AGT adicionam inteligência de IA sobre a funcionalidade base.
+
+---
+
+### AGT-000: Padronização & Setup Base — [WT-1559](https://wedotalent.atlassian.net/browse/WT-1559)
+
+```yaml
+Titulo: "[AGT-000] Padronização & Setup Base — 4-File Pattern + Dev Environment + Checklist 18 Itens"
+Tipo: Infra/Dev
+Area: Backend
+Sprint: S0
+Pontos: 5
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Fase: MVP Alpha 1
+Tags: [backend, IA, infra, devops, compliance, react-agents, langgraph]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: Nenhuma — pré-requisito de TODOS os outros cards AGT
+Referências Diagnóstico: §13B (blueprint), §13D (compliance), §13F (IA vs Determinístico)
+
+Descricao: |
+  Card de infraestrutura de desenvolvimento. Define o padrão obrigatório para
+  todos os agentes (4-file pattern), a estrutura de diretórios V5, configuração
+  do ambiente (env vars, Docker, serviços externos) e o checklist de 18 itens
+  de produção que TODOS os agentes devem passar antes de marcar como "Done".
+  Nenhum outro card AGT pode ser iniciado sem este estar concluído.
+
+Historia de Usuario: |
+  Como desenvolvedor do time, eu quero ter uma estrutura padronizada de
+  diretórios, padrão 4-file obrigatório para agentes, ambiente Docker
+  configurado e checklist de produção documentado, para que todos os agentes
+  sejam construídos de forma consistente e auditável.
+
+Padrao 4-File Obrigatorio por Agente:
+  - {domain}_react_agent.py — Classe principal (herda EnhancedAgentMixin)
+  - {domain}_system_prompt.py — build_system_prompt() → str (10 seções obrigatórias)
+  - {domain}_tool_registry.py — TOOL_DEFINITIONS, STAGE_TOOLS, funções wrapper async
+  - {domain}_stage_context.py — get_stage_context(stage) → str
+
+10 Secoes Obrigatorias do System Prompt:
+  1. IDENTIDADE E PAPEL
+  2. CONTEXTO DA EMPRESA (dinâmico via stage_context)
+  3. FERRAMENTAS DISPONÍVEIS
+  4. REGRAS DE USO DAS FERRAMENTAS
+  5. CONTEXTO DO ESTÁGIO ATUAL (dinâmico por stage)
+  6. GUARDRAILS E LIMITAÇÕES
+  7. COMPLIANCE E ÉTICA
+  8. EXEMPLOS DE USO (FEW-SHOT) — mínimo 2-3
+  9. TRATAMENTO DE ERROS
+  10. FORMATO DE RESPOSTA
+
+Checklist de Producao — 18 Itens:
+  1. Padrão 4-file completo
+  2. EnhancedAgentMixin herdado — process() implementado
+  3. FairnessGuard wired — em TODAS as entradas de texto
+  4. PromptInjectionGuard wired — sanitiza input antes do LLM
+  5. AuditCallback registrado — toda execução trackeada com company_id
+  6. company_id propagado — em TODAS queries, registros e logs
+  7. PII Masking ativo — CPF, email, tel mascarados nos logs
+  8. PolicyEngine consultado — antes de cada execução
+  9. Circuit breaker — em TODAS chamadas LLM e APIs externas
+  10. System prompt 10 seções — incluindo 2+ few-shot examples
+  11. STAGE_TOOLS correto — tools por estágio definidas
+  12. Testes unitários — mínimo 5 por tool registrada
+  13. Testes fairness — 5+ queries discriminatórias bloqueadas
+  14. Testes integração — fluxo completo com mocks
+  15. Sem dados hardcoded — sem PII em código
+  16. Sem secrets em código — todas via env vars
+  17. Logs sem PII — verificado com PIIMaskingTest
+  18. FRIA documentada — se agente toma decisões (EU AI Act)
+
+Requisitos Tecnicos:
+  Arquivos a criar:
+    - docker-compose.yml (PostgreSQL 15 + Redis 7 + RabbitMQ 3)
+    - .env.example (todas vars obrigatórias documentadas)
+    - alembic.ini + alembic/env.py (suporte async SQLAlchemy)
+    - src/core/config.py (Settings Pydantic BaseSettings)
+    - src/shared/agents/agent_scaffold.py (AgentScaffold.generate(domain='X') → 4 arquivos)
+  Dependências:
+    langchain-anthropic, langgraph, celery, aio-pika, pgvector, alembic, asyncpg
+
+Criterios de Aceitacao:
+  - [ ] docker-compose up sobe PostgreSQL + Redis + RabbitMQ sem erros
+  - [ ] alembic upgrade head roda sem erros
+  - [ ] AgentScaffold.generate(domain='test') cria 4 arquivos
+  - [ ] .env.example documentado e revisado
+  - [ ] Checklist 18 itens publicado internamente
+  - [ ] README de setup completo (passos 1–10)
+
+DoD:
+  - [ ] Docker Compose funcional — todos serviços healthy
+  - [ ] Checklist 18 itens aprovado pelo tech lead
+  - [ ] AgentScaffold.generate() testado
+  - [ ] README atualizado
+
+Inteligencia e Automacao:
+  Agentes Envolvidos: Nenhum — define a infra que todos usam
+  Tools: AgentScaffold.generate() — gera 4 arquivos por domínio
+  Servicos IA: Nenhum — card de infraestrutura/padronização
+  Modelo LLM: Nenhum — configuração de ambiente
+  Governanca: Checklist 18 itens = gate obrigatório para todo agente ir a produção
+  Fairness: FairnessGuard definido como obrigatório (item #3 do checklist)
+  Automacoes: AgentScaffold gera templates ao criar novo domínio
+  Fallbacks: Env vars de integrações externas usam mocks no início
+
+Arquivos de Referencia (Codigo Existente no Replit):
+  - lia-agent-system/app/shared/agents/langgraph_react_base.py
+  - lia-agent-system/app/shared/agents/enhanced_agent_mixin.py
+  - lia-agent-system/app/shared/compliance/fairness_guard.py
+  - lia-agent-system/app/shared/compliance/audit_callback.py
+  - lia-agent-system/app/shared/pii_masking.py
+  - lia-agent-system/app/shared/prompt_injection.py
+  - lia-agent-system/app/core/celery_app.py
+
+Riscos:
+  - V5 pode ter estrutura de diretórios diferente — mapear e decidir
+  - agent_scaffold.py gera templates — devs implementam conteúdo real
+  - Env vars externas (Gupy, Pearch) podem não estar disponíveis — usar mocks
+```
+
+---
+
+### AGT-002: Infraestrutura Compartilhada — [WT-1560](https://wedotalent.atlassian.net/browse/WT-1560)
+
+```yaml
+Titulo: "[AGT-002] Infraestrutura Compartilhada — BaseAgent + FairnessGuard + PII Masking + AuditCallback + LLM Providers"
+Tipo: Infra
+Area: Backend
+Sprint: S0
+Pontos: 21
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Fase: MVP Alpha 1
+Tags: [backend, IA, infra, compliance, fairness, langchain, langgraph, lgpd, multi-tenant]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: Nenhuma (pré-requisito de todos os outros cards)
+Referências Diagnóstico: §13B, §13C.2, §13C.3, §13C.14, §13D
+
+Descricao: |
+  Setup da infraestrutura base que todos os agentes dependem:
+  BaseAgent/EnhancedAgentMixin, provedores LLM (Claude primário, OpenAI/Gemini
+  fallback), sistema de prompts YAML, compliance (FairnessGuard 3 camadas,
+  PII Masking, AuditCallback, PromptInjectionGuard), guardrails seed e
+  configuração base.
+
+Historia de Usuario: |
+  Como desenvolvedor de agentes IA, eu quero ter infraestrutura compartilhada
+  com BaseAgent, provedores LLM, compliance (FairnessGuard, PII Masking,
+  AuditCallback) e prompts YAML, para construir agentes seguros e auditáveis.
+
+Requisitos Tecnicos:
+  Arquivos a Criar/Modificar:
+    | Ação    | Arquivo V5                                  | Referência LIA                              |
+    | Criar   | src/shared/agents/enhanced_agent_mixin.py   | app/shared/agents/enhanced_agent_mixin.py   |
+    | Criar   | src/shared/agents/langgraph_react_base.py   | app/shared/agents/langgraph_react_base.py   |
+    | Criar   | src/shared/providers/llm_factory.py         | app/shared/providers/llm_factory.py         |
+    | Criar   | src/shared/providers/llm_claude.py          | app/shared/providers/llm_claude.py          |
+    | Criar   | src/shared/compliance/fairness_guard.py     | app/shared/compliance/fairness_guard.py     |
+    | Criar   | src/shared/compliance/audit_callback.py     | app/shared/compliance/audit_callback.py     |
+    | Criar   | src/shared/compliance/audit_service.py      | app/shared/compliance/audit_service.py      |
+    | Criar   | src/shared/pii_masking.py                   | app/shared/pii_masking.py                   |
+    | Criar   | src/shared/prompt_injection.py              | app/shared/prompt_injection.py              |
+    | Criar   | src/shared/prompts/loader.py                | app/shared/prompts/loader.py                |
+    | Criar   | src/prompts/shared/lia_persona.yaml         | app/prompts/shared/lia_persona.yaml         |
+    | Criar   | src/core/seeds/guardrails_seed.py           | app/core/seeds/guardrails_seed.py           |
+    | Executar| Migrations 020, 032, 034, 035              | ver 0B.2                                    |
+    | Executar| guardrails_seed.py                          | ver 0B.3                                    |
+
+Criterios de Aceitacao:
+  - [ ] EnhancedAgentMixin.process() funciona com 6 passos (ver 13B.7)
+  - [ ] FairnessGuard.check() detecta padrões discriminatórios (Camadas 1+2)
+  - [ ] PII Masking ativo nos loggers (CPF, email, tel mascarados)
+  - [ ] AuditCallback registra todas execuções no DB
+  - [ ] PromptInjectionGuard bloqueia tentativas de injection
+  - [ ] 13 guardrails do seed carregados no DB
+  - [ ] Providers LLM: Claude primário, OpenAI e Gemini fallback
+
+Testes Obrigatorios:
+  - Unit: FairnessGuard com 10+ casos discriminatórios
+  - Unit: PII Masking — log com CPF/email/tel mascarado
+  - Unit: PromptInjectionGuard — jailbreak bloqueado
+
+Inteligencia e Automacao:
+  Agentes: EnhancedAgentMixin — base de todos os ReAct agents
+  Servicos IA: LLMFactory (Claude Sonnet → OpenAI → Gemini fallback)
+  Modelo LLM: Claude 3.5 Sonnet via langchain-anthropic
+  Governanca: FairnessGuard 3 camadas + 13 guardrails seed
+  Fairness: Camada 1 regex, Camada 2 semântica, Camada 3 LLM (opt-in)
+  Compliance: LGPD Art. 46 (PII Masking), EU AI Act (FRIA)
+  Fallbacks: LLM cascade Claude → OpenAI → Gemini
+
+Arquivos de Referencia:
+  - lia-agent-system/app/shared/agents/enhanced_agent_mixin.py
+  - lia-agent-system/app/shared/agents/langgraph_react_base.py
+  - lia-agent-system/app/shared/compliance/fairness_guard.py
+  - lia-agent-system/app/shared/compliance/audit_callback.py
+  - lia-agent-system/app/shared/compliance/audit_service.py
+  - lia-agent-system/app/shared/pii_masking.py
+  - lia-agent-system/app/shared/prompt_injection.py
+  - lia-agent-system/app/shared/providers/llm_factory.py
+
+Tabelas PostgreSQL:
+  - agent_executions (migration 020)
+  - guardrails (migration 034)
+  - hitl_pending_actions (migration 032)
+  - hitl_audit_trail (migration 032)
+```
+
+---
+
+### AGT-001: MainOrchestrator — [WT-1561](https://wedotalent.atlassian.net/browse/WT-1561)
+
+```yaml
+Titulo: "[AGT-001] MainOrchestrator — 3-Tier CascadedRouter + HITL + Roteamento de 9 Agentes"
+Tipo: Orchestrator
+Area: Backend
+Sprint: S0
+Pontos: 13
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [backend, IA, orchestrator, websocket, hitl, langgraph, multi-tenant]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: AGT-002 (bloqueante)
+Referências: §14.1, §13C.1, §13B.7, §13C.17
+
+Descricao: |
+  Orquestrador central que recebe mensagens do frontend via WebSocket,
+  classifica a intenção com CascadedRouter (6 tiers) e roteia para o agente
+  correto. Cobre passos 5, 6 e 7 do fluxo Alpha 1.
+
+Historia de Usuario: |
+  Como recrutador usando a LIA, eu quero enviar mensagens via chat e ter minha
+  intenção classificada e roteada automaticamente para o agente especialista
+  correto, sem precisar navegar por menus.
+
+Requisitos Tecnicos:
+  CascadedRouter — 6 Tiers:
+    T1 Hard Rules (<1ms): Comandos diretos (/help, /cancel)
+    T2 State Check (<1ms): Contexto de sessão
+    T3 Domain Lock (<1ms): Sessão associada a domínio
+    T4 FastRouter (<5ms): Regex patterns por domínio
+    T5 Intent LLM (~500ms): Claude classifica intenção
+    T6 Fallback (<1ms): Default domain
+  
+  Arquivos:
+    | Ação    | Arquivo V5                            | Referência LIA                        |
+    | Adaptar | src/domains/orchestrator.py            | app/orchestrator/orchestrator.py      |
+    | Criar   | src/orchestrator/cascaded_router.py    | app/orchestrator/cascaded_router.py   |
+    | Criar   | src/orchestrator/intent_router.py      | app/orchestrator/intent_router.py     |
+    | Criar   | src/orchestrator/fast_router.py        | app/orchestrator/fast_router.py       |
+    | Criar   | src/orchestrator/pending_action.py     | app/orchestrator/pending_action.py    |
+    | Criar   | src/orchestrator/task_planner.py       | app/orchestrator/task_planner.py      |
+    | Criar   | src/orchestrator/state_manager.py      | app/orchestrator/state_manager.py     |
+    | Criar   | src/orchestrator/llm_cascade.py        | app/orchestrator/llm_cascade.py       |
+
+Criterios de Aceitacao:
+  - [ ] WebSocket /ws/chat/{session_id} roteia para agente correto
+  - [ ] CascadedRouter T4 cobre intents Alpha 1
+  - [ ] PendingActions suporta fluxos multi-turn
+  - [ ] Roteamento para 9 agentes Alpha 1
+  - [ ] HITL inline: interrupt → hitl_request no frontend
+  - [ ] PolicyEngine carrega guardrails antes de cada execução
+  - [ ] company_id extraído do JWT e propagado
+
+Inteligencia e Automacao:
+  Agentes: MainOrchestrator — orquestrador central
+  Servicos IA: IntentRouter (T5) — classificação LLM
+  Modelo LLM: Claude Sonnet (intent classification)
+  HITL: interrupt → hitl_request → approve/reject → resume
+  Governanca: PolicyEngine carrega guardrails do DB
+  Fallbacks: LLM cascade simplificado para Sonnet no MVP
+
+Arquivos de Referencia:
+  - lia-agent-system/app/api/orchestrator_routes.py
+  - lia-agent-system/app/services/enhanced_intent_classifier.py
+  - lia-agent-system/app/services/wizard_orchestrator_service.py
+```
+
+---
+
+### AGT-003: ATSIntegrationService — [WT-1562](https://wedotalent.atlassian.net/browse/WT-1562)
+
+```yaml
+Titulo: "[AGT-003] ATSIntegrationService — Integração Bidirecional com ATS (Gupy Primário)"
+Tipo: Serviço
+Area: Backend
+Sprint: S0
+Pontos: 8
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [backend, IA, serviço, integração, ats, multi-tenant]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: AGT-002
+Referências: §14.8, §4.8
+
+Descricao: |
+  Serviço REST de integração bidirecional com ATS externo. Premissa do Alpha 1:
+  vagas importadas do ATS antes de tudo mais. Alpha 1 usa como serviço REST
+  simples (não agente ReAct). Cobre passos 2, 5 e 8.
+
+Criterios de Aceitacao:
+  - [ ] GET /api/v1/ats/jobs importa vagas do Gupy
+  - [ ] Vagas salvas como job_vacancies com company_id
+  - [ ] POST /api/v1/ats/sync-status exporta status/score de volta
+  - [ ] Mapeamento de campos ATS ↔ WeDo funcional
+  - [ ] Circuit breaker/retry se ATS indisponível
+  - [ ] Audit log para cada sync
+
+Arquivos de Referencia:
+  - lia-agent-system/app/domains/ats_integration/ (4-file pattern completo)
+  - lia-agent-system/app/domains/ats_integration/services/ats_clients/gupy.py
+  - lia-agent-system/app/services/ats_sync_service.py
+```
+
+---
+
+### AGT-004: SourcingReActAgent — [WT-1563](https://wedotalent.atlassian.net/browse/WT-1563)
+
+```yaml
+Titulo: "[AGT-004] SourcingReActAgent — Busca de Candidatos com 14 Tools"
+Tipo: ReAct Agent
+Area: Backend
+Sprint: S1
+Pontos: 13
+Prioridade: P0
+Epic: É35 (WT-1558)
+Tags: [backend, IA, react-agents, sourcing, pgvector, elasticsearch, fairness]
+Classificação: 🟡 MVP SUPORTE
+Dependências: AGT-002, AGT-003
+Referências: §14.3, §4.2, §13B.7, §13C.6
+
+Descricao: |
+  Agente ReAct de busca de candidatos com 14 tools: busca semântica (PGVector),
+  fulltext (ES/pg_trgm), WRF fusion, Pearch AI, Like/Dislike feedback loop.
+
+14 Tools:
+  1. extract_search_params — NL query → estruturado
+  2. semantic_search — PGVector cosine similarity
+  3. fulltext_search — ES BM25 / pg_trgm
+  4. wrf_fusion — Weighted Rank Fusion
+  5. pearch_search — Pearch AI (190M+ perfis)
+  6. get_candidate_profile — Perfil completo
+  7. add_to_shortlist — Shortlist
+  8. remove_from_shortlist
+  9. like_candidate — Feedback positivo
+  10. dislike_candidate — Feedback negativo
+  11. filter_by_location — Filtro geográfico
+  12. filter_by_experience — Filtro experiência
+  13. get_similar_candidates — Similares
+  14. check_policy_compliance — HiringPolicy
+
+Arquivos de Referencia:
+  - lia-agent-system/app/domains/sourcing/agents/ (4-file completo)
+  - lia-agent-system/app/services/rag_pipeline_service.py
+```
+
+---
+
+### AGT-005: CommunicationService — [WT-1564](https://wedotalent.atlassian.net/browse/WT-1564)
+
+```yaml
+Titulo: "[AGT-005] CommunicationService + Adapters — Email + WhatsApp + Teams + Feedback Personalizado"
+Tipo: Serviço
+Area: Backend
+Sprint: S1
+Pontos: 13
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [backend, IA, comunicação, email, whatsapp, teams, lgpd]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: AGT-002
+Sobreposição: COM-001 — camada complementar de IA
+Referências: §14.7, §4.7, §13C.5
+
+Descricao: |
+  Serviço multi-canal: Email (Resend primário), WhatsApp (simulado Alpha 1),
+  Teams (notificações). Feedback personalizado por LLM (Gate1≠Gate2).
+  Complementa COM-001 adicionando IA: tone policy, AI_GENERATED_FOOTER.
+
+Arquivos de Referencia:
+  - lia-agent-system/app/domains/communication/ (4-file + services)
+  - lia-agent-system/app/services/communication_dispatcher.py
+  - lia-agent-system/app/templates/communication_templates.py
+```
+
+---
+
+### AGT-006: JD Generator Service — [WT-1565](https://wedotalent.atlassian.net/browse/WT-1565)
+
+```yaml
+Titulo: "[AGT-006] JD Generator Service — Geração/Ajuste de Job Description por LLM + FairnessGuard"
+Tipo: Serviço LLM
+Area: Backend
+Sprint: S1
+Pontos: 5
+Prioridade: P1
+Epic: É35 (WT-1558)
+Tags: [backend, IA, llm, fairness]
+Classificação: 🟡 MVP SUPORTE
+Dependências: AGT-002, AGT-003
+Referências: §14.2, §4.9
+
+Descricao: |
+  Serviço LLM que gera/ajusta Job Description a partir dos dados do ATS.
+  Tool do WizardAgent, não agente autônomo. FairnessGuard obrigatório no JD.
+```
+
+---
+
+### AGT-017: HiringPolicyService — [WT-1566](https://wedotalent.atlassian.net/browse/WT-1566)
+
+```yaml
+Titulo: "[AGT-017] HiringPolicyService — 4 Tools como Serviço"
+Tipo: Serviço
+Area: Backend
+Sprint: S1
+Pontos: 5
+Prioridade: P1
+Epic: É35 (WT-1558)
+Tags: [backend, IA, policy, compliance, multi-tenant]
+Classificação: 🟡 MVP SUPORTE
+Dependências: AGT-002
+Referências: §14.10, §4.10, §13D.5
+
+Descricao: |
+  4 tools como serviço: get_current_policy, save_policy_block,
+  apply_industry_defaults, validate_policy_compliance.
+  PolicySetupAgent (19 perguntas) é opcional no Alpha 1.
+
+Arquivos de Referencia:
+  - lia-agent-system/app/domains/policy/agents/ (pós Sprint I3c)
+  - lia-agent-system/app/api/v1/pipeline_policy.py
+```
+
+---
+
+### AGT-015: PipelineGateService — [WT-1567](https://wedotalent.atlassian.net/browse/WT-1567)
+
+```yaml
+Titulo: "[AGT-015] PipelineGateService — Gate 1 + Gate 2 + HITL Trigger + Bypass Inscrição Web"
+Tipo: Serviço+HITL
+Area: Backend
+Sprint: S1
+Pontos: 8
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [backend, IA, pipeline, hitl, compliance]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: AGT-002, AGT-003
+Sobreposição: SAT-007 — camada complementar
+Referências: §14.9, §4.9, §6
+
+Descricao: |
+  Gates 1 e 2, regras de transição, HITL. Inscrição web bypassa Gate 1.
+  Complementa SAT-007 com triggers automáticos e HITL.
+
+Arquivos de Referencia:
+  - lia-agent-system/app/domains/pipeline/agents/pipeline_transition_react_agent.py
+  - lia-agent-system/app/services/pipeline_service.py
+  - lia-agent-system/app/domains/automation/services/pipeline_monitor.py
+```
+
+---
+
+### AGT-007: WSIInterviewGraph — [WT-1568](https://wedotalent.atlassian.net/browse/WT-1568)
+
+```yaml
+Titulo: "[AGT-007] WSIInterviewGraph — Entrevista WSI Completa (7 Blocos + 15 Serviços + Scoring)"
+Tipo: LangGraph StateGraph
+Area: Backend
+Sprint: S2
+Pontos: 21
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [backend, IA, langgraph, wsi, scoring, fairness, lgpd, hitl]
+Classificação: 🟢 MVP CRÍTICO — Card mais complexo do Alpha 1
+Dependências: AGT-002, AGT-005, AGT-009
+Sobreposição: TRI-005 — AGT-007 detalha a implementação LangGraph
+Referências: §14.5, §4.4, §13B.10, §13C.17
+
+Descricao: |
+  LangGraph StateGraph que conduz entrevista WSI completa. 7 blocos
+  (Apresentação → Elegibilidade → Técnico → Comportamental CBI → Simulação
+  → Fit Cultural → Encerramento). 15 serviços WSI (~9.621 linhas no LIA).
+  Scoring determinístico: Score = (0.6×Autodec) + (0.4×Context) - Penalty + Bonus.
+
+7 Blocos WSI:
+  1. Apresentação — Contexto empresa/vaga (informativo)
+  2. Elegibilidade — CLT, PCD, localização (eliminatório)
+  3. Técnico — Hard skills (0.6×Autodec)
+  4. Comportamental CBI — STAR method (0.6×Autodec + 0.4×Context)
+  5. Simulação — Caso prático (0.6×Autodec + 0.4×Context + Bonus)
+  6. Fit cultural — Valores (0.4×Context)
+  7. Encerramento — Próximos passos (informativo)
+
+15 Servicos WSI:
+  - WSI Screening Pipeline, Deterministic Scorer (558L CRÍTICO),
+    Question Generator, Feedback Generator, Calibration Profiles,
+    Bloom Taxonomy, Dreyfus Assessor, Big Five Analyzer,
+    CBI Question Bank (200+), Session Manager, State Machine,
+    Block Navigator, Response Validator, Report Generator,
+    Personalized Feedback
+
+LangGraph Estrutura:
+  State: WSIState { session_id, job_id, company_id, candidate_id,
+                    current_block, questions[], answers[], scores{}, status }
+  Nós: load_context → generate_question → deliver_question →
+       validate_response → score_response → advance_block →
+       generate_feedback → END
+  Checkpointer: PostgresSaver (obrigatório)
+  HITL: interrupt_before=["generate_feedback"]
+
+Arquivos de Referencia:
+  - lia-agent-system/app/services/wsi_screening_pipeline.py
+  - lia-agent-system/app/services/wsi_deterministic_scorer.py (558L — CRÍTICO)
+  - lia-agent-system/app/services/wsi_question_generator.py
+  - lia-agent-system/app/services/wsi_service.py
+  - lia-agent-system/app/api/v1/wsi_screening_pipeline_endpoint.py
+```
+
+---
+
+### AGT-008: CVScreeningReActAgent — [WT-1569](https://wedotalent.atlassian.net/browse/WT-1569)
+
+```yaml
+Titulo: "[AGT-008] CVScreeningReActAgent — Triagem Curricular com 8 Tools"
+Tipo: ReAct Agent
+Area: Backend
+Sprint: S2
+Pontos: 8
+Prioridade: P1
+Epic: É35 (WT-1558)
+Tags: [backend, IA, react-agents, cv-screening, fairness]
+Classificação: 🟡 MVP SUPORTE
+Dependências: AGT-002, AGT-007
+Referências: §14.4, §4.3, §13C.7
+
+Descricao: |
+  Agente ReAct de triagem de CV. Análise documental (não conversacional).
+  8 tools: parse_cv, score_cv_match, extract_skills, check_experience,
+  run_wsi_screening, move_to_stage, add_screening_note, get_job_requirements.
+
+Arquivos de Referencia:
+  - lia-agent-system/app/domains/cv_screening/agents/ (4-file)
+  - lia-agent-system/app/domains/cv_screening/services/
+```
+
+---
+
+### AGT-009: Chat Web Canal — [WT-1570](https://wedotalent.atlassian.net/browse/WT-1570)
+
+```yaml
+Titulo: "[AGT-009] Chat Web Canal — WebSocket Backend para Triagem do Candidato"
+Tipo: Infra
+Area: Backend
+Sprint: S2
+Pontos: 8
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [backend, IA, websocket, lgpd, compliance]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: AGT-007, AGT-002
+Sobreposição: TRI-002 — AGT-009 é o backend WebSocket
+Referências: §5.3, §7
+
+Descricao: |
+  Canal WebSocket para triagem WSI do candidato. Link único /triagem/{token},
+  sessões de 10-30min, PromptInjectionGuard em todas mensagens, PostgresSaver
+  para retomada. Banner LGPD obrigatório.
+
+Arquivos de Referencia:
+  - lia-agent-system/app/api/v1/orchestrated_talent_chat.py
+  - lia-agent-system/app/api/v1/orchestrated_job_chat.py
+```
+
+---
+
+### AGT-016: EventRetryOrchestrator — [WT-1571](https://wedotalent.atlassian.net/browse/WT-1571)
+
+```yaml
+Titulo: "[AGT-016] EventRetryOrchestrator — Celery Scheduler + DLQ"
+Tipo: Serviço
+Area: Backend
+Sprint: S2
+Pontos: 8
+Prioridade: P1
+Epic: É35 (WT-1558)
+Tags: [backend, IA, celery, automação]
+Classificação: 🟡 MVP SUPORTE
+Dependências: AGT-002
+Referências: §14.14, §7
+
+Descricao: |
+  Infraestrutura background: 10 jobs agendados + 8 triggers + DLQ.
+  Jobs Alpha 1: follow_up_7d, triagem_timeout_48h,
+  check_interview_no_shows, send_interview_reminders, run_lgpd_cleanup.
+
+Arquivos de Referencia:
+  - lia-agent-system/app/core/celery_app.py
+  - lia-agent-system/app/shared/messaging/celery_config.py
+  - lia-agent-system/app/domains/automation/services/pipeline_monitor.py
+```
+
+---
+
+### AGT-010: Follow-up 7d + Email Tracking — [WT-1572](https://wedotalent.atlassian.net/browse/WT-1572)
+
+```yaml
+Titulo: "[AGT-010] Follow-up 7 Dias + Email Tracking"
+Tipo: Serviço
+Area: Backend
+Sprint: S2
+Pontos: 8
+Prioridade: P1
+Epic: É35 (WT-1558)
+Tags: [backend, IA, email, automação, celery, lgpd]
+Classificação: 🟡 MVP SUPORTE
+Dependências: AGT-005, AGT-016
+Referências: §7, §5.3
+
+Descricao: |
+  Funcionalidade NOVA. Re-envio a cada 24h × 7 dias para candidatos que não
+  responderam. Pixel 1×1 GIF para abertura, redirect para clique.
+  LGPD: limitar re-envios + opt-out obrigatório.
+```
+
+---
+
+### AGT-FE-001: Chat Web UI — [WT-1573](https://wedotalent.atlassian.net/browse/WT-1573)
+
+```yaml
+Titulo: "[AGT-FE-001] Chat Web UI — Interface do Candidato para Triagem WSI"
+Tipo: Frontend
+Area: Frontend
+Sprint: S2
+Pontos: 8
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [frontend, IA, react, nextjs, websocket, lgpd, mobile-first, acessibilidade]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: AGT-009, AGT-007
+Sobreposição: TRI-002 — camada complementar de IA
+Referências: Design System v4.2.1, §13F
+
+Descricao: |
+  Interface web mobile-first para candidato. Link único, sem login.
+  Streaming token a token, indicador "Bloco 2/5 • Pergunta 3/6",
+  banner LGPD, identificação IA, reconexão automática.
+
+Arquivos a Criar:
+  - src/app/triagem/[token]/page.tsx
+  - src/components/chat/CandidateChat.tsx
+  - src/components/chat/ConsentBanner.tsx
+  - src/components/chat/ProgressIndicator.tsx
+  - src/hooks/use-candidate-chat.ts
+  - src/lib/session-token.ts
+
+Arquivos de Referencia:
+  - plataforma-lia/src/components/triagem/ChatContainer.tsx
+  - plataforma-lia/src/components/triagem/MessageBubble.tsx
+  - plataforma-lia/src/components/triagem/InputBar.tsx
+  - plataforma-lia/src/components/triagem/WelcomeCard.tsx
+  - plataforma-lia/src/hooks/use-triagem-chat.ts
+```
+
+---
+
+### AGT-FE-002: HITLConfirmCard — [WT-1574](https://wedotalent.atlassian.net/browse/WT-1574)
+
+```yaml
+Titulo: "[AGT-FE-002] HITLConfirmCard — Aprovação do Consultor no Chat (5 Estados)"
+Tipo: Frontend Component
+Area: Frontend
+Sprint: S2
+Pontos: 5
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [frontend, IA, react, hitl, websocket]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: AGT-011 (HITL wiring), AGT-001 (WebSocket)
+Referências: §13C.8, CLAUDE.md Sprint J
+
+Descricao: |
+  Componente React no chat do consultor para aprovação HITL.
+  5 estados: pending (botões Aprovar/Rejeitar), loading (spinner),
+  approved (badge ✓), rejected (badge ✗ + comentário), expired (>24h).
+
+Arquivos de Referencia:
+  - plataforma-lia/src/components/lia-float/HITLConfirmCard.tsx
+  - plataforma-lia/src/hooks/use-float-streaming.ts
+```
+
+---
+
+### AGT-011: Gate HITL Wiring — [WT-1575](https://wedotalent.atlassian.net/browse/WT-1575)
+
+```yaml
+Titulo: "[AGT-011] Gate HITL Wiring — Interrupt → HITLConfirmCard → Approve/Reject → Resume"
+Tipo: Serviço+HITL
+Area: Backend
+Sprint: S3
+Pontos: 8
+Prioridade: P0 Crítica
+Epic: É35 (WT-1558)
+Tags: [backend, IA, hitl, langgraph, redis, websocket, compliance, auditoria]
+Classificação: 🟢 MVP CRÍTICO
+Dependências: AGT-015, AGT-FE-002
+Referências: §13C.8, CLAUDE.md Sprint J, §13B.9
+
+Descricao: |
+  Wiring completo do fluxo HITL: agente emite interrupt LangGraph →
+  frontend recebe hitl_request → consultor vê HITLConfirmCard →
+  aprova/rejeita → agente resume do checkpoint. Redis (fast-path TTL 24h)
+  + PostgreSQL (source of truth). Tabelas: hitl_pending_actions, hitl_audit_trail.
+
+Tabelas HITL (migration 032):
+  hitl_pending_actions:
+    id, company_id, thread_id, domain, action, description,
+    data JSON, agent_input JSON, status, ws_session_id,
+    created_at, expires_at, resolved_at, resolved_by, comment
+  hitl_audit_trail:
+    id, company_id, thread_id, pending_id, action,
+    approved, comment, resolved_by, resolved_at
+
+Arquivos de Referencia:
+  - lia-agent-system/app/services/hitl_service.py
+  - lia-agent-system/app/api/v1/hitl.py
+```
+
+---
+
+### AGT-012: SchedulingGraph — [WT-1576](https://wedotalent.atlassian.net/browse/WT-1576)
+
+```yaml
+Titulo: "[AGT-012] SchedulingGraph — LangGraph 6 Nós (MS Graph + Calendar + Teams)"
+Tipo: LangGraph
+Area: Backend
+Sprint: S3
+Pontos: 13
+Prioridade: P1
+Epic: É35 (WT-1558)
+Tags: [backend, IA, langgraph, scheduling, ms-graph, teams]
+Classificação: 🔵 PÓS-MVP (Alpha 1.1)
+Dependências: AGT-002, AGT-005
+Referências: §14.6, §4.6
+
+Descricao: |
+  LangGraph StateGraph de 6 nós para agendamento de entrevista pós-Gate 2.
+  Integra MS Graph (Outlook Calendar), gera link Teams.
+
+Arquivos de Referencia:
+  - lia-agent-system/app/services/scheduling_service.py
+  - lia-agent-system/app/services/zero_touch_scheduling_service.py
+  - lia-agent-system/app/api/v1/scheduling.py
+```
+
+---
+
+### AGT-013: Triagem Abandonada Monitor — [WT-1577](https://wedotalent.atlassian.net/browse/WT-1577)
+
+```yaml
+Titulo: "[AGT-013] Triagem Abandonada Monitor — Celery Beat 48h"
+Tipo: Serviço
+Area: Backend
+Sprint: S3
+Pontos: 5
+Prioridade: P1
+Epic: É35 (WT-1558)
+Tags: [backend, IA, celery, automação, lgpd]
+Classificação: 🔵 PÓS-MVP (Alpha 1.1)
+Dependências: AGT-016, AGT-005
+Referências: §5.3, §7, §14.14
+
+Descricao: |
+  Celery Beat detecta triagens WSI não concluídas após 48h.
+  Fluxo: 48h → lembrete → +24h → lembrete → +24h → alerta consultor → abandoned.
+  Candidato pode retomar via PostgresSaver. Funcionalidade NOVA.
+```
+
+---
+
+### AGT-014: Teams/Slack Notifications — [WT-1578](https://wedotalent.atlassian.net/browse/WT-1578)
+
+```yaml
+Titulo: "[AGT-014] Teams/Slack Notifications — 3 Tipos de Adaptive Cards"
+Tipo: Serviço
+Area: Backend
+Sprint: S3
+Pontos: 3
+Prioridade: P2
+Epic: É35 (WT-1558)
+Tags: [backend, IA, teams, slack, notificação]
+Classificação: 🔵 PÓS-MVP (Alpha 1.1)
+Dependências: AGT-005 (Teams adapter)
+Referências: §5.3
+
+Descricao: |
+  3 alertas Adaptive Cards ao consultor via Teams: CANDIDATE_NO_RESPONSE (24h),
+  SCREENING_ABANDONED (48h), SCHEDULING_NO_AVAILABILITY. Fallback para email.
+```
+
+---
+
+### AGT-FE-003: Pipeline Status UI — [WT-1579](https://wedotalent.atlassian.net/browse/WT-1579)
+
+```yaml
+Titulo: "[AGT-FE-003] Pipeline Status UI — Dashboard do Consultor"
+Tipo: Frontend
+Area: Frontend
+Sprint: S3
+Pontos: 5
+Prioridade: P1
+Epic: É35 (WT-1558)
+Tags: [frontend, IA, react, nextjs, pipeline, websocket]
+Classificação: 🔵 PÓS-MVP (Alpha 1.1)
+Dependências: AGT-015, AGT-007
+Referências: Design System v4.2.1
+
+Descricao: |
+  Dashboard para consultor: candidatos por estágio, scores WSI,
+  Gate 1/Gate 2 pela UI. Polling 30s ou WebSocket.
+
+Arquivos de Referencia:
+  - plataforma-lia/src/components/ui/pipeline-report.tsx
+  - plataforma-lia/src/components/ui/pipeline-stages-carousel.tsx
+  - plataforma-lia/src/hooks/use-company-pipeline.ts
+```
+
+---
+
+### Mapa de Dependências AGT — Grafo de Bloqueios
+
+```
+AGT-002 (Infra) ─── BLOQUEANTE de tudo
+  ├── AGT-001 (Orchestrator)
+  ├── AGT-003 (ATS)
+  ├── AGT-004 (Sourcing)
+  ├── AGT-005 (Communication)
+  ├── AGT-006 (JD Generator)
+  ├── AGT-017 (Policy)
+  ├── AGT-015 (Pipeline Gate)
+  ├── AGT-016 (Scheduler)
+  └── AGT-009 (Chat Web)
+
+AGT-003 (ATS)
+  ├── AGT-004 (Sourcing — precisa vagas)
+  └── AGT-006 (JD Generator — precisa dados vaga)
+
+AGT-005 (Communication)
+  ├── AGT-010 (Follow-up)
+  └── AGT-013 (Abandono)
+
+AGT-007 (WSI) → AGT-008 (CV Screening usa WSI como tool)
+AGT-009 (Chat Web backend) → AGT-FE-001 (Chat Web UI)
+AGT-011 (HITL Wiring) → AGT-FE-002 (HITL Card)
+AGT-015 (Pipeline Gate) → AGT-011 (HITL) → AGT-FE-003 (Pipeline UI)
+AGT-016 (Scheduler) → AGT-010 (Follow-up), AGT-013 (Abandono)
+```
+
+### Sobreposições Complementares AGT ↔ Cards Existentes
+
+| Card AGT | Card Existente | Natureza da Sobreposição |
+|----------|---------------|--------------------------|
+| AGT-005 (CommunicationService) | COM-001 (CommunicationDispatcher) | AGT-005 adiciona IA: feedback LLM, tone policy, AI footer |
+| AGT-007 (WSIInterviewGraph) | TRI-005 (Motor WSI) | AGT-007 detalha implementação LangGraph com 15 serviços |
+| AGT-009 (Chat Web Canal) | TRI-002 (useTriagemChat) | AGT-009 é backend WebSocket, TRI-002 é frontend hook |
+| AGT-FE-001 (Chat Web UI) | TRI-002 (useTriagemChat) | AGT-FE-001 adiciona IA: streaming, progress, LGPD banner |
+| AGT-015 (PipelineGateService) | SAT-007 (Gate 1 máquina de estados) | AGT-015 adiciona HITL triggers e bypass automático |
+
+---
+
+*Documento v5.0 — 11/março/2026. Cards PIP removidos (v3.0), SendGrid→Mailgun (v4.0). v5.0: Bloco global de referência IA expandido com 15 seções — Tools Registry (91 tools Alpha 1), NFRs (latência/disponibilidade/rate limits), Env vars por épico, LLM Cascade (6 tiers), HITL map (14 ações), Prompt templates (9 YAMLs), Limites operacionais (12 recursos), Anti-patterns (8 regras), Migrations Alembic, Production templates (11 templates), Webhooks (8 integrações), Checklist de impacto (12 dimensões feature-impact), Checklist de conformidade IA (18 itens), Shared tools (8 tools cross-agent), Infraestrutura compartilhada (12 componentes obrigatórios). v5.1: Adicionada seção §11 — É35 Arquitetura de IA (AGT) com 21 cards completos (191 SPs). Referências cruzadas: `diagnostico-agentes-mvp.md` (§0B, §8, §13, §13B, §14, §17-§21), `feature-impact` skill (12 dimensões), código real do Replit (70+ arquivos). Total: 65 cards · 413 SPs (44 cards funcionalidade + 21 cards arquitetura IA).*

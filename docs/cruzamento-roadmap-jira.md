@@ -1,7 +1,7 @@
 # Cruzamento: Roadmap MVP Alpha 1 × Jira (Projeto WT)
 
 > **Data**: 11/03/2026
-> **Fonte roadmap**: `docs/roadmap-mvp-alpha1-cards-unificados.md` (v5.0)
+> **Fonte roadmap**: `docs/roadmap-mvp-alpha1-cards-unificados.md` (v5.1)
 > **Projeto Jira**: WT (cloudId: `8cf762f8-6a44-47de-8915-6b3dc0cd2715`)
 
 ---
@@ -10,14 +10,15 @@
 
 | Métrica | Valor |
 |---|---|
-| Cards no roadmap | **44** |
-| Encontrados no Jira | **44** (100%) |
+| Cards no roadmap | **65** |
+| Encontrados no Jira | **65** (100%) |
 | Faltando no Jira | **0** |
-| SP com divergência | **1** |
+| SP com divergência | **1** (TRI-001) |
 | Sem Epic link no Jira | **17** (VGM + AUD) |
 | PIP cards no Jira (removidos do roadmap v3+) | **8** |
+| É35 AGT cards (novos) | **21** (191 SPs) |
 
-**Conclusão: Todos os 44 cards do roadmap já existem no Jira.**
+**Conclusão: Todos os 65 cards do roadmap já existem no Jira (44 funcionalidade + 21 arquitetura IA).**
 
 ---
 
@@ -32,6 +33,7 @@
 | É34 (VOZ) | WT-1522 | Backlog | Voz Bidirecional (VOZ-001→004) |
 | VGM Epic | WT-1494 | Backlog | VGM — Gestão de Vagas: Criação Manual e Ciclo de Vida |
 | AUD Epic | WT-1505 | Backlog | AUD — Auditoria e Compliance do Agente Python |
+| É35 (AGT) | WT-1558 | Backlog | Arquitetura de IA: Agentes, Tools, Serviços e Automações (AGT-000→FE-003) |
 
 ---
 
@@ -179,4 +181,16 @@ AUD-004 → WT-1509                          VGM-007 → WT-1501
 AUD-005 → WT-1510                          VGM-008 → WT-1502
 AUD-006 → WT-1511                          VGM-009 → WT-1503
 AUD-007 → WT-1512                          VGM-010 → WT-1504
+```
+
+### É35 AGT — Arquitetura de IA (Epic WT-1558) — 21 cards
+
+```
+AGT-000 → WT-1559    AGT-007  → WT-1568    AGT-013   → WT-1577
+AGT-001 → WT-1561    AGT-008  → WT-1569    AGT-014   → WT-1578
+AGT-002 → WT-1560    AGT-009  → WT-1570    AGT-015   → WT-1567
+AGT-003 → WT-1562    AGT-010  → WT-1572    AGT-016   → WT-1571
+AGT-004 → WT-1563    AGT-011  → WT-1575    AGT-017   → WT-1566
+AGT-005 → WT-1564    AGT-012  → WT-1576    AGT-FE-001 → WT-1573
+AGT-006 → WT-1565    AGT-FE-002 → WT-1574  AGT-FE-003 → WT-1579
 ```
