@@ -1,7 +1,7 @@
 # Roadmap MVP Alpha 1 — Cards Jira Unificados
 ## WeDOTalent / Plataforma LIA
 
-**Versão:** 4.0 | **Data:** 11/março/2026 | **Classificação:** Referência técnica do time — Confidencial
+**Versão:** 5.0 | **Data:** 11/março/2026 | **Classificação:** Referência técnica do time — Confidencial
 
 > **Documento único de referência.** Consolida todos os cards Jira criados nos documentos de especificação e os organiza segundo o fluxo real do MVP Alpha 1. Fontes: `saturacao-chatweb-comunicacao-cards-jira.md`, `jira-cards-job-creation-lifecycle.md`, `diagnostico-agentes-mvp.md` e `ANALISE_COMPARATIVA_V5_vs_LIA.md`.
 
@@ -373,6 +373,298 @@ Env vars: MAILGUN_API_KEY, MAILGUN_DOMAIN, MAILGUN_FROM_EMAIL
           WHATSAPP_META_TOKEN, WHATSAPP_PHONE_ID
           TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
 ```
+
+
+
+### Tools do Tool Registry por Agente (91 tools Alpha 1)
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §8 + §14. Cada agente só pode usar as tools registradas em seu `_tool_registry.py`.
+
+| Agente (LIA) | Tools | Tipo | Cards Impactados | Arquivo Registry |
+|-------------|:-----:|------|-----------------|------------------|
+| MainOrchestrator (Ag.0) | 9 | Orchestrator | TRI-005, COM-001 | `app/orchestrator/orchestrator.py` |
+| Job Wizard (Ag.1) | 9 | ReAct + Graph | VGM-001→005 | `app/domains/job_management/agents/job_wizard_tool_registry.py` |
+| Sourcing (Ag.2) | 14 | ReAct | SAT-001 (pool sourcing) | `app/domains/sourcing/agents/sourcing_tool_registry.py` |
+| CV Screening (Ag.3) | 13 | ReAct | SAT-005, TRI-005 | `app/domains/cv_screening/agents/pipeline_tool_registry.py` |
+| WSI Interview (Ag.4+5) | 6 nós | StateGraph | TRI-005, TRI-007 | `app/domains/cv_screening/agents/wsi_interview_graph.py` |
+| Scheduling (Ag.6) | 6 nós | StateGraph | (pós-Alpha) | `app/domains/interview_scheduling/agents/interview_graph.py` |
+| Communication (Ag.7) | 5 | ReAct | COM-001→005 | `app/domains/communication/agents/communication_tool_registry.py` |
+| ATS Integration (Ag.8) | 5 | ReAct | (serviço REST) | `app/domains/ats_integration/agents/ats_tool_registry.py` |
+| Pipeline Transition (Ag.9) | 20 | ReAct + HITL | SAT-005, SAT-007 | `app/domains/cv_screening/agents/pipeline_tool_registry.py` |
+| Hiring Policy (Ag.10) | 4 | Serviço | SAT-003 | `app/domains/policy/agents/agent.py` |
+| **Total Alpha 1** | **91** | | | |
+
+### Shared Tools (disponíveis para todos os agentes via EnhancedAgentMixin)
+
+| Tool | O que faz | Arquivo |
+|------|----------|---------|
+| `get_pipeline_health` | Detecta gargalos e estagnação | `app/shared/tools/insight_tools.py` |
+| `get_conversion_rates` | Taxas de conversão entre estágios | `app/shared/tools/insight_tools.py` |
+| `get_time_to_fill` | Duração média de preenchimento | `app/shared/tools/insight_tools.py` |
+| `check_stagnant_candidates` | Candidatos parados >7 dias | `app/shared/tools/proactive_tools.py` |
+| `check_pipeline_risks` | Scan holístico de saúde | `app/shared/tools/proactive_tools.py` |
+| `predict_dropout_risk` | Probabilidade de desistência | `app/shared/tools/predictive_tools.py` |
+| `export_candidates` | Exporta lista CSV/XLSX/JSON | `app/shared/tools/export_tools.py` |
+| `generate_report` | Relatórios PDF de recrutamento | `app/shared/tools/export_tools.py` |
+
+### NFRs — Requisitos Não-Funcionais por Componente
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §20. Critérios de aceitação mensuráveis para produção.
+
+**Latência:**
+
+| Componente | P50 | P95 | Limite Máximo | Cards |
+|-----------|:---:|:---:|:-------------:|-------|
+| WebSocket handshake | <100ms | <300ms | 1s | TRI-002, TRI-007 |
+| WSI — resposta por turno | <2s | <4s | 8s | TRI-005 |
+| Sourcing — query inicial | <1s | <3s | 5s | SAT-001 |
+| Email send | <2s | <5s | 10s | COM-001→005 |
+| Gate HITL — approve | <500ms | <1s | 2s | SAT-005, SAT-007 |
+| CV parsing | <3s | <8s | 15s | INS-003 |
+| TTS audio generation | <1s | <3s | 5s | VOZ-003 |
+| STT transcription | <2s | <5s | 10s | VOZ-001 |
+
+**Disponibilidade e Resiliência:**
+
+| Componente | Uptime Alvo | Fallback | Cards |
+|-----------|:-----------:|---------|-------|
+| Claude (LLM primário) | 99,5% | → OpenAI → Gemini | TRI-005, VGM-001 |
+| PostgreSQL | 99,9% | Auto-failover | Todos |
+| Redis | 99,5% | Degradar sem cache | TRI-002, SAT-001 |
+| Mailgun (email) | 99% | → Resend | COM-001→005 |
+| Meta WhatsApp API | 95% | → Twilio SMS | COM-001 |
+
+**Rate Limits por Tenant (plano):**
+
+| Recurso | Starter | Pro | Business | Enterprise | Cards |
+|---------|:-------:|:---:|:--------:|:----------:|-------|
+| Requisições LLM/hora | 100 | 500 | 2.000 | Ilimitado | TRI-005, VGM-001 |
+| Emails/dia | 200 | 1.000 | 5.000 | Ilimitado | COM-001→005 |
+| Sessões WSI simultâneas | 5 | 20 | 100 | Ilimitado | TRI-005, TRI-007 |
+| Candidatos/busca | 50 | 200 | 1.000 | Ilimitado | SAT-001 |
+
+**Implementação:** `app/orchestrator/tenant_budget.py` + `app/services/token_budget_service.py`
+
+### Env Vars Necessárias por Épico
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §0B.1. Configurar ANTES de implementar o card.
+
+| Épico | Variáveis de Ambiente | Quando |
+|-------|----------------------|--------|
+| **SAT** (Saturação) | `DATABASE_URL`, `REDIS_URL` | S1 |
+| **TRI** (Triagem) | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `DATABASE_URL`, `REDIS_URL`, `LANGSMITH_API_KEY` | S2 |
+| **COM** (Comunicação) | `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM_EMAIL`, `WHATSAPP_META_TOKEN`, `WHATSAPP_PHONE_ID`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | S2 |
+| **INS** (Inscrição) | `DATABASE_URL` (nenhuma adicional — reutiliza SAT) | S2 |
+| **VOZ** (Voz) | `OPENAI_API_KEY` (TTS tts-1), `DEEPGRAM_API_KEY` (STT primário) | S2 |
+| **VGM** (Vagas) | `ANTHROPIC_API_KEY` (JD Generator), `DATABASE_URL` | S1 |
+| **AUD** (Auditoria) | `LANGSMITH_API_KEY`, `AWS_S3_BUCKET` (storage externo), `PROMETHEUS_PORT` | S1/S3 |
+
+### LLM Cascade — Qual Modelo Cada Card Usa
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §13 + `app/orchestrator/llm_cascade.py`. Cascade: Haiku → Sonnet → Opus.
+
+| Tier | Modelo | Temperatura | Uso nos Cards | Custo Relativo |
+|------|--------|:-----------:|--------------|:--------------:|
+| **Tier 3a (Fast)** | Claude Haiku | 0.1 | Router de intenções (TRI-002 roteamento), classificação rápida | $ |
+| **Tier 3b (Mid)** | Claude Sonnet | 0.3 | TRI-005 (WSI perguntas/scoring), VGM-001 (JD generation), COM-001 (feedback personalizado) | $$ |
+| **Tier 3c (Power)** | Claude Opus | 0.3 | Análises complexas, rubric evaluation (SAT-001 scoring avançado) | $$$ |
+| **Fallback 1** | OpenAI GPT-4 | 0.3 | Quando Anthropic indisponível — todos os cards com IA | $$ |
+| **Fallback 2** | Gemini Pro | 0.3 | Quando Anthropic + OpenAI indisponíveis | $$ |
+| **Embeddings** | Gemini text-embedding-004 | — | SAT-001 (busca semântica), TRI-005 (cache semântico) | $ |
+| **TTS** | OpenAI tts-1 (voice "nova") | — | VOZ-003 (geração de áudio) | $ |
+| **STT** | Deepgram Nova-2 | — | VOZ-001 (transcrição de áudio) | $ |
+
+**Configuração:** `libs/config/lia_config/config.py` → `LLMSettings` (model names, temperatures, cascade thresholds)
+
+### HITL — Mapa de Confirmação Humana por Ação
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §21.6. Ações que requerem aprovação do recrutador antes de executar.
+
+| Ação | Confirmação | Risco | Cards Impactados |
+|------|:-----------:|-------|-----------------|
+| `analisar_perfil` | NÃO | Baixo | SAT-001 |
+| `disparar_triagem` | NÃO | Baixo | TRI-005 |
+| `scoring_wsi` | NÃO | Baixo | TRI-005 |
+| `buscar_candidatos` | NÃO | Baixo | SAT-001 |
+| `gerar_jd` | NÃO | Baixo | VGM-001 |
+| `mover_candidato` | **SIM** | Médio | SAT-005, SAT-007 |
+| `aprovar_candidato` | **SIM** | Médio | SAT-005 |
+| `agendar_entrevista` | **SIM** | Médio | (pós-Alpha) |
+| `enviar_email` | **SIM** | Alto | COM-001→005 |
+| `reprovar_candidato` | **SIM** | Alto | SAT-005, SAT-007 |
+| `publicar_vaga` | **SIM** | Alto | VGM-005 |
+| `enviar_whatsapp_massa` | **SIM** | Alto | COM-001 |
+| `pausar_vaga` | **SIM** | Alto | VGM-008 |
+| `fechar_vaga` | **SIM** | Alto | VGM-009 |
+
+**Implementação:** `requires_confirmation=True` no `ToolDefinition` + `ActionExecutorService` (`app/orchestrator/action_executor.py`)
+
+### Prompt Templates e YAMLs de Domínio
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §13B.5 + `app/prompts/domains/`.
+
+| Domínio | YAML | Agente/Graph | Cards |
+|---------|------|-------------|-------|
+| `sourcing.yaml` | Busca de candidatos | SourcingReActAgent | SAT-001 |
+| `cv_screening.yaml` | Triagem curricular + WSI | PipelineReActAgent, WSIGraph | SAT-005, TRI-005 |
+| `communication.yaml` | Email, WhatsApp, notificação | CommunicationReActAgent | COM-001→005 |
+| `job_management.yaml` | Criação/edição de vagas | WizardReActAgent, JobWizardGraph | VGM-001→005 |
+| `ats_integration.yaml` | Sync ATS (Gupy/Pandapé) | ATSIntegrationAgent (serviço) | — |
+| `analytics.yaml` | KPIs, relatórios | AnalyticsReActAgent | AUD-006, AUD-007 |
+| `recruiter_assistant.yaml` | Kanban, pipeline | KanbanReActAgent | SAT-002 |
+| `automation.yaml` | Jobs agendados | AutomationReActAgent | AUD-003 |
+| Persona compartilhada | `app/prompts/shared/lia_persona.yaml` | Todos os agentes | Todos |
+
+**Prompt Registry:** `app/shared/prompts/prompt_registry.py` — versionamento de prompts (ex: `orchestrator` v2.0.0)
+
+### Limites Operacionais — Referência Rápida
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §21.7
+
+| Recurso | Limite | Configuração | Cards |
+|---------|--------|-------------|-------|
+| LLM timeout (Claude/OpenAI) | 120 segundos | `shared/providers/llm_*.py` | Todos com IA |
+| Max tool calls por request | 3 | `REACT_MAX_TOOL_CALLS` | Todos com agente |
+| Max iterações ReActLoop | 5 | `ReActConfig.max_iterations` | Todos com agente |
+| Rate limit por minuto | 200 req/min por tenant | Rate limiter middleware | Todos |
+| Cache hot (Tier 1) | TTL 5 minutos | `cache_manager_service.py` | SAT-001, TRI-002 |
+| Cache warm (Tier 2) | TTL 1 hora | idem | SAT-001 |
+| Pearch searches/dia | 10 por tenant | PolicyEngine | SAT-001 |
+| Voice screenings/dia | 20 por tenant | PolicyEngine | VOZ-003, VOZ-004 |
+| Max tokens/request | 50.000 | PolicyEngine | TRI-005 |
+| Max concurrent requests | 5 por tenant | PolicyEngine | TRI-005 |
+| Duplicate action threshold | 2 | `REACT_DUPLICATE_THRESHOLD` | Todos com agente |
+| Observation max chars | 5.000 | `REACT_OBSERVATION_MAX_CHARS` | Todos com agente |
+
+### Anti-Patterns — NUNCA Faça Isso (Referência para Todos os Cards)
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §21.5
+
+| Anti-Pattern | Consequência | Alternativa Correta |
+|-------------|-------------|-------------------|
+| Hardcodar regras por empresa | Impossível escalar multi-tenant | Use `CompanyHiringPolicy` no banco |
+| Colocar dados sensíveis em logs | Violação LGPD (Art. 46) | Use `PIIMasking` antes de logar |
+| Criar tool sem `try/except` | Erro não tratado crasha o ReActLoop | Sempre envolva em try/except com log |
+| Mudar tool sem atualizar `STAGE_TOOLS` | Tool existe mas agente não pode usar | Atualizar STAGE_TOOLS junto com a tool |
+| Lógica crítica apenas no prompt | LLM pode ignorar a regra | Implemente em código (tool ou guard) |
+| Chamar LLM sem circuit breaker | Falha do provider derruba o sistema | Use `CircuitBreaker` para chamadas externas |
+| Ignorar FairnessGuard no input | Viés discriminatório passa sem detecção | Sempre valide texto com `check()` |
+| Retornar traceback ao usuário | UX ruim + expõe internals | Retorne mensagem amigável no catch |
+
+### Infraestrutura Compartilhada Obrigatória (usada por todos os agentes)
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §13
+
+| Componente | Arquivo | Função | Obrigatório |
+|-----------|--------|--------|:-----------:|
+| BaseAgent | `libs/agents-core/lia_agents_core/langgraph_react_base.py` | Base ReAct com lifecycle hooks | ✅ |
+| EnhancedAgentMixin | `libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` | Memória + guardrails + learning | ✅ |
+| FairnessGuard | `app/shared/agents/fairness_guard.py` | 3 camadas (pre-prompt, post-response, aggregate) | ✅ |
+| AuditCallback | `app/shared/compliance/audit_service.py` | Log estruturado de decisões IA | ✅ |
+| PII Masking | `app/shared/pii_masking.py` | Masking LGPD (CPF, email, tel) | ✅ |
+| PromptInjectionGuard | `app/shared/prompt_injection.py` | Detecção de prompt injection (177L) | ✅ |
+| Token Budget | `app/services/token_budget_service.py` | Rate limiting por tenant/plano | ✅ |
+| HITL Service | `app/services/hitl_service.py` | Human-in-the-Loop via LangGraph interrupt | ✅ |
+| EmbeddingService | `app/shared/intelligence/embedding_service.py` | Gemini text-embedding-004 (768 dim) | ✅ |
+| WorkingMemoryService | `app/shared/agents/working_memory.py` | Memória de trabalho persistente por sessão | ✅ |
+| PolicyEngine | `app/orchestrator/policy_engine.py` | Guardrails antes/depois de cada execução | ✅ |
+| CircuitBreaker | `app/shared/providers/` | Circuit breaker para APIs externas | ✅ |
+
+### Migrations Alembic Necessárias (mínimo Alpha 1)
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §0B.2
+
+| Migration | O que cria | Sprint | Cards Dependentes |
+|-----------|-----------|:------:|------------------|
+| `001`–`019` | Modelos base (candidates, jobs, pipeline, users) | Pré-req | Todos |
+| `020_add_guardrails_table` | Tabela `guardrails` — regras de agentes por tenant | S0 | SAT-003, AUD-001 |
+| `028_add_pgvector` | Extensão pgvector para embeddings | S0 | SAT-001 |
+| `032_add_hitl_tables` | `hitl_pending_actions` + `hitl_audit_trail` | S0 | SAT-005, SAT-007 |
+| `034_add_agent_quality_evaluations` | Avaliação qualidade do agente | S0 | AUD-001 |
+| `035_add_user_agent_preferences` | Preferências de agente por usuário | S0 | — |
+| `saturation_*` | Tabelas/campos de saturação | S1 | SAT-001→007 |
+| `triagem_*` | `triagem_sessions`, `triagem_messages` | S2 | TRI-001→008 |
+| `communication_*` | `communication_history`, `email_templates`, etc. | S2 | COM-001→005 |
+| `voice_*` | `voice_screenings` | S2 | VOZ-001→004 |
+
+**Comando:** `cd lia-agent-system && alembic upgrade head`
+
+### Production Templates de Comunicação
+
+> **Fonte:** `app/templates/communication_templates.py` + `docs/templates/biblioteca-templates-completa.md`
+
+| Template | Arquivo | Cards |
+|----------|---------|-------|
+| Email convite para triagem WSI | `app/templates/communication_templates.py` | COM-001, COM-002 |
+| Email feedback construtivo (Gate 1) | `app/templates/communication_templates.py` | COM-003 |
+| Email feedback final (Gate 2) | `app/templates/communication_templates.py` | COM-003 |
+| Email confirmação de inscrição | `app/templates/communication_templates.py` | INS-003, COM-005 |
+| WhatsApp template — convite | `app/templates/communication_templates.py` | COM-001 |
+| Email fila de espera (saturação) | `app/templates/communication_templates.py` | SAT-005, COM-004 |
+| Email pausar/reativar vaga | `app/templates/communication_templates.py` | VGM-008 |
+| Email fechamento de vaga | `app/templates/communication_templates.py` | VGM-010 |
+| Relatório PDF de triagem | `app/templates/report_templates.py` | TRI-005, AUD-006 |
+| Taxonomia de templates | `docs/templates/TAXONOMIA_TEMPLATES.md` | Referência |
+| Biblioteca completa | `docs/templates/biblioteca-templates-completa.md` | Referência |
+
+### Webhooks e Pontos de Integração Externa
+
+> **Fonte:** `app/api/v1/external_webhooks.py` + docs de integração
+
+| Webhook/Integração | Endpoint | Cards | Direção |
+|---------------------|---------|-------|---------|
+| ATS (Gupy/Pandapé) sync | `POST /api/v1/webhooks/ats` | VGM-001 (import), SAT-001 | Inbound |
+| Merge.dev ATS connector | `POST /api/v1/webhooks/merge` | VGM-001 | Inbound |
+| WorkOS SCIM/Auth | `POST /api/v1/webhooks/workos` | (Auth — cross-cutting) | Inbound |
+| Billing (Iugu/Vindi) | `POST /api/v1/webhooks/billing` | (Billing — pós-Alpha) | Inbound |
+| Deepgram transcription | `POST /api/v1/webhooks/deepgram` | VOZ-001 | Inbound |
+| Mailgun delivery status | `POST /api/v1/webhooks/mailgun` | COM-001 (tracking) | Inbound |
+| Meta WhatsApp status | `POST /api/v1/webhooks/whatsapp` | COM-001 | Inbound |
+| Job status notification | `POST /api/v1/job-status-webhooks` | VGM-008, VGM-010 | Outbound |
+
+### Checklist de Impacto — 12 Dimensões (Mini Feature-Impact por Card)
+
+> **Fonte:** `.agents/skills/feature-impact/SKILL.md`. Antes de implementar qualquer card, verificar se há impacto nessas dimensões.
+
+| # | Dimensão | Verificação Rápida | Cards com Impacto |
+|---|---------|-------------------|------------------|
+| 1 | Frontend | Novas páginas, componentes, hooks, proxy routes? | SAT-002→004, TRI-001→007, INS-001→002, VOZ-001→002, VGM-001→009 |
+| 2 | Backend API | Novos endpoints REST, schemas Pydantic? | SAT-001, TRI-005, COM-001, VGM-010, AUD-006 |
+| 3 | Serviços | Novos serviços ou ajuste em existentes? | SAT-005, TRI-005, COM-001, VOZ-003, AUD-003 |
+| 4 | Banco de Dados | Novas tabelas, campos, migrations, índices? | SAT-001, TRI-005, COM-001, INS-003, VOZ-003 |
+| 5 | Agentes IA | Tools, prompts, state machine, domínios? | TRI-005, VGM-001, COM-001, SAT-001 |
+| 6 | Comunicações | Email, WhatsApp, Teams, notificações? | COM-001→005, SAT-005, VGM-008, VGM-010 |
+| 7 | Integrações | WorkOS, ATS, Deepgram, Pearch? | VOZ-001, INS-003, VGM-001 |
+| 8 | Compliance/LGPD | PII, consentimento, auditoria, retenção? | AUD-001→007, TRI-005, COM-001 |
+| 9 | Segurança | Multi-tenant, CORS, rate limiting? | Todos (company_id obrigatório) |
+| 10 | Infra/Async | Celery tasks, Redis cache, migrations? | SAT-005, AUD-004, COM-001 |
+| 11 | Observabilidade | Logs, métricas Prometheus, LangSmith? | AUD-001, AUD-007 |
+| 12 | Testes | Unitários, integração, fairness, edge cases? | Todos |
+
+### Checklist de Conformidade do Agente (18 itens — obrigatório para cards com IA)
+
+> **Fonte:** `diagnostico-agentes-mvp.md` §13B.9. Todo card que envolve agente ReAct/Graph deve passar nestes 18 itens antes de "Done".
+
+| # | Critério | Cards |
+|---|---------|-------|
+| 1 | Padrão 4-file completo (agent, prompt, tools, context) | TRI-005, VGM-001, COM-001, SAT-001 |
+| 2 | EnhancedAgentMixin herdado | Todos com agente |
+| 3 | FairnessGuard wired | Todos com agente |
+| 4 | PromptInjectionGuard wired | TRI-005, TRI-007 |
+| 5 | AuditCallback registrado | Todos com agente (AUD-001) |
+| 6 | `company_id` propagado em TODAS as queries | Todos |
+| 7 | PII Masking ativo nos logs | Todos |
+| 8 | PolicyEngine consultado antes de execução | Todos com agente |
+| 9 | Circuit breaker em chamadas LLM/API | Todos com IA (AUD-003) |
+| 10 | System prompt com 10 seções obrigatórias | TRI-005, VGM-001, COM-001 |
+| 11 | STAGE_TOOLS correto | TRI-005, COM-001 |
+| 12 | Testes unitários (mín. 5 por tool) | Todos |
+| 13 | Testes fairness (5+ queries discriminatórias bloqueadas) | TRI-005, VGM-001, COM-001 |
+| 14 | Testes integração (fluxo completo com mocks) | Todos |
+| 15 | Sem dados hardcoded (CPF, email, tel) | Todos |
+| 16 | Sem secrets em código | Todos |
+| 17 | Logs sem PII | Todos |
+| 18 | FRIA documentada (se toma decisões sobre candidatos) | TRI-005, SAT-005 |
 
 
 ---
@@ -5603,4 +5895,4 @@ AUD-001 → AUD-002 → AUD-003 (Auditoria mínima ativa)
 
 ---
 
-*Documento v4.0 — 11/março/2026. Cards PIP (pipeline-transition) removidos na v3.0. SendGrid substituído por Mailgun na v4.0. Enriquecido com referências de código do Replit, tags padronizadas (backend/frontend/fullstack/dados/IA/comunicacao/voz), mapa de agentes IA, modelos de banco de dados PostgreSQL, stack de comunicação (Mailgun + Meta WhatsApp + Twilio fallback), e instruções de teste. Consolida cards de: `saturacao-chatweb-comunicacao-cards-jira.md` (27 cards), `jira-cards-job-creation-lifecycle.md` (10 cards), `diagnostico-agentes-mvp.md` + `ANALISE_COMPARATIVA_V5_vs_LIA.md` (7 cards AUD). Total: 44 cards · 222 SPs.*
+*Documento v5.0 — 11/março/2026. Cards PIP removidos (v3.0), SendGrid→Mailgun (v4.0). v5.0: Bloco global de referência IA expandido com 15 seções — Tools Registry (91 tools Alpha 1), NFRs (latência/disponibilidade/rate limits), Env vars por épico, LLM Cascade (6 tiers), HITL map (14 ações), Prompt templates (9 YAMLs), Limites operacionais (12 recursos), Anti-patterns (8 regras), Migrations Alembic, Production templates (11 templates), Webhooks (8 integrações), Checklist de impacto (12 dimensões feature-impact), Checklist de conformidade IA (18 itens), Shared tools (8 tools cross-agent), Infraestrutura compartilhada (12 componentes obrigatórios). Referências cruzadas: `diagnostico-agentes-mvp.md` (§0B, §8, §13, §13B, §14, §20, §21), `feature-impact` skill (12 dimensões), código real do Replit (70+ arquivos). Total: 44 cards · 222 SPs.*
