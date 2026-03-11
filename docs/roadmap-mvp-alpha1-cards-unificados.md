@@ -5960,7 +5960,12 @@ Fase: MVP Alpha 1
 Tags: [backend, IA, infra, devops, compliance, react-agents, langgraph]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: Nenhuma — pré-requisito de TODOS os outros cards AGT
-Referências Diagnóstico: §13B (blueprint), §13D (compliance), §13F (IA vs Determinístico)
+Referências Diagnóstico: §13B (blueprint), §13D (compliance), §13F (IA vs Determinístico), §13C.17
+
+Estado V5 vs LIA:
+  V5: Não existe — estrutura de diretórios diferente
+  LIA: Padrão 4-file já definido, EnhancedAgentMixin, AgentScaffold
+  Veredicto: Card de padronização — define padrão V5 baseado nas melhores práticas LIA
 
 Descricao: |
   Card de infraestrutura de desenvolvimento. Define o padrão obrigatório para
@@ -6078,7 +6083,17 @@ Fase: MVP Alpha 1
 Tags: [backend, IA, infra, compliance, fairness, langchain, langgraph, lgpd, multi-tenant]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: Nenhuma (pré-requisito de todos os outros cards)
-Referências Diagnóstico: §13B, §13C.2, §13C.3, §13C.14, §13D
+Referências Diagnóstico: §13B, §13C.2, §13C.3, §13C.14, §13D, §13D.5, §13C.17
+
+Estado V5 vs LIA:
+  V5: Estrutura a ser criada no novo diretório src/
+  LIA: Todos os componentes existem em app/shared/ (9 arquivos base + compliance)
+  Veredicto: Adaptar todos de LIA para V5 — apenas reestruturar diretórios
+
+Roteiro de Reproducao (§13C.17):
+  Provedores e LLM (7 arquivos): §13C.17
+  Robustez e segurança (10 arquivos): §13C.17
+  Prompts (13 arquivos): §13C.17
 
 Descricao: |
   Setup da infraestrutura base que todos os agentes dependem:
@@ -6165,7 +6180,27 @@ Epic: É35 (WT-1558)
 Tags: [backend, IA, orchestrator, websocket, hitl, langgraph, multi-tenant]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: AGT-002 (bloqueante)
-Referências: §14.1, §13C.1, §13B.7, §13C.17
+Referências Diagnóstico: §14.1, §13C.1, §13B.7, §13C.17
+
+Estado V5 vs LIA:
+  V5: Mesma arquitetura (orchestrator.py + cascaded_router) — sem HITL
+  LIA: CascadedRouter 6 tiers + PendingActions + HITL + PolicyEngine
+  Veredicto: LIA mais completa — usar LIA, adaptar para 9 domínios Alpha 1
+
+Dominios Roteados Alpha 1:
+  | Domínio              | Agente                        | Card AGT |
+  | wizard               | WizardReActAgent              | AGT-006  |
+  | sourcing             | SourcingReActAgent            | AGT-004  |
+  | cv_screening         | CVScreeningReActAgent         | AGT-008  |
+  | pipeline_transition  | PipelineTransitionReActAgent  | AGT-015  |
+  | communication        | CommunicationReActAgent       | AGT-005  |
+  | ats_integration      | ATSIntegrationService         | AGT-003  |
+  | wsi                  | WSIInterviewGraph             | AGT-007  |
+  | policy               | HiringPolicyService           | AGT-017  |
+  | scheduling           | SchedulingGraph (Pós-Alpha)   | AGT-012  |
+
+Roteiro de Reproducao (§13C.17):
+  Orquestrador (9 arquivos): §13C.17
 
 Descricao: |
   Orquestrador central que recebe mensagens do frontend via WebSocket,
@@ -6226,7 +6261,7 @@ Arquivos de Referencia:
 
 ```yaml
 Titulo: "[AGT-003] ATSIntegrationService — Integração Bidirecional com ATS (Gupy Primário)"
-Tipo: Serviço
+Tipo: Serviço REST (Alpha 1) / ReAct Agent (Pós-Alpha)
 Area: Backend
 Sprint: S0
 Pontos: 8
@@ -6235,12 +6270,60 @@ Epic: É35 (WT-1558)
 Tags: [backend, IA, serviço, integração, ats, multi-tenant]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: AGT-002
-Referências: §14.8, §4.8
+Referências Diagnóstico: §14.8, §4.8, §13B.7, §13C.17
+
+Estado V5 vs LIA:
+  V5: SourcingAPIClient (consumidor REST) + 67 YAMLs de endpoints
+  LIA: ReAct Agent com 5 tools + 5 clientes ATS (Gupy, PandaPé, Merge, StackOne, base) + sync bidirecional + webhooks
+  Veredicto: Alpha 1 usa como serviço REST (CRUD bidirecional é determinístico). Pós-Alpha ativa agente conversacional
 
 Descricao: |
   Serviço REST de integração bidirecional com ATS externo. Premissa do Alpha 1:
   vagas importadas do ATS antes de tudo mais. Alpha 1 usa como serviço REST
   simples (não agente ReAct). Cobre passos 2, 5 e 8.
+
+5 Tools (Pos-Alpha como agente ReAct):
+  | Tool                     | O que faz                       | Serviço        |
+  | sync_candidate_to_ats    | Sync candidato para ATS externo | ATSSyncService |
+  | fetch_candidate_from_ats | Importa candidato do ATS        | ATSSyncService |
+  | validate_ats_fields      | Valida campos ATS               | Validation     |
+  | bulk_sync_candidates     | Sync em lote                    | ATSSyncService |
+  | get_sync_status          | Status do sync                  | ATSSyncService |
+
+Servicos Chamados:
+  | Serviço              | Arquivo                                         |
+  | ATSSyncService       | app/domains/ats_integration/services/ats_sync_service.py |
+  | GupyService          | app/services/gupy_service.py                     |
+  | PandapeService       | app/services/pandape_service.py                  |
+  | MergeATSService      | app/services/merge_ats_service.py                |
+  | ATSJobHistoryService | app/services/ats_job_history_service.py           |
+
+API Endpoints:
+  | Método | Endpoint                       | Descrição                     |
+  | POST   | /ats/connections                | Cria conexão ATS (Gupy/Pandapé) |
+  | POST   | /ats/connections/{id}/sync      | Dispara sync bidirecional     |
+  | WS     | /ws/chat/{session_id} (ats_integration) | WebSocket (pós-Alpha)  |
+
+Automacoes Relacionadas:
+  | Automação              | Frequência | Ação                            |
+  | ATS_SYNC (evento)      | Imediato   | Sincroniza mudanças com ATS     |
+  | CANDIDATE_HIRED (evento)| Imediato  | Sync final com ATS              |
+
+Padrao de Implementacao (13B.7):
+  Classe: ATSIntegrationReActAgent(EnhancedAgentMixin, BaseAgent)
+  Domain: "ats_integration"
+  Tools: get_ats_tools() (5 tools)
+  System_prompt: get_ats_system_prompt(guardrails, memory_context)
+  Guardrails: 13D.5 — #1-#6 globais
+  Particularidade: Alpha 1 usa como serviço REST — não instancia ReAct loop
+
+Camadas de Suporte Obrigatorias:
+  | Camada         | Seção  | Arquivos                                    |
+  | Provedores LLM | 13C.2  | ats_factory.py (factory de providers ATS)    |
+  | Config/Infra   | 13C.14 | config.py (chaves API dos ATS)              |
+
+Roteiro de Reproducao (§13C.17):
+  ReAct (domínio=ats_integration): 7 arquivos padrão
 
 Criterios de Aceitacao:
   - [ ] GET /api/v1/ats/jobs importa vagas do Gupy
@@ -6250,8 +6333,14 @@ Criterios de Aceitacao:
   - [ ] Circuit breaker/retry se ATS indisponível
   - [ ] Audit log para cada sync
 
+Para Alpha 1:
+  - Premissa: vaga importada do ATS
+  - Validar fetch_candidate_from_ats com pelo menos 1 provedor real (Gupy ou Merge)
+  - Garantir que importação popula dados suficientes para o wizard editar
+
 Arquivos de Referencia:
   - lia-agent-system/app/domains/ats_integration/ (4-file pattern completo)
+  - lia-agent-system/app/domains/ats_integration/agents/ats_integration_tool_registry.py
   - lia-agent-system/app/domains/ats_integration/services/ats_clients/gupy.py
   - lia-agent-system/app/services/ats_sync_service.py
 ```
@@ -6262,7 +6351,7 @@ Arquivos de Referencia:
 
 ```yaml
 Titulo: "[AGT-004] SourcingReActAgent — Busca de Candidatos com 14 Tools"
-Tipo: ReAct Agent
+Tipo: ReAct Agent (4-file pattern)
 Area: Backend
 Sprint: S1
 Pontos: 13
@@ -6271,31 +6360,102 @@ Epic: É35 (WT-1558)
 Tags: [backend, IA, react-agents, sourcing, pgvector, elasticsearch, fairness]
 Classificação: 🟡 MVP SUPORTE
 Dependências: AGT-002, AGT-003
-Referências: §14.3, §4.2, §13B.7, §13C.6
+Referências Diagnóstico: §14.3, §4.2, §13B.7, §13C.6, §13C.17
+
+Estado V5 vs LIA:
+  V5: MultiAgentOrchestrator com 6 sub-agents (search, detail, comparison, analytics, report, action) — padrão fragmentado
+  LIA: 1 ReAct agent coeso com 14 tools + WRF + LearningLoop
+  Veredicto: LIA é mais coeso — usar padrão LIA (ReAct puro, 4-file)
 
 Descricao: |
-  Agente ReAct de busca de candidatos com 14 tools: busca semântica (PGVector),
-  fulltext (ES/pg_trgm), WRF fusion, Pearch AI, Like/Dislike feedback loop.
+  Agente ReAct puro (4-file pattern) de busca de candidatos. Ciclo ReAct iterativo:
+  mensagem → raciocínio LLM → escolha de tool (14 disponíveis) → execução →
+  observação → próximo passo. Sem LangGraph. Exemplo canônico da seção 13B.7.
 
-14 Tools:
-  1. extract_search_params — NL query → estruturado
-  2. semantic_search — PGVector cosine similarity
-  3. fulltext_search — ES BM25 / pg_trgm
-  4. wrf_fusion — Weighted Rank Fusion
-  5. pearch_search — Pearch AI (190M+ perfis)
-  6. get_candidate_profile — Perfil completo
-  7. add_to_shortlist — Shortlist
-  8. remove_from_shortlist
-  9. like_candidate — Feedback positivo
-  10. dislike_candidate — Feedback negativo
-  11. filter_by_location — Filtro geográfico
-  12. filter_by_experience — Filtro experiência
-  13. get_similar_candidates — Similares
-  14. check_policy_compliance — HiringPolicy
+14 Tools com Servicos:
+  | Tool                    | O que faz                           | Serviço                     |
+  | set_search_criteria     | Define critérios de busca           | Search Context              |
+  | suggest_skills          | Sugestões IA de skills para cargo   | LLM / Skill Taxonomy        |
+  | search_candidates       | Busca candidatos (ES+PGV+WRF)      | CandidateSearchService      |
+  | filter_results          | Filtra resultados por critério      | In-memory filter            |
+  | view_candidate          | Visualiza perfil do candidato       | DB: candidates              |
+  | analyze_profile         | Análise IA do perfil                | Profile Analysis Service    |
+  | compare_candidates      | Comparação lado a lado              | ComparisonService           |
+  | score_candidate         | Scoring WSI do candidato            | WSI Scoring Service         |
+  | add_to_shortlist        | Adiciona à shortlist                | DB: vacancy_candidates      |
+  | remove_from_shortlist   | Remove da shortlist                 | DB: vacancy_candidates      |
+  | rank_candidates         | Rankeia shortlist por score IA      | Scoring Engine              |
+  | send_outreach           | Envia mensagem de contato           | CommunicationService        |
+  | generate_message        | Gera mensagem personalizada com IA  | LLM                         |
+  | track_response          | Rastreia resposta do candidato      | DB: communication_history   |
+
+Servicos Chamados:
+  | Serviço                  | Arquivo                                            |
+  | HybridSearchService      | app/services/hybrid_search_service.py               |
+  | WRFDynamicKService       | app/services/wrf_dynamic_k_service.py               |
+  | PreWRFFilterService      | app/services/pre_wrf_filter_service.py              |
+  | RAGPipelineService       | app/services/rag_pipeline_service.py                |
+  | PearchService            | app/services/pearch_service.py                      |
+  | ApifyService             | app/services/apify_service.py                       |
+  | CandidateEnrichmentSvc   | app/services/candidate_enrichment_service.py        |
+  | SourcingPipelineService  | app/services/sourcing_pipeline_service.py           |
+  | SemanticSearchService    | app/shared/intelligence/semantic_search_service.py  |
+  | EmbeddingService         | app/shared/intelligence/embedding_service.py        |
+  | WorkingMemoryService     | app/shared/agents/working_memory.py                 |
+
+API Endpoints:
+  | Método | Endpoint                            | Descrição                     |
+  | POST   | /sourcing/search                    | Busca booleana                |
+  | POST   | /sourcing/match-candidates          | Matching candidato×vaga       |
+  | GET    | /sourcing/suggestions/{job_id}      | Sugestões por vaga            |
+  | POST   | /candidates/search/local            | Busca local (PostgreSQL)      |
+  | POST   | /candidates/search                  | Busca externa (Pearch 190M+)  |
+  | POST   | /candidates/{id}/enrich             | Enriquecimento (Apify)        |
+  | GET    | /candidates/rag-search              | Busca RAG híbrida             |
+  | WS     | /ws/chat/{session_id} (sourcing)    | WebSocket conversacional      |
+
+Padrao de Implementacao (13B.7):
+  Classe: SourcingReActAgent(EnhancedAgentMixin, BaseAgent)
+  Domain: "sourcing"
+  Tools: get_sourcing_tools() (14 tools)
+  System_prompt: get_sourcing_system_prompt(guardrails, memory_context)
+  Guardrails: 13D.5 — #1-#6 globais + #10 (sourcing — não contatar recusados <6 meses)
+  Particularidade: ReAct puro — exemplo canônico da seção 13B.7
+
+Camadas de Suporte Obrigatorias:
+  | Camada            | Seção  | Arquivos                                         |
+  | Sourcing Services | 13C.6  | 13 arquivos (pipeline, WRF, Pearch, ES, pgvector) |
+  | Provedores LLM    | 13C.2  | llm.py, embedding_service.py, semantic_search     |
+  | Prompts           | 13C.17 | sourcing.yaml, lia_persona.yaml                   |
+
+Roteiro de Reproducao:
+  1. app/shared/agents/react_agent_registry.py
+  2. app/domains/sourcing/agents/sourcing_react_agent.py
+  3. app/domains/sourcing/agents/sourcing_system_prompt.py
+  4. app/domains/sourcing/agents/sourcing_tool_registry.py
+  5. app/domains/sourcing/agents/sourcing_stage_context.py
+  6. app/prompts/domains/sourcing.yaml
+  7. app/prompts/shared/lia_persona.yaml
+  Sourcing inteligente (8 arquivos): §13C.17
+
+Gaps V5 Aplicaveis:
+  | Gap V5                                              | Impacto                         |
+  | ParamExtractor (492L, extração detalhada)            | 🟡 V5 mais detalhado na extração |
+  | FactChecker domain-specific (313L, verifica claims)  | 🟡 LIA tem genérico em shared    |
+  | Template Formatter (256L, formatação por tipo)        | 🟢 Nice-to-have                  |
+  | Validators (367L, validação de dados sourcing)        | 🟢 LIA valida inline             |
+
+Para Alpha 1:
+  - Integrar busca com dados importados do ATS (candidatos da vaga)
+  - Validar que WRF+PGV+ES funciona em produção
+  - Configurar Pearch/Apify para busca externa (se no scope Alpha 1)
 
 Arquivos de Referencia:
   - lia-agent-system/app/domains/sourcing/agents/ (4-file completo)
   - lia-agent-system/app/services/rag_pipeline_service.py
+  - lia-agent-system/app/services/wrf_dynamic_k_service.py
+  - lia-agent-system/app/services/pre_wrf_filter_service.py
+  - lia-agent-system/app/services/hybrid_search_service.py
 ```
 
 ---
@@ -6304,7 +6464,7 @@ Arquivos de Referencia:
 
 ```yaml
 Titulo: "[AGT-005] CommunicationService + Adapters — Email + WhatsApp + Teams + Feedback Personalizado"
-Tipo: Serviço
+Tipo: ReAct Agent (4-file pattern)
 Area: Backend
 Sprint: S1
 Pontos: 13
@@ -6314,17 +6474,107 @@ Tags: [backend, IA, comunicação, email, whatsapp, teams, lgpd]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: AGT-002
 Sobreposição: COM-001 — camada complementar de IA
-Referências: §14.7, §4.7, §13C.5
+Referências Diagnóstico: §14.7, §4.7, §13C.5, §13C.17, §13D.3
+
+Estado V5 vs LIA:
+  V5: Mesma arquitetura (communication_react_agent.py), mas só email básico
+  LIA: Agent com 5 tools + WhatsApp + Teams + template engine + 23 arquivos de suporte
+  Veredicto: LIA significativamente mais completa — usar LIA. Absorve AnalistaFeedback (Ag.7 reclassificado)
 
 Descricao: |
-  Serviço multi-canal: Email (Resend primário), WhatsApp (simulado Alpha 1),
-  Teams (notificações). Feedback personalizado por LLM (Gate1≠Gate2).
-  Complementa COM-001 adicionando IA: tone policy, AI_GENERATED_FOOTER.
+  Agente ReAct puro (4-file pattern) de comunicação multi-canal. Ciclo ReAct iterativo
+  com 5 tools. Decide qual canal enviar (email vs WhatsApp vs Teams), com que template,
+  em que momento. 23 arquivos de suporte: Adapters (Resend, SendGrid, Meta, Twilio),
+  dispatcher, templates, history — ver camada 13C.5.
+  Complementa COM-001 adicionando IA: tone policy, AI_GENERATED_FOOTER, PersonalizedFeedbackService.
+
+5 Tools com Servicos:
+  | Tool                       | O que faz                        | Serviço                       |
+  | send_email                 | Envia email (Resend ou SendGrid) | EmailService                  |
+  | send_whatsapp              | Envia WhatsApp (Meta ou Twilio)  | WhatsAppService               |
+  | get_communication_history  | Histórico de comunicações        | CommunicationHistoryService   |
+  | schedule_message           | Agenda envio futuro              | AutomationScheduler           |
+  | check_rate_limit           | Verifica rate limit por canal    | TokenBudgetService            |
+
+Servicos Chamados:
+  | Serviço                      | Arquivo                                                       |
+  | CommunicationService         | app/domains/communication/services/communication_service.py    |
+  | CommunicationDispatcher      | app/services/communication_dispatcher.py                       |
+  | EmailService                 | app/services/email_service.py                                  |
+  | EmailProviders               | app/services/email_providers/ (Resend + SendGrid)              |
+  | RecruitmentEmailTemplates    | app/services/recruitment_email_templates.py                    |
+  | WhatsAppService              | app/domains/communication/services/whatsapp_service.py         |
+  | WhatsAppTwilioService        | app/services/whatsapp_twilio_service.py                        |
+  | WhatsAppMetaService          | app/services/whatsapp_meta_service.py                          |
+  | WhatsAppFactory              | app/services/whatsapp_factory.py                               |
+  | CommunicationHistoryService  | app/domains/communication/services/communication_history.py    |
+  | TeamsService                 | app/domains/communication/services/teams_service.py            |
+
+API Endpoints:
+  | Método | Endpoint                             | Descrição                     |
+  | POST   | /communication/send-email             | Envia email                   |
+  | POST   | /communication/send-whatsapp          | Envia WhatsApp                |
+  | POST   | /communication/send-screening-invite  | Convite de triagem            |
+  | WS     | /ws/chat/{session_id} (communication) | WebSocket conversacional      |
+
+Communication Matrix Triggers:
+  | Trigger                    | Canal          | Timing         |
+  | match_alto_detectado       | Bell + Email   | Imediato       |
+  | triagem_abandonada         | Email          | 24h após início|
+  | entrevista_nao_confirmada  | Alerta         | 6h antes       |
+  | briefing_2x_dia            | Dashboard      | 08:00 e 14:00  |
+  | sla_em_risco               | Alerta         | Quando ultrapassado |
+  | sla_violado                | Alerta + Email | Quando violado |
+
+Padrao de Implementacao (13B.7):
+  Classe: CommunicationReActAgent(EnhancedAgentMixin, BaseAgent)
+  Domain: "communication"
+  Tools: get_communication_tools() (5 tools)
+  System_prompt: get_communication_system_prompt(guardrails, memory_context)
+  Guardrails: 13D.5 — #1-#6 globais + #3 (IA identificada) + #9 (footer IA obrigatório)
+  Particularidade: Absorve AnalistaFeedback — PersonalizedFeedbackService é serviço interno, não agente
+
+Camadas de Suporte Obrigatorias:
+  | Camada              | Seção  | Arquivos                                           |
+  | Comunicação Services| 13C.5  | 23 arquivos (serviço, dispatcher, providers, templates) |
+  | Provedores LLM      | 13C.2  | interpret_context_llm_service.py usa LLM             |
+  | Config/Infra        | 13C.14 | email_service.py, recruitment_email_templates.py     |
+
+Roteiro de Reproducao (§13C.17):
+  1. app/domains/communication/services/communication_service.py
+  2. app/domains/communication/services/interpret_context_llm_service.py
+  3. app/domains/communication/services/infer_behavior_service.py
+  4. app/domains/communication/services/communication_dispatcher.py
+  5. app/domains/communication/services/email_service.py
+  6. app/domains/communication/services/email_providers/resend_provider.py
+  7. app/domains/communication/services/whatsapp_service.py
+  8. app/domains/communication/services/whatsapp_meta_service.py
+  9. app/domains/communication/services/email_templates_data.py
+  10. app/domains/communication/services/transition_dispatch_service.py
+
+Gaps — Funcionalidades Faltantes:
+  | Gap                                        | Status     | Impacto                 |
+  | Email tracking pixel (abertura/clique)      | ❌ Absent  | 🔴 Implementar do zero  |
+  | Feedback diferenciado por Gate (G1≠G2)      | ❌ Absent  | 🟡 Template novo        |
+
+Automacoes Relacionadas:
+  | Automação                  | Frequência | Ação                            |
+  | CANDIDATE_NO_CONTACT_48H   | 48h        | Email follow-up + tarefa        |
+  | CANDIDATE_REJECTED (evento) | Imediato   | Email rejeição + talent pool    |
+  | STAGE_CHANGED (evento)      | Imediato   | Comunicação automática          |
+
+Para Alpha 1:
+  - Email é canal primário — configurar EmailService com provider real (Resend ou SendGrid)
+  - Criar templates Alpha 1: convite triagem, follow-up 7d, feedback Gate 1 (construtivo), feedback Gate 2 (final)
+  - Implementar tracking pixel para métricas de abertura/clique
+  - Configurar follow-up automático em 7 dias
 
 Arquivos de Referencia:
-  - lia-agent-system/app/domains/communication/ (4-file + services)
+  - lia-agent-system/app/domains/communication/ (4-file + services — 23 arquivos)
   - lia-agent-system/app/services/communication_dispatcher.py
-  - lia-agent-system/app/templates/communication_templates.py
+  - lia-agent-system/app/services/recruitment_email_templates.py
+  - lia-agent-system/app/services/email_service.py
+  - lia-agent-system/app/domains/communication/services/whatsapp_service.py
 ```
 
 ---
@@ -6333,20 +6583,92 @@ Arquivos de Referencia:
 
 ```yaml
 Titulo: "[AGT-006] JD Generator Service — Geração/Ajuste de Job Description por LLM + FairnessGuard"
-Tipo: Serviço LLM
+Tipo: ReAct Agent + LangGraph StateGraph (dual mode)
 Area: Backend
 Sprint: S1
 Pontos: 5
 Prioridade: P1
 Epic: É35 (WT-1558)
-Tags: [backend, IA, llm, fairness]
+Tags: [backend, IA, llm, fairness, langgraph, hitl]
 Classificação: 🟡 MVP SUPORTE
 Dependências: AGT-002, AGT-003
-Referências: §14.2, §4.9
+Referências Diagnóstico: §14.2, §4.9, §13B.7, §13C.17
+
+Estado V5 vs LIA:
+  V5: Mesma arquitetura dual (wizard_react_agent + jd_generator_service)
+  LIA: ReAct conversacional + LangGraph StateGraph com HITL no stage_transition
+  Veredicto: Mesma base — adaptar para modo "editar vaga importada do ATS"
 
 Descricao: |
-  Serviço LLM que gera/ajusta Job Description a partir dos dados do ATS.
-  Tool do WizardAgent, não agente autônomo. FairnessGuard obrigatório no JD.
+  Dual mode: ReAct (4-file pattern) para interação livre com consultor (criar/editar vaga)
+  + LangGraph StateGraph (job_wizard_graph.py) para fluxo guiado passo-a-passo.
+  FairnessGuard obrigatório na geração de JD. HITL no stage_transition.
+
+9 Tools com Servicos:
+  | Tool                    | O que faz                         | Serviço                              |
+  | validate_job_requirements | Valida requisitos da vaga        | FairnessGuard                        |
+  | get_salary_benchmarks   | Benchmarks salariais do mercado   | DB Analytics                         |
+  | search_salary_benchmark | Busca benchmark salarial          | DB Analytics                         |
+  | validate_job_fields     | Valida campos obrigatórios        | Validation rules                     |
+  | get_job_suggestions     | Sugestões IA para campos          | LLM                                  |
+  | save_job_draft          | Salva rascunho da vaga            | DB: job_vacancies                    |
+  | get_company_config      | Configuração da empresa           | DB: companies                        |
+  | generate_enriched_jd    | Gera JD enriquecida com IA        | JDGeneratorService + JDEnrichmentSvc |
+  | check_job_draft_health  | Verifica completude do draft      | Validation rules                     |
+
+LangGraph — Job Wizard Graph:
+  Nós: intent_classifier → field_extractor → tool_router → tool_executor → response_generator → stage_transition → END
+  State: JobWizardState { intent, fields{}, current_stage, tool_calls[] }
+  Checkpointer: PostgresSaver
+  HITL: interrupt_before=["stage_transition"]
+
+Servicos Chamados:
+  | Serviço                    | Arquivo                                                     |
+  | JDGeneratorService         | app/services/jd_generator_service.py                         |
+  | JDEnrichmentService        | app/services/jd_enrichment_service.py                        |
+  | JDParserService            | app/services/jd_parser_service.py                            |
+  | JDImportService            | app/services/jd_import_service.py                            |
+  | JDTemplateService          | app/services/jd_template_service.py                          |
+  | JobVacancyService          | app/services/job_vacancy_service.py                          |
+  | JobRequirementsService     | app/services/job_requirements_service.py                     |
+  | WizardOrchestratorService  | app/domains/job_management/services/wizard_orchestrator.py   |
+  | WizardDataPriorityService  | app/domains/job_management/services/wizard_data_priority.py  |
+
+API Endpoints:
+  | Método | Endpoint                              | Descrição                     |
+  | POST   | /wizard/start                          | Inicia wizard de vaga         |
+  | POST   | /wizard/message                        | Envia mensagem ao wizard      |
+  | WS     | /ws/chat/{session_id} (domain=wizard)  | WebSocket conversacional      |
+
+Padrao de Implementacao (13B.7):
+  Classe: WizardReActAgent(EnhancedAgentMixin, BaseAgent)
+  Domain: "job_management"
+  Tools: get_job_management_tools() (10 tools)
+  System_prompt: get_job_management_system_prompt(guardrails, memory_context)
+  Guardrails: 13D.5 — #1-#6 globais (FairnessGuard no JD é crítico)
+  Particularidade: Dual ReAct+Graph — job_wizard_graph.py orquestra nós, ReAct escolhe tools dentro de cada nó
+
+Camadas de Suporte Obrigatorias:
+  | Camada         | Seção  | Arquivos                                    |
+  | Provedores LLM | 13C.2  | llm.py, llm_factory.py, llm_claude.py       |
+  | HITL           | 13C.8  | hitl_service.py, HITLConfirmCard.tsx         |
+  | Prompts        | 13C.17 | job_management.yaml, lia_persona.yaml       |
+
+Roteiro de Reproducao (§13C.17):
+  ReAct (domínio=job_management): 7 arquivos padrão
+  HITL (Graph usa HITL): 5 arquivos — §13C.17
+
+Para Alpha 1:
+  - Adaptar para modo "editar vaga importada do ATS" (não criar do zero)
+  - JDImportService precisa receber dados do ATS e popular o wizard
+  - HITL no stage_transition para aprovação de JD
+
+Arquivos de Referencia:
+  - lia-agent-system/app/domains/job_management/agents/wizard_react_agent.py
+  - lia-agent-system/app/domains/job_management/agents/wizard_tool_registry.py
+  - lia-agent-system/app/domains/job_management/agents/wizard_system_prompt.py
+  - lia-agent-system/app/domains/job_management/agents/job_wizard_graph.py
+  - lia-agent-system/app/services/jd_generator_service.py
 ```
 
 ---
@@ -6354,25 +6676,78 @@ Descricao: |
 ### AGT-017: HiringPolicyService — [WT-1566](https://wedotalent.atlassian.net/browse/WT-1566)
 
 ```yaml
-Titulo: "[AGT-017] HiringPolicyService — 4 Tools como Serviço"
-Tipo: Serviço
+Titulo: "[AGT-017] HiringPolicyService — 4 Tools como Serviço + PolicySetupAgent (19 Perguntas)"
+Tipo: Serviço (Alpha 1) / ReAct Agent (Pós-Alpha)
 Area: Backend
 Sprint: S1
 Pontos: 5
 Prioridade: P1
 Epic: É35 (WT-1558)
-Tags: [backend, IA, policy, compliance, multi-tenant]
+Tags: [backend, IA, policy, compliance, multi-tenant, fairness]
 Classificação: 🟡 MVP SUPORTE
 Dependências: AGT-002
-Referências: §14.10, §4.10, §13D.5
+Referências Diagnóstico: §14.10, §4.10, §13D.5, §13B.7
+
+Estado V5 vs LIA:
+  V5: Mesma arquitetura (policy_react_agent.py)
+  LIA: PolicySetupAgent com 19 perguntas, 5 blocos + 13 tools (Alpha 1 usa 4 como serviço)
+  Veredicto: Alpha 1 usa 4 tools essenciais como serviço REST. Pós-Alpha ativa agente conversacional completo
 
 Descricao: |
-  4 tools como serviço: get_current_policy, save_policy_block,
-  apply_industry_defaults, validate_policy_compliance.
-  PolicySetupAgent (19 perguntas) é opcional no Alpha 1.
+  4 tools como serviço REST interno (sem agente conversacional no Alpha 1).
+  Reclassificado de PÓS-ALPHA para Alpha 1 P1 porque: get_current_policy + apply_industry_defaults
+  definem defaults, validate_policy_compliance chama FairnessGuard (Inegociável),
+  save_policy_block configura regras por cliente. Triagem (Ag.3) e Gates (Ag.9) dependem
+  de políticas configuradas.
+
+4 Tools Alpha 1 (modo servico):
+  | Tool                       | O que faz                        | Serviço            | Consumidor Alpha 1                     |
+  | get_current_policy         | Carrega políticas da empresa     | DB: hiring_policies | Orchestrator, CVScreening, Pipeline     |
+  | save_policy_block          | Salva bloco inteiro de política  | DB                 | Setup inicial (onboarding)              |
+  | apply_industry_defaults    | Aplica padrões do setor em lote  | DB                 | Setup inicial (onboarding)              |
+  | validate_policy_compliance | Verifica viés/violações          | FairnessGuard      | CVScreening (pré-triagem), Pipeline (pré-Gate) |
+
+9 Tools Pos-Alpha (agente conversacional):
+  save_policy_field, get_policy_summary, get_company_context, get_industry_benchmarks,
+  explain_policy_impact, get_setup_progress, get_platform_benchmarks,
+  detect_policy_impact_anomalies, get_policy_effectiveness_report
+
+PolicySetupAgent — 19 Perguntas em 5 Blocos:
+  Arquivo: app/domains/policy/agents/agent.py
+  System Prompt: EXTRACTION_PROMPT + REPLY_PROMPT
+  Tool Registry: POLICY_TOOLS = [] (LLM direto, sem tools)
+  Stage Context: QUESTIONS (19), BLOCK_NAMES (5 blocos), PolicySetupSession
+
+API Endpoints:
+  | Método | Endpoint                     | Fase      | Descrição                       |
+  | REST   | /hiring-policy/current        | Alpha 1   | GET política atual              |
+  | REST   | /hiring-policy/apply-defaults | Alpha 1   | POST aplicar defaults do setor  |
+  | REST   | /hiring-policy/save-block     | Alpha 1   | POST salvar bloco de política   |
+  | REST   | /hiring-policy/validate       | Alpha 1   | POST validar compliance         |
+  | WS     | /ws/chat/{session_id} (policy)| Pós-Alpha | WebSocket conversacional        |
+
+Padrao de Implementacao (13B.7):
+  Classe: PolicyReActAgent(EnhancedAgentMixin, BaseAgent)
+  Domain: "policy"
+  Tools: get_policy_tools() (13 tools — Alpha 1: 4 como serviço)
+  System_prompt: get_policy_system_prompt(guardrails, memory_context)
+  Guardrails: 13D.5 — #1-#6 globais + #13 (policy — alterações requerem confirmação explícita)
+  Particularidade: Alpha 1 usa 4 tools como serviço — não instancia ReAct loop. validate_policy_compliance chama FairnessGuard
+
+Roteiro de Reproducao (§13C.17):
+  ReAct (domínio=policy): 7 arquivos padrão
+
+Para Alpha 1 (modo servico):
+  1. Sprint 1: Expor 4 tools como endpoints REST internos
+  2. Sprint 1: Integrar get_current_policy no Orchestrator
+  3. Sprint 1: Integrar validate_policy_compliance no CVScreening + PipelineTransition
+  4. Sprint 1: Script de onboarding com apply_industry_defaults + save_policy_block
 
 Arquivos de Referencia:
-  - lia-agent-system/app/domains/policy/agents/ (pós Sprint I3c)
+  - lia-agent-system/app/domains/policy/agents/agent.py
+  - lia-agent-system/app/domains/policy/agents/system_prompt.py
+  - lia-agent-system/app/domains/policy/agents/tool_registry.py
+  - lia-agent-system/app/domains/policy/agents/stage_context.py
   - lia-agent-system/app/api/v1/pipeline_policy.py
 ```
 
@@ -6382,25 +6757,111 @@ Arquivos de Referencia:
 
 ```yaml
 Titulo: "[AGT-015] PipelineGateService — Gate 1 + Gate 2 + HITL Trigger + Bypass Inscrição Web"
-Tipo: Serviço+HITL
+Tipo: ReAct Agent (4-file pattern) + HITL inline
 Area: Backend
 Sprint: S1
 Pontos: 8
 Prioridade: P0 Crítica
 Epic: É35 (WT-1558)
-Tags: [backend, IA, pipeline, hitl, compliance]
+Tags: [backend, IA, pipeline, hitl, compliance, fairness, auditoria]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: AGT-002, AGT-003
 Sobreposição: SAT-007 — camada complementar
-Referências: §14.9, §4.9, §6
+Referências Diagnóstico: §14.9, §4.9, §6, §13C.8, §13D.5
+
+Estado V5 vs LIA:
+  V5: Mesma arquitetura (pipeline_transition_agent.py), mas sem HITL e sem StageAutomationEngine
+  LIA: ReAct com 20 tools + HITL inline + FairnessGuard + AuditCallback
+  Veredicto: LIA é mais completa — agente com mais tools (20) e único ReAct com HITL inline
 
 Descricao: |
-  Gates 1 e 2, regras de transição, HITL. Inscrição web bypassa Gate 1.
+  ReAct Agent com HITL inline. Gates 1 e 2, regras de transição, HITL obrigatório.
+  Inscrição web bypassa Gate 1. Tools como approve_candidate, reject_candidate,
+  move_to_gate pausam para confirmação do consultor via PendingActions.
   Complementa SAT-007 com triggers automáticos e HITL.
+
+20 Tools com Servicos:
+  | Tool                       | O que faz                          | Serviço                |
+  | get_candidate_profile      | Perfil completo                    | DB: candidates         |
+  | get_candidate_wsi_scores   | Scores WSI                         | DB: wsi_scores         |
+  | get_candidate_screening    | Resultados de triagem              | DB: screening_results  |
+  | get_candidate_salary_info  | Info salarial                      | DB: candidate_salary   |
+  | update_candidate_field     | Atualiza campo do candidato        | DB: candidates         |
+  | request_data_collection    | Solicita coleta de dados           | DataCollectionService  |
+  | get_stage_sub_statuses     | Sub-status do estágio              | DB: pipeline_stages    |
+  | suggest_sub_status         | Sugere sub-status                  | LLM                    |
+  | extract_preferences        | Extrai preferências do recrutador  | NLP                    |
+  | validate_transition        | Valida transição de estágio        | PolicyEngine + FairnessGuard |
+  | get_job_context            | Contexto da vaga                   | DB: job_vacancies      |
+  | schedule_secondary_task    | Agenda tarefa secundária           | PlannedTaskService     |
+  | personalize_communication  | Personaliza comunicação            | LLM                    |
+  | check_rejection_fairness   | Verifica viés na rejeição          | FairnessGuard (SOX)    |
+  | check_candidate_availability | Disponibilidade do candidato     | CalendarService        |
+  | get_recruiter_preferences  | Preferências do recrutador         | DB: recruiter_prefs    |
+  | save_recruiter_preference  | Salva preferência                  | DB: recruiter_prefs    |
+  | get_interview_details      | Detalhes da entrevista             | CalendarService        |
+  | cancel_interview           | Cancela entrevista                 | CalendarService        |
+  | reschedule_interview       | Reagenda entrevista                | CalendarService        |
+
+Servicos Chamados:
+  | Serviço                  | Arquivo                                           |
+  | PipelineService          | app/services/pipeline_service.py                   |
+  | PipelineStageService     | app/services/pipeline_stage_service.py              |
+  | CommunicationDispatcher  | app/services/communication_dispatcher.py            |
+  | CalendarService          | app/domains/interview_scheduling/services/calendar_service.py |
+  | FairnessGuard            | app/shared/agents/fairness_guard.py                |
+  | HITLService              | app/services/hitl_service.py                       |
+
+HITL Behavior:
+  Acoes que requerem aprovacao humana: move (estágios avançados), reject, offer
+  Endpoint: POST /hitl/{thread_id}/approve, GET /hitl/{thread_id}/pending
+  Fluxo: Agent propõe → HITL pending → Recrutador aprova/rejeita → Agent executa
+
+API Endpoints:
+  | Método | Endpoint                                    | Descrição                     |
+  | POST   | /recruitment-stages/*                        | Pipeline transition endpoints |
+  | POST   | /hitl/{thread_id}/approve                    | Aprova ação pendente          |
+  | GET    | /hitl/{thread_id}/pending                    | Lista ações pendentes         |
+  | WS     | /ws/chat/{session_id} (pipeline_transition)  | WebSocket                     |
+
+Automacoes Relacionadas:
+  | Automação                  | Frequência | Ação                              |
+  | STAGE_CHANGED (evento)      | Imediato   | Log transição + auto-agenda       |
+  | CANDIDATE_REJECTED (evento) | Imediato   | Email rejeição + talent pool      |
+  | CANDIDATE_HIRED (evento)    | Imediato   | Sync ATS + onboarding             |
+  | OFFER_SENT (evento)         | Imediato   | Monitora resposta                 |
+  | JOB_NO_MOVEMENT_5D          | 5 dias     | Alerta vaga estagnada             |
+
+Padrao de Implementacao (13B.7):
+  Classe: PipelineTransitionAgent(EnhancedAgentMixin, BaseAgent)
+  Domain: "pipeline"
+  Tools: get_pipeline_transition_tools() (20 tools)
+  System_prompt: get_pipeline_system_prompt(guardrails, memory_context)
+  Guardrails: 13D.5 — #1-#6 globais + #5 (rejeição sem HITL proibida) + #11 (gate humano antes de rejeição em massa)
+  Particularidade: ReAct + HITL — validate_transition chama PolicyEngine + FairnessGuard. Maior contagem de tools Alpha 1 (20)
+
+Camadas de Suporte Obrigatorias:
+  | Camada       | Seção  | Arquivos                                              |
+  | HITL         | 13C.8  | 7 arquivos (BE + FE — core deste agente)              |
+  | Robustez     | 13C.3  | FairnessGuard (check_rejection_fairness), Audit Trail |
+  | Comunicação  | 13C.5  | Dispatch automático em transições de pipeline          |
+  | Qualidade    | 13C.9  | AgentQualityEvaluator (decisões de Gate auditoráveis)  |
+
+Roteiro de Reproducao (§13C.17):
+  ReAct (domínio=pipeline): 7 arquivos padrão
+  HITL: 5 arquivos — §13C.17
+
+Para Alpha 1:
+  - Configurar para Gate 1 (pós-triagem CV) e Gate 2 (pós-WSI)
+  - Gate 1: HITL obrigatório antes de aprovar/rejeitar
+  - Gate 2: HITL obrigatório + fairness check antes de rejeitar
+  - Garantir que check_rejection_fairness funciona com FairnessGuard
 
 Arquivos de Referencia:
   - lia-agent-system/app/domains/pipeline/agents/pipeline_transition_react_agent.py
+  - lia-agent-system/app/domains/pipeline/agents/pipeline_tool_registry.py
   - lia-agent-system/app/services/pipeline_service.py
+  - lia-agent-system/app/services/hitl_service.py
   - lia-agent-system/app/domains/automation/services/pipeline_monitor.py
 ```
 
@@ -6420,7 +6881,31 @@ Tags: [backend, IA, langgraph, wsi, scoring, fairness, lgpd, hitl]
 Classificação: 🟢 MVP CRÍTICO — Card mais complexo do Alpha 1
 Dependências: AGT-002, AGT-005, AGT-009
 Sobreposição: TRI-005 — AGT-007 detalha a implementação LangGraph
-Referências: §14.5, §4.4, §13B.10, §13C.17
+Referências Diagnóstico: §14.5, §4.4, §13B.10, §13C.17, §13C.9, §13D
+
+Estado V5 vs LIA:
+  V5: Mesma arquitetura (wsi_interview_graph.py + 15 serviços)
+  LIA: WSIInterviewGraph com 7 blocos, 15 serviços (9.621 linhas), scoring determinístico (558L)
+  Veredicto: Mesma base — LIA é mais madura (~9.6k linhas de implementação)
+
+Camadas de Suporte Obrigatorias:
+  | Camada            | Seção  | Arquivos                                          |
+  | WSI Services      | 13B.10 | 18 arquivos (pipeline, scorer, questions, feedback) |
+  | Provedores LLM    | 13C.2  | llm.py (geração de perguntas e feedback)            |
+  | Compliance        | 13C.3  | FairnessGuard (perguntas não-discriminatórias)      |
+  | HITL              | 13C.8  | interrupt_before=["generate_feedback"]              |
+  | Qualidade         | 13C.9  | AgentQualityEvaluator (avalia qualidade das respostas) |
+
+Roteiro de Reproducao (§13C.17):
+  WSI (8 arquivos): §13C.17
+  1. app/services/wsi_screening_pipeline.py
+  2. app/services/wsi_deterministic_scorer.py (558L CRÍTICO)
+  3. app/services/wsi_question_generator.py
+  4. app/services/wsi_session_manager.py
+  5. app/services/wsi_state_machine.py
+  6. app/services/wsi_block_navigator.py
+  7. app/services/wsi_response_validator.py
+  8. app/services/wsi_report_generator.py
 
 Descricao: |
   LangGraph StateGraph que conduz entrevista WSI completa. 7 blocos
@@ -6467,26 +6952,95 @@ Arquivos de Referencia:
 ### AGT-008: CVScreeningReActAgent — [WT-1569](https://wedotalent.atlassian.net/browse/WT-1569)
 
 ```yaml
-Titulo: "[AGT-008] CVScreeningReActAgent — Triagem Curricular com 8 Tools"
-Tipo: ReAct Agent
+Titulo: "[AGT-008] CVScreeningReActAgent — Triagem Curricular com 13 Tools"
+Tipo: ReAct Agent (4-file pattern)
 Area: Backend
 Sprint: S2
 Pontos: 8
 Prioridade: P1
 Epic: É35 (WT-1558)
-Tags: [backend, IA, react-agents, cv-screening, fairness]
+Tags: [backend, IA, react-agents, cv-screening, fairness, compliance]
 Classificação: 🟡 MVP SUPORTE
 Dependências: AGT-002, AGT-007
-Referências: §14.4, §4.3, §13C.7
+Referências Diagnóstico: §14.4, §4.3, §13C.7, §13B.7, §13C.17
+
+Estado V5 vs LIA:
+  V5: Não existe como agente separado — scoring básico em evaluation domain
+  LIA: ReAct puro (4-file pattern) com 13 tools (triagem CV, scoring, matching)
+  Veredicto: LIA tem, V5 não — construir seguindo padrão LIA
 
 Descricao: |
-  Agente ReAct de triagem de CV. Análise documental (não conversacional).
-  8 tools: parse_cv, score_cv_match, extract_skills, check_experience,
-  run_wsi_screening, move_to_stage, add_screening_note, get_job_requirements.
+  Agente ReAct puro (4-file pattern) de triagem de CV. Análise documental
+  (não conversacional — diferente do WSI Graph §14.5 que faz entrevista).
+  13 tools incluem: parse CV, score matching, extrair skills, run WSI screening.
+  FairnessGuard wiring crítico + PromptInjectionGuard + HITL para Gates.
+
+13 Tools com Servicos:
+  | Tool                   | O que faz                          | Serviço                   |
+  | view_candidate_profile | Perfil completo do candidato       | DB: candidates            |
+  | move_candidate         | Muda estágio no pipeline           | DB + HITLService          |
+  | analyze_cv             | Extrai skills/score do CV          | CVParser + AI Analysis    |
+  | run_wsi_screening      | Triagem comportamental WSI         | WSIService                |
+  | schedule_interview     | Agenda entrevista                  | CalendarService           |
+  | send_communication     | Envia comunicação ao candidato     | CommunicationService      |
+  | add_notes              | Adiciona notas ao perfil           | DB: candidate_notes       |
+  | batch_move             | Move múltiplos candidatos          | DB batch                  |
+  | add_to_shortlist       | Adiciona à shortlist               | DB: vacancy_candidates    |
+  | view_screening_results | Visualiza resultados de triagem    | DB: screening_results     |
+  | view_interview_notes   | Notas da entrevista                | DB: interview_notes       |
+  | generate_offer         | Cria proposta de contratação       | Offer Generation Service  |
+  | finalize_hiring        | Registra admissão                  | Core Recruitment          |
+
+Servicos Chamados:
+  | Serviço                  | Arquivo                                           |
+  | CVParser                 | app/services/cv_parser.py                          |
+  | CVScoringService         | app/services/cv_scoring_service.py                 |
+  | RubricEvaluationService  | app/services/rubric_evaluation_service.py           |
+  | EvaluationCriteriaService| app/services/evaluation_criteria_service.py         |
+  | WSIScreeningPipeline     | app/domains/cv_screening/services/wsi_screening_pipeline.py |
+  | HITLService              | app/services/hitl_service.py                       |
+  | FairnessGuard            | app/shared/agents/fairness_guard.py                |
+
+API Endpoints:
+  | Método | Endpoint                                    | Descrição                     |
+  | POST   | /automation/screen-candidate                 | Triagem curricular (Rubric/BARS) |
+  | POST   | /automation/handle-trigger/screening-completed| Pós-triagem (Bloom+Dreyfus+Big5)|
+  | WS     | /ws/chat/{session_id} (domain=pipeline)      | WebSocket conversacional      |
+
+Padrao de Implementacao (13B.7):
+  Classe: PipelineReActAgent(EnhancedAgentMixin, BaseAgent)
+  Domain: "cv_screening"
+  Tools: get_pipeline_tools() (13 tools)
+  System_prompt: get_pipeline_system_prompt(guardrails, memory_context) — inclui FAIRNESS_RULES + COMMUNICATION_TRANSPARENCY_RULES
+  Guardrails: 13D.5 — #1-#6 globais + #11 (pipeline — gate humano antes de rejeição em massa)
+  Particularidade: FairnessGuard wiring crítico (13D.1) + PromptInjectionGuard (13D) + HITL para Gates
+
+Camadas de Suporte Obrigatorias:
+  | Camada          | Seção  | Arquivos                                               |
+  | CV Screening Svc| 13C.7  | 5 arquivos (cv_parser, scoring, batch, questions)       |
+  | WSI Services    | 13B.10 | 18 arquivos (pipeline WSI completo)                     |
+  | Robustez        | 13C.3  | input_validation.py, response_filter.py (PromptInjection)|
+  | HITL            | 13C.8  | hitl_service.py (Gate 1/2 precisam aprovação humana)    |
+
+Gaps V5 Aplicaveis:
+  | Gap V5                                               | Impacto                          |
+  | Multi-Stage Eval Graph (4 nós: classify→evaluate→decide→craft) | 🟡 V5 tem graph de avaliação |
+  | Security Guard (detecção prompt injection em inputs candidatos)  | 🟡 LIA tem mas não integrado |
+
+Roteiro de Reproducao (§13C.17):
+  ReAct (domínio=cv_screening): 7 arquivos padrão
+
+Para Alpha 1:
+  - Integrar PromptInjectionGuard no fluxo de screening (antes de processar input do candidato)
+  - Configurar para fluxo Alpha 1: triagem CV → score → Gate 1 (HITL)
+  - Garantir que move_candidate aciona triggers automáticos (StageAutomationEngine)
 
 Arquivos de Referencia:
   - lia-agent-system/app/domains/cv_screening/agents/ (4-file)
   - lia-agent-system/app/domains/cv_screening/services/
+  - lia-agent-system/app/services/cv_parser.py
+  - lia-agent-system/app/services/cv_scoring_service.py
+  - lia-agent-system/app/services/rubric_evaluation_service.py
 ```
 
 ---
@@ -6495,26 +7049,76 @@ Arquivos de Referencia:
 
 ```yaml
 Titulo: "[AGT-009] Chat Web Canal — WebSocket Backend para Triagem do Candidato"
-Tipo: Infra
+Tipo: Infra/Canal
 Area: Backend
 Sprint: S2
 Pontos: 8
 Prioridade: P0 Crítica
 Epic: É35 (WT-1558)
-Tags: [backend, IA, websocket, lgpd, compliance]
+Tags: [backend, IA, websocket, lgpd, compliance, prompt-injection]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: AGT-007, AGT-002
 Sobreposição: TRI-002 — AGT-009 é o backend WebSocket
-Referências: §5.3, §7
+Referências Diagnóstico: §5.3, §7, §13C.17, §13D
+
+Estado V5 vs LIA:
+  V5: chat_router.py + chat_controller.py (FastAPI WebSocket)
+  LIA: orchestrated_talent_chat.py + orchestrated_job_chat.py (2 endpoints WS distintos)
+  Veredicto: Mesma abordagem — adaptar LIA: 1 endpoint WS unificado com domain routing
 
 Descricao: |
   Canal WebSocket para triagem WSI do candidato. Link único /triagem/{token},
-  sessões de 10-30min, PromptInjectionGuard em todas mensagens, PostgresSaver
-  para retomada. Banner LGPD obrigatório.
+  sessões de 10-30min. PromptInjectionGuard em TODAS mensagens do candidato
+  (alto risco — input externo não confiável). PostgresSaver para retomada de
+  sessão após queda de conexão. Banner LGPD obrigatório no início.
+
+Fluxo WebSocket:
+  1. Candidato acessa /triagem/{token} → frontend conecta via WS
+  2. Backend valida token → carrega sessão WSI (ou cria nova)
+  3. Cada mensagem: PromptInjectionGuard.check() → WSIGraph.process()
+  4. Respostas em streaming (token a token) via WS
+  5. Desconexão → sessão salva em PostgresSaver → candidato retoma pelo mesmo link
+
+Seguranca Obrigatoria:
+  | Controle                | Implementação                    | Motivo                      |
+  | PromptInjectionGuard    | Antes de cada mensagem do candidato | Input não confiável — alto risco |
+  | Token validation        | JWT com exp de 48h                | Acesso sem login             |
+  | Rate limiting           | Max 60 msgs/min por sessão        | Anti-spam                    |
+  | PII Masking             | Logs sem dados pessoais do candidato | LGPD Art. 46              |
+  | Banner LGPD             | Primeira mensagem automática       | Consentimento               |
+
+API Endpoints:
+  | Método | Endpoint                                    | Descrição                     |
+  | WS     | /ws/triagem/{token}                          | WebSocket candidato (triagem WSI) |
+  | GET    | /triagem/{token}/status                      | Status da sessão               |
+  | POST   | /triagem/{token}/reconnect                   | Reconexão após queda          |
+
+Camadas de Suporte Obrigatorias:
+  | Camada            | Seção  | Arquivos                                    |
+  | WebSocket Infra   | 13C.14 | orchestrated_talent_chat.py, starlette WS    |
+  | WSI Graph         | 13B.10 | wsi_interview_graph.py (§14.5)               |
+  | Compliance        | 13C.3  | prompt_injection.py, pii_masking.py           |
+  | Checkpointer      | 13C.14 | PostgresSaver (retomada de sessão)            |
+
+Roteiro de Reproducao (§13C.17):
+  Orquestrador (9 arquivos): §13C.17
+
+Gaps — Funcionalidades Faltantes:
+  | Gap                                 | Status     | Impacto                 |
+  | Reconexão automática no backend     | ❌ Absent  | 🔴 Implementar do zero  |
+  | Rate limiting por sessão WS         | ❌ Absent  | 🟡 Implementar           |
+
+Para Alpha 1:
+  - Endpoint WS unificado /ws/triagem/{token}
+  - PromptInjectionGuard em cada mensagem (OBRIGATÓRIO — candidato é input externo)
+  - PostgresSaver para retomada (candidato pode perder conexão durante triagem de 10-30min)
+  - Banner LGPD automático na primeira mensagem
+  - Streaming token a token para UX responsiva
 
 Arquivos de Referencia:
   - lia-agent-system/app/api/v1/orchestrated_talent_chat.py
   - lia-agent-system/app/api/v1/orchestrated_job_chat.py
+  - lia-agent-system/app/shared/prompt_injection.py
 ```
 
 ---
@@ -6522,26 +7126,102 @@ Arquivos de Referencia:
 ### AGT-016: EventRetryOrchestrator — [WT-1571](https://wedotalent.atlassian.net/browse/WT-1571)
 
 ```yaml
-Titulo: "[AGT-016] EventRetryOrchestrator — Celery Scheduler + DLQ"
-Tipo: Serviço
+Titulo: "[AGT-016] EventRetryOrchestrator — Celery Scheduler (10 Jobs + 8 Triggers + 5 Proativos) + DLQ"
+Tipo: Serviço (Scheduler infra — não agente conversacional)
 Area: Backend
 Sprint: S2
 Pontos: 8
 Prioridade: P1
 Epic: É35 (WT-1558)
-Tags: [backend, IA, celery, automação]
+Tags: [backend, IA, celery, automação, rabbitmq, lgpd]
 Classificação: 🟡 MVP SUPORTE
 Dependências: AGT-002
-Referências: §14.14, §7
+Referências Diagnóstico: §14.14, §7, §13C.17
+
+Estado V5 vs LIA:
+  V5: Mesma arquitetura (automation_scheduler.py + stage_automation_engine.py)
+  LIA: AutomationScheduler (10 jobs) + StageAutomationEngine (8 triggers) + 5 triggers proativos
+  Veredicto: Dual mode no Alpha 1 — agente conversacional NÃO entra, mas 10 jobs + 8 triggers + 5 proativos RODAM como infra
 
 Descricao: |
-  Infraestrutura background: 10 jobs agendados + 8 triggers + DLQ.
-  Jobs Alpha 1: follow_up_7d, triagem_timeout_48h,
-  check_interview_no_shows, send_interview_reminders, run_lgpd_cleanup.
+  Infraestrutura background que roda sem agente conversacional.
+  AutomationScheduler (10 jobs agendados) + StageAutomationEngine (8 triggers por evento) +
+  AutomationTriggerService (5 triggers proativos por tempo) + DLQ para falhas.
+  Roda via Celery Beat + RabbitMQ.
+
+10 Jobs Agendados:
+  | Job                        | Frequência   | O que faz                          |
+  | check_inactive_candidates  | A cada 1h    | Candidatos sem atividade 7+ dias   |
+  | check_interview_no_shows   | A cada 30m   | Detecta no-shows de entrevista     |
+  | send_interview_reminders   | A cada 15m   | Lembretes 24h/1h antes             |
+  | check_expiring_vacancies   | Diário 09:00 | Vagas próximas do deadline         |
+  | cleanup_stale_reminders    | Diário 00:00 | Limpa flags obsoletos              |
+  | auto_complete_screenings   | A cada 1h    | Triagens expiradas → timeout       |
+  | pipeline_monitor           | A cada 30m   | Saúde do pipeline (gargalos)       |
+  | learning_automation        | A cada 6h    | Padrões e promoção de skills       |
+  | expire_trials              | Diário 01:00 | Trials expirados → bloqueio        |
+  | run_lgpd_cleanup           | Diário 02:00 | Cleanup LGPD (dados expirados)     |
+
+8 Triggers por Evento:
+  | Evento                  | Ação                                      |
+  | SCREENING_COMPLETED     | Log + email feedback ao candidato          |
+  | STAGE_CHANGED           | Log transição + auto-agenda se Interview   |
+  | CANDIDATE_REJECTED      | Email rejeição + adiciona ao talent pool   |
+  | INTERVIEW_SCHEDULED     | Confirmação + evento no calendário         |
+  | INTERVIEW_COMPLETED     | Parecer IA (LLM)                           |
+  | CANDIDATE_HIRED         | Sync ATS + onboarding                      |
+  | OFFER_SENT              | Monitora resposta (polling)                |
+  | ATS_SYNC                | Sincroniza com ATS externo                 |
+
+5 Triggers Proativos por Tempo:
+  | Trigger                    | Threshold | Ação                          |
+  | CANDIDATE_NO_CONTACT_48H   | 48h       | Follow-up + tarefa            |
+  | SCORECARD_PENDING_24H      | 24h       | Notifica entrevistador        |
+  | JOB_NO_MOVEMENT_5D         | 5 dias    | Alerta vaga estagnada         |
+  | FEEDBACK_PENDING_48H       | 48h       | Escalação prioridade alta     |
+  | JOB_DEADLINE_APPROACHING   | 3 dias    | Alerta severidade alta        |
+
+API Endpoints:
+  | Método | Endpoint                    | Descrição                     |
+  | POST   | /automation/trigger-event    | Dispara evento manualmente    |
+  | REST   | /tasks/*                     | CRUD de tarefas agendadas     |
+  | REST   | /proactive-actions/*         | Ações proativas (autonomous)  |
+  | REST   | /transition/*                | Stage transition automática   |
+
+Servicos Chamados:
+  | Serviço                   | Arquivo                                                    |
+  | AutomationScheduler       | app/domains/automation/services/automation_scheduler.py      |
+  | StageAutomationEngine     | app/domains/automation/services/stage_automation_engine.py    |
+  | AutomationTriggerService  | app/domains/automation/services/automation_trigger_service.py |
+  | AutomationHandlers        | app/domains/automation/services/automation_handlers.py        |
+  | CeleryApp                 | app/core/celery_app.py                                       |
+  | PipelineMonitor           | app/domains/automation/services/pipeline_monitor.py           |
+
+Camadas de Suporte Obrigatorias:
+  | Camada            | Seção  | Arquivos                                    |
+  | Celery + RabbitMQ | 13C.14 | celery_app.py, celery_config.py              |
+  | Comunicação       | 13C.5  | communication_dispatcher.py (emails automáticos) |
+  | Compliance        | 13C.3  | pii_masking.py (logs de jobs)                |
+
+Roteiro de Reproducao (§13C.17):
+  Arquivo de entrada: app/domains/automation/services/automation_scheduler.py
+  Entende dependências: stage_automation_engine.py, automation_trigger_service.py
+  Configura: Celery Beat schedule em celery_app.py
+
+Para Alpha 1 (Jobs Prioritarios):
+  - check_inactive_candidates (follow-up 7d)
+  - auto_complete_screenings (triagem timeout 48h)
+  - check_interview_no_shows (no-show detection)
+  - send_interview_reminders (lembretes de entrevista)
+  - run_lgpd_cleanup (compliance LGPD obrigatório)
+  - SCREENING_COMPLETED + STAGE_CHANGED + CANDIDATE_REJECTED (3 triggers prioritários)
 
 Arquivos de Referencia:
   - lia-agent-system/app/core/celery_app.py
   - lia-agent-system/app/shared/messaging/celery_config.py
+  - lia-agent-system/app/domains/automation/services/automation_scheduler.py
+  - lia-agent-system/app/domains/automation/services/stage_automation_engine.py
+  - lia-agent-system/app/domains/automation/services/automation_trigger_service.py
   - lia-agent-system/app/domains/automation/services/pipeline_monitor.py
 ```
 
@@ -6550,22 +7230,71 @@ Arquivos de Referencia:
 ### AGT-010: Follow-up 7d + Email Tracking — [WT-1572](https://wedotalent.atlassian.net/browse/WT-1572)
 
 ```yaml
-Titulo: "[AGT-010] Follow-up 7 Dias + Email Tracking"
-Tipo: Serviço
+Titulo: "[AGT-010] Follow-up 7 Dias + Email Tracking (Pixel + Redirect)"
+Tipo: Serviço (funcionalidade NOVA)
 Area: Backend
 Sprint: S2
 Pontos: 8
 Prioridade: P1
 Epic: É35 (WT-1558)
-Tags: [backend, IA, email, automação, celery, lgpd]
+Tags: [backend, IA, email, automação, celery, lgpd, tracking]
 Classificação: 🟡 MVP SUPORTE
 Dependências: AGT-005, AGT-016
-Referências: §7, §5.3
+Referências Diagnóstico: §7, §5.3
+
+Estado V5 vs LIA:
+  V5: NÃO EXISTE — funcionalidade totalmente nova
+  LIA: NÃO EXISTE — funcionalidade totalmente nova
+  Veredicto: Implementar do zero — gap identificado como necessário para Alpha 1
 
 Descricao: |
-  Funcionalidade NOVA. Re-envio a cada 24h × 7 dias para candidatos que não
-  responderam. Pixel 1×1 GIF para abertura, redirect para clique.
-  LGPD: limitar re-envios + opt-out obrigatório.
+  Funcionalidade NOVA (não existe em V5 nem LIA). Re-envio automático a cada
+  24h × 7 dias para candidatos que não responderam ao convite de triagem.
+  Tracking de email: pixel 1×1 GIF para detectar abertura, redirect link para
+  detectar clique. LGPD: limitar número de re-envios + link de opt-out obrigatório
+  em todo email. Integrado com AGT-016 (Celery Beat) e AGT-005 (EmailService).
+
+Fluxo:
+  1. Convite de triagem enviado (AGT-005)
+  2. Celery Beat job: check_inactive_candidates (a cada 1h)
+  3. Se candidato não respondeu em 24h → re-envio automático
+  4. Repetir até 7 dias ou resposta
+  5. Após 7d sem resposta → alerta ao consultor
+
+Email Tracking:
+  | Tipo          | Implementação                    | O que detecta           |
+  | Abertura      | Pixel 1×1 GIF com ID único       | Candidato abriu o email |
+  | Clique        | Redirect URL com token tracking  | Candidato clicou no link|
+  | Bounce        | Webhook do provedor (Resend)     | Email não entregue      |
+
+Tabelas Necessarias (NOVAS):
+  | Tabela                 | Campos chave                                           |
+  | email_tracking_events  | id, email_id, event_type, timestamp, ip, user_agent    |
+  | email_followup_status  | id, candidate_id, job_id, send_count, last_sent, opted_out |
+
+API Endpoints:
+  | Método | Endpoint                          | Descrição                     |
+  | GET    | /tracking/pixel/{tracking_id}.gif  | Pixel de abertura (1×1 GIF)   |
+  | GET    | /tracking/click/{tracking_id}      | Redirect com tracking         |
+  | POST   | /tracking/webhook/resend           | Webhook bounce/delivery       |
+  | POST   | /email/opt-out/{token}             | Candidato cancela follow-up   |
+
+LGPD Compliance:
+  - Link de opt-out obrigatório em todo email
+  - Máximo 7 re-envios (1/dia × 7 dias)
+  - Logs de tracking sem PII (PIIMasking)
+  - Retenção de tracking events: 90 dias
+
+Para Alpha 1:
+  - Criar tabelas email_tracking_events e email_followup_status
+  - Implementar pixel tracking (endpoint GET que retorna 1×1 GIF transparente)
+  - Implementar redirect tracking (endpoint GET que redireciona + registra)
+  - Integrar com Celery Beat job check_inactive_candidates (AGT-016)
+  - Configurar opt-out obrigatório
+
+Arquivos de Referencia:
+  - Nenhum existente — funcionalidade totalmente nova
+  - Dependências: AGT-005 (EmailService), AGT-016 (Celery Beat)
 ```
 
 ---
@@ -6584,20 +7313,65 @@ Tags: [frontend, IA, react, nextjs, websocket, lgpd, mobile-first, acessibilidad
 Classificação: 🟢 MVP CRÍTICO
 Dependências: AGT-009, AGT-007
 Sobreposição: TRI-002 — camada complementar de IA
-Referências: Design System v4.2.1, §13F
+Referências Diagnóstico: Design System v4.2.1, §13F, §13C.8 FE
+
+Estado V5 vs LIA:
+  V5: Não existe — construir do zero
+  LIA: Componentes existentes (ChatContainer, MessageBubble, InputBar, WelcomeCard, use-triagem-chat)
+  Veredicto: Usar componentes LIA existentes como base — adaptar para DS v4.2.1
 
 Descricao: |
-  Interface web mobile-first para candidato. Link único, sem login.
-  Streaming token a token, indicador "Bloco 2/5 • Pergunta 3/6",
-  banner LGPD, identificação IA, reconexão automática.
+  Interface web mobile-first para candidato. Link único /triagem/{token},
+  sem login. Streaming token a token via WebSocket (AGT-009),
+  indicador de progresso "Bloco 2/5 • Pergunta 3/6", banner LGPD,
+  identificação IA ("Gerado pela LIA"), reconexão automática.
+  Design System v4.2.1: monocromático, cyan #60BED1 apenas ícone LIA,
+  dark mode suportado.
+
+Componentes:
+  | Componente         | Responsabilidade                          | DS v4.2.1                |
+  | CandidateChat      | Container principal do chat               | bg-gray-950, rounded-lg  |
+  | MessageBubble      | Mensagem individual (IA vs candidato)     | Cores distintas por tipo |
+  | InputBar           | Campo de entrada de texto                 | border-gray-700          |
+  | ProgressIndicator  | "Bloco 2/5 • Pergunta 3/6"               | text-gray-400            |
+  | ConsentBanner      | Banner LGPD + consentimento               | bg-yellow-900/20         |
+  | WelcomeCard        | Boas-vindas + contexto da empresa/vaga    | Card com logo empresa    |
+  | ReconnectionBanner | Aviso de reconexão após queda             | bg-red-900/20            |
+
+WebSocket Integration:
+  Hook: use-candidate-chat.ts
+  Conecta: WS /ws/triagem/{token}
+  Streaming: onmessage → append token a token
+  Reconexão: Auto-reconnect com backoff exponencial (1s, 2s, 4s, 8s max)
+  Estado: idle | connecting | connected | reconnecting | error
+
+LGPD Obrigatorio:
+  - ConsentBanner no início (antes da primeira pergunta)
+  - Texto: "Esta triagem é conduzida pela LIA (IA da WeDo Talent). Seus dados..."
+  - Botão "Aceitar e continuar" obrigatório
+  - Footer: "Gerado pela LIA — assistente de IA da WeDo Talent"
+
+Acessibilidade:
+  - ARIA labels em todos elementos interativos
+  - Suporte a screen reader (aria-live="polite" para novas mensagens)
+  - Contraste WCAG AA mínimo
+  - Navegação por teclado (Tab + Enter)
 
 Arquivos a Criar:
   - src/app/triagem/[token]/page.tsx
   - src/components/chat/CandidateChat.tsx
   - src/components/chat/ConsentBanner.tsx
   - src/components/chat/ProgressIndicator.tsx
+  - src/components/chat/ReconnectionBanner.tsx
   - src/hooks/use-candidate-chat.ts
   - src/lib/session-token.ts
+
+Para Alpha 1:
+  - Mobile-first (candidato acessa pelo celular)
+  - Streaming token a token (UX responsiva)
+  - ProgressIndicator (candidato sabe quanto falta)
+  - ConsentBanner LGPD obrigatório
+  - Reconexão automática (sessão de 10-30min pode cair)
 
 Arquivos de Referencia:
   - plataforma-lia/src/components/triagem/ChatContainer.tsx
@@ -6619,15 +7393,63 @@ Sprint: S2
 Pontos: 5
 Prioridade: P0 Crítica
 Epic: É35 (WT-1558)
-Tags: [frontend, IA, react, hitl, websocket]
+Tags: [frontend, IA, react, hitl, websocket, auditoria]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: AGT-011 (HITL wiring), AGT-001 (WebSocket)
-Referências: §13C.8, CLAUDE.md Sprint J
+Referências Diagnóstico: §13C.8, CLAUDE.md Sprint J, §13B.9
+
+Estado V5 vs LIA:
+  V5: Não existe — construir do zero
+  LIA: HITLConfirmCard.tsx existente com 5 estados
+  Veredicto: Usar componente LIA existente — adaptar para DS v4.2.1
 
 Descricao: |
   Componente React no chat do consultor para aprovação HITL.
   5 estados: pending (botões Aprovar/Rejeitar), loading (spinner),
-  approved (badge ✓), rejected (badge ✗ + comentário), expired (>24h).
+  approved (badge verde ✓), rejected (badge vermelho ✗ + campo de comentário),
+  expired (>24h — badge cinza). Renderizado inline no chat quando o backend
+  emite hitl_request via WebSocket.
+
+5 Estados do Componente:
+  | Estado    | UI                                      | Ação                           |
+  | pending   | Botões "Aprovar" + "Rejeitar" + resumo   | Aguarda decisão do consultor   |
+  | loading   | Spinner + "Processando..."               | Enviando decisão ao backend    |
+  | approved  | Badge verde ✓ + "Aprovado por [nome]"    | Ação executada com sucesso     |
+  | rejected  | Badge vermelho ✗ + comentário obrigatório | Ação rejeitada com justificativa |
+  | expired   | Badge cinza + "Expirado (>24h)"          | TTL expirou sem decisão        |
+
+Fluxo WebSocket:
+  1. Backend emite: { type: "hitl_request", action: "move_candidate", data: {...} }
+  2. Frontend renderiza HITLConfirmCard no chat (estado: pending)
+  3. Consultor clica "Aprovar" ou "Rejeitar" (+ comentário se rejeitar)
+  4. Frontend envia: POST /hitl/{thread_id}/approve { approved: true/false, comment }
+  5. Backend processa → emite resultado via WS → Card muda para approved/rejected
+
+Props do Componente:
+  | Prop           | Tipo     | Descrição                     |
+  | threadId       | string   | ID do thread LangGraph         |
+  | action         | string   | Ação proposta (move, reject)   |
+  | description    | string   | Resumo legível da ação         |
+  | candidateName  | string   | Nome do candidato afetado      |
+  | data           | object   | Dados completos da ação        |
+  | expiresAt      | Date     | Quando expira (TTL 24h)        |
+  | onApprove      | function | Callback de aprovação          |
+  | onReject       | function | Callback de rejeição           |
+
+Design System v4.2.1:
+  - Background: bg-gray-800 (dark mode)
+  - Border: border-gray-700
+  - Botão Aprovar: bg-green-600 hover:bg-green-700
+  - Botão Rejeitar: bg-red-600 hover:bg-red-700
+  - Badge aprovado: text-green-400
+  - Badge rejeitado: text-red-400
+  - Badge expirado: text-gray-500
+
+Para Alpha 1:
+  - 5 estados completos funcionais
+  - Comentário obrigatório na rejeição (auditoria)
+  - TTL 24h com expiração visual
+  - Integração com WebSocket do chat do consultor
 
 Arquivos de Referencia:
   - plataforma-lia/src/components/lia-float/HITLConfirmCard.tsx
@@ -6640,7 +7462,7 @@ Arquivos de Referencia:
 
 ```yaml
 Titulo: "[AGT-011] Gate HITL Wiring — Interrupt → HITLConfirmCard → Approve/Reject → Resume"
-Tipo: Serviço+HITL
+Tipo: Serviço+HITL (wiring end-to-end)
 Area: Backend
 Sprint: S3
 Pontos: 8
@@ -6649,26 +7471,99 @@ Epic: É35 (WT-1558)
 Tags: [backend, IA, hitl, langgraph, redis, websocket, compliance, auditoria]
 Classificação: 🟢 MVP CRÍTICO
 Dependências: AGT-015, AGT-FE-002
-Referências: §13C.8, CLAUDE.md Sprint J, §13B.9
+Referências Diagnóstico: §13C.8, CLAUDE.md Sprint J, §13B.9, §13C.17
+
+Estado V5 vs LIA:
+  V5: Não existe — construir do zero
+  LIA: hitl_service.py + hitl.py existentes + HITLConfirmCard.tsx + tabelas migration 032
+  Veredicto: Usar infra LIA existente — fazer wiring end-to-end
 
 Descricao: |
-  Wiring completo do fluxo HITL: agente emite interrupt LangGraph →
-  frontend recebe hitl_request → consultor vê HITLConfirmCard →
-  aprova/rejeita → agente resume do checkpoint. Redis (fast-path TTL 24h)
-  + PostgreSQL (source of truth). Tabelas: hitl_pending_actions, hitl_audit_trail.
+  Wiring completo do fluxo HITL end-to-end: agente emite interrupt LangGraph →
+  HITLService cria pending_action → WebSocket envia hitl_request ao frontend →
+  consultor vê HITLConfirmCard (AGT-FE-002) → aprova/rejeita →
+  HITLService resolve → agente resume do checkpoint LangGraph.
+  Redis (fast-path TTL 24h) + PostgreSQL (source of truth).
+
+Fluxo End-to-End:
+  1. Agente chama tool com HITL (ex: move_candidate) → agente detecta que precisa aprovação
+  2. LangGraph interrupt_before=["execute_action"] → pausa o grafo
+  3. HITLService.create_pending_action() → salva em hitl_pending_actions (PostgreSQL)
+  4. HITLService publica em Redis (fast-path) → WebSocket envia hitl_request ao frontend
+  5. Frontend renderiza HITLConfirmCard (AGT-FE-002) no chat do consultor
+  6. Consultor clica Aprovar ou Rejeitar (+comentário)
+  7. Frontend chama POST /hitl/{thread_id}/approve
+  8. HITLService.resolve_action() → atualiza PostgreSQL + Redis
+  9. LangGraph resume do checkpoint → executa ou cancela ação
+  10. Resultado enviado via WebSocket → Card muda de estado
 
 Tabelas HITL (migration 032):
   hitl_pending_actions:
     id, company_id, thread_id, domain, action, description,
-    data JSON, agent_input JSON, status, ws_session_id,
-    created_at, expires_at, resolved_at, resolved_by, comment
+    data JSON, agent_input JSON, status (pending/approved/rejected/expired),
+    ws_session_id, created_at, expires_at (TTL 24h), resolved_at, resolved_by, comment
   hitl_audit_trail:
     id, company_id, thread_id, pending_id, action,
-    approved, comment, resolved_by, resolved_at
+    approved (bool), comment, resolved_by, resolved_at
+
+14 Acoes HITL Mapeadas:
+  | Ação                    | Domínio      | Quem Aprova    |
+  | move_to_gate1           | pipeline     | Consultor      |
+  | move_to_gate2           | pipeline     | Consultor      |
+  | reject_candidate        | pipeline     | Consultor      |
+  | approve_candidate       | pipeline     | Consultor      |
+  | send_offer              | pipeline     | Consultor      |
+  | batch_reject            | pipeline     | Consultor      |
+  | schedule_interview      | scheduling   | Consultor      |
+  | cancel_interview        | scheduling   | Consultor      |
+  | generate_jd             | wizard       | Consultor      |
+  | update_policy           | policy       | Admin          |
+  | send_bulk_email         | communication| Consultor      |
+  | ats_sync_full           | ats          | Admin          |
+  | create_shortlist        | sourcing     | Consultor      |
+  | finalize_hiring         | pipeline     | Admin          |
+
+API Endpoints:
+  | Método | Endpoint                     | Descrição                     |
+  | POST   | /hitl/{thread_id}/approve     | Aprovar/rejeitar ação pendente |
+  | GET    | /hitl/{thread_id}/pending     | Listar ações pendentes         |
+  | GET    | /hitl/summary                 | Resumo de ações HITL           |
+  | DELETE | /hitl/{pending_id}            | Cancelar ação pendente         |
+
+Servicos Chamados:
+  | Serviço        | Arquivo                          | Papel                      |
+  | HITLService    | app/services/hitl_service.py      | CRUD de pending actions     |
+  | Redis          | fast-path cache TTL 24h           | Notificação real-time       |
+  | PostgresSaver  | LangGraph checkpointer            | Resume do grafo             |
+  | WebSocket      | orchestrator WS                   | Push hitl_request ao FE     |
+
+Camadas de Suporte Obrigatorias:
+  | Camada       | Seção  | Arquivos                                    |
+  | HITL BE      | 13C.8  | hitl_service.py, hitl.py (router)            |
+  | HITL FE      | 13C.8  | HITLConfirmCard.tsx (AGT-FE-002)             |
+  | LangGraph    | 13B.9  | PostgresSaver (checkpoint + resume)           |
+  | Redis        | 13C.14 | Redis para fast-path TTL 24h                 |
+  | Auditoria    | 13C.8  | hitl_audit_trail (compliance SOX)             |
+
+Roteiro de Reproducao (§13C.17):
+  HITL (5 arquivos): §13C.17
+  1. app/services/hitl_service.py
+  2. app/api/v1/hitl.py
+  3. plataforma-lia/src/components/lia-float/HITLConfirmCard.tsx
+  4. Migration 032 (hitl_pending_actions + hitl_audit_trail)
+  5. Redis configuration (fast-path)
+
+Para Alpha 1:
+  - Wiring completo end-to-end funcionando com pelo menos 3 ações:
+    move_to_gate1, reject_candidate, approve_candidate
+  - Redis como cache fast-path (TTL 24h) + PostgreSQL como source of truth
+  - HITLConfirmCard 5 estados (AGT-FE-002) integrado no chat
+  - Auditoria: toda decisão registrada em hitl_audit_trail (compliance SOX)
 
 Arquivos de Referencia:
   - lia-agent-system/app/services/hitl_service.py
   - lia-agent-system/app/api/v1/hitl.py
+  - plataforma-lia/src/components/lia-float/HITLConfirmCard.tsx
 ```
 
 ---
@@ -6677,20 +7572,63 @@ Arquivos de Referencia:
 
 ```yaml
 Titulo: "[AGT-012] SchedulingGraph — LangGraph 6 Nós (MS Graph + Calendar + Teams)"
-Tipo: LangGraph
+Tipo: LangGraph StateGraph
 Area: Backend
 Sprint: S3
 Pontos: 13
 Prioridade: P1
 Epic: É35 (WT-1558)
-Tags: [backend, IA, langgraph, scheduling, ms-graph, teams]
+Tags: [backend, IA, langgraph, scheduling, ms-graph, teams, hitl]
 Classificação: 🔵 PÓS-MVP (Alpha 1.1)
 Dependências: AGT-002, AGT-005
-Referências: §14.6, §4.6
+Referências Diagnóstico: §14.6, §4.6, §13B.7, §13C.17
+
+Estado V5 vs LIA:
+  V5: Mesma arquitetura (scheduling_graph.py + zero_touch_scheduling)
+  LIA: LangGraph StateGraph com 6 nós, ZeroTouchSchedulingService, MS Graph integration
+  Veredicto: Mesma base — adaptar para Alpha 1.1
 
 Descricao: |
   LangGraph StateGraph de 6 nós para agendamento de entrevista pós-Gate 2.
-  Integra MS Graph (Outlook Calendar), gera link Teams.
+  Zero-touch: busca disponibilidade do entrevistador via MS Graph,
+  propõe horários, cria evento no Outlook Calendar, gera link Teams.
+  HITL antes de confirmar agendamento.
+
+LangGraph — Scheduling Graph (6 Nos):
+  Nós: check_availability → propose_slots → candidate_selection →
+       confirm_booking → create_calendar_event → send_confirmations → END
+  State: SchedulingState { job_id, candidate_id, interviewer_ids[],
+         available_slots[], selected_slot, calendar_event_id, status }
+  Checkpointer: PostgresSaver
+  HITL: interrupt_before=["confirm_booking"]
+
+Servicos Chamados:
+  | Serviço                       | Arquivo                                         |
+  | SchedulingService             | app/services/scheduling_service.py                |
+  | ZeroTouchSchedulingService    | app/services/zero_touch_scheduling_service.py     |
+  | CalendarService               | app/services/calendar_service.py                  |
+  | MSGraphService                | app/services/ms_graph_service.py                  |
+  | TeamsService                  | app/domains/communication/services/teams_service.py |
+
+API Endpoints:
+  | Método | Endpoint                                    | Descrição                     |
+  | POST   | /scheduling/auto-schedule                    | Inicia agendamento automático |
+  | GET    | /scheduling/available-slots/{job_id}         | Slots disponíveis             |
+  | POST   | /scheduling/confirm                          | Confirma agendamento          |
+  | WS     | /ws/chat/{session_id} (scheduling)           | WebSocket conversacional      |
+
+Automacoes Relacionadas:
+  | Automação                  | Frequência | Ação                              |
+  | INTERVIEW_SCHEDULED (evento)| Imediato  | Confirmação + evento calendário   |
+  | INTERVIEW_COMPLETED (evento)| Imediato  | Parecer IA                        |
+  | check_interview_no_shows    | A cada 30m | Detecta no-shows                 |
+  | send_interview_reminders    | A cada 15m | Lembretes 24h/1h antes           |
+
+Para Alpha 1.1:
+  - Integrar MS Graph (OAuth2) para calendário do entrevistador
+  - Zero-touch: propor 3 slots automaticamente
+  - HITL antes de confirmar (consultor aprova slot)
+  - Criar evento Outlook + link Teams
 
 Arquivos de Referencia:
   - lia-agent-system/app/services/scheduling_service.py
@@ -6703,22 +7641,57 @@ Arquivos de Referencia:
 ### AGT-013: Triagem Abandonada Monitor — [WT-1577](https://wedotalent.atlassian.net/browse/WT-1577)
 
 ```yaml
-Titulo: "[AGT-013] Triagem Abandonada Monitor — Celery Beat 48h"
-Tipo: Serviço
+Titulo: "[AGT-013] Triagem Abandonada Monitor — Celery Beat 48h + Fluxo Escalação"
+Tipo: Serviço (Celery Beat job)
 Area: Backend
 Sprint: S3
 Pontos: 5
 Prioridade: P1
 Epic: É35 (WT-1558)
-Tags: [backend, IA, celery, automação, lgpd]
+Tags: [backend, IA, celery, automação, lgpd, email]
 Classificação: 🔵 PÓS-MVP (Alpha 1.1)
 Dependências: AGT-016, AGT-005
-Referências: §5.3, §7, §14.14
+Referências Diagnóstico: §5.3, §7, §14.14 (trigger triagem_abandonada)
+
+Estado V5 vs LIA:
+  V5: NÃO EXISTE — funcionalidade totalmente nova
+  LIA: NÃO EXISTE — funcionalidade totalmente nova
+  Veredicto: Implementar do zero — usa infra de AGT-016 (Celery Beat) + AGT-005 (email)
 
 Descricao: |
-  Celery Beat detecta triagens WSI não concluídas após 48h.
-  Fluxo: 48h → lembrete → +24h → lembrete → +24h → alerta consultor → abandoned.
-  Candidato pode retomar via PostgresSaver. Funcionalidade NOVA.
+  Celery Beat job detecta triagens WSI não concluídas após 48h.
+  Fluxo de escalação: 48h → lembrete email → +24h → segundo lembrete →
+  +24h → alerta ao consultor → marcar como abandoned.
+  Candidato pode retomar a qualquer momento via PostgresSaver (sessão preservada).
+  Funcionalidade NOVA — não existe em V5 nem LIA.
+
+Fluxo de Escalacao:
+  | Tempo        | Ação                             | Destinatário |
+  | T+48h        | Email: "Continue sua triagem"    | Candidato    |
+  | T+72h        | Email: "Última chance"           | Candidato    |
+  | T+96h        | Alerta: triagem não concluída    | Consultor    |
+  | T+96h        | Status → ABANDONED               | Sistema      |
+
+Integracao com AGT-016:
+  Job: auto_complete_screenings (a cada 1h)
+  Query: SELECT * FROM wsi_sessions WHERE status='in_progress' AND updated_at < NOW() - INTERVAL '48 hours'
+  Ação: Para cada sessão encontrada → dispara fluxo de escalação
+
+Retomada de Sessao:
+  - Candidato acessa mesmo link /triagem/{token}
+  - PostgresSaver carrega checkpoint da sessão
+  - Retoma do último bloco/pergunta respondido
+  - Se status=ABANDONED → reativa sessão + notifica consultor
+
+Para Alpha 1.1:
+  - Implementar job auto_complete_screenings com query de timeout
+  - Criar 2 templates de email (lembrete + última chance)
+  - Integrar com AGT-005 para envio dos lembretes
+  - Notificar consultor via chat (AGT-001) quando abandono confirmado
+
+Arquivos de Referencia:
+  - Nenhum existente — funcionalidade totalmente nova
+  - Dependências: AGT-016 (Celery Beat), AGT-005 (EmailService), AGT-009 (PostgresSaver)
 ```
 
 ---
@@ -6726,21 +7699,51 @@ Descricao: |
 ### AGT-014: Teams/Slack Notifications — [WT-1578](https://wedotalent.atlassian.net/browse/WT-1578)
 
 ```yaml
-Titulo: "[AGT-014] Teams/Slack Notifications — 3 Tipos de Adaptive Cards"
+Titulo: "[AGT-014] Teams/Slack Notifications — 3 Adaptive Cards + Fallback Email"
 Tipo: Serviço
 Area: Backend
 Sprint: S3
 Pontos: 3
 Prioridade: P2
 Epic: É35 (WT-1558)
-Tags: [backend, IA, teams, slack, notificação]
+Tags: [backend, IA, teams, slack, notificação, adaptive-cards]
 Classificação: 🔵 PÓS-MVP (Alpha 1.1)
 Dependências: AGT-005 (Teams adapter)
-Referências: §5.3
+Referências Diagnóstico: §5.3, §14.7 (TeamsService)
+
+Estado V5 vs LIA:
+  V5: TeamsService com sending básico
+  LIA: TeamsService com Adaptive Cards + fallback email
+  Veredicto: Usar LIA — adaptar para 3 tipos de Adaptive Cards
 
 Descricao: |
-  3 alertas Adaptive Cards ao consultor via Teams: CANDIDATE_NO_RESPONSE (24h),
-  SCREENING_ABANDONED (48h), SCHEDULING_NO_AVAILABILITY. Fallback para email.
+  3 tipos de Adaptive Cards enviadas ao consultor via Teams (ou Slack).
+  Fallback para email se Teams não configurado. Usa TeamsService do AGT-005.
+
+3 Adaptive Cards:
+  | Card                          | Trigger                    | Conteúdo                              |
+  | CANDIDATE_NO_RESPONSE         | 24h sem resposta           | Nome, vaga, dias sem contato, botão "Enviar follow-up" |
+  | SCREENING_ABANDONED           | 48h triagem incompleta     | Nome, vaga, bloco parado, botão "Reativar"             |
+  | SCHEDULING_NO_AVAILABILITY    | Sem slots disponíveis      | Nome, vaga, período tentado, botão "Verificar agenda"   |
+
+Fallback:
+  - Se Teams não configurado → envia email equivalente
+  - Se email falhar → registra em notificações internas do dashboard
+
+Integracao com AGT-005:
+  Serviço: TeamsService (app/domains/communication/services/teams_service.py)
+  API: Microsoft Teams Incoming Webhook ou Bot Framework
+  Adaptive Card: JSON template por tipo
+
+Para Alpha 1.1:
+  - Configurar Teams Incoming Webhook (mais simples que Bot Framework)
+  - Criar 3 templates Adaptive Card em JSON
+  - Implementar fallback para email
+  - Integrar com triggers do AGT-016
+
+Arquivos de Referencia:
+  - lia-agent-system/app/domains/communication/services/teams_service.py
+  - Dependências: AGT-005 (CommunicationService)
 ```
 
 ---
@@ -6748,21 +7751,56 @@ Descricao: |
 ### AGT-FE-003: Pipeline Status UI — [WT-1579](https://wedotalent.atlassian.net/browse/WT-1579)
 
 ```yaml
-Titulo: "[AGT-FE-003] Pipeline Status UI — Dashboard do Consultor"
+Titulo: "[AGT-FE-003] Pipeline Status UI — Dashboard do Consultor (Candidatos × Estágios × Scores)"
 Tipo: Frontend
 Area: Frontend
 Sprint: S3
 Pontos: 5
 Prioridade: P1
 Epic: É35 (WT-1558)
-Tags: [frontend, IA, react, nextjs, pipeline, websocket]
+Tags: [frontend, IA, react, nextjs, pipeline, websocket, polling]
 Classificação: 🔵 PÓS-MVP (Alpha 1.1)
 Dependências: AGT-015, AGT-007
-Referências: Design System v4.2.1
+Referências Diagnóstico: Design System v4.2.1, §13C.8 FE
+
+Estado V5 vs LIA:
+  V5: Não existe como dashboard separado
+  LIA: pipeline-report.tsx + pipeline-stages-carousel.tsx existentes
+  Veredicto: Usar componentes LIA existentes — adaptar para DS v4.2.1 + dados de IA
 
 Descricao: |
-  Dashboard para consultor: candidatos por estágio, scores WSI,
-  Gate 1/Gate 2 pela UI. Polling 30s ou WebSocket.
+  Dashboard visual para o consultor ver o status do pipeline: candidatos por
+  estágio, scores WSI, Gate 1/Gate 2 actions, alertas automáticos. Atualização
+  em tempo real via polling 30s ou WebSocket. Integra dados de AGT-015 (Gates)
+  e AGT-007 (scores WSI).
+
+Componentes:
+  | Componente              | Responsabilidade                          | Dados                    |
+  | PipelineOverview        | Visão geral: candidatos por estágio       | GET /pipeline/{job_id}   |
+  | CandidateStageCard      | Card individual por candidato             | Score WSI, status, ações |
+  | StageCarousel           | Carousel de estágios (horizontal)         | Contagem por estágio     |
+  | GateActionPanel         | Botões Gate 1/Gate 2 (aceitar/rejeitar)   | HITL actions pendentes   |
+  | AlertBanner             | Alertas: abandono, no-show, stagnação     | Proactive alerts         |
+  | ScoreChart              | Radar chart de scores WSI por dimensão    | WSI scores breakdown     |
+
+Dados em Tempo Real:
+  | Método     | Endpoint                     | Frequência    |
+  | Polling    | GET /pipeline/{job_id}/status | A cada 30s    |
+  | WebSocket  | /ws/pipeline/{job_id}         | Real-time     |
+  | REST       | GET /hitl/pending?job_id=X    | Sob demanda   |
+
+Design System v4.2.1:
+  - Background: bg-gray-950
+  - Cards: bg-gray-900 border-gray-800
+  - Scores: Green (>70), Yellow (50-70), Red (<50)
+  - Estágios: Badges monocromáticos
+  - Gate badges: green (aprovado), red (rejeitado), yellow (pendente)
+
+Para Alpha 1.1:
+  - Polling 30s (mais simples que WebSocket para Alpha 1.1)
+  - Integrar com AGT-015 para mostrar ações HITL pendentes
+  - Mostrar scores WSI do AGT-007
+  - Alertas visuais de candidatos em risco
 
 Arquivos de Referencia:
   - plataforma-lia/src/components/ui/pipeline-report.tsx
@@ -6813,4 +7851,4 @@ AGT-016 (Scheduler) → AGT-010 (Follow-up), AGT-013 (Abandono)
 
 ---
 
-*Documento v5.0 — 11/março/2026. Cards PIP removidos (v3.0), SendGrid→Mailgun (v4.0). v5.0: Bloco global de referência IA expandido com 15 seções — Tools Registry (91 tools Alpha 1), NFRs (latência/disponibilidade/rate limits), Env vars por épico, LLM Cascade (6 tiers), HITL map (14 ações), Prompt templates (9 YAMLs), Limites operacionais (12 recursos), Anti-patterns (8 regras), Migrations Alembic, Production templates (11 templates), Webhooks (8 integrações), Checklist de impacto (12 dimensões feature-impact), Checklist de conformidade IA (18 itens), Shared tools (8 tools cross-agent), Infraestrutura compartilhada (12 componentes obrigatórios). v5.1: Adicionada seção §11 — É35 Arquitetura de IA (AGT) com 21 cards completos (191 SPs). Referências cruzadas: `diagnostico-agentes-mvp.md` (§0B, §8, §13, §13B, §14, §17-§21), `feature-impact` skill (12 dimensões), código real do Replit (70+ arquivos). Total: 65 cards · 413 SPs (44 cards funcionalidade + 21 cards arquitetura IA).*
+*Documento v5.0 — 11/março/2026. Cards PIP removidos (v3.0), SendGrid→Mailgun (v4.0). v5.0: Bloco global de referência IA expandido com 15 seções — Tools Registry (91 tools Alpha 1), NFRs (latência/disponibilidade/rate limits), Env vars por épico, LLM Cascade (6 tiers), HITL map (14 ações), Prompt templates (9 YAMLs), Limites operacionais (12 recursos), Anti-patterns (8 regras), Migrations Alembic, Production templates (11 templates), Webhooks (8 integrações), Checklist de impacto (12 dimensões feature-impact), Checklist de conformidade IA (18 itens), Shared tools (8 tools cross-agent), Infraestrutura compartilhada (12 componentes obrigatórios). v5.1: Adicionada seção §11 — É35 Arquitetura de IA (AGT) com 21 cards completos (191 SPs). v5.2: Enriquecimento completo dos 21 cards AGT com dados do `diagnostico-agentes-mvp.md` (5.251 linhas) — cada card agora contém: Estado V5 vs LIA, Gap Analysis, Tools com Serviços (tabela detalhada), API Endpoints, Padrão 13B.7, Camadas de Suporte Obrigatórias, Roteiro de Reprodução (§13C.17), Automações Relacionadas, e Para Alpha 1. Referências cruzadas: §14.1-§14.14 (catálogos por agente), §13B (blueprint), §13C (inventário ~165 arquivos), §13D (compliance + guardrails). Total: 65 cards · 413 SPs (44 cards funcionalidade + 21 cards arquitetura IA).*
