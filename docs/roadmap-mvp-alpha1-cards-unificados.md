@@ -1,7 +1,7 @@
 # Roadmap MVP Alpha 1 — Cards Jira Unificados
 ## WeDOTalent / Plataforma LIA
 
-**Versão:** 3.0 | **Data:** 11/março/2026 | **Classificação:** Referência técnica do time — Confidencial
+**Versão:** 4.0 | **Data:** 11/março/2026 | **Classificação:** Referência técnica do time — Confidencial
 
 > **Documento único de referência.** Consolida todos os cards Jira criados nos documentos de especificação e os organiza segundo o fluxo real do MVP Alpha 1. Fontes: `saturacao-chatweb-comunicacao-cards-jira.md`, `jira-cards-job-creation-lifecycle.md`, `diagnostico-agentes-mvp.md` e `ANALISE_COMPARATIVA_V5_vs_LIA.md`.
 
@@ -69,7 +69,7 @@
 
 | Card | Título | SP | Prioridade | Fase | Sprint |
 |------|--------|----|------------|------|--------|
-| COM-001 / [WT-1542](https://wedotalent.atlassian.net/browse/WT-1542) | [Comunicação] CommunicationDispatcher — SendGrid + Twilio + Tone Policy (~533L) | 8 | 🔴 Crítica | A1 | S1 |
+| COM-001 / [WT-1542](https://wedotalent.atlassian.net/browse/WT-1542) | [Comunicação] CommunicationDispatcher — Mailgun + Mailgun + Meta WhatsApp + Tone Policy (~533L) | 8 | 🔴 Crítica | A1 | S1 |
 | COM-002 / [WT-1538](https://wedotalent.atlassian.net/browse/WT-1538) | [Comunicação] Dispatch Automático #1 — Feedback de Triagem (Aprovado/Reprovado) | 3 | 🟠 Alta | A1 | S2 |
 | COM-003 / [WT-1540](https://wedotalent.atlassian.net/browse/WT-1540) | [Comunicação] Dispatch Automático #2 — Rejeição ao Mudar de Stage | 3 | 🟠 Alta | A1 | S2 |
 | COM-004 / [WT-1541](https://wedotalent.atlassian.net/browse/WT-1541) | [Comunicação] Dispatch Automático #3 — Convite de Fila quando Slot Abre | 3 | 🟠 Alta | A1 | S2 |
@@ -191,7 +191,7 @@ Transversal              → AUD: Auditoria, Circuit Breaker, Observabilidade
 | Ordem | Card | Título | SP | Passo do Fluxo | Agente |
 |-------|------|--------|----|----------------|--------|
 | 1 | **SAT-001** | [Saturação] Modelo de Dados — Pools Separados, Thresholds e Governance Rules | 8 | Transversal | — |
-| 2 | **COM-001** | [Comunicação] CommunicationDispatcher — SendGrid + Twilio + Tone Policy | 8 | Transversal | Ag.7 |
+| 2 | **COM-001** | [Comunicação] CommunicationDispatcher — Mailgun + Mailgun + Meta WhatsApp + Tone Policy | 8 | Transversal | Ag.7 |
 | 3 | **TRI-001** | [Chat Web] Tipos e Interfaces TypeScript — types.ts Completo | 3 | Passo 7 | Ag.4+5 |
 | 4 | **VGM-001** | [FULLSTACK] Modal de Escolha: LIA vs Criação Manual | 3 | Passo 2 | Ag.1 |
 | 5 | **VGM-002** | [FULLSTACK] Formulário de Criação Manual de Vaga | 5 | Passo 2 | Ag.1 |
@@ -304,6 +304,76 @@ Transversal              → AUD: Auditoria, Circuit Breaker, Observabilidade
 | Passo 6 — Contato Email | Ag.0 Orch, Ag.7 Comm | COM-001 | COM-004, COM-005 | — |
 | Passo 7 — Triagem WSI Chat | Ag.4+5 WSI, Ag.0 Orch | TRI-001 | TRI-002→005, VOZ-001→004 | — |
 | Transversal — Auditoria | Todos | AUD-001→003 | AUD-004 | AUD-005→007 |
+
+---
+
+
+### Legenda de Tags Padronizadas
+
+| Tag | Significado |
+|-----|-------------|
+| `backend` | Endpoint, service, ou lógica Python/FastAPI no lia-agent-system |
+| `frontend` | Componente, hook, ou página TypeScript/React no plataforma-lia |
+| `fullstack` | Card com mudanças obrigatórias em ambos os lados |
+| `dados` | Modelo de banco de dados, migração, schema PostgreSQL |
+| `IA` | Agente ReAct, LLM, prompt engineering, scoring, governance IA |
+| `comunicacao` | Email (Mailgun), WhatsApp (Meta API), SMS, notificação |
+| `voz` | TTS (OpenAI tts-1), STT (Deepgram/Whisper), áudio |
+| `multi-tenant` | Isolamento por company_id, configuração por empresa |
+
+### Mapa de Agentes IA → Cards
+
+| Agente | Domain | Papel no MVP | Cards Impactados |
+|--------|--------|--------------|-----------------|
+| **Orchestrator** | core | Roteamento de conversa, LLM cascade | TRI-005, COM-001 |
+| **PipelineReActAgent** | cv_screening | Kanban, movimentação de candidatos | SAT-005, SAT-007 |
+| **WizardReActAgent** | job_management | Criação e enriquecimento de vagas | VGM-001→005 |
+| **CommunicationReActAgent** | communication | Envio multicanal, templates | COM-001→005 |
+| **PolicyReActAgent** | policy | Políticas de saturação, compliance | SAT-001, SAT-003 |
+| **KanbanReActAgent** | recruiter_assistant | Análise de pipeline e saturação | SAT-002, SAT-004 |
+| **SourceReActAgent** | sourcing | Busca ativa de candidatos | SAT-001 (pool sourcing) |
+| **AnalyticsReActAgent** | analytics | KPIs, relatórios, funnel analysis | AUD-006, AUD-007 |
+
+### Modelos de Banco de Dados Relevantes (PostgreSQL)
+
+| Tabela | Modelo SQLAlchemy | Campos Críticos MVP |
+|--------|-------------------|---------------------|
+| `job_vacancies` | `lia_models/job_vacancy.py` | governance_rules (JSONB), status, title |
+| `vacancy_candidates` | `lia_models/candidate.py` | origin, status, lia_score, additional_data |
+| `company_profiles` | `lia_models/company.py` | additional_data.saturation_settings |
+| `triagem_sessions` | `lia_models/triagem.py` | token, status, voice_mode, wsi_final_score |
+| `triagem_messages` | `lia_models/triagem.py` | role, content, block_index, audio_base64 |
+| `communication_history` | `lia_models/communication_history.py` | channel, status, template_id |
+| `communication_matrix` | `lia_models/communication_matrix.py` | event_type, channels, tone |
+| `email_templates` | `lia_models/email_template.py` | name, subject, body, variables |
+| `whatsapp_conversations` | `lia_models/whatsapp_conversation.py` | phone, status, provider |
+| `voice_screenings` | `lia_models/voice_screening.py` | status, audio_url, transcript |
+| `audit_logs` | `lia_models/audit_log.py` | agent_name, decision_type, reasoning |
+| `screening_questions` | `lia_models/screening_question.py` | question, block, weight |
+| `recruitment_stages` | `lia_models/recruitment_stages.py` | name, display_name, order |
+
+### Stack de Serviços de Comunicação
+
+```
+┌─────────────────────────────────────────────────────┐
+│              MultiChannelService                     │
+│  lia-agent-system/app/shared/channels/              │
+├─────────────────────────────────────────────────────┤
+│  ChannelRouter (fallback: WhatsApp → Email → SMS)   │
+├──────────┬──────────┬──────────┬────────────────────┤
+│ WhatsApp │  Email   │   SMS    │  MS Teams          │
+│ Adapter  │ Adapter  │ Adapter  │  Adapter           │
+├──────────┼──────────┼──────────┼────────────────────┤
+│ Meta API │ Mailgun  │ Twilio   │  Graph API         │
+│(primário)│(primário)│  SMS     │  (pendente)        │
+│ Twilio   │ Resend   │          │                    │
+│(fallback)│(fallback)│          │                    │
+└──────────┴──────────┴──────────┴────────────────────┘
+Env vars: MAILGUN_API_KEY, MAILGUN_DOMAIN, MAILGUN_FROM_EMAIL
+          WHATSAPP_META_TOKEN, WHATSAPP_PHONE_ID
+          TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
+```
+
 
 ---
 
@@ -515,6 +585,16 @@ Arquivos de Referencia (Prototipo LIA):
   - model: lia-agent-system/app/models/company.py (additional_data JSONB)
   - proxy: plataforma-lia/src/app/api/backend-proxy/settings/saturation/route.ts
   - proxy: plataforma-lia/src/app/api/backend-proxy/job-vacancies/[jobId]/saturation-status/route.ts
+
+Arquivos Adicionais no Replit (Código Existente):
+  - handler: lia-agent-system/app/services/automation_handlers.py (process_screening_queue)
+  - schema: lia-agent-system/app/schemas/saturation.py
+  - model-db: lia-agent-system/libs/models/lia_models/job_vacancy.py (governance_rules JSONB)
+  - model-db: lia-agent-system/libs/models/lia_models/candidate.py (VacancyCandidate)
+  - model-db: lia-agent-system/libs/models/lia_models/company.py (additional_data JSONB)
+
+Tabelas PostgreSQL:
+  job_vacancies (governance_rules), company_profiles (additional_data), vacancy_candidates (origin, status)
 ```
 
 
@@ -633,6 +713,12 @@ Arquivos de Referencia (Prototipo LIA):
   - componente: plataforma-lia/src/components/kanban/components/SaturationBadge.tsx (267L)
   - integração: plataforma-lia/src/components/pages/job-kanban-page.tsx (usa <SaturationBadge jobId={...} />)
   - proxy: plataforma-lia/src/app/api/backend-proxy/job-vacancies/[jobId]/saturation-status/route.ts
+
+Arquivos Adicionais no Replit (Código Existente):
+  - component: plataforma-lia/src/components/kanban/components/SaturationBadge.tsx
+  - kanban: plataforma-lia/src/components/kanban/components/KanbanColumn.tsx (integração)
+  - proxy: plataforma-lia/src/app/api/backend-proxy/job-vacancies/[jobId]/saturation-status/route.ts
+  - hook: plataforma-lia/src/components/kanban/hooks/useSaturationStatus.ts
 ```
 
 
@@ -720,6 +806,11 @@ Como Testar:
 Arquivos de Referencia (Prototipo LIA):
   - componente: plataforma-lia/src/components/settings/StageCard.tsx (855L — seção de saturação dentro)
   - proxy: plataforma-lia/src/app/api/backend-proxy/settings/saturation/route.ts
+
+Arquivos Adicionais no Replit (Código Existente):
+  - proxy: plataforma-lia/src/app/api/backend-proxy/settings/saturation/route.ts
+  - page: plataforma-lia/src/app/admin/configuracoes/page.tsx (seção saturação)
+  - backend: lia-agent-system/app/api/v1/saturation.py (PUT /settings/saturation)
 ```
 
 
@@ -919,6 +1010,11 @@ Arquivos de Referencia (Prototipo LIA):
   - score: lia-agent-system/app/services/lia_score_service.py (LIAScoreService)
   - pii: lia-agent-system/app/shared/pii_masking.py (PIIMaskingFilter)
   - consent: lia-agent-system/app/services/consent_checker_service.py
+
+Arquivos Adicionais no Replit (Código Existente):
+  - handler: lia-agent-system/app/services/automation_handlers.py (process_screening_queue)
+  - model-db: lia-agent-system/libs/models/lia_models/candidate.py (status=awaiting_screening)
+  - endpoint: lia-agent-system/app/api/v1/saturation.py (screening-queue, process-queue)
 ```
 
 
@@ -1027,6 +1123,10 @@ Pontos: 5
 Prioridade: Crítica
 Epic: É30
 Status: 📋 Pendente Jira | ✅ Protótipo Concluído (Backend)
+
+Arquivos Adicionais no Replit (Código Existente):
+  - endpoint: lia-agent-system/app/api/v1/saturation.py (verificação de saturação no apply)
+  - spec: docs/saturacao-chatweb-comunicacao-cards-jira.md §4.3 (Gate 1 state machine)
 ```
 
 **Contexto:**
@@ -1281,6 +1381,10 @@ DoD:
 
 Arquivos de Referencia (Prototipo LIA):
   - file: plataforma-lia/src/components/triagem/types.ts (125L — copiar diretamente)
+
+Arquivos Adicionais no Replit (Código Existente):
+  - types: plataforma-lia/src/hooks/use-triagem-chat.ts (interfaces TriagemMessage, SessionStatus)
+  - model-db: lia-agent-system/libs/models/lia_models/triagem.py (TriagemSession, TriagemMessage)
 ```
 
 
@@ -1397,6 +1501,12 @@ Inteligencia e Automacao:
 Arquivos de Referencia (Prototipo LIA):
   - hook: plataforma-lia/src/hooks/use-triagem-chat.ts (537L — copiar e adaptar)
   - proxy: plataforma-lia/src/app/api/backend-proxy/triagem/[...path]/route.ts
+
+Arquivos Adicionais no Replit (Código Existente):
+  - hook: plataforma-lia/src/hooks/use-triagem-chat.ts (hook completo ~537L)
+  - proxy: plataforma-lia/src/app/api/backend-proxy/triagem/[...path]/route.ts
+  - api: lia-agent-system/app/api/v1/triagem.py (6 endpoints REST)
+  - service: lia-agent-system/app/services/triagem_session_service.py
 ```
 
 
@@ -1470,6 +1580,9 @@ Criterios de Aceitacao:
 Arquivos de Referencia (Prototipo LIA):
   - componente: plataforma-lia/src/components/triagem/WelcomeCard.tsx (101L)
   - lia-icon: plataforma-lia/src/components/ui/lia-icon.tsx
+
+Arquivos Adicionais no Replit (Código Existente):
+  - component: plataforma-lia/src/components/triagem/WelcomeCard.tsx
 ```
 
 
@@ -1527,6 +1640,10 @@ Arquivos de Referencia (Prototipo LIA):
   - componente: plataforma-lia/src/components/triagem/MessageBubble.tsx (117L)
   - audio-player: plataforma-lia/src/components/ui/audio-player.tsx
   - lia-icon: plataforma-lia/src/components/ui/lia-icon.tsx
+
+Arquivos Adicionais no Replit (Código Existente):
+  - component: plataforma-lia/src/components/triagem/MessageBubble.tsx
+  - audio: plataforma-lia/src/components/ui/audio-player.tsx
 ```
 
 
@@ -1791,6 +1908,19 @@ Arquivos de Referencia (Prototipo LIA):
   - consent: lia-agent-system/app/services/consent_checker_service.py
   - model_drift: lia-agent-system/app/services/model_drift_service.py
   - llm: lia-agent-system/app/services/llm.py (LLM provider cascade)
+
+Arquivos Adicionais no Replit (Código Existente):
+  - service: lia-agent-system/app/services/triagem_session_service.py (~887L)
+  - model-db: lia-agent-system/libs/models/lia_models/triagem.py (TriagemSession)
+  - model-db: lia-agent-system/libs/models/lia_models/screening.py (ScreeningResult)
+  - wsi: lia-agent-system/app/services/wsi_screening_pipeline.py
+  - prompts: lia-agent-system/app/prompts/domains/cv_screening.yaml
+  - domain: lia-agent-system/app/domains/cv_screening/ (inteiro)
+  - agent: lia-agent-system/app/domains/cv_screening/agents/ (PipelineReActAgent)
+  - scoring: lia-agent-system/app/services/voice_screening_analysis.py (wsi_deterministic_scorer)
+
+Tabelas PostgreSQL:
+  triagem_sessions (token, status, voice_mode, wsi_final_score, recommendation), triagem_messages (role, content, block_index, audio_base64)
 ```
 
 
@@ -1845,6 +1975,11 @@ DoD:
 Arquivos de Referencia (Prototipo LIA):
   - componente: plataforma-lia/src/components/triagem/InputBar.tsx (155L)
   - audio-button: plataforma-lia/src/components/ui/audio-record-button.tsx
+
+Arquivos Adicionais no Replit (Código Existente):
+  - component: plataforma-lia/src/components/triagem/InputBar.tsx
+  - audio-rec: plataforma-lia/src/components/ui/audio-record-button.tsx
+  - voice-btn: plataforma-lia/src/components/chat/voice-chat-button.tsx
 ```
 
 
@@ -1935,6 +2070,15 @@ Arquivos de Referencia (Prototipo LIA):
   - container: plataforma-lia/src/components/triagem/ChatContainer.tsx (24L)
   - progress: plataforma-lia/src/components/triagem/ProgressBar.tsx (48L)
   - completion: plataforma-lia/src/components/triagem/CompletionCard.tsx (82L)
+
+Arquivos Adicionais no Replit (Código Existente):
+  - page: plataforma-lia/src/app/triagem/[token]/page.tsx (~311L)
+  - layout: plataforma-lia/src/app/triagem/[token]/layout.tsx (standalone, sem nav)
+  - container: plataforma-lia/src/components/triagem/ChatContainer.tsx
+  - progress: plataforma-lia/src/components/triagem/ProgressBar.tsx
+  - completion: plataforma-lia/src/components/triagem/CompletionCard.tsx
+  - likert: plataforma-lia/src/components/triagem/LikertScaleCard.tsx
+  - mcq: plataforma-lia/src/components/triagem/MultipleChoiceCard.tsx
 ```
 
 
@@ -1981,6 +2125,10 @@ DoD:
 
 Arquivos de Referencia (Prototipo LIA):
   - proxy: plataforma-lia/src/app/api/backend-proxy/triagem/[...path]/route.ts
+
+Arquivos Adicionais no Replit (Código Existente):
+  - proxy: plataforma-lia/src/app/api/backend-proxy/triagem/[...path]/route.ts
+  - backend: lia-agent-system/app/api/v1/triagem.py
 ```
 
 
@@ -1995,7 +2143,7 @@ Arquivos de Referencia (Prototipo LIA):
 ### COM-001: CommunicationDispatcher — Classe Central de Envio
 
 ```yaml
-Titulo: "[Comunicação] CommunicationDispatcher — SendGrid + Twilio + Tone Policy (~533L)"
+Titulo: "[Comunicação] CommunicationDispatcher — Mailgun + Mailgun + Meta WhatsApp + Tone Policy (~533L)"
 Tipo: Feature
 Area: Backend
 Sprint: S1
@@ -2004,12 +2152,12 @@ Prioridade: Crítica
 Epic: É32
 Status: 📋 Pendente Jira | ✅ Protótipo Concluído (Backend)
 Fase: MVP Alpha 1
-Tags: [backend, comunicação, email, whatsapp, sms, sendgrid, twilio]
+Tags: [backend, comunicação, email, whatsapp, sms, mailgun, twilio]
 Dependências: Nenhuma
 
 Descricao: |
   Classe Python (~533L) que centraliza TODA comunicação da plataforma
-  com candidatos. Encapsula SendGrid (email) e Twilio (WhatsApp/SMS)
+  com candidatos. Encapsula Mailgun (email) e Meta WhatsApp API (primário) + Twilio (fallback SMS)
   com lazy initialization, mock em desenvolvimento, e aplicação de
   tone policy por empresa.
   
@@ -2052,8 +2200,8 @@ Regras de Negocio:
 Requisitos Tecnicos:
   Backend:
     - Classe: CommunicationDispatcher
-    - Dependências: sendgrid, twilio
-    - Env vars: SENDGRID_API_KEY, SENDGRID_FROM_EMAIL, SENDGRID_FROM_NAME,
+    - Dependências: mailgun, twilio
+    - Env vars: MAILGUN_API_KEY, MAILGUN_FROM_EMAIL, MAILGUN_FROM_NAME,
         TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM,
         TWILIO_SMS_FROM (ou TWILIO_PHONE_NUMBER)
     - Policy: app.shared.policy_middleware.get_policy_for_company()
@@ -2064,7 +2212,7 @@ Requisitos Tecnicos:
       formal → "Prezado(a) Sr(a). {nome_completo}, "
 
 DoD:
-  - [x] send_email funcional com SendGrid
+  - [x] send_email funcional com Mailgun
   - [x] send_whatsapp funcional com Twilio
   - [x] send_sms funcional com Twilio
   - [x] dispatch_message com multi_channel
@@ -2074,8 +2222,8 @@ DoD:
   - [ ] Testes unitários para cada método
 
 Criterios de Aceitacao:
-  - [x] Sem SENDGRID_API_KEY → retorna {success:true, mock:true}
-  - [x] Com SENDGRID_API_KEY → email enviado, retorna message_id
+  - [x] Sem MAILGUN_API_KEY → retorna {success:true, mock:true}
+  - [x] Com MAILGUN_API_KEY → email enviado, retorna message_id
   - [x] dispatch_message com email + phone → 2 canais enviados
   - [x] dispatch_message com tone="friendly" → "Oi, Maria!"
   - [x] dispatch_message com tone="formal" → "Prezado(a) Sr(a). Maria Silva,"
@@ -2107,7 +2255,7 @@ Inteligencia e Automacao:
     - Tone uniforme por empresa: Todos os candidatos recebem mesmo tom de comunicação
     - Templates padronizados: Evitam linguagem discriminatória ad-hoc
   Fallbacks:
-    - SendGrid offline → mock success (dev), error logged (prod)
+    - Mailgun offline → mock success (dev), error logged (prod)
     - Twilio offline → mock success (dev), email-only fallback (prod)
     - multi_channel=True + apenas email disponível → envia só email (sem error)
 
@@ -2118,6 +2266,40 @@ Arquivos de Referencia (Prototipo LIA):
   - channels: lia-agent-system/app/core/template_channels.py (8 canais definidos)
   - email_tracking: lia-agent-system/app/services/email_tracking_service.py
   - rate_limits: lia-agent-system/app/config/default_rules.json (messages_per_hour)
+
+Arquivos Adicionais no Replit (Código Existente):
+  - service: lia-agent-system/app/services/communication_dispatcher.py
+  - email-svc: lia-agent-system/app/domains/communication/services/email_service.py
+  - email-provider-factory: lia-agent-system/app/services/email_providers/__init__.py
+  - email-provider-mailgun: lia-agent-system/app/services/email_providers/sendgrid_provider.py (→ migrar para mailgun_provider.py)
+  - email-provider-resend: lia-agent-system/app/services/email_providers/resend_provider.py (fallback)
+  - whatsapp-factory: lia-agent-system/app/services/whatsapp_factory.py
+  - whatsapp-meta: lia-agent-system/app/services/whatsapp_meta_service.py (Meta Cloud API — primário)
+  - whatsapp-twilio: lia-agent-system/app/services/whatsapp_twilio_service.py (Twilio — fallback)
+  - whatsapp-webhook: lia-agent-system/app/api/v1/whatsapp.py
+  - multi-channel: lia-agent-system/app/shared/channels/multi_channel_service.py
+  - channel-router: lia-agent-system/app/shared/channels/channel_router.py (fallback logic)
+  - email-adapter: lia-agent-system/app/shared/channels/adapters/email_adapter.py
+  - whatsapp-adapter: lia-agent-system/app/shared/channels/adapters/whatsapp_adapter.py
+  - notification: lia-agent-system/libs/messaging/lia_messaging/notification_service.py
+  - model-db: lia-agent-system/libs/models/lia_models/communication_history.py
+  - model-db: lia-agent-system/libs/models/lia_models/communication_matrix.py
+  - model-db: lia-agent-system/libs/models/lia_models/communication_settings.py
+  - model-db: lia-agent-system/libs/models/lia_models/email_template.py
+  - model-db: lia-agent-system/libs/models/lia_models/whatsapp_conversation.py
+  - api: lia-agent-system/app/api/v1/communication.py
+  - api: lia-agent-system/app/api/v1/communication_settings.py
+  - api: lia-agent-system/app/api/v1/communication_matrix.py
+  - api: lia-agent-system/app/api/v1/email.py
+  - api: lia-agent-system/app/api/v1/email_templates.py
+  - api: lia-agent-system/app/api/v1/email_tracking.py
+  - frontend: plataforma-lia/src/app/admin/configuracoes/comunicacoes/page.tsx
+  - frontend: plataforma-lia/src/components/communication/message-composer.tsx
+  - frontend: plataforma-lia/src/components/email-templates/email-templates-manager.tsx
+  - frontend: plataforma-lia/src/components/modals/unified-communication-modal.tsx
+
+Tabelas PostgreSQL:
+  communication_history, communication_matrix, communication_settings, email_templates, email_logs, whatsapp_conversations
 ```
 
 
@@ -2185,7 +2367,7 @@ Inteligencia e Automacao:
     - BiasAuditService: Snapshot de taxa aprovação/reprovação por grupo demográfico
   Fallbacks:
     - Candidato sem email/phone → log warning, feedback_sent=False (não crasheia)
-    - SendGrid/Twilio offline → registra falha, candidato pode consultar status via portal
+    - Mailgun/Twilio offline → registra falha, candidato pode consultar status via portal
 
 Arquivos de Referencia (Prototipo LIA):
   - handler: lia-agent-system/app/domains/automation/services/automation_handlers.py (linhas 60-142)
@@ -2498,6 +2680,10 @@ Inteligencia e Automacao:
 
 Arquivos de Referencia (Prototipo LIA):
   - spec: docs/pipeline-transition-system.md (bypass Gate 1 para inscrição web)
+
+Arquivos Adicionais no Replit (Código Existente):
+  - proxy: plataforma-lia/src/app/api/backend-proxy/public-vacancies/route.ts
+  - proxy: plataforma-lia/src/app/api/public-proxy/ (rota pública sem auth)
 ```
 
 
@@ -2553,6 +2739,10 @@ DoD:
 
 Arquivos de Referencia (Prototipo LIA):
   - endpoint: lia-agent-system/app/api/v1/job_board.py
+
+Arquivos Adicionais no Replit (Código Existente):
+  - proxy: plataforma-lia/src/app/api/backend-proxy/public-vacancies/route.ts
+  - backend: lia-agent-system/app/api/v1/job_board.py (public vacancy listing)
 ```
 
 
@@ -2637,6 +2827,12 @@ Inteligencia e Automacao:
 Arquivos de Referencia (Prototipo LIA):
   - endpoint: lia-agent-system/app/api/v1/job_board.py
   - saturação: lia-agent-system/app/api/v1/saturation.py
+
+Arquivos Adicionais no Replit (Código Existente):
+  - backend: lia-agent-system/app/api/v1/job_board.py (POST apply endpoint)
+  - saturation-check: lia-agent-system/app/api/v1/saturation.py (verifica saturação no apply)
+  - model-db: lia-agent-system/libs/models/lia_models/candidate.py
+  - model-db: lia-agent-system/libs/models/lia_models/job_vacancy.py
 ```
 
 
@@ -2717,6 +2913,13 @@ Inteligencia e Automacao:
 
 Arquivos de Referencia (Prototipo LIA):
   - componente: plataforma-lia/src/components/ui/audio-record-button.tsx
+
+Arquivos Adicionais no Replit (Código Existente):
+  - component: plataforma-lia/src/components/ui/audio-record-button.tsx
+  - voice-btn: plataforma-lia/src/components/chat/voice-chat-button.tsx
+  - stt-service: lia-agent-system/app/services/deepgram_service.py
+  - voice-api: lia-agent-system/app/api/v1/voice.py
+  - proxy: plataforma-lia/src/app/api/backend-proxy/transcribe/audio/route.ts
 ```
 
 
@@ -2783,6 +2986,9 @@ Inteligencia e Automacao:
 
 Arquivos de Referencia (Prototipo LIA):
   - componente: plataforma-lia/src/components/ui/audio-player.tsx
+
+Arquivos Adicionais no Replit (Código Existente):
+  - component: plataforma-lia/src/components/ui/audio-player.tsx
 ```
 
 
@@ -2858,6 +3064,17 @@ Inteligencia e Automacao:
 
 Arquivos de Referencia (Prototipo LIA):
   - função: lia-agent-system/app/services/triagem_session_service.py (linhas 16-41)
+
+Arquivos Adicionais no Replit (Código Existente):
+  - voice-service: lia-agent-system/app/services/voice_service.py
+  - gemini-voice: lia-agent-system/app/services/gemini_voice_service.py
+  - voice-provider: lia-agent-system/app/shared/providers/voice_provider.py
+  - lia-voice-api: lia-agent-system/app/api/v1/lia_voice.py
+  - wsi-voice: lia-agent-system/app/services/wsi_voice_orchestrator.py
+  - model-db: lia-agent-system/libs/models/lia_models/voice_screening.py
+
+Tabelas PostgreSQL:
+  voice_screenings (status, audio_url, transcript, analysis)
 ```
 
 
@@ -2912,6 +3129,10 @@ Arquivos de Referencia (Prototipo LIA):
   - page: plataforma-lia/src/app/triagem/[token]/page.tsx
   - hook: plataforma-lia/src/hooks/use-triagem-chat.ts
   - backend: lia-agent-system/app/services/triagem_session_service.py (process_message, linhas 499-518)
+
+Arquivos Adicionais no Replit (Código Existente):
+  - hook: plataforma-lia/src/hooks/use-triagem-chat.ts (isVoiceMode state)
+  - wsi-status: plataforma-lia/src/components/wsi/wsi-voice-screening-status.tsx
 ```
 
 
@@ -2924,6 +3145,41 @@ Arquivos de Referencia (Prototipo LIA):
 > **Status Jira:** VGM-001→010 = WT-1494→WT-1504 (existentes)
 > **Stack produção:** Vue 3 + Vuetify 3 + Nuxt 3 + Pinia (FE) · FastAPI/Python (BE) · PostgreSQL
 > **Skills obrigatórias FE:** `/vue-migration-prep` · `/design-standardize` · `/feature-impact`
+
+
+### Tags Padronizadas — Cards VGM
+
+| Card | Tags |
+|------|------|
+| VGM-001 | `fullstack`, `frontend`, `backend`, `IA` |
+| VGM-002 | `fullstack`, `frontend`, `backend`, `dados` |
+| VGM-003 | `frontend`, `UX` |
+| VGM-004 | `fullstack`, `frontend`, `backend`, `dados` |
+| VGM-005 | `fullstack`, `frontend`, `backend` |
+| VGM-006 | `fullstack`, `frontend`, `backend` |
+| VGM-007 | `fullstack`, `frontend`, `IA` |
+| VGM-008 | `fullstack`, `frontend`, `backend`, `comunicacao` |
+| VGM-009 | `fullstack`, `frontend`, `backend`, `dados` |
+| VGM-010 | `backend`, `comunicacao`, `dados` |
+
+### Agentes IA Envolvidos (VGM)
+
+| Agente | Cards | Função |
+|--------|-------|--------|
+| WizardReActAgent (job_management) | VGM-001→005 | Criação e enriquecimento de vagas via LIA |
+| PipelineReActAgent (cv_screening) | VGM-007, VGM-009 | WSI badge, placement tracking |
+| CommunicationReActAgent (communication) | VGM-008, VGM-010 | Notificações de pausa/fechamento |
+
+### Tabelas PostgreSQL (VGM)
+
+| Tabela | Modelo | Campos Críticos |
+|--------|--------|----------------|
+| `job_vacancies` | `lia_models/job_vacancy.py` | title, status, governance_rules, public_link |
+| `vacancy_candidates` | `lia_models/candidate.py` | status, lia_score, pipeline_stage |
+| `job_vacancy_audit` | `lia_models/job_vacancy_audit.py` | action, old_status, new_status |
+| `job_drafts` | `lia_models/job_draft.py` | draft_data (wizard state) |
+| `communication_history` | `lia_models/communication_history.py` | channel, template, recipient |
+
 
 ### Fontes de Verdade — Referências do Repositório (VGM)
 
@@ -4822,7 +5078,7 @@ Descricao: |
   fechamento (VGM-009) captura os dados de notificação, mas o envio real
   ainda não foi implementado. Este card cobre os endpoints de envio de
   comunicação, os templates, e a integração com os canais (email via
-  SendGrid/Resend, WhatsApp via Meta/Twilio).
+  Mailgun/Resend, WhatsApp via Meta/Twilio).
 
 Historia de Usuario: |
   Como candidato contratado, quero receber uma mensagem de parabéns
@@ -4832,7 +5088,7 @@ Historia de Usuario: |
 
 Regras de Negocio:
   1. Envio é assíncrono (não bloqueia a UI) — disparado via fila (RabbitMQ/Celery)
-  2. Email via SendGrid (primário) com fallback para Resend/Mailgun
+  2. Email via Mailgun (primário) com fallback para Resend/Mailgun
   3. WhatsApp via Meta Business API ou Twilio WhatsApp
   4. Canal "ambos": dispara email E WhatsApp independentemente
   5. Rastreamento: cada envio gera registro em communication_logs
@@ -5000,14 +5256,14 @@ Response: [{ id, recipient, channel, template, status, sent_at, opened_at }]
 
 #### Integrações
 
-**Email (SendGrid):**
+**Email (Mailgun):**
 ```python
 # lia-agent-system/app/services/email_service.py
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from mailgun import MailgunAPIClient
+from mailgun.helpers.mail import Mail
 
 async def send_email(to: str, subject: str, body: str, template_id: str = None):
-    sg = SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+    sg = MailgunAPIClient(api_key=settings.MAILGUN_API_KEY)
     message = Mail(
         from_email=settings.FROM_EMAIL,
         to_emails=to,
@@ -5101,6 +5357,27 @@ CREATE INDEX idx_comm_logs_status    ON communication_logs(status);
 - [ ] AuditCallback injetado em todos os 11 agentes ReAct do registry
 - [ ] Testes verificando que cada chamada LLM gera um registro de auditoria
 
+
+**Arquivos de Referência no Replit:**
+- `lia-agent-system/libs/audit/audit_callback.py` — AuditCallback existente
+- `lia-agent-system/libs/agents-core/lia_agents_core/react_agent_registry.py` — Registry dos 11 agentes ReAct
+- `lia-agent-system/app/shared/agents/langgraph_react_base.py` — Base class dos agentes
+- `lia-agent-system/app/domains/workflow.py` — DomainWorkflow (ponto de injeção)
+- `lia-agent-system/libs/models/lia_models/audit_log.py` — Modelo AuditLog
+- `lia-agent-system/libs/models/lia_models/audit_logs.py` — Modelo estendido
+- `lia-agent-system/libs/models/lia_models/agent_activity.py` — AgentActivity tracking
+- `lia-agent-system/app/api/v1/audit_logs.py` — Endpoints existentes de audit
+- `lia-agent-system/app/api/v1/audit_timeline.py` — Timeline endpoint
+
+**Tabelas PostgreSQL:** `audit_logs (agent_name, decision_type, reasoning, candidate_id, job_vacancy_id)`, `agent_activity`
+
+**Tags padronizadas:** `backend`, `IA`, `dados`, `compliance`, `auditoria`
+
+**Como Testar:**
+1. Invocar qualquer agente ReAct via chat
+2. Verificar que `audit_logs` recebeu registro com agent_name, token count, latência
+3. Verificar que company_id e user_id estão presentes no registro
+
 ---
 
 ### AUD-002 / WT-1507 — Rastrear Tools Chamadas por Nome
@@ -5115,6 +5392,20 @@ CREATE INDEX idx_comm_logs_status    ON communication_logs(status);
 **Contexto (Gap 2):** O audit log atual não registra quais tools foram chamadas durante uma execução de agente. Essencial para debugar comportamento e para auditoria regulatória (saber que critério o agente consultou).
 
 **Escopo:** Adicionar hook `on_tool_start` / `on_tool_end` no AuditCallback para registrar nome da tool, input e output em cada chamada.
+
+
+**Arquivos de Referência no Replit:**
+- `lia-agent-system/libs/audit/audit_callback.py` — Adicionar on_tool_start/on_tool_end
+- `lia-agent-system/app/domains/cv_screening/agents/pipeline_tool_registry.py` — Tools do PipelineAgent
+- `lia-agent-system/app/domains/job_management/tools/` — Tools do WizardAgent
+- `lia-agent-system/app/domains/communication/tools/` — Tools do CommunicationAgent
+
+**Tags padronizadas:** `backend`, `IA`, `dados`, `auditoria`
+
+**Como Testar:**
+1. Executar agente que usa tool (ex: PipelineAgent move candidato)
+2. Verificar que audit_log inclui tool_name, tool_input, tool_output
+3. Endpoint GET /audit/timeline retorna tools chamadas
 
 ---
 
@@ -5131,6 +5422,21 @@ CREATE INDEX idx_comm_logs_status    ON communication_logs(status);
 
 **Escopo:** Integrar `CircuitBreaker` da plataforma no `AutomationReActAgent`. Se circuit abrir: falha rápida + log + notificação via `AgentHealthAlertService`.
 
+
+**Arquivos de Referência no Replit:**
+- `lia-agent-system/app/domains/automation/agents/` — AutomationReActAgent
+- `lia-agent-system/app/shared/agents/langgraph_react_base.py` — Base com max_iterations
+- `lia-agent-system/libs/models/lia_models/health_check.py` — HealthCheck model
+- `lia-agent-system/libs/models/lia_models/observability.py` — Observability model
+
+**Tags padronizadas:** `backend`, `IA`, `resiliência`
+
+**Como Testar:**
+1. Simular falha de provider LLM (mock Anthropic 503)
+2. Verificar que circuit breaker abre após N falhas consecutivas
+3. Verificar que AgentHealthAlertService notifica
+4. Verificar que agente retorna erro graceful em vez de loop infinito
+
 ---
 
 ### AUD-004 / WT-1509 — Retention/Cleanup de agent_executions
@@ -5146,6 +5452,19 @@ CREATE INDEX idx_comm_logs_status    ON communication_logs(status);
 
 **Escopo:** Celery beat task que executa diariamente: move registros > 90 dias para cold storage, deleta registros > 7 anos.
 
+
+**Arquivos de Referência no Replit:**
+- `lia-agent-system/libs/models/lia_models/audit_log.py` — Tabela audit_logs
+- `lia-agent-system/libs/models/lia_models/agent_activity.py` — Tabela agent_activity
+
+**Tags padronizadas:** `backend`, `dados`, `compliance`, `LGPD`
+
+**Como Testar:**
+1. Inserir registros de audit com created_at > 90 dias
+2. Executar cleanup task
+3. Verificar que registros foram movidos para cold storage
+4. Verificar que registros < 90 dias permanecem intactos
+
 ---
 
 ### AUD-005 / WT-1510 — Storage Externo para Logs Pesados (S3/GCS)
@@ -5160,6 +5479,13 @@ CREATE INDEX idx_comm_logs_status    ON communication_logs(status);
 **Contexto (Gap 3):** Logs completos de execução de agentes (inputs/outputs completos) não devem ser armazenados em PostgreSQL — são grandes demais e têm política de retenção diferente (7 anos SOX).
 
 **Escopo:** Configurar pipeline: metadados em PG (query rápida) + corpo completo em S3/GCS com lifecycle policy (90d → Glacier → 7 anos → deletar).
+
+
+**Arquivos de Referência no Replit:**
+- `lia-agent-system/libs/audit/audit_callback.py` — Source dos logs
+- `lia-agent-system/libs/models/lia_models/audit_log.py` — Metadados PG
+
+**Tags padronizadas:** `backend`, `dados`, `infra`, `compliance`, `SOX`
 
 ---
 
@@ -5180,6 +5506,20 @@ GET /api/v1/audit/agents/{agent_name}/executions          → lista de execuçõ
 GET /api/v1/audit/agents/{agent_name}/executions/{id}     → detalhe + tools chamadas
 GET /api/v1/audit/candidates/{candidate_id}/timeline      → timeline por candidato
 ```
+
+
+**Arquivos de Referência no Replit:**
+- `lia-agent-system/app/api/v1/audit_timeline.py` — Endpoint existente (expandir)
+- `lia-agent-system/app/api/v1/audit_logs.py` — Endpoints de audit_logs (expandir)
+- `lia-agent-system/libs/models/lia_models/audit_log.py` — Queries
+- Frontend: `plataforma-lia/src/app/admin/` — Painel de admin (integrar timeline)
+
+**Tags padronizadas:** `backend`, `frontend`, `dados`, `auditoria`
+
+**Como Testar:**
+1. GET /audit/agents/PipelineReActAgent/executions → lista paginada
+2. GET /audit/candidates/{id}/timeline → timeline completa do candidato
+3. Verificar que tools chamadas aparecem na timeline
 
 ---
 
@@ -5202,6 +5542,18 @@ agent_tool_calls_total{agent, tool}
 agent_llm_cost_dollars{agent, model}
 agent_circuit_breaker_state{circuit}
 ```
+
+
+**Arquivos de Referência no Replit:**
+- `lia-agent-system/libs/models/lia_models/observability.py` — Modelo existente
+- `lia-agent-system/app/shared/agents/langgraph_react_base.py` — Instrumentar com counters
+
+**Tags padronizadas:** `backend`, `infra`, `observabilidade`
+
+**Como Testar:**
+1. GET /metrics → retorna métricas Prometheus text format
+2. Verificar counters: agent_executions_total, agent_llm_cost_dollars
+3. Verificar histograms: agent_execution_duration_seconds
 
 ---
 
@@ -5251,4 +5603,4 @@ AUD-001 → AUD-002 → AUD-003 (Auditoria mínima ativa)
 
 ---
 
-*Documento v3.0 — 11/março/2026. Cards PIP (pipeline-transition) removidos nesta versão. Enriquecido com 100% do conteúdo das fontes canônicas. Consolida cards de: `saturacao-chatweb-comunicacao-cards-jira.md` (27 cards), `jira-cards-job-creation-lifecycle.md` (10 cards), `diagnostico-agentes-mvp.md` + `ANALISE_COMPARATIVA_V5_vs_LIA.md` (7 cards AUD). Roadmap alinhado ao fluxo MVP Alpha 1 (9 passos) do diagnóstico de agentes. Total: 44 cards · 222 SPs.*
+*Documento v4.0 — 11/março/2026. Cards PIP (pipeline-transition) removidos na v3.0. SendGrid substituído por Mailgun na v4.0. Enriquecido com referências de código do Replit, tags padronizadas (backend/frontend/fullstack/dados/IA/comunicacao/voz), mapa de agentes IA, modelos de banco de dados PostgreSQL, stack de comunicação (Mailgun + Meta WhatsApp + Twilio fallback), e instruções de teste. Consolida cards de: `saturacao-chatweb-comunicacao-cards-jira.md` (27 cards), `jira-cards-job-creation-lifecycle.md` (10 cards), `diagnostico-agentes-mvp.md` + `ANALISE_COMPARATIVA_V5_vs_LIA.md` (7 cards AUD). Total: 44 cards · 222 SPs.*
