@@ -1,257 +1,768 @@
-# Proposta: Skill "Document Factory" — Fábrica de Documentos & Cards Autocontidos
+# Proposta v2: Skill "Document Factory" — Pacotes de Implementação Autocontidos
+
+> v2.0 — 11/março/2026. Revisão incorporando feedback: cards como pacotes completos com conteúdo real dos arquivos, textos de governança, grafos com nós, integrações, automações, comunicação, componentes.
+
+---
 
 ## 1. Aprendizados Consolidados
 
-### 1.1 O que funcionou nos cards AGT (21 cards, 3 sessões)
+### 1.1 O que funcionou (manter)
 
-| Aspecto | Aprendizado | Evidência |
-|---------|------------|-----------|
-| **Estado V5 vs LIA** | Comparação explícita "o que existe vs o que falta" elimina ambiguidade | Todos 21 cards usaram; devs sabem exatamente o gap |
-| **Tools com Serviços (tabela)** | Mapear tool → serviço → arquivo concreto dá autonomia total ao dev | AGT-004 (14 tools), AGT-015 (20 tools) — zero perguntas |
-| **Padrão 13B.7** | Definir classe, domain, guardrails por card = dev sabe copiar/colar | Todos agentes seguem o mesmo template |
-| **Roteiro de Reprodução** | Lista de arquivos numerada = checklist implementável | 13 cards com roteiro — dev abre arquivo por arquivo |
-| **Para Alpha 1** | Scope explícito evita over-engineering | "Alpha 1 usa como serviço REST" vs "Pós-Alpha ativa ReAct" |
-| **Referências cruzadas** | Apontar §seção do diagnóstico = dev pode ir mais fundo | §14.1-§14.14, §13B, §13C.17 |
-| **YAML metadata** | Sprint, pontos, prioridade, dependências = Jira-ready | 21 cards → Jira sem retrabalho |
+| Aspecto | Por que funciona | Onde aplicar |
+|---------|-----------------|--------------|
+| **Estado V5 vs LIA** (gap analysis) | Dev sabe exatamente o que existe e o que falta | Card Tipo A |
+| **Tools com Serviços (tabela)** | Mapeia tool → serviço → arquivo = zero ambiguidade | Card Tipo A |
+| **Padrão 13B.7** (classe + domain + guardrails) | Dev copia estrutura sem inventar | Card Tipo A |
+| **Roteiro de Reprodução** (lista numerada de arquivos) | Checklist implementável = dev segue na ordem | Card Tipo A |
+| **Para Alpha 1 / Escopo explícito** | Evita over-engineering | Card Tipo A |
+| **Referências cruzadas (§seção)** | Dev aprofunda quando precisa | Todos |
+| **Glossário na seção 0** | Time fala a mesma língua desde a página 1 | Doc Tipo B e C |
+| **Inventário exaustivo (§13C)** | Ninguém pergunta "onde está X?" | Doc Tipo B |
+| **Blueprint replicável (§13B)** | Escala sem divergência arquitetural | Doc Tipo B |
+| **Fora do escopo explícito (§22)** | Previne scope creep | Todos |
 
-### 1.2 O que funcionou no diagnóstico de agentes (5.251 linhas)
+### 1.2 O que faltou (adicionar)
 
-| Aspecto | Aprendizado |
-|---------|------------|
-| **Glossário na seção 0** | Time fala a mesma língua desde a página 1 |
-| **Inventário exaustivo (§13C)** | ~165 arquivos catalogados = ninguém pergunta "onde está X?" |
-| **Blueprint replicável (§13B)** | Padrão 4-file = escala sem divergência arquitetural |
-| **Gap analysis tabular** | Tabela V5 vs LIA por componente = decisão visual rápida |
-| **Roteiros de reprodução (§13C.17)** | Dev reproduz comportamento LIA no V5 seguindo lista |
-| **Fora do escopo explícito (§22)** | Previne scope creep — "isso NÃO entra no Alpha 1" |
-
-### 1.3 O que faltou / pode melhorar
-
-| Gap | Solução na nova skill |
-|-----|----------------------|
-| Cards não tinham diagramas de fluxo | Adicionar seção `Fluxo Visual` (Mermaid) |
-| Sem critérios de aceite formais | Adicionar `Critérios de Aceite` (Given/When/Then) |
-| Sem estimativa de risco/complexidade | Adicionar `Matriz de Risco` |
-| Documentos longos sem resumo executivo | Obrigar `TL;DR` no início |
-| Sem versionamento explícito de templates | Template com `versão` e `changelog` |
-| Sem contexto de negócio para stakeholders não-técnicos | Adicionar `Contexto de Negócio` (linguagem simples) |
+| Gap | Solução | Onde |
+|-----|---------|------|
+| Cards sem conteúdo real dos arquivos | **Seção "Conteúdo dos Arquivos"** com texto/código copy-paste | Card A |
+| Sem grafos/diagramas de fluxo | **Mermaid obrigatório** (fluxo + grafo LangGraph + sequência) | Card A, Doc B |
+| Sem mapa de integrações | **Seção "Integrações & Dependências"** (serviços externos, internos, webhooks) | Card A |
+| Sem camada de comunicação | **Seção "Comunicação & Automações"** (triggers, canais, templates) | Card A |
+| Sem comportamento de componentes | **Seção "Comportamento & Estados"** (estados, transições, edge cases) | Card A |
+| Sem critérios de aceite formais | **Given/When/Then** + cenários de erro | Card A |
+| Sem textos de governança prontos | **Seção "Governança — Textos Prontos"** (guardrails, persona, ethical guidelines, FairnessGuard) | Card A |
+| Sem template de system prompt | **Conteúdo real** do system prompt com 10 seções preenchidas | Card A (agentes) |
+| Sem template de tool registry | **Código real** com ToolDefinition, wrappers, stage_tools | Card A (agentes) |
+| Sem riscos e mitigações | **Matriz de Risco** (prob × impacto × mitigação) | Card A |
+| Sem contexto de negócio para stakeholders | **Seção "Valor de Negócio"** (linguagem simples) | Card A, Doc C |
+| Docs longos sem resumo executivo | **TL;DR obrigatório** (3 linhas) | Todos |
 
 ---
 
-## 2. Escopo da Skill
+## 2. Escopo da Skill — 3 Tipos de Artefato
 
-A skill "Document Factory" cobre **3 tipos de artefato**:
+### Tipo A — Card de Implementação (Pacote Completo)
+> **Para**: Dev + AI Coding Assistant (Claude Code, Cursor, Copilot, Windsurf)
+> **Filosofia**: O card contém TUDO — o dev abre, copia, cola, adapta. Zero perguntas.
+> **Diferencial**: Entrega conteúdo real dos arquivos, não apenas descrições.
 
-### Tipo A — Card Autocontido (Jira-Ready)
-> Para: Dev + AI Coding Assistant (Claude Code, Cursor, Copilot)
-> Objetivo: Card que contém TUDO para implementar sem perguntar nada
+### Tipo B — Documento Técnico (Blueprint/Diagnóstico)
+> **Para**: Time de engenharia, reuniões técnicas, onboarding, sprint planning
+> **Filosofia**: Catálogo exaustivo com inventário, gap analysis, roteiros de reprodução.
 
-### Tipo B — Documento Técnico Explicativo
-> Para: Time de engenharia, reuniões técnicas, onboarding
-> Objetivo: Diagnósticos, blueprints, inventários, catálogos
-
-### Tipo C — Documento de Produto
-> Para: Stakeholders, reuniões de produto, apresentações, demos
-> Objetivo: Roadmaps visuais, feature decks, glossários, fluxos
+### Tipo C — Documento de Produto (Apresentação/Stakeholder)
+> **Para**: Stakeholders, reuniões de produto, demos, board, investidores
+> **Filosofia**: Linguagem de negócio, fluxos visuais, métricas, jornadas de usuário.
 
 ---
 
-## 3. Estrutura Proposta — Tipo A: Card Autocontido
+## 3. Estrutura Completa — Tipo A: Card de Implementação
+
+### BLOCO 1: METADATA (YAML)
 
 ```yaml
-# ═══════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 # CARD: [ID] — [Título Descritivo]
-# ═══════════════════════════════════════════════════
+# Tipo: [ver classificação abaixo]
+# ═══════════════════════════════════════════════════════════════
 
-# ── METADATA ──────────────────────────────────────
 Titulo: "[ID] [Título]"
-Tipo: [ReAct Agent | LangGraph StateGraph | Serviço REST | Componente React | Infra]
-Area: [Backend | Frontend | Full-Stack | DevOps]
+Tipo: [ReAct Agent (4-file) | LangGraph StateGraph | Serviço REST | Componente React | Hook React | Infra/DevOps | Celery Job | Migration DB]
+Area: [Backend | Frontend | Full-Stack | DevOps | IA/ML]
 Sprint: [número]
 Pontos: [fibonacci: 1,2,3,5,8,13,21]
 Prioridade: [P0-Blocker | P1-Critical | P2-High | P3-Medium]
-Epic: "[Nome do Épico] (JIRA-KEY)"
-Tags: [lista de tags]
-Classificacao: [🟢 MVP CRÍTICO | 🟡 MVP SUPORTE | 🔵 PÓS-MVP]
-Dependencias: [lista de IDs]
-Referencias: [seções de documentos]
+Epic: "[Nome] (JIRA-KEY)"
+Tags: [lista]
+Classificacao: [🟢 MVP CRÍTICO | 🟡 MVP SUPORTE | 🔵 PÓS-MVP | 🔴 TECH DEBT]
+Dependencias: [lista de IDs com descrição curta]
+Referencias_Diagnostico: [§seções relevantes]
 ```
-
-### Seções Obrigatórias do Card
-
-#### 1. TL;DR (3 linhas máximo)
-> O que é, por que importa, o que entrega. Stakeholder lê APENAS isso.
-
-#### 2. Contexto de Negócio
-> Linguagem não-técnica. Qual problema resolve? Qual o valor para o usuário final?
-> Quem usa? Quando usa? O que muda na experiência?
-
-#### 3. Estado Atual vs Alvo
-> **Atual**: O que existe hoje (com paths de arquivo)
-> **Alvo**: O que deve existir ao final do card
-> **Gap**: Lista precisa do que falta
-> **Veredicto**: Decisão arquitetural (criar do zero / adaptar / migrar)
-
-#### 4. Arquitetura & Fluxo
-
-##### 4a. Fluxo Visual (Mermaid)
-```mermaid
-graph LR
-  A[Trigger] --> B[Processamento]
-  B --> C{Decisão}
-  C -->|Sim| D[Resultado A]
-  C -->|Não| E[Resultado B]
-```
-
-##### 4b. Componentes / Tools (Tabela)
-| # | Tool/Componente | O que faz | Serviço/Arquivo | Dependência |
-|---|----------------|-----------|-----------------|-------------|
-
-##### 4c. API Endpoints (se aplicável)
-| Método | Endpoint | Descrição | Auth | Rate Limit |
-|--------|----------|-----------|------|------------|
-
-##### 4d. Modelo de Dados (se aplicável)
-| Tabela | Campos-chave | Relações | Migration |
-|--------|-------------|----------|-----------|
-
-#### 5. Padrão de Implementação
-> Classe base, mixins, domain, guardrails, compliance.
-> Para agentes: 4-file pattern, system prompt, tool registry.
-> Para frontend: componentes, hooks, props interface.
-
-#### 6. Roteiro de Implementação
-> Lista numerada de arquivos a criar/modificar, na ordem de implementação.
-> Cada item com: arquivo, o que fazer, referência de código existente.
-
-```
-1. [ ] arquivo.py — Criar classe X (ref: outro_arquivo.py L45-120)
-2. [ ] arquivo2.py — Adicionar método Y
-3. [ ] test_arquivo.py — Testes unitários (mínimo: 3 cenários)
-```
-
-#### 7. Critérios de Aceite
-```gherkin
-DADO [pré-condição]
-QUANDO [ação do usuário/sistema]
-ENTÃO [resultado esperado]
-
-DADO [pré-condição alternativa]
-QUANDO [ação diferente]
-ENTÃO [resultado esperado diferente]
-```
-
-#### 8. Escopo & Limites
-> **Entra**: Lista do que o card cobre
-> **NÃO entra**: Lista explícita do que NÃO implementar neste card
-> **Pós-MVP**: O que pode ser feito depois (nice-to-have)
-
-#### 9. Riscos & Mitigações
-| Risco | Probabilidade | Impacto | Mitigação |
-|-------|--------------|---------|-----------|
-| [descrição] | Alta/Média/Baixa | Alto/Médio/Baixo | [ação] |
-
-#### 10. Testes Obrigatórios
-> Unitários (mínimo), integração, e2e se aplicável.
-> Cenários de erro, edge cases, compliance.
-
-#### 11. Referências & Código-Fonte
-> Links para documentação, seções do diagnóstico, arquivos de referência.
-> Snippets de código quando útil.
 
 ---
 
-## 4. Estrutura Proposta — Tipo B: Documento Técnico
+### BLOCO 2: CONTEXTO (para humanos)
+
+#### 2.1 TL;DR (3 linhas máximo)
+> O que é, por que importa, o que entrega.
+
+#### 2.2 Valor de Negócio
+> Linguagem não-técnica. Qual problema resolve para o usuário?
+> Quem usa (persona)? Em que momento? O que muda na experiência?
+> Métrica de sucesso (ex: "reduz tempo de triagem de 48h para 2h")
+
+#### 2.3 Estado Atual vs Alvo
+```
+ATUAL (V5):  [o que existe — com paths de arquivo]
+ALVO (LIA):  [o que deve existir ao final — com paths de arquivo]
+GAP:         [lista precisa do que falta]
+VEREDICTO:   [criar do zero | adaptar de LIA | migrar de V5 | mesclar V5+LIA]
+```
+
+---
+
+### BLOCO 3: ARQUITETURA (para devs e IA)
+
+#### 3.1 Diagrama de Fluxo (Mermaid — obrigatório)
+```mermaid
+graph TD
+  A[Trigger/Entrada] --> B[Processamento]
+  B --> C{Decisão}
+  C -->|Path A| D[Resultado]
+  C -->|Path B| E[Alternativa]
+```
+
+#### 3.2 Grafo LangGraph (se agente — Mermaid obrigatório)
+```mermaid
+stateDiagram-v2
+  [*] --> load_context
+  load_context --> generate_question
+  generate_question --> deliver_question
+  deliver_question --> validate_response
+  validate_response --> score_response
+  score_response --> advance_block: block_complete
+  score_response --> generate_question: more_questions
+  advance_block --> generate_feedback: all_blocks_done
+  advance_block --> generate_question: next_block
+  generate_feedback --> [*]
+
+  note right of validate_response: PromptInjectionGuard.check()
+  note right of generate_feedback: HITL: interrupt_before
+```
+
+#### 3.3 Diagrama de Sequência (interações entre componentes — quando aplicável)
+```mermaid
+sequenceDiagram
+  participant FE as Frontend
+  participant WS as WebSocket
+  participant OR as Orchestrator
+  participant AG as Agent
+  participant DB as PostgreSQL
+
+  FE->>WS: message
+  WS->>OR: route(message)
+  OR->>AG: process(context)
+  AG->>DB: query/update
+  AG-->>OR: response
+  OR-->>WS: stream tokens
+  WS-->>FE: render
+```
+
+#### 3.4 Tools / Componentes (tabela)
+| # | Tool/Componente | O que faz | Serviço/Classe | Arquivo | Dependência Externa |
+|---|----------------|-----------|----------------|---------|---------------------|
+
+#### 3.5 API Endpoints
+| Método | Endpoint | Descrição | Auth | Rate Limit | Request Schema | Response Schema |
+|--------|----------|-----------|------|------------|---------------|----------------|
+
+#### 3.6 Modelo de Dados
+| Tabela | Campos-chave | Tipo | Relações FK | Migration | Índices |
+|--------|-------------|------|-------------|-----------|---------|
+
+#### 3.7 Eventos & Webhooks (se aplicável)
+| Evento Emitido | Quando | Consumers | Payload |
+|----------------|--------|-----------|---------|
+
+---
+
+### BLOCO 4: INTEGRAÇÕES & DEPENDÊNCIAS
+
+#### 4.1 Mapa de Impacto (onde este card toca)
+```
+PRODUZ dados para:   [lista de cards/serviços que consomem output deste]
+CONSOME dados de:    [lista de cards/serviços que alimentam este]
+DISPARA automação:   [lista de triggers/events que este card gera]
+RECEBE automação de: [lista de triggers/events que chegam neste card]
+COMUNICA via:        [canais — email, WhatsApp, Teams, WS, REST]
+```
+
+#### 4.2 Integrações Externas
+| Serviço | Tipo | Credencial (env var) | Fallback |
+|---------|------|---------------------|----------|
+
+#### 4.3 Integrações Internas (entre domínios)
+| Domínio | Serviço Consumido | Como Conecta | Arquivo |
+|---------|-------------------|-------------|---------|
+
+---
+
+### BLOCO 5: COMUNICAÇÃO & AUTOMAÇÕES
+
+#### 5.1 Triggers de Automação (se aplicável)
+| Trigger | Tipo | Frequência | Handler | Ação Resultante |
+|---------|------|-----------|---------|-----------------|
+
+#### 5.2 Templates de Comunicação (se aplicável)
+| Template | Canal | Quando Envia | Variáveis | Tone Policy |
+|----------|-------|-------------|-----------|-------------|
+
+#### 5.3 Notificações (se aplicável)
+| Evento | Destinatário | Canal | Prioridade | Fallback |
+|--------|-------------|-------|-----------|----------|
+
+---
+
+### BLOCO 6: COMPORTAMENTO & ESTADOS
+
+#### 6.1 Estados do Componente/Serviço
+| Estado | Descrição | Transição Para | Trigger da Transição |
+|--------|-----------|---------------|---------------------|
+
+#### 6.2 Edge Cases & Tratamento de Erros
+| Cenário | Comportamento Esperado | Fallback |
+|---------|----------------------|----------|
+
+#### 6.3 Limites Operacionais
+| Recurso | Limite | Ação quando excede |
+|---------|--------|-------------------|
+
+---
+
+### BLOCO 7: GOVERNANÇA — TEXTOS PRONTOS (copy-paste)
+
+> Esta seção entrega o conteúdo real que vai dentro dos arquivos.
+> O dev copia e cola. A IA coding assistant usa como contexto direto.
+
+#### 7.1 Guardrails Aplicáveis (texto real do guardrails_seed.py)
+```python
+# Guardrails que se aplicam a este domínio
+# Copie para guardrails_seed.py ou configure via API
+
+PRIMARY_GUARDRAILS_FOR_THIS_DOMAIN = [
+    GuardrailCreate(
+        level="primary",
+        rule="[TEXTO REAL DA REGRA — ex: Nunca revelar dados pessoais...]",
+        blocking_message="[TEXTO REAL DA MENSAGEM DE BLOQUEIO]",
+        tool=None,
+        domain=None,
+        updated_by="system_seed",
+    ),
+    # ... (todos os guardrails aplicáveis)
+]
+
+SECONDARY_GUARDRAILS_FOR_THIS_DOMAIN = [
+    GuardrailCreate(
+        level="secondary",
+        rule="[REGRA ESPECÍFICA DO DOMÍNIO]",
+        blocking_message="[MENSAGEM]",
+        tool="[tool_name ou None]",
+        domain="[domain_name]",
+        updated_by="system_seed",
+    ),
+]
+```
+
+#### 7.2 System Prompt Completo (texto real — 10 seções)
+```python
+# Copie para {domain}_system_prompt.py
+# Adapte os campos entre [COLCHETES]
+
+DOMAIN_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
+Voce esta ajudando um recrutador com [DESCRIÇÃO DO DOMÍNIO].
+
+=== IDENTIDADE ===
+- Nome: LIA (Assistente de Recrutamento com IA)
+- Personalidade: Profissional, amigavel, eficiente e proativa
+- Idioma: Portugues Brasileiro (PT-BR)
+- Tom: [TOM ESPECÍFICO DO DOMÍNIO]
+
+=== FILOSOFIA CENTRAL ===
+O chat e a interface principal. [FILOSOFIA ESPECÍFICA DO DOMÍNIO].
+NUNCA use botoes como interacao principal - sempre priorize o chat.
+
+=== INSTRUCOES REACT ===
+Voce opera em um ciclo de Raciocinio-Acao-Observacao:
+1. RACIOCINE sobre a situacao atual:
+   - [PERGUNTAS ESPECÍFICAS DO DOMÍNIO]
+2. AJA de uma das formas:
+   - action="call_tool": [QUANDO USAR TOOLS NESTE DOMÍNIO]
+   - action="respond": [QUANDO RESPONDER]
+   - action="ask_clarification": [QUANDO PEDIR ESCLARECIMENTO]
+3. OBSERVE o resultado e decida se precisa agir novamente
+
+=== ESTAGIOS DO [DOMÍNIO] ===
+[LISTA DE ESTÁGIOS COM DESCRIÇÃO]
+
+=== TOOLS DISPONIVEIS ===
+[LISTA DE TOOLS COM QUANDO USAR CADA UMA]
+
+=== COMPLIANCE ===
+- Sempre aplique FairnessGuard antes de [AÇÃO ESPECÍFICA]
+- Nunca [PROIBIÇÃO ESPECÍFICA DO DOMÍNIO]
+- LGPD: [REGRA LGPD ESPECÍFICA]
+
+=== FORMATO DE RESPOSTA ===
+[INSTRUÇÕES DE FORMATAÇÃO]
+
+=== EXEMPLOS (FEW-SHOT) ===
+Exemplo 1:
+  Recrutador: "[INPUT EXEMPLO]"
+  Raciocinio: [RACIOCÍNIO]
+  Acao: [AÇÃO]
+  Resposta: "[RESPOSTA EXEMPLO]"
+
+Exemplo 2:
+  [OUTRO EXEMPLO]
+
+=== ERROS COMUNS (EVITE) ===
+- [ANTI-PATTERN 1]
+- [ANTI-PATTERN 2]
+"""
+```
+
+#### 7.3 Tool Registry Completo (código real)
+```python
+# Copie para {domain}_tool_registry.py
+# Implemente as funções wrapper
+
+from lia_agents_core.tool_definition import ToolDefinition
+
+TOOL_DEFINITIONS: list[ToolDefinition] = [
+    ToolDefinition(
+        name="[tool_name]",
+        description="[DESCRIÇÃO DETALHADA — a LLM lê isto para decidir quando usar]",
+        parameters={
+            "[param1]": {"type": "string", "description": "[desc]", "required": True},
+            "[param2]": {"type": "integer", "description": "[desc]", "required": False},
+        },
+        category="[search|action|query|mutation]",
+        requires_confirmation=False,  # True para HITL
+    ),
+    # ... (todas as tools)
+]
+
+STAGE_TOOLS: dict[str, list[str]] = {
+    "[stage-1]": ["tool_1", "tool_2"],
+    "[stage-2]": ["tool_2", "tool_3"],
+}
+
+# === WRAPPERS ===
+async def _wrap_[tool_name](
+    params: dict,
+    context: dict,
+    db: AsyncSession,
+) -> str:
+    """[DOCSTRING com o que faz e o que retorna]"""
+    company_id = context.get("company_id")
+    # 1. Validação
+    # 2. Chamada ao serviço
+    # 3. Formatação do resultado
+    result = await [Service].method(params, company_id, db)
+    return json.dumps(result)
+```
+
+#### 7.4 Stage Context Completo (código real)
+```python
+# Copie para {domain}_stage_context.py
+
+STAGES = {
+    "[stage-1]": {
+        "name": "[Nome do Estágio]",
+        "description": "[Descrição]",
+        "required_fields": ["field1", "field2"],
+        "optional_fields": ["field3"],
+        "transition_criteria": "[QUANDO AVANÇAR]",
+        "available_tools": ["tool_1", "tool_2"],
+    },
+    # ... (todos os estágios)
+}
+
+def get_stage_context(stage: str) -> str:
+    """Retorna contexto formatado para o system prompt."""
+    if stage not in STAGES:
+        return ""
+    s = STAGES[stage]
+    return f"""
+    Estagio atual: {s['name']}
+    {s['description']}
+    Campos obrigatorios: {', '.join(s['required_fields'])}
+    Para avancar: {s['transition_criteria']}
+    Tools disponiveis: {', '.join(s['available_tools'])}
+    """
+```
+
+#### 7.5 Persona & Ethical Guidelines (referência — texto real)
+```yaml
+# Referência: lia_persona.yaml — NÃO modificar, apenas consumir
+# O conteúdo abaixo já está no repositório em:
+# lia-agent-system/app/prompts/shared/lia_persona.yaml
+
+# Campos relevantes para este domínio:
+# - lia_persona (identidade, tom, evite/use)
+# - hr_vocabulary (termos técnicos de RH)
+# - ethical_guidelines (critérios permitidos/proibidos)
+# - data_persistence (regras de salvamento)
+```
+
+#### 7.6 FairnessGuard — Categorias Aplicáveis (texto real)
+```python
+# Referência: fairness_guard.py
+# Categorias de bias que se aplicam a este domínio:
+
+CATEGORIAS_APLICAVEIS = {
+    "genero": ["mulher", "homem", "feminino", "masculino", "grávida", "gestante"],
+    "raca_etnia": ["negro", "branco", "pardo", "indígena", "asiático"],
+    "idade": ["jovem", "velho", "idade", "anos de idade", "senior demais"],
+    "religiao": ["cristão", "evangélico", "judeu", "muçulmano"],
+    "deficiencia": ["deficiente", "cadeirante", "PCD", "limitação"],
+    # ... (todas as categorias do fairness_guard.py)
+}
+
+# Bias implícito (termos sutis):
+BIAS_IMPLICITO = {
+    "boa aparência": "Discriminação estética — usar critérios objetivos",
+    "bairros nobres": "Viés socioeconômico — usar localização apenas para logística",
+    "escola de primeira linha": "Elitismo educacional — avaliar competências",
+    "sem filhos": "Discriminação familiar — irrelevante para competência",
+}
+```
+
+---
+
+### BLOCO 8: CONTEÚDO DOS ARQUIVOS (copy-paste ready)
+
+> **Esta é a seção mais importante.** Cada arquivo que o dev precisa criar/modificar
+> tem seu conteúdo aqui — pronto para copiar e colar.
+
+#### 8.1 Arquivo: [path/to/file1.py]
+```python
+# ═══════════════════════════════════════════════
+# [path/to/file1.py]
+# Card: [CARD-ID] — [Título]
+# ═══════════════════════════════════════════════
+
+"""
+[Docstring com contexto, responsabilidades, e referências]
+"""
+
+[CÓDIGO COMPLETO DO ARQUIVO]
+# - Classes com docstrings
+# - Métodos com type hints
+# - Imports explícitos
+# - TODO markers para partes que dependem de outros cards
+```
+
+#### 8.2 Arquivo: [path/to/file2.tsx]
+```tsx
+// ═══════════════════════════════════════════════
+// [path/to/file2.tsx]
+// Card: [CARD-ID] — [Título]
+// ═══════════════════════════════════════════════
+
+[CÓDIGO COMPLETO DO COMPONENTE]
+// - Props interface com JSDoc
+// - Estados explícitos
+// - Hooks com dependências
+// - Tailwind classes DS v4.2.1
+// - ARIA labels
+```
+
+#### 8.3 Arquivo: [path/to/migration.py]
+```python
+# Alembic migration
+# Card: [CARD-ID]
+
+def upgrade():
+    [SQL COMPLETO]
+
+def downgrade():
+    [SQL REVERSO]
+```
+
+#### 8.4 Arquivo: [path/to/test.py]
+```python
+# Testes obrigatórios
+# Card: [CARD-ID]
+
+[CÓDIGO COMPLETO DOS TESTES]
+# - Happy path
+# - Edge cases
+# - Compliance (FairnessGuard)
+# - Error handling
+```
+
+---
+
+### BLOCO 9: ROTEIRO DE IMPLEMENTAÇÃO (ordem)
+
+```
+FASE 1 — Fundação (dia 1)
+1. [ ] [arquivo] — [o que fazer] (ref: [arquivo existente] L[linhas])
+2. [ ] [arquivo] — [o que fazer]
+
+FASE 2 — Lógica (dia 2-3)
+3. [ ] [arquivo] — [o que fazer]
+4. [ ] [arquivo] — [o que fazer]
+
+FASE 3 — Integração (dia 4)
+5. [ ] [arquivo] — Conectar com [serviço]
+6. [ ] [arquivo] — Registrar no [router/orchestrator]
+
+FASE 4 — Testes & Compliance (dia 5)
+7. [ ] [arquivo] — Testes unitários (mínimo 5 cenários)
+8. [ ] [arquivo] — Testes de compliance (FairnessGuard)
+9. [ ] Rodar checklist 18 itens (AGT-000)
+```
+
+---
+
+### BLOCO 10: CRITÉRIOS DE ACEITE
+
+```gherkin
+# Cenário principal
+DADO [pré-condição completa]
+QUANDO [ação específica do usuário/sistema]
+ENTÃO [resultado esperado verificável]
+E [efeito colateral esperado]
+
+# Cenário de erro
+DADO [pré-condição de erro]
+QUANDO [ação que causa erro]
+ENTÃO [comportamento de erro esperado]
+E [log/alerta gerado]
+
+# Cenário de compliance
+DADO [input com viés potencial]
+QUANDO [processamento pela IA]
+ENTÃO FairnessGuard bloqueia E mensagem educativa é exibida
+
+# Cenário HITL (se aplicável)
+DADO [ação que requer aprovação humana]
+QUANDO [agente tenta executar]
+ENTÃO interrupt_before pausa o grafo
+E HITLConfirmCard é exibido ao consultor
+E ação só executa após aprovação
+```
+
+---
+
+### BLOCO 11: ESCOPO & LIMITES
+
+```
+ENTRA (este card):
+- [lista do que o card cobre]
+
+NÃO ENTRA (explícito):
+- [lista do que NÃO implementar — com justificativa]
+
+PÓS-MVP (backlog):
+- [lista de melhorias futuras — com card de referência se existir]
+
+DEPENDÊNCIA BLOQUEANTE:
+- [card X] deve estar pronto antes (motivo: [porquê])
+
+DEPENDÊNCIA SOFT:
+- [card Y] pode ser feito em paralelo mas integra depois
+```
+
+---
+
+### BLOCO 12: RISCOS & MITIGAÇÕES
+
+| Risco | Prob. | Impacto | Mitigação | Owner |
+|-------|-------|---------|-----------|-------|
+
+---
+
+### BLOCO 13: TESTES OBRIGATÓRIOS
+
+```
+UNITÁRIOS (mínimo 5):
+- [ ] [cenário 1] — [o que testa]
+- [ ] [cenário 2] — [o que testa]
+- [ ] [cenário de erro] — [o que testa]
+- [ ] [cenário de compliance] — [o que testa]
+- [ ] [cenário de edge case] — [o que testa]
+
+INTEGRAÇÃO (mínimo 2):
+- [ ] [cenário end-to-end 1]
+- [ ] [cenário end-to-end 2]
+
+COMPLIANCE (obrigatório para IA):
+- [ ] FairnessGuard com input discriminatório
+- [ ] PromptInjection com input malicioso
+- [ ] PII Masking com dados sensíveis
+```
+
+---
+
+### BLOCO 14: REFERÊNCIAS & CÓDIGO-FONTE
+
+```
+DOCUMENTAÇÃO:
+- [doc1.md] §[seção] — [o que tem]
+- [doc2.md] §[seção] — [o que tem]
+
+CÓDIGO DE REFERÊNCIA (LIA — copiar padrão):
+- [arquivo1.py] (L[início]-[fim]) — [o que usar de referência]
+- [arquivo2.py] (L[início]-[fim]) — [o que usar de referência]
+
+CÓDIGO DE REFERÊNCIA (V5 — adaptar):
+- [arquivo3.py] (L[início]-[fim]) — [o que adaptar]
+
+SKILLS RELACIONADAS:
+- [skill-name] — [quando consultar]
+```
+
+---
+
+## 4. Estrutura Completa — Tipo B: Documento Técnico
 
 ```markdown
 # [Título do Documento]
 > Versão X.Y — Data. Autor: [nome/agente].
+> Última atualização: [data]. Linhas: [N].
 
 ## TL;DR (5 linhas)
 
-## Sumário Executivo (1 página)
+## Sumário (com links internos)
 
 ## §0 — Glossário
-| Termo | Definição | Exemplo |
-|-------|-----------|---------|
+| Termo | Sigla | Definição | Exemplo | Ref |
+|-------|-------|-----------|---------|-----|
 
 ## §1 — Contexto & Motivação
 > Por que este documento existe? Qual problema resolve?
+> Quem são os leitores? O que esperam encontrar aqui?
 
-## §2 — Escopo
-> O que cobre. O que NÃO cobre.
+## §2 — Escopo & Limites
+> O que cobre. O que NÃO cobre. Documentos complementares.
 
-## §3-N — Seções Técnicas
-### Padrão por seção:
-- Objetivo da seção
-- Estado atual (com evidências: código, métricas, screenshots)
+## §3 — Arquitetura Geral
+> Diagrama de blocos (Mermaid). Visão macro.
+> Decisões arquiteturais (ADRs) com justificativa.
+
+## §4-N — Seções Técnicas (padrão por seção)
+### Cada seção contém:
+- Objetivo (1 parágrafo)
+- Estado atual (com evidências: código, métricas)
 - Estado alvo
-- Gap analysis (tabela)
+- Gap analysis (tabela: componente | V5 | LIA | gap | prioridade)
 - Recomendações (numeradas, acionáveis)
+- Diagrama (Mermaid quando aplicável)
+- Código de referência (snippets reais)
 - Referências cruzadas (→ Ver §X)
 
 ## §N+1 — Inventário de Arquivos
-| # | Arquivo | Linhas | Responsabilidade | Seção Relacionada |
-|---|---------|--------|-----------------|-------------------|
+| # | Arquivo | Linhas | Domínio | Responsabilidade | Cards Relacionados |
+|---|---------|--------|---------|-----------------|-------------------|
 
-## §N+2 — Matriz de Decisões
-| Decisão | Opções | Escolha | Justificativa |
-|---------|--------|---------|---------------|
+## §N+2 — Catálogo por Domínio/Componente
+### Para cada item:
+- Identificação (nome, classe, arquivo)
+- Estado V5 vs LIA
+- Tools/API surface
+- Dependências
+- Gaps
+- Prioridade Alpha 1
 
-## §N+3 — Roadmap de Implementação
-| Fase | Duração | Cards | Dependências |
-|------|---------|-------|-------------- |
+## §N+3 — Matriz de Decisões Arquiteturais
+| # | Decisão | Opções Avaliadas | Escolha | Justificativa | Impacto |
+|---|---------|-----------------|---------|---------------|---------|
 
-## §N+4 — Fora do Escopo (Explícito)
-> Lista do que foi avaliado e descartado, com justificativa.
+## §N+4 — Blueprint de Replicação
+> Padrão obrigatório que todo novo componente deve seguir.
+> Checklist de produção.
+
+## §N+5 — Compliance & Governança
+> Guardrails aplicáveis, FairnessGuard, LGPD, auditoria.
+> Textos reais dos guardrails_seed.py.
+
+## §N+6 — Roadmap de Implementação
+| Fase | Sprint | Cards | SPs | Dependências | Milestone |
+|------|--------|-------|-----|-------------- |-----------|
+
+## §N+7 — Fora do Escopo (Explícito)
+> O que foi avaliado e NÃO entra. Com justificativa.
+
+## §N+8 — NFRs (Non-Functional Requirements)
+| NFR | Métrica | Target | Como Medir |
+|-----|---------|--------|------------|
 
 ## Changelog
-| Versão | Data | Mudanças |
-|--------|------|----------|
+| Versão | Data | Autor | Mudanças |
+|--------|------|-------|----------|
+
+## Apêndices
+> Dados complementares, tabelas grandes, código extenso.
 ```
 
 ---
 
-## 5. Estrutura Proposta — Tipo C: Documento de Produto
+## 5. Estrutura Completa — Tipo C: Documento de Produto
 
 ```markdown
 # [Título] — Visão de Produto
-> Versão X.Y — Data
+> Versão X.Y — Data. Para: [público-alvo].
 
-## Resumo Executivo (linguagem de negócio)
-> 1 parágrafo para C-level.
+## Resumo Executivo (1 parágrafo para C-level)
+
+## Glossário de Produto (termos na linguagem do cliente)
+| Termo | O que significa para o cliente |
+|-------|------------------------------|
 
 ## Problema & Oportunidade
-> Dor do cliente. Tamanho do mercado. Benchmark competitivo.
+> Dor do cliente (com dados/citações).
+> Tamanho da oportunidade.
+> Benchmark competitivo (como outros resolvem).
 
-## Solução Proposta
-> O que fazemos. Como funciona (alto nível). Diferencial.
+## Solução
+> O que fazemos. Como funciona (alto nível, sem código).
+> Diferencial vs concorrentes.
 
 ## Jornada do Usuário
-> Passo a passo visual da experiência.
-> Personas envolvidas. Pontos de contato.
+> Passo a passo visual (Mermaid ou diagrama).
+> Personas envolvidas. Pontos de contato. Momentos "wow".
+
+```mermaid
+journey
+  title Jornada do Recrutador
+  section Abertura de Vaga
+    Descreve perfil no chat: 5: Recrutador
+    LIA gera JD completa: 4: LIA
+    Recrutador ajusta: 5: Recrutador
+  section Busca de Candidatos
+    LIA busca automaticamente: 5: LIA
+    Apresenta shortlist: 4: LIA
+  section Triagem
+    Candidato faz triagem WSI: 3: Candidato
+    LIA pontua automaticamente: 5: LIA
+    Recrutador aprova/rejeita: 5: Recrutador
+```
 
 ## Funcionalidades
 ### Para cada feature:
-| Feature | Descrição | Valor | Sprint | Status |
-|---------|-----------|-------|--------|--------|
+| Feature | Descrição (linguagem de negócio) | Valor | Status | Sprint |
+|---------|--------------------------------|-------|--------|--------|
 
-## Arquitetura (Simplificada)
-> Diagrama de blocos (sem código). 
+## Arquitetura Simplificada
+> Diagrama de blocos SEM código.
 > "O sistema faz X, conecta com Y, entrega Z."
 
 ## Métricas de Sucesso
-| KPI | Baseline | Meta | Como Medir |
-|-----|----------|------|------------|
+| KPI | O que mede | Baseline | Meta | Como Medir |
+|-----|-----------|----------|------|------------|
 
 ## Roadmap Visual
-> Timeline com milestones. Mermaid gantt ou tabela.
-
-## Glossário de Produto
-> Termos na linguagem do cliente, NÃO técnicos.
+```mermaid
+gantt
+  title Roadmap Alpha 1
+  dateFormat YYYY-MM-DD
+  section Fundação
+    Infra base        :a1, 2026-03-15, 10d
+    Agentes core      :a2, after a1, 15d
+  section Funcionalidades
+    Triagem WSI       :b1, after a2, 20d
+    Pipeline + HITL   :b2, after a2, 15d
+  section Frontend
+    Chat candidato    :c1, after b1, 10d
+    Dashboard         :c2, after b2, 10d
+```
 
 ## FAQ
-> Perguntas frequentes de stakeholders.
+> Perguntas frequentes de stakeholders (com respostas prontas).
 
 ## Apêndices
 > Detalhes complementares para quem quiser aprofundar.
@@ -259,176 +770,111 @@ ENTÃO [resultado esperado diferente]
 
 ---
 
-## 6. Funcionalidades da Skill
+## 6. Regras de Qualidade da Skill
 
-### 6.1 Comandos / Triggers
+### 6.1 Validações Obrigatórias (a skill rejeita card incompleto)
 
-| Trigger | Ação | Tipo |
-|---------|------|------|
-| "criar card para [feature]" | Gera Card Autocontido (Tipo A) | A |
+| # | Regra | Severidade | Aplicável a |
+|---|-------|-----------|-------------|
+| Q1 | Card sem TL;DR | ERRO | Todos |
+| Q2 | Card sem Critério de Aceite (Given/When/Then) | ERRO | Tipo A |
+| Q3 | Card sem Roteiro de Implementação | ERRO | Tipo A |
+| Q4 | Card sem Diagrama Mermaid | AVISO | Tipo A |
+| Q5 | Card > 21 SPs sem sugestão de split | ERRO | Tipo A |
+| Q6 | Card de agente sem System Prompt completo | ERRO | Tipo A (agentes) |
+| Q7 | Card de agente sem Tool Registry | ERRO | Tipo A (agentes) |
+| Q8 | Card de agente sem Guardrails | ERRO | Tipo A (agentes) |
+| Q9 | Card sem seção "NÃO entra" | AVISO | Todos |
+| Q10 | Card sem Mapa de Impacto | AVISO | Tipo A |
+| Q11 | Documento sem Glossário | AVISO | Tipo B, C |
+| Q12 | Card de frontend sem estados do componente | AVISO | Tipo A (frontend) |
+| Q13 | Card sem Testes Obrigatórios | ERRO | Tipo A |
+| Q14 | Card de IA sem cenário de compliance | ERRO | Tipo A (IA) |
+| Q15 | Referência circular entre cards | ERRO | Tipo A |
+
+### 6.2 Checklist de Completude (score 0-100%)
+
+```
+METADATA (10%):      [ ] YAML completo com todos os campos
+CONTEXTO (10%):      [ ] TL;DR + Valor de Negócio + Estado Atual vs Alvo
+ARQUITETURA (20%):   [ ] Diagramas + Tools/API + Modelo de Dados
+INTEGRAÇÕES (10%):   [ ] Mapa de Impacto + Integrações externas/internas
+COMUNICAÇÃO (5%):    [ ] Triggers + Templates + Notificações
+COMPORTAMENTO (5%):  [ ] Estados + Edge Cases + Limites
+GOVERNANÇA (15%):    [ ] Guardrails + Prompt + FairnessGuard + Persona
+CONTEÚDO (15%):      [ ] Arquivos completos copy-paste
+IMPLEMENTAÇÃO (5%):  [ ] Roteiro ordenado + fases
+QUALIDADE (5%):      [ ] Critérios aceite + Testes + Riscos
+```
+
+---
+
+## 7. Funcionalidades Extras da Skill
+
+### 7.1 Extração Automática do Codebase
+
+A skill pode extrair conteúdo real do Replit para popular cards:
+- **Guardrails**: Lê `guardrails_seed.py` → preenche Bloco 7.1
+- **Persona**: Lê `lia_persona.yaml` → preenche Bloco 7.5
+- **System Prompts**: Lê `*_system_prompt.py` existentes → gera template
+- **Tool Registries**: Lê `*_tool_registry.py` existentes → gera template
+- **FairnessGuard**: Lê `fairness_guard.py` → preenche Bloco 7.6
+- **Automações**: Lê `automation_scheduler.py` + handlers → preenche Bloco 5
+- **Endpoints**: Lê `app/api/v1/*.py` → preenche API Endpoints
+- **Modelos**: Lê `libs/models/` → preenche Modelo de Dados
+
+### 7.2 Sincronização Jira
+
+- Formata card em ADF (Atlassian Document Format) para API v3
+- Cria/atualiza issues via REST API
+- Vincula a épicos existentes
+- Define story points, sprint, labels
+- Valida completude antes de enviar
+
+### 7.3 Geração de PR Description
+
+- Extrai do card: TL;DR + Roteiro + Critérios de Aceite
+- Formata como PR description GitHub-ready
+
+### 7.4 Compatibilidade AI Coding Assistants
+
+Cards otimizados para:
+- **Claude Code**: Bloco 8 (conteúdo dos arquivos) = instrução direta
+- **Cursor**: Referências de arquivo + código = autocompletar contextualizado
+- **Copilot Workspace**: Critérios de aceite = plano de implementação
+- **Windsurf**: Roteiro de implementação = sequência de ações
+
+---
+
+## 8. Triggers da Skill
+
+| Trigger (frase do usuário) | Ação | Tipo |
+|---------------------------|------|------|
+| "criar card para [feature]" | Gera Card Completo (Tipo A) | A |
+| "criar card de agente para [domínio]" | Gera Card com 4-file pattern completo | A |
+| "criar card frontend para [componente]" | Gera Card com estados, hooks, props | A |
+| "criar cards para épico [nome]" | Gera N cards com dependências | A batch |
+| "enriquecer card [ID]" | Adiciona seções faltantes | A |
 | "criar documento técnico sobre [tema]" | Gera Doc Técnico (Tipo B) | B |
+| "criar diagnóstico de [sistema/módulo]" | Gera Diagnóstico com inventário | B |
+| "criar blueprint de [padrão]" | Gera Blueprint replicável | B |
 | "criar documento de produto sobre [tema]" | Gera Doc Produto (Tipo C) | C |
-| "criar cards para épico [nome]" | Gera N cards do épico | A (batch) |
-| "enriquecer card [ID]" | Adiciona seções faltantes a card existente | A |
-| "sincronizar cards com Jira" | Envia cards para Jira via API | A |
+| "criar roadmap de [escopo]" | Gera Roadmap visual | B/C |
 | "gerar glossário de [domínio]" | Extrai termos e gera glossário | B/C |
-| "gerar roadmap de [escopo]" | Cria roadmap visual com timeline | B/C |
-
-### 6.2 Regras de Qualidade
-
-1. **Card sem Critério de Aceite = card incompleto** → Skill rejeita
-2. **Card sem Roteiro de Implementação = card inútil** → Skill rejeita
-3. **Documento sem Glossário = documento inacessível** → Skill alerta
-4. **Documento sem TL;DR = documento ignorado** → Skill adiciona
-5. **Card > 21 SPs = card precisa ser dividido** → Skill sugere split
-6. **Referência circular entre cards = alerta de dependência** → Skill detecta
-7. **Seção "NÃO entra" vazia = risco de scope creep** → Skill exige
-
-### 6.3 Integração com Jira
-
-A skill inclui lógica para:
-- Formatar card em ADF (Atlassian Document Format) para API v3
-- Criar/atualizar issues via REST API
-- Vincular a épicos existentes
-- Definir campos customizados (story points, sprint, labels)
-- Validar que o card cumpre todas as seções obrigatórias antes de enviar
-
-### 6.4 Integração com GitHub
-
-A skill também pode:
-- Gerar markdown para PR descriptions
-- Criar issues no formato GitHub
-- Gerar commit messages padronizados baseados no card
-
-### 6.5 Compatibilidade com AI Coding Assistants
-
-Cards gerados são otimizados para:
-- **Claude Code / Cursor**: Roteiro numerado = prompt direto
-- **Copilot**: Referências de arquivo = autocompletar contextualizado
-- **GitHub Copilot Workspace**: Critérios de aceite = plano de implementação
+| "sincronizar cards com Jira" | Envia para Jira via API | A |
+| "validar card [ID]" | Roda checklist de completude | A |
+| "extrair conteúdo de [arquivo] para card" | Lê arquivo e popula blocos | A |
 
 ---
 
-## 7. Exemplo de Card Gerado pela Skill
+## 9. Próximos Passos
 
-```yaml
-# ═══════════════════════════════════════════════════
-# CARD: FTR-001 — Email Tracking com Pixel + Redirect
-# ═══════════════════════════════════════════════════
-
-Titulo: "FTR-001 Email Tracking com Pixel + Redirect"
-Tipo: Serviço REST + Endpoints
-Area: Backend
-Sprint: 8
-Pontos: 8
-Prioridade: P2-High
-Epic: "É36 Follow-up & Tracking (WT-XXXX)"
-Tags: [backend, email, tracking, LGPD]
-Classificacao: 🟡 MVP SUPORTE
-Dependencias: [AGT-005, AGT-010]
-Referencias: §5.3, §7
-```
-
-### TL;DR
-Tracking de abertura (pixel 1×1) e clique (redirect) em emails enviados pela plataforma. Permite medir engajamento do candidato e alimentar automações de follow-up. LGPD: opt-out obrigatório.
-
-### Contexto de Negócio
-O recrutador hoje envia emails e não sabe se foram abertos. Com tracking, a LIA pode: (1) alertar quando candidato abriu mas não respondeu, (2) priorizar follow-up para quem não abriu, (3) medir eficácia de templates de email.
-
-### Estado Atual vs Alvo
-**Atual**: Emails enviados via Resend/SendGrid sem tracking. Não há visibilidade pós-envio.
-**Alvo**: Pixel tracking (abertura), redirect tracking (clique), webhook (bounce/spam).
-**Gap**: Tabelas email_tracking_events e email_followup_status não existem. Endpoints de tracking não existem.
-**Veredicto**: Implementar do zero — funcionalidade nova.
-
-### Fluxo Visual
-```mermaid
-graph LR
-  A[Email Enviado] --> B[Candidato Abre]
-  B --> C[Pixel 1x1 Carrega]
-  C --> D[GET /tracking/pixel/ID.gif]
-  D --> E[Registra OPENED]
-  B --> F[Candidato Clica Link]
-  F --> G[GET /tracking/click/ID]
-  G --> H[Registra CLICKED]
-  H --> I[Redirect URL Original]
-```
-
-### Tools / Componentes
-| # | Componente | O que faz | Arquivo |
-|---|-----------|-----------|---------|
-| 1 | TrackingPixelEndpoint | Retorna GIF 1×1, registra abertura | app/api/v1/tracking.py |
-| 2 | TrackingClickEndpoint | Registra clique, redireciona | app/api/v1/tracking.py |
-| 3 | EmailTrackingService | CRUD tracking events | app/services/email_tracking_service.py |
-| 4 | ResendWebhookHandler | Processa bounce/spam | app/api/v1/webhooks/resend.py |
-
-### API Endpoints
-| Método | Endpoint | Descrição | Auth |
-|--------|----------|-----------|------|
-| GET | /tracking/pixel/{id}.gif | Pixel tracking (abertura) | Nenhuma |
-| GET | /tracking/click/{id} | Click tracking (redirect) | Nenhuma |
-| POST | /tracking/webhook/resend | Webhook Resend (bounce) | Webhook secret |
-| POST | /email/opt-out/{token} | Opt-out LGPD | Token JWT |
-
-### Modelo de Dados
-| Tabela | Campos-chave | Migration |
-|--------|-------------|-----------|
-| email_tracking_events | id, email_id, event_type (sent/opened/clicked/bounced), ip_hash, user_agent, created_at | 035_email_tracking.py |
-| email_followup_status | id, candidate_id, job_id, send_count, last_sent_at, status, opted_out | 035_email_tracking.py |
-
-### Roteiro de Implementação
-```
-1. [ ] libs/models/lia_models/email_tracking.py — Modelos SQLAlchemy
-2. [ ] alembic/versions/035_email_tracking.py — Migration
-3. [ ] app/services/email_tracking_service.py — CRUD + lógica de tracking
-4. [ ] app/api/v1/tracking.py — Endpoints pixel + click + opt-out
-5. [ ] app/api/v1/webhooks/resend.py — Webhook handler
-6. [ ] tests/test_email_tracking.py — Testes unitários (5 cenários)
-7. [ ] Integrar com CommunicationDispatcher — Adicionar tracking_id ao envio
-```
-
-### Critérios de Aceite
-```gherkin
-DADO um email enviado com pixel tracking
-QUANDO o candidato abre o email
-ENTÃO o sistema registra evento "opened" com timestamp
-
-DADO um email com link rastreado
-QUANDO o candidato clica no link
-ENTÃO o sistema registra "clicked" E redireciona para URL original
-
-DADO um candidato que clicou opt-out
-QUANDO o sistema tenta enviar follow-up
-ENTÃO o envio é bloqueado E registrado como "opted_out"
-```
-
-### Escopo & Limites
-**Entra**: Pixel tracking, click tracking, webhook bounce, opt-out LGPD
-**NÃO entra**: A/B testing de templates, analytics dashboard, heatmaps
-**Pós-MVP**: Dashboard de métricas de email, integração com analytics
-
-### Riscos & Mitigações
-| Risco | Prob. | Impacto | Mitigação |
-|-------|-------|---------|-----------|
-| Bloqueio de pixel por email client | Alta | Médio | Click tracking como fallback |
-| LGPD: tracking sem consentimento | Média | Alto | Opt-out obrigatório + banner |
-| Volume alto de tracking events | Baixa | Médio | Particionamento por mês |
-
-### Referências
-- AGT-005 (CommunicationService) — serviço de envio
-- AGT-010 (Follow-up 7 Dias) — lógica de re-envio
-- Resend Webhooks: https://resend.com/docs/webhooks
-
----
-
-## 8. Próximos Passos
-
-1. **Você avalia** esta proposta e sugere ajustes
+1. **Você avalia** esta proposta v2 e sugere ajustes
 2. **Eu crio** a skill em `.agents/skills/document-factory/SKILL.md`
-3. **Testamos** gerando 2-3 cards de exemplo com a skill
+3. **Testamos** gerando 2-3 cards reais com a skill
 4. **Iteramos** até o formato estar ideal
 5. **Documentamos** o padrão no `replit.md`
 
 ---
 
-*Proposta v1.0 — 11/março/2026*
+*Proposta v2.0 — 11/março/2026*
