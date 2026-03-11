@@ -1,9 +1,9 @@
 # Roadmap MVP Alpha 1 — Cards Jira Unificados
 ## WeDOTalent / Plataforma LIA
 
-**Versão:** 1.0 | **Data:** 11/março/2026 | **Classificação:** Referência técnica do time — Confidencial
+**Versão:** 3.0 | **Data:** 11/março/2026 | **Classificação:** Referência técnica do time — Confidencial
 
-> **Documento único de referência.** Consolida todos os cards Jira criados nos documentos de especificação e os organiza segundo o fluxo real do MVP Alpha 1. Fontes: `saturacao-chatweb-comunicacao-cards-jira.md`, `pipeline-transition-cards-jira.md` (gerado a partir de `pipeline-transition-system.md`), `jira-cards-job-creation-lifecycle.md`, `diagnostico-agentes-mvp.md` e `ANALISE_COMPARATIVA_V5_vs_LIA.md`.
+> **Documento único de referência.** Consolida todos os cards Jira criados nos documentos de especificação e os organiza segundo o fluxo real do MVP Alpha 1. Fontes: `saturacao-chatweb-comunicacao-cards-jira.md`, `jira-cards-job-creation-lifecycle.md`, `diagnostico-agentes-mvp.md` e `ANALISE_COMPARATIVA_V5_vs_LIA.md`.
 
 ---
 
@@ -11,15 +11,14 @@
 
 1. [Índice de Todos os Cards por Documento de Origem](#1-índice-de-todos-os-cards-por-documento-de-origem)
 2. [Roadmap MVP Alpha 1 — Por Passo do Fluxo](#2-roadmap-mvp-alpha-1--por-passo-do-fluxo)
-3. [Cards Completos — É24/É25/É26 Pipeline & Transições](#3-cards-completos--é24é25é26-pipeline--transições-pip)
-4. [Cards Completos — É30 Saturação e Controle de Pools](#4-cards-completos--é30-saturação-e-controle-de-pools-sat)
-5. [Cards Completos — É31 Chat Web de Triagem](#5-cards-completos--é31-chat-web-de-triagem-tri)
-6. [Cards Completos — É32 Comunicação Multicanal](#6-cards-completos--é32-comunicação-multicanal-com)
-7. [Cards Completos — É33 Inscrição Web](#7-cards-completos--é33-inscrição-web-ins)
-8. [Cards Completos — É34 Voz Bidirecional](#8-cards-completos--é34-voz-bidirecional-voz)
-9. [Cards Completos — VGM Gestão de Vagas](#9-cards-completos--vgm-gestão-de-vagas-vgm)
-10. [Cards Completos — AUD Auditoria e Compliance (WT-1505→WT-1512)](#10-cards-completos--aud-auditoria-e-compliance-wt-1505wt-1512)
-11. [Tabela de Dependências Cross-Épico](#11-tabela-de-dependências-cross-épico)
+3. [Cards Completos — É30 Saturação e Controle de Pools](#3-cards-completos--é30-saturação-e-controle-de-pools-sat)
+4. [Cards Completos — É31 Chat Web de Triagem](#4-cards-completos--é31-chat-web-de-triagem-tri)
+5. [Cards Completos — É32 Comunicação Multicanal](#5-cards-completos--é32-comunicação-multicanal-com)
+6. [Cards Completos — É33 Inscrição Web](#6-cards-completos--é33-inscrição-web-ins)
+7. [Cards Completos — É34 Voz Bidirecional](#7-cards-completos--é34-voz-bidirecional-voz)
+8. [Cards Completos — VGM Gestão de Vagas](#8-cards-completos--vgm-gestão-de-vagas-vgm)
+9. [Cards Completos — AUD Auditoria e Compliance (WT-1505→WT-1512)](#9-cards-completos--aud-auditoria-e-compliance-wt-1505wt-1512)
+10. [Tabela de Dependências Cross-Épico](#10-tabela-de-dependências-cross-épico)
 
 ---
 
@@ -105,36 +104,7 @@
 
 ---
 
-### 1.2 — `pipeline-transition-cards-jira.md` (gerado a partir de `pipeline-transition-system.md`)
-
-**Épicos É24 / É25 / É26 — Pipeline & Transições**
-
-| Card | Título | SP | Prioridade | Fase | Sprint |
-|------|--------|----|------------|------|--------|
-| PIP-001 | [Pipeline] Arquitetura de 3 Camadas de Colunas + Catálogo de Etapas | 8 | 🔴 Crítica | A1 | S1 |
-| PIP-002 | [Pipeline] Motor de action_behavior — 10 Tipos de Ação Nativa | 8 | 🔴 Crítica | A1 | S1 |
-| PIP-003 | [Pipeline] UniversalTransitionModal — Hub de Transições (Frontend) | 8 | 🔴 Crítica | A1 | S2 |
-| PIP-004 | [Pipeline] use-transition-context — Hook de Estado de Transição | 5 | 🟠 Alta | A1 | S2 |
-| PIP-005 | [Pipeline] Movimentação Livre — Drag-Drop e Dropdown | 5 | 🔴 Crítica | A1 | S2 |
-| PIP-006 | [Pipeline] Sistema de Badges nos Cards do Kanban | 5 | 🟠 Alta | A1 | S2 |
-| PIP-007 | [Pipeline] TransitionDispatchService — Disparos Automáticos Layer 1 | 8 | 🟠 Alta | A1 | S2 |
-| PIP-008 | [Pipeline] Endpoints de Transição — API REST | 5 | 🔴 Crítica | A1 | S1 |
-| PIP-009 | [Pipeline] Pipeline CRUD — Gestão de Colunas por Vaga | 5 | 🟠 Alta | A1 | S1 |
-| PIP-010 | [Pipeline] Barra de Ações em Massa — Seleção Múltipla | 5 | 🟠 Alta | A1 | S2 |
-| PIP-011 / [WT-1549](https://wedotalent.atlassian.net/browse/WT-1549) | [Pipeline] Pipeline Padrão da Empresa — Menu Configurações | 5 | 🟡 Média | A2 | S3 |
-| PIP-012 / [WT-1548](https://wedotalent.atlassian.net/browse/WT-1548) | [Pipeline] Herança de Pipeline — Empresa → Vaga (Copy-on-Write) | 5 | 🟡 Média | A2 | S3 |
-| PIP-013 / [WT-1550](https://wedotalent.atlassian.net/browse/WT-1550) | [Pipeline] Criação de Colunas Customizadas — LIA sugere action_behavior | 5 | 🟡 Média | A2 | S3 |
-| PIP-014 / [WT-1555](https://wedotalent.atlassian.net/browse/WT-1555) | [Pipeline] TestSendModal — Modal de Envio de Testes Técnicos | 5 | 🟠 Alta | A2 | S3 |
-| PIP-015 / [WT-1556](https://wedotalent.atlassian.net/browse/WT-1556) | [Pipeline] ProposalModal — Modal de Proposta Formal ao Candidato | 5 | 🟠 Alta | A2 | S3 |
-| PIP-016 / [WT-1554](https://wedotalent.atlassian.net/browse/WT-1554) | [Pipeline] SchedulingModal — Agendamento com Calendário Integrado | 8 | 🟡 Média | A2+ | S4 |
-| PIP-017 / [WT-1557](https://wedotalent.atlassian.net/browse/WT-1557) | [Pipeline] Mini-Prompt LLM — Interpretação Layer 2 do Dispatch | 5 | 🟡 Média | A2 | S3 |
-| PIP-018 / [WT-1553](https://wedotalent.atlassian.net/browse/WT-1553) | [Pipeline] Sistema de Timeout e Escalação por Pipeline | 5 | 🟡 Média | A2+ | S4 |
-
-**Subtotal É24/É25/É26:** 18 cards · 105 SPs
-
----
-
-### 1.3 — `jira-cards-job-creation-lifecycle.md`
+### 1.2 — `jira-cards-job-creation-lifecycle.md`
 
 **Épico VGM — Gestão de Vagas**
 
@@ -155,7 +125,7 @@
 
 ---
 
-### 1.4 — `diagnostico-agentes-mvp.md` + `ANALISE_COMPARATIVA_V5_vs_LIA.md`
+### 1.3 — `diagnostico-agentes-mvp.md` + `ANALISE_COMPARATIVA_V5_vs_LIA.md`
 
 **Épico WT-1505 — AUD: Auditoria e Compliance do Agente Python**
 
@@ -173,7 +143,7 @@
 
 ---
 
-### 1.5 — Totais Consolidados
+### 1.4 — Totais Consolidados
 
 | Épico | Prefixo | Cards | SPs | Fase |
 |-------|---------|-------|-----|------|
@@ -182,10 +152,9 @@
 | É32 Comunicação | COM | 5 | 20 | Alpha 1 |
 | É33 Inscrição Web | INS | 3 | 18 | Alpha 1 |
 | É34 Voz | VOZ | 4 | 16 | Alpha 1 |
-| É24/25/26 Pipeline | PIP | 18 | 105 | Alpha 1/2 |
 | VGM Vagas | VGM | 10 | 53 | Alpha 1 |
 | WT-1505 Auditoria | AUD/WT | 7 | 15 | Alpha 1 |
-| **TOTAL** | | **62** | **327** | |
+| **TOTAL** | | **44** | **222** | |
 
 ---
 
@@ -223,27 +192,23 @@ Transversal              → AUD: Auditoria, Circuit Breaker, Observabilidade
 |-------|------|--------|----|----------------|--------|
 | 1 | **SAT-001** | [Saturação] Modelo de Dados — Pools Separados, Thresholds e Governance Rules | 8 | Transversal | — |
 | 2 | **COM-001** | [Comunicação] CommunicationDispatcher — SendGrid + Twilio + Tone Policy | 8 | Transversal | Ag.7 |
-| 3 | **PIP-001** | [Pipeline] Arquitetura de 3 Camadas de Colunas + Catálogo de Etapas | 8 | Passo 5/8 | Ag.9 |
-| 4 | **PIP-002** | [Pipeline] Motor de action_behavior — 10 Tipos de Ação Nativa | 8 | Passo 5/8 | Ag.9 |
-| 5 | **PIP-008** | [Pipeline] Endpoints de Transição — API REST | 5 | Passo 5/8 | Ag.9 |
-| 6 | **PIP-009** | [Pipeline] Pipeline CRUD — Gestão de Colunas por Vaga | 5 | Passo 5/8 | Ag.9 |
-| 7 | **TRI-001** | [Chat Web] Tipos e Interfaces TypeScript — types.ts Completo | 3 | Passo 7 | Ag.4+5 |
-| 8 | **VGM-001** | [FULLSTACK] Modal de Escolha: LIA vs Criação Manual | 3 | Passo 2 | Ag.1 |
-| 9 | **VGM-002** | [FULLSTACK] Formulário de Criação Manual de Vaga | 5 | Passo 2 | Ag.1 |
-| 10 | **VGM-003** | [FULLSTACK] Navegação Automática pós-criação → Tab Configurações | 3 | Passo 2 | Ag.1 |
-| 11 | **VGM-004** | [FULLSTACK] Tab Configurações da Vaga (Edição Completa) | 8 | Passo 2 | Ag.1 |
-| 12 | **VGM-005** | [FULLSTACK] Publicação da Vaga — Auto-save + Link + Status Ativa | 5 | Passo 2 | Ag.1 |
-| 13 | **VGM-006** | [FULLSTACK] Header da Vaga — Badge Status + Popover de Ações | 5 | Passo 2 | Ag.1 |
-| 14 | **TRI-008** | [Chat Web] Proxy Route Next.js — /api/backend-proxy/triagem/[...path] | 3 | Passo 7 | Ag.4+5 |
-| 16 | SAT-002 | [Saturação] SaturationBadge — Badge Visual com Popover de Ações no Kanban | 5 | Passo 4 | — |
-| 17 | SAT-003 | [Saturação] Seção de Configuração no Card Triagem (Settings → Pipeline) | 5 | Passo 3 | — |
-| 18 | SAT-004 | [Saturação] Badges de Origem — Web, WhatsApp, Busca, ATS, Aguardando | 3 | Passo 4 | — |
-| 19 | **SAT-007** | [Saturação] Gate 1 — Máquina de Estados da Inscrição Web até Triagem WSI | 5 | Passo 5 | Ag.9 |
-| 20 | **AUD-001** | Propagar AuditCallback para ReAct Agents (WT-1506) | 2 | Transversal | Todos |
-| 21 | **AUD-002** | Rastrear Tools Chamadas por Nome (WT-1507) | 1 | Transversal | Todos |
-| 22 | **AUD-003** | Circuit Breaker no Autonomous Agent (WT-1508) | 2 | Transversal | Todos |
+| 3 | **TRI-001** | [Chat Web] Tipos e Interfaces TypeScript — types.ts Completo | 3 | Passo 7 | Ag.4+5 |
+| 4 | **VGM-001** | [FULLSTACK] Modal de Escolha: LIA vs Criação Manual | 3 | Passo 2 | Ag.1 |
+| 5 | **VGM-002** | [FULLSTACK] Formulário de Criação Manual de Vaga | 5 | Passo 2 | Ag.1 |
+| 6 | **VGM-003** | [FULLSTACK] Navegação Automática pós-criação → Tab Configurações | 3 | Passo 2 | Ag.1 |
+| 7 | **VGM-004** | [FULLSTACK] Tab Configurações da Vaga (Edição Completa) | 8 | Passo 2 | Ag.1 |
+| 8 | **VGM-005** | [FULLSTACK] Publicação da Vaga — Auto-save + Link + Status Ativa | 5 | Passo 2 | Ag.1 |
+| 9 | **VGM-006** | [FULLSTACK] Header da Vaga — Badge Status + Popover de Ações | 5 | Passo 2 | Ag.1 |
+| 10 | **TRI-008** | [Chat Web] Proxy Route Next.js — /api/backend-proxy/triagem/[...path] | 3 | Passo 7 | Ag.4+5 |
+| 11 | SAT-002 | [Saturação] SaturationBadge — Badge Visual com Popover de Ações no Kanban | 5 | Passo 4 | — |
+| 12 | SAT-003 | [Saturação] Seção de Configuração no Card Triagem (Settings → Pipeline) | 5 | Passo 3 | — |
+| 13 | SAT-004 | [Saturação] Badges de Origem — Web, WhatsApp, Busca, ATS, Aguardando | 3 | Passo 4 | — |
+| 14 | **SAT-007** | [Saturação] Gate 1 — Máquina de Estados da Inscrição Web até Triagem WSI | 5 | Passo 5 | Ag.9 |
+| 15 | **AUD-001** | Propagar AuditCallback para ReAct Agents (WT-1506) | 2 | Transversal | Todos |
+| 16 | **AUD-002** | Rastrear Tools Chamadas por Nome (WT-1507) | 1 | Transversal | Todos |
+| 17 | **AUD-003** | Circuit Breaker no Autonomous Agent (WT-1508) | 2 | Transversal | Todos |
 
-**S1 Total:** 21 cards · ~106 SPs
+**S1 Total:** 17 cards · 74 SPs
 
 ---
 
@@ -266,1259 +231,83 @@ Transversal              → AUD: Auditoria, Circuit Breaker, Observabilidade
 
 | Ordem | Card | Título | SP | Passo | Depende de |
 |-------|------|--------|----|-------|------------|
-| 6 | **SAT-005** | [Saturação] Fila de Espera — awaiting_screening + Promoção Automática | 8 | Passo 4/7 | SAT-001, COM-001 |
-| 7 | SAT-006 | [Saturação] Override Manual — Recrutador Aprova Candidato da Fila | 5 | Passo 5 | SAT-005, COM-001 |
+| 7 | **SAT-005** | [Saturação] Fila de Espera — awaiting_screening + Promoção Automática | 8 | Passo 4/7 | SAT-001, COM-001 |
+| 8 | SAT-006 | [Saturação] Override Manual — Recrutador Aprova Candidato da Fila | 5 | Passo 5 | SAT-005, COM-001 |
 
-**Bloco C — Pipeline Operacional (Passo 5 e Passo 8)**
-
-| Ordem | Card | Título | SP | Passo | Depende de |
-|-------|------|--------|----|-------|------------|
-| 8 | **PIP-003** | [Pipeline] UniversalTransitionModal — Hub de Transições (Frontend) | 8 | Passo 5/8 | PIP-002, PIP-008 |
-| 9 | PIP-004 | [Pipeline] use-transition-context — Hook de Estado de Transição | 5 | Passo 5/8 | PIP-003 |
-| 10 | **PIP-005** | [Pipeline] Movimentação Livre — Drag-Drop e Dropdown | 5 | Passo 5/8 | PIP-003 |
-| 11 | PIP-006 | [Pipeline] Sistema de Badges nos Cards do Kanban | 5 | Passo 5/8 | PIP-002 |
-| 12 | **PIP-007** | [Pipeline] TransitionDispatchService — Disparos Automáticos Layer 1 | 8 | Passo 5/8 | PIP-008 |
-| 13 | PIP-010 | [Pipeline] Barra de Ações em Massa — Seleção Múltipla | 5 | Passo 5/8 | PIP-003 |
-
-**Bloco D — Comunicação Automática (Passo 5 → Passo 6 → Passo 7)**
+**Bloco C — Comunicação Automática (Passo 5 → Passo 6 → Passo 7)**
 
 | Ordem | Card | Título | SP | Passo | Depende de |
 |-------|------|--------|----|-------|------------|
-| 14 | **COM-002** | [Comunicação] Dispatch Automático #1 — Feedback de Triagem | 3 | Passo 5/6 | COM-001 |
-| 15 | **COM-003** | [Comunicação] Dispatch Automático #2 — Rejeição ao Mudar de Stage | 3 | Passo 5/8 | COM-001 |
-| 16 | **COM-004** | [Comunicação] Dispatch Automático #3 — Convite de Fila quando Slot Abre | 3 | Passo 6 | COM-001, SAT-005 |
-| 17 | COM-005 | [Comunicação] Dispatch Automático #5 — Confirmação Pós-Conclusão da Triagem | 3 | Passo 7B | COM-001, TRI-005 |
+| 9 | **COM-002** | [Comunicação] Dispatch Automático #1 — Feedback de Triagem | 3 | Passo 5/6 | COM-001 |
+| 10 | **COM-003** | [Comunicação] Dispatch Automático #2 — Rejeição ao Mudar de Stage | 3 | Passo 5/8 | COM-001 |
+| 11 | **COM-004** | [Comunicação] Dispatch Automático #3 — Convite de Fila quando Slot Abre | 3 | Passo 6 | COM-001, SAT-005 |
+| 12 | COM-005 | [Comunicação] Dispatch Automático #5 — Confirmação Pós-Conclusão da Triagem | 3 | Passo 7B | COM-001, TRI-005 |
 
-**Bloco E — Chat Web de Triagem WSI (Passo 7)**
-
-| Ordem | Card | Título | SP | Passo | Depende de |
-|-------|------|--------|----|-------|------------|
-| 19 | **TRI-005** | [Chat Web] TriagemSessionService — Motor IA Conversacional + WSI Scoring | 21 | Passo 7 | COM-001 |
-| 20 | **TRI-002** | [Chat Web] Hook useTriagemChat — State Management + API Integration | 13 | Passo 7 | TRI-001, TRI-005 |
-| 21 | TRI-003 | [Chat Web] WelcomeCard — Boas-Vindas com Branding da Empresa | 3 | Passo 7 | TRI-001 |
-| 22 | TRI-004 | [Chat Web] MessageBubble — Bolha de Mensagem com AudioPlayer | 5 | Passo 7 | TRI-001, VOZ-002 |
-| 23 | **TRI-006** | [Chat Web] InputBar — Campo de Texto + Gravação de Áudio + Controles de Voz | 5 | Passo 7 | TRI-001, VOZ-001 |
-| 24 | **TRI-007** | [Chat Web] Página de Triagem — /triagem/[token] (~311L) | 8 | Passo 7 | TRI-001, TRI-002, TRI-003, TRI-004, TRI-006 |
-
-**Bloco F — Voz Bidirecional (Passo 7 — paralelo ao Chat Web)**
+**Bloco D — Chat Web de Triagem WSI (Passo 7)**
 
 | Ordem | Card | Título | SP | Passo | Depende de |
 |-------|------|--------|----|-------|------------|
-| 25 | VOZ-003 | [Voz] TTS Backend — Geração de Áudio via OpenAI tts-1 | 5 | Passo 7 | — |
-| 26 | VOZ-002 | [Voz] AudioPlayer — Reprodução de Áudio com Controles | 3 | Passo 7 | — |
-| 27 | VOZ-001 | [Voz] AudioRecordButton — Gravação de Áudio + STT | 5 | Passo 7 | — |
-| 28 | VOZ-004 | [Voz] Propagação de isVoiceMode — Estado Runtime no UI | 3 | Passo 7 | TRI-002, TRI-007 |
+| 13 | **TRI-005** | [Chat Web] TriagemSessionService — Motor IA Conversacional + WSI Scoring | 21 | Passo 7 | COM-001 |
+| 14 | **TRI-002** | [Chat Web] Hook useTriagemChat — State Management + API Integration | 13 | Passo 7 | TRI-001, TRI-005 |
+| 15 | TRI-003 | [Chat Web] WelcomeCard — Boas-Vindas com Branding da Empresa | 3 | Passo 7 | TRI-001 |
+| 16 | TRI-004 | [Chat Web] MessageBubble — Bolha de Mensagem com AudioPlayer | 5 | Passo 7 | TRI-001, VOZ-002 |
+| 17 | **TRI-006** | [Chat Web] InputBar — Campo de Texto + Gravação de Áudio + Controles de Voz | 5 | Passo 7 | TRI-001, VOZ-001 |
+| 18 | **TRI-007** | [Chat Web] Página de Triagem — /triagem/[token] (~311L) | 8 | Passo 7 | TRI-001, TRI-002, TRI-003, TRI-004, TRI-006 |
 
-**Bloco G — Auditoria S2**
+**Bloco E — Voz Bidirecional (Passo 7 — paralelo ao Chat Web)**
 
 | Ordem | Card | Título | SP | Passo | Depende de |
 |-------|------|--------|----|-------|------------|
-| 29 | AUD-004 | Retention/Cleanup de agent_executions (WT-1509) | 1 | Transversal | AUD-001 |
+| 19 | VOZ-003 | [Voz] TTS Backend — Geração de Áudio via OpenAI tts-1 | 5 | Passo 7 | — |
+| 20 | VOZ-002 | [Voz] AudioPlayer — Reprodução de Áudio com Controles | 3 | Passo 7 | — |
+| 21 | VOZ-001 | [Voz] AudioRecordButton — Gravação de Áudio + STT | 5 | Passo 7 | — |
+| 22 | VOZ-004 | [Voz] Propagação de isVoiceMode — Estado Runtime no UI | 3 | Passo 7 | TRI-002, TRI-007 |
 
-**S2 Total:** 30 cards · ~188 SPs
+**Bloco F — Auditoria S2**
+
+| Ordem | Card | Título | SP | Passo | Depende de |
+|-------|------|--------|----|-------|------------|
+| 23 | AUD-004 | Retention/Cleanup de agent_executions (WT-1509) | 1 | Transversal | AUD-001 |
+
+**S2 Total:** 23 cards · 131 SPs
 
 ---
 
 ### 2.3 — Sprint S3 — Refinamentos, Observabilidade e Alpha 2
 
-> Com S1 + S2, o fluxo MVP Alpha 1 está completo. S3 adiciona configurações avançadas de pipeline, observabilidade e prepara Alpha 2.
+> Com S1 + S2, o fluxo MVP Alpha 1 está completo. S3 adiciona observabilidade e prepara Alpha 2.
 
-**Bloco A — Pipeline Configurações Avançadas**
-
-| Ordem | Card | Título | SP | Passo | Depende de |
-|-------|------|--------|----|-------|------------|
-| 1 | PIP-011 | [Pipeline] Pipeline Padrão da Empresa — Menu Configurações | 5 | Config | PIP-009 |
-| 2 | PIP-012 | [Pipeline] Herança de Pipeline — Empresa → Vaga (Copy-on-Write) | 5 | Config | PIP-011 |
-| 3 | PIP-013 | [Pipeline] Criação de Colunas Customizadas — LIA sugere action_behavior | 5 | Config | PIP-009 |
-| 4 | PIP-014 | [Pipeline] TestSendModal — Modal de Envio de Testes Técnicos | 5 | Passo 8 | PIP-003 |
-| 5 | PIP-015 | [Pipeline] ProposalModal — Modal de Proposta Formal ao Candidato | 5 | Passo 8 | PIP-003 |
-| 6 | PIP-017 | [Pipeline] Mini-Prompt LLM — Interpretação Layer 2 do Dispatch | 5 | Passo 5/8 | PIP-007 |
-
-**Bloco B — Auditoria e Observabilidade**
+**Bloco A — Auditoria e Observabilidade**
 
 | Ordem | Card | Título | SP | Passo | Depende de |
 |-------|------|--------|----|-------|------------|
-| 7 | AUD-005 | Storage Externo para Logs Pesados S3/GCS (WT-1510) | 3 | Transversal | AUD-001 |
-| 8 | AUD-006 | Endpoints REST de Timeline (WT-1511) | 3 | Transversal | AUD-001 |
-| 9 | AUD-007 | Métricas Prometheus (WT-1512) | 3 | Transversal | AUD-001 |
+| 1 | AUD-005 | Storage Externo para Logs Pesados S3/GCS (WT-1510) | 3 | Transversal | AUD-001 |
+| 2 | AUD-006 | Endpoints REST de Timeline (WT-1511) | 3 | Transversal | AUD-001 |
+| 3 | AUD-007 | Métricas Prometheus (WT-1512) | 3 | Transversal | AUD-001 |
 
-**Bloco C — Gestão de Vagas S3**
+**Bloco B — Gestão de Vagas S3**
 
 | Ordem | Card | Título | SP | Passo | Depende de |
 |-------|------|--------|----|-------|------------|
-| 10 | VGM-010 | [BACKEND] Endpoints de Notificação de Fechamento e Placement de Candidatos | 8 | Passo 9 | VGM-009 |
+| 4 | VGM-010 | [BACKEND] Endpoints de Notificação de Fechamento e Placement de Candidatos | 8 | Passo 9 | VGM-009 |
 
-**S3 Total:** 10 cards · 47 SPs
+**S3 Total:** 4 cards · 17 SPs
 
 ---
 
-### 2.4 — Sprint S4 — Alpha 2+ (Funcionalidades Avançadas)
-
-| Ordem | Card | Título | SP | Passo | Depende de |
-|-------|------|--------|----|-------|------------|
-| 1 | PIP-016 | [Pipeline] SchedulingModal — Agendamento com Calendário Integrado | 8 | Passo 9 | PIP-003 |
-| 2 | PIP-018 | [Pipeline] Sistema de Timeout e Escalação por Pipeline | 5 | Transversal | PIP-006 |
-
-**S4 Total:** 2 cards · 13 SPs
-
----
-
-### 2.5 — Mapa de Passos → Cards (visão inversa)
+### 2.4 — Mapa de Passos → Cards (visão inversa)
 
 | Passo do Fluxo | Agente(s) | Cards do Sprint S1 | Cards do Sprint S2 | Cards S3+ |
 |---|---|---|---|---|
 | Passo 2 — Criar/Editar Vaga | Ag.1 JD Generator, Ag.8 ATS | VGM-001→008 | VGM-009, VGM-010 | — |
-| Passo 3 — Configurar WSI | Ag.4+5 WSI Graph | SAT-003 | — | PIP-013 |
 | Passo 4 — Buscar Candidatos | Ag.2 Sourcing, Ag.3 Triagem | SAT-001, SAT-002, SAT-004, SAT-007 | INS-001→003, SAT-005, SAT-006 | — |
-| Passo 5 — Gate 1 | Ag.9 Pipeline, Ag.7 Comm | PIP-001, PIP-002, PIP-008, PIP-009 | PIP-003→007, PIP-010, COM-002, COM-003 | PIP-014, PIP-015, PIP-017 |
 | Passo 6 — Contato Email | Ag.0 Orch, Ag.7 Comm | COM-001 | COM-004, COM-005 | — |
 | Passo 7 — Triagem WSI Chat | Ag.4+5 WSI, Ag.0 Orch | TRI-001 | TRI-002→005, VOZ-001→004 | — |
-| Passo 8 — Gate 2 | Ag.9 Pipeline, Ag.7 Comm, Ag.8 ATS | PIP-001, PIP-008 | PIP-003, PIP-005, COM-003 | PIP-014, PIP-015 |
-| Passo 9 — Entrevista | Ag.6 Scheduling, Ag.7 Comm | — | VGM-009, VGM-010 | PIP-016 |
-| Transversal — Auditoria | Todos | AUD-001→003 | AUD-004 | AUD-005→007, PIP-018 |
+| Transversal — Auditoria | Todos | AUD-001→003 | AUD-004 | AUD-005→007 |
 
 ---
 
-## 3. Cards Completos — É24/É25/É26 Pipeline & Transições (PIP)
-
-> **Fonte:** `pipeline-transition-cards-jira.md` (gerado a partir de `pipeline-transition-system.md`)
-> **Épicos:** É24 — Pipeline & Kanban (PIP-001→005), É25 — Badges & Transições (PIP-006→008), É26 — Configuração & Automação (PIP-009→018)
-> **Status Jira:** PIP-001→010 = WT-1400→WT-1409 (existentes) | PIP-011→018 = WT-1548→WT-1557 (criados)
-
-### PIP-001: Arquitetura de 3 Camadas de Colunas + Catálogo
-
-```yaml
-Titulo: "[Pipeline] Arquitetura de 3 Camadas de Colunas + Catálogo de Etapas"
-Tipo: Feature
-Area: Backend + Frontend
-Sprint: S1
-Pontos: 8
-Prioridade: Crítica
-Epic: É24
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: SRV-016 (consome action_behavior), INF-005 (cascatas usam stage_id)
-
-Descricao: |
-  Modelo de dados para colunas do pipeline com 3 camadas:
-  
-  1. **System** (3 colunas obrigatórias): Funil, Contratado, Reprovado
-     - Presentes em toda vaga, não removíveis
-  2. **Catalog** (13 colunas pré-configuradas): Triagem WSI, Entrevista RH,
-     Teste Técnico, Avaliação Gestor, Proposta, etc.
-     - Disponíveis para adicionar via catálogo
-  3. **Custom** (ilimitadas): Criadas pelo recrutador via botão "+"
-     - Com sugestão de action_behavior pela LIA (Alpha 2+)
-  
-  Cada coluna possui: id, name, slug, layer (system|catalog|custom),
-  action_behavior, icon, order, sub_statuses[], is_removable, is_reorderable.
-  
-  Endpoint GET /api/v1/stage-catalog retorna catálogo completo.
-
-Historia de Usuario: |
-  Como recrutador, eu quero que o pipeline da minha vaga tenha etapas
-  padrão (triagem, entrevista, teste) para organizar o processo seletivo.
-
-Regras de Negocio:
-  1. Colunas System NUNCA podem ser removidas ou reordenadas
-  2. Colunas Catalog podem ser adicionadas/removidas livremente
-  3. Cada coluna TEM um action_behavior que define seu comportamento nativo
-  4. Sub-statuses são derivados do action_behavior (ver PIP-002)
-  5. Ordem das colunas define o fluxo visual (esquerda→direita)
-  6. Slug é único por vaga (snake_case do name)
-
-Requisitos Tecnicos:
-  Backend:
-    - Tabela pipeline_stages (id, job_id, name, slug, layer, action_behavior,
-      icon, order, sub_statuses JSONB, is_removable, is_reorderable)
-    - Endpoint GET /api/v1/stage-catalog (catálogo estático ou DB)
-    - Seed com 13 colunas catalog + 3 system
-  Frontend:
-    - Tipo PipelineStage com layer, action_behavior, sub_statuses
-    - Hook usePipelineStages(jobId) com CRUD
-
-DoD:
-  - [ ] Modelo de dados pipeline_stages criado com 3 camadas
-  - [ ] Catálogo de 13 colunas + 3 system populado
-  - [ ] Endpoint GET /stage-catalog funcional
-  - [ ] Tipo TypeScript PipelineStage definido
-  - [ ] Testes unitários para CRUD de pipeline
-
-Criterios de Aceitacao:
-  - [ ] Vaga nova tem 3 colunas System (Funil, Contratado, Reprovado)
-  - [ ] Recrutador pode adicionar colunas do catálogo ao pipeline
-  - [ ] Colunas System não podem ser removidas (botão desabilitado)
-  - [ ] Catálogo retorna 13 colunas com action_behavior e ícones
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §2 (3 Camadas)
-  - spec: docs/pipeline-transition-system.md §3 (Catálogo Completo)
-  - spec: docs/pipeline-transition-system.md Apêndice B (Endpoints)
-```
-
-
----
-
-### PIP-002: Motor de action_behavior (10 Tipos + Sub-statuses)
-
-```yaml
-Titulo: "[Pipeline] Motor de action_behavior — 10 Tipos de Ação Nativa"
-Tipo: Feature
-Area: Backend + Frontend
-Sprint: S1
-Pontos: 8
-Prioridade: Crítica
-Epic: É24
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: SRV-016 (SubStatusPredictor usa action_behavior para predição)
-
-Descricao: |
-  Engine que define o comportamento nativo de cada coluna do pipeline.
-  Quando um candidato é movido para uma coluna, o sistema consulta o
-  action_behavior para determinar: qual modal abrir, quais sub-statuses
-  oferecer, qual ação automática disparar.
-  
-  10 tipos de action_behavior:
-  1. intake — Análise inicial (Like/Dislike, Gate 1)
-  2. screening — Triagem WSI (convite + acompanhamento)
-  3. scheduling — Agendamento de entrevista
-  4. evaluation — Avaliação técnica (teste, case study)
-  5. verification — Verificação de dados/documentos
-  6. offer — Proposta formal ao candidato
-  7. passive — Sem ação (aguardando, banco de talentos)
-  8. conclusion_hired — Contratação finalizada
-  9. conclusion_rejected — Rejeição com feedback
-  10. conclusion_declined — Candidato desistiu
-  
-  Cada tipo define: sub_statuses[], modal_type, channels[], auto_dispatch_eligible.
-
-Historia de Usuario: |
-  Como recrutador, eu quero que ao mover um candidato para "Entrevista RH"
-  o sistema me ofereça automaticamente opções de agendamento, para que eu
-  não precise lembrar qual ação tomar em cada etapa.
-
-Regras de Negocio:
-  1. Toda coluna TEM exatamente 1 action_behavior
-  2. Sub-statuses são DERIVADOS do action_behavior (não configuráveis pelo usuário)
-  3. A matriz action→modal→canal é determinística (ver pipeline-transition-system.md §5)
-  4. Tipos conclusion_* são terminais (candidato SAI do pipeline ativo)
-  5. intake é o único tipo com ação Like/Dislike (sem comunicação)
-
-Requisitos Tecnicos:
-  Backend:
-    - Enum ActionBehavior com 10 valores
-    - Mapeamento ACTION_BEHAVIOR_CONFIG: Dict[ActionBehavior, ActionConfig]
-      onde ActionConfig = {sub_statuses, modal_type, channels, auto_dispatch}
-    - Validação: action_behavior é obrigatório em toda coluna
-  Frontend:
-    - Map de action_behavior→configuração para rendering condicional
-    - useActionBehavior(stageId) hook que retorna config completa
-
-DoD:
-  - [ ] Enum ActionBehavior com 10 tipos
-  - [ ] Mapeamento completo de sub-statuses por tipo
-  - [ ] Matriz ação→modal→canal implementada
-  - [ ] Hook frontend useActionBehavior funcional
-  - [ ] Testes para todos os 10 tipos
-
-Criterios de Aceitacao:
-  - [ ] Coluna "Triagem WSI" retorna action_behavior=screening com sub-statuses corretos
-  - [ ] Coluna "Proposta" retorna action_behavior=offer com sub-statuses de proposta
-  - [ ] Tentativa de criar coluna sem action_behavior retorna erro 400
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §4 (action_behavior)
-  - spec: docs/pipeline-transition-system.md §5 (Matriz Ação→Modal→Canal)
-```
-
-
----
-
-### PIP-003: UniversalTransitionModal (Hub Frontend de Transições)
-
-> **⚠️ Escopo vs SRV-016:** Este card cobre o **componente React** (UI, estado, rendering, delegação a modais). SRV-016 cobre o **backend Python** (SubStatusPredictor, CandidateContextAggregator). PIP-003 *invoca* SRV-016 via API — não duplica sua lógica.
-
-```yaml
-Titulo: "[Pipeline] UniversalTransitionModal — Hub de Transições (Frontend)"
-Tipo: Feature
-Area: Frontend
-Sprint: S2
-Pontos: 8
-Prioridade: Crítica
-Epic: É25
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: SRV-016 (SubStatusPredictor — chamado via API), AGT-011 (CommunicationAgent via dispatch)
-
-Descricao: |
-  Componente React (~527L) que é o ponto de entrada de TODA movimentação
-  de candidato no pipeline. Aparece ao mover candidato via drag-drop ou dropdown.
-  
-  Estrutura do modal:
-  ┌────────────────────────────────────────┐
-  │ Header: "Candidato → Etapa Destino"    │
-  │ 🧠 Brain icon (#60BED1) se AI ativo    │
-  ├────────────────────────────────────────┤
-  │ Sub-status: dropdown com opções        │
-  │ derivadas do action_behavior           │
-  ├────────────────────────────────────────┤
-  │ Mini-prompt: campo texto livre         │
-  │ (contexto para LIA ou modal manual)    │
-  ├────────────────────────────────────────┤
-  │ Ação:                                  │
-  │ ● LIA auto (dispara automaticamente)   │
-  │ ○ Manual (abre modal especializado)    │
-  ├────────────────────────────────────────┤
-  │ [Confirmar]  [Cancelar]                │
-  └────────────────────────────────────────┘
-  
-  Princípio: NUNCA duplica lógica de modais existentes — DELEGA via
-  handleOpenSpecializedModal que abre o modal correto por action_behavior.
-
-Historia de Usuario: |
-  Como recrutador, eu quero que ao arrastar um candidato para outra coluna
-  um modal me pergunte o sub-status e me ofereça a opção de deixar a LIA
-  executar a ação automaticamente ou abrir o modal completo.
-
-Regras de Negocio:
-  1. Modal aparece em TODA movimentação (exceto passive → move direto)
-  2. Sub-status dropdown mostra opções do action_behavior destino
-  3. Mini-prompt é OPCIONAL (personalização em linguagem natural)
-  4. Modo LIA auto: dispara ação sem abrir modal especializado
-  5. Modo Manual: abre modal especializado correspondente
-  6. Brain icon (#60BED1) indica que IA está disponível para a ação
-  7. Modal é COMPACTO (~250px largura) — delegação, não duplicação
-
-Requisitos Tecnicos:
-  Frontend:
-    - Componente UniversalTransitionModal com props:
-      candidateId, sourceStage, targetStage, onConfirm, onCancel
-    - Integração com useTransitionContext hook (PIP-004)
-    - Mapeamento handleOpenSpecializedModal por action_behavior:
-      intake → CandidateDecisionFlowModal
-      screening → WSITriagemInviteModal
-      scheduling → UnifiedCommunicationModal (agendamento)
-      evaluation → UnifiedCommunicationModal (avaliação)
-      verification → DataRequestModal
-      offer → UnifiedCommunicationModal (proposta)
-      conclusion_rejected → CandidateDecisionFlowModal + feedback
-      conclusion_declined → inline radio (motivo)
-
-DoD:
-  - [ ] Modal renderiza com header, sub-status, mini-prompt, ação
-  - [ ] Delegação para 7+ modais especializados funcional
-  - [ ] Brain icon aparece quando AI está disponível
-  - [ ] Modo LIA auto dispara TransitionDispatchService (PIP-007)
-  - [ ] Testes para cada action_behavior
-
-Criterios de Aceitacao:
-  - [ ] Drag-drop de candidato abre UniversalTransitionModal
-  - [ ] Sub-status mostra opções corretas por coluna destino
-  - [ ] Botão "Manual" abre WSITriagemInviteModal ao mover para Triagem
-  - [ ] Botão "LIA auto" dispara email+WhatsApp sem abrir modal
-
-Arquivos de Referencia (Prototipo Replit):
-  - file: plataforma-lia/src/components/kanban/components/UniversalTransitionModal.tsx (527L)
-  - spec: docs/pipeline-transition-system.md §7 (Design Compacto)
-  - spec: docs/pipeline-transition-system.md §10 (Integração com Modais)
-```
-
-
----
-
-### PIP-004: use-transition-context Hook (Estado de Transição)
-
-> **⚠️ Escopo vs SRV-016:** Este card cobre o **hook React** (estado local, context provider). SRV-016 cobre os **endpoints backend** que este hook consome. Sem sobreposição — camadas diferentes (frontend vs backend).
-
-```yaml
-Titulo: "[Pipeline] use-transition-context — Hook de Estado de Transição"
-Tipo: Feature
-Area: Frontend
-Sprint: S2
-Pontos: 5
-Prioridade: Alta
-Epic: É25
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: SRV-016 (predict-substatus chamado pelo hook)
-
-Descricao: |
-  Hook React (~694L) que gerencia todo o estado de uma transição de candidato.
-  Centraliza: candidato selecionado, etapa origem/destino, sub-status escolhido,
-  mini-prompt, modo (LIA auto vs manual), loading, erros.
-  
-  Responsabilidades:
-  - Carregar config do action_behavior da etapa destino
-  - Gerenciar sub-status selecionado
-  - Chamar API de transição (POST /candidates/{id}/transition)
-  - Chamar predict-substatus (SRV-016) quando AI está habilitado
-  - Gerenciar estado de loading/error/success
-  - Resetar estado ao fechar modal
-
-Historia de Usuario: |
-  Como desenvolvedor, eu quero um hook centralizado para o estado de
-  transição, para que o UniversalTransitionModal e os modais especializados
-  compartilhem o mesmo estado sem prop drilling.
-
-Requisitos Tecnicos:
-  Frontend:
-    - Hook useTransitionContext(candidateId, targetStageId)
-    - Retorna: { subStatus, setSubStatus, miniPrompt, setMiniPrompt,
-      mode, setMode, actionConfig, isAiAvailable, execute, isLoading, error }
-    - Context provider TransitionContextProvider para compartilhar entre modais
-    - Chamada ao backend: POST /api/v1/candidates/{id}/transition
-    - Chamada AI: POST /api/v1/stage-transition/predict-substatus (opcional)
-
-DoD:
-  - [ ] Hook funcional com estado completo de transição
-  - [ ] Context provider para compartilhamento entre componentes
-  - [ ] Integração com API de transição
-  - [ ] Integração com predict-substatus (quando AI disponível)
-  - [ ] Testes unitários
-
-Criterios de Aceitacao:
-  - [ ] Modal e modais especializados compartilham mesmo estado via context
-  - [ ] Transição executada via hook atualiza Kanban em tempo real
-  - [ ] Erro na API exibe mensagem de erro no modal
-
-Arquivos de Referencia (Prototipo Replit):
-  - file: plataforma-lia/src/hooks/use-transition-context.ts (694L)
-  - spec: docs/pipeline-transition-system.md §7 (Modal + Estado)
-```
-
-
----
-
-### PIP-005: Movimentação Livre (Drag-Drop + Dropdown)
-
-```yaml
-Titulo: "[Pipeline] Movimentação Livre — Drag-Drop e Dropdown"
-Tipo: Feature
-Area: Frontend
-Sprint: S2
-Pontos: 5
-Prioridade: Crítica
-Epic: É25
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: Nenhuma (feature puramente frontend)
-
-Descricao: |
-  O candidato pode ser movido para QUALQUER coluna do pipeline a qualquer
-  momento, sem restrições de transição. Duas interfaces de movimentação:
-  
-  1. **Drag-and-drop no Kanban**: arrastar card do candidato entre colunas
-  2. **Dropdown na Tabela**: selecionar etapa destino via dropdown na linha
-  
-  Ambos disparam o UniversalTransitionModal (PIP-003) antes de confirmar.
-
-Historia de Usuario: |
-  Como recrutador, eu quero arrastar candidatos livremente entre colunas
-  do Kanban, sem bloqueios de ordem, para ter flexibilidade no processo.
-
-Regras de Negocio:
-  1. QUALQUER coluna → QUALQUER coluna (sem rotas restritas)
-  2. Movimentação para mesma coluna é ignorada (no-op)
-  3. Ao soltar na coluna, abre UniversalTransitionModal
-  4. Se coluna destino é passive → move direto SEM modal
-  5. Movimentação em massa: selecionar múltiplos → mesma coluna destino
-  6. Candidato mantém histórico de movimentações (stage_history)
-
-Requisitos Tecnicos:
-  Frontend:
-    - Hook useDragDrop com @dnd-kit ou react-beautiful-dnd
-    - Integração com UniversalTransitionModal ao drop
-    - Dropdown de etapas na view Tabela com onChange → modal
-    - Optimistic update no Kanban (mover card antes da confirmação API)
-  Backend:
-    - Registro de stage_history: {from_stage, to_stage, timestamp, user_id, sub_status}
-
-DoD:
-  - [ ] Drag-drop funcional entre colunas do Kanban
-  - [ ] Dropdown de etapas na Tabela funcional
-  - [ ] Ambos abrem UniversalTransitionModal
-  - [ ] Passive columns movem sem modal
-  - [ ] stage_history registrado a cada movimentação
-
-Criterios de Aceitacao:
-  - [ ] Candidato pode ser arrastado de "Funil" para "Proposta" diretamente
-  - [ ] Dropdown na tabela mostra todas as colunas do pipeline
-  - [ ] Coluna "Aguardando Documentos" (passive) move sem modal
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §6 (Movimentação Livre)
-```
-
-
----
-
-### PIP-006: Sistema de Badges nos Cards do Kanban
-
-```yaml
-Titulo: "[Pipeline] Sistema de Badges nos Cards do Kanban"
-Tipo: Feature
-Area: Frontend
-Sprint: S2
-Pontos: 5
-Prioridade: Alta
-Epic: É25
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: SRV-016 (sub-status usado nos badges), AUT-005 (return events atualizam badges)
-
-Descricao: |
-  Sistema de indicadores visuais nos cards de candidatos no Kanban.
-  5 tipos de badge, derivados de f(action_behavior, sub_status, timestamps, activity):
-  
-  1. **Sub-status**: Estado atual dentro da coluna (ex: "Agendada", "Em análise")
-     - Cores por categoria: info (azul), warning (amarelo), success (verde), error (vermelho)
-  2. **Ação pendente candidato**: Candidato precisa responder/agir
-     - Ex: "Aguardando resposta", "Teste pendente", "Documentos pendentes"
-  3. **Ação pendente recrutador**: Recrutador precisa tomar decisão
-     - Ex: "Avaliar resultado", "Revisar proposta", "Confirmar entrevista"
-  4. **Alerta temporal**: Timeout se aproximando ou expirado
-     - Ex: "3 dias sem resposta", "Prazo vencido"
-  5. **Conclusão**: Status terminal do candidato
-     - Ex: "Contratado", "Reprovado", "Desistiu"
-
-Historia de Usuario: |
-  Como recrutador, eu quero ver badges nos cards dos candidatos indicando
-  o status detalhado e ações pendentes, para priorizar meu trabalho.
-
-Regras de Negocio:
-  1. Badge é CALCULADO automaticamente (não definido manualmente)
-  2. Prioridade de exibição: alerta temporal > ação pendente > sub-status
-  3. Máximo 2 badges visíveis por card (mais → tooltip)
-  4. Badges se atualizam em tempo real (WebSocket ou polling)
-  5. Cores seguem paleta: info=#3B82F6, warning=#F59E0B, success=#10B981, error=#EF4444
-
-Requisitos Tecnicos:
-  Frontend:
-    - Componente CandidateBadge com variant (sub_status|pending_candidate|pending_recruiter|alert|conclusion)
-    - Função computeBadges(candidate, stage) → Badge[]
-    - Integração com Kanban card (max 2 visíveis + overflow)
-  Backend:
-    - Endpoint ou campo calculado que retorna badges por candidato
-    - Lógica de timeout baseada em timestamps de última atividade
-
-DoD:
-  - [ ] 5 tipos de badge implementados
-  - [ ] computeBadges funcional para todos os action_behaviors
-  - [ ] Badges visíveis nos cards do Kanban
-  - [ ] Prioridade de exibição correta
-  - [ ] Testes para cálculo de badges
-
-Criterios de Aceitacao:
-  - [ ] Candidato em "Triagem WSI" com resposta pendente mostra badge amarelo "Aguardando resposta"
-  - [ ] Candidato sem resposta há 3 dias mostra badge vermelho "3 dias sem resposta"
-  - [ ] Candidato contratado mostra badge verde "Contratado"
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §11 (Badges)
-```
-
-
----
-
-### PIP-007: TransitionDispatchService (Layer 1 — Determinístico)
-
-```yaml
-Titulo: "[Pipeline] TransitionDispatchService — Disparos Automáticos Layer 1"
-Tipo: Feature
-Area: Backend
-Sprint: S2
-Pontos: 8
-Prioridade: Alta
-Epic: É24
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: AGT-011 (CommunicationAgent executa envio), SRV-016 (Layer 2 estende este serviço)
-
-Descricao: |
-  Serviço backend que executa disparos automáticos quando o recrutador
-  escolhe modo "LIA auto" no UniversalTransitionModal.
-  
-  Layer 1 = Determinístico (sem LLM):
-  1. Consulta action_behavior da coluna destino
-  2. Seleciona template de mensagem por (action_behavior + sub_status)
-  3. Renderiza template com dados do candidato e da vaga
-  4. Envia via canais configurados (Email + WhatsApp)
-  
-  Fluxo: action_behavior → template_selector → template_renderer → channel_dispatcher
-  
-  Layer 2 (LLM, coberto por SRV-016 + AUT-006):
-  - Interpretação do mini-prompt por LLM
-  - Personalização de mensagem por IA
-  - Predição de sub-status
-
-Historia de Usuario: |
-  Como recrutador, eu quero que ao escolher "LIA auto" no modal de transição,
-  a LIA envie automaticamente a mensagem correta por email e WhatsApp,
-  sem que eu precise configurar nada manualmente.
-
-Regras de Negocio:
-  1. Layer 1 é DETERMINÍSTICO (sem chamada LLM)
-  2. Template selecionado por (action_behavior, sub_status, canal)
-  3. Canais: Email + WhatsApp (exceto offer/hired → apenas Email)
-  4. Renderização: {{candidato_nome}}, {{vaga_titulo}}, {{empresa_nome}}, etc.
-  5. Disparo registrado em activity_log com {channel, template_id, timestamp}
-  6. Se template não encontrado → log warning, não bloqueia transição
-
-Requisitos Tecnicos:
-  Backend:
-    - TransitionDispatchService com dispatch(candidate_id, stage_id, sub_status, mini_prompt)
-    - TemplateSelector: busca template por (action_behavior, sub_status, canal)
-    - TemplateRenderer: Jinja2/Mustache com variáveis de candidato+vaga
-    - ChannelDispatcher: envia via Email (Mailgun) + WhatsApp
-    - Tabela dispatch_log (candidate_id, stage_id, channel, template_id, status, timestamp)
-
-DoD:
-  - [ ] TransitionDispatchService funcional
-  - [ ] Templates para os 6 action_behaviors com comunicação
-  - [ ] Envio por Email funcional
-  - [ ] Envio por WhatsApp funcional
-  - [ ] Registro em dispatch_log
-  - [ ] Testes end-to-end de disparo
-
-Criterios de Aceitacao:
-  - [ ] "LIA auto" em Triagem WSI → candidato recebe email com link de triagem
-  - [ ] "LIA auto" em Entrevista → candidato recebe email+WhatsApp com detalhes
-  - [ ] "LIA auto" em Proposta → candidato recebe APENAS email com proposta
-  - [ ] Dispatch sem template não bloqueia a movimentação
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §12 (Disparos Automáticos)
-```
-
-
----
-
-### PIP-008: Endpoints de Transição (API)
-
-```yaml
-Titulo: "[Pipeline] Endpoints de Transição — API REST"
-Tipo: Feature
-Area: Backend
-Sprint: S1
-Pontos: 5
-Prioridade: Crítica
-Epic: É24
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: SRV-016 (endpoint predict-substatus), INF-005 (event dispatch pós-transição)
-
-Descricao: |
-  Endpoints REST para movimentação de candidatos no pipeline.
-  
-  Endpoints:
-  1. POST /api/v1/candidates/{id}/transition
-     Body: { target_stage_id, sub_status?, mini_prompt?, mode: "auto"|"manual" }
-     - Executa transição, registra stage_history, dispara eventos
-  
-  2. POST /api/v1/transition/interpret-context (Alpha 2+)
-     Body: { mini_prompt, candidate_id, target_stage_id }
-     - LLM interpreta mini-prompt e retorna ação sugerida
-  
-  3. GET /api/v1/jobs/{id}/pipeline
-     - Retorna pipeline completo da vaga com colunas e candidatos por coluna
-  
-  4. PUT /api/v1/jobs/{id}/pipeline
-     - Reordena/adiciona/remove colunas do pipeline da vaga
-
-Historia de Usuario: |
-  Como sistema, eu preciso de endpoints para executar transições de
-  candidatos e gerenciar o pipeline de vagas.
-
-Requisitos Tecnicos:
-  Backend:
-    - POST /candidates/{id}/transition com validação de stage existente
-    - Registro em candidate_stage_history (from_stage, to_stage, timestamp, user_id, sub_status, mini_prompt)
-    - Disparo de evento stage_changed para EventDispatcher (INF-005)
-    - GET/PUT /jobs/{id}/pipeline com CRUD de colunas
-    - Autenticação e autorização por tenant_id
-
-DoD:
-  - [ ] POST /candidates/{id}/transition funcional
-  - [ ] GET /jobs/{id}/pipeline retorna pipeline completo
-  - [ ] PUT /jobs/{id}/pipeline atualiza colunas
-  - [ ] stage_history registrado
-  - [ ] Evento stage_changed disparado após transição
-
-Criterios de Aceitacao:
-  - [ ] Transição retorna 200 com novo estado do candidato
-  - [ ] Transição para stage inexistente retorna 404
-  - [ ] stage_history contém registro de toda movimentação
-  - [ ] Evento stage_changed recebido pelo EventDispatcher
-
-Arquivos de Referencia (Prototipo Replit):
-  - file: lia-agent-system/app/api/v1/stage_transition_automation.py (547L)
-  - spec: docs/pipeline-transition-system.md Apêndice B (Endpoints)
-```
-
-
----
-
-### PIP-009: Pipeline CRUD por Vaga
-
-```yaml
-Titulo: "[Pipeline] Pipeline CRUD — Gestão de Colunas por Vaga"
-Tipo: Feature
-Area: Backend + Frontend
-Sprint: S1
-Pontos: 5
-Prioridade: Alta
-Epic: É24
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: Nenhuma (CRUD puro sem IA)
-
-Descricao: |
-  Interface e API para o recrutador gerenciar as colunas do pipeline de uma vaga.
-  
-  Operações:
-  - Adicionar coluna do catálogo ao pipeline
-  - Remover coluna do pipeline (exceto System)
-  - Reordenar colunas (drag-drop horizontal)
-  - Renomear coluna (exceto System)
-  
-  No Alpha 1, o pipeline é definido por vaga (sem herança empresa).
-  Herança empresa→vaga é Alpha 2+ (PIP-012).
-
-Historia de Usuario: |
-  Como recrutador, eu quero customizar as etapas do pipeline da minha vaga
-  adicionando ou removendo colunas, para adaptar o processo seletivo.
-
-Regras de Negocio:
-  1. Colunas System NÃO podem ser removidas nem renomeadas
-  2. Colunas podem ser reordenadas livremente (exceto System fixas)
-  3. Mínimo: 3 colunas System sempre presentes
-  4. Máximo: 20 colunas por pipeline (System + Catalog + Custom)
-  5. Candidatos em coluna removida são movidos para "Funil"
-
-Requisitos Tecnicos:
-  Frontend:
-    - Pipeline editor no header do Kanban
-    - Botão "+" para adicionar coluna → modal com catálogo
-    - Drag-drop horizontal para reordenação
-    - Botão "x" para remover (com confirmação se há candidatos)
-  Backend:
-    - PUT /api/v1/jobs/{id}/pipeline para bulk update de order
-    - POST /api/v1/jobs/{id}/pipeline/stages para adicionar
-    - DELETE /api/v1/jobs/{id}/pipeline/stages/{stageId} para remover
-
-DoD:
-  - [ ] Adicionar coluna do catálogo funcional
-  - [ ] Remover coluna com migração de candidatos
-  - [ ] Reordenação drag-drop funcional
-  - [ ] Validações de limite e proteção System
-
-Criterios de Aceitacao:
-  - [ ] Recrutador adiciona "Teste Técnico" do catálogo ao pipeline
-  - [ ] Tentar remover "Funil" mostra erro (coluna System)
-  - [ ] Remover coluna com 3 candidatos move todos para Funil
-  - [ ] Reordenação persiste após reload
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §2, §3 (Colunas)
-  - spec: docs/pipeline-transition-system.md Apêndice B (Endpoints)
-```
-
-
----
-
-### PIP-010: Barra de Ações em Massa
-
-```yaml
-Titulo: "[Pipeline] Barra de Ações em Massa — Seleção Múltipla"
-Tipo: Feature
-Area: Frontend
-Sprint: S2
-Pontos: 5
-Prioridade: Alta
-Epic: É25
-Status: 📋 Pendente Jira
-Fase: MVP Alpha 1
-Referências IA: AUT-006 (bulk reject com AI), AGT-011 (bulk messages)
-
-Descricao: |
-  Barra de ações que aparece ao selecionar múltiplos candidatos no Kanban
-  ou na Tabela. Cada botão abre o modal correspondente em modo bulk.
-  
-  Ações disponíveis:
-  - → Mover Etapa → UniversalTransitionModal (bulk)
-  - 📋 Triagem WSI → WSITriagemInviteModal (bulk)
-  - 📅 Agendar → UnifiedCommunicationModal (type=agendamento, bulk)
-  - 📄 Solicitar Dados → DataRequestModal (bulk)
-  - ✉️ Email → UnifiedCommunicationModal (type=email, bulk)
-  - 💬 WhatsApp → UnifiedCommunicationModal (type=whatsapp, bulk)
-  - 📝 Feedback → UnifiedCommunicationModal (type=feedback, bulk)
-  - 🤖 Análise LIA → Análise comparativa em lote
-  - 🔴 Reprovar → CandidateDecisionFlowModal (reject, bulk)
-
-Historia de Usuario: |
-  Como recrutador, eu quero selecionar vários candidatos e aplicar
-  a mesma ação a todos de uma vez, para economizar tempo.
-
-Regras de Negocio:
-  1. Barra aparece ao selecionar ≥2 candidatos
-  2. Máximo de seleção: 100 candidatos por vez
-  3. "× Limpar" reseta seleção
-  4. "○ Selecionar todos" seleciona todos da coluna ou filtro
-  5. Contador mostra "N candidatos selecionados de M"
-  6. Ações abrem modais em modo bulk (lista de candidate_ids)
-  7. Bulk reject pode usar SubStatusPredictor (SRV-016) para individualizar
-
-Requisitos Tecnicos:
-  Frontend:
-    - Componente BulkActionsBar com selectedCandidateIds[]
-    - Checkbox de seleção em cada card/row
-    - Botões por ação com ícone + label
-    - Passagem de candidateIds[] para modais em modo bulk
-  Backend:
-    - Endpoints de transição aceitam candidate_ids[] (bulk)
-    - POST /api/v1/candidates/bulk-transition
-
-DoD:
-  - [ ] Barra de ações aparece ao selecionar ≥2 candidatos
-  - [ ] 9 ações funcionais em modo bulk
-  - [ ] Selecionar todos / limpar seleção
-  - [ ] Modais recebem lista de candidatos
-  - [ ] Endpoint bulk-transition funcional
-
-Criterios de Aceitacao:
-  - [ ] Selecionar 5 candidatos → barra mostra "5 candidatos selecionados"
-  - [ ] "Reprovar" em massa → CandidateDecisionFlowModal com 5 candidatos
-  - [ ] "Mover Etapa" → UniversalTransitionModal aplica a todos
-  - [ ] Máximo 100: tentativa de selecionar 101 mostra aviso
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md Apêndice A (Barra de Ações em Massa)
-```
-
----
-
-#### Alpha 2+ — Cards de Refinamento
-
-> Cards de refinamento e features avançadas. Não bloqueiam o Alpha 1 mas enriquecem significativamente a experiência.
-
----
-
-### PIP-011: Pipeline Padrão da Empresa (Menu Configurações)
-
-```yaml
-Titulo: "[Pipeline] Pipeline Padrão da Empresa — Menu Configurações"
-Tipo: Feature
-Area: Backend + Frontend
-Sprint: S3
-Pontos: 5
-Prioridade: Média
-Epic: É26
-Status: 📋 Pendente Jira
-Fase: Alpha 2
-Referências IA: Nenhuma (CRUD puro sem IA)
-
-Descricao: |
-  Tela no Menu Configurações para o admin da empresa definir o pipeline
-  padrão que será herdado por todas as novas vagas.
-  
-  Funcionalidades:
-  - Listar colunas do pipeline padrão da empresa
-  - Adicionar/remover colunas do catálogo
-  - Reordenar colunas
-  - Definir configurações de comunicação por coluna
-  - Salvar como template da empresa
-
-Historia de Usuario: |
-  Como administrador da empresa, eu quero definir um pipeline padrão
-  para que todas as novas vagas comecem com as mesmas etapas.
-
-Requisitos Tecnicos:
-  Backend:
-    - Tabela company_pipeline_template (company_id, stages JSONB)
-    - GET/PUT /api/v1/company/{id}/pipeline
-    - POST /api/v1/company/{id}/pipeline/stages
-  Frontend:
-    - Tela em Configurações → Pipeline → Editor visual
-    - Reutiliza componentes de PIP-009
-
-DoD:
-  - [ ] Tela de configuração de pipeline da empresa
-  - [ ] CRUD de colunas no pipeline template
-  - [ ] Template persiste e é consultável
-
-Criterios de Aceitacao:
-  - [ ] Admin define pipeline com 8 colunas → salva com sucesso
-  - [ ] Template aparece ao criar nova vaga (PIP-012)
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §15 (Menu Configurações)
-```
-
-
----
-
-### PIP-012: Herança de Pipeline — Empresa → Vaga
-
-```yaml
-Titulo: "[Pipeline] Herança de Pipeline — Empresa → Vaga (Copy-on-Write)"
-Tipo: Feature
-Area: Backend
-Sprint: S3
-Pontos: 5
-Prioridade: Média
-Epic: É26
-Status: 📋 Pendente Jira
-Fase: Alpha 2
-Referências IA: Nenhuma (lógica de herança pura)
-
-Descricao: |
-  Ao criar nova vaga, o pipeline é COPIADO do template da empresa.
-  A vaga pode customizar seu pipeline sem afetar o template.
-  
-  Regras de herança:
-  1. Nova vaga → copia pipeline da empresa (snapshot)
-  2. Alteração na vaga → desvincula do template (copy-on-write)
-  3. Alteração no template empresa → NÃO afeta vagas existentes
-  4. Vaga pode "resetar" pipeline para o template atual da empresa
-
-Historia de Usuario: |
-  Como recrutador, eu quero que novas vagas comecem com o pipeline
-  padrão da empresa, e que eu possa customizar sem afetar outras vagas.
-
-Requisitos Tecnicos:
-  Backend:
-    - Lógica de copy-on-write ao criar vaga
-    - Campo is_customized em job_pipeline para indicar desvio
-    - Endpoint POST /api/v1/jobs/{id}/pipeline/reset-to-company
-
-DoD:
-  - [ ] Nova vaga herda pipeline da empresa
-  - [ ] Customização na vaga não afeta template
-  - [ ] Reset para template funcional
-
-Criterios de Aceitacao:
-  - [ ] Criar vaga → pipeline igual ao template empresa
-  - [ ] Adicionar coluna na vaga → is_customized=true
-  - [ ] Alterar template empresa → vagas existentes não mudam
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §14 (Herança)
-```
-
-
----
-
-### PIP-013: Criação de Colunas Customizadas com LIA (Infer-Behavior)
-
-```yaml
-Titulo: "[Pipeline] Criação de Colunas Customizadas — LIA sugere action_behavior"
-Tipo: Feature
-Area: Backend + Frontend
-Sprint: S3
-Pontos: 5
-Prioridade: Média
-Epic: É26
-Status: 📋 Pendente Jira
-Fase: Alpha 2
-Referências IA: SRV-016 (LLM inference), INF-012 (feature flag ENABLE_INFER_BEHAVIOR)
-
-Descricao: |
-  Recrutador clica "+" no Kanban → digita nome da coluna → LIA sugere
-  action_behavior automaticamente via LLM.
-  
-  Fluxo:
-  1. Recrutador clica "+" entre colunas
-  2. Input: nome da coluna (ex: "Dinâmica de Grupo")
-  3. POST /api/v1/stages/infer-behavior { name: "Dinâmica de Grupo" }
-  4. LIA retorna: { action_behavior: "evaluation", confidence: 0.92, reasoning: "..." }
-  5. Recrutador confirma ou altera o action_behavior sugerido
-  6. Coluna criada com layer=custom
-
-Historia de Usuario: |
-  Como recrutador, eu quero criar etapas personalizadas no meu pipeline
-  e ter a LIA sugerindo o tipo de ação, para não precisar configurar manualmente.
-
-Requisitos Tecnicos:
-  Backend:
-    - Endpoint POST /api/v1/stages/infer-behavior
-    - LLM prompt: "Dado o nome da coluna '{name}', classifique em um dos 10 action_behaviors..."
-    - Feature flag ENABLE_INFER_BEHAVIOR (default: true)
-    - Fallback: se LLM falha → retorna action_behavior=passive
-  Frontend:
-    - Botão "+" entre colunas no Kanban
-    - Modal: input nome + dropdown action_behavior (com sugestão AI highlighted)
-
-DoD:
-  - [ ] Botão "+" funcional no Kanban
-  - [ ] Endpoint infer-behavior com LLM
-  - [ ] Modal com sugestão AI e override manual
-  - [ ] Coluna custom criada no pipeline
-
-Criterios de Aceitacao:
-  - [ ] "Dinâmica de Grupo" → LIA sugere evaluation com 90%+ confiança
-  - [ ] "Aguardando Retorno" → LIA sugere passive
-  - [ ] Recrutador pode mudar sugestão via dropdown
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §16 (Colunas Customizadas)
-```
-
-
----
-
-### PIP-014: TestSendModal (Envio de Testes)
-
-```yaml
-Titulo: "[Pipeline] TestSendModal — Modal de Envio de Testes Técnicos"
-Tipo: Feature
-Area: Frontend
-Sprint: S3
-Pontos: 5
-Prioridade: Alta
-Epic: É26
-Status: 📋 Pendente Jira
-Fase: Alpha 2
-Referências IA: AGT-011 (envio via CommunicationAgent)
-
-Descricao: |
-  Modal dedicado (~300L) para envio de testes técnicos ao candidato.
-  Substitui o uso genérico do UnifiedCommunicationModal para action_behavior=evaluation.
-  
-  Campos:
-  - Tipo de teste: Técnico / Case Prático / Inglês / Personalizado
-  - Link do teste OU upload de arquivo
-  - Prazo para entrega (dias)
-  - Instruções adicionais (campo texto)
-  - Canal (Email / WhatsApp)
-  - Template de envio (filtrado por situation=avaliacao_tecnica)
-  - Preview da mensagem
-  - Envio com confirmação
-
-Historia de Usuario: |
-  Como recrutador, eu quero enviar testes técnicos aos candidatos com
-  prazo e instruções claras, em vez de usar um email genérico.
-
-DoD:
-  - [ ] Modal com campos de tipo, link/upload, prazo, instruções
-  - [ ] Preview da mensagem antes de enviar
-  - [ ] Envio via Email ou WhatsApp
-  - [ ] Registro de teste enviado no candidate_activity
-
-Criterios de Aceitacao:
-  - [ ] Mover candidato para "Teste Técnico" → botão Manual abre TestSendModal
-  - [ ] Teste enviado com prazo de 3 dias → badge "Teste pendente" aparece
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §19 Gap 1 (TestSendModal)
-```
-
-
----
-
-### PIP-015: ProposalModal (Proposta Formal)
-
-```yaml
-Titulo: "[Pipeline] ProposalModal — Modal de Proposta Formal ao Candidato"
-Tipo: Feature
-Area: Frontend
-Sprint: S3
-Pontos: 5
-Prioridade: Alta
-Epic: É26
-Status: 📋 Pendente Jira
-Fase: Alpha 2
-Referências IA: AGT-011 (envio via CommunicationAgent)
-
-Descricao: |
-  Modal dedicado (~200L+) para envio de proposta formal ao candidato.
-  Substitui o uso genérico do UnifiedCommunicationModal para action_behavior=offer.
-  
-  Campos adicionais:
-  - Salário (valor + moeda + periodicidade)
-  - Modelo de contratação (CLT / PJ / Cooperativa / Estágio)
-  - Benefícios (seleção múltipla do catálogo da empresa)
-  - Data de início prevista
-  - Prazo para resposta (dias)
-  - Bônus / variável (opcional)
-  - Template de proposta específico
-  - Geração de PDF formal (futuro)
-
-Historia de Usuario: |
-  Como recrutador, eu quero enviar uma proposta formal estruturada
-  com salário, benefícios e modelo de contratação, não apenas um email.
-
-DoD:
-  - [ ] Modal com campos estruturados de proposta
-  - [ ] Benefícios carregados do catálogo da empresa
-  - [ ] Envio via Email
-  - [ ] Registro de proposta no candidate_activity
-
-Criterios de Aceitacao:
-  - [ ] Mover para "Proposta" → botão Manual abre ProposalModal
-  - [ ] Proposta com salário R$ 15.000 CLT + 5 benefícios → enviada com sucesso
-  - [ ] Badge "Proposta enviada" aparece no card
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §19 Gap 2 (ProposalModal)
-```
-
-
----
-
-### PIP-016: SchedulingModal Dedicado (Integração Calendário)
-
-```yaml
-Titulo: "[Pipeline] SchedulingModal — Agendamento com Calendário Integrado"
-Tipo: Feature
-Area: Frontend + Backend
-Sprint: S4
-Pontos: 8
-Prioridade: Média
-Epic: É26
-Status: 📋 Pendente Jira
-Fase: Alpha 2+
-Referências IA: AGT-003 (SchedulingAgent), SRV-010 (Calendar Service), INT-AI-005 (MS Graph)
-
-Descricao: |
-  Modal dedicado para agendamento de entrevistas com integração de calendário.
-  Substitui o uso do UnifiedCommunicationModal para action_behavior=scheduling.
-  
-  Funcionalidade:
-  - Tipo de entrevista (RH / Técnica / Gestor / Final)
-  - Plataforma (Zoom / Meet / Teams / Presencial)
-  - Duração (30min / 1h / 1h30 / 2h)
-  - Seleção de entrevistador (lista da empresa)
-  - Calendário visual com disponibilidade
-  - Data e horário selecionados
-  - Link automático da plataforma
-  - Template pré-preenchido
-  - Integração com Google Calendar / Outlook
-
-Historia de Usuario: |
-  Como recrutador, eu quero agendar entrevistas vendo a disponibilidade
-  do entrevistador e do candidato, e gerando link automaticamente.
-
-DoD:
-  - [ ] Modal com seleção de tipo, plataforma, duração
-  - [ ] Calendário visual com slots disponíveis
-  - [ ] Link da reunião gerado automaticamente
-  - [ ] Email de convite enviado ao candidato
-
-Criterios de Aceitacao:
-  - [ ] Mover para "Entrevista RH" → Manual abre SchedulingModal
-  - [ ] Selecionar slot → email enviado com link Teams
-  - [ ] Badge "Entrevista agendada 22/02 14h" aparece
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §19 Gap 3 (SchedulingModal)
-```
-
-
----
-
-### PIP-017: Mini-Prompt LLM Interpretation (Layer 2 Dispatch)
-
-```yaml
-Titulo: "[Pipeline] Mini-Prompt LLM — Interpretação Layer 2 do Dispatch"
-Tipo: Feature
-Area: Backend
-Sprint: S3
-Pontos: 5
-Prioridade: Média
-Epic: É24
-Status: 📋 Pendente Jira
-Fase: Alpha 2
-Referências IA: SRV-016 (LLM inference), AGT-011 (personalização de mensagem)
-
-Descricao: |
-  Interpretação por LLM do mini-prompt escrito pelo recrutador no
-  UniversalTransitionModal. Estende o Layer 1 (determinístico) com
-  personalização inteligente.
-  
-  Endpoint: POST /api/v1/transition/interpret-context
-  Body: { mini_prompt, candidate_id, target_stage_id }
-  Response: { suggested_action, personalized_message, confidence }
-  
-  Exemplos:
-  - "Agendar entrevista técnica com o João para semana que vem"
-    → { action: "schedule", params: { type: "tecnica", week: "next" } }
-  - "Enviar teste de Python com prazo de 5 dias"
-    → { action: "send_test", params: { type: "python", deadline_days: 5 } }
-
-Historia de Usuario: |
-  Como recrutador, eu quero escrever instruções em linguagem natural
-  no mini-prompt e ter a LIA interpretando e executando a ação correta.
-
-DoD:
-  - [ ] Endpoint interpret-context funcional
-  - [ ] LLM interpreta pelo menos 5 tipos de instrução
-  - [ ] Personalização de mensagem com contexto do mini-prompt
-
-Criterios de Aceitacao:
-  - [ ] Mini-prompt "agendar para terça às 14h" → ação de agendamento
-  - [ ] Mini-prompt "dar feedback positivo" → mensagem personalizada
-  - [ ] Mini-prompt vazio → Layer 1 determinístico (fallback)
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §7.3 (Mini-Prompt)
-  - spec: docs/pipeline-transition-system.md §12 (Layer 2)
-```
-
-
----
-
-### PIP-018: Sistema de Timeout e Escalação
-
-```yaml
-Titulo: "[Pipeline] Sistema de Timeout e Escalação por Pipeline"
-Tipo: Feature
-Area: Backend
-Sprint: S4
-Pontos: 5
-Prioridade: Média
-Epic: É24
-Status: 📋 Pendente Jira
-Fase: Alpha 2+
-Referências IA: INF-005 (dispara eventos de timeout), AUT-002 (timeout de triagem)
-
-Descricao: |
-  Sistema de prazos configuráveis por empresa para cada etapa do pipeline.
-  Quando um candidato ultrapassa o timeout de uma coluna:
-  
-  1. Badge de alerta temporal aparece no card (PIP-006)
-  2. Notificação ao recrutador responsável
-  3. Se continua sem ação → escalação ao gestor
-  4. NUNCA move candidato automaticamente (exceto offer_accepted/declined)
-  
-  Configuração por empresa:
-  - Timeout padrão por action_behavior (ex: screening=5d, scheduling=3d)
-  - Escalação: recrutador → gestor → admin
-  - Canais: Teams + Email + Bell (in-app)
-
-Historia de Usuario: |
-  Como gestor, eu quero ser notificado quando candidatos ficam
-  parados em uma etapa por mais tempo que o esperado.
-
-DoD:
-  - [ ] Configuração de timeout por etapa por empresa
-  - [ ] Badge de alerta temporal funcional
-  - [ ] Notificação ao recrutador no timeout
-  - [ ] Escalação ao gestor se sem ação
-
-Criterios de Aceitacao:
-  - [ ] Candidato 5 dias em "Triagem" → badge "5 dias sem resposta"
-  - [ ] Recrutador notificado via Teams
-  - [ ] +2 dias → gestor notificado
-
-Arquivos de Referencia (Prototipo Replit):
-  - spec: docs/pipeline-transition-system.md §13.5 (Timeout/Escalação)
-```
-
-
----
-
-## 4. Cards Completos — É30 Saturação e Controle de Pools (SAT) — Épico [WT-1518](https://wedotalent.atlassian.net/browse/WT-1518)
+## 3. Cards Completos — É30 Saturação e Controle de Pools (SAT) — Épico [WT-1518](https://wedotalent.atlassian.net/browse/WT-1518)
 
 > **Fonte:** `saturacao-chatweb-comunicacao-cards-jira.md` §6
 > **Épico:** É30 — Saturação e Controle de Pools
@@ -2433,7 +1222,7 @@ Arquivos de Referencia (Prototipo LIA):
 
 ---
 
-## 5. Cards Completos — É31 Chat Web de Triagem (TRI) — Épico [WT-1519](https://wedotalent.atlassian.net/browse/WT-1519)
+## 4. Cards Completos — É31 Chat Web de Triagem (TRI) — Épico [WT-1519](https://wedotalent.atlassian.net/browse/WT-1519)
 
 > **Fonte:** `saturacao-chatweb-comunicacao-cards-jira.md` §7
 > **Épico:** É31 — Chat Web de Triagem (WSI + IA Conversacional)
@@ -3197,7 +1986,7 @@ Arquivos de Referencia (Prototipo LIA):
 
 ---
 
-## 6. Cards Completos — É32 Comunicação Multicanal (COM) — Épico [WT-1520](https://wedotalent.atlassian.net/browse/WT-1520)
+## 5. Cards Completos — É32 Comunicação Multicanal (COM) — Épico [WT-1520](https://wedotalent.atlassian.net/browse/WT-1520)
 
 > **Fonte:** `saturacao-chatweb-comunicacao-cards-jira.md` §8
 > **Épico:** É32 — Comunicação Multicanal
@@ -3608,7 +2397,7 @@ Arquivos de Referencia (Prototipo LIA):
 
 ---
 
-## 7. Cards Completos — É33 Inscrição Web (INS) — Épico [WT-1521](https://wedotalent.atlassian.net/browse/WT-1521)
+## 6. Cards Completos — É33 Inscrição Web (INS) — Épico [WT-1521](https://wedotalent.atlassian.net/browse/WT-1521)
 
 > **Fonte:** `saturacao-chatweb-comunicacao-cards-jira.md` §9
 > **Épico:** É33 — Inscrição Web (Formulário Público)
@@ -3853,7 +2642,7 @@ Arquivos de Referencia (Prototipo LIA):
 
 ---
 
-## 8. Cards Completos — É34 Voz Bidirecional (VOZ) — Épico [WT-1522](https://wedotalent.atlassian.net/browse/WT-1522)
+## 7. Cards Completos — É34 Voz Bidirecional (VOZ) — Épico [WT-1522](https://wedotalent.atlassian.net/browse/WT-1522)
 
 > **Fonte:** `saturacao-chatweb-comunicacao-cards-jira.md` §10
 > **Épico:** É34 — Suporte a Voz Bidirecional
@@ -4128,7 +2917,7 @@ Arquivos de Referencia (Prototipo LIA):
 
 ---
 
-## 9. Cards Completos — VGM Gestão de Vagas (VGM)
+## 8. Cards Completos — VGM Gestão de Vagas (VGM)
 
 > **Fonte:** `jira-cards-job-creation-lifecycle.md`
 > **Épico:** VGM — Gestão de Vagas
@@ -6285,7 +5074,7 @@ CREATE INDEX idx_comm_logs_status    ON communication_logs(status);
 
 ---
 
-## 10. Cards Completos — AUD Auditoria e Compliance (WT-1505→WT-1512)
+## 9. Cards Completos — AUD Auditoria e Compliance (WT-1505→WT-1512)
 
 > **Fonte:** `diagnostico-agentes-mvp.md` + `ANALISE_COMPARATIVA_V5_vs_LIA.md`
 > **Épico:** [WT-1505](https://wedotalent.atlassian.net/browse/WT-1505) — AUD — Auditoria e Compliance do Agente Python
@@ -6416,7 +5205,7 @@ agent_circuit_breaker_state{circuit}
 
 ---
 
-## 11. Tabela de Dependências Cross-Épico
+## 10. Tabela de Dependências Cross-Épico
 
 > Dependências entre cards de épicos diferentes. Críticas para planejamento de sprint.
 
@@ -6433,9 +5222,6 @@ agent_circuit_breaker_state{circuit}
 | COM-005 | TRI-005 | Confirmação pós-triagem não é enviada |
 | INS-001 | SAT-001 | Formulário não sabe se pool está cheio |
 | INS-003 | SAT-001 | Endpoint não verifica saturação |
-| PIP-003 | PIP-002, PIP-008 | Modal não tem dados do backend |
-| PIP-007 | PIP-008 | Dispatcher não tem endpoints para chamar |
-| PIP-010 | PIP-003 | Bulk actions não têm modal para usar |
 | VOZ-004 | TRI-002 | Voice mode não propaga estado |
 | VGM-010 | COM-001 | Notificações de fechamento não são enviadas |
 | AUD-004 | AUD-001 | Cleanup sem logs para limpar |
@@ -6449,17 +5235,15 @@ agent_circuit_breaker_state{circuit}
 
 | Sprint | Cards | SPs | Entregável Principal |
 |--------|-------|-----|----------------------|
-| **S1 — Fundação** | 21 | ~106 | Modelos de dados, APIs base, VGM S1, TRI-008 proxy, AUD P0/P1 |
-| **S2 — Fluxo Completo** | 30 | ~188 | Inscrição → Chat Web Triagem → Gate 1 → Gate 2 → Comunicação |
-| **S3 — Refinamentos** | 10 | ~47 | Pipeline avançado, AUD observabilidade, VGM-010 |
-| **S4 — Alpha 2+** | 2 | ~13 | Scheduling modal, timeout/escalação |
-| **TOTAL** | **63** | **354** | MVP Alpha 1 completo em S1+S2 |
+| **S1 — Fundação** | 17 | 74 | Modelos de dados, APIs base, VGM S1, TRI-008 proxy, AUD P0/P1 |
+| **S2 — Fluxo Completo** | 23 | 131 | Inscrição → Chat Web Triagem → Comunicação |
+| **S3 — Refinamentos** | 4 | 17 | AUD observabilidade, VGM-010 |
+| **TOTAL** | **44** | **222** | MVP Alpha 1 completo em S1+S2 |
 
 **Caminho crítico do MVP Alpha 1:**
 ```
 SAT-001 → INS-003 → INS-001 → SAT-007
 COM-001 → SAT-005 → COM-004
-PIP-001 → PIP-002 → PIP-008 → PIP-003 → PIP-005
 TRI-001 → TRI-005 → TRI-002 → (Chat Web funcional)
 VGM-001 → VGM-005 → VGM-006 (Vaga publicada)
 AUD-001 → AUD-002 → AUD-003 (Auditoria mínima ativa)
@@ -6467,4 +5251,4 @@ AUD-001 → AUD-002 → AUD-003 (Auditoria mínima ativa)
 
 ---
 
-*Documento v2.0 — 11/março/2026. Enriquecido com 100% do conteúdo das fontes canônicas. 35 cards + 5 épicos criados no Jira. Consolida cards de: `saturacao-chatweb-comunicacao-cards-jira.md` (27 cards — TRI-006, TRI-007, TRI-008 adicionados na v1.1), `pipeline-transition-cards-jira.md` (18 cards — PIP-002 e PIP-006 corrigidos na v1.1), `jira-cards-job-creation-lifecycle.md` (10 cards — VGM-007/008/009/010 títulos, sprints e SPs corrigidos na v1.1), `diagnostico-agentes-mvp.md` + `ANALISE_COMPARATIVA_V5_vs_LIA.md` (7 cards AUD). Roadmap alinhado ao fluxo MVP Alpha 1 (9 passos) do diagnóstico de agentes. Total: 62 cards · 327 SPs (excluindo S4).*
+*Documento v3.0 — 11/março/2026. Cards PIP (pipeline-transition) removidos nesta versão. Enriquecido com 100% do conteúdo das fontes canônicas. Consolida cards de: `saturacao-chatweb-comunicacao-cards-jira.md` (27 cards), `jira-cards-job-creation-lifecycle.md` (10 cards), `diagnostico-agentes-mvp.md` + `ANALISE_COMPARATIVA_V5_vs_LIA.md` (7 cards AUD). Roadmap alinhado ao fluxo MVP Alpha 1 (9 passos) do diagnóstico de agentes. Total: 44 cards · 222 SPs.*
