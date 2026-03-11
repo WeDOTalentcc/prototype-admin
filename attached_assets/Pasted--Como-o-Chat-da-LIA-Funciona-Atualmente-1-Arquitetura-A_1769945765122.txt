@@ -1,0 +1,139 @@
+📊 Como o Chat da LIA Funciona Atualmente
+1. Arquitetura Atual - Dois Modos de Operação
+O chat da LIA opera em dois modos distintos:
+
+Modo	Quando é Ativado	Como Funciona
+Wizard Guiado	Clique em "Nova Vaga"	Fluxo estruturado por etapas
+Chat Livre	Super Chat / Prompt expandido	Interpretação livre de mensagens
+2. Fluxo do Wizard de Criação de Vagas
+Quando o recrutador clica em "Nova Vaga":
+
+Frontend (expanded-chat-modal.tsx)
+        ↓
+    Etapas fixas: greeting → criteria → compensation → competencies → screening → review
+        ↓
+Cada mensagem do usuário vai para:
+        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Endpoint: /job-wizard/orchestrate                           │
+│ - Recebe: mensagem, etapa atual, dados coletados           │
+│ - Chama LLM (Gemini) para decidir a ação                   │
+│ - Retorna: action, response, updated_fields                │
+└─────────────────────────────────────────────────────────────┘
+        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Endpoint: /job-wizard/evaluate                              │
+│ - Extrai dados estruturados do texto (título, salário...)  │
+│ - Chama LLM para fazer extração semântica                  │
+│ - Retorna: detected_fields, suggestions, confidence        │
+└─────────────────────────────────────────────────────────────┘
+        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Endpoint: /job-wizard/step                                  │
+│ - Processa etapa específica (compensação, competências)    │
+│ - Gera análises de mercado, sugestões de skills            │
+│ - Usa agentes especializados (job_intake_agent.py)         │
+└─────────────────────────────────────────────────────────────┘
+Quando LLM atua no Wizard:
+
+✅ Extração de critérios do texto livre
+✅ Decisão de qual ação tomar (avançar, pedir mais info, atualizar campos)
+✅ Geração de sugestões de competências
+✅ Análise de salário vs benchmark de mercado
+✅ Geração de perguntas de triagem
+Quando é lógica hardcoded:
+
+❌ Transições entre etapas (ainda são fixas)
+❌ Validação de campos obrigatórios
+❌ Estrutura das mensagens de cada etapa
+3. Fluxo do Chat Livre (Super Chat)
+Quando o usuário digita algo no chat expandido fora do wizard:
+
+Frontend detecta que NÃO está em modo wizard
+        ↓
+Chama: orchestrateWizardMessage()
+        ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Backend analisa se deve:                                    │
+│ - Iniciar novo wizard (detecta intenção de criar vaga)     │
+│ - Responder conversacionalmente                             │
+│ - Executar ação específica                                  │
+└─────────────────────────────────────────────────────────────┘
+Problema atual: O chat livre ainda depende muito do endpoint do wizard, não tendo um orquestrador verdadeiramente genérico.
+
+4. Agentes Especializados Disponíveis
+O sistema tem um JobIntakeAgent (job_intake_agent.py) que é acionado em situações específicas:
+
+Capacidade	Funciona?	Como
+Extrair requisitos de JD	✅ Sim	LLM com prompt estruturado
+Sugerir competências	✅ Sim	Catalogo de skills + LLM
+Análise de salário	✅ Sim	Serviço de benchmark + LLM
+Gerar perguntas de triagem	✅ Sim	WSI methodology + LLM
+Detecção de vaga afirmativa	✅ Sim	LLM com termos específicos
+🔴 Limitações Atuais
+1. Fluxo de Etapas Rígido
+As etapas do wizard são fixas (criteria → compensation → competencies → screening → review)
+Não há inteligência para pular etapas ou reorganizar baseado no que o usuário já forneceu
+2. Interpretação Limitada de Comandos
+O chat ainda não consegue interpretar e executar comandos como:
+
+"Mude a senioridade para Sênior" → Funciona parcialmente
+"Adicione Python às skills" → Precisa melhorar
+"Volte para a etapa de salário" → Não funciona
+3. Falta de Memória Conversacional Rica
+O contexto é passado como lista de mensagens, mas não há resumo semântico
+Conversas longas perdem contexto inicial
+4. Ausência de Tool Calling Unificado no Wizard
+O sistema tem 23 tools para ações (update_candidate, send_email, etc.)
+Mas o wizard não usa essas tools - ele tem lógica separada
+5. Não há Roteamento Inteligente
+Falta um orchestrator unificado que decida:
+"Isso é criação de vaga? Ou é uma pergunta sobre candidatos?"
+"O usuário quer analisar algo ou executar uma ação?"
+🟢 Oportunidades de Melhoria
+Prioridade Alta (Impacto Imediato)
+Interpretador de Comandos de Edição
+
+Implementar parsing de comandos como "mude X para Y"
+Mapear para atualizações de campos específicos
+Usar LLM para detectar intenção de edição
+Navegação Flexível entre Etapas
+
+Permitir "voltar para compensação" ou "pular para revisão"
+LLM decide se tem dados suficientes para pular
+Feedback Loop de Ajustes
+
+Quando usuário pede ajuste → LLM interpreta → Atualiza campos → Confirma mudança
+Prioridade Média (Mais Inteligente)
+Orquestrador Unificado
+
+Um único endpoint que roteia para:
+Wizard de vagas
+Análise de candidatos
+Execução de ações
+Respostas informativas
+Memória Conversacional Aprimorada
+
+Resumos automáticos de conversas longas
+Contexto persistente entre sessões
+Integração com Tool Calling
+
+Wizard usar as mesmas tools que o chat do pipeline
+Exemplo: "Publica essa vaga no LinkedIn" → tool publish_job
+Prioridade Futura (Experiência Avançada)
+Multi-turn Reasoning
+
+LIA faz perguntas de follow-up inteligentes
+Detecta ambiguidades e pede clarificação
+Aprendizado por Feedback
+
+Capturar quando usuário corrige LIA
+Melhorar prompts baseado em padrões
+📋 Resumo Executivo
+Aspecto	Estado Atual	Ideal
+Extração de dados	✅ Usa LLM	✅ OK
+Sugestões contextuais	✅ Usa LLM + serviços	✅ OK
+Navegação entre etapas	❌ Hardcoded	Dinâmica via LLM
+Comandos de edição	⚠️ Parcial	Interpretação completa
+Orquestração de intenção	⚠️ Limitada	Roteamento inteligente
+Tool Calling	❌ Separado do wizard	Unificado

@@ -1,0 +1,60 @@
+📋 Plano de Substituição de Cores - Funil de Talentos
+Paleta Monocromática a Utilizar:
+Elemento	Cor Atual	Nova Cor Proposta
+Accent (ícones, destaques)	#60BED1	Mantém #60BED1 (uso mínimo)
+Fundo claro	green/cyan/blue-50	gray-50 ou white
+Textos/badges	green/blue-700/800	gray-600 ou gray-700
+Bordas	green/blue borders	gray-200
+🎯 Elementos a Ajustar (Por Componente)
+1. Tabela de Candidatos (unified-candidate-table.tsx, cell-renderers.tsx)
+Elemento	Cor Atual	Nova Cor
+Match Score ≥90	bg-green-100 text-green-800	bg-gray-800 text-white (alto)
+Match Score ≥80	bg-blue-100 text-blue-800	bg-gray-100 text-gray-700 (médio)
+Match Score ≥70	bg-yellow-100 text-yellow-800	bg-gray-50 text-gray-500 (baixo)
+Source "Base Local"	bg-green-100 text-green-800	bg-gray-100 text-gray-700
+Work Model "Remoto"	bg-green-100 text-green-800	bg-gray-100 text-gray-700
+2. Prompt LIA (expandable-ai-prompt.tsx)
+Elemento	Cor Atual	Nova Cor
+Cards análise (Total, Base Local)	bg-emerald/green-50	bg-gray-50 border-gray-200
+Ícones nos cards	green/blue coloridos	text-[#60BED1] (accent) ou gray-500
+Badge "base local"	bg-green-100 text-green-700	bg-gray-100 text-gray-600
+Banner "Expandir Busca"	bg-emerald/teal fundo	bg-white border border-gray-200
+3. Preview do Candidato (candidate-preview.tsx)
+Elemento	Cor Atual	Nova Cor
+Badge Status/Empresa	bg-green/blue-100	bg-gray-100 text-gray-700
+Ícones de ação (email, etc.)	cores variadas	gray-500 hover:text-[#60BED1]
+Score circular	stroke verde/cyan	stroke gray-400 (ou manter #60BED1)
+4. Painel Lateral - Análises de Busca
+Elemento	Cor Atual	Nova Cor
+Senioridade "Senior: 2"	bg-cyan/teal text-teal	bg-gray-100 text-gray-700
+Empresas similares	bg-blue/teal-100	bg-gray-100 text-gray-700
+Badges de skill	bg-cyan-100	bg-gray-100 text-gray-600
+📁 Arquivos a Modificar
+cell-renderers.tsx - ScoreCell, SourceCell, WorkModelCell
+expandable-ai-prompt.tsx - Cards de análise, badges, banner de expansão
+candidate-preview.tsx - Badges, ícones de ação, scores
+unified-candidate-table.tsx - Match scores, etapas
+search-results-card.tsx - Scores e badges
+✅ Regras de Substituição
+Verde/Teal/Cyan → Monocromático:
+
+bg-green-100 → bg-gray-100
+text-green-800 → text-gray-700
+bg-emerald-50 → bg-gray-50
+bg-teal-100 → bg-gray-100
+Azul → Monocromático:
+
+bg-blue-100 → bg-gray-100
+text-blue-800 → text-gray-700
+Scores altos (destaque):
+
+Pode usar bg-gray-800 text-white para ≥90 (estilo premium)
+Ou manter bg-[#60BED1]/10 text-[#60BED1] como accent pontual
+⚠️ Impacto em Outros Lugares
+Como unified-candidate-table.tsx e candidate-preview.tsx são componentes unificados, as mudanças afetarão:
+
+Página de Indicadores
+Kanban de candidatos
+Modal de candidato
+Todas as tabelas de candidatos
+Deseja que eu prossiga com a implementação deste plano? Posso começar pelos elementos mais críticos (Match Scores, Badges de Fonte, e Cards de Análise) ou fazer todos de uma vez.

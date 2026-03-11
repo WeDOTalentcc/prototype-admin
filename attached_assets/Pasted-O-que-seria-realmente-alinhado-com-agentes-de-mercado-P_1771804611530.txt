@@ -1,0 +1,278 @@
+O que seria realmente alinhado com agentes de mercado
+Para a LIA funcionar como um agente inteligente de verdade no wizard, precisaria de:
+
+ReAct Loop (Reasoning + Acting) — Ao invés de pipeline linear, um loop: Pensar → Decidir Ação → Executar → Observar → Pensar novamente. O LangGraph suporta nativamente.
+
+Working Memory (Scratchpad) — Um estado rico que o agente mantém: "Estou na criação de vaga X, já coletei título/competências/salário, o recrutador pediu para voltar ao salário, preciso mostrar o que já tem e perguntar o que quer mudar"
+
+LLM-based Intent + Routing — Eliminar regex. Cada mensagem vai ao Claude com contexto completo e ele decide: é um ajuste? uma pergunta? quer avançar? quer voltar? quer falar de outra coisa?
+
+Stage-aware Prompt Injection — Ao invés de templates estáticos, o prompt do agente recebe instruções dinâmicas por etapa: "Você está na etapa Salário. O salário foi definido no Parecer como R$8-12k. Apresente isso e pergunte se quer ajustar."
+
+Tool Use como agente — O agente decide sozinho quando chamar ferramentas (buscar benchmark, gerar perguntas WSI, salvar rascunho), não porque o código mandou.
+
+Plano Revisado (Arquitetura de Agente Real)
+Vou reestruturar o plano para ficar realmente alinhado com o estado da arte:
+
+mas porque nao temos este conceito na arquiteuta completa do nosso produto, nos prompts, nos agentes etc? porque nao fazemos com que nossa plataforma realmente aja como uma plataforma de agentes de ia de verdade?
+
+Você tocou no ponto mais importante de todo o projeto. E a resposta honesta é: a plataforma hoje não funciona como um sistema de agentes de IA de verdade. Vou explicar o que temos vs. o que deveria ser.
+
+O que temos hoje (a realidade)
+Olhando o código, o que chamamos de "agentes" na LIA são na verdade funções que chamam LLM com prompts específicos. Não são agentes autônomos. Veja:
+
+JobWizardGraph — é uma pipeline linear (A→B→C→D), não um agente que raciocina
+9 "domínios de agentes" (Sourcing, Job Management, CV Screening, etc.) — são módulos de código com prompts, não agentes que decidem o que fazer
+Intent classification — regex com fallback, não compreensão real
+Orquestração — o FastRouter roteia para o domínio certo, mas cada domínio executa um script fixo
+"Multi-agent" — na prática é chamada sequencial de funções, não agentes que colaboram
+É como ter um call center onde cada atendente segue um script. Funciona, mas não é inteligente.
+
+O que seria um sistema de agentes de verdade
+Sistemas como Manus AI, CrewAI, AutoGen, ou mesmo o que empresas como Cognition (Devin) constroem, têm 5 pilares que a LIA não tem:
+
+1. Agentes com autonomia — Cada agente tem um objetivo, ferramentas, e decide sozinho como alcançar. Não segue um script.
+
+2. Loop de raciocínio (ReAct) — Pensar → Agir → Observar → Pensar de novo. Não pipeline linear.
+
+3. Memória rica — Working memory (o que estou fazendo agora), episodic memory (o que aconteceu antes), semantic memory (o que sei sobre o mundo).
+
+4. Comunicação entre agentes — Agentes delegam tarefas entre si, pedem ajuda, compartilham contexto.
+
+5. Planejamento — Dado um objetivo complexo, o agente cria um plano, executa, adapta quando algo muda.
+
+Por que não temos isso?
+Porque a arquitetura foi construída incrementalmente — cada feature foi adicionada como um módulo isolado com seu próprio prompt. O resultado é um sistema que tem muitas capacidades mas nenhuma inteligência unificada. É um monolito de prompts disfarçado de multi-agent.
+
+O que propor
+A transformação real seria repensar a arquitetura inteira para ser agent-first. Não é refatorar o wizard — é refatorar a LIA como produto. Isso envolveria:
+
+Agent Core — Um loop de raciocínio central (ReAct) que recebe qualquer input e decide o que fazer
+Specialized Skills (não "agentes") — Cada domínio vira uma skill que o agente central pode invocar
+Unified Memory — Um sistema de memória que persiste contexto, preferências, histórico de decisões
+Tool Registry — Todas as ações possíveis registradas como tools que o agente decide quando usar
+Planning Layer — Dado um objetivo ("criar vaga de Dev Senior"), o agente cria e executa um plano
+Orchestrator real — Ao invés do FastRouter fazer routing por regex, o agente central entende e delega
+Isso é uma mudança de paradigma, não uma refatoração. Mas é o que diferenciaria a LIA de "plataforma com IA" para "plataforma de agentes de IA".
+
+Quer que eu estruture esse redesign como um plano de implementação completo? Seria a fundação para todo o produto, não só o wizard — todos os 4 chats, pipeline, busca de candidatos, tudo rodaria sobre essa mesma arquitetura de agente real.
+
+mas o que isso signnificaria na pratica, que tudo que foi construido ate agora deveria deixar de existir? essa nossa arquitetura com dominios etc esta equivocada?
+
+Não, nada precisa ser jogado fora. A arquitetura de domínios está certa. O que precisa mudar é como os domínios são orquestrados, não os domínios em si.
+
+Pense assim:
+
+O que está certo (e fica)
+Os domínios são o conhecimento especializado. Sourcing sabe buscar candidatos. CV Screening sabe avaliar currículos. Job Management sabe criar vagas. Communication sabe enviar mensagens. Isso é valioso e está bem organizado.
+
+Os prompts especializados são bons. O SALARY_ANALYSIS_TEMPLATE, o COMPETENCY_SUGGESTION_TEMPLATE, o FIELD_EXTRACTION_TEMPLATE — todos fazem trabalho real. São as "habilidades" do sistema.
+
+Os tools funcionam. search_salary_benchmark, generate_wsi_questions, save_draft, enrich_jd — são ações concretas que produzem resultados.
+
+O banco de dados, APIs, modelos — tudo isso permanece.
+
+O que muda (na prática)
+A mudança é adicionar uma camada de inteligência em cima do que já existe. Os domínios viram skills/ferramentas que um agente central pode usar, ao invés de serem chamados diretamente por código fixo.
+
+Hoje funciona assim:
+
+Mensagem do recrutador
+  → FastRouter (regex) escolhe domínio
+    → Domínio executa script fixo
+      → Retorna resposta
+Deveria funcionar assim:
+
+Mensagem do recrutador
+  → Agente Central (LLM com ReAct loop)
+    → Pensa: "O que o recrutador quer?"
+    → Decide: "Preciso usar a skill de Salary Analysis"
+    → Executa: chama o tool search_salary_benchmark
+    → Observa: "Resultado X"
+    → Pensa: "Faz sentido? O recrutador vai entender?"
+    → Responde: mensagem contextual
+Os domínios viram as "mãos" do agente. O agente é o "cérebro" que decide quando e como usar cada domínio.
+
+Analogia simples
+Imagine um hospital:
+
+Hoje: Paciente chega, recepcionista (FastRouter) lê os sintomas em regex e manda para o departamento certo. Cada departamento segue um protocolo fixo.
+Proposto: Paciente chega, um médico generalista (Agente Central) escuta, pensa, pede exames (tools), consulta especialistas (domínios), e conduz o tratamento de forma inteligente.
+Os departamentos (domínios) continuam existindo. O que muda é quem decide o quê.
+
+Na prática, o que seria construído
+Agent Core — uma nova camada (~1 arquivo principal) com o loop ReAct que recebe qualquer mensagem e decide o que fazer
+Skill Registry — registro dos domínios existentes como skills invocáveis (adapter simples sobre o código que já existe)
+Working Memory — tabela PostgreSQL para persistir o estado do raciocínio do agente entre mensagens
+Prompt do Agente Central — um system prompt bem escrito que define como o agente raciocina e usa as skills
+Adaptação do Frontend — aceitar respostas dinâmicas ao invés de templates fixos
+Os domínios, prompts, tools, banco — tudo continua. Eles ganham um "cérebro" por cima.
+
+Quer que eu estruture esse plano detalhado para implementação?
+
+quais sao os riscos disso?
+
+Boa pergunta. Vou ser direto sobre os riscos reais:
+
+Riscos Altos
+1. Latência e custo
+Hoje cada mensagem faz 1-2 chamadas ao Claude. Com ReAct loop, pode fazer 3-5 chamadas por mensagem (pensar → agir → observar → pensar → responder). Isso significa:
+
+Tempo de resposta de 2-3s pode ir para 5-10s
+Custo de API multiplica por 2-3x
+Experiência do usuário pode sofrer se a resposta demora
+2. Imprevisibilidade
+Agentes autônomos às vezes fazem coisas inesperadas. Se o agente decide sozinho que precisa chamar uma tool, pode executar algo que o recrutador não pediu. Quanto mais autonomia, mais risco de comportamento indesejado. Isso requer guardrails sólidos.
+
+3. Regressão do que funciona
+Hoje o sistema funciona de forma previsível. Cada etapa faz o que foi programado. Ao trocar para decisões do agente, coisas que funcionavam podem quebrar porque o LLM decidiu diferente. O risco de "estava funcionando ontem e hoje não" é real.
+
+4. Debugging mais difícil
+Com código fixo, quando algo dá errado, você olha o código e acha o problema. Com agente autônomo, o "bug" pode ser uma decisão do LLM que não tem log claro. Precisa de observabilidade robusta (logging de cada passo de raciocínio).
+
+Riscos Médios
+5. Complexidade de manutenção
+Adicionar uma camada de agente sobre os domínios cria mais uma coisa para manter. Se o prompt do agente central não for bem escrito, ele pode rotear mal, ignorar domínios, ou gerar respostas genéricas.
+
+6. Dependência do modelo
+O comportamento do agente depende 100% do Claude. Se a Anthropic muda o modelo ou tem instabilidade, o agente pode mudar de comportamento de um dia para o outro. Hoje, com código fixo, isso afeta menos.
+
+7. Escopo pode crescer demais
+Refatorar "só a orquestração" pode virar refatorar tudo. É fácil entrar num ciclo de "preciso mudar isso também para funcionar direito".
+
+Riscos Baixos (mitigáveis)
+8. Perda de dados — Baixo, porque os domínios/banco não mudam
+9. Frontend quebrar — Baixo, se a interface aceitar respostas dinâmicas do backend
+
+Como mitigar
+Abordagem incremental — Não trocar tudo de uma vez. Começar pelo wizard (1 chat), validar, depois expandir
+Fallback — Se o agente falha ou demora, cair de volta para o comportamento fixo atual
+Guardrails — Lista de ações que o agente NUNCA pode fazer sozinho (deletar vaga, publicar sem confirmação)
+Cache de raciocínio — Para perguntas comuns, cachear a decisão do agente
+Feature flag — Manter os dois sistemas (fixo e agente) e alternar com flag
+Observabilidade — Log de cada passo do ReAct para debugging
+Resumindo: os riscos existem, mas são gerenciáveis se a implementação for incremental (começar pelo wizard), com fallback (se falhar, volta ao comportamento atual), e com feature flag (liga/desliga). O maior risco é latência/custo, que precisa ser medido e otimizado.
+
+Quer que eu siga com o plano de implementação já considerando essas mitigações, ou prefere discutir mais algum ponto?
+
+ainda nao ficou claro p mim os pros e contras? considerando que agora eu quero independencia dos meus prompts, apesar de quer que em cada prompt os agentes funcionaem de verdade como estamos discutindo aqui. minimizariamos o risco se mantivessemos estas estruturas independentes?
+
+Agora entendi sua pergunta. Você está perguntando: e se cada domínio/agente funcionar de verdade como agente inteligente (ReAct, memória, autonomia) mas de forma independente, sem um "cérebro central" que controla tudo?
+
+Sim, isso minimiza os riscos significativamente. Deixa eu comparar as duas abordagens:
+
+Opção A: Agente Central Único (o que eu propus antes)
+Um "cérebro" que controla tudo, domínios viram tools dele.
+
+Prós:
+
+Visão unificada — o agente sabe tudo que está acontecendo
+Coordenação natural entre domínios
+Uma personalidade consistente (LIA)
+Contras:
+
+Ponto único de falha — se o agente central falha, tudo para
+Prompt gigante — precisa saber sobre todos os domínios
+Latência — mais raciocínio = mais tempo
+Se a Anthropic muda o modelo, todo o sistema muda
+Muito mais difícil de testar e debugar
+Opção B: Agentes Independentes por Domínio (o que você está sugerindo)
+Cada domínio tem seu próprio agente inteligente com ReAct loop, memória, e autonomia. Eles funcionam de forma independente.
+
+Prós:
+
+Independência de prompt — muda o prompt do Wizard sem afetar o Pipeline ou o Sourcing
+Isolamento de falha — se o agente de Salary falha, os outros continuam
+Prompts menores e focados — cada agente sabe muito bem sobre seu domínio
+Testável isoladamente — testa cada agente separado
+Evolução independente — pode melhorar o agente de CV Screening sem tocar nos outros
+Menos risco de regressão — mudar um não quebra outro
+Pode usar modelos diferentes — Wizard usa Claude, WSI Screening usa Gemini, etc.
+Contras:
+
+Precisa de um roteador que saiba para qual agente mandar (mas isso já existe no FastRouter)
+Contexto entre agentes precisa ser compartilhado explicitamente (ex: o agente de Competências precisa saber o que o de Job Management coletou)
+Pode ter inconsistência de tom/personalidade entre agentes (mitigável com prompt base compartilhado)
+Minha conclusão
+A Opção B é melhor para a LIA. E encaixa perfeitamente no que já existe:
+
+Os 9 domínios já estão separados
+O FastRouter já faz o roteamento
+Cada domínio já tem seus prompts
+O que muda é: dentro de cada domínio, o "agente" deixa de ser uma função com prompt fixo e passa a ser um loop ReAct com memória e autonomia. Mas cada um isolado.
+
+O compartilhamento de contexto entre eles (ex: wizard preencheu salário, pipeline precisa saber) acontece pelo banco de dados e por um contexto compartilhado leve — não por um cérebro central.
+
+Assim:
+
+Risco de latência: menor (cada agente faz seu loop curto)
+Risco de regressão: menor (mexe em um, outros não mudam)
+Risco de imprevisibilidade: menor (cada agente tem escopo limitado)
+Independência de prompt: total
+Capacidade real de agente: sim, dentro de cada domínio
+Quer que eu estruture o plano de implementação com essa abordagem — agentes independentes por domínio, começando pelo Wizard?
+
+e se no futuro eu quiser adicionar este cerebro central é dificil?
+
+Não, seria fácil. E é justamente essa a beleza da Opção B.
+
+Se cada domínio já funciona como agente inteligente independente, adicionar um cérebro central no futuro é basicamente:
+
+Criar um agente que usa os outros agentes como tools.
+
+Ou seja:
+
+Hoje (Opção B):
+  Recrutador → Router → Agente Wizard (inteligente)
+  Recrutador → Router → Agente Pipeline (inteligente)
+  Recrutador → Router → Agente Sourcing (inteligente)
+Futuro (com cérebro central):
+  Recrutador → Agente Central → chama Agente Wizard como tool
+                               → chama Agente Pipeline como tool
+                               → chama Agente Sourcing como tool
+O Agente Central não precisa saber fazer nada — ele só precisa saber qual agente chamar e coordenar entre eles. Cada agente já sabe fazer seu trabalho.
+
+É como contratar um gerente de projetos. Ele não precisa saber programar, recrutar, ou fazer contabilidade. Ele precisa saber quem sabe e delegar.
+
+Por que é fácil?
+
+Cada agente já tem interface clara (recebe mensagem + contexto, retorna resposta + ações)
+É só encapsular cada agente como uma tool do central
+O cérebro central seria 1 arquivo com 1 prompt
+Se não funcionar bem, desliga e volta ao router direto
+O único pré-requisito é que os agentes independentes tenham interfaces padronizadas — mesma estrutura de input/output. Isso já faz parte do plano da Opção B.
+
+Resumindo: a Opção B é o caminho natural para chegar na Opção A no futuro, sem risco. Primeiro cada agente fica inteligente sozinho, depois — quando fizer sentido — coloca alguém para coordenar.
+
+Quer que eu monte o plano de implementação começando pelo Wizard?
+
+entao, eu estou aqui desenvolvendo e meu time vai aproveitar esse codigo todo. o que seria mais interessante? eu montar tudo com cerebro central e eles fazem a separacao na hora de desenvolver no outro ambiente, copiar os arquios do nosso projeto ou é melhor eu fazer sem o cerebro central para eles aproveitarem mais os documentos e arquivos do nosso prototipo e depois evoluimos? o que acha?
+
+Para o contexto de protótipo que seu time vai aproveitar, a melhor abordagem é sem cérebro central. E aqui está o porquê:
+
+Por que sem cérebro central é melhor para seu time
+1. Cada domínio fica autocontido
+Seu time pega o módulo do Wizard, por exemplo, e tem tudo ali — prompt, agente com ReAct, memória, tools. Não depende de outro componente para funcionar. Podem testar, rodar e evoluir isolado.
+
+2. Menos acoplamento = mais fácil de copiar
+Se tem cérebro central, o time precisa copiar o central + todos os domínios + a lógica de roteamento entre eles. Se cada domínio é independente, copiam só o que precisam.
+
+3. Entendimento mais claro
+Quando seu time olhar o código do agente de Job Management, vai entender o fluxo completo ali dentro. Não precisa entender a orquestração central para saber como funciona.
+
+4. Evolução gradual
+Podem levar o protótipo, colocar em produção com os agentes independentes, e no futuro adicionar o cérebro central quando o produto exigir coordenação entre domínios. O caminho natural.
+
+5. Documentação viva
+Cada agente independente serve como documentação de como aquele domínio funciona. Prompt + loop + tools = especificação executável.
+
+Na prática para o time
+O time recebe:
+
+Domínio Wizard — agente inteligente completo para criação de vagas
+Domínio Pipeline — agente inteligente para gestão de candidatos
+Domínio Sourcing — agente inteligente para busca
+etc.
+Cada um funciona sozinho. Eles plugam no ambiente deles, conectam ao router deles, e pronto.
+
+Se quiserem no futuro adicionar coordenação, é criar 1 arquivo que usa os agentes como tools.

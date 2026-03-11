@@ -1,0 +1,498 @@
+Entendido! Você quer estruturar um sistema de aprendizado com histórico do cliente para melhorar as sugestões no wizard.
+
+Proposta de Estruturação
+1. Dados a Importar (Fase 1 - Prioritário)
+Campo	Fonte	Uso no Wizard
+Título da vaga	Job Description	Autocomplete + padrões de nomenclatura
+Departamento/Área	JD + Configurações	Dropdown com valores do cliente
+Responsabilidades	JD	Sugestões contextuais
+Skills técnicas	JD	Catálogo personalizado
+Skills comportamentais	JD	Catálogo personalizado
+Faixa salarial	JD	Ranges por cargo/senioridade
+Benefícios	JD + Configurações	Pacote padrão do cliente
+Gestor/Reporte	JD	Autocomplete de nomes
+2. Arquitetura Proposta
+┌─────────────────────────────────────────────────────────────┐
+│                    IMPORTAÇÃO (uma vez)                      │
+│  ATS/Planilhas → Parser → Normalização → client_patterns DB │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│              CATÁLOGO DO CLIENTE (tenant-scoped)            │
+│  - client_job_patterns (títulos, departamentos)             │
+│  - client_skills (skills do histórico)                      │
+│  - client_salary_ranges (por cargo/área)                    │
+│  - client_benefits (pacote padrão)                          │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    WIZARD (runtime)                          │
+│  Prioridade: 1) Histórico Cliente → 2) Templates Curados    │
+│                                                              │
+│  LIA: "Vi que vocês já contrataram 3 Devs Backend.          │
+│        Quer usar o padrão anterior?"                        │
+└─────────────────────────────────────────────────────────────┘
+3. Modelo de Dados Sugerido
+# Padrões extraídos do histórico do cliente
+class ClientJobPattern:
+    tenant_id: UUID
+    title_normalized: str        # "desenvolvedor backend"
+    title_variations: List[str]  # ["Dev Backend", "Backend Developer"]
+    department: str
+    typical_seniorities: List[str]
+    salary_ranges: Dict[str, Range]  # por senioridade
+    common_skills: List[Skill]
+    common_responsibilities: List[str]
+    usage_count: int             # quantas vezes foi usado
+    last_used: datetime
+    success_rate: float          # % de contratações
+4. Fluxo no Wizard
+Recrutador digita: "preciso de um dev backend"
+                    ↓
+LIA busca: 1) client_job_patterns (histórico)
+           2) curated_templates (662 templates)
+                    ↓
+LIA responde: "Encontrei 3 vagas similares no seu histórico:
+              - Dev Backend Sr (dez/2024) - contratado em 28 dias
+              - Dev Backend Pl (out/2024) - contratado em 35 dias
+              
+              Quer usar uma delas como base? Ou prefere 
+              começar do template padrão?"
+Antes de detalhar mais: você mencionou duas features no início. Essa é a primeira (histórico do cliente). Qual seria a segunda feature que quer avaliar?
+
+na verdade seria dividir a feature em duas sendo a primeira utilizando os dados principais do cliente que seriam a job description das vagas com as principais informacoes que nos interessam que sao titulo, responsabilidades, skills tecnicas, skills comportamentais. salario, beneficios. a segunda parte seria utilizar mais informacoes das vagas e outros campos que deixariam o processo de criacao de vagas muito mais assertivo e sofisticado como como departamento, gestor, candidato contratado, candidatos entrevistados, volume de candidatos, canais de publicacao e outras informacoes. com isso teriamos um volume e variedade de dados que poderiam elevar fortemente o processo de analise de nossa plataforma para predizr ou inferir dados e tomar melhores dcioes de recrutamento, o que acha?
+
+Excelente abordagem! Dividir em duas fases faz total sentido. Aqui está minha análise:
+
+Estruturação em Duas Fases
+Fase 1: Catálogo do Cliente (MVP)
+Foco: Acelerar criação de vagas
+
+Dado	Impacto	Complexidade
+Título	🟢 Alto - autocomplete	🟢 Baixa
+Responsabilidades	🟢 Alto - reutilização	🟢 Baixa
+Skills técnicas	🟢 Alto - catálogo próprio	🟢 Baixa
+Skills comportamentais	🟢 Alto - catálogo próprio	🟢 Baixa
+Faixa salarial	🟢 Alto - benchmarks internos	🟢 Baixa
+Benefícios	🟡 Médio - pacote padrão	🟢 Baixa
+Resultado: Templates personalizados por cliente + sugestões contextuais
+
+Fase 2: Inteligência Preditiva
+Foco: Decisões mais assertivas
+
+Dado	Uso Preditivo	Complexidade
+Departamento	Padrões por área	🟢 Baixa
+Gestor	Preferências/histórico	🟡 Média
+Candidato contratado	Perfil de sucesso	🟡 Média
+Candidatos entrevistados	Taxa de conversão	🟡 Média
+Volume de candidatos	Previsão de atração	🟡 Média
+Canais de publicação	ROI por canal	🔴 Alta
+Time-to-fill histórico	Previsão de prazo	🟡 Média
+Resultado: LIA pode dizer:
+
+"Vagas similares levam ~25 dias para fechar"
+"O perfil que mais deu certo tinha X, Y, Z"
+"LinkedIn trouxe 70% dos contratados nessa área"
+Minha Avaliação
+Critério	Fase 1	Fase 2
+ROI	🟢 Alto (economia de tempo imediata)	🟢 Alto (decisões melhores)
+Esforço	🟢 2-3 semanas	🟡 4-6 semanas
+Dependências	Parser de JD + normalização	Fase 1 + analytics
+Diferencial competitivo	🟡 Médio (outros têm)	🟢 Alto (poucos têm)
+Recomendação
+SIM, vale implementar! A sequência ideal seria:
+
+Templates Curados (662) ← já temos
+         ↓
+    Fase 1 (MVP)        ← próximo passo
+         ↓
+    Fase 2 (Preditivo)  ← diferencial
+Quer que eu detalhe o modelo de dados e arquitetura técnica para a Fase 1? Ou prefere discutir mais sobre o escopo antes?
+
+alem disso, teriamos ainda a questao da integracao de outras plataformas como de workforceplanning, ou datalakes do cliente. sendo que a integracao de plataformas ja organizadas como workoforceplanning nos permitiria sugerir proativamente a abertura de vagas conforme planejamento com dados já organizados e isso poderia estar ja na fase 1. na fase 2 alem da proposta que estamos discutindo poderiamos adicionar dados menos estruturados de datalakes, planilhas, outras plataformas de hris, fopag etc. o que acha? me ajude a estruturar isso e um plano do que seria aimplemetnacao ideal, mas o mais importante, como garantir que nosso modelo de wizard de criacao de vagas com a camada de inteligenca, agentes de ia, modelo de raciocionio e processamento dos dados utilizaria isso da maneira correta adicionando mais uma camada de dados e inteligencia no wizard (completo e fasttrack)?
+
+Excelente visão! Você está pensando em 3 camadas de dados que alimentam o wizard. Deixe-me estruturar isso:
+
+Arquitetura de Camadas de Dados para o Wizard
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         WIZARD (Completo + Fast Track)                  │
+│                                                                         │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │              CAMADA DE INTELIGÊNCIA (Orquestrador)              │   │
+│   │   • Reasoning: qual fonte usar para cada campo?                 │   │
+│   │   • Priorização: Workforce > Histórico > Templates > LLM       │   │
+│   │   • Confiança: score de cada sugestão                          │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                              ↑                                          │
+├──────────────────────────────┼──────────────────────────────────────────┤
+│   CAMADA 3 (Templates)       │   CAMADA 2 (Histórico)  │ CAMADA 1      │
+│   662 templates curados      │   JDs do cliente        │ Workforce     │
+│   WSI Quality Gates          │   Padrões inferidos     │ Planning      │
+│   Fallback universal         │   Catálogo próprio      │ PROATIVO      │
+└──────────────────────────────┴─────────────────────────┴───────────────┘
+Plano de Implementação Detalhado
+FASE 1A: Workforce Planning Integration (Proativo)
+"LIA sugere abrir vagas antes do recrutador pedir"
+
+Workforce Planning API
+        ↓
+┌─────────────────────────────────────┐
+│  planned_positions                  │
+│  - cargo, departamento, gestor      │
+│  - data_prevista_abertura           │
+│  - headcount, orçamento             │
+│  - status: planejada/aprovada       │
+└─────────────────────────────────────┘
+        ↓
+LIA notifica: "Você tem 3 vagas planejadas para março:
+              • Dev Backend Sr (TI) - aprovada
+              • Analista Financeiro (Finanças) - pendente
+              Quer iniciar a criação agora?"
+Dados necessários do Workforce Planning:
+
+Campo	Uso
+Cargo planejado	Pré-preenche título
+Departamento	Pré-preenche área
+Gestor responsável	Pré-preenche requisitante
+Headcount	Quantidade de vagas
+Orçamento/Faixa	Valida salário
+Data prevista	Urgência/prioridade
+FASE 1B: Catálogo do Cliente (JDs históricos)
+"Usa padrões do próprio cliente"
+
+class ClientJobCatalog:
+    # Dados extraídos dos JDs históricos
+    tenant_id: UUID
+    
+    # Catálogo de títulos (normalizado)
+    job_titles: List[JobTitlePattern]
+    
+    # Catálogo de skills do cliente
+    technical_skills: List[ClientSkill]
+    behavioral_skills: List[ClientSkill]
+    
+    # Padrões salariais por cargo/área
+    salary_patterns: Dict[str, SalaryRange]
+    
+    # Benefícios padrão do cliente
+    default_benefits: List[Benefit]
+    
+    # Responsabilidades por tipo de cargo
+    responsibility_patterns: Dict[str, List[str]]
+FASE 2A: Inteligência Preditiva (Dados de processo)
+class ProcessIntelligence:
+    # Dados do processo seletivo
+    candidates_per_job: int
+    interview_conversion_rate: float
+    time_to_fill_avg: int
+    
+    # Perfil de sucesso
+    hired_candidate_profiles: List[CandidateProfile]
+    
+    # Canais efetivos
+    channel_effectiveness: Dict[str, ChannelMetrics]
+    
+    # Gestores e preferências
+    hiring_manager_patterns: Dict[str, ManagerPreferences]
+LIA pode dizer:
+
+"Vagas de Dev Backend levam ~28 dias. LinkedIn trouxe 65% dos contratados."
+"O gestor João prefere candidatos com experiência em fintech."
+FASE 2B: Dados Não-Estruturados (Datalakes, HRIS, Fopag)
+┌─────────────────────────────────────────────────────────────┐
+│                   CONECTORES DE DADOS                        │
+├─────────────────────────────────────────────────────────────┤
+│ HRIS (SAP, Workday)  → Estrutura org, gestores, headcount  │
+│ Fopag                → Faixas salariais reais, benefícios   │
+│ Datalakes/Planilhas  → Dados ad-hoc, exportações           │
+│ ATS legado           → Histórico de vagas/candidatos        │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+                    ETL + Normalização
+                              ↓
+                    client_data_lake (unificado)
+Como o Wizard Usa Cada Camada
+Prioridade de Fontes (Reasoning do Orquestrador)
+class WizardIntelligenceLayer:
+    """
+    Camada de inteligência que decide qual fonte usar para cada campo.
+    """
+    
+    PRIORITY_ORDER = [
+        "workforce_planning",  # 1. Mais autoritativo - dados planejados
+        "client_history",      # 2. Padrões do cliente
+        "curated_templates",   # 3. Templates WSI (662)
+        "llm_inference",       # 4. Fallback - LLM gera
+    ]
+    
+    def get_suggestion(self, field: str, context: JobContext) -> Suggestion:
+        for source in self.PRIORITY_ORDER:
+            suggestion = self.query_source(source, field, context)
+            if suggestion and suggestion.confidence > 0.7:
+                return Suggestion(
+                    value=suggestion.value,
+                    source=source,
+                    confidence=suggestion.confidence,
+                    explanation=f"Baseado em {source}"
+                )
+        
+        # Fallback: LLM gera com base no contexto
+        return self.llm_generate(field, context)
+Exemplo de Fluxo no Wizard
+RECRUTADOR: "Preciso contratar um desenvolvedor backend"
+WIZARD (internamente):
+  1. Busca em workforce_planning → Encontra vaga planejada? 
+     ✓ SIM → "Encontrei uma vaga de Dev Backend Sr aprovada para março"
+  
+  2. Busca em client_history → Padrões anteriores?
+     ✓ SIM → "Vocês já contrataram 5 Devs Backend. Último levou 25 dias."
+  
+  3. Busca em curated_templates → Template WSI?
+     ✓ SIM → Usa skills, responsabilidades do template
+  
+  4. Mescla dados com prioridade:
+     - Título: workforce_planning (Dev Backend Sr)
+     - Skills: client_history (padrões do cliente)
+     - Responsabilidades: curated_template + client_history
+     - Salário: workforce_planning (orçamento) ∩ client_history (ranges)
+LIA RESPONDE:
+  "Encontrei uma vaga de Dev Backend Sr no seu planejamento de março!
+   
+   Baseado no histórico, vagas assim levam ~25 dias para fechar.
+   O último contratado tinha experiência em Node.js e AWS.
+   
+   Quer usar esses dados como base?"
+Resumo do Plano
+Fase	Escopo	Esforço	Impacto
+1A	Workforce Planning (proativo)	2-3 sem	🟢 Alto - diferencial
+1B	Catálogo do Cliente (JDs)	2-3 sem	🟢 Alto - economia tempo
+2A	Inteligência Preditiva	4-5 sem	🟢 Alto - decisões
+2B	Datalakes/HRIS/Fopag	4-6 sem	🟡 Médio - dados extras
+O que acha dessa estruturação? Quer que eu documente isso formalmente no replit.md ou prefere ajustar algo antes?
+
+ok. so entendendo, estas novas etapas seriam executadas depois da lia avaliar os dados do menu configuracoes, certo? teriamos que adicionar algo no menu configuracoes informando a respeito destas integracoes ou dados importados do ats do cliente? ou seja, a ordem é sempre, dados do menu configuracoes, historico da plataforma, dados oriundos de importacao do ats (etapa com dados mais basicos como mencionei anteriomente (job descriptions, titulo, responsabilidades, skills tecnicas, comportamentais, salario....dados oriundos de integracoes HRIS (workforceplanning) e dadados oriundos de ats (mais completo) + outras diversas integracoes diversas como etls outros arquivos e ats (completo). certo? eessa seria a ordem?
+
+Exato! Vou estruturar a ordem correta de prioridade:
+
+Ordem de Prioridade das Fontes de Dados
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    PRIORIDADE DE DADOS NO WIZARD                        │
+│                    (do mais autoritativo ao fallback)                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1️⃣  MENU CONFIGURAÇÕES (sempre primeiro)                              │
+│      → Dados cadastrados na implementação                               │
+│      → Estrutura organizacional, benefícios padrão, faixas salariais    │
+│      → Departamentos, áreas, gestores                                   │
+│                                                                         │
+│  2️⃣  HISTÓRICO DA PLATAFORMA LIA                                       │
+│      → Vagas já criadas na própria LIA                                  │
+│      → Padrões de uso do recrutador                                     │
+│      → Feedback loops (o que funcionou)                                 │
+│                                                                         │
+│  3️⃣  IMPORTAÇÃO ATS BÁSICA (Fase 1B)                                   │
+│      → JDs históricos: título, responsabilidades                        │
+│      → Skills técnicas e comportamentais                                │
+│      → Salários, benefícios praticados                                  │
+│                                                                         │
+│  4️⃣  INTEGRAÇÃO HRIS / WORKFORCE PLANNING (Fase 1A)                    │
+│      → Vagas planejadas/aprovadas                                       │
+│      → Headcount, orçamento                                             │
+│      → Sugestões proativas de abertura                                  │
+│                                                                         │
+│  5️⃣  ATS COMPLETO + DATALAKES + ETLs (Fase 2)                          │
+│      → Candidatos, entrevistas, contratações                            │
+│      → Métricas de processo (time-to-fill, conversão)                   │
+│      → Dados de HRIS, fopag, planilhas                                  │
+│                                                                         │
+│  6️⃣  TEMPLATES CURADOS (662) - Fallback                                │
+│      → Quando cliente não tem histórico                                 │
+│      → Complementa dados faltantes                                      │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+Menu Configurações - Seção de Integrações
+Sim, precisamos adicionar no Menu Configurações:
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  ⚙️  CONFIGURAÇÕES                                                      │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  📋 Dados da Empresa (já existe)                                        │
+│     → Nome, CNPJ, logo, cores                                           │
+│                                                                         │
+│  🏢 Estrutura Organizacional (já existe)                                │
+│     → Departamentos, áreas, gestores                                    │
+│                                                                         │
+│  💰 Remuneração e Benefícios (já existe)                                │
+│     → Faixas salariais, pacote de benefícios                            │
+│                                                                         │
+│  🔗 INTEGRAÇÕES E IMPORTAÇÕES (NOVO)                                    │
+│     ├── ATS de Origem                                                   │
+│     │   → Status: ✅ Conectado (Gupy)                                   │
+│     │   → Última sync: 02/02/2026 14:30                                 │
+│     │   → Vagas importadas: 847                                         │
+│     │   → JDs processados: 623                                          │
+│     │                                                                   │
+│     ├── Workforce Planning                                              │
+│     │   → Status: ⏳ Não configurado                                    │
+│     │   → [Conectar SAP SuccessFactors]                                 │
+│     │   → [Conectar Workday]                                            │
+│     │                                                                   │
+│     ├── HRIS / Folha                                                    │
+│     │   → Status: ⏳ Não configurado                                    │
+│     │   → [Conectar]                                                    │
+│     │                                                                   │
+│     └── Importações Manuais                                             │
+│         → Planilhas carregadas: 3                                       │
+│         → [Upload nova planilha]                                        │
+│                                                                         │
+│  📊 Qualidade dos Dados                                                 │
+│     → Cobertura de skills: 78%                                          │
+│     → Cobertura de salários: 92%                                        │
+│     → Recomendação: "Importe mais JDs de TI"                            │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+Resumo da Lógica do Wizard
+class WizardDataPriority:
+    """
+    Ordem de consulta para cada campo no wizard.
+    """
+    
+    PRIORITY = [
+        "settings",           # 1. Menu Configurações
+        "lia_history",        # 2. Histórico da plataforma LIA
+        "ats_basic_import",   # 3. JDs importados (básico)
+        "workforce_planning", # 4. HRIS/Workforce Planning
+        "ats_full_import",    # 5. ATS completo + ETLs
+        "curated_templates",  # 6. Templates curados (fallback)
+    ]
+    
+    def get_field_value(self, field: str, context: JobContext):
+        for source in self.PRIORITY:
+            value = self.query(source, field, context)
+            if value and value.confidence > 0.7:
+                return value
+        return self.llm_fallback(field, context)
+Está correto esse entendimento? Quer que eu documente isso formalmente?
+
+e essa logica do wizard faria um loop de aprendizagem, consumo de dados e processamento e predicao, certo? algo deste tipo?
+
+Exatamente! É um ciclo de aprendizagem contínuo. Veja:
+
+Loop de Aprendizagem do Wizard
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    CICLO DE INTELIGÊNCIA DO WIZARD                      │
+└─────────────────────────────────────────────────────────────────────────┘
+                         ┌──────────────────┐
+                         │   1. CONSUMO     │
+                         │   DE DADOS       │
+                         └────────┬─────────┘
+                                  │
+         Configurações, Histórico, ATS, HRIS, ETLs
+                                  │
+                                  ▼
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│  6. APRENDIZADO  │      │  2. PROCESSAMENTO│      │                  │
+│                  │      │  E NORMALIZAÇÃO  │      │                  │
+│  • Atualiza      │      │                  │      │                  │
+│    padrões       │◄─────│  • Extração      │─────►│  3. ANÁLISE DE   │
+│  • Ajusta pesos  │      │  • Categorização │      │     PADRÕES      │
+│  • Melhora       │      │  • Enriquecimento│      │                  │
+│    predições     │      │                  │      │  • Correlações   │
+│                  │      └──────────────────┘      │  • Tendências    │
+└────────┬─────────┘                               │  • Anomalias     │
+         │                                          └────────┬─────────┘
+         │                                                   │
+         │         ┌──────────────────┐                      │
+         │         │  5. FEEDBACK     │                      │
+         │         │                  │                      │
+         └────────►│  • Recrutador    │◄─────────────────────┘
+                   │    aceita/rejeita│                      │
+                   │  • Ajustes feitos│      ┌───────────────┘
+                   │  • Outcome final │      │
+                   │    (contratou?)  │      ▼
+                   └────────┬─────────┘  ┌──────────────────┐
+                            │            │  4. PREDIÇÃO E   │
+                            │            │     SUGESTÃO     │
+                            │            │                  │
+                            └───────────►│  • LIA sugere    │
+                                         │  • Preenche campos│
+                                         │  • Explica "porquê"│
+                                         └──────────────────┘
+Detalhamento de Cada Etapa
+1️⃣ CONSUMO DE DADOS
+data_sources = {
+    "settings": "Dados do Menu Configurações",
+    "lia_history": "Vagas criadas na LIA",
+    "ats_import": "JDs importados do ATS",
+    "workforce": "Planejamento de headcount",
+    "hris": "Estrutura organizacional",
+    "outcomes": "Resultados (quem foi contratado)"
+}
+2️⃣ PROCESSAMENTO
+# Normalização e enriquecimento
+processed_data = {
+    "skills_catalog": extract_skills(all_jds),
+    "salary_patterns": analyze_salaries(jobs, region, seniority),
+    "title_variations": cluster_similar_titles(all_titles),
+    "success_profiles": extract_from_hired(outcomes)
+}
+3️⃣ ANÁLISE DE PADRÕES
+patterns = {
+    "dev_backend": {
+        "avg_time_to_fill": 28,
+        "best_channels": ["LinkedIn", "GitHub Jobs"],
+        "common_skills": ["Node.js", "Python", "AWS"],
+        "salary_range": {"pleno": (8000, 12000)},
+        "success_indicators": ["experiência fintech", "inglês avançado"]
+    }
+}
+4️⃣ PREDIÇÃO E SUGESTÃO
+# LIA no wizard
+suggestion = {
+    "title": "Desenvolvedor Backend Sênior",
+    "source": "lia_history",
+    "confidence": 0.92,
+    "explanation": "Baseado em 5 vagas similares criadas nos últimos 6 meses",
+    "predictions": {
+        "time_to_fill": "~25 dias",
+        "expected_candidates": "~45 aplicações",
+        "recommended_channels": ["LinkedIn", "Indicações"]
+    }
+}
+5️⃣ FEEDBACK
+# Captura de feedback do recrutador
+feedback = {
+    "suggestion_accepted": True,  # ou False
+    "fields_modified": ["salary_max", "remote_policy"],
+    "reason": "Ajustei salário para atrair mais candidatos"
+}
+# Outcome final (após processo)
+outcome = {
+    "job_id": "xxx",
+    "hired": True,
+    "time_to_fill": 22,
+    "candidates_total": 52,
+    "candidates_interviewed": 8,
+    "hired_profile": {...}
+}
+6️⃣ APRENDIZADO
+# Atualiza padrões com base no feedback e outcomes
+learning_update = {
+    "pattern": "dev_backend",
+    "adjustment": {
+        "salary_range": "aumentar 5% (feedback recente)",
+        "time_to_fill": "reduzir para 24 dias (média atualizada)",
+        "success_skills": "adicionar 'fintech' com peso maior"
+    },
+    "confidence_delta": +0.03
+}
+Resultado: LIA Fica Mais Inteligente
+Ciclo	Precisão das Sugestões
+Implementação inicial	~60% (baseado em templates)
+Após 10 vagas	~75% (aprendeu padrões do cliente)
+Após 50 vagas	~85% (refinamentos contínuos)
+Após 100+ vagas	~92% (predições muito assertivas)
+Esse é exatamente o modelo! Quer que eu documente isso formalmente no projeto?
+
+eu quero que adicione isso em nosso docuemnto job wizard enhancement plan.d que no final ja tem o plano de implementacao de clusterizacao e para agora eu gostaria de implementar a fase de importacao de job descriptions com os dados basicos de job description com titulos, responsabilidades, skills tecnicas e coprotamentais e salario e beneficios. o que acha? faz sentido? ou faria diferente

@@ -1,0 +1,196 @@
+SEÇÃO EDUCAÇÃO
+
+32. Universidades (Universities)
+
+•
+Tipo de Campo: Campo de texto com presets e exclusão, botão "Select Preset"
+
+•
+Descrição: Filtra candidatos por universidade frequentada
+
+•
+Opções/Valores:
+
+•
+Campo de texto aberto com autocomplete
+
+•
+Presets disponíveis:
+
+•
+Juicebox Presets: Ivy League, Top 20 US CS Universities, Times Higher Education Global 100, US CS Top 10, Asia Top 50, etc.
+
+•
+Organization Presets: Presets customizados criados pela equipe
+
+
+
+•
+Suporta exclusão de universidades
+
+
+
+•
+Como Funciona: Campo inteligente que sugere universidades; permite usar presets pré-configurados; permite excluir universidades
+
+•
+Tipo de Filtro: Campo de texto com presets e exclusão
+
+•
+Sugestões de Melhoria: A IA poderia sugerir universidades com base no curso ou área de estudo; permitir filtrar por "ranking da universidade"; mostrar "número de candidatos por universidade"
+
+33. Universidades Excluídas (Excluded Universities)
+
+•
+Tipo de Campo: Campo de texto
+
+•
+Descrição: Exclui candidatos que frequentaram universidades específicas
+
+•
+Opções/Valores: Campo de texto aberto com autocomplete
+
+•
+Como Funciona: Remove candidatos associados às universidades selecionadas
+
+•
+Tipo de Filtro: Campo de texto
+
+•
+Sugestões de Melhoria: Adicionar a opção de excluir "grupos de universidades" (ex: todas as universidades de uma região); permitir salvar listas de exclusão
+
+34. Localizações das Universidades (University Locations)
+
+•
+Tipo de Campo: Campo de texto com sugestões
+
+•
+Descrição: Filtra universidades com base na localização
+
+•
+Opções/Valores:
+
+•
+Campo de texto aberto com autocomplete
+
+•
+Exemplos: San Francisco, United States; New York, United States; London, United Kingdom; etc.
+
+
+
+•
+Como Funciona: Filtra candidatos que frequentaram universidades em localizações específicas
+
+•
+Tipo de Filtro: Campo de texto com sugestões
+
+•
+Sugestões de Melhoria: Permitir a busca por "universidades com campus em múltiplas cidades"; adicionar filtro por "país" ou "região"
+
+35. Requisitos de Grau (Degree Requirements)
+
+•
+Tipo de Campo: Dropdown
+
+•
+Descrição: Define como o grau será buscado
+
+•
+Opções:
+
+•
+Regular (Find people who have this degree from any university)
+
+•
+Nested (Find people who have this degree from selected universities)
+
+
+
+•
+Como Funciona:
+
+•
+Regular: Encontra candidatos com o grau em qualquer universidade
+
+•
+Nested: Encontra candidatos com o grau apenas nas universidades selecionadas
+
+
+
+•
+Tipo de Filtro: Dropdown com seleção única
+
+•
+Sugestões de Melhoria: Adicionar a opção de buscar por graus equivalentes em diferentes países; permitir filtrar por "tipo de grau" (Bachelor, Master, PhD, etc.)
+
+36. Áreas de Estudo (Fields of Study)
+
+•
+Tipo de Campo: Campo de texto com sugestões
+
+•
+Descrição: Filtra candidatos por área de estudo
+
+•
+Opções/Valores:
+
+•
+Campo de texto aberto com autocomplete
+
+•
+Exemplos: All Engineering Majors, Natural Sciences, Computer Science, Business, etc.
+
+•
+Suporta exclusão
+
+
+
+•
+Como Funciona: Campo inteligente que sugere áreas de estudo; suporta múltiplas seleções
+
+•
+Tipo de Filtro: Campo de texto com IA
+
+•
+Sugestões de Melhoria: Ter uma árvore de categorias de áreas de estudo para facilitar a navegação e seleção; permitir filtrar por "campo relacionado"
+
+37. Ano de Formatura Mínimo (Graduation Year - Min)
+
+•
+Tipo de Campo: Dropdown
+
+•
+Descrição: Define o ano mínimo de formatura
+
+•
+Opções/Valores: Dropdown com anos (ex: 2000, 2005, 2010, 2015, 2020, 2023, etc.)
+
+•
+Como Funciona: Filtra candidatos formados no ano selecionado ou depois
+
+•
+Tipo de Filtro: Dropdown com seleção única
+
+•
+Sugestões de Melhoria: Permitir a busca por "recém-formados" sem a necessidade de selecionar um ano específico; adicionar presets (ex: "Últimos 5 anos", "Últimos 10 anos")
+
+38. Ano de Formatura Máximo (Graduation Year - Max)
+
+•
+Tipo de Campo: Dropdown
+
+•
+Descrição: Define o ano máximo de formatura
+
+•
+Opções/Valores: Dropdown com anos
+
+•
+Como Funciona: Filtra candidatos formados no ano selecionado ou antes
+
+•
+Tipo de Filtro: Dropdown com seleção única
+
+•
+Sugestões de Melhoria: Adicionar a opção de "formados nos últimos X anos"; permitir busca por "período de formatura"
+

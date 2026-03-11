@@ -1,0 +1,97 @@
+   WeDO Talent - Plataforma de Recrutamento com IA
+
+   Este é um ATS (Applicant Tracking System) moderno com inteligência artificial, construído em Nuxt 3 + Vue 3 + Vuetify, focado em gestão de talentos e recrutamento inteligente.
+
+   Funcionalidades Principais:
+
+   1. LIA - Assistente de IA 🤖
+
+     - Chat interativo com IA para recrutamento
+     - Análise de candidatos com IA
+     - Sugestões contextuais e templates
+     - Busca inteligente de talentos
+     - Comunicação via WebSocket (ActionCable)
+     - Mensagens de áudio
+
+   2. Gestão de Vagas 💼
+
+     - Criação e edição de vagas
+     - Workflow visual de processos seletivos
+     - Status e substatus personalizáveis
+     - Vagas urgentes com alertas
+     - Integração com LIA para análise
+     - Preview e visualização de vagas
+
+   3. Funil de Talentos 👥
+
+     - Gestão completa de candidatos
+     - Múltiplas abas: Candidatos, Pipelines, Personas, Mapeamento, Favoritos, Histórico, Buscas Salvas
+     - Perfis detalhados com: experiências, educação, cursos, skills, idiomas, remuneração, endereços
+     - Análise LIA de candidatos
+     - Aplicações/candidaturas
+
+   4. Processos Seletivos
+
+     - Criação de processos customizados
+     - Substatus personalizados
+     - Sistema de feedback estruturado
+     - Provas/Avaliações integradas
+     - Gestão de etapas do funil
+
+   5. Avaliações
+
+     - Sistema de provas para candidatos
+     - Questões personalizáveis
+     - Integração com processos seletivos
+
+   6. Painel Administrativo ⚙️
+
+     - Usuários: Gestão de usuários e permissões
+     - Roles: Controle de papéis/permissões
+     - Accounts: Gestão de contas
+     - Business: Empresas/clientes
+     - Setores: Organização departamental
+     - Job Status: Status de vagas
+     - WhatsApp Config: Configurações de WhatsApp
+     - AI Costs: Monitoramento de custos de IA
+     - Dashboard: Indicadores gerais
+
+   7. Sistema de Autenticação
+
+     - Login tradicional (email/senha)
+     - Integração com Microsoft OAuth
+     - Recuperação de senha
+     - Autenticação via JWT
+
+   8. Recursos Técnicos
+
+     - Editor de texto rico (TipTap) com formatação completa
+     - Drag & Drop (vuedraggable)
+     - Máscaras de entrada (telefone, etc)
+     - Validação de formulários (Vuelidate)
+     - Notificações toast
+     - Histórias de componentes (Histoire/Storybook)
+     - WebSocket para comunicação real-time
+     - Pinia para gestão de estado
+     - Vuetify para UI/UX
+     - Lucide Icons + Material Design Icons
+
+   9. Workspaces
+
+     - Espaços de trabalho colaborativos
+     - Histórico de conversas com LIA
+     - Gestão de múltiplos workspaces
+
+   10. Recursos Adicionais
+
+     - Temas: Modo claro/escuro
+     - Internacionalização: Pluralização de textos
+     - Sistema de tabelas dinâmico e configurável
+     - Filtros e buscas avançadas
+     - Painéis laterais expansíveis
+     - Animações (auto-animate)
+     - Split panes para layout flexível
+
+   Público-alvo:
+
+   Empresas e recrutadores que buscam automatizar e otimizar processos de recrutamento com auxílio de inteligência artificial.

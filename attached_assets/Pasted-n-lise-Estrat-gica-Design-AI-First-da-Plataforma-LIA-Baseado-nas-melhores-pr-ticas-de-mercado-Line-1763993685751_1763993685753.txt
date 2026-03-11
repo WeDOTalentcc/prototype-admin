@@ -1,0 +1,106 @@
+nálise Estratégica: Design AI-First da Plataforma LIA
+Baseado nas melhores práticas de mercado (Linear, Notion AI, GitHub Copilot, Intercom Fin), aqui está minha análise do design atual:
+
+🔍 Problemas Identificados
+1. Baixa Descobrabilidade (Discoverability)
+
+❌ O prompt "Fale com a LIA" depende 100% de intuição do usuário
+❌ Não há pistas visuais sobre o que pode ser feito ali
+❌ Falta onboarding: chips de sugestão, texto fantasma, exemplos
+2. Contexto Implícito (Não Visível)
+
+❌ O sistema entende que está no candidato "Thiago Pereira", mas isso não aparece visualmente
+❌ Usuários não têm certeza se o prompt "entende" o contexto
+❌ Falta pill de contexto (ex: "📍 Contexto: Thiago Pereira • Vaga Diretor TI")
+3. Falta de Affordance (Clareza de Ações)
+
+❌ Recrutadores não sabem que podem "agendar entrevista", "avaliar fit técnico", "gerar email" via prompt
+❌ Não há sugestões inline como Perplexity/ChatGPT mostram
+✅ Solução Proposta: Hybrid AI-Command Surface
+Combinar 3 camadas para maximizar descobrabilidade + velocidade:
+
+🎯 Camada 1: Quick Actions (Chips Contextuais)
+Mostrar sugestões visíveis acima/abaixo do prompt:
+
+┌─────────────────────────────────────────────────┐
+│ 📍 Contexto: Thiago Pereira • Desenvolvedor    │
+├─────────────────────────────────────────────────┤
+│ Sugestões rápidas:                              │
+│ [📅 Agendar entrevista] [⚡ Avaliar fit técnico]│
+│ [✉️ Gerar email follow-up] [📊 Comparar perfis]│
+├─────────────────────────────────────────────────┤
+│ 💬 Ou descreva o que precisa...                 │
+│ ┌───────────────────────────────────────────┐   │
+│ │ Ex: "agendar amanhã às 14h comigo"        │   │
+│ └───────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────┘
+
+Referências de mercado:
+
+Notion AI - Menu de sugestões contextuais
+ChatGPT - Suggestions automáticas
+Perplexity - Related queries visíveis
+⌨️ Camada 2: Command Palette (Cmd+K / Ctrl+K)
+Atalho universal para qualquer página com contexto automático:
+
+Cmd+K → Abre palette
+┌────────────────────────────────────┐
+│ 🔍 Buscar ação...                  │
+│ ─────────────────────────────────  │
+│ 📅 Agendar entrevista              │
+│ 📧 Enviar mensagem WhatsApp        │
+│ 🎯 Avaliar candidato               │
+│ 📊 Comparar com outros perfis     │
+│ 🗓️ Ver agenda do recrutador        │
+└────────────────────────────────────┘
+
+Referências de mercado:
+
+Linear - Cmd+K para tudo
+GitHub - Command palette contextual
+Superhuman - Email via commands
+🤖 Camada 3: AI Prompt (Mantido)
+Linguagem natural para casos não cobertos pelos chips/palette:
+
+💬 "Qual candidato tem mais fit para CLT remoto?"
+💬 "Me mostre desenvolvedores Python em Florianópolis"
+💬 "Avalie se esse perfil encaixa na vaga de CTO"
+
+📐 Arquitetura de Interação Proposta
+┌─────────────────────────────────────────────────────┐
+│              GLOBAL (Qualquer Página)               │
+│  • Cmd+K → Command Palette (ações + AI prompt)     │
+│  • Prompt expandido lateral (pesquisas globais)     │
+└─────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────┐
+│         CONTEXTUAL (Preview do Candidato)           │
+│  📍 Pill: "Thiago Pereira • Desenvolvedor Backend" │
+│  🎯 Quick Actions: [Agendar] [Avaliar] [Email]    │
+│  💬 Prompt AI: "Ou descreva o que precisa..."      │
+└─────────────────────────────────────────────────────┘
+
+🎨 Recomendações de Implementação
+Prioridade Alta (Implementar Agora):
+
+✅ Contextual Pills - Mostrar "📍 Contexto: [Nome] • [Cargo]" no preview
+✅ Suggested Actions (Chips) - 4-6 ações mais comuns como chips clicáveis
+✅ Ghost Text - Placeholder com exemplo: "Ex: agendar amanhã às 14h"
+Prioridade Média (Próxima Sprint):
+4. ⏳ Command Palette (Cmd+K) - Atalho universal para power users
+
+⏳ Empty State - Quando não há contexto, mostrar tutorial inline
+Prioridade Baixa (Futuro):
+6. ⏸️ AI Suggestions - LIA sugere próxima ação baseada em histórico
+
+⏸️ Voice Input - Permitir comando por voz (microfone no prompt)
+🧪 Próximos Passos
+Quer que eu implemente a Camada 1 (Quick Actions + Context Pills) no preview do candidato agora? Isso melhoraria drasticamente a descobrabilidade sem perder o AI-first approach.
+
+Mudanças sugeridas:
+
+Adicionar pill de contexto no topo do chat/preview
+Mostrar 4-6 chips de ações sugeridas (Agendar, Avaliar, Email, Comparar)
+Melhorar placeholder do input com exemplo real
+Fazer chips abrirem os modais AI-first existentes
+Posso prototipar isso rapidamente mantendo toda a arquitetura atual! 🚀

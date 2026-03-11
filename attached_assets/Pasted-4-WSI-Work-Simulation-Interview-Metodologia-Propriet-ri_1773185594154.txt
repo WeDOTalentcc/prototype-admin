@@ -1,0 +1,22 @@
+4. WSI — Work Simulation Interview (Metodologia Proprietária)
+Pipeline completo de avaliação de candidatos via entrevista simulada de trabalho.
+
+Arquivo	Papel
+app/domains/cv_screening/services/wsi_screening_pipeline.py	Pipeline principal — orquestra todo o fluxo WSI
+app/domains/cv_screening/services/wsi_deterministic_scorer.py	Scorer determinístico — cálculo do WSI score com regras fixas + IA
+app/domains/cv_screening/services/wsi_question_generator.py	Gerador de perguntas WSI calibradas por taxonomia de Bloom
+app/domains/cv_screening/services/wsi_question_adjuster.py	Ajuste dinâmico de dificuldade das perguntas durante a entrevista
+app/domains/cv_screening/services/wsi_question_service.py	Serviço CRUD de perguntas WSI
+app/domains/cv_screening/services/wsi_service.py	Serviço geral WSI — coordena triagens, resultados e histórico
+app/domains/cv_screening/services/wsi_voice_orchestrator.py	Orquestrador de triagem por voz
+app/domains/cv_screening/services/rubric_evaluation_service.py	Avaliação por rubrica — aplica critérios estruturados às respostas
+app/domains/cv_screening/services/evaluation_criteria_service.py	Definição e gestão dos critérios de avaliação
+app/domains/cv_screening/services/calibration_profiles.py	Perfis de calibração por senioridade e área
+app/domains/cv_screening/services/seniority_context_calibrator.py	Calibração de contexto por nível de senioridade
+app/domains/cv_screening/services/seniority_resolver.py	Resolução de senioridade a partir do perfil
+app/domains/cv_screening/services/seniority_utils.py	Utilitários de senioridade
+app/domains/cv_screening/services/score_normalization_service.py	Normalização de scores para comparabilidade
+app/domains/cv_screening/services/personalized_feedback_service.py	Geração de feedback personalizado para candidatos
+app/domains/cv_screening/services/pre_qualification_service.py	Pré-qualificação automática de candidatos
+app/domains/cv_screening/services/eligibility_verification_service.py	Verificação de elegibilidade
+app/services/wsi_screening_pipeline.py	Pipeline WSI no nível de serviço (legacy/wrapper)

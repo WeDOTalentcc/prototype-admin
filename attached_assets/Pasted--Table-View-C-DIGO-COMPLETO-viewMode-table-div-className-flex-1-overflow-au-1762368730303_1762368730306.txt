@@ -1,0 +1,394 @@
+{/* Table View - CÓDIGO COMPLETO */}
+{viewMode === 'table' && (
+  <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950 flex flex-col">
+    <div className="p-4 space-y-4">
+      
+      {/* Filtros de Etapa - Pipeline Flow Design */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+              <Columns className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                Filtrar por Etapa
+              </h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {tableStageFilter.length > 0
+                  ? `${tableStageFilter.length} etapa${tableStageFilter.length > 1 ? 's' : ''} selecionada${tableStageFilter.length > 1 ? 's' : ''}`
+                  : 'Todas as etapas'
+                }
+              </p>
+            </div>
+          </div>
+          {tableStageFilter.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearStageFilters}
+              className="h-7 text-xs gap-1"
+            >
+              <X className="w-3 h-3" />
+              Limpar
+            </Button>
+          )}
+        </div>
+
+        {/* Pipeline Flow */}
+        <div className="flex items-center gap-2">
+          {pipelineStages.map((stage, index) => {
+            const isSelected = tableStageFilter.includes(stage.name)
+            const count = getStageCount(stage.name)
+
+            return (
+              <React.Fragment key={stage.id}>
+                <button
+                  onClick={() => toggleStageFilter(stage.name)}
+                  className={`
+                    flex-1 relative
+                    transition-all duration-200
+                    ${isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'}
+                  `}
+                >
+                  <div className={`
+                    rounded-lg px-4 py-3
+                    border
+                    transition-all duration-200
+                    ${isSelected
+                      ? `${stage.color} border-blue-400 dark:border-blue-500 shadow-sm`
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-750'
+                    }
+                  `}>
+                    {/* Stage Name */}
+                    <div className={`
+                      text-xs font-semibold mb-1
+                      ${isSelected ? '' : 'text-gray-600 dark:text-gray-400'}
+                    `}>
+                      {stage.name}
+                    </div>
+
+                    {/* Count */}
+                    <div className="flex items-baseline gap-1">
+                      <span className={`
+                        text-2xl font-bold
+                        ${isSelected
+                          ? 'text-current'
+                          : 'text-gray-900 dark:text-gray-100'
+                        }
+                      `}>
+                        {count}
+                      </span>
+                      <span className={`
+                        text-[10px] font-medium
+                        ${isSelected
+                          ? 'text-current opacity-70'
+                          : 'text-gray-500 dark:text-gray-400'
+                        }
+                      `}>
+                        {count === 1 ? 'candidato' : 'candidatos'}
+                      </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mt-2 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          isSelected
+                            ? 'bg-current'
+                            : 'bg-gray-400 dark:bg-gray-600'
+                        }`}
+                        style={{
+                          width: `${Math.min(100, (count / getAllCandidates().length) * 100 * 3)}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Selection Indicator */}
+                  {isSelected && (
+                    <div className="absolute -top-1.5 -right-1.5">
+                      <div className="w-5 h-5 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center shadow-md">
+                        <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
+                      </div>
+                    </div>
+                  )}
+                </button>
+
+                {/* Connector Arrow Between Stages */}
+                {index < pipelineStages.length - 1 && (
+                  <div className="flex-shrink-0 text-gray-300 dark:text-gray-600">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                )}
+              </React.Fragment>
+            )
+          })}
+        </div>
+
+        {/* Quick Stats */}
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-gray-600 dark:text-gray-400">
+                Taxa de Conversão:
+              </span>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">
+                {Math.round((pipelineStages.find(s => s.name === 'Final')?.count || 0) / (getAllCandidates().length || 1) * 100)}%
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-gray-600 dark:text-gray-400">
+                Em Processo:
+              </span>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">
+                {getAllCandidates().filter((c: any) =>
+                  ['Triagem', 'Entrevista', 'Final'].includes(c.stage)
+                ).length}
+              </span>
+            </div>
+          </div>
+          <div className="text-gray-500 dark:text-gray-400">
+            Clique nas etapas para filtrar
+          </div>
+        </div>
+      </div>
+
+      {/* TABELA COMPLETA */}
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <table className="w-full">
+          
+          {/* HEADER DA TABELA */}
+          <thead className="bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
+            <tr>
+              
+              {/* Checkbox Header para Seleção em Massa */}
+              <th className="px-4 py-3 text-left">
+                <div
+                  onClick={() => {
+                    const paginatedData = getPaginatedCandidates()
+                    const allIds = new Set(paginatedData.candidates.map((c: any) => c.id))
+                    const allSelected = paginatedData.candidates.every((c: any) => selectedCandidatesForBatch.has(c.id))
+
+                    if (allSelected) {
+                      // Deselect all from current page
+                      setSelectedCandidatesForBatch(prev => {
+                        const newSet = new Set(prev)
+                        paginatedData.candidates.forEach((c: any) => newSet.delete(c.id))
+                        return newSet
+                      })
+                    } else {
+                      // Select all from current page
+                      setSelectedCandidatesForBatch(prev => {
+                        const newSet = new Set(prev)
+                        paginatedData.candidates.forEach((c: any) => newSet.add(c.id))
+                        return newSet
+                      })
+                    }
+                    setBulkActionMode(selectedCandidatesForBatch.size > 0)
+                  }}
+                  className="cursor-pointer"
+                >
+                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                    getPaginatedCandidates().candidates.length > 0 && getPaginatedCandidates().candidates.every((c: any) => selectedCandidatesForBatch.has(c.id))
+                      ? 'bg-blue-600 border-blue-600'
+                      : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                  }`}>
+                    {getPaginatedCandidates().candidates.length > 0 && getPaginatedCandidates().candidates.every((c: any) => selectedCandidatesForBatch.has(c.id)) && (
+                      <CheckCircle className="w-3.5 h-3.5 text-white" fill="currentColor" />
+                    )}
+                  </div>
+                </div>
+              </th>
+
+              {/* ID Column */}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                ID
+              </th>
+
+              {/* Nota LIA Geral - Sortable */}
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleTableSort('notaLiaGeral')}
+              >
+                <div className="flex items-center gap-2">
+                  <BrainCircuit className="w-3.5 h-3.5 text-blue-600" />
+                  Nota LIA
+                  {tableSortColumn === 'notaLiaGeral' && (
+                    tableSortDirection === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
+                  )}
+                </div>
+              </th>
+
+              {/* Score LIA Triagem - Sortable */}
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleTableSort('scoreLiaTriagem')}
+              >
+                <div className="flex items-center gap-2">
+                  Triagem LIA
+                  {tableSortColumn === 'scoreLiaTriagem' && (
+                    tableSortDirection === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
+                  )}
+                </div>
+              </th>
+
+              {/* Score LIA CV - Sortable */}
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleTableSort('scoreLiaCV')}
+              >
+                <div className="flex items-center gap-2">
+                  Score LIA CV
+                  {tableSortColumn === 'scoreLiaCV' && (
+                    tableSortDirection === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
+                  )}
+                </div>
+              </th>
+
+              {/* Teste Técnico - Sortable */}
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleTableSort('testeTecnico')}
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5 text-purple-600" />
+                  Técnico
+                  {tableSortColumn === 'testeTecnico' && (
+                    tableSortDirection === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
+                  )}
+                </div>
+              </th>
+
+              {/* Teste Inglês - Sortable */}
+              <th
+                className="px-3 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleTableSort('testeIngles')}
+              >
+                <div className="flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-indigo-600" />
+                  Inglês
+                  {tableSortColumn === 'testeIngles' && (
+                    tableSortDirection === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
+                  )}
+                </div>
+              </th>
+
+              {/* Assessment Big Five */}
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
+                  Big Five
+                </div>
+              </th>
+
+              {/* Alertas LIA */}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-3.5 h-3.5 text-orange-600" />
+                  Alertas LIA
+                </div>
+              </th>
+
+              {/* Candidato - Sortable */}
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleTableSort('name')}
+              >
+                <div className="flex items-center gap-2">
+                  Candidato
+                  {tableSortColumn === 'name' && (
+                    tableSortDirection === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
+                  )}
+                </div>
+              </th>
+
+              {/* Cargo */}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Cargo
+              </th>
+
+              {/* Empresa */}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Empresa
+              </th>
+
+              {/* Salário Atual */}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Salário Atual
+              </th>
+
+              {/* Expectativa */}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Expectativa
+              </th>
+
+              {/* Localização - Sortable */}
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleTableSort('location')}
+              >
+                <div className="flex items-center gap-2">
+                  Localização
+                  {tableSortColumn === 'location' && (
+                    tableSortDirection === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
+                  )}
+                </div>
+              </th>
+
+              {/* Etapa - Sortable */}
+              <th
+                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleTableSort('stage')}
+              >
+                <div className="flex items-center gap-2">
+                  Etapa
+                  {tableSortColumn === 'stage' && (
+                    tableSortDirection === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
+                  )}
+                </div>
+              </th>
+
+              {/* Status */}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Status
+              </th>
+
+              {/* Ações */}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Ações
+              </th>
+            </tr>
+          </thead>
+
+          {/* BODY DA TABELA - LINHAS DE CANDIDATOS */}
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            {getPaginatedCandidates().candidates.map((candidate: any) => {
+              // Calcular valores para cada candidato
+              const ranking = calculateNotaLiaGeral(candidate)
+              const alerts = getLiaAlerts(candidate)
+              const urgency = getUrgencyLevel(ranking)
+              const isSelected = selectedCandidatesForBatch.has(candidate.id)
+              
+              return (
+                <tr
+                  key={candidate.id}
+                  className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
+                    isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''
+                  }`}
+                  onClick={() => handleViewCandidate(candidate)}
+                >
+                  {/* Checkbox para Seleção Individual */}
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      onClick={() => toggleCandidateSelection(candidate.id)}
+                      className="cursor-pointer"
+                    >
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                        isSelected
+                          ? 'bg-blue-600 border-blue-600'
+                          : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600

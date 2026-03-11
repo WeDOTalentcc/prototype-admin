@@ -1,0 +1,64 @@
+Etapa 7.3: Busca Ativa - Detalhamento Completo
+Fluxo de Adição ao Pipeline
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    FLUXO BUSCA ATIVA (Stage 7.3)                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1️⃣ LIA INICIA BUSCA                                                        │
+│  ├── Busca no banco local do recrutador                                     │
+│  ├── Se insuficiente + Pearch ativo → busca global                          │
+│  └── Calcula match score para cada candidato                                │
+│                                                                              │
+│  2️⃣ ADIÇÃO AO PIPELINE                                                      │
+│  ├── Método: `_add_candidates_to_job()` ou `_add_pearch_candidates_to_job()`│
+│  ├── Cria registro Interview com:                                           │
+│  │   ├── status: "pending"                                                  │
+│  │   ├── application_stage: "triagem"                                       │
+│  │   ├── interview_type: "triagem"                                          │
+│  │   └── created_by: "sourcing_pipeline" ou "sourcing_pipeline_pearch"      │
+│  ├── Score: ✅ Pearch salva lia_score | ⚠️ Local não salva                  │
+│  └── Detalhes: ver seção "ONDE O SCORE É ARMAZENADO" abaixo                 │
+│                                                                              │
+│  3️⃣ ORDENAÇÃO (apenas em AgentResponse, não persiste no DB)                 │
+│  ├── candidatos.sort(key=lambda x: x.get("overall_score", 0), reverse=True) │
+│  ├── Aplicado apenas ao retornar resposta para o frontend                   │
+│  └── Ordem no banco/kanban: conforme inserção (não por score)               │
+│                                                                              │
+│  4️⃣ ONDE O SCORE É ARMAZENADO                                               │
+│  ├── Candidate.lia_score: Float (modelo candidate.py linha 206/353)         │
+│  ├── ✅ Pearch: lia_score=data.get("match_score") na criação (linha 674)    │
+│  ├── ⚠️ Local: lia_score NÃO é setado na adição ao pipeline                 │
+│  ├── Sorting: AgentResponse ordena por overall_score (não persiste no DB)   │
+│  └── UI: implementação de exibição depende do frontend (não verificado)     │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+Notificações ao Recrutador
+Canais disponíveis:
+
+bell - Notificação in-app (sino)
+email - E-mail automático
+teams - Microsoft Teams (webhook)
+sms - SMS (via Twilio)
+Notificação de Triagem Concluída:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  📬 TEAMS / BELL NOTIFICATION                                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Título: "Triagem concluída: {candidate_name}"                              │
+│                                                                              │
+│  Mensagem:                                                                   │
+│  "Score WSI: {wsi_score}/5 - {recommendation}                               │
+│   Confiança: {confidence}%"                                                  │
+│                                                                              │
+│  Onde:                                                                       │
+│  - recommendation = "Aprovado - Sugerido: {stage}" ou                       │
+│                     "Não aprovado - Revisão recomendada"                     │
+│                                                                              │
+│  Ações sugeridas:                                                            │
+│  - [Aprovar transição] / [Ver detalhes]                                     │
+│  - [Ver relatório completo]                                                 │
+│  - [Agendar entrevista] / [Arquivar candidato]                              │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+Status: Fluxo Recrutador → WhatsApp Triagem

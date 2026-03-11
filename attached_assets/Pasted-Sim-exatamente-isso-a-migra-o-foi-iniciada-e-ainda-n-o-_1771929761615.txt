@@ -1,0 +1,135 @@
+Sim, é exatamente isso — a migração foi iniciada e ainda não foi concluída. A plataforma nasceu com a arquitetura legacy (18 agentes) e está sendo progressivamente migrada para ReAct (7 agentes já migrados). As duas coexistem porque é mais seguro migrar domínio por domínio do que reescrever tudo de uma vez.
+
+O que ainda é Legacy? (Mapa completo)
+Aqui está o retrato exato — 18 agentes legacy, em 7 áreas diferentes:
+
+#	Agente Legacy	Área (Domínio)	O que faz
+1	JobDraftingAgent	Gestão de Vagas	Rascunho de descrição de vaga
+2	JobIntakeAgent	Gestão de Vagas	Intake de requisitos de vaga
+3	JobLifecycleAgent	Gestão de Vagas	Ciclo de vida da vaga
+4	JobInsightsAgent	Gestão de Vagas	Insights sobre vagas
+5	JobBenefitsCompAgent	Gestão de Vagas	Benefícios e compensação
+6	JobRubricAgent	Gestão de Vagas	Rubricas de avaliação
+7	RecruiterAssistantAgent	Assistente do Recrutador	Assistente geral (fallback)
+8	ScreeningAgent	Triagem de CVs	Screening de candidatos
+9	AvaliadorWSIAgent	Triagem de CVs	Avaliação WSI
+10	TriagemCurricularAgent	Triagem de CVs	Triagem curricular
+11	SourcingAgent	Sourcing	Sourcing (fallback)
+12	CommunicationAgent	Comunicação	Comunicação multi-canal
+13	SchedulingAgent	Entrevistas	Agendamento de entrevistas
+14	EntrevistadorAgent	Entrevistas	Condução de entrevistas
+15	AnalyticsAgent	Analytics	Relatórios e analytics
+16	AnalistaFeedbackAgent	Analytics	Análise de feedback
+17	IntegradorATSAgent	Integração ATS	Integração com ATS externos
+18	TaskPlannerAgent	Automação	Planejamento de tarefas
+Situação por área:
+┌──────────────────────────────────────────────────────────────┐
+│         MIGRAÇÃO POR DOMÍNIO — STATUS ATUAL                  │
+│                                                              │
+│  DOMÍNIO              │ ReAct        │ Legacy     │ Status   │
+│  ─────────────────────┼──────────────┼────────────┼──────────│
+│  Gestão de Vagas      │ WizardReAct  │ 6 agentes  │ PARCIAL  │
+│                       │ (9 tools)    │            │          │
+│  Assistente Recrutador│ KanbanReAct  │ 1 agente   │ PARCIAL  │
+│                       │ TalentReAct  │ (fallback) │          │
+│                       │ JobsMgmtReAct│            │          │
+│  Triagem de CVs       │ PipelineReAct│ 3 agentes  │ PARCIAL  │
+│                       │ (14 tools)   │            │          │
+│  Sourcing             │ SourcingReAct│ 1 agente   │ PARCIAL  │
+│                       │ (14 tools)   │ (fallback) │          │
+│  Políticas Contratação│ PolicyReAct  │ NENHUM     │ ✅ 100%  │
+│                       │ (13 tools)   │            │          │
+│  Comunicação          │ —            │ 1 agente   │ ❌ 0%    │
+│  Entrevistas          │ —            │ 2 agentes  │ ❌ 0%    │
+│  Analytics            │ —            │ 2 agentes  │ ❌ 0%    │
+│  Integração ATS       │ —            │ 1 agente   │ ❌ 0%    │
+│  Automação            │ —            │ 1 agente   │ ❌ 0%    │
+└──────────────────────────────────────────────────────────────┘
+Resumo: Apenas 1 domínio (Políticas de Contratação) está 100% migrado. 4 domínios têm ReAct mas mantêm legacy como fallback. 5 domínios ainda são 100% legacy.
+
+Diferença de consumo de tokens
+Esta é uma pergunta muito boa, e a resposta é: sim, ReAct tende a consumir mais tokens por interação, e aqui está o porquê:
+
+Como cada um consome tokens:
+LEGACY (1 chamada LLM por interação):
+┌──────────┐     ┌──────────┐     ┌──────────┐
+│  Input   │ ──→ │  1x LLM  │ ──→ │ Resposta │
+│  do user │     │  call    │     │  final   │
+└──────────┘     └──────────┘     └──────────┘
+Tokens: ~1.000-3.000 por interação (1 chamada)
+ReAct (até 5 chamadas LLM por interação):
+┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│  Input   │ ──→ │ Thought  │ ──→ │  Action  │ ──→ │ Observe  │ ──╮
+│  do user │     │ (LLM #1) │     │ (Tool)   │     │ (result) │   │
+└──────────┘     └──────────┘     └──────────┘     └──────────┘   │
+                                                                   │
+     ╭─────────────────────────────────────────────────────────────╯
+     │  Loop repete até 5x (max_iterations = 5)
+     ▼
+┌──────────┐
+│ Resposta │
+│  final   │
+└──────────┘
+Tokens: ~3.000-15.000 por interação (1-5 chamadas)
+Comparação direta:
+Aspecto	Legacy	ReAct
+Chamadas LLM por interação	1 (fixa)	1 a 5 (dinâmica)
+Tokens por chamada	~1.000-3.000	~1.000-3.000 cada
+Total por interação	~1.000-3.000	~3.000-15.000
+Custo estimado	~$0.01	~$0.01-0.05
+Mas...	Pode precisar de 3-4 interações para resolver	Frequentemente resolve em 1 interação
+O ponto-chave: custo por RESULTADO, não por chamada
+O ReAct consome mais tokens por interação, mas resolve problemas mais complexos em menos interações. Pense assim:
+
+Legacy: O usuário pergunta algo complexo → agente dá resposta parcial → usuário precisa reformular → outra resposta parcial → 3-4 trocas para resolver. Total: 4 x $0.01 = $0.04
+ReAct: O usuário pergunta algo complexo → agente raciocina, usa 3 tools, dá resposta completa. Total: 1 x $0.04 = $0.04
+O custo total tende a ser similar, mas a experiência do usuário é muito melhor com ReAct porque resolve em uma interação só.
+
+A plataforma rastreia tudo isso na tabela AiConsumption — cada chamada LLM registra input_tokens, output_tokens, cost_cents, agent_type e model, com limite mensal de 100.000 tokens por empresa (configurável).
+
+Quer que eu adicione esses detalhes ao documento educacional, especialmente o mapa de status da migração e a análise de consumo de tokens?
+
+antes disso, para confirmar, a recomendacao entao, seria migrar tudo para react. com isso nós reduziriamos ou enxugariamos a estrutura de agentes ou nao? para entender
+
+Excelente pergunta. A resposta é sim, a recomendação é migrar tudo para ReAct, e sim, isso enxugaria significativamente a estrutura. Deixa eu te mostrar o porquê com números concretos:
+
+Hoje: 26 agentes (7 ReAct + 1 LangGraph + 18 Legacy)
+Depois da migração completa: ~9-12 agentes ReAct
+A mágica é que um agente ReAct substitui vários agentes legacy, porque ele é flexível o suficiente para cobrir múltiplas funções dentro do mesmo domínio. Olha o que já aconteceu:
+
+EXEMPLO REAL — DOMÍNIO "GESTÃO DE VAGAS":
+ANTES (Legacy):                    DEPOIS (ReAct):
+├── JobDraftingAgent               ├── WizardReActAgent (9 tools)
+├── JobIntakeAgent                 │   └── 1 agente faz TUDO que
+├── JobLifecycleAgent              │       os 6 faziam, porque
+├── JobInsightsAgent               │       escolhe a tool certa
+├── JobBenefitsCompAgent           │       conforme o contexto
+├── JobRubricAgent                 │
+│                                  │
+│   6 agentes                      │   1 agente
+│   6 arquivos de lógica           │   4 arquivos (padrão fixo)
+│   Código duplicado entre eles    │   Zero duplicação
+Projeção da migração completa:
+Domínio	Legacy (hoje)	ReAct (projeção)	Redução
+Gestão de Vagas	6 agentes	1 (WizardReAct) ✅ já existe	-5
+Assistente Recrutador	1 agente	3 (Kanban + Talent + JobsMgmt) ✅ já existe	+2*
+Triagem de CVs	3 agentes	1 (PipelineReAct) ✅ já existe	-2
+Sourcing	1 agente	1 (SourcingReAct) ✅ já existe	0
+Políticas	0	1 (PolicyReAct) ✅ já existe	0
+Comunicação	1 agente	1 ReAct (futuro)	0
+Entrevistas	2 agentes	1 ReAct (futuro)	-1
+Analytics	2 agentes	1 ReAct (futuro)	-1
+Integração ATS	1 agente	1 ReAct (futuro)	0
+Automação	1 agente	1 ReAct (futuro)	0
+TOTAL	18 legacy	~12 ReAct	~14 agentes a menos
+*O domínio "Assistente do Recrutador" cresceu de 1 para 3 porque a versão legacy era um agente genérico que fazia tudo mal; a versão ReAct dividiu em 3 especializados que fazem tudo bem.
+
+Então o que enxuga de verdade?
+Não é só o número de agentes — é a complexidade total:
+
+Menos código: Cada agente ReAct segue o padrão de 4 arquivos. Hoje os 18 legacy têm estruturas diferentes entre si.
+Zero duplicação: Serviços compartilhados (FairnessGuard, busca, cache) são acessados via tools, não replicados em cada agente.
+Um único motor: Todos os agentes ReAct usam o mesmo ReActLoop. Manutenção centralizada — melhora um, melhora todos.
+Menos rotas de decisão: O Orchestrator precisa saber rotear para 26 agentes hoje. Com migração completa, seriam ~12, todos via ReactAgentRegistry.
+A analogia:
+Hoje é como ter 26 funcionários, cada um com um manual de instruções diferente. Depois da migração, seriam ~12 funcionários, todos treinados pelo mesmo método, com acesso às mesmas ferramentas, mas cada um especialista na sua área.

@@ -1,0 +1,45 @@
+1. O que o guia cobre bem (e está acima da média do mercado)
+O guia é muito maduro nestas áreas:
+
+Filosofia conversation-first — A articulação de LIA como persona, o híbrido proposital (botões+chat), a convergência progressiva. Isso é visão de produto sofisticada que poucos competidores têm documentado assim.
+Metodologia WSI — Multi-bloco com frameworks psicométricos (Bloom, Dreyfus, CBI, Big Five) é significativamente mais estruturado que a maioria das plataformas de recrutamento com IA.
+12 Crenças + Inegociáveis — O manifesto é um dos melhores que já vi para produtos de IA em RH. A crença #11 (anti-bajulação) e #12 (autonomia progressiva) são particularmente diferenciadas.
+LGPD com 6 pilares — Cobertura sólida para o mercado brasileiro.
+Governança de agentes — Prompt injection, confidence thresholds, human review gates.
+2. O que FALTA no guia vs. melhores práticas de mercado
+Aqui estão as lacunas que identifico quando comparo com frameworks como NIST AI RMF, EU AI Act (que entra em vigor em 2026), ISO 42001, e práticas de líderes como HireVue, Pymetrics/Harver:
+
+Regulatório & Compliance:
+
+EU AI Act detalhado — O guia menciona o EU AI Act mas não detalha que IA em recrutamento é classificada como high-risk (Art. 6/Anexo III). Falta: avaliação de conformidade, FRIA (Fundamental Rights Impact Assessment), requisitos de documentação técnica específicos do AI Act.
+Acessibilidade (WCAG 2.1) — Não mencionado em nenhum lugar. Para uma plataforma de recrutamento, acessibilidade é obrigatória legalmente em muitos mercados e crítica para DEI genuíno.
+Compliance internacional — Só cobre Brasil/LGPD. Nada sobre GDPR para candidatos internacionais ou requisitos dos EUA (EEOC, NYC LL144 — que aliás já aparece no frontend mas não no guia).
+Operacional & Maturidade de IA:
+
+Model drift detection — Como detectar quando a qualidade da IA degrada ao longo do tempo? Não existe protocolo.
+Taxonomia de incidentes de IA — O guia tem breach response, mas não distingue entre: falha de modelo, incidente de viés, vazamento de dados, alucinação, prompt injection bem-sucedido. Cada tipo precisa de resposta diferente.
+Protocolo de red teaming estruturado — Mencionado como item de checklist mas sem protocolo real (quem faz, com que frequência, que cenários, que ferramentas).
+LLM evaluation framework — Como medir a qualidade das respostas sistematicamente? RAGAS para RAG quality, prompt regression testing. O guia não aborda.
+Feedback loop formalizado — Como o feedback do recrutador volta para melhorar o sistema? Long-term memory existe no código mas o guia não formaliza o ciclo.
+Experiência do candidato:
+
+Métricas de experiência — Nenhum KPI de candidato: NPS, CSAT, tempo de resposta, satisfação com feedback, taxa de abandono no screening WhatsApp.
+Acessibilidade do screening — E se o candidato tem deficiência visual e não pode usar WhatsApp? Canais alternativos acessíveis.
+3. O que vocês JÁ CONSTRUÍRAM mas o guia NÃO documenta
+Isso é talvez o mais importante — o guia deveria refletir o que vocês já fizeram:
+
+Circuit Breaker pattern (3 estados) — Implementado no código, não está no guia como princípio de resiliência.
+Fallback multi-provider LLM (Claude→Gemini→OpenAI) — Funciona, mas o guia não documenta a estratégia de cascata.
+Token cost management — Budget por user/company com limites diários ($500/company), alertas em 70%. O guia não menciona.
+Anti-sycophancy com benchmarks de mercado — O PolicyReActAgent usa dados reais de 8 setores (ABRH, GPTW, Gupy, Robert Half) para contra-argumentar. Isso é uma feature diferenciadora que deveria estar no guia.
+30+ páginas de compliance no admin — SOC-2, SOX, ISO-27001, DPO, gestão de incidentes, portal do titular, consentimentos. O guia mal menciona.
+Pre-qualification antes do chat — PreQualificationService avalia CV vs. rubric antes de iniciar diálogo. Não está na Parte III.
+Confidence Policy Service — Sistema de 3 tiers (APPLY_SILENT/APPLY_NOTIFY/ASK_USER) com thresholds calibrados. Documentado parcialmente no guia mas merecia mais destaque.
+Long-term memory cross-session — LIA aprende entre sessões. O guia diz "Learning" no nome mas não detalha como o aprendizado funciona.
+PII Masking global — Filtro automático em todos os logs. Deveria ser destaque nos Inegociáveis.
+Resumo: O que eu recomendo
+Antes de criar as skills, eu sugeriria:
+
+Enriquecer o guia — Adicionar as lacunas de mercado (EU AI Act high-risk, acessibilidade, taxonomia de incidentes, métricas de candidato) e documentar o que vocês já construíram mas não está no guia.
+
+Depois criar as skills — Com o guia completo, as skills teriam cobertura total e seriam muito mais poderosas.

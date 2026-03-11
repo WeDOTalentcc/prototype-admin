@@ -1,0 +1,192 @@
+🔒 Área de Observabilidade e Governança por Cliente
+Arquitetura em 4 Camadas
+┌─────────────────────────────────────────────────────────────┐
+│                    DASHBOARDS (Frontend)                     │
+│  Compliance Center │ AI Governance │ LGPD Console │ Health  │
+├─────────────────────────────────────────────────────────────┤
+│                  GOVERNANCE SERVICES (Backend)               │
+│  Audit Engine │ Bias Detector │ DSR Handler │ Alert Manager │
+├─────────────────────────────────────────────────────────────┤
+│               OBSERVABILITY LAKEHOUSE (Storage)              │
+│  audit_events │ ai_inference_logs │ consent_records │ etc   │
+├─────────────────────────────────────────────────────────────┤
+│                   DATA INGESTION (Collectors)                │
+│  Auth Events │ AI Traces │ Data Access │ Integration Health │
+└─────────────────────────────────────────────────────────────┘
+
+📊 Indicadores por Framework de Compliance
+ISO 27001 (Segurança da Informação)
+Métrica	Descrição
+Inventário de Ativos	Dados sensíveis por cliente
+Controles de Acesso	Logins, permissões, MFA status
+Incidentes de Segurança	Tentativas de acesso indevido
+Tempo de Resposta a Incidentes	MTTR (Mean Time to Respond)
+SOC 2 (Trust Services Criteria)
+Métrica	Descrição
+Disponibilidade	Uptime por serviço (SLA 99.9%)
+Integridade de Processamento	Validação de dados de entrada/saída
+Confidencialidade	Criptografia, mascaramento de PII
+Privacidade	Consentimentos ativos, retenção
+Ética em IA
+Métrica	Descrição
+Bias Drift	Variação de viés em decisões de IA
+Fairness Parity	Equidade por gênero/idade/etnia
+Explainability Coverage	% decisões com explicação disponível
+Human-in-Loop SLA	Tempo para revisão humana quando solicitada
+Override Rate	Taxa de correções humanas em decisões IA
+LGPD (Lei Geral de Proteção de Dados)
+Métrica	Descrição
+Minimização de Dados	Campos coletados vs necessários
+Consentimento Ativo	% candidatos com consentimento válido
+DSR Handling (Direitos do Titular)	Solicitações de acesso/exclusão
+Tempo de Resposta DSR	SLA de 15 dias úteis
+Retenção de Dados	Dados além do prazo legal
+📝 Logs e Dados a Capturar
+1. Logs de Autenticação e Acesso
+- user_id, company_id, action, resource, ip_address, user_agent
+- timestamp, session_id, mfa_used, success/failure
+
+2. Traces de Decisões de IA
+- inference_id, agent_type, candidate_id, vacancy_id
+- input_data (prompt), output_data (response)
+- model_version, latency_ms, tokens_used
+- confidence_score, decision_made, human_override
+- feature_attributions (explicabilidade)
+
+3. Logs de Acesso a Dados
+- data_type (CV, parecer, score), operation (read/export)
+- requestor_id, purpose, legal_basis
+- pii_fields_accessed, anonymized
+
+4. Registros de Consentimento
+- candidate_id, consent_type, version, granted_at
+- ip_address, expiry_date, revoked_at
+- legal_basis, data_controller
+
+🗄️ Schemas de Banco de Dados
+-- Eventos de Auditoria Geral
+CREATE TABLE audit_events (
+  id UUID PRIMARY KEY,
+  company_id UUID NOT NULL,
+  user_id UUID,
+  event_type VARCHAR(50),  -- 'login', 'data_export', 'config_change'
+  resource_type VARCHAR(50),
+  resource_id UUID,
+  action VARCHAR(50),
+  old_value JSONB,
+  new_value JSONB,
+  ip_address INET,
+  user_agent TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+-- Logs de Inferência de IA
+CREATE TABLE ai_inference_logs (
+  id UUID PRIMARY KEY,
+  company_id UUID NOT NULL,
+  agent_type VARCHAR(50),  -- 'screening', 'scoring', 'interview'
+  candidate_id UUID,
+  vacancy_id UUID,
+  model_version VARCHAR(20),
+  input_hash VARCHAR(64),  -- Hash do input (privacidade)
+  input_preview TEXT,      -- Preview truncado
+  output_summary JSONB,
+  decision_type VARCHAR(50),
+  confidence_score DECIMAL(5,4),
+  latency_ms INTEGER,
+  tokens_used INTEGER,
+  human_override BOOLEAN DEFAULT FALSE,
+  override_reason TEXT,
+  override_by UUID,
+  feature_attributions JSONB,
+  bias_flags JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+-- Logs de Acesso a Dados (LGPD)
+CREATE TABLE data_access_logs (
+  id UUID PRIMARY KEY,
+  company_id UUID NOT NULL,
+  user_id UUID NOT NULL,
+  data_subject_id UUID,    -- ID do candidato
+  data_type VARCHAR(50),   -- 'cv', 'score', 'parecer'
+  operation VARCHAR(20),   -- 'view', 'export', 'delete'
+  pii_fields TEXT[],
+  purpose VARCHAR(100),
+  legal_basis VARCHAR(50),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+-- Registros de Consentimento
+CREATE TABLE consent_records (
+  id UUID PRIMARY KEY,
+  company_id UUID NOT NULL,
+  candidate_id UUID NOT NULL,
+  consent_type VARCHAR(50),  -- 'data_processing', 'ai_scoring', 'marketing'
+  version VARCHAR(10),
+  granted_at TIMESTAMP,
+  expires_at TIMESTAMP,
+  revoked_at TIMESTAMP,
+  ip_address INET,
+  source VARCHAR(50),
+  legal_basis VARCHAR(50),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+-- Relatórios de Incidentes
+CREATE TABLE incident_reports (
+  id UUID PRIMARY KEY,
+  company_id UUID,          -- NULL se global
+  incident_type VARCHAR(50),
+  severity VARCHAR(20),     -- 'low', 'medium', 'high', 'critical'
+  description TEXT,
+  affected_resources JSONB,
+  detected_at TIMESTAMP,
+  resolved_at TIMESTAMP,
+  root_cause TEXT,
+  remediation_actions TEXT[],
+  notified_parties TEXT[],
+  created_by UUID,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+-- Avaliações de Modelo (Bias/Fairness)
+CREATE TABLE model_evaluations (
+  id UUID PRIMARY KEY,
+  company_id UUID,
+  model_version VARCHAR(20),
+  evaluation_type VARCHAR(50), -- 'bias_check', 'fairness_audit'
+  dimension VARCHAR(50),       -- 'gender', 'age', 'ethnicity'
+  metric_name VARCHAR(50),
+  metric_value DECIMAL(10,6),
+  threshold DECIMAL(10,6),
+  passed BOOLEAN,
+  sample_size INTEGER,
+  evaluation_date DATE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+📈 Dashboards Propostos
+1. Compliance Control Center
+Status geral de compliance (ISO, SOC2, LGPD)
+Controles ativos vs pendentes
+Próximas auditorias
+Exportar bundle de evidências
+2. AI Governance Monitor
+Decisões de IA por agente
+Taxa de override humano
+Métricas de bias por dimensão
+Explainability coverage
+3. LGPD & Privacy Console
+Consentimentos ativos vs expirados
+Solicitações DSR (acesso, exclusão, portabilidade)
+Dados além do prazo de retenção
+Relatório de Impacto (RIPD)
+4. Operational Health (SLO)
+Uptime por serviço
+Latência de APIs
+Health das integrações
+Incidentes abertos
+⏰ Política de Retenção de Dados
+Tipo de Dado	Retenção	Motivo
+Logs de Autenticação	2 anos	SOC2, ISO 27001
+Traces de IA	5 anos	Auditoria, explicabilidade
+Dados de Candidatos	2 anos após última interação	LGPD Art. 15
+Registros de Consentimento	5 anos após revogação	Prova legal
+Incidentes de Segurança	5 anos	Regulatório
+Métricas de Bias	Indefinido (anonimizado)	Melhoria contínua

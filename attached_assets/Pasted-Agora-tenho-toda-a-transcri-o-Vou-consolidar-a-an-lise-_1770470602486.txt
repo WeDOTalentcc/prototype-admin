@@ -1,0 +1,272 @@
+Agora tenho toda a transcrição. Vou consolidar a análise completa:
+
+Análise da Reunião de Alinhamento — 06/02/2026
+Baseada na transcrição completa (1h32min) entre Paulo Moraes e Anderson Victhor, cruzada com os 15 épicos do documento lia-mvp-cards-jira.md.
+
+ÉPICO 1: Autenticação (EPIC-AUTH) — 4 cards
+Status na reunião: Em andamento, decisões importantes tomadas
+
+Decisões:
+
+Adotar subdomínio por empresa (ex: itau.wedotalent.cc) em vez de switch de account simples — mais trabalho, mas habilita white label e customização de logo
+WorkOS SSO com JWT já está encaminhado
+Wildcard SSL precisa de card para configuração no Google Cloud
+Cards a ajustar:
+
+AUTH-001 — Adicionar customização de logo/branding por tenant na tela de login
+NOVO CARD: AUTH-005 — Configuração Wildcard SSL + Google Cloud para multi-brand/subdomínio
+NOVO CARD: AUTH-006 — Revisão final de design pelo Lucas (logos, marca atualizada)
+ÉPICO 2: Wizard Conversacional (EPIC-WIZARD) — 13 cards
+Status na reunião: Passaram rápido, foco foi em WSI dentro do wizard
+
+Decisões:
+
+O estágio de perguntas WSI (WIZ-012) é na verdade parte de edição da vaga
+Quality Gates WSI (WIZ-013) faz parte do wizard
+Geração de perguntas WSI é épico próprio (Épico 4)
+Revisão metodológica com André ficou para depois (quando tiver geração WSI + respostas funcionando)
+Cards a ajustar:
+
+NOVO CARD: WIZ-014 — Revisão de metodologia Wizard ponta a ponta com André (pós-MVP, quando screening estiver funcional)
+ÉPICO 3: Busca e Mapeamento (EPIC-MAPPING) — 6 cards
+Status na reunião: Maioria feita, filtros avançados com dificuldade técnica
+
+Decisões:
+
+Lista de candidatos: OK
+Busca semântica: OK (ElasticSearch para armazenamento chave-valor)
+Filtros avançados (MAP-003): Dificuldade com filtros de shortlisted/placement — desdobramentos como data e vagas específicas complicaram. Felipe quase termina
+Adicionar candidato à vaga: feito
+Matching Score IA: feito
+Sugestões proativas: feito
+Cards a ajustar:
+
+NOVO CARD: MAP-007 — Cards de revisão do André (trabalho de revisão de qualidade de busca)
+ÉPICO 4: Geração de Perguntas WSI (EPIC-WSI) — 5 cards
+Status na reunião: Motor e blocos prontos, decisão crucial sobre edição
+
+Decisões:
+
+Motor de geração: pronto
+Blocos de metodologia: pronto
+Preview: precisa trabalhar para funcionar com screening
+DECISÃO CRÍTICA: Remover edição manual direta (WSI-004). Recrutador NÃO edita perguntas — isso poderia quebrar a metodologia WSI
+Substituir por edição via prompt — o recrutador diz "não gostei disso, quero mais daquilo" e a IA regenera mantendo a integridade da metodologia
+Aprovação: em revisão (dúvida se recrutador aprova ou IA decide)
+Cards a ajustar:
+
+WSI-004 — REMOVER "Edição Manual de Perguntas"
+NOVO CARD: WSI-006 — Edição de Perguntas via Prompt Conversacional (recrutador pede ajustes, IA regenera sem quebrar WSI)
+ÉPICO 5: Triagem WhatsApp (EPIC-TRIAGEM) — 11 cards
+Status na reunião: Parcialmente pronto, decisões importantes sobre Twilio
+
+Decisões:
+
+Twilio ficou sem sentido — número já precisa estar homologado, dificuldade similar a integrar direto. Pesquisar alternativas (Tudu, Zenvia, Slickflow)
+Envio de mensagem inicial: funciona
+Webhook: funciona
+Fluxo conversacional LIA: funciona (testado na semana)
+Persistência de conversa: funciona
+TRI-006 Tela de monitoramento: NÃO faz sentido como desenhada. Recrutador não precisa ver triagem em tempo real. Refatorar para: histórico de conversas no Activities do candidato
+Timeout: existe (valor fixo), retentativas: não existe, precisa fazer
+Templates de mensagem: precisam de template aprovado no Meta, sincronização é complexa
+Envio em massa: tem
+Pré-qualificação automatizada: precisa conversar mais, depende de definições sobre autonomia da LIA
+Novo card sobre candidato reportar problemas — se LIA alucinar, candidato precisa poder digitar código e disparar incidente
+
+Cards a ajustar:
+
+TRI-001 — Reavaliar Twilio, pesquisar alternativas (Tudu, Zenvia)
+TRI-006 — REFATORAR: de "Tela de Monitoramento" para "Histórico de Conversas no Activities do Candidato"
+TRI-009 — Adicionar complexidade de sincronização com Meta
+TRI-011 — Mover para discussão futura, precisa definição de autonomia
+NOVO CARD: TRI-013 — Sistema de Reporte de Problemas pelo Candidato (digita código → dispara incidente)
+NOVO CARD: TRI-014 — Pesquisa de alternativas a Twilio para disparo WhatsApp com número fornecido
+ÉPICO 6: Score WSI (EPIC-SCORE) — 8 cards
+Status na reunião: Parcialmente implementado
+
+Decisões:
+
+Cálculo de Score: implementado
+Big Five, Bloom/Dreyfus: Estão dentro do processo de geração de perguntas, não são cards separados de score — são metodologias aplicadas na construção das perguntas
+Breakdown de dimensões: destrinchar entre modelos usados
+Comparação entre candidatos (SCO-007): Mesma questão discutida com André — como garantir consistência de score entre buscas diferentes
+Histórico de scores: como candidato foi avaliado em outras vagas
+Cards a ajustar:
+
+SCO-002 e SCO-003 — Esclarecer que Big Five e Bloom/Dreyfus são metodologias aplicadas na geração de perguntas, não scores separados. Possivelmente consolidar com Épico 4
+ÉPICO 7: Gates de Aprovação (EPIC-GATES) — 7 cards
+Status na reunião: Fluxo discutido em detalhe
+
+Decisões:
+
+Gate 1 (Aprovar Mapeados): é o botão aprovar/reprovar na coluna Funil do Kanban (demonstrado no Replit)
+Gate 2 (Aprovar Triados): mesma mecânica na coluna Triagem, mas com feedback obrigatório ao candidato
+Modal de reprovação: existe no Replit, precisa de campo para motivo da reprovação
+Feedback customizado: gerado pela IA, recrutador NÃO edita feedback diretamente
+Aprovação em massa: seleciona vários e blau
+Histórico de decisões: super válido, sistema de auditoria completo
+Cards a ajustar:
+
+GAT-003 — Adicionar campo de motivo/anotação na reprovação
+GAT-004 — Esclarecer: feedback é gerado por IA, sem edição direta pelo recrutador
+NOVO CARD: GAT-008 — Aprendizagem da IA sobre reprovados (gerar métricas, estatísticas e inteligência para melhorar buscas futuras com base em aprovações e reprovações)
+ÉPICO 8: Templates de Comunicação (EPIC-TEMPLATES) — 7 cards
+Status na reunião: Todos construídos no Replit
+
+Decisões:
+
+Todos os templates já estão construídos na área de Configurações > Comunicação e Alertas do Replit
+Mensagem inicial de WhatsApp: precisa de 2 templates (mensagem de consentimento + mensagem de apresentação da vaga)
+Templates de e-mail e WhatsApp já existem com variáveis dinâmicas
+WhatsApp template creation bloqueado no front por Felipe (aguardando definição de sincronização com Meta)
+Cards a ajustar:
+
+NOVO CARD: TPL-008 — Sincronização de templates WhatsApp entre plataforma e Meta
+TPL-001 — Esclarecer: são 2 templates (consentimento + apresentação da vaga)
+ÉPICO 9: Agendamento Automático (EPIC-AGE) — 8 cards
+Status na reunião: Nada pronto, depende de Azure/Microsoft
+
+Decisões:
+
+Integração Microsoft Graph: pendente — trocando de conta Microsoft, precisa habilitar Teams no Azure
+Priorizar Teams como primeira integração de agendamento
+Google Meet como segunda opção futura
+Nenhum card deste épico está pronto
+Cards a ajustar:
+
+Sem alterações de estrutura, mas nenhum card para sprint imediata
+ÉPICO 10: Notificações (EPIC-NOT) — 6 cards
+Status na reunião: Nada pronto, adiado
+
+Decisões:
+
+Sistema de notificações é necessário (Anderson sente falta quando busca termina)
+Pode destrinchar por entidade (funil, busca, etc.)
+Não é épico para próxima sprint
+Falta card de notificação via Teams para recrutador
+Cards a ajustar:
+
+NOVO CARD: NOT-007 — Notificações para recrutador via Teams
+Épico inteiro adiado para sprints posteriores
+ÉPICO 11: Kanban e Tabela de Candidatos (EPIC-KAN) — 27 cards
+Status na reunião: Maioria feita, revisão de front pendente
+
+Decisões:
+
+Kanban 4 colunas: OK
+Card de candidato: OK
+Drag-and-drop: OK
+Menu de ações: OK
+KAN-005 Ícones de ação rápida: OBSOLETO (confirmado)
+Badge de Score WSI: OK
+Filtros: OK (anotar para revisar)
+Tabela de candidatos, colunas ordenáveis, seleção múltipla, paginação (10/20): OK
+Ações em massa: algumas feitas, precisa de mais
+Preview lateral: OK, pendência de revisão de front para adaptar ao design do Replit
+Tab Parecer LIA: não tem, precisa destrinchar mais
+Tabela de vagas: OK
+Duplicar vaga: não tem ainda
+Arquivar vaga: OK
+Navegação Vaga → Kanban: 90%, precisa olhar fino nos designs
+Cards a ajustar:
+
+KAN-005 — Confirmar como OBSOLETO
+NOVO CARD: Botão de "Disparar Triagem" dentro da vaga (selecionar candidatos → gerar triagem)
+NOVO CARD: "Adicionar mais candidatos" / "Solicitar novos candidatos" com critérios refinados (JD + feedback de aprovação/reprovação)
+NOVO CARD: "Buscar candidatos similares a este" (ação no card do candidato)
+Feedback implícito em transições (KAN-010): precisa se debruçar mais
+ÉPICO 12: JD e Wizard Avançado (EPIC-JD) — 5 cards
+Status na reunião: Nada para agora
+
+Decisão: Todo o épico 12 é pós-MVP
+
+ÉPICO 13: Configurações Avançadas (EPIC-CONFIG) — 6 cards
+Status na reunião: Nada para agora
+
+Decisão: Todo o épico 13 é pós-MVP
+
+ÉPICO 14: Integrações MVP (EPIC-INT) — 33 cards
+Status na reunião: Misto — algumas prontas, várias pendentes
+
+Decisões:
+
+Twilio: conta existe, mas repensar uso (ver Épico 5)
+Webhook mensagens: OK
+Templates Meta: só pela plataforma do Meta por agora
+Status delivery: OK
+Rate limit e filas: OK
+Azure App (INT-MSG-001): precisa refazer config (mudança de conta)
+OAuth Microsoft: precisa refazer
+Calendar API: pendente
+Teams Meeting API: pendente
+Token refresh: OK
+Multi-tenant calendar: OK
+Cliente Anthropic Claude: MVP só com Gemini (funciona muito bem). Claude só se cliente exigir
+Router de modelos (INT-LLM-003): pós-MVP pela dificuldade
+Fallback entre modelos (INT-LLM-004): pós-MVP
+Gestão de prompts (INT-LLM-005): precisa para D-zero — tabela de consumo agrupada por company
+Cache de respostas (INT-LLM-006): precisa fazer (perguntas e respostas)
+Monitoramento de custos (INT-LLM-007): precisa fazer
+Rate limit LLM (INT-LLM-008): não tem rate limit de IA, só global
+Logging de conversas: precisa fazer
+WorkOS account: faltam detalhes
+SSO SAML/OIDC: falta fazer
+Directory Sync SCIM: para homologação bancária
+MFA: para segurança
+User Management SDK (INT-WOS-005): provavelmente não precisa (só web, não app)
+Admin Portal WorkOS: existe inicial, melhorar gradualmente
+Apify: OK, LinkedIn scraper e sourcing agent OK
+Cards a ajustar:
+
+INT-LLM-001 — Adiado (MVP só Gemini)
+INT-LLM-003 — Pós-MVP
+INT-LLM-004 — Pós-MVP
+INT-WOS-005 — Avaliar se necessário (pode não precisar se só web)
+NOVO CARD: INT-ALT-001 — Pesquisar alternativa a Twilio para disparo WhatsApp com número flexível
+ÉPICO 15: Agentes IA Especializados (EPIC-AGENTS) — 8 cards
+Status na reunião: Revisão rápida, sem profundidade
+
+Decisões:
+
+Agente Avaliador WSI: precisa existir
+Agente de Triagem Curricular: dúvida se é agente separado ou mesmo agente
+Agente de Agendamento: verificar com Anderson
+Orquestrador de pipeline chat: Paulo não leu esses cards ainda
+Cards precisam ser revisados com mais detalhes na próxima reunião
+Resumo de Prioridades Definidas
+Prioridade	Épicos
+Semana(s) imediata(s)	1 (Auth), 3 (Busca), 4 (WSI Perguntas), 5 (Triagem), 7 (Gates), 11 (Kanban)
+Próximas sprints	2 (Wizard), 6 (Score), 8 (Templates), 9 (Agendamento), 14 (Integrações parcial), 15 (Agentes)
+Pós-MVP	10 (Notificações), 12 (JD Avançado), 13 (Config Avançadas), Integrações parcial
+Novos Cards Identificados na Reunião
+Código sugerido	Título	Épico
+AUTH-005	Wildcard SSL + Google Cloud multi-brand	1
+AUTH-006	Revisão design/marca pelo Lucas	1
+WIZ-014	Revisão metodologia Wizard com André	2
+MAP-007	Revisão de qualidade de busca com André	3
+WSI-006	Edição de Perguntas via Prompt Conversacional	4
+TRI-013	Sistema de Reporte de Problemas pelo Candidato	5
+TRI-014	Pesquisa alternativas a Twilio	5
+GAT-008	Aprendizagem IA sobre reprovados	7
+TPL-008	Sincronização templates WhatsApp ↔ Meta	8
+NOT-007	Notificações via Teams	10
+KAN-NEW1	Botão Disparar Triagem dentro da vaga	11
+KAN-NEW2	Solicitar novos candidatos com critérios refinados	11
+KAN-NEW3	Buscar candidatos similares a este	11
+INT-ALT-001	Alternativa a Twilio para WhatsApp	14
+Cards Removidos/Alterados
+Card	Ação
+WSI-004	REMOVER (Edição manual quebra WSI)
+KAN-005	OBSOLETO (confirmado)
+TRI-006	REFATORAR (tela de monitoramento → histórico em Activities)
+INT-LLM-001	ADIAR (MVP só Gemini)
+INT-LLM-003	PÓS-MVP
+INT-LLM-004	PÓS-MVP
+Próximos Passos Combinados na Reunião
+Paulo faz análise da transcrição e manda para Anderson
+Paulo trabalha nos códigos dos cards para Anderson classificar
+Segunda-feira: mais 1 hora para definir quais épicos e cards na sprint da semana
+Anderson revisa o que está pronto e já bloca o que falta
+Paulo faz apresentações semanais do Replit para o time (primeiro dia da sprint)
+Quer que eu atualize o documento lia-mvp-cards-jira.md com todas essas mudanças, ou prefere revisar primeiro?

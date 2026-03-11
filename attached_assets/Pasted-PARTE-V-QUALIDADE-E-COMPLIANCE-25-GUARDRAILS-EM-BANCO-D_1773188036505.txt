@@ -1,0 +1,51 @@
+PARTE V — QUALIDADE E COMPLIANCE
+25. GUARDRAILS EM BANCO DE DADOS
+Modelo
+Arquivo: app/models/guardrail.py
+
+class Guardrail(Base):
+    __tablename__ = "guardrails"
+    id              = Column(UUID, primary_key=True)
+    level           = Column(String(20))     # "primary" | "secondary"
+    domain          = Column(String(50))     # NULL = todos os domínios
+    node            = Column(String(50))     # NULL = todos os nós
+    tool            = Column(String(50))     # NULL = todas as tools
+    rule            = Column(Text)           # A regra em linguagem natural
+    blocking_message = Column(Text)          # Mensagem se bloqueado
+    is_active       = Column(Boolean)
+    company_id      = Column(UUID)           # NULL = global
+    updated_by      = Column(String)
+    updated_at      = Column(TIMESTAMP)
+Repositório
+Arquivo: app/shared/compliance/guardrail_repository.py
+
+# Prioridade de carregamento (3-tier):
+# 1. Guardrails primários globais (domain=None, company_id=None)
+# 2. Guardrails primários do tenant
+# 3. Guardrails secundários globais do domínio
+# 4. Guardrails secundários do tenant para o domínio
+guardrails = await GuardrailRepository.get_active(
+    db=db,
+    domain="sourcing",      # domínio do agente
+    company_id=company_id   # tenant atual
+)
+Seed Inicial (13 guardrails)
+Arquivo: app/core/seeds/guardrails_seed.py
+
+# 6 guardrails primários (globais — LGPD/fairness):
+"Nunca revelar informações pessoais de candidatos não compartilhadas explicitamente"
+"Nunca discriminar por gênero, raça, idade, religião ou estado civil"
+"Sempre identificar comunicação gerada por IA quando solicitado"
+"Nunca criar perguntas que impliquem questões familiares, filhos ou vida pessoal"
+"Não tomar decisões finais de rejeição sem revisão humana habilitada"
+"Registrar auditoria completa de todas as avaliações automatizadas"
+# 7 guardrails secundários (por domínio):
+"wsi_interviewer: Perguntas exclusivamente sobre competências profissionais"
+"wsi_interviewer: Não interromper candidato durante resposta"
+"communication: Todo email deve incluir identificação de IA no rodapé"
+"sourcing: Não contatar candidatos já recusados nos últimos 6 meses"
+"pipeline: Gate humano obrigatório antes de rejeição em massa"
+"analytics: Nunca expor dados individuais em relatórios agregados"
+"policy: Alterações em políticas requerem confirmação explícita do usuário"
+# Para rodar o seed:
+# python -c "from app.core.seeds.guardrails_seed import run_seed; import asyncio; asyncio.run(run_seed(db))"

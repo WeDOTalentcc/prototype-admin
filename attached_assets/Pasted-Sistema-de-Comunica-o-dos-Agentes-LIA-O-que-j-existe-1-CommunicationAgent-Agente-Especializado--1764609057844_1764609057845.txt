@@ -1,0 +1,77 @@
+Sistema de Comunicação dos Agentes LIA
+O que já existe:
+1. CommunicationAgent (Agente Especializado)
+
+Responsável por emails, WhatsApp e relatórios
+Ações disponíveis:
+send_email - Email individual para candidato
+send_bulk_email - Email em massa
+send_feedback - Feedback ao candidato
+send_candidate_report - Parecer para gestor
+notify_stakeholders - Notificar stakeholders
+2. Templates de Comunicação Prontos
+
+Canal	Templates Disponíveis
+Email	Contato inicial, Lembrete de triagem, Feedback positivo, Rejeição, Convite de entrevista, Proposta de trabalho
+WhatsApp	Contato inicial, Início de triagem, Lembrete, Aprovação na triagem, Reprovação (com feedback), Confirmação de entrevista, Encerramento de processo
+3. Pontos de Comunicação Mapeados no Workflow (27 passos)
+
+Passo	Evento	Comunicação	Canal	Aprovação?
+18	Aprovação de contato	Solicita aprovação do recrutador	Chat/Bell	Sim
+19	Email outreach	Envia convite para triagem	Email	Após aprovação
+20	Início de triagem	Candidato responde	WhatsApp/Chat	Automático
+21	Feedback pós-triagem	Envia feedback estruturado	WhatsApp/Email	Automático
+22	Entrevista agendada	Confirmação de agendamento	Email/Calendar	Automático
+25	Rejeição	Feedback construtivo	Email/WhatsApp	Configurável
+27	Vaga fechada	Feedback de encerramento em massa	Email	Sim (confirmar)
+Regras Atuais dos Agentes:
+O que PODEM fazer:
+
+Preparar e rascunhar mensagens
+Preencher templates com variáveis (nome, vaga, empresa, etc.)
+Mostrar preview antes de enviar
+Agendar envios
+Enviar após confirmação do recrutador
+O que PRECISAM de aprovação:
+
+✅ Primeiro contato com candidatos
+✅ Envio em massa (bulk)
+✅ Feedback de rejeição
+O que é automático (sem aprovação):
+
+🤖 Lembrete de triagem pendente
+🤖 Confirmação de entrevista agendada
+🤖 Feedback pós-triagem (aprovação/reprovação)
+O que ainda precisa ser definido/implementado:
+1. Integração Real com Provedores
+
+Email: SendGrid, AWS SES ou SMTP (atualmente simulado)
+WhatsApp: Twilio ou WhatsApp Business API
+
+2. Políticas de Comunicação (a definir)
+
+Horários permitidos para envio (ex: 8h-20h?)
+Rate limiting por candidato (máx X mensagens/dia)
+Opt-out e gestão de consentimento (LGPD)
+Quarentena após rejeição (não recontatar por X meses)
+3. Fluxo Human-in-the-Loop
+Podemos ter 3 níveis:
+
+Automático: LIA envia sem aprovação
+Prévia: LIA mostra preview, recrutador confirma
+Manual: LIA prepara, recrutador edita e envia
+4. Tracking e Analytics
+
+Taxa de abertura de emails
+Taxa de resposta
+Tempo médio de resposta do candidato
+Perguntas para definirmos juntos:
+Qual nível de autonomia você quer dar à LIA para cada tipo de comunicação?
+
+Contato inicial: Automático ou com aprovação?
+Feedback de rejeição: Template automático ou personalizar cada um?
+Quais provedores pretende usar para email e WhatsApp?
+
+Há políticas específicas que precisamos seguir (horários, LGPD, etc.)?
+
+Quer que eu detalhe o fluxo de aprovação human-in-the-loop ou crie um diagrama visual?

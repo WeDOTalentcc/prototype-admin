@@ -1,0 +1,150 @@
+Análise da Proposta
+Sim, Integração ATS deve ficar no Admin
+A área de integrações ATS já existe parcialmente em settings-page.tsx (tab "Integrações") e ats-integrations-page.tsx, mas está fragmentada. Consolidar no Admin com self-service faz total sentido.
+
+💡 Proposta: "Journey Mapping Wizard"
+Uma área no Admin onde o cliente responde perguntas sobre seu processo atual, e a LIA configura tudo automaticamente:
+
+Fluxo do Wizard
+┌─────────────────────────────────────────────────────────────────────┐
+│  PASSO 1: SISTEMAS EXISTENTES                                       │
+├─────────────────────────────────────────────────────────────────────┤
+│  Quais sistemas vocês usam hoje?                                    │
+│                                                                     │
+│  [x] ATS (Qual? ▾ Gupy)         → Configura integração              │
+│  [ ] Workforce Planning         → Se sim, qual? Configura sync      │
+│  [x] HRIS/Folha                 → Conectar para onboarding          │
+│  [ ] Avaliação de Desempenho    → Importar perfis internos          │
+│  [ ] LMS/Treinamento            → Preparar onboarding               │
+│  [ ] Assinatura Digital         → DocuSign, Clicksign               │
+│  [ ] Background Check           → Integrar verificação              │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  PASSO 2: ORIGEM DAS VAGAS                                          │
+├─────────────────────────────────────────────────────────────────────┤
+│  Como as vagas são abertas hoje?                                    │
+│                                                                     │
+│  ○ Sistema de Workforce Planning externo                            │
+│    → LIA monitora e notifica recrutador                             │
+│                                                                     │
+│  ○ Workforce Planning da WedoTalent                                 │
+│    → LIA usa headcount cadastrado                                   │
+│                                                                     │
+│  ○ Requisição manual do gestor                                      │
+│    → LIA cria fluxo de aprovação                                    │
+│                                                                     │
+│  ○ Demanda pontual sem planejamento                                 │
+│    → LIA guia criação do zero                                       │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  PASSO 3: ETAPAS DO PROCESSO                                        │
+├─────────────────────────────────────────────────────────────────────┤
+│  Quais etapas vocês praticam?                                       │
+│                                                                     │
+│  [x] Triagem de CV           → Automático ou manual?                │
+│  [x] Teste Técnico           → Qual plataforma? HackerRank, etc.    │
+│  [x] Entrevista RH           → Quem conduz? Quantos dias SLA?       │
+│  [x] Entrevista Técnica      → Painel ou individual?                │
+│  [ ] Case/Apresentação       → Opcional                             │
+│  [x] Entrevista Gestor       → Final ou intermediária?              │
+│  [ ] Comitê de Aprovação     → Se sim, quem participa?              │
+│  [x] Proposta                → Quem aprova valores?                 │
+│  [x] Exame Admissional       → Próprio ou terceirizado?             │
+│  [x] Onboarding              → Digital ou presencial?               │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  PASSO 4: AUTOMAÇÕES DESEJADAS                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│  O que a LIA pode automatizar?                                      │
+│                                                                     │
+│  [x] Notificar recrutador sobre novas vagas                         │
+│  [x] Triagem automática de CVs                                      │
+│  [x] Agendamento de entrevistas                                     │
+│  [x] Envio de feedbacks negativos                                   │
+│  [x] Relatórios semanais para gestores                              │
+│  [x] Alertas de SLA em risco                                        │
+│  [ ] Aprovação automática de propostas até X valor                  │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  PASSO 5: CANAIS DE PUBLICAÇÃO                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│  Onde vocês publicam vagas?                                         │
+│                                                                     │
+│  [x] LinkedIn Jobs            → Conectar página da empresa          │
+│  [x] Indeed                   → Configurar credenciais              │
+│  [ ] Glassdoor                → Conectar perfil                     │
+│  [x] Site Próprio             → Qual URL? Embed ou API?             │
+│  [ ] Universidades            → Quais? Integrar portais             │
+│  [ ] Outros job boards        → Listar                              │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  RESULTADO: CONFIGURAÇÃO AUTOMÁTICA                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ✅ Integração Gupy configurada                                     │
+│  ✅ Pipeline de 7 etapas criado                                     │
+│  ✅ 12 automações ativadas                                          │
+│  ✅ 3 canais de publicação conectados                               │
+│  ✅ SLAs definidos por etapa                                        │
+│  ✅ Notificações para gestores configuradas                         │
+│                                                                     │
+│  [Ver Jornada Completa]  [Ajustar Configurações]  [Concluir Setup]  │
+└─────────────────────────────────────────────────────────────────────┘
+📊 Cenários de Uso
+Cenário	Configuração Automática
+Cliente com Workforce Planning externo	LIA sincroniza, monitora headcount, notifica recrutador quando vaga é aprovada
+Cliente usa WedoTalent WFP	LIA lê planejamento interno, sugere abertura no momento certo
+Cliente sem WFP	LIA pergunta se quer usar o módulo interno ou receber requisições ad-hoc
+Cliente com ATS mapeado (Gupy, Pandapé)	Setup em 1 clique, campos já mapeados
+Cliente com ATS customizado	Wizard de mapeamento de campos
+Cliente sem ATS	WedoTalent é o ATS principal
+🔄 Fluxo de Dados
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│  Journey Wizard  │────▶│  Admin Config    │────▶│  Criação Vaga    │
+│  (setup inicial) │     │  (dados mestres) │     │  (usa os dados)  │
+└──────────────────┘     └──────────────────┘     └──────────────────┘
+         │                        │                        │
+         │                        ▼                        │
+         │               ┌──────────────────┐              │
+         └──────────────▶│  Jornada Recrut. │◀─────────────┘
+                         │  (etapas visíveis)│
+                         └──────────────────┘
+✅ Benefícios
+Time de Implementação: Setup guiado reduz tempo de 2 semanas para 2 horas
+Self-service: Cliente pode fazer sozinho após treinamento básico
+Consistência: Dados fluem automaticamente para todas as áreas
+LIA mais inteligente: Conhece o contexto completo do cliente
+📋 Estrutura Proposta no Admin
+Admin
+├── 🏢 Empresa
+│   ├── Dados Institucionais
+│   ├── Cultura & EVP
+│   └── Estrutura (Organograma)
+│
+├── 🗺️ Journey Mapping (NOVO)
+│   ├── Wizard Inicial
+│   ├── Mapa Visual da Jornada
+│   └── Pontos de Integração
+│
+├── 🔗 Integrações
+│   ├── ATS (Gupy, Pandapé, StackOne)
+│   ├── Workforce Planning
+│   ├── HRIS/Folha
+│   ├── Job Boards (LinkedIn, Indeed)
+│   └── Comunicação (Slack, Teams)
+│
+├── 📋 Jornada de Recrutamento
+│   ├── Etapas do Processo (alimentado pelo Journey)
+│   ├── Templates por Tipo de Vaga
+│   └── SLAs e Automações
+│
+└── ⚙️ Configurações
+    ├── Usuários & Permissões
+    ├── Notificações
+    └── Segurança
+O que você acha dessa estrutura? Quer que eu crie a documentação detalhada desse "Journey Mapping Wizard" como parte da documentação Admin?

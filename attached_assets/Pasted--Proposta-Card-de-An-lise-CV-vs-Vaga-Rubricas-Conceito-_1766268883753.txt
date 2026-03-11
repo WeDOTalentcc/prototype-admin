@@ -1,0 +1,57 @@
+📋 Proposta: Card de Análise CV vs Vaga (Rubricas)
+Conceito
+Quando a LIA avaliar um CV contra uma vaga usando Rubricas, será criada uma atividade na timeline do candidato com um card rico mostrando:
+
+┌─────────────────────────────────────────────────────┐
+│ 🎯 Análise CV vs Vaga                               │
+│ ─────────────────────────────────────────────────── │
+│ Vaga: Backend Senior Python         ID: JOB-2024-42│
+│                                                     │
+│ Score: ████████░░ 78%                               │
+│                                                     │
+│ ✅ Exceeds: Python (Essential) - 7 anos exp        │
+│ ✅ Meets: PostgreSQL (Important) - Experiência     │
+│ ⚠️ Partial: Docker (Nice-to-Have) - Conhecimento   │
+│ ❌ Missing: Kubernetes (Important) - Não encontrado│
+│                                                     │
+│ 📝 Resumo LIA:                                      │
+│ "Candidato forte em desenvolvimento Python com     │
+│ boa base em banco de dados. Gap principal em       │
+│ orquestração de containers, mas perfil promissor." │
+│                                                     │
+│ [Ver Análise Completa] [Agendar Entrevista]        │
+└─────────────────────────────────────────────────────┘
+Estrutura de Dados
+Novo activity_type: rubric_evaluation
+
+extra_data JSON:
+
+{
+  "job_id": "uuid-da-vaga",
+  "job_title": "Backend Senior Python",
+  "job_code": "JOB-2024-42",
+  "score": 78.5,
+  "score_label": "Forte",
+  "evaluations": [
+    {
+      "requirement": "Python",
+      "priority": "essential",
+      "level": "EXCEEDS",
+      "evidence": "7 anos de experiência em Python"
+    },
+    ...
+  ],
+  "summary": "Candidato forte em desenvolvimento...",
+  "recommendation": "interview",
+  "evaluated_at": "2024-12-20T15:30:00Z"
+}
+Implementação Necessária
+Componente	Arquivo	Mudança
+Backend	rubric_evaluation_service.py	Criar atividade após avaliação
+Frontend	activity-feed.tsx	Novo card tipo rubric_evaluation
+Frontend	candidate-preview.tsx	Exibir na tab Activities
+Filtros na Tab Activities
+Adicionar filtro rubrics ou evaluations para mostrar apenas análises CV vs Vaga:
+
+activityFilter: 'all' | 'emails' | 'interviews' | 'lia' | 'applications' | 'tests' | 'offers' | 'evaluations'
+Quer que eu implemente essa proposta? Posso começar pelo backend (criar atividade após avaliação) e depois o card no frontend.

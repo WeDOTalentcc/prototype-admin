@@ -1,0 +1,190 @@
+
+Explicação da estratégia:
+	
+	Primeira etapa 
+	
+	Recebe uma solicitação, faz a análise e expansão com LLM (gemini).
+	
+	Realiza uma busca no elasticsearch passando o texto (não fica claro se é o texto bruto ou o texto expandido via LLM), gera uma lista com 100 candidatos (limite arbitrário)
+	ordenada por score
+	
+	Realiza uma busca usando pgvector passando o texto (não fica claro se é o texto bruto ou o texto expandido via LLM), gera uma lista com 100 candidatos (limite arbitrário)
+	ordenada pelo resultado da heurística de distância de cossenos
+	
+	Aplica um WeightedRankFusion para ficar, ao final, com os 100 candidatos melhor rankeados entre as duas buscas acima.
+	
+	Avaliação da primeira etapa:
+	
+		A expansão da query com LLM parece ser uma abordagem interessante mas talvez pode ser melhor trabalhada, precisava entender melhor
+		as diretrizes que ela usa para expansão.
+		
+		A busca com elastic search é interessante e a qualidade do retorno ainda pode ser refinada com análises estatísticas específicas 
+		combinadas com alteração de campos a serem investigados.
+		
+		O pgvector também pode passar por algumas análises estatísticas para saber se a calibração está coerente.
+		
+		O conjunto das análises estatísticas do pgvector e do elastic search combinado com uma busca iterativa que exclui resultados 
+		já retornados na iteração anterior pode criar uma busca eficiente em relação a resultados, custos e performance.
+		
+		O trabalho da análise estatística dos dados da busca híbrida pode produzir rankings mais eficientes e permitir que o K
+		utilizado no WRF seja calibrado (provavelmente sendo menor) para tornar mais agressivo o rankeamento dado que poucos candidatos
+		seriam analisados.
+		
+	Segunda etapa:
+	
+	O Profile analyzer se alimenta dos perfis triados na busca híbrida + WRF, da query expandida e dos requisitos de sourcing
+	
+	A busca conta com contenção de viéses (por exemplo, instituições de ensino famosas n serem favorecidas, gaps de emprego, etc)
+	
+	São incluídos critérios de confiança e evidências de fatores importantes analisados.
+	
+	Os perfis também são avaliados com relação a sua completude e ao final são gerados indicadores de auditabilidade.
+	
+	O custo das análises é estimado para gerar um log também.
+	
+	Rubric Based Scoring:
+		Evita que um candidato compense requisitos essenciais com vários diferenciais (minimizando buzzwords).
+		
+		Cap 99 diminui probabilidade de candidatos com currículo super otimizado se destacarem demais.
+		Garante que mesmo um candidato que atenda tudo terá no máximo um score 99 abrindo alguma margem para uma 
+		avaliação humana.
+		
+		Verificar se o objetivo não é excluir candidatos com requisitos essenciais faltando (a regra atual não garante isso)
+			Se essa for a ideia, incluir isso -> Se qualquer essential = missing → status = "reprovado"
+
+		O floor da fórmula indica que qualquer coisa abaixo de 1 é ignorável e pode ser considerada ruído, então
+		84,98 não é melhor que 84,05. No fim, essas definições vão fazer diferença de fato dependendo do 
+		"achatamento" dos scores encontrados, isso é muito relativo de cada amostra.
+		
+		
+	Avaliação 
+	
+	Em teoria, o custo das análises é controlado, girando em torno de 1 centavo de dólar por candidato analisado.
+			
+	A avaliação é feita com uma metodologia clara e auditável.
+	
+		
+Perguntas:
+	
+	O grau de confiança determina de alguma forma o prosseguimento do uso da query expandida?
+	
+	Os dados expandidos são usados no elasticsearch ou no pgvector (ou em ambos)?
+	
+	Quais as propriedades dos dados de busca usadas no search do elastic? Em quais campos a string, por exemplo, 
+	"desenvolvedor python machine learning" é aplicada na busca?
+	
+	Na busca vetorial é utilizada a query expandida gerada no primeiro passo ou é realizada uma nova com
+	o gemini? 
+	
+	O limite usado nas buscas é configurável via frontend? O número de 100 candidatos foi arbitrariamente definido? 
+	
+	A busca vetorial está configurada para usar operador OR ou AND nas palavras da busca (isso influencia em quão preciso são os resultados e tem impacto no limite e no rankeamento) ?
+
+	O peso das buscas usando elastic foram intuitivamente setados para serem maiores no WeightedRankFusion? Qual foi o critério?
+	
+	
+	
+Sugestão:
+	
+	Calcular a taxa de queda do score nos dados rankeados do elastic search (ajuda a indicar situações que tornam o desempenho do WRF ruim):
+	
+		drop_ratio = (score_1 − score_k) / score_1
+	
+		A taxa (um valor percentual) indica a performance da busca: 
+			Rank	Doc	Score
+				1	A	12.4
+				2	B	11.9
+				3	C	10.1
+				4	D	7.0
+				5	E	6.8
+				6	F	6.7
+				7	G	6.6
+				8	H	6.5
+				9	I	6.4
+				10	J	6.3 (12.4 − 6.3) / 12.4 ≈ 49%
+				
+		Um valor de 50% de queda de score entre o melhor e o pior documento é razoável, uma queda de 90% provavelmente indicaria que o limite 
+		está maior que o necessário ou que a configuração da busca está ruim.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+		
+	Estabilidade de rank (intra-query)
+
+		Analisar a diferença dos ranks da mesma query executada múltiplas vezes.
+		
+			Exemplo:
+				A, B, D, C
+				C, B, A, D
+				
+		Se isso acontecer, pode indicar que a "sensibilidade" da ferramenta de rankeamento não é suficiente para os dados.
+		
+		Importante ressaltar que o uso da ordenação por score explícita, conforme descrito na imagem, ajudaria em casos de scores próximos.
+		
+		Imaginando que os scores estejam bem próximos e considerando que o objetivo nessa busca não é retornar O MELHOR candidato e sim
+		um grupo de bons candidatos, ainda assim atenderia ao objetivo.
+		
+		O ideal seria esse resultado não variar ou variar muito pouco em buscas sequenciais com a mesma estrutura
+		
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	Calcular gap semântico do pgvector (ajuda a indicar situações que tornam o desempenho do WRF ruim):
+		
+			Rank	Dist	gap
+				1	0.06	 
+				2	0.07	0.01
+				3	0.08	0.02
+				4	0.09	0.03
+				5	0.10	0.04
+				6	0.22	0.16 -> a partir daqui o gap já é bem relevante
+				7	0.35	0.29
+				8	0.41	0.35
+				
+		gap= distk​−dist1​	
+		
+		Essa medida é a mesma ideia da taxa de queda no elastic, aqui, se vc tem um N de 100 que é o padrão mostrado aqui, mas 
+		o gap começa a ser intenso a partir de 20, talvez a quantidade de candidatos entrando no funil está muito alta. 
+			
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	Se for aplicada a ideia de construir buscas iterativas com quantidades menores de candidatos e estratégia de não repetição
+	é possível variar o K do Weighted Rank Fusion (WRF) para tornar mais agressiva a triagem. 
+			
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	A estratégia de rerank é computacionalmente cara, se o tamanho das amostras da busca com elastic e com pgvector estiver grande
+	(estatisticamente retornando resultados com rank muito desproporcional) é possível que exista um problema de desempenho que poderia ser solucionado fazendo a análise estatística dos rankings.
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	Propor uma estratégia de busca iterativa onde se retornam menos candidatos e se o usuário solicitar novos com o mesmo perfil, insere os da ultima execução para serem excluídos da busca.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	Como são definidos os requisitos hoje? De forma geral, a avaliação da IA será tão boa quanto forem claros os 
+	requisitos e definição explícita do que é uma evidência forte (é um ponto importantíssimo a estudar).
+	
+		Talvez fosse útil pensar em uma estratégia para apresentar exemplos positivos e negativos por tipo de requisitos
+		e criar uma base com esses dados que seria usada para configurar o prompt da LLM.
+		
+		Talvez também fosse legal inserir uma ordem clara para não inferir experiência sem uma evidência clara (definir
+		também formas de considerar uma evidência como clara).
+
+		Na esteira dos dois pontos acima talvez o score de confiança devesse ser apresentado por requisito obrigatório.
+		
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	A LLM está sujeita a confiança exagerada por ter um comportamento natural de inferir e gerar respostas plausíveis
+	mais do que se apegar a regras de fato.
+	
+		Forma de mitigar:
+		
+		{
+		  "matchLevel": "meets",
+		  "evidenceType": "explicit | implicit | inferred"
+		}
+		
+		Isso pode permitir que requisitos meet com evidência inferida possam receber downgrade automático, por exemplo.	
+	
+		Avaliar indicadores linguísticos vagos, "pode ter...", "indica que...", "sugere...", etc
+		
+	Flags de problema mais objetivas:
+			Marcar um currículo com 2 competências como tendo 8 requisitos exceeds (completamente improvável)

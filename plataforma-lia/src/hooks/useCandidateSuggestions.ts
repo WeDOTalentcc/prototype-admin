@@ -1,0 +1,97 @@
+import useSWR from "swr"
+
+export interface AISuggestion {
+  id: string
+  candidate_id: string
+  vacancy_id: string
+  trigger_type: string
+  suggested_action: string
+  confidence_score: number
+  status: string
+  payload?: Record<string, any>
+  created_at: string
+}
+
+interface UseCandidateSuggestionsResult {
+  suggestions: AISuggestion[]
+  isLoading: boolean
+  error: Error | null
+  approveSuggestion: (id: string) => Promise<void>
+  rejectSuggestion: (id: string, reason?: string) => Promise<void>
+  mutate: () => void
+}
+
+const fetcher = async (url: string) => {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) {
+      return { suggestions: [] }
+    }
+    return res.json()
+  } catch {
+    return { suggestions: [] }
+  }
+}
+
+export function useCandidateSuggestions(
+  vacancyId: string | undefined,
+  candidateId?: string
+): UseCandidateSuggestionsResult {
+  const shouldFetch = vacancyId && vacancyId.length > 0
+  
+  const endpoint = shouldFetch
+    ? candidateId
+      ? `/api/lia/api/v1/automation/ai-suggestions/candidate/${candidateId}`
+      : `/api/lia/api/v1/automation/ai-suggestions/vacancy/${vacancyId}`
+    : null
+  
+  const { data, error, isLoading, mutate } = useSWR<{ suggestions: AISuggestion[] }>(
+    endpoint,
+    fetcher,
+    {
+      refreshInterval: 30000,
+      revalidateOnFocus: true,
+    }
+  )
+
+  const approveSuggestion = async (id: string) => {
+    try {
+      await fetch(`/api/lia/api/v1/automation/ai-suggestions/${id}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+      mutate()
+    } catch (e) {
+      console.error("Failed to approve suggestion:", e)
+    }
+  }
+
+  const rejectSuggestion = async (id: string, reason?: string) => {
+    try {
+      await fetch(`/api/lia/api/v1/automation/ai-suggestions/${id}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      })
+      mutate()
+    } catch (e) {
+      console.error("Failed to reject suggestion:", e)
+    }
+  }
+
+  return {
+    suggestions: data?.suggestions || [],
+    isLoading,
+    error: error || null,
+    approveSuggestion,
+    rejectSuggestion,
+    mutate,
+  }
+}
+
+export function getSuggestionForCandidate(
+  suggestions: AISuggestion[],
+  candidateId: string
+): AISuggestion | undefined {
+  return suggestions.find(s => s.candidate_id === candidateId && s.status === "pending")
+}

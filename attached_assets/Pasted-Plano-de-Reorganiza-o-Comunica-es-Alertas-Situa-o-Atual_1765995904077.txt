@@ -1,0 +1,98 @@
+Plano de Reorganização: Comunicações & Alertas
+📊 Situação Atual
+CommunicationHub.tsx (Menu Configurações > Comunicação & Alertas):
+
+4 abas: Templates, Assinatura, Horários LGPD, Alertas
+10 templates (6 email, 4 WhatsApp)
+5 alertas básicos
+Configurações de assinatura e horários
+Central de Comunicações (Nova - não usar):
+
+Templates, Automações, Políticas, Histórico
+Sobreposição com o existente
+🎯 Proposta: Separação Cliente vs Admin
+✅ FICA - Menu Configurações (Cliente/Recrutador)
+Seção: "Comunicação & Alertas" - Preferências pessoais e customizações simples
+
+Aba	O que contém	Descrição
+Templates	Templates personalizados do cliente	Templates que o cliente pode editar: Contato Inicial, Follow-up, Convite Triagem, Convite Entrevista, Feedback Positivo, Feedback Construtivo (Email e WhatsApp)
+Assinatura	Assinatura de email	Nome, cargo, empresa, telefone, website
+Horários LGPD	Preferências de envio	Horário início/fim, respeitar feriados, respeitar fins de semana, máximo mensagens/dia
+Alertas	Alertas que quero receber	SLA Próximo, Meta em Risco, Candidato Sem Interação, Entrevista Não Confirmada, Feedback Pendente + canal (email/Teams)
+Templates que FICAM (cliente pode editar):
+
+ID	Nome	Canal	Situação
+1	Contato Inicial	Email	Primeiro contato com candidato
+2	Follow-up	Email	Acompanhamento
+3	Convite Triagem	Email	Convite para triagem LIA
+4	Convite Entrevista	Email	Agendamento de entrevista
+5	Feedback Positivo	Email	Retorno positivo ao candidato
+6	Feedback Construtivo	Email	Retorno construtivo/negativo
+7	Contato Rápido	WhatsApp	Primeiro contato rápido
+8	Lembrete	WhatsApp	Lembrete de conversa
+9	Convite Triagem	WhatsApp	Convite triagem via WhatsApp
+10	Convite Entrevista	WhatsApp	Agendamento via WhatsApp
+Alertas que FICAM (cliente pode ativar/desativar):
+
+Alerta	Descrição	Canais
+SLA Próximo do Vencimento	Candidato há 80% do SLA	Email, Teams
+Meta Mensal em Risco	Meta pode não ser atingida	Email
+Candidato Sem Interação	Sem contato há 5+ dias	Teams
+Entrevista Não Confirmada	24h antes sem confirmação	Email, Teams
+Feedback Pendente	48h após entrevista	Email
+🔧 MOVE - Área Administrativa (Time WeDo)
+Localização: /admin/configuracoes/comunicacoes - Acesso restrito
+
+Seção	O que contém	Por que é admin
+Templates de Sistema	Templates automáticos que o cliente NÃO deve editar	screening_reminder, screening_passed, screening_failed, interview_scheduled, rejection_post_interview, offer_letter, process_closed, etc.
+Automações	Triggers e fluxos automáticos	Regras de disparo, condições, ações
+Políticas LGPD	Configurações de compliance	Opt-out, retenção de dados, consentimento
+Webhooks	Integrações técnicas	Eventos, endpoints, autenticação
+Alertas Técnicos	Alertas de sistema	ATS_SYNC_FAILED, AGENT_HEALTH_LOW, CREDITS_LOW, AI_DECISION_ERROR
+Histórico Completo	Logs de todas comunicações	Auditoria, debug
+Canais Avançados	Configuração de provedores	SendGrid, Twilio, Teams webhooks
+Templates que vão para ADMIN (sistema):
+
+ID	Nome	Tipo	Por que Admin
+screening_reminder	Lembrete Triagem Pendente	Automático	Cron job 24h
+screening_passed	Aprovação na Triagem	Automático	Após aprovação
+screening_failed	Rejeição na Triagem	Automático	Após rejeição
+interview_scheduled	Entrevista Agendada	Automático	Após agendar
+interview_reminder	Lembrete 24h	Automático	Cron job
+interview_reminder_urgent	Lembrete 1h	Automático	Cron job
+offer_letter	Carta Proposta	Sensível	Valores salariais
+rejection_feedback	Feedback de Rejeição	Sensível	Compliance
+process_closed	Processo Fechado	Sensível	Encerramento
+welcome_user	Boas-vindas Usuário	Sistema	Onboarding
+password_changed	Senha Alterada	Sistema	Segurança
+Alertas que vão para ADMIN (técnicos):
+
+Categoria	Alertas	Por que Admin
+SYSTEM	ATS_SYNC_FAILED, AGENT_HEALTH_LOW, CREDITS_LOW, AI_DECISION_ERROR	Infraestrutura
+PREDICTIVE	DROPOUT_RISK_HIGH, TIME_TO_FILL_RISK, REJECTION_PATTERN	Configuração IA
+COMMUNICATION	EMAIL_DELIVERY_LOW, HIGH_OPT_OUT	Monitoramento canais
+📝 Gaps Identificados (do documento)
+Templates que faltam implementar:
+
+goal_at_risk - Meta em risco
+goal_missed - Meta não atingida
+weekly_performance - Resumo semanal
+monthly_report - Relatório mensal
+sla_violated - SLA violado (email)
+approval_pending - Aprovação pendente
+workforce_variance - Variância workforce
+no_show_alert - Candidato não compareceu
+offer_accepted / offer_rejected - Proposta aceita/recusada
+Funcionalidades que faltam:
+
+Histórico consolidado de comunicações
+Biblioteca LGPD parametrizável
+Fluxos de aprovação de mudanças
+Catálogo visual de automações
+🚀 Plano de Implementação
+Quer que eu crie as tarefas de implementação para:
+
+Simplificar o CommunicationHub atual (manter só o que é para cliente)
+Remover a Central de Comunicações duplicada
+Criar área administrativa /admin/configuracoes/comunicacoes
+Implementar os templates e alertas que faltam

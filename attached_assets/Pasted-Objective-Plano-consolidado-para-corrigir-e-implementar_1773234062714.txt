@@ -1,0 +1,233 @@
+Objective
+Plano consolidado para corrigir e implementar: (A) fluxo completo de saturação/configuração, (B) formulário web de inscrição, (C) desacoplamento inscrição/triagem WhatsApp, (D) integração IA conversacional no chat web, (E) suporte a voz bidirecional no chat web.
+
+DIAGNÓSTICO DO ESTADO ATUAL
+O que já existe e funciona:
+✅ Botões Aprovar/Reprovar no kanban (Funil + Triagem) e na tabela
+✅ SaturationBadge com popover (+10, 24h) — mas hardcoded
+✅ Chat web de triagem (/triagem/[token]) — renderiza mensagens, welcome card
+✅ Gravação de áudio + transcrição STT (AudioRecordButton → Deepgram/Whisper)
+✅ TTS no backend (OpenAI tts-1, endpoint /voice/synthesize e /voice/chat)
+✅ WSIInterviewGraph (LangGraph) com LLM para perguntas contextuais
+✅ Templates de comunicação (email + WhatsApp)
+✅ Configuração de canais de triagem (WhatsApp, Chat Web, Ligação/Phone)
+✅ LIA icon (Brain cyan) como avatar nas mensagens
+✅ TypingIndicator animado
+O que NÃO funciona / falta:
+❌ Chat web usa perguntas HARDCODED (WSI_BLOCKS estáticos), não LLM
+❌ Score final é random.uniform(5.0, 9.5) — placeholder
+❌ LIA não responde a perguntas do candidato (off-script)
+❌ Sem TTS no chat web (LIA não "fala" — só backend tem capacidade)
+❌ Sem AudioPlayer no frontend para reproduzir áudio da LIA
+❌ Sem botão "iniciar conversa por voz" / "finalizar conversa"
+❌ Sem formulário web na página de vagas
+❌ Sem verificação de saturação antes da triagem
+❌ Sem fila de espera com retomada automática
+❌ Sem badges de origem nos cards do kanban
+❌ "Ver Configurações" aponta para /admin/jornada-recrutamento (errado)
+❌ Sem seção de saturação em Configurações
+❌ Branding "WeDOTalent" na sessão demo (deveria ser empresa cliente)
+FLUXOS CONSOLIDADOS
+(Mesmos fluxos A-H da versão anterior, mantidos como referência)
+
+Tasks
+BLOCO 1: Saturação e Configuração (frontend + backend)
+T001: Seção de Saturação no card Triagem da Jornada de Recrutamento
+Blocked By: []
+Details:
+No card "Triagem" (etapa fixa) em Configurações → Recrutamento → Pipeline
+Adicionar seção "Controle de Saturação" com 4 campos:
+Limite inscrições orgânicas (web/whatsapp): default 20
+Limite busca ativa (sourcing): default 20
+Incremento de desbloqueio: default +10
+Horas de desbloqueio temporário: default 24
+Persistir via endpoint de settings
+Files: plataforma-lia/src/components/settings/RecruitmentJourneyConfig.tsx, StageCard.tsx
+Acceptance: Campos editáveis no card Triagem; valores salvos e carregados
+T002: Endpoint backend para configurações globais de saturação
+Blocked By: []
+Details:
+Criar GET/PUT /api/v1/settings/saturation para defaults da empresa
+Campos: threshold_web, threshold_sourcing, unlock_increment, unlock_hours
+Adicionar campo origin no VacancyCandidate (web/whatsapp/sourcing/ats)
+Alterar saturation-status para contagem separada por canal, cascade vaga → empresa → 20
+Files: lia-agent-system/app/api/v1/saturation.py, modelos
+Acceptance: API retorna thresholds e contagens separados por canal
+T003: Corrigir navegação "Ver Configurações" no kanban
+Blocked By: [T001]
+Details:
+Alterar onOpenSettings (linha 4151 de job-kanban-page.tsx)
+De /admin/jornada-recrutamento para /admin/configuracoes (seção Pipeline)
+Files: job-kanban-page.tsx
+Acceptance: Navegação correta
+T004: Atualizar SaturationBadge para pools separados
+Blocked By: [T002]
+Details:
+Badge mostra "12/20 org | 8/20 src"
+Botões usam valores do settings (não hardcoded)
+Link "Ver configurações" no popover
+Files: SaturationBadge.tsx
+Acceptance: Pools separados; valores dinâmicos
+T005: Badges de origem nos cards do kanban
+Blocked By: [T002]
+Details:
+Badge: "Web" (azul), "WhatsApp" (verde), "Busca" (cinza), "ATS" (roxo)
+Badge "Aguardando" (âmbar) para fila de saturação
+Filtro por origem na coluna Funil
+Files: CandidateCard.tsx, job-kanban-page.tsx
+Acceptance: Badges visíveis; filtro funcional
+BLOCO 2: Inscrição e fluxo de candidatos
+T006: Formulário de inscrição web na página da vaga
+Blocked By: [T002]
+Details:
+Adicionar "Candidatar-se Online" ao lado do botão WhatsApp em /vagas/[slug]
+Campos: Nome*, Email*, Telefone/WhatsApp* (formato universal), CV upload*, LGPD checkbox*
+Backend: POST /api/v1/public-vacancies/p/{slug}/apply
+Parsing CV + Rubrica automática
+Score >= 55: verifica saturação → triagem ou fila
+Score < 55: rejeição automática com feedback
+Agradecimento em todos canais
+Files: plataforma-lia/src/app/vagas/[slug]/page.tsx, backend
+Acceptance: Inscrição funcional; dados persistidos; comunicação disparada
+T007: Desacoplar inscrição de triagem no fluxo WhatsApp
+Blocked By: [T002]
+Details:
+Fase 1 (Inscrição): LGPD → CV → parsing → confirmação → email (confirma se extraído, pergunta se não) → Rubrica
+PAUSA: verificar saturação
+Fase 2 (Triagem): perguntas do roteiro no WhatsApp
+Score < 55: rejeição automática
+Saturado: "Dados registrados, entraremos em contato em breve"
+Files: conversation_manager.py
+Acceptance: Fases desacopladas; saturação entre elas
+T008: Fila de espera com retomada automática
+Blocked By: [T002, T007]
+Details:
+Status "awaiting_screening"
+Slot abre → próximo da fila (score rubrica DESC, data ASC)
+Convite automático (WhatsApp → triagem WhatsApp; só email → chat web)
+Override manual: recrutador Aprovar = priorização pontual
+Files: stage_automation_engine.py
+Acceptance: Retomada automática; override via Aprovar
+T009: Comunicação multicanal obrigatória
+Blocked By: []
+Details:
+Toda comunicação em todos os canais disponíveis por default
+Verificar/criar templates faltantes
+Configurável em Configurações → Comunicação
+Files: templates, notification_service.py, automation_handlers.py
+Acceptance: Email + WhatsApp em todas comunicações
+T010: Guardrail de saturação na triagem automática
+Blocked By: [T002]
+Details:
+Check de saturação em bulk_start_screening e send_screening_invite
+Bloqueia se saturado; override manual possível
+Files: bulk_actions.py, communication.py
+Acceptance: Triagem bloqueada quando saturado
+BLOCO 3: Integração IA conversacional no chat web
+T011: Substituir respostas hardcoded por LLM no TriagemSessionService
+Blocked By: []
+Details:
+Substituir _generate_lia_response (que usa WSI_BLOCKS estáticos) por chamadas ao LLM
+Opção 1 (recomendada): integrar o WSIInterviewGraph (LangGraph) existente ao fluxo do chat web
+O grafo já tem: geração contextual de perguntas, validação de respostas, scoring determinístico, guardrails anti-injection
+Conectar via chamada direta ao grafo (não WebSocket, pois o chat web já usa HTTP)
+Opção 2 (mais simples): manter a estrutura de blocos mas usar LLM para:
+Gerar perguntas contextuais baseadas na resposta anterior
+Responder perguntas off-script do candidato antes de retomar o roteiro
+Gerar transições naturais entre blocos
+Substituir random.uniform(5.0, 9.5) por scoring real (WSI deterministic scorer)
+Manter os 7 blocos WSI como estrutura guia, mas com flexibilidade conversacional
+Files: triagem_session_service.py, wsi_interview_graph.py, wsi_deterministic_scorer.py
+Acceptance: LIA responde de forma contextual; lida com perguntas off-script; score real calculado
+T012: Tratamento de perguntas off-script do candidato
+Blocked By: [T011]
+Details:
+Quando candidato faz pergunta (em vez de responder), LIA:
+Detecta que é uma pergunta (classificação de intent)
+Responde a pergunta usando contexto da vaga/empresa
+Retoma o roteiro naturalmente ("Ótima pergunta! Respondendo... Agora, voltando à nossa conversa...")
+Guardrails: prompt injection guard existente, limitar desvios a 2-3 trocas antes de retomar
+Files: triagem_session_service.py
+Acceptance: LIA responde perguntas do candidato e retoma roteiro
+BLOCO 4: Suporte a voz bidirecional no chat web
+T013: Criar AudioPlayer para mensagens da LIA
+Blocked By: []
+Details:
+Novo componente AudioPlayer.tsx em src/components/ui/
+Design: botão play/pause, barra de progresso, indicador de tempo
+Estilo: alinhado com DS v4.2.1 (monochromático, rounded-md, Open Sans)
+Exibido dentro do MessageBubble quando mensagem tem audioUrl
+Files: novo AudioPlayer.tsx, MessageBubble.tsx
+Acceptance: Player funcional e visualmente integrado
+T014: Integrar TTS no fluxo do chat web
+Blocked By: [T011, T013]
+Details:
+Quando triagem configurada como "voz" (canal chat_web + voice mode):
+Backend gera áudio TTS para cada resposta da LIA (OpenAI tts-1)
+Retorna audio_base64 junto com o texto na resposta da API
+Frontend decodifica e exibe AudioPlayer no MessageBubble
+Adicionar campo audio_url ou audio_base64 no TriagemMessage
+Endpoint /triagem/{token}/message retorna audio quando voice mode ativo
+Criar proxy frontend para /api/backend-proxy/triagem/{token}/audio
+Files: triagem_session_service.py, triagem.py (API), use-triagem-chat.ts, MessageBubble.tsx
+Acceptance: LIA "fala" no chat web com áudio reproduzível
+T015: UI de controle de voz no chat web
+Blocked By: [T013, T014]
+Details:
+Quando modo voz ativo:
+Botão "Iniciar Conversa por Voz" no WelcomeCard (substitui/complementa "Iniciar Triagem")
+Indicador visual quando LIA está "falando" (onda sonora animada ou ícone pulsante no avatar)
+Botão de mute/unmute para candidato desativar áudio da LIA
+Auto-play opcional das respostas da LIA (com toggle)
+Botão "Finalizar Conversa" visível durante toda a sessão
+Quando modo texto:
+Sem alterações — funciona como hoje (com as melhorias do T011)
+AudioRecordButton continua disponível para candidato gravar respostas
+Files: page.tsx (triagem), WelcomeCard.tsx, InputBar.tsx, MessageBubble.tsx
+Acceptance: Controles de voz funcionais; experiência fluida
+T016: Animação visual da LIA falando
+Blocked By: [T013]
+Details:
+Quando áudio da LIA está tocando:
+LIA icon pulsa ou mostra onda sonora animada
+Ou: barra de onda animada ao lado do MessageBubble
+Quando candidato está gravando:
+Botão de microfone pulsa vermelho (já existe)
+Manter minimalismo do DS v4.2.1
+Files: lia-icon.tsx ou novo componente de animação, MessageBubble.tsx
+Acceptance: Feedback visual quando LIA está falando
+BLOCO 5: Correções e branding
+T017: Corrigir branding da sessão demo
+Blocked By: []
+Details:
+Atualizar sessão demo (token 3180ce9e...) com company_name correto da empresa cliente
+Garantir que WelcomeCard mostra logo da empresa quando disponível
+"WeDo Talent" só aparece no footer como "Powered by WeDo Talent"
+Files: script SQL de atualização, WelcomeCard.tsx
+Acceptance: Branding correto na sessão demo
+BLOCO 6: Validação
+T018: Validação e teste end-to-end
+Blocked By: [T001-T017]
+Details:
+Testar:
+Saturação configurada na Jornada de Recrutamento
+Inscrição via formulário web → agradecimento multicanal
+Inscrição via WhatsApp → desacoplamento inscrição/triagem
+Rubrica < 55 → rejeição automática com feedback
+Pipeline satura → fila → retomada automática
+Chat web: LIA conversa de forma inteligente (não robótica)
+Chat web: LIA responde perguntas off-script
+Chat web voz: LIA fala (TTS), candidato fala (STT)
+Controles de voz: iniciar/finalizar/mute
+Badges de origem no kanban
+Navegação "Ver Configurações" correta
+SaturationBadge com pools separados
+Acceptance: Todos os fluxos validados
+PRIORIDADE DE EXECUÇÃO
+FASE 1 (Infraestrutura):  T002, T009, T013, T017  (paralelo)
+FASE 2 (Saturação UI):    T001, T004, T005         (depende T002)
+FASE 3 (Fluxos):          T003, T006, T007, T010   (depende T001/T002)
+FASE 4 (IA):              T011, T012               (independente)
+FASE 5 (Voz):             T014, T015, T016         (depende T011+T013)
+FASE 6 (Fila):            T008                     (depende T002+T007)
+FASE 7 (Validação):       T018                     (depende tudo)

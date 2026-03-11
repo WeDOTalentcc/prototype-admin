@@ -1,0 +1,59 @@
+Comparando:
+
+Cards do Jira MVP que NÃO aparecem no Exist. de 2.2.4 = 40 cards removidos:
+
+#	Card(s)	Nome	Épico	Motivo provável
+1	AUTH-001	Tela de Login	É1	Login simplificado no Alpha (email/senha direto)
+2	AUTH-002	Integração WorkOS SSO	É1	SSO excluído do Alpha
+3	AUTH-003	Middleware JWT	É1	Auth simplificada
+4	AUTH-004	Sessão e Refresh Token	É1	Auth simplificada
+5	AUTH-005	Wildcard SSL + Multi-Brand	É1	Infraestrutura não priorizada
+6	AUTH-006	Revisão Design Lucas	É1	Design não priorizado
+7	KAN-009	Componentes Kanban Modulares	É15	Refatoração não essencial
+8	KAN-010	Feedback Implícito em Transições	É11	Feature avançada
+9	KAN-012	Solicitar Novos Candidatos Refinados	É11	Feature avançada
+10	KAN-013	Buscar Candidatos Similares	É11	Feature avançada AI
+11	VAG-005	Duplicar Vaga	É11	No Alpha vagas vêm do ATS
+12	VAG-006	Arquivar Vaga	É11	No Alpha vagas vêm do ATS
+13	INT-WOS-001	Configurar WorkOS Account	É14	WorkOS excluído
+14	INT-WOS-002	SSO SAML/OIDC	É14	WorkOS excluído
+15	INT-WOS-003	Directory Sync SCIM	É14	WorkOS excluído
+16	INT-WOS-004	MFA Enforcement	É14	WorkOS excluído
+17	INT-WOS-005	User Management SDK	É14	WorkOS excluído
+18	INT-WOS-006	Webhook de Eventos	É14	WorkOS excluído
+19	INT-WOS-007	Admin Portal	É14	WorkOS excluído
+20	INT-TWI-001	Configurar Twilio Account	É14	Twilio excluído (possível Gupshup)
+21	INT-TWI-002	Sandbox WhatsApp	É14	Twilio excluído
+22	INT-TWI-003	Número de Produção	É14	Twilio excluído
+23	INT-TWI-004	Webhook de Mensagens	É14	Twilio excluído
+24	INT-TWI-005	Templates Aprovados Meta	É14	Twilio excluído
+25	INT-TWI-006	Status Delivery Reports	É14	Twilio excluído
+26	INT-TWI-007	Rate Limiting e Filas	É14	Twilio excluído
+27	TRI-014	Pesquisa Alternativas Twilio	É5	Pesquisa já feita/dispensável
+28	TPL-008	Sync Templates WhatsApp com Meta	É8	Depende de Twilio/provider
+29	INT-LLM-002	Cliente Google Gemini	É14	Infra LLM simplificada
+30	INT-LLM-005	Gestão de Prompts (Versioning)	É14	Infra LLM simplificada
+31	INT-LLM-006	Cache de Respostas LLM	É14	Infra LLM simplificada
+32	INT-LLM-007	Monitoramento de Custos	É14	Infra LLM simplificada
+33	INT-LLM-008	Rate Limiting LLM	É14	Infra LLM simplificada
+34	INT-LLM-009	Logging de Conversas	É14	Infra LLM simplificada
+35	NOT-002	Notificações Tempo Real (WebSocket)	É10	Simplificado no Alpha
+36	NOT-003	Preferências de Notificação	É10	Simplificado no Alpha
+37	NOT-004	Notificações Push (PWA)	É10	PWA não priorizado
+38	NOT-005	Histórico de Notificações	É10	Simplificado no Alpha
+39	NOT-006	Badge de Não Lidas	É10	Simplificado no Alpha
+40	DAT-001	Sistema de Solicitação de Dados	É15	Feature avançada
+41	ENT-001	Análise de Transcrição Entrevista	É15	Feature avançada
+Resumo da Redução:
+
+Categoria	Cards removidos	% do Jira MVP
+É1: Autenticação inteira	6	4,3%
+É14: WorkOS (7) + Twilio (7) + LLM (6)	20	14,2%
+É10: Notificações (5 de 6)	5	3,5%
+É11: Kanban/Vagas avançados	6	4,3%
+É15: Agentes avançados	2	1,4%
+É5/É8: Triagem/Templates periféricos	2	1,4%
+TOTAL REMOVIDOS	41	29,1%
+Observação importante: O quadro 2.2.4 também "promove" 1 card do pós-MVP para o Alpha: NOT-007 (Notificações via Microsoft Teams), que no Jira está marcado como pós-MVP mas no cenário Alpha é usado como card existente. Então na prática são 41 cards removidos e 1 card promovido, resultando em uma redução líquida de 40 cards (de 141 para 101 únicos no Exist.).
+
+O maior bloco de corte são as integrações (20 cards = quase metade da redução), seguido pela autenticação (6 cards), o que faz sentido: no Alpha, o login é simplificado e as integrações com providers externos (WorkOS, Twilio) são substituídas por alternativas mais leves ou adiadas.

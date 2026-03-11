@@ -1,0 +1,52 @@
+O que REALMENTE está funcionando bem:
+
+Roteamento inteligente — O sistema de 3 camadas (cache → FastRouter → LLM) classifica mensagens em 9+ domínios de agentes. As chaves de API da Anthropic/Claude estão configuradas e o LLM responde.
+
+Enriquecimento de contexto — Cada chat injeta dados reais no prompt:
+
+Job Chat: pipeline completo + candidatos + métricas
+Talent Chat: pool de talentos + métricas
+Jobs Management: contexto de vagas ativas
+Wizard: rascunho + catálogo da empresa + benchmarks
+Sistema proativo — O AutomationScheduler roda com 8 jobs periódicos reais:
+
+A cada 30 min: PipelineMonitor escaneia empresas e cria alertas
+A cada hora: Detecta candidatos inativos (7+ dias)
+A cada 30 min: Detecta no-shows de entrevista
+A cada 15 min: Envia lembretes de entrevista
+Diário: Verifica vagas expirando
+A cada 6h: Learning automation (detecção de padrões)
+Notificações — O NotificationService cria notificações persistentes no banco, o frontend as busca e exibe.
+
+Multi-turn com persistência — PendingActionState agora persiste no PostgreSQL. Sobrevive reinícios.
+
+Closed-loop frontend — ActionResultCard renderiza em todos os 4 chats.
+
+Domínios registrados — Pipeline, Job Management, Communication, Sourcing, etc. todos têm execute_action implementado.
+
+O que tem LACUNAS importantes:
+
+Ações com fallback para simulação — Quando o ActionExecutor tenta executar via domínio e falha (por exemplo, problema de conexão ou serviço indisponível), ele cai para _simulate_execution que retorna "simulated": True. Ou seja, a ação parece ter sido executada, mas nada muda no banco. Isso afeta: move_candidate, pause_job, close_job, duplicate_job, reject_candidate, etc.
+
+Email não enviando — A infraestrutura SendGrid está completa, mas falta o SENDGRID_API_KEY. Sem isso, emails são simulados.
+
+OpenAI não configurado — Só Anthropic (Claude) e Gemini estão com chaves. Se algum prompt depender de OpenAI, não vai funcionar.
+
+Algumas ações de domínio podem falhar — O PipelineDomain.execute_action chama handle_tool_call que tenta fazer HTTP requests internos. Se as rotas internas não estiverem mapeadas corretamente, cai na simulação.
+
+Resumo pragmático:
+
+Capacidade	Status	Nota
+Entender perguntas do recrutador	Funcionando	Claude + intent routing ativo
+Responder de forma inteligente com contexto	Funcionando	Enriquecimento real de dados
+Executar ações reais (mover candidato, pausar vaga)	Parcial	Tenta real, cai em simulação se falhar
+Enviar emails	Precisa de API key	Infraestrutura pronta
+Alertas proativos	Funcionando	8 jobs agendados, cria notificações
+Multi-turn (pedir parâmetros, confirmar)	Funcionando	Persistente no PostgreSQL
+Learning/observability	Funcionando	Dashboard + APIs + scheduler
+O que precisamos fazer para fechar as lacunas?
+
+Configurar SENDGRID_API_KEY — Para emails funcionarem de verdade
+Eliminar simulações — Conectar as ações diretamente às queries SQL que alteram status das vagas/candidatos no banco, sem depender de HTTP interno
+Testar end-to-end — Mandar mensagens reais para cada chat e verificar que ações são executadas
+Quer que eu priorize alguma dessas lacunas? A mais impactante seria eliminar a simulação das ações — fazer com que "pausar vaga", "fechar vaga", "mover candidato" etc. realmente alterem os dados no banco.

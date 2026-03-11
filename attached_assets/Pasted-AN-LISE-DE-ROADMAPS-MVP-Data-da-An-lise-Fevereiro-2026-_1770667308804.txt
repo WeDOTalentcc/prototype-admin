@@ -1,0 +1,612 @@
+ANÁLISE DE ROADMAPS MVP
+Data da Análise: Fevereiro 2026
+Objetivo: Fornecer três cenários de desenvolvimento do MVP com análise de dependências, prioridades e trade-offs, incluindo opções de calibração de busca.
+
+CONTEXTO DA ANÁLISE
+Situação Atual
+Total de Cards: 154 cards MVP (excluindo 58 de Config Admin)
+Cards Prontos: 0
+Cards A Desenvolver: 154
+Wizard: 6 estágios em 3 fases (Construção: input/salary/competencies, WSI: wsi-questions, Publicação: review/calibration)
+Skip Calibração: Planejado via fluxo conversacional
+Agentes IA: 10 agentes ativos (v2.2) + 3 deprecated
+Templates: 326 templates curados em 9 categorias
+Nota: 5 cards adicionais são variações/consolidações (INT-MSG-001, INT-MSG-005, INT-MSG-007 movidos para pós-MVP)
+Bloqueadores Críticos:
+WhatsApp/Twilio não configurado (TRI-001)
+Integração de calendário pendente
+Fluxo Core do MVP
+Recrutador cria vaga (Wizard 6 etapas) → Calibração ou Skip → Busca candidatos
+→ Aprova mapeados (Gate 1) → LIA gera perguntas WSI → LIA contata via WhatsApp
+→ LIA faz triagem → Recrutador aprova/reprova triados (Gate 2) → LIA agenda entrevista
+CENÁRIO A: WIZARD FIRST
+Filosofia
+Priorizar a experiência completa de criação de vagas antes de habilitar a triagem. Garante que as vagas criadas tenham todos os dados necessários para perguntas WSI de alta qualidade.
+
+O Cenário A divide-se em dois sub-cenários baseados na etapa de calibração:
+
+CENÁRIO A.1: WIZARD + SKIP CALIBRAÇÃO
+Fluxo do Wizard
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                      FLUXO A.1: WIZARD + SKIP CALIBRAÇÃO                        │
+└─────────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────┐    ┌──────────┐    ┌──────────────┐    ┌──────────────┐
+  │    INPUT     │    │  SALARY  │    │ COMPETENCIES │    │     WSI      │
+  │  EVALUATION  │───►│          │───►│              │───►│  QUESTIONS   │
+  └──────────────┘    └──────────┘    └──────────────┘    └──────────────┘
+         │                                                        │
+         │  Descrição da vaga,                                    │  Perguntas de
+         │  requisitos básicos                                    │  triagem geradas
+         ▼                                                        ▼
+  ┌──────────────┐                                         ┌──────────────┐
+  │   REVIEW     │◄────────────────────────────────────────│    SKIP      │
+  │   PUBLISH    │           (Pula calibração)             │ CALIBRATION  │
+  └──────────────┘                                         └──────────────┘
+         │
+         │  Recrutador define Match Threshold
+         │  diretamente no painel lateral
+         │  (ex: 70%, 80%, 90%)
+         ▼
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │                    BUSCA DE CANDIDATOS AUTOMÁTICA                    │
+  │              (Sem etapa de calibração visual prévia)                 │
+  └──────────────────────────────────────────────────────────────────────┘
+Características
+Aspecto	Descrição
+Fluxo	Input-Evaluation → Salary → Competencies → WSI-Questions → Review-Publish → (skip search-calibration)
+Match Threshold	Definido diretamente no painel lateral pelo recrutador
+Calibração Visual	❌ Não realizada
+Tempo Economizado	~15-20 minutos por vaga
+Complexidade	⭐⭐ Baixa
+Ideal Para
+✅ Recrutadores experientes que conhecem bem o mercado
+✅ Vagas similares a outras já publicadas anteriormente
+✅ Alto volume de vagas (10+ por mês)
+✅ Posições operacionais com perfil bem definido
+✅ Empresas com histórico de contratações bem-sucedidas
+Vantagens
+Agilidade - Criação de vaga em ~10-15 minutos
+Simplicidade - Menos etapas para o recrutador
+Escalabilidade - Ideal para processos de alto volume
+Experiência otimizada - Recrutadores seniores não precisam de "treinamento" visual
+Desvantagens
+Menos refinamento - Threshold pode não ser ideal para primeira execução
+Sem validação prévia - Recrutador não vê amostra de candidatos antes de publicar
+Ajustes posteriores - Pode precisar refinar após ver os primeiros resultados
+CENÁRIO A.2: WIZARD + CALIBRAÇÃO COMPLETA
+Fluxo do Wizard
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                    FLUXO A.2: WIZARD + CALIBRAÇÃO COMPLETA                      │
+└─────────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────┐    ┌──────────┐    ┌──────────────┐    ┌──────────────┐
+  │    INPUT     │    │  SALARY  │    │ COMPETENCIES │    │     WSI      │
+  │  EVALUATION  │───►│          │───►│              │───►│  QUESTIONS   │
+  └──────────────┘    └──────────┘    └──────────────┘    └──────────────┘
+         │                                                        │
+         │  Descrição da vaga,                                    │  Perguntas de
+         │  requisitos básicos                                    │  triagem geradas
+         ▼                                                        ▼
+  ┌──────────────┐                                         ┌──────────────┐
+  │   REVIEW     │                                         │   SEARCH     │
+  │   PUBLISH    │◄────────────────────────────────────────│ CALIBRATION  │
+  └──────────────┘                                         └──────────────┘
+                                                                  │
+         ┌────────────────────────────────────────────────────────┘
+         ▼
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │                        ETAPA DE CALIBRAÇÃO                           │
+  │                                                                       │
+  │   ┌─────────────────────────────────────────────────────────────┐    │
+  │   │  📋 AMOSTRA DE CANDIDATOS (3-5 perfis)                      │    │
+  │   │                                                              │    │
+  │   │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │    │
+  │   │  │ João S. │  │ Maria L.│  │ Pedro A.│  │ Ana C.  │        │    │
+  │   │  │ ⭐ 85%  │  │ ⭐ 78%  │  │ ⭐ 72%  │  │ ⭐ 68%  │        │    │
+  │   │  │  👍/👎  │  │  👍/👎  │  │  👍/👎  │  │  👍/👎  │        │    │
+  │   │  └─────────┘  └─────────┘  └─────────┘  └─────────┘        │    │
+  │   └─────────────────────────────────────────────────────────────┘    │
+  │                                                                       │
+  │   ┌─────────────────────────────────────────────────────────────┐    │
+  │   │  🎛️ AJUSTE DE PESOS                                         │    │
+  │   │                                                              │    │
+  │   │  Experiência:    [████████░░] 80%                           │    │
+  │   │  Habilidades:    [██████░░░░] 60%                           │    │
+  │   │  Formação:       [████░░░░░░] 40%                           │    │
+  │   │  Localização:    [██░░░░░░░░] 20%                           │    │
+  │   └─────────────────────────────────────────────────────────────┘    │
+  │                                                                       │
+  │   ┌─────────────────────────────────────────────────────────────┐    │
+  │   │  📊 FEEDBACK VISUAL                                          │    │
+  │   │                                                              │    │
+  │   │  ⚠️ "Muito restritivo: apenas 12 candidatos encontrados"    │    │
+  │   │  ✅ "Balanceado: 156 candidatos com match > 70%"            │    │
+  │   │  ⚠️ "Muito amplo: 2.340 candidatos, considere refinar"      │    │
+  │   └─────────────────────────────────────────────────────────────┘    │
+  └──────────────────────────────────────────────────────────────────────┘
+         │
+         │  Calibração refina o algoritmo de match
+         │  antes de publicar a vaga
+         ▼
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │                    BUSCA DE CANDIDATOS CALIBRADA                     │
+  │                (Algoritmo refinado com feedback)                     │
+  └──────────────────────────────────────────────────────────────────────┘
+Características
+Aspecto	Descrição
+Fluxo	Input-Evaluation → Salary → Competencies → WSI-Questions → Review-Publish → Search-Calibration
+Amostra	Recrutador vê 3-5 candidatos de amostra
+Ajuste de Pesos	Interface visual para refinar critérios
+Feedback Visual	Indicadores de "muito restritivo" ou "muito amplo"
+Tempo Adicional	~15-20 minutos para calibração
+Complexidade	⭐⭐⭐⭐ Alta
+Ideal Para
+✅ Novas posições nunca contratadas antes
+✅ Recrutadores novos na empresa ou na função
+✅ Vagas críticas (C-level, especialistas raros)
+✅ Mercados desconhecidos ou nichos específicos
+✅ Quando a qualidade é mais importante que velocidade
+Vantagens
+Precisão - Algoritmo calibrado com feedback real
+Confiança - Recrutador valida amostra antes de publicar
+Aprendizado - Sistema aprende preferências do recrutador
+Menor desperdício - Evita processar candidatos que não fazem sentido
+Desvantagens
+Tempo adicional - ~15-20 minutos extras por vaga
+Complexidade - Mais decisões para o recrutador tomar
+Dependência de dados - Precisa de base de candidatos prévia para amostragem
+Distribuição por Sprint (Cenário A) - Cronograma Atual: 4 Sprints
+Sprint	Foco Principal	Épicos	Entregas
+Sprint 1	Fundação: Auth, Wizard, Kanban, Integrações	ÉPICO 1, 2, 11, 14	Login, Wizard 6 etapas, Kanban base, Twilio setup
+Sprint 2	Triagem: Mapeamento, Perguntas WSI, WhatsApp	ÉPICO 3, 4, 5	Busca candidatos, perguntas WSI, contato WhatsApp
+Sprint 3	Avaliação: Score WSI, Gates, Templates, Agentes	ÉPICO 6, 7, 8, 15	Cálculo WSI, aprovação em massa, parecer LIA
+Sprint 4	Finalização: Agendamento, Notificações, Config	ÉPICO 9, 10, 12, 13	Integração Teams, notificações, ajustes
+Caminho Crítico (Cenário A)
+AUTH → WIZARD (6 etapas) → PERGUNTAS WSI → WHATSAPP/TRIAGEM → SCORE → GATES → AGENDAMENTO
+  ↓          ↓                    ↓                ↓              ↓
+Sprint 1   Sprint 1           Sprint 2         Sprint 2       Sprint 3    Sprint 4
+           (inclui calibração
+            ou skip opcional)
+Vantagens Gerais do Cenário A
+UX completa desde o início - Recrutador tem experiência fluida de criação
+Dados ricos para WSI - Perguntas geradas com contexto completo da vaga
+Menor retrabalho - Wizard define formato que perguntas usarão
+Validação gradual - Cada etapa validada antes de avançar
+Flexibilidade - Recrutador escolhe entre A.1 (rápido) ou A.2 (refinado)
+Desvantagens Gerais do Cenário A
+Time-to-value maior - ~2 sprints até primeira triagem WSI
+Risco concentrado no início - Wizard é complexo (6 estágios)
+Feedback tardio sobre core - Só testa triagem na Sprint 2
+Métricas (Cenário A)
+Primeira entrega de valor: Sprint 1 (Wizard funcional)
+Core IA testável: Sprint 3 (Score WSI)
+MVP completo: Sprint 4
+CENÁRIO B: TRIAGEM FIRST (Alternativo)
+Nota: Este é um cenário alternativo de planejamento. O cronograma atual adota o Cenário A (4 Sprints).
+
+Filosofia
+Priorizar validação do core de IA (perguntas WSI + triagem + score) antes de investir no Wizard conversacional. Permite testar a proposta de valor principal mais cedo.
+
+Premissa
+Vagas podem ser criadas via formulário básico, permitindo pular temporariamente o Wizard conversacional.
+
+Distribuição por Sprint (Alternativo - 4 Sprints)
+Sprint	Foco Principal	Épicos	Entregas
+Sprint 1	Auth + Twilio + WhatsApp	ÉPICO 1, 5, 14	Login, WhatsApp configurado, webhook
+Sprint 2	Perguntas WSI + Triagem	ÉPICO 4, 5	Preview, edição, fluxo conversacional LIA
+Sprint 3	Score + Gates + Templates	ÉPICO 6, 7, 8	Cálculo WSI, aprovação, feedback
+Sprint 4	Wizard + Kanban + Notificações	ÉPICO 2, 9, 10, 11	Wizard 6 etapas, agendamento, notificações
+Caminho Crítico
+AUTH → WHATSAPP → PERGUNTAS → TRIAGEM → SCORE → GATES → WIZARD → AGENDAMENTO
+  ↓          ↓          ↓           ↓         ↓
+Sprint 1  Sprint 1   Sprint 2   Sprint 2   Sprint 3   Sprint 4
+Vantagens
+Validação rápida do core - Triagem WSI testável na Sprint 2
+Time-to-value menor - ~2 sprints até primeira triagem
+Feedback antecipado - Sabe se a IA funciona antes de investir em UX
+Risco técnico identificado cedo - WhatsApp/Twilio validado primeiro
+Desvantagens
+UX de criação de vaga pior - Formulário manual até Sprint 4
+Menos dados para perguntas - Vaga criada sem wizard tem menos contexto
+Possível retrabalho - Se formato da vaga mudar, perguntas precisam ajuste
+Dependência crítica única - Twilio bloqueia todo o roadmap
+Sem opção de calibração - Funcionalidade só disponível com Wizard
+Métricas
+Primeira entrega de valor: Sprint 2 (Triagem WSI)
+Core IA testável: Sprint 2 (Triagem)
+MVP completo: Sprint 4
+COMPARAÇÃO ENTRE CENÁRIOS
+Aspecto	A.1 (Skip Calibração)	A.2 (Calibração Completa)	B (Triagem First)
+Primeiro entregável	Wizard funcional	Wizard funcional	Triagem WSI funcionando
+Time-to-value	~2 sprints	~2 sprints	~2 sprints
+Tempo por vaga	10-15 min	25-35 min	5-10 min (formulário)
+Risco técnico	Distribuído	Distribuído	Concentrado em WhatsApp
+Dependência crítica	Wizard (6 etapas)	Wizard + Calibração	Twilio (1 integração)
+UX inicial	Completa	Completa + Refinada	Básica (formulário)
+Qualidade perguntas WSI	Alta	Muito Alta	Média
+Calibração de busca	❌ Threshold manual	✅ Visual + Feedback	❌ Não disponível
+Retrabalho potencial	Baixo	Muito Baixo	Médio
+Ideal para	Alto volume	Vagas críticas	Validação de hipótese
+Perfil do recrutador	Experiente	Novato ou Sênior	Técnico
+Recomendação por Contexto
+Cenário de Uso	Cenário Recomendado
+Time tem experiência com Twilio/WhatsApp	B (Triagem First)
+Wizard especificado completo	A.1 ou A.2
+Precisa validar proposta de valor rápido	B (Triagem First)
+Cliente quer experiência completa	A.2 (Calibração Completa)
+Recursos limitados, foco em core	B (Triagem First)
+Prazo apertado (8 semanas)	B (Triagem First)
+Prazo flexível (12 semanas)	A.2 (Calibração Completa)
+Alto volume de vagas (10+/mês)	A.1 (Skip Calibração)
+Vagas críticas/C-level	A.2 (Calibração Completa)
+Recrutadores experientes	A.1 (Skip Calibração)
+Recrutadores novos na função	A.2 (Calibração Completa)
+Mercado/nicho desconhecido	A.2 (Calibração Completa)
+Posições operacionais em escala	A.1 (Skip Calibração)
+Fluxo de Decisão para Escolha de Cenário
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        ÁRVORE DE DECISÃO DE CENÁRIO                             │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                    ┌──────────────────────────────┐
+                    │   Precisa validar proposta   │
+                    │   de valor rapidamente?      │
+                    └──────────────┬───────────────┘
+                                   │
+                    ┌──────────────┴───────────────┐
+                    │                              │
+                   SIM                            NÃO
+                    │                              │
+                    ▼                              ▼
+           ┌────────────────┐         ┌──────────────────────────┐
+           │ CENÁRIO B      │         │   Recrutadores são       │
+           │ Triagem First  │         │   experientes no mercado?│
+           └────────────────┘         └──────────────┬───────────┘
+                                                     │
+                                      ┌──────────────┴───────────┐
+                                      │                          │
+                                     SIM                        NÃO
+                                      │                          │
+                                      ▼                          ▼
+                             ┌────────────────┐       ┌────────────────────┐
+                             │   Alto volume  │       │   CENÁRIO A.2      │
+                             │   de vagas?    │       │   Calibração       │
+                             └───────┬────────┘       │   Completa         │
+                                     │                └────────────────────┘
+                      ┌──────────────┴───────────┐
+                      │                          │
+                     SIM                        NÃO
+                      │                          │
+                      ▼                          ▼
+             ┌────────────────┐       ┌────────────────────┐
+             │ CENÁRIO A.1    │       │   Vaga é crítica   │
+             │ Skip Calibração│       │   (C-level, rara)? │
+             └────────────────┘       └────────┬───────────┘
+                                               │
+                                ┌──────────────┴───────────┐
+                                │                          │
+                               SIM                        NÃO
+                                │                          │
+                                ▼                          ▼
+                       ┌────────────────┐       ┌────────────────┐
+                       │ CENÁRIO A.2    │       │ CENÁRIO A.1    │
+                       │ Calibração     │       │ Skip Calibração│
+                       │ Completa       │       │                │
+                       └────────────────┘       └────────────────┘
+DETALHAMENTO DOS 15 ÉPICOS
+Legenda de Status
+📋 Pendente - Card a desenvolver
+🔧 Em desenvolvimento - Card em progresso
+🔗 Integração - Requer configuração externa
+🔄 Consolidado/Pós-MVP - Card movido ou adiado
+⚠️ Obsoleto - Card descontinuado
+ÉPICO 1: AUTENTICAÇÃO
+Objetivo: Permitir acesso seguro à plataforma
+Sprint Alvo: 0
+Prioridade: 🔴 Crítica
+Dependências: Nenhuma (base)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+AUTH-001	Tela de Login	Frontend	📋 Pendente	-	3
+AUTH-002	Integração WorkOS SSO	Integração	📋 Pendente	AUTH-001	8
+AUTH-003	Middleware de Autenticação JWT	Backend	📋 Pendente	-	5
+AUTH-004	Gestão de Sessão e Refresh Token	Backend	📋 Pendente	AUTH-003	5
+Total: 4 cards | Pontos: 21 | Status: Pendente Jira
+
+ÉPICO 2: WIZARD CONVERSACIONAL ⏸️ PÓS-MVP
+Objetivo: Criação fluida de vagas via chat com LIA
+Sprint Alvo: Pós-MVP
+Prioridade: ⏸️ Adiado
+Dependências: ÉPICO 1 (Auth)
+
+⏸️ Épico inteiro movido para Pós-MVP (decisão 06/fev/2026). WIZ-008, WIZ-012, WIZ-013 migrados para Épico 4 (WSI).
+
+Card	Título	Tipo	Status	Dependências	Pontos
+WIZ-001	Interface Chat Conversacional	Frontend	📦 Pós-MVP	-	8
+WIZ-002	Orquestrador de Intenções	AI	📦 Pós-MVP	WIZ-001	13
+WIZ-003	Serviço de Insights de Mercado	Backend	📦 Pós-MVP	-	8
+WIZ-004	Gerador de Job Description	AI	📦 Pós-MVP	WIZ-002	8
+WIZ-005	Salvamento de Rascunho	Backend	📦 Pós-MVP	WIZ-001	3
+WIZ-006	Sugestões Clicáveis	Frontend	📦 Pós-MVP	WIZ-001	5
+WIZ-007	Preview da Vaga (Live)	Full-Stack	📦 Pós-MVP	WIZ-002	5
+WIZ-008	Formulário de Edição Completa	Full-Stack	➡️ Migrado p/ Épico 4	WIZ-007	8
+WIZ-009	Skip Calibração Conversacional	Full-Stack	📦 Pós-MVP	-	3
+WIZ-010	Estágio de Salário Interativo	Frontend	📦 Pós-MVP	WIZ-001	5
+WIZ-011	Estágio de Competências	Frontend	📦 Pós-MVP	WIZ-001	8
+WIZ-012	Estágio de Perguntas WSI	Frontend	➡️ Migrado p/ Épico 4	WIZ-001	8
+WIZ-013	Quality Gates WSI	Backend	➡️ Migrado p/ Épico 4	WIZ-002	5
+Total: 13 cards | Pontos: 87 | Status: ⏸️ Pós-MVP (10 pós-MVP + 3 migrados p/ Épico 4)
+
+ÉPICO 3: BUSCA E MAPEAMENTO
+Objetivo: Encontrar e adicionar candidatos às vagas
+Sprint Alvo: 2
+Prioridade: 🟠 Alta
+Dependências: ÉPICO 2 (Wizard - vaga criada)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+MAP-001	Lista de Candidatos da Base	Frontend	📋 Pendente	-	5
+MAP-002	Busca Semântica com Gemini	Backend	📋 Pendente	-	8
+MAP-003	Filtros Avançados	Full-Stack	📋 Pendente	MAP-001	5
+MAP-004	Adicionar Candidato à Vaga	Full-Stack	📋 Pendente	MAP-001	5
+MAP-005	Matching Score IA	AI	📋 Pendente	MAP-002	8
+MAP-006	Sugestões Proativas LIA	AI	📋 Pendente	MAP-005	8
+Total: 6 cards | Pontos: 39 | Status: Pendente Jira
+
+CARDS WDT — TALENT FUNNEL (Fase 1: Quick Wins)
+Cards de otimização do sistema de busca, integrados ao Épico 3. Todos os cards mantidos como 📋 Pendente para equipe de produção. Referência completa: docs/epic-wdt-talent-funnel.md
+
+Card	Título	Tipo	Status	Dependências	Pontos
+WDT-001 (MAP-007)	Endpoint de busca paginada com limit 10	Backend	📋 Pendente	-	5
+WDT-002 (MAP-008)	Componente de paginação on-demand	Frontend	📋 Pendente	WDT-001	3
+WDT-003 (MAP-009)	Adaptar Elasticsearch query para exclusão de IDs	Backend	📋 Pendente	WDT-001	3
+WDT-004 (MAP-010)	Adaptar PG Vector query para exclusão de IDs	Backend	📋 Pendente	WDT-001	2
+WDT-006 (MAP-011)	API de feedback Like/Dislike	Backend	📋 Pendente	-	5
+WDT-007 (MAP-012)	Componente Like/Dislike no card de candidato	Frontend	📋 Pendente	WDT-006	3
+WDT-005 (MAP-013)	Remover ordenação automática por ranking	Frontend	📋 Pendente	-	2
+Total WDT: 7 cards | Pontos: 23 | Status: Pendente Jira
+
+ÉPICO 4: GERAÇÃO DE PERGUNTAS WSI
+Objetivo: Gerar perguntas de triagem baseadas na metodologia WSI
+Sprint Alvo: 1-2
+Prioridade: 🟠 Alta
+Dependências: Vaga criada (ÉPICO 2 ou formulário básico)
+
+Nota (06/fev/2026): WIZ-008, WIZ-012, WIZ-013 migrados do Épico 2 (Wizard) para cá.
+
+Card	Título	Tipo	Status	Dependências	Pontos
+WSI-001	Motor de Geração de Perguntas	AI	📋 Pendente	-	13
+WSI-002	Blocos de Metodologia WSI (7 blocos)	Backend	📋 Pendente	WSI-001	8
+WSI-003	Preview de Perguntas	Frontend	📋 Pendente	WSI-001	5
+WSI-004	Edição Manual de Perguntas	Full-Stack	❌ Removido	WSI-003	5
+WSI-005	Aprovação de Perguntas pelo Recrutador	Full-Stack	📋 Pendente	WSI-004	3
+WIZ-008	Formulário de Edição Completa (migrado do É2)	Full-Stack	📋 Pendente	WIZ-005	8
+WIZ-012	Estágio de Perguntas WSI (migrado do É2)	Frontend	📋 Pendente	WIZ-001	8
+WIZ-013	Quality Gates WSI (migrado do É2)	Backend	📋 Pendente	WIZ-002	5
+Total: 8 cards (7 MVP + 1 removido) | Pontos: 55 | Status: Pendente Jira
+
+ÉPICO 5: TRIAGEM WHATSAPP
+Objetivo: LIA conduzir triagem via WhatsApp com candidatos
+Sprint Alvo: 3-4
+Prioridade: 🔴 Crítica
+Dependências: ÉPICO 4 (Perguntas), ÉPICO 14 (Twilio)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+TRI-001	Configuração Twilio WhatsApp	Integração	📋 Pendente	-	8
+TRI-002	Envio de Mensagem Inicial	Backend	📋 Pendente	TRI-001	5
+TRI-003	Webhook de Recebimento	Backend	📋 Pendente	TRI-001	5
+TRI-004	Fluxo Conversacional LIA	AI	📋 Pendente	TRI-003, WSI-001	13
+TRI-005	Persistência de Conversa	Backend	📋 Pendente	TRI-004	5
+TRI-006	Tela de Monitoramento de Conversas	Frontend	📋 Pendente	TRI-005	8
+TRI-007	Timeout e Retentativas	Backend	📋 Pendente	TRI-004	5
+TRI-008	Opt-out e Consentimento LGPD	Backend	📋 Pendente	TRI-002	5
+TRI-009	Templates de Mensagem WhatsApp	Full-Stack	📋 Pendente	TRI-002	5
+TRI-010	Envio em Massa (Bulk)	Full-Stack	📋 Pendente	TRI-002	8
+TRI-011	Pré-Qualificação Automatizada	Backend	📋 Pendente	TRI-004	8
+Total: 11 cards | Pontos: 75 | Status: Pendente Jira
+
+ÉPICO 6: SCORE WSI
+Objetivo: Calcular e exibir pontuação WSI dos candidatos
+Sprint Alvo: 4-5
+Prioridade: 🟠 Alta
+Dependências: ÉPICO 5 (Triagem concluída)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+SCO-001	Cálculo de Score WSI	AI	📋 Pendente	TRI-004	13
+SCO-002	Modelo Big Five Comportamental	AI	📋 Pendente	SCO-001	8
+SCO-003	Avaliação Bloom/Dreyfus	AI	📋 Pendente	SCO-001	8
+SCO-004	Parecer Textual LIA	AI	📋 Pendente	SCO-001	8
+SCO-005	Visualização de Score (Radar Chart)	Frontend	📋 Pendente	SCO-001	5
+SCO-006	Breakdown de Dimensões WSI	Frontend	📋 Pendente	SCO-005	5
+SCO-007	Comparação entre Candidatos	Full-Stack	📋 Pendente	SCO-006	8
+SCO-008	Histórico de Scores	Backend	📋 Pendente	SCO-001	5
+Total: 8 cards | Pontos: 60 | Status: Pendente Jira
+
+ÉPICO 7: GATES DE APROVAÇÃO
+Objetivo: Portões de decisão do recrutador (aprovar/reprovar)
+Sprint Alvo: 5
+Prioridade: 🟠 Alta
+Dependências: ÉPICO 6 (Score calculado)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+GAT-001	Gate 1: Aprovar Candidatos Mapeados	Full-Stack	📋 Pendente	MAP-004	8
+GAT-002	Gate 2: Aprovar Candidatos Triados	Full-Stack	📋 Pendente	SCO-001	8
+GAT-003	Modal de Reprovação com Motivo	Frontend	📋 Pendente	GAT-002	3
+GAT-004	Geração de Feedback LIA para Reprovados	AI	📋 Pendente	GAT-003	8
+GAT-005	Envio Automático de Feedback	Backend	📋 Pendente	GAT-004	5
+GAT-006	Aprovação/Reprovação em Massa	Full-Stack	📋 Pendente	GAT-002	5
+GAT-007	Histórico de Decisões (Audit Trail)	Backend	📋 Pendente	GAT-002	5
+Total: 7 cards | Pontos: 42 | Status: Pendente Jira
+
+ÉPICO 8: TEMPLATES DE COMUNICAÇÃO
+Objetivo: Mensagens padronizadas para comunicação com candidatos
+Sprint Alvo: 5-6
+Prioridade: 🟡 Média
+Dependências: ÉPICO 5 (WhatsApp configurado)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+TPL-001	Template de Abordagem Inicial	Full-Stack	📋 Pendente	-	3
+TPL-002	Template de Agendamento	Full-Stack	📋 Pendente	-	3
+TPL-003	Template de Confirmação	Full-Stack	📋 Pendente	-	3
+TPL-004	Template Pós-Entrevista	Full-Stack	📋 Pendente	-	3
+TPL-005	Editor de Templates (WYSIWYG)	Frontend	📋 Pendente	-	8
+TPL-006	Variáveis Dinâmicas {{nome}}, {{vaga}}	Backend	📋 Pendente	TPL-005	5
+TPL-007	Preview de Template	Frontend	📋 Pendente	TPL-006	3
+Total: 7 cards | Pontos: 28 | Status: Pendente Jira
+
+ÉPICO 9: AGENDAMENTO AUTOMÁTICO
+Objetivo: LIA agenda entrevistas automaticamente via Teams/Outlook
+Sprint Alvo: 6-7
+Prioridade: 🟠 Alta
+Dependências: ÉPICO 7 (Gate 2 aprovado), ÉPICO 14 (Microsoft Graph)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+AGE-001	Integração Microsoft Graph	Integração	📋 Pendente	-	13
+AGE-002	Consulta de Disponibilidade	Backend	📋 Pendente	AGE-001	8
+AGE-003	Sugestão Inteligente de Horários	AI	📋 Pendente	AGE-002	8
+AGE-004	Criação de Evento Teams	Backend	📋 Pendente	AGE-001	5
+AGE-005	Confirmação do Candidato via WhatsApp	Full-Stack	📋 Pendente	AGE-004, TRI-002	5
+AGE-006	Reagendamento	Full-Stack	📋 Pendente	AGE-004	5
+AGE-007	Lembretes Automáticos (24h antes)	Backend	📋 Pendente	AGE-004	3
+AGE-008	Cancelamento com Notificação	Full-Stack	📋 Pendente	AGE-004	3
+Total: 8 cards | Pontos: 50 | Status: Pendente Jira
+
+ÉPICO 10: NOTIFICAÇÕES
+Objetivo: Sistema de notificações para o recrutador
+Sprint Alvo: 7
+Prioridade: 🟡 Média
+Dependências: ÉPICO 1 (Auth)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+NOT-001	Sistema de Notificações (Bell Icon)	Full-Stack	📋 Pendente	-	8
+NOT-002	Notificações em Tempo Real (WebSocket)	Backend	📋 Pendente	NOT-001	8
+NOT-003	Preferências de Notificação	Full-Stack	📋 Pendente	NOT-001	5
+NOT-004	Notificações Push (PWA)	Backend	📋 Pendente	NOT-001	8
+NOT-005	Histórico de Notificações	Full-Stack	📋 Pendente	NOT-001	5
+NOT-006	Badge de Não Lidas	Frontend	📋 Pendente	NOT-001	2
+Total: 6 cards | Pontos: 36 | Status: Pendente Jira
+
+ÉPICO 11: KANBAN E TABELA DE CANDIDATOS
+Objetivo: Visualização e gestão de candidatos no pipeline
+Sprint Alvo: 1-8 (transversal)
+Prioridade: 🟡 Média
+Dependências: ÉPICO 1 (Auth), ÉPICO 3 (Candidatos mapeados)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+KAN-001	Estrutura do Kanban 4 Colunas	Frontend	📋 Pendente	-	8
+KAN-002	Card de Candidato	Frontend	📋 Pendente	KAN-001	5
+KAN-003	Drag-and-Drop entre Colunas	Frontend	📋 Pendente	KAN-001	8
+KAN-004	Menu de Ações do Card	Frontend	📋 Pendente	KAN-002	5
+KAN-005	Ícones de Ação Rápida	Frontend	📋	-	-
+KAN-006	Badge de Score WSI no Card	Frontend	📋 Pendente	SCO-001	3
+KAN-007	Filtro por Status/Etapa	Frontend	📋 Pendente	KAN-001	5
+KAN-008	Busca de Candidato por Nome	Frontend	📋 Pendente	KAN-001	3
+KAN-010	Feedback Implícito em Transições	Backend	📋 Pendente	KAN-003	5
+TAB-001	Tabela de Candidatos (View Alternativa)	Frontend	📋 Pendente	-	8
+TAB-002	Colunas Ordenáveis	Frontend	📋 Pendente	TAB-001	3
+TAB-003	Seleção Múltipla (Checkbox)	Frontend	📋 Pendente	TAB-001	3
+TAB-004	Paginação	Frontend	📋 Pendente	TAB-001	3
+TAB-005	Barra de Ações em Massa	Frontend	📋 Pendente	TAB-003	5
+PRV-001	Preview Lateral do Candidato	Frontend	📋 Pendente	KAN-002	8
+PRV-002	Tab Perfil (Dados Básicos)	Frontend	📋 Pendente	PRV-001	5
+PRV-003	Tab Atividades (Histórico)	Frontend	📋 Pendente	PRV-001	5
+PRV-004	Tab Arquivos (CV, Documentos)	Frontend	📋 Pendente	PRV-001	5
+PRV-005	Tab Parecer LIA	Frontend	📋 Pendente	PRV-001, SCO-004	5
+VAG-001	Tabela de Vagas	Frontend	📋 Pendente	-	5
+VAG-002	Tabs de Status (Ativas, Pausadas, Fechadas)	Frontend	📋 Pendente	VAG-001	3
+VAG-003	Menu de Ações da Vaga	Frontend	📋 Pendente	VAG-001	3
+VAG-004	Pausar/Ativar Vaga	Full-Stack	📋 Pendente	VAG-003	3
+VAG-005	Duplicar Vaga	Full-Stack	📋 Pendente	VAG-003	3
+VAG-006	Arquivar Vaga	Full-Stack	📋 Pendente	VAG-003	3
+VAG-007	Contador de Candidatos por Etapa	Frontend	📋 Pendente	KAN-001	3
+VAG-008	Navegação Vaga → Kanban	Frontend	📋 Pendente	VAG-001, KAN-001	2
+Total: 27 cards | Pontos: 117 | Status: Pendente Jira
+
+ÉPICO 12: JD E WIZARD AVANÇADO 🆕
+Objetivo: Melhorias no wizard e geração de Job Description
+Sprint Alvo: 2
+Prioridade: 🟢 Baixa (Melhorias)
+Dependências: ÉPICO 2 (Wizard base)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+JD-001	Preview de JD com Sugestões LIA	Frontend	📋 Pendente	WIZ-004	5
+JD-002	JD Completo para Publicação	Frontend	📋 Pendente	JD-001	5
+JDW-001	Interação com Sugestões LIA	Backend	📋 Pendente	WIZ-002	8
+JDW-002	Análise de Compensação de Mercado	Backend	📋 Pendente	WIZ-003	8
+JDW-003	Insights de Mercado para Vagas	Backend	📋 Pendente	WIZ-003	5
+Total: 5 cards | Pontos: 31 | Status: Pendente Jira
+
+ÉPICO 13: CONFIGURAÇÕES AVANÇADAS 🆕
+Objetivo: Configurações e personalizações da plataforma
+Sprint Alvo: 3
+Prioridade: 🟢 Baixa
+Dependências: ÉPICO 1 (Auth)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+CFG-001	LIA Field Toggles (On/Off por campo)	Frontend	📋 Pendente	-	5
+CFG-002	Verificação de Completude da Vaga	Backend	📋 Pendente	-	3
+CFG-003	Configuração de Jornada do Candidato	Frontend	📋 Pendente	-	5
+CFG-004	Hub de Comunicação (Email, WhatsApp)	Frontend	📋 Pendente	-	8
+CFG-005	Dados da Empresa para Contexto LIA	Frontend	📋 Pendente	-	5
+IMP-001	Importação Inteligente de Vagas	Frontend	📋 Pendente	-	8
+Total: 6 cards | Pontos: 34 | Status: Pendente Jira
+
+ÉPICO 14: INTEGRAÇÕES MVP
+Objetivo: Conectar serviços externos necessários
+Sprint Alvo: 0-8 (transversal)
+Prioridade: 🔴 Crítica (parcial)
+Dependências: Variadas por integração
+
+Grupo Twilio/WhatsApp (Crítico)
+Card	Título	Tipo	Status	Dependências	Pontos
+INT-TWI-001	Configurar Twilio Account	Integração	📋 Pendente	-	3
+INT-TWI-002	Sandbox WhatsApp	Backend	📋 Pendente	INT-TWI-001	3
+INT-TWI-003	Número de Produção	Integração	📋 Pendente	INT-TWI-002	3
+INT-TWI-004	Webhook de Mensagens	Backend	📋 Pendente	INT-TWI-001	5
+INT-TWI-005	Templates Aprovados Meta	Integração	📋 Pendente	INT-TWI-003	5
+INT-TWI-006	Status Delivery Reports	Backend	📋 Pendente	INT-TWI-004	3
+INT-TWI-007	Rate Limiting e Filas	Backend	📋 Pendente	INT-TWI-004	5
+Grupo Microsoft Graph (A desenvolver)
+Card	Título	Tipo	Status	Dependências	Pontos
+INT-MSG-001	Configurar Azure App	Integração	📋	-	-
+INT-MSG-002	OAuth Flow Microsoft	Backend	📋 Pendente	-	5
+INT-MSG-003	Calendar API	Backend	📋 Pendente	INT-MSG-002	5
+INT-MSG-004	Teams Meeting API	Backend	📋 Pendente	INT-MSG-002	5
+INT-MSG-005	Webhook de Eventos	Backend	📋	-	-
+INT-MSG-006	Token Refresh	Backend	📋 Pendente	INT-MSG-002	3
+INT-MSG-007	Multi-tenant Calendar	Backend	📋	-	-
+Grupo LLM (Parcial)
+Card	Título	Tipo	Status	Dependências	Pontos
+INT-LLM-001	Cliente Anthropic Claude	Backend	📋 Pendente	-	5
+INT-LLM-002	Cliente Google Gemini	Backend	📋 Pendente	-	5
+INT-LLM-003	Router de Modelos	Backend	📋 Pendente	INT-LLM-001	8
+INT-LLM-004	Fallback entre Modelos	Backend	📋 Pendente	INT-LLM-003	5
+INT-LLM-005	Gestão de Prompts (Versioning)	Backend	📋 Pendente	-	5
+INT-LLM-006	Cache de Respostas LLM	Backend	📋 Pendente	-	5
+INT-LLM-007	Monitoramento de Custos	Backend	📋 Pendente	-	5
+INT-LLM-008	Rate Limiting LLM	Backend	📋 Pendente	-	3
+INT-LLM-009	Logging de Conversas	Backend	📋 Pendente	-	3
+Grupo WorkOS (Pós-MVP)
+Card	Título	Tipo	Status	Dependências	Pontos
+INT-WOS-001	Configurar WorkOS Account	Integração	📋 Pendente	-	3
+INT-WOS-002	SSO SAML/OIDC	Backend	📋 Pendente	INT-WOS-001	8
+INT-WOS-003	Directory Sync SCIM	Backend	📋 Pendente	INT-WOS-002	8
+INT-WOS-004	MFA Enforcement	Backend	📋 Pendente	INT-WOS-002	5
+INT-WOS-005	User Management SDK	Backend	📋 Pendente	INT-WOS-001	5
+INT-WOS-006	Webhook de Eventos	Backend	📋 Pendente	INT-WOS-002	3
+INT-WOS-007	Admin Portal	Frontend	📋 Pendente	INT-WOS-005	8
+Total: 33 cards | Pontos: ~130 | Status: Pendente Jira
+
+ÉPICO 15: AGENTES IA ESPECIALIZADOS 🆕
+Objetivo: Infraestrutura de agentes IA para tarefas específicas
+Sprint Alvo: 4-5
+Prioridade: 🟡 Média
+Dependências: ÉPICO 14 (LLM configurados)
+
+Card	Título	Tipo	Status	Dependências	Pontos
+AGT-001	Agente Avaliador WSI	AI	📋 Pendente	SCO-001	13
+AGT-002	Agente de Triagem Curricular	AI	📋 Pendente	MAP-002	13
+AGT-003	Agente de Agendamento	AI	📋 Pendente	AGE-001	8
+AGT-004	Orquestrador de Pipeline Chat	AI	📋 Pendente	AGT-001	8
+TRI-012	Serviço de Pré-Qualificação	Backend	📋 Pendente	TRI-004	8
+DAT-001	Sistema de Solicitação de Dados	Frontend	📋 Pendente	-	8
+ENT-001	Análise de Transcrição de Entrevista	Backend	📋 Pendente	AGE-001	13
+KAN-009	Componentes Kanban Modulares	Frontend	📋 Pendente	KAN-001	13
+Total: 8 cards | Pontos: 84 | Status: Pendente Jira

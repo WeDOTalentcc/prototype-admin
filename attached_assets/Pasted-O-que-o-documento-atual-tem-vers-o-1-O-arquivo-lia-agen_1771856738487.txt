@@ -1,0 +1,59 @@
+O que o documento atual tem (versão 1)
+O arquivo lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md tem 614 linhas com 7 seções. Ele é mais técnico e descritivo — explica conceitos, mas falta ser visual e catalogar tudo de forma completa.
+
+O que vai mudar (versão 2)
+Seção 1 — Arquitetura Completa (reescrever)
+Hoje: Tem um diagrama de caixas simples e uma lista de passos.
+Vai virar:
+
+Diagrama de árvore completo de toda a pasta app/ com anotações (no estilo da imagem que você gostou: ├── domains/ ← Domínios de negócio)
+Diagrama do fluxo de requisição mais detalhado
+Tabela-resumo "Camada | O que controla | Exemplo" (no estilo das imagens que você mostrou)
+Seção 2 — Domínios (expandir muito)
+Hoje: Cobre 8 domínios, mas com tabelas genéricas e poucos arquivos listados.
+Vai virar:
+
+10 domínios (faltavam ats_integration e automation)
+Cada domínio com diagrama de árvore visual mostrando a pasta inteira
+TODOS os arquivos listados (não só os principais) — por exemplo, job_management tem 26 serviços, todos vão aparecer com descrição de 1 linha
+Conexões explícitas: "usa FairnessGuard", "chama wsi_service", etc.
+Seção 3 — Catálogo de Todos os Agentes (nova)
+Hoje: Não existe uma lista única. Os agentes estão espalhados dentro de cada domínio.
+Vai ser: Tabela-catálogo com os 25 agentes do sistema:
+
+Nome, domínio, tipo (ReAct ou Legacy), quantidade de tools, e o que faz
+Isso permite ver de uma vez todos os agentes da plataforma
+Seção 4 — Agentes ReAct em detalhe (expandir)
+Hoje: Explica o padrão de 4 arquivos de forma genérica.
+Vai virar:
+
+Os 7 agentes ReAct detalhados individualmente (Wizard, Kanban, Talent, Jobs Mgmt, Policy, Sourcing, Pipeline)
+Para cada um: diagrama de árvore dos arquivos + lista completa de TODAS as tools com nome e descrição curta
+Diagrama visual do ciclo ReAct (Thought → Action → Observation → Decide)
+Tabela prática: "Tipo de arquivo | O que controla | Nível de garantia | Quando mexer"
+Seção 5 — Infraestrutura Compartilhada (expandir)
+Hoje: Lista os módulos com tabelas simples.
+Vai virar:
+
+Diagrama de árvore completo de shared/ com todos os ~95 arquivos
+Subsecções com tabelas para cada módulo (incluindo governance/, repositories/, async_processing/, tools/ que estavam faltando)
+Diagrama de conexões mostrando quem usa o quê (ex: "FairnessGuard → usado por Wizard, Kanban, Talent, Jobs Mgmt")
+Seção 6 — Orquestrador (manter e melhorar)
+Hoje: Já está razoável.
+Melhoria: Adicionar diagrama de árvore dos 9 arquivos e tabela com exemplos de frases que cada tipo de agente recebe
+
+Seção 7 — Catálogo de Todos os Serviços (nova)
+Hoje: Não existe.
+Vai ser: Tabela-catálogo com os 85+ serviços agrupados por domínio: Nome | Domínio | O que faz
+
+Seção 8 — Guia "Onde Mexer" (expandir)
+Hoje: Tem tabela e 3 cenários detalhados.
+Vai virar:
+
+16+ cenários na tabela
+Tabela visual de níveis de garantia (soft/médio/hard) com exemplos — no estilo da imagem que você mostrou
+Mantém os 3 cenários passo a passo
+Seção 9 — Glossário (manter)
+Hoje: 18 termos. Vai manter e adicionar os que faltam.
+
+Resumo: O documento vai de ~614 linhas para algo em torno de ~1200-1500 linhas, com diagramas visuais de árvore em praticamente todas as seções, catálogos completos de agentes e serviços, e muito mais detalhamento nos domínios. Quer que eu siga com a implementação?

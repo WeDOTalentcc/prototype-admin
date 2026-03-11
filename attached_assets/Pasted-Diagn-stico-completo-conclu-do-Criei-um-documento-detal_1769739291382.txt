@@ -1,0 +1,60 @@
+Diagnóstico completo concluído! Criei um documento detalhado em docs/DIAGNOSTICO_PROMPTS_PLATAFORMA.md (769 linhas) com toda a análise. Aqui está o resumo executivo:
+
+Diagnóstico dos Prompts da Plataforma LIA
+Status Geral: 5 Interfaces de Chat
+Status	Prompts	Descrição
+🟢 Orquestrado (3)	Jobs Page, Job Kanban, Candidates Page	Usam multi-agent orchestrator real
+🟡 Parcial (1)	Job Creation Wizard	API específica sem orquestrador completo
+🔴 Mock (3)	Pipelines Tab, Personas Tab, Mapping Tab	CRÍTICO: Não têm backend real!
+O Que Cada Prompt Pode e Não Pode Fazer
+1. Jobs Page (Gestão de Vagas) - 🟢 FUNCIONA
+✅ Análise de portfólio de vagas
+✅ Identificação de vagas críticas/urgentes
+✅ Sugestão de filtros
+✅ UI Action para criar nova vaga
+❌ Não executa ações (apenas sugere)
+❌ Não edita vagas diretamente
+2. Job Kanban (Dentro da Vaga) - 🟢 FUNCIONA
+✅ Ranking de candidatos por WSI Score
+✅ Análise de funil com gargalos
+✅ Comparação de candidatos
+✅ Análise Big Five de personalidade
+✅ Identifica candidatos parados >7 dias
+❌ Não move candidatos (apenas sugere)
+❌ Não envia emails automaticamente
+3. Candidates Page (Funil de Talentos) - 🟢 FUNCIONA
+✅ Busca inteligente de candidatos
+✅ Ranking e análise de perfis
+✅ UI Actions para email, WhatsApp, agendamento
+❌ Não adiciona candidatos a vagas diretamente
+4. Talent Funnel Tabs - 🔴 PROBLEMA CRÍTICO
+Pipelines: Apenas texto mockado, sem análise real
+Personas: Apenas texto mockado, sem criação real
+Mapping: Apenas texto mockado, sem análise de empresas
+Por quê? Usam if/else com keywords no frontend, sem chamada de API
+5. Job Creation Wizard - 🟡 PARCIAL
+✅ Sugestões de salário com benchmark
+✅ Catálogo de competências
+✅ Geração de perguntas WSI
+❌ Wizard sequencial (não pula etapas)
+❌ Sem orquestrador multi-agent
+Plano de Ação Prioritizado
+Fase	O Que Fazer	Prioridade	Tempo
+1.1	Conectar Tabs (Pipelines/Personas/Mapping) ao orquestrador	🔴 P0	5-8 dias
+1.2	Criar endpoint /orchestrator/pipeline-chat	🔴 P0	3-5 dias
+2.1	Implementar Tool Calling real (ações executáveis)	🟡 P1	10-15 dias
+2.2	Adicionar memória de conversa persistente	🟡 P1	3-5 dias
+3.1	Agente autônomo para monitoramento de pipelines	🟢 P2	8-10 dias
+3.2	Integração com sourcing externo	🟢 P2	10-15 dias
+Total Fase 1: 8-13 dias (URGENTE)
+Total Fase 2: 13-20 dias
+Total Fase 3: 33-45 dias
+
+Próximo Passo Recomendado
+O problema mais crítico são as 3 tabs do Talent Funnel que estão completamente mockadas. Quando você digita algo nelas, a resposta é apenas texto estático gerado no frontend - a LIA não está realmente analisando nada.
+
+Quer que eu comece a implementação da Fase 1? Isso conectaria essas tabs ao orquestrador real, permitindo:
+
+Análise real de pipelines de recrutamento
+Criação inteligente de personas de vagas
+Mapeamento de empresas com dados reais

@@ -1,0 +1,176 @@
+🤖 ARQUITETURA DE AUTOMAÇÃO & NOTIFICAÇÕES - LIA PLATFORM
+1️⃣ QUEM ORGANIZA ESSAS TAREFAS?
+A automação é orquestrada por 4 Serviços Centrais:
+
+📋 NotificationService (Núcleo de Notificações)
+Responsabilidade: Gerenciar o envio de TODAS as notificações
+Canais disponíveis:
+🔔 BELL (sino do canto superior direito)
+💬 CHAT (mensagens internas)
+👥 TEAMS (Microsoft Teams)
+📧 EMAIL (email direto)
+📱 WHATSAPP
+📲 PUSH (notificações push)
+🎯 IN_APP (pop-ups internos)
+⚡ AutomationTriggerService (Acionador Inteligente)
+Responsabilidade: Monitorar eventos e executar ações automaticamente
+Gatilhos pré-configurados (já implementados):
+⏱️ CANDIDATE_NO_CONTACT_48H → Enviar follow-up automático
+📅 INTERVIEW_REMINDER_24H → Lembrete via WhatsApp 24h antes
+✅ SCORECARD_PENDING_24H → Alerta para feedback pendente
+🔄 JOB_NO_MOVEMENT_5D → Alerta: vaga parada há 5+ dias
+🎂 CANDIDATE_BIRTHDAY → Mensagem personalizada
+⏰ JOB_DEADLINE_APPROACHING → Alerta de deadline aproximando
+🚨 JobAlertService (Monitor de Vagas)
+Responsabilidade: Monitorar saúde das vagas e gerar alertas
+Verificações automáticas (já implementadas):
+🔴 Critical Jobs (> 30 dias aberta)
+⚠️ Stale Jobs (> 7 dias sem movimento)
+📉 Low Volume (menos de 5 candidatos no funil)
+📝 Pending Feedback (feedback atrasado > 3 dias)
+📋 TaskService (Gestor de Tarefas)
+Responsabilidade: Criar, atribuir e acompanhar tarefas automatizadas
+Divide-se em:
+✅ Tarefas criadas por agentes
+✅ Tarefas auto-executáveis (requerem confirmação ou não)
+✅ Tarefas atribuídas a usuários ou agentes
+2️⃣ QUAIS AGENTES USAM ESSES SERVIÇOS?
+1. RecruiterAssistantAgent ⭐ (Principal)
+Dispara Daily Briefings (resumos matinais)
+Envia Afternoon Summaries (resumos tarde)
+Cria Approval Requests (solicitações de aprovação)
+Monitora Candidates Added (novo candidato no funil)
+Alerta sobre Calibration Needed (necessário recalibrar)
+2. SourcingAgent 🔍
+Envia notificações quando busca local é concluída
+Pede aprovação para expandir busca global (Pearch)
+Envia volume assessment (avaliação de volume)
+3. EntrevistadorAgent 🎙️
+Envia screening_completed (triagem concluída)
+Notifica sobre interview_reminder (lembrete de entrevista)
+Dispara feedback_pending se feedback atrasado
+4. AnalistaFeedbackAgent 📊
+Envia relatórios KPI para gerentes
+Dispara job_health_alerts (saúde das vagas)
+Notifica sobre low_adherence_applicants (candidatos baixa aderência)
+Gerencia candidate_feedback (feedback automático)
+5. AgendadorAgent 📅
+Cria lembres de entrevista
+Sincroniza com Microsoft Graph (calendário)
+Envia confirmações de agendamento
+3️⃣ TAREFAS & AÇÕES JÁ PROGRAMADAS
+✅ Automações de Email
+Follow-up 48h (candidato sem contato)
+├─ Ação: SEND_EMAIL (template: follow_up_48h)
+├─ Cria Task automática
+└─ Log da atividade
+Interview Reminder (24h antes)
+├─ Ação: SEND_WHATSAPP (com link de joining)
+└─ Coodown: 24h (não repete)
+Feedback Request (scorecard pendente)
+├─ Ação: SEND_EMAIL + CREATE_TASK
+└─ Prioridade: HIGH
+
+✅ Automações de Alertas
+Job Critical (> 30 dias)
+├─ Severidade: CRITICAL
+├─ Sugestões: "Revisar requisitos", "Ativar sourcing"
+└─ Cria notificação URGENT
+Low Volume (< 5 candidatos)
+├─ Severidade: WARNING
+├─ Ação: Expand sourcing
+└─ Notificação actionable
+Feedback Overdue (> 3 dias)
+├─ Severidade: URGENT
+├─ Destinatário: Gerente + Recrutador
+└─ Pop-up com call-to-action
+
+✅ Automações de Tarefas
+create_task (criação automática)
+├─ Tipo: FEEDBACK, FOLLOW_UP, INTERVIEW_PREP, SCHEDULING
+├─ Priority: CRITICAL, HIGH, MEDIUM, LOW
+├─ Status: PENDING → IN_PROGRESS → COMPLETED
+└─ Assigned to: User ou Agent
+is_automated: true/false
+├─ true = pode executar sozinha
+└─ false = requer aprovação/confirmação
+
+4️⃣ O QUE CADA NOTIFICAÇÃO JÁ FAZ
+Tipo	Origem	Ação	Canais
+Morning Briefing	RecruiterAssistant	Resume do dia + KPIs	CHAT + BELL + EMAIL
+Approval Needed	SourcingAgent	Pede confirmação	CHAT + TEAMS + BELL
+Job Critical	JobAlertService	Alerta urgente	BELL + TEAMS + EMAIL
+Interview Reminder	EntrevistadorAgent	Lembrete 24h	WHATSAPP + EMAIL
+Feedback Pending	AnalistaFeedbackAgent	Cobrança de feedback	CHAT + BELL + TEAMS
+Candidate Feedback	CommunicationService	Feedback ao candidato	EMAIL + WHATSAPP
+5️⃣ ESTRUTURA DE NOTIFICAÇÕES EXISTENTE
+Notification Model (Banco de Dados)
+├── user_id (quem recebe)
+├── title (título)
+├── message (corpo)
+├── notification_type (urgent, action_required, info, success, warning)
+├── proactive_type (briefing, approval, alert, etc)
+├── priority (normal, high, critical)
+├── source_agent (qual agente criou)
+├── channels (quais canais enviar)
+├── related_job_id (contexto)
+├── related_candidate_id (contexto)
+├── action_url (link de ação)
+├── action_label (texto do botão)
+└── is_read (controle de leitura)
+
+6️⃣ MINHA RECOMENDAÇÃO - ESTRATÉGIA DE NOTIFICAÇÕES ✅
+Baseado em UX/padrões best-practice, recomendo esse sistema em 3 camadas:
+
+🔔 Camada 1: SINO (Bell Notifications)
+O que: Alertas não-intrusivos
+Quando: Informações que o recrutador deve revisar, mas não é urgente
+Exemplos:
+✅ "Novo candidato adicionado ao funil"
+✅ "Morning briefing está pronto"
+✅ "Relatório KPI gerado"
+Ação ao clicar: Navega para contexto (funil, briefing, etc)
+👥 Camada 2: TEAMS (Microsoft Teams)
+O que: Alertas críticos + solicitações de aprovação
+Quando: Ações que precisam de decisão AGORA
+Exemplos:
+🔴 "Vaga crítica há 40 dias aberta"
+🟡 "Aprovação necessária: expandir busca global?"
+📊 "Feedback pendente há 72h"
+Formato: Cards ricos com botões de ação
+Benefício: Recrutador lê no Teams, clica botão → entra no chat da LIA
+💬 Camada 3: POP-UP INTELIGENTE NA PLATAFORMA
+O que: Alertas que requerem ação IMEDIATA
+Quando: Apenas para casos críticos que afetam timeline
+Exemplos:
+⏰ "Entrevista começando em 5 minutos!"
+🔴 "Limite de créditos Pearch atingido"
+✨ "Candidato perfeito encontrado - quer revisar?"
+Comportamento:
+✅ Pop-up modal no canto inferior direito (toast não-intrusivo)
+✅ Ao clicar: "Ir para Chat da LIA" → abre contexto conversacional
+✅ LIA pronta para ação (ex: "Clique aqui para agendar entrevista")
+✅ Auto-dismiss após 8-10 segundos se não crítico
+7️⃣ FLUXO RECOMENDADO: NOTIFICAÇÃO → AÇÃO
+1. Agente detecta condição
+   └─→ AutomationTriggerService
+2. Serviço cria notificação
+   └─→ NotificationService com canais selecionados
+3. SINO: Alerta não-urgente
+   └─→ Recrutador clica sino → navega para contexto
+4. TEAMS: Aprovação necessária
+   └─→ Recrutador aprova/rejeita no Teams
+   └─→ Automação prossegue no backend
+5. POP-UP: Crítico
+   └─→ Recrutador clica "Ir para LIA"
+   └─→ Chat da LIA abre com contexto
+   └─→ LIA oferece ações: "Agendar? Enviar email? Aprovar?"
+   └─→ Recrutador decide ou deixa LIA agir automaticamente
+
+8️⃣ O QUE FALTA IMPLEMENTAR AINDA
+ Dashboard de Notificações (centro de notificações com histórico)
+ Preferências de Notificação (recrutador escolhe quais canais por tipo)
+ Throttling/Deduplicação (não enviar 10 alertas iguais)
+ Scheduling (enviar notificações em horário específico)
+ Integration com Teams Bot (respostas diretas no Teams)
+Resumo: Os 4 Serviços Centrais (Notification, Automation Trigger, Job Alert, Task) trabalham juntos, acionados por 5 Agentes Especializados, criando notificações que fluem por 7 canais diferentes. Recomendo a estratégia em 3 camadas (Sino → Teams → Pop-up) para máxima clareza e UX sem fadiga de notificações. ✅

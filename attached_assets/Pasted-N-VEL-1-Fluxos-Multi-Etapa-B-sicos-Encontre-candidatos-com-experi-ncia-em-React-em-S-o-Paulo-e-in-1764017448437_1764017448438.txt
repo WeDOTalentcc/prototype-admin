@@ -1,0 +1,118 @@
+NÍVEL 1: Fluxos Multi-Etapa Básicos
+
+"Encontre candidatos com experiência em React em São Paulo e inscreva-os na vaga de Desenvolvedor React Pleno no status Inscritos"
+
+Requer: candidates_search → jobs_search → selective_processes_search → applies_create_collection
+
+
+"Crie uma vaga de Analista de Dados, gere a descrição automaticamente e busque 5 candidatos compatíveis"
+
+Requer: jobs_create → gerar descrição com IA → talent_pool_search
+
+
+"Mostre todos os candidatos da vaga de Product Manager que estão no status Entrevista Técnica"
+
+Requer: jobs_search → selective_processes_search → applies_search com filtros
+
+
+
+🟡 NÍVEL 2: Lógica de Contexto e Validações
+
+"Mova os 3 candidatos mais bem pontuados da vaga de Engenheiro de Software para a etapa Final, mas apenas se o score for acima de 85%"
+
+Requer: jobs_search → talent_pool_search (com min_score) → validar score → applies_search → selective_processes_search → applies_update_collection
+
+
+"Crie uma avaliação técnica de JavaScript para a vaga de Frontend Developer, gere 5 questões automaticamente e envie para todos os candidatos aplicados"
+
+Requer: jobs_search → evaluations_create → questions_create (5x com geração inteligente) → applies_search → evaluation_candidate_create
+
+
+"Liste todos os candidatos que NÃO estão aplicados em nenhuma vaga mas têm score acima de 90% para a vaga de Gerente de Marketing"
+
+Requer: jobs_search → talent_pool_search → applies_search → cruzamento de dados para filtrar não aplicados
+
+
+
+🔴 NÍVEL 3: Regras de Negócio Críticas
+
+"Quero mover os candidatos da vaga X do status Triagem para Aprovados, mas primeiro me mostre quantos são e seus nomes para eu confirmar"
+
+Requer: jobs_search → selective_processes_search (Triagem) → applies_search → aguardar confirmação → selective_processes_search (Aprovados) → applies_update_collection
+Testa: confirmação antes de ação destrutiva
+
+
+"Importe candidatos desse CSV, mas só inscreva automaticamente aqueles com score acima de 80% na vaga de Analista de Dados"
+
+Requer: candidates_bulk_import_preview → processar CSV → candidates_create (múltiplos) → talent_pool_search → filtrar por score → applies_create_collection
+Testa: importação + matching + aplicação condicional
+
+
+"Excluir a etapa 'Teste Técnico' da vaga de DevOps é seguro? Quantos candidatos serão afetados?"
+
+Requer: jobs_search → selective_processes_search → applies_search (contar candidatos) → avisar impacto → aguardar confirmação → selective_processes_delete
+Testa: validação de impacto antes de exclusão
+
+
+
+🟣 NÍVEL 4: Armadilhas da Documentação
+
+"Adicione João Silva e Maria Santos na vaga de React Developer no status Inscritos"
+
+ARMADILHA: A doc diz "❌ Nunca use nomes diretamente — sempre resolva para IDs"
+Requer: candidates_search (João Silva) → candidates_search (Maria Santos) → jobs_search → selective_processes_search → applies_create_collection
+
+
+"Mude o status da vaga de Desenvolvedor Backend para 'Concluída'"
+
+ARMADILHA: Doc diz que antes de jobs_update, deve usar jobs_status_search para obter o job_status_id, não enviar o nome diretamente
+Requer: jobs_search → jobs_status_search ("Concluída") → jobs_update com job_status_id
+
+
+"Envie a avaliação 'Teste de Lógica' para os candidatos da vaga X"
+
+ARMADILHA: Doc diz "Nunca use Candidate.id, sempre Use Apply.id" e "reference_type deve ser Apply"
+Requer: jobs_search → evaluations_search → applies_search (não candidates_search) → evaluation_candidate_create com reference_type: "Apply"
+
+
+
+⚫ NÍVEL 5: Casos Extremos e Otimizações
+
+"Quantos candidatos existem no total no sistema e quantos estão aplicados na vaga de Marketing?"
+
+ARMADILHA: Doc avisa "⚠️ CRÍTICO: Use SEMPRE meta.total, NÃO conte o array data[]"
+Requer: candidates_search (ler meta.total) → jobs_search → applies_search (ler meta.total)
+Testa: entendimento de paginação
+
+
+"Crie um template de campos obrigatórios para vagas de tecnologia com 8 campos customizados, defina como padrão da conta, e use esse template para criar uma nova vaga"
+
+Requer: job_field_templates_create (com array de 8 fields estruturados) → marcar is_default: true → jobs_create usando o template
+Testa: estruturas complexas e relações
+
+
+"Busque candidatos compatíveis com a vaga de 'Analista de Dados' usando o algoritmo de matching, mas só mostre aqueles que têm LinkedIn e GitHub preenchidos e estão em São Paulo"
+
+Requer: jobs_search → talent_pool_search com job_id → filtrar where: { linkedin: { exists: true }, github: { exists: true }, city: { ilike: "%são paulo%" } }
+Testa: combinação de matching + filtros avançados
+
+
+
+🔥 NÍVEL 6: Fluxos Completos End-to-End
+
+"Crie uma vaga completa de Desenvolvedor Full Stack: gere a descrição automaticamente, defina como remota, adicione 5 habilidades técnicas, configure salário entre R$8000-12000, crie uma avaliação técnica com 3 questões, busque candidatos compatíveis com score acima de 85% e inscreva os 10 melhores no status Triagem"
+
+Requer: Orquestração de 10+ chamadas de API em sequência lógica
+Testa: capacidade de gerenciar fluxo longo sem perder contexto
+
+
+"Quero ver um relatório completo: quantas vagas tenho abertas, quantos candidatos aplicados em cada uma, qual a taxa de aprovação por etapa, e quais vagas têm menos de 5 candidatos inscritos"
+
+Requer: jobs_search → para cada vaga: applies_search → selective_processes_search → cruzar dados → análise quantitativa
+Testa: agregação e análise de múltiplas fontes
+
+
+"Existe alguma inconsistência nos meus processos seletivos? Alguma vaga sem etapa 'Inscritos' ou candidatos aplicados em etapas que não existem mais?"
+
+Requer: jobs_search → selective_processes_search (validar estrutura) → applies_search (verificar integridade) → análise de consistência
+Testa: validação de integridade de dados

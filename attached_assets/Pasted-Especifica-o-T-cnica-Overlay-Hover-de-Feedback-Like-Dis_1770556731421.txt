@@ -1,0 +1,103 @@
+Especificação Técnica: Overlay Hover de Feedback (Like/Dislike)
+Visão Geral
+Funcionalidade que exibe dois botões (thumbs up / thumbs down) quando o usuário passa o mouse sobre uma linha da tabela. O overlay aparece sobre a primeira coluna de dados (a coluna imediatamente após o checkbox), cobrindo parcialmente o conteúdo dessa célula.
+
+Arquitetura (3 camadas)
+A funcionalidade é composta por 3 arquivos que se conectam:
+
+1. Tipagem (types.ts)
+
+// Na interface da tabela (UnifiedTableProps):
+renderLeftOverlayActions?: (candidate: TableCandidate) => React.ReactNode
+// Na interface da linha (CandidateRowProps):
+renderLeftOverlayActions?: () => React.ReactNode
+2. Componente da Tabela (unified-candidate-table.tsx)
+
+Recebe renderLeftOverlayActions como prop e repassa para cada <CandidateTableRow>, envolvendo em uma closure:
+renderLeftOverlayActions={renderLeftOverlayActions ? () => renderLeftOverlayActions(candidate) : undefined}
+3. Componente da Linha (candidate-table-row.tsx)
+
+Calcula a posição do overlay e renderiza o conteúdo dentro do <td> da primeira coluna de dados.
+Lógica de Posicionamento (candidate-table-row.tsx)
+const overlayContent = renderLeftOverlayActions?.()
+const firstDataColumnIndex = columns.findIndex(c => c.id !== 'checkbox')
+Dentro do columns.map, no <td> correspondente:
+
+{index === firstDataColumnIndex && overlayContent && (
+  <div 
+    className="absolute left-0 top-0 h-full flex items-center pl-2 
+               opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <div className="flex items-center gap-0.5 bg-white/95 dark:bg-gray-900/95 
+                    backdrop-blur-sm rounded-lg shadow-sm px-1.5 py-1 
+                    border border-gray-200 dark:border-gray-700">
+      {overlayContent}
+    </div>
+  </div>
+)}
+Pontos chave do posicionamento:
+
+O <tr> tem a classe group (Tailwind group hover)
+O <td> tem relative para posicionar o overlay
+O overlay usa absolute left-0 top-0 h-full para cobrir toda a altura da célula
+opacity-0 group-hover:opacity-100 faz aparecer/desaparecer ao hover na linha inteira
+transition-opacity duration-200 = animação de 200ms
+z-20 garante que fica acima do conteúdo da célula
+e.stopPropagation() impede que cliques no overlay acionem o onRowClick da linha
+O container interno tem bg-white/95 backdrop-blur-sm rounded-lg shadow-sm border para criar um visual de "card flutuante"
+Componente de Botões (SearchFeedbackButtons.tsx)
+Props:
+
+Prop	Tipo	Obrigatório	Descrição
+candidateId	string	Sim	ID do candidato
+candidateName	string	Não	Nome (enviado na API)
+candidateScore	number	Não	Score (enviado na API)
+jobId	string	Não	ID da vaga
+searchQuery	string	Não	Query da busca
+initialFeedback	'like' | 'dislike' | null	Não	Estado inicial
+onFeedbackChange	(id, feedback) => void	Não	Callback ao mudar
+size	'sm' | 'md'	Não	Tamanho (sm recomendado para overlay)
+Comportamento:
+
+Toggle: clicar no mesmo botão ativo desfaz o feedback (volta a null)
+Otimista: atualiza UI imediatamente, reverte em caso de erro
+Estado de submissão: opacity-50 pointer-events-none durante envio
+Tamanhos:
+
+sm: ícone w-3.5 h-3.5, botão h-7 w-7
+md: ícone w-4 h-4, botão h-8 w-8
+Cores (3 estados por botão):
+
+Like ativo: text-[#60BED1] bg-[#60BED1]/10 (cor cyan LIA, ícone preenchido)
+Dislike ativo: text-red-400 bg-red-50 (vermelho, ícone preenchido)
+Inativo (com outro ativo): text-gray-300 (opacidade reduzida)
+Neutro (nenhum ativo): text-gray-400 hover:text-gray-600 hover:bg-gray-100
+API chamada:
+
+POST /api/backend-proxy/search/feedback
+Body: { candidate_id, feedback_type, job_id, search_query, candidate_score, candidate_name }
+Como Usar em Outra Tabela
+Na página que consome o UnifiedCandidateTable, basta passar a prop:
+
+<UnifiedCandidateTable
+  candidates={candidatos}
+  columns={colunas}
+  // ... outras props ...
+  renderLeftOverlayActions={(candidate) => (
+    <SearchFeedbackButtons
+      candidateId={candidate.id}
+      candidateName={candidate.name}
+      candidateScore={candidate.lia_score || candidate.score}
+      initialFeedback={feedbacks[candidate.id] || null}
+      onFeedbackChange={handleFeedbackChange}
+      size="sm"
+    />
+  )}
+/>
+Requisitos:
+
+A tabela deve usar UnifiedCandidateTable (que já tem suporte à prop)
+As colunas devem incluir uma coluna com id: 'checkbox' se quiser que o overlay apareça na coluna seguinte
+Se não houver coluna checkbox, o overlay aparece na primeira coluna
+O state de feedbacks pode ser gerenciado com useState<Record<string, 'like' | 'dislike' | null>>({})

@@ -1,0 +1,69 @@
+📋 Plano de Enriquecimento dos Candidatos Fictícios
+📊 Situação Atual
+Campo	Status Atual	Ação Necessária
+Formação/Educação	Apenas texto simples ("Design - PUC-SP")	Expandir com: instituição, curso, período, tipo (graduação/pós)
+Experiência Profissional	Parcial (alguns têm workHistory)	Completar todos com 2-3 experiências, datas detalhadas, atividades
+Skills	Arrays básicos	Separar em technical_skills e soft_skills
+Fotos	URLs genéricas (pravatar.cc)	Gerar fotos profissionais com IA
+Salário	Parcial	Completar currentSalary e expectedSalary para todos
+Outros campos	Vários vazios	Preencher certifications, languages, notes
+📁 Arquivos a Modificar
+job-kanban-page.tsx - Principal fonte de dados mock (~40 candidatos)
+Possivelmente outros arquivos com dados de candidatos duplicados
+🎯 Estrutura Expandida para Cada Candidato
+{
+  // Dados básicos (já existem)
+  id, name, role, currentCompany, location, avatar,
+  
+  // Educação expandida
+  education: [
+    {
+      institution: "Universidade de São Paulo",
+      degree: "Bacharelado",
+      field: "Design de Interfaces",
+      period: "2014 - 2018",
+      type: "graduação"
+    },
+    {
+      institution: "FIAP",
+      degree: "Pós-graduação",
+      field: "UX Design",
+      period: "2019 - 2020",
+      type: "pos-graduacao"
+    }
+  ],
+  
+  // Experiência expandida
+  workHistory: [
+    {
+      company: "Nubank",
+      position: "UX Designer Sênior",
+      period: "Jan 2022 - Atual",
+      description: "Liderança de projetos de design...",
+      activities: ["Criação de Design System", "Prototipagem", "User Research"]
+    }
+  ],
+  
+  // Skills separadas
+  technical_skills: ["Figma", "Sketch", "Adobe XD"],
+  soft_skills: ["Comunicação", "Liderança", "Trabalho em equipe"],
+  
+  // Certificações
+  certifications: ["Google UX Design Certificate", "Nielsen Norman Group"],
+  
+  // Salários completos
+  currentSalary: 12000,
+  salary_currency: "BRL",
+  expectedSalary: "R$ 14.000 - R$ 18.000",
+  desired_salary_min: 14000,
+  desired_salary_max: 18000,
+}
+
+📸 Geração de Fotos
+Vou gerar ~10 fotos profissionais de alta qualidade para os candidatos principais (os que aparecem mais nas visualizações), com diversidade de gênero, etnia e estilo profissional.
+
+⏱️ Estimativa
+Enriquecimento de dados: Atualizar todos os candidatos com dados completos
+Fotos: Gerar 10 fotos de candidatos profissionais
+Validação: Verificar que tabelas e previews exibem corretamente
+Deseja que eu prossiga com esta implementação? Posso começar gerando as fotos dos candidatos e depois atualizar os dados, ou fazer tudo de uma vez.

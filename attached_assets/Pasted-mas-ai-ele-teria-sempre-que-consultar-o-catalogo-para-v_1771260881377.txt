@@ -1,0 +1,58 @@
+mas ai ele teria sempre que consultar o catalogo para ver se a pergunta de nivel de ingles ja nao existe, é isso? ou o ideal seria o recruador ter no banco perguntas que nao dizem respeito a estes itens? isso talvez simplifcasse?
+
+Exatamente, você tocou no ponto certo. A ideia de o recrutador ter que "consultar" um catálogo para evitar duplicatas é adicionar complexidade, não simplificar.
+
+A Solução Mais Limpa
+Separar as responsabilidades assim:
+
+No Catálogo de Perguntas Padrão (Configurações da empresa)
+Ficam apenas perguntas genéricas que NÃO se derivam de campos da vaga. São perguntas que a empresa quer usar em várias vagas mas que não têm vínculo automático:
+
+"Possui CNH categoria B?"
+"Tem disponibilidade para viagens internacionais?"
+"Aceita trabalhar em turnos?"
+"Tem experiência com atendimento ao cliente?"
+"Pretensão salarial?"
+Na Configuração de Triagem (dentro da vaga)
+As perguntas vinculadas a campos da vaga são geradas automaticamente ali mesmo, sem depender do catálogo:
+
+Idioma → pergunta de idioma (eliminatória)
+Modelo de trabalho → pergunta de modalidade (eliminatória)
+Tipo de contrato → pergunta de contrato (eliminatória)
+Vaga afirmativa → pergunta de critério afirmativo (classificatória)
+Localização → pergunta de disponibilidade geográfica (classificatória)
+Resultado Final na Tela de Triagem:
+┌─────────────────────────────────────────────────┐
+│ PERGUNTAS DE TRIAGEM                             │
+├─────────────────────────────────────────────────┤
+│                                                  │
+│ ▸ Derivadas da Vaga (automáticas)         3 ✓   │
+│   ┌────────────────────────────────────────┐     │
+│   │ ☑ Inglês avançado?        Eliminatória │     │
+│   │ ☑ Trabalho híbrido 3x?   Eliminatória │     │
+│   │ ☑ Vaga afirmativa PCD    Classific.    │     │
+│   └────────────────────────────────────────┘     │
+│                                                  │
+│ ▸ Do Banco da Empresa                     +     │
+│   (perguntas que NÃO vêm de campos)             │
+│   ┌────────────────────────────────────────┐     │
+│   │ □ Tem CNH categoria B?                 │     │
+│   │ □ Disponibilidade para viagens?        │     │
+│   │ □ Aceita trabalhar em turnos?          │     │
+│   └────────────────────────────────────────┘     │
+│                                                  │
+│ ▸ Personalizadas desta Vaga               +     │
+│   ┌────────────────────────────────────────┐     │
+│   │ • Experiência com SAP?    Classific.   │     │
+│   │ [+ Criar pergunta]                     │     │
+│   └────────────────────────────────────────┘     │
+│                                                  │
+└─────────────────────────────────────────────────┘
+Por que isso simplifica:
+Sem sobreposição — o catálogo nunca tem perguntas de idioma, modelo, contrato, etc. Essas vêm dos campos
+Sem consulta manual — o recrutador não precisa verificar nada, cada coisa tem seu lugar claro
+Sem duplicata — campos da vaga = perguntas derivadas automáticas. Catálogo = perguntas extras genéricas
+Um só lugar para montar — tudo aparece na tela de triagem da vaga, organizado por origem
+A regra é simples: se a pergunta pode ser gerada a partir de um campo da vaga, ela NÃO entra no catálogo de perguntas padrão. O catálogo fica só para o que é genuinamente "extra".
+
+Faz sentido para você? Quer que eu implemente isso?

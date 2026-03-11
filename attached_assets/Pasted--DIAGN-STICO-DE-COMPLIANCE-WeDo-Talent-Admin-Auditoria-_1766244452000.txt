@@ -1,0 +1,171 @@
+📋 DIAGNÓSTICO DE COMPLIANCE - WeDo Talent Admin
+Auditoria para Homologação em Bancos e Instituições Financeiras
+🎯 RESUMO EXECUTIVO
+A plataforma WeDo Talent Admin possui uma base sólida de compliance com módulos já implementados para LGPD, SOX, ISO 27001, SOC 2 e Trust Center. Contudo, existem gaps críticos que precisam ser endereçados para homologação em instituições financeiras, especialmente considerando a Resolução BCB Nº 498/2025.
+
+✅ O QUE JÁ EXISTE (Implementado)
+1. LGPD Compliance (/api/v1/lgpd/)
+Funcionalidade	Status	Descrição
+Registro de DPO	✅ Implementado	Cadastro e gestão de Encarregados de Proteção de Dados
+Notificação de Incidentes (Breaches)	✅ Implementado	Tracking de 48h para ANPD, severidade, status
+Decisões Automatizadas	✅ Implementado	Explicabilidade de IA (Art. 20), revisão humana
+Estatísticas LGPD	✅ Implementado	Dashboard com métricas de conformidade
+Logs de Acesso a Dados	✅ Implementado	Rastreamento de quem acessou quais dados
+Registros de Consentimento	✅ Implementado	Tracking de consentimentos por tipo
+2. Audit Logs SOX-Compliant (/api/v1/audit-logs/)
+Funcionalidade	Status	Descrição
+7 Categorias de Ação	✅ Implementado	authentication, data_access, configuration, ai_decision, financial, user_management, system
+Retenção 7 Anos (84 meses)	✅ Implementado	Políticas SOX Section 802 para registros financeiros
+Exportação CSV	✅ Implementado	Para auditores externos
+Filtros Avançados	✅ Implementado	Por data, cliente, categoria, status
+Estatísticas	✅ Implementado	Total de registros, ações com falha, usuários únicos
+Políticas de Retenção	✅ Implementado	Configuráveis por categoria
+3. Compliance Controls (/api/v1/compliance/)
+Funcionalidade	Status	Descrição
+Biblioteca de 177 Controles	✅ Implementado	93 ISO 27001:2022, 61 SOC 2 TSC, 23 SOX
+Controles por Empresa	✅ Implementado	Status individual, evidências, owners
+Dashboard de Compliance	✅ Implementado	Taxa de conformidade por framework
+Gestão de Auditorias	✅ Implementado	Interna/externa/certificação
+Controles SOX Específicos	✅ Implementado	Sections 302, 404, 409, 802
+Upload de Evidências	✅ Implementado	Anexar documentos comprobatórios
+4. Bias Audit System (/api/v1/bias-audits/)
+Funcionalidade	Status	Descrição
+11 Categorias de Bias	✅ Implementado	sex, race/ethnicity, age, disability, religion, etc.
+Frameworks de Compliance	✅ Implementado	NYC LL144, CO SB205, EU AI Act, CA FEHA, LGPD Brazil
+Relatórios Periódicos	✅ Implementado	Mensal, trimestral, anual, on-demand
+Publicação de Auditorias	✅ Implementado	Para transparência pública
+5. Trust Center (/api/v1/trust-center/)
+Funcionalidade	Status	Descrição
+Portal Público	✅ Implementado	Sem autenticação para transparência
+Certificações	✅ Implementado	Listagem de frameworks conformes
+Status de Controles	✅ Implementado	Por framework
+Subprocessadores	✅ Implementado	Lista de terceiros que processam dados
+Recursos Downloadáveis	✅ Implementado	Políticas, certificados
+Atualizações	✅ Implementado	News de compliance
+6. Global Policies (/api/v1/policies/)
+Funcionalidade	Status	Descrição
+4 Categorias	✅ Implementado	data_retention, ai_limits, security, compliance
+13 Políticas Default	✅ Implementado	LGPD, SOX, MFA, senhas, etc.
+Auditoria de Mudanças	✅ Implementado	change_reason tracking
+Scope Platform/Company	✅ Implementado	Multi-tenant
+7. Frontend Admin (WeDo Talent Admin)
+Página	Status	Path
+Dashboard Geral	✅	/admin
+Lista de Clientes	✅	/admin/clientes
+Observabilidade por Cliente	✅	/admin/clientes/[id]/observabilidade
+Auditoria & Logs	✅	/admin/configuracoes/auditoria
+Políticas Globais	✅	/admin/configuracoes/politicas
+Templates Padrão	✅	/admin/configuracoes/templates
+Comunicações	✅	/admin/configuracoes/comunicacoes
+Métricas SaaS	✅	/admin/metricas-plataforma
+❌ GAPS IDENTIFICADOS (Necessário Implementar)
+🔴 CRÍTICO - Bloqueia Homologação
+#	Gap	Norma Afetada	Impacto	Prioridade
+1	Portal Self-Service do Titular	LGPD Art. 18	Candidatos não podem exercer direitos (acesso, correção, exclusão, portabilidade) autonomamente	P0
+2	Gestão de Ciclo de Vida do Consentimento	LGPD Art. 8	Falta versionamento de termos, renovação automática, rastreio de IP/dispositivo	P0
+3	Seguro Cibernético (Documentação)	BCB 498/2025	Não há módulo para registrar apólice, cobertura, validade	P0
+4	Monitoramento 24/7 (Integração SOC/SIEM)	BCB 498/2025	Sem hooks para integração com SOC externo ou alertas de ameaças	P0
+5	Plano de Resposta a Incidentes (PRI)	ISO 27001, SOC 2	Falta workflow estruturado com SLAs de notificação (24/48h)	P0
+🟠 ALTO - Necessário para Certificação
+#	Gap	Norma Afetada	Impacto	Prioridade
+6	Matriz de Segregação de Funções (SoD)	SOX Section 404	Não há validação automática de conflitos de acesso	P1
+7	Registro de Riscos (Risk Register)	ISO 27001	Falta módulo ISMS com avaliação e tratamento de riscos	P1
+8	RTO/RPO e Testes de DR	BCB 498/2025, SOC 2	Sem tracking de objetivos de recuperação e histórico de testes	P1
+9	Avaliação de Fornecedores (Supply Chain)	BCB 498/2025	Falta due diligence de segurança para subprocessadores	P1
+10	Logs Imutáveis (Write-Once)	SOX Section 802	Logs podem ser alterados, não há garantia de imutabilidade	P1
+🟡 MÉDIO - Melhoria de Maturidade
+#	Gap	Norma Afetada	Impacto	Prioridade
+11	Dashboard de Segurança em Tempo Real	BCB 498/2025	Falta monitoramento de KPIs de segurança (tentativas de login, anomalias)	P2
+12	Exportação de Pacote para Auditores	ISO 27001, SOC 2	Não há geração automática de evidências consolidadas	P2
+13	Alertas de Evidências Expirando	ISO 27001, SOC 2	Sem notificação proativa de revisões pendentes	P2
+14	Mapa de Cobertura Cross-Framework	Múltiplos	Sem visualização de como um controle atende múltiplos frameworks	P2
+15	Treinamento e Conscientização	ISO 27001, LGPD	Sem tracking de completude de treinamentos de segurança	P2
+📊 ANÁLISE POR FRAMEWORK
+LGPD
+Requisito	Existente	Gap
+DPO Registry	✅	-
+Breach Notification (48h)	✅	-
+Decisões Automatizadas (Art. 20)	✅	-
+Logs de Acesso a Dados	✅	-
+Consentimento	⚠️ Parcial	Versionamento, renovação, IP tracking
+Portal do Titular	❌	Falta completamente
+Transferência Internacional	❌	Sem controle documentado
+SOX (Sarbanes-Oxley)
+Requisito	Existente	Gap
+Trilhas de Auditoria	✅	-
+Retenção 7 Anos	✅	-
+Exportação para Auditores	✅	-
+Controles Sections 302/404	✅	-
+Segregação de Funções (SoD)	❌	Matriz automática não existe
+Imutabilidade de Logs	❌	Sem proteção write-once
+ISO 27001:2022
+Requisito	Existente	Gap
+Biblioteca de Controles	✅	-
+Status por Empresa	✅	-
+Gestão de Auditorias	✅	-
+Upload de Evidências	✅	-
+Risk Register (ISMS)	❌	Não existe
+Continuidade de Negócios	❌	PCN/PRD não rastreados
+Gestão de Incidentes	⚠️ Parcial	Sem workflow completo
+SOC 2 Type II
+Requisito	Existente	Gap
+Trust Services Criteria	✅	-
+Período de Observação	⚠️ Parcial	Sem tracking contínuo
+Descrição do Sistema	❌	Documento não gerenciado
+Monitoramento Contínuo	❌	Sem dashboards em tempo real
+Resolução BCB 498/2025
+Requisito	Existente	Gap
+Política de Segurança	✅	Documentada nas policies
+Trilhas de Auditoria	✅	-
+Seguro Cibernético	❌	Sem registro de apólice
+Monitoramento 24/7	❌	Sem integração SOC
+Testes de Vulnerabilidade	❌	Sem tracking de pentests
+Supply Chain Security	❌	Due diligence não rastreada
+RTO/RPO	❌	Não documentados
+🛠️ PLANO DE AÇÃO RECOMENDADO
+Fase 1: Correções Críticas (0-30 dias)
+Item	Descrição	Módulos Afetados	Esforço
+1.1	Portal de Privacidade do Candidato - Self-service para acesso, correção, exclusão, portabilidade	Backend: /api/v1/data-subjects/, Frontend: Nova página	Alto
+1.2	Gestão de Consentimento Completa - Versionamento de termos, renovação automática, tracking de dispositivo/IP	Backend: Expandir /api/v1/lgpd/, Frontend: Forms	Médio
+1.3	Módulo de Seguro Cibernético - Registro de apólice, cobertura, validade, alertas de renovação	Backend: /api/v1/insurance/, Frontend: Config	Baixo
+1.4	Workflow de Resposta a Incidentes - Templates de PRI, SLAs, escalation matrix, notificações	Backend: Expandir breaches, Frontend: Wizard	Médio
+Fase 2: Conformidade Avançada (30-60 dias)
+Item	Descrição	Módulos Afetados	Esforço
+2.1	Matriz de Segregação de Funções (SoD) - Definição de conflitos, validação automática, alertas	Backend: /api/v1/sod/, Frontend: Matrix visual	Médio
+2.2	Risk Register (ISMS) - Cadastro de riscos, avaliação, tratamento, monitoramento	Backend: /api/v1/risks/, Frontend: Dashboard	Alto
+2.3	Plano de Continuidade (PCN/PRD) - RTO/RPO, testes programados, resultados	Backend: /api/v1/continuity/, Frontend: Page	Médio
+2.4	Due Diligence de Fornecedores - Questionário de segurança, scores, renovação	Backend: Expandir subprocessors, Frontend: Forms	Médio
+2.5	Integração SIEM/SOC - Webhooks para logs críticos, alertas em tempo real	Backend: Event emitters, Config	Médio
+Fase 3: Maturidade e Automação (60-90 dias)
+Item	Descrição	Módulos Afetados	Esforço
+3.1	Dashboard de Segurança Real-Time - KPIs de tentativas de login, anomalias, ameaças	Frontend: New dashboard	Alto
+3.2	Gerador de Pacote de Auditoria - Exportação consolidada de todas as evidências por framework	Backend + Frontend	Médio
+3.3	Alertas Proativos - Evidências expirando, revisões pendentes, renovações de seguro	Backend: Scheduled jobs	Baixo
+3.4	Tracking de Treinamentos - Completude de conscientização, certificados	Backend: /api/v1/training/	Baixo
+3.5	Logs Imutáveis - Integração com storage write-once ou blockchain hash	Backend: Infra	Alto
+📈 MATRIZ DE PRIORIZAÇÃO
+IMPACTO
+  Alto │  [1.1] [1.4]  │  [2.1] [2.2]  │
+       │  [1.2]        │  [2.3] [2.4]  │
+       ├───────────────┼───────────────┤
+ Médio │  [1.3]        │  [2.5] [3.1]  │
+       │               │  [3.2]        │
+       ├───────────────┼───────────────┤
+ Baixo │               │  [3.3] [3.4]  │
+       │               │  [3.5]        │
+       └───────────────┴───────────────┘
+              Alta           Média
+                URGÊNCIA
+💰 ESTIMATIVA DE ESFORÇO
+Fase	Período	Esforço Estimado	Complexidade
+Fase 1	0-30 dias	120-160 horas	Alta
+Fase 2	30-60 dias	160-200 horas	Alta
+Fase 3	60-90 dias	80-120 horas	Média
+Total	90 dias	360-480 horas	-
+🎯 RECOMENDAÇÃO
+Prioridade Imediata: Portal do Titular (LGPD) e Módulo de Seguro Cibernético (BCB 498)
+Segunda Onda: SoD Matrix e Risk Register para SOX/ISO 27001
+Automação: Após base sólida, implementar alertas e dashboards avançados
+A plataforma está 70% aderente aos requisitos. Com as correções propostas, atingirá nível adequado para homologação.
+
+Quer que eu detalhe algum gap específico, crie um roadmap mais granular, ou comece a implementação de algum módulo prioritário?

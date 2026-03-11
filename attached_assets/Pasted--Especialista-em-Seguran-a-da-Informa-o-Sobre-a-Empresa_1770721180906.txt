@@ -1,0 +1,84 @@
+
+
+# Especialista em Segurança da Informação
+
+## Sobre a Empresa
+
+Somos uma empresa inovadora e comprometida com a excelência tecnológica, onde a segurança da informação é pilar fundamental para o sucesso dos nossos negócios. Acreditamos que proteger dados e sistemas vai além de implementar ferramentas - é sobre construir uma cultura de segurança robusta e consciente.
+
+Buscamos pessoas que compartilhem nossos valores de ética, transparência e inovação contínua. Aqui, você terá a oportunidade de trabalhar em projetos desafiadores, com autonomia para propor soluções e impactar diretamente a proteção dos ativos mais valiosos da organização.
+
+## Responsabilidades
+
+- Desenvolver, implementar e manter políticas, procedimentos e padrões de segurança da informação alinhados às melhores práticas do mercado e frameworks reconhecidos (ISO 27001, NIST, CIS Controls)
+- Realizar análises de riscos e vulnerabilidades em infraestrutura, aplicações e processos, propondo e implementando planos de mitigação efetivos
+- Gerenciar incidentes de segurança, conduzindo investigações forenses, análise de causa raiz e coordenando a resposta a ameaças cibernéticas
+- Monitorar continuamente o ambiente de TI através de ferramentas de SIEM, IDS/IPS e outras soluções de segurança, identificando comportamentos anômalos e potenciais ameaças
+- Conduzir testes de segurança incluindo pentests, análise de vulnerabilidades e simulações de ataques para validar a efetividade dos controles implementados
+- Promover a conscientização em segurança da informação através de treinamentos, campanhas e comunicações direcionadas a diferentes públicos da organização
+- Colaborar com equipes de desenvolvimento na implementação de práticas de segurança no ciclo de vida de desenvolvimento (DevSecOps)
+- Manter-se atualizado sobre tendências, ameaças emergentes e novas tecnologias de segurança, recomendando melhorias contínuas para o programa de segurança
+
+## Requisitos
+
+### Obrigatórios
+
+**Técnicos:**
+- Graduação completa em Segurança da Informação, Ciência da Computação, Sistemas de Informação ou áreas correlatas
+- Experiência comprovada de no mínimo 5 anos em segurança da informação, com atuação em múltiplas áreas (rede, aplicações, governança)
+- Conhecimento profundo em frameworks e normas de segurança (ISO 27001, LGPD, GDPR, NIST)
+- Experiência prática com ferramentas de segurança: SIEM, WAF, IDS/IPS, antivírus corporativo, DLP
+- Domínio de conceitos de criptografia, gestão de identidades e acessos (IAM), segurança em nuvem (AWS, Azure ou GCP)
+- Experiência em resposta a incidentes e análise forense digital
+- Conhecimento em segurança de aplicações e metodologias como OWASP Top 10
+
+**Comportamentais:**
+- **Pensamento Crítico:** Capacidade analítica excepcional para avaliar riscos, identificar vulnerabilidades e tomar decisões estratégicas baseadas em evidências
+- **Ética:** Postura íntegra e responsável no tratamento de informações sensíveis, com compromisso inabalável com a confidencialidade e conformidade
+- Excelente comunicação para traduzir conceitos técnicos complexos para diferentes audiências
+- Proatividade e autonomia para identificar oportunidades de melhoria e implementar soluções
+
+### Desejáveis
+
+- Certificações profissionais como CISSP, CISM, CEH, OSCP, Security+, CRISC ou similares
+- Pós-graduação ou MBA em Segurança da Informação, Gestão de Riscos ou áreas relacionadas
+- Experiência com automação de segurança e scripting (Python, PowerShell, Bash)
+- Conhecimento em arquiteturas Zero Trust e SASE
+- Vivência em ambientes regulados (financeiro, saúde, governo)
+- Participação em comunidades de segurança e contribuições para projetos open source
+- Experiência com Threat Intelligence e Threat Hunting
+- Conhecimento em segurança de containers (Docker, Kubernetes) e DevSecOps
+
+## Benefícios
+
+- 💰 Remuneração compatível com o mercado + bônus por desempenho
+- 🏥 Plano de saúde e odontológico extensivo a dependentes (sem coparticipação)
+- 🍽️ Vale-refeição ou alimentação flexível
+- 🚗 Vale-transporte ou auxílio combustível
+- 📚 Programa de educação continuada com subsídio para certificações, cursos e eventos da área
+- 💻 Equipamentos de última geração para trabalho
+- 🏠 Modelo de trabalho híbrido com flexibilidade
+- 🎯 Plano de carreira estruturado com avaliações periódicas
+- 🧘 Programa de qualidade de vida e apoio psicológico
+- 📈 Participação em conferências e eventos de segurança (Black Hat, RSA, H2HC, etc.)
+- ☕ Ambiente colaborativo com day-off no aniversário
+
+## Como Se Candidatar
+
+Gostou da oportunidade? Estamos ansiosos para conhecer você!
+
+Clique no botão **"Candidatar-se"** e envie seu currículo atualizado. Candidaturas que incluam um portfólio de projetos, certificações ou contribuições para a comunidade de segurança serão diferenciadas.
+
+**Nosso processo seletivo:**
+1. Triagem de currículos
+2. Entrevista com RH (fit cultural)
+3. Desafio técnico prático
+4. Entrevista técnica com o time de Segurança
+5. Entrevista com liderança
+6. Proposta
+
+**Valorizamos a diversidade!** Incentivamos a candidatura de todas as pessoas, independentemente de gênero, raça, orientação sexual, religião, idade ou deficiência. Temos compromisso com um ambiente inclusivo e respeitoso.
+
+---
+
+**Candidate-se agora e venha construir um ambiente digital mais seguro conosco!** 🔐

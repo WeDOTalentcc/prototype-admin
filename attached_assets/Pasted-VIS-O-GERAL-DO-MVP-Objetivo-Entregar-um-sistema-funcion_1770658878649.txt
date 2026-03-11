@@ -1,0 +1,292 @@
+VISÃO GERAL DO MVP
+Objetivo
+Entregar um sistema funcional onde o recrutador consiga:
+
+Pesquisar e adicionar candidatos em vagas (busca manual OU solicitação para LIA buscar)
+Ter a LIA gerando perguntas de triagem automaticamente
+Aprovar candidatos mapeados antes da LIA iniciar contato (Gate 1)
+Ter a LIA fazendo contato via WhatsApp e triagem WSI
+Aprovar/reprovar candidatos triados com base no score WSI (Gate 2)
+Ter a LIA agendando entrevistas (aprovados) ou dando feedback (reprovados)
+Escopo MVP
+O MVP termina no agendamento da entrevista pela LIA. Etapas posteriores (entrevista, proposta, contratação) serão gerenciadas no ATS integrado.
+
+Portões de Aprovação (Gates)
+Gate	Momento	Ação do Recrutador	Se APROVADO	Se REPROVADO
+Gate 1	Após mapeamento	Aprovar candidatos para triagem	LIA inicia contato WhatsApp	LIA envia feedback → Coluna "Reprovados"
+Gate 2	Após triagem WSI	Aprovar/Reprovar com base no score	LIA agenda entrevista	LIA envia feedback → Coluna "Reprovados"
+Fontes de Candidatos
+Fonte	Descrição	Quem Adiciona
+Base Interna	Candidatos já cadastrados na plataforma	Recrutador busca e adiciona
+Busca Global	LinkedIn, Pearch, outras fontes externas	LIA busca e sugere
+Importação ATS	Candidatos vindos do ATS integrado	Sistema importa automaticamente
+Inscrição via Link	Candidatos via link publicado em redes sociais	Candidato se auto-cadastra via WhatsApp
+FLUXO MVP DETALHADO
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           FLUXO MVP - PLATAFORMA LIA                            │
+└─────────────────────────────────────────────────────────────────────────────────┘
+    ┌──────────────┐                              ┌──────────────┐
+    │  RECRUTADOR  │                              │     LIA      │
+    └──────┬───────┘                              └──────┬───────┘
+           │                                             │
+           │  1. CRIAR VAGA                              │
+           │  ─────────────────────────────────────────► │
+           │  • Usa Wizard Conversacional                │
+           │  • Define requisitos, benefícios            │
+           │  • Configura pipeline customizado           │
+           │                                             │
+           │                    2. GERAR PERGUNTAS       │
+           │  ◄───────────────────────────────────────── │
+           │  • LIA analisa requisitos da vaga           │
+           │  • Gera perguntas WSI (7 blocos)            │
+           │                                             │
+           │  3. BUSCAR CANDIDATOS                       │
+           │  ─────────────────────────────────────────► │
+           │  • Solicita busca na base interna           │
+           │  • Solicita busca global (Pearch/LinkedIn)  │
+           │                                             │
+           │                    4. MAPEAR CANDIDATOS     │
+           │  ◄───────────────────────────────────────── │
+           │  • LIA busca e ranqueia candidatos          │
+           │  • Adiciona candidatos na vaga → FUNIL      │
+           │                                             │
+           │  5. APROVAR MAPEADOS (Gate 1)               │
+           │  ─────────────────────────────────────────► │
+           │  • Aprova → TRIAGEM | Reprova → REPROVADO   │
+           │                                             │
+           │                    6. CONTATAR VIA WHATSAPP │
+           │  ◄───────────────────────────────────────── │
+           │  • LIA envia mensagem de abordagem          │
+           │  • Aguarda resposta do candidato            │
+           │                                             │
+           │                    7. FAZER TRIAGEM WSI     │
+           │  ◄───────────────────────────────────────── │
+           │  • LIA conduz conversa via WhatsApp         │
+           │  • Aplica perguntas, calcula Score WSI      │
+           │                                             │
+           │  8. APROVAR/REPROVAR TRIADOS (Gate 2)       │
+           │  ─────────────────────────────────────────► │
+           │  • Aprova → SHORT LIST | Reprova → FEEDBACK │
+           │                                             │
+           │                    9A. AGENDAR ENTREVISTA   │
+           │  ◄───────────────────────────────────────── │
+           │  (Se APROVADO) LIA agenda via Teams         │
+           │                                             │
+           │                    9B. DAR FEEDBACK         │
+           │  ◄───────────────────────────────────────── │
+           │  (Se REPROVADO) LIA envia feedback          │
+           │                                             │
+           ▼                                             ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │              FIM DO ESCOPO MVP                           │
+    │  Candidatos aprovados: Entrevista agendada               │
+    │  Candidatos reprovados: Feedback enviado                 │
+    └──────────────────────────────────────────────────────────┘
+FLUXO DE ESTADOS DO CANDIDATO
+                                    ┌─────────────┐
+                                    │   INÍCIO    │
+                                    └──────┬──────┘
+                                           │
+                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 1: FUNIL                                                              │
+│ Candidatos mapeados pela LIA (busca interna + global)                       │
+│ Sub-status: mapeado, aguardando_aprovacao                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                           │
+                         ┌─────────────────┴─────────────────┐
+                         │ Recrutador aprova? (Gate 1)       │
+                    ┌────┴────┐                         ┌────┴────┐
+                    │   SIM   │                         │   NÃO   │
+                    └────┬────┘                         └────┬────┘
+                         │                                   │
+                         ▼                                   ▼
+┌─────────────────────────────────────┐     ┌─────────────────────────────────┐
+│ ETAPA 2: TRIAGEM                    │     │ REPROVADO (Gate 1)              │
+│ LIA contata via WhatsApp            │     │ LIA envia feedback automático   │
+│ LIA aplica perguntas WSI            │     │ Sub-status: feedback_enviado    │
+└─────────────────────────────────────┘     └─────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 3: TRIAGEM CONCLUÍDA                                                  │
+│ Score WSI calculado | Parecer LIA gerado | Notificação enviada              │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                           │
+                         ┌─────────────────┴─────────────────┐
+                         │ Recrutador aprova? (Gate 2)       │
+                    ┌────┴────┐                         ┌────┴────┐
+                    │   SIM   │                         │   NÃO   │
+                    └────┬────┘                         └────┬────┘
+                         │                                   │
+                         ▼                                   ▼
+┌─────────────────────────────────────┐     ┌─────────────────────────────────┐
+│ ETAPA 4: SHORT LIST                 │     │ REPROVADO (Gate 2)              │
+│ LIA agenda entrevista               │     │ LIA envia feedback automático   │
+│ Sub-status: entrevista_agendada     │     │ Sub-status: feedback_enviado    │
+└─────────────────────────────────────┘     └─────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 5: ENTREVISTA AGENDADA                                                │
+│ ═══════════════════════════════════════════════════════════════════════════ │
+│                         FIM DO ESCOPO MVP                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+STATUS DAS FUNCIONALIDADES
+Módulo	Funcionalidade	Status	Observação
+Autenticação	Login/Logout	📋 Pendente	-
+Funil de Talentos	Busca de candidatos	📋 Pendente	-
+Funil de Talentos	Filtros de busca	📋 Pendente	-
+Funil de Talentos	Adicionar candidatos à vaga	📋 Pendente	-
+Vagas	Listar vagas	📋 Pendente	-
+Vagas	Criar/Editar vaga (Wizard)	📋 Pendente	6 estágios planejados
+Wizard	Interface Chat Conversacional	📋 Pendente	expanded-chat-modal.tsx
+Wizard	Orquestrador de Intenções	📋 Pendente	useWizardOrchestrator.ts
+Wizard	Estágios do Wizard (6)	📋 Pendente	input, salary, competencies, wsi, review, calibration
+Wizard	Skip Calibração	📋 Pendente	Fluxo conversacional
+Wizard	Quality Gates WSI	📋 Pendente	useWSIQualityGates.ts
+Kanban	Estrutura básica (colunas)	📋 Pendente	-
+Kanban	Drag and drop	📋 Pendente	-
+Kanban	Feedback implícito	📋 Pendente	Captura em transições
+Tabela	Estrutura básica	📋 Pendente	CandidateTableRow.tsx
+Tabela	Preview lateral	📋 Pendente	-
+Pipeline	Cards de etapas (carrossel)	📋 Pendente	-
+Agentes IA	10 agentes especializados (v2.2)	📋 Pendente	Arquitetura multi-agente
+Templates	326 templates curados	📋 Pendente	9 categorias
+INTEGRAÇÕES MVP
+Integração	Propósito	Status	Prioridade
+Claude (Anthropic)	LLM para agentes, perguntas, parecer	📋 Pendente	Crítica
+Gemini (Google)	Busca semântica, embeddings, multimodal	📋 Pendente	Alta
+OpenAI	LLM alternativo, fallback, TTS	📋 Pendente	Média
+WhatsApp (Twilio)	Comunicação com candidatos	📋 Pendente	Crítica
+Microsoft Graph	Calendário, Teams, Outlook	📋 Pendente	Alta
+WorkOS	SSO, MFA, SCIM	📋 Pendente	Média
+Gupy	Integração ATS Brasil	📋 Pendente	Média
+Pandapé	Integração ATS Brasil	📋 Pendente	Média
+StackOne	Unified HRIS/ATS API	📋 Pendente	Média
+Merge	Multi-ATS/HRIS Integration	📋 Pendente	Média
+Pearch	Busca global de candidatos	📋 Pendente	Alta
+Deepgram	Speech-to-Text (Nova-2)	📋 Pendente	Média
+CRONOGRAMA DE SEMANAS
+Semana	Período	Cards	Foco Principal
+Semana 1	09/fev → 13/fev	62	Fundação: Auth, Kanban, Mapeamento, Integrações (WorkOS+Twilio)
+Semana 2	16/fev → 20/fev	45	Core: WSI, Triagem, Templates, Agendamento, Integrações (MS Graph+LLM)
+Semana 3	23/fev → 27/fev	33	Finalização: Score WSI, Gates, Notificações, Agentes IA, Integrações (Apify)
+Duração total: 3 semanas (15 dias úteis) — 09/fev a 27/fev/2026
+
+Caminho Crítico
+Auth → Edição de Vaga → Mapeamento → Perguntas WSI → WhatsApp → Triagem → Score → Gates → Agendamento
+CHECKLIST DE ENTREGA MVP
+Recrutador consegue:
+ Fazer login
+ Editar vaga existente para configurar parâmetros WSI
+ Buscar candidatos (base + global)
+ Adicionar candidatos à vaga
+ Visualizar kanban com drag-and-drop
+ Aprovar candidatos mapeados (Gate 1)
+ Ver score WSI após triagem
+ Aprovar/reprovar candidatos triados (Gate 2)
+ Ver entrevista agendada no calendário
+ Receber notificações
+LIA consegue:
+ Gerar perguntas de triagem WSI
+ Sugerir competências e habilidades (pós-MVP — depende do Wizard)
+ Analisar faixa salarial de mercado (pós-MVP — depende do Wizard)
+ Contatar candidato via WhatsApp
+ Conduzir triagem conversacional
+ Calcular score WSI (backend)
+ Gerar parecer textual
+ Agendar entrevista automaticamente
+ Enviar feedback para reprovados
+CARDS JIRA DETALHADOS
+A partir daqui estão os 140 cards MVP ativos + 3 removidos/consolidados + 30 pós-MVP = 173 cards detalhados.
+
+RESUMO EXECUTIVO
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                              VISÃO GERAL DOS CARDS MVP                                  │
+│                           (Atualizado: 07 Fevereiro 2026)                               │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                          │
+│   FLUXO CORE MVP:                                                                        │
+│   ─────────────────                                                                      │
+│   Recrutador edita vaga → Busca candidatos → Aprova mapeados (Gate 1)                   │
+│   → LIA gera perguntas WSI → LIA contata via WhatsApp → LIA faz triagem                 │
+│   → Recrutador aprova/reprova triados (Gate 2) → LIA agenda entrevista                  │
+│                                                                                          │
+│   CRONOGRAMA: 3 SEMANAS (09/fev a 27/fev)                                               │
+│   ──────────────────────────────────────────                                            │
+│   │ Semana 1 │ 62 cards │ 09-13/fev │ Fundação: Auth, Kanban, Mapeamento, Integrações │ │
+│   │ Semana 2 │ 45 cards │ 16-20/fev │ Core: WSI, Triagem, Templates, Agendamento      │ │
+│   │ Semana 3 │ 33 cards │ 23-27/fev │ Finalização: Score, Gates, Notificações, Agentes│ │
+│   └──────────┴──────────┴───────────┴─────────────────────────────────────────────────┘│
+│                                                                                          │
+│   DISTRIBUIÇÃO POR ÉPICO:                                                               │
+│   ─────────────────────────                                                              │
+│   │ ÉPICO 1: Autenticação       │  6 cards │ Sprint 1 │ 🔧 0 prontos │              │  │
+│   │ ÉPICO 2: Wizard ⏸️ PÓS-MVP  │  0 cards │ Pós-MVP  │ ⏸️ 11 pós-MVP│ 3→Épico4     │  │
+│   │ ÉPICO 3: Busca/Mapeamento   │ 13 cards │ Sprint 1 │ ✅ 5 prontos │ MAP-014 pós  │  │
+│   │ ÉPICO 4: Geração Perguntas  │  7 cards │ Sprint 2 │ 🔧 0 prontos │ WSI-004 rem +3 do É2│  │
+│   │ ÉPICO 5: Triagem WhatsApp   │ 12 cards │ Sprint 2 │ 🔧 0 prontos │ TRI-011 pós  │  │
+│   │ ÉPICO 6: Score WSI          │  8 cards │ Sprint 3 │ 🔧 0 prontos │              │  │
+│   │ ÉPICO 7: Gates Aprovação    │  8 cards │ Sprint 3 │ 🔧 0 prontos │              │  │
+│   │ ÉPICO 8: Templates          │  8 cards │ Sprint 2 │ 🔧 0 prontos │              │  │
+│   │ ÉPICO 9: Agendamento        │  8 cards │ Sprint 2 │ 🔧 0 prontos │              │  │
+│   │ ÉPICO 10: Notificações      │  6 cards │ Sprint 3 │ 🔧 0 prontos │ NOT-007 pós  │  │
+│   │ ÉPICO 11: Kanban/Tabela     │ 29 cards │ Sprint 1 │ 🔧 0 prontos │ KAN-005 rem  │  │
+│   │ ÉPICO 12: JD/Wizard ⏸️ PÓS  │  0 cards │ Pós-MVP  │ ⏸️ 5 pós-MVP │              │  │
+│   │ ÉPICO 13: Config ⏸️ PÓS-MVP │  0 cards │ Pós-MVP  │ ⏸️ 6 pós-MVP │              │  │
+│   │ ÉPICO 14: Integrações MVP   │ 27 cards │ Sprint1-3│ 🔧 0 prontos │ 5 pós+1 cons │  │
+│   │ ÉPICO 15: Agentes IA        │  8 cards │ Sprint 3 │ 🔧 0 prontos │              │  │
+│   └─────────────────────────────┴──────────┴──────────┴──────────────┘               │  │
+│                                                                                          │
+│   TOTAL: 173 cards │ 140 MVP ativos │ 3 removidos/consolidados │ 30 pós-MVP              │
+│                                                                                          │
+│   PROGRESSO: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% - Início do desenvolvimento              │
+│                                                                                          │
+│   Atualizado com decisões da reunião de alinhamento de 06/02/2026 (Paulo + Anderson)     │
+│   É12 (JD/Wizard Avançado) e É13 (Config Avançadas) movidos para Pós-MVP                │
+│                                                                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+MAPA DE CARDS POR SPRINT
+SPRINT 1 — Semana 1 (09-13/fev) — FUNDAÇÃO (62 cards)
+Épico	Cards	Qtd	Notas
+É1: Autenticação	AUTH-001 a AUTH-006	6	Base para todo o sistema
+É3: Busca/Mapeamento	MAP-001 a MAP-013	13	5 já prontos (MAP-001,002,004,005,006)
+É11: Kanban/Tabela	KAN-001..004,006..008,010..013, TAB-001..005, PRV-001..005, VAG-001..008	29	KAN-005 removido, KAN-009 em É15
+É14: Integrações (parcial)	INT-WOS-001..007, INT-TWI-001..007	14	WorkOS (auth) + Twilio (WhatsApp)
+SPRINT 2 — Semana 2 (16-20/fev) — CORE (45 cards)
+Épico	Cards	Qtd	Notas
+É4: Geração Perguntas WSI	WSI-001,002,003,005,006, WIZ-008,012,013	7	WSI-004 removido, 3 migrados de É2
+É5: Triagem WhatsApp	TRI-001..010, TRI-013, TRI-014	12	TRI-011 pós-MVP
+É8: Templates Comunicação	TPL-001 a TPL-008	8	Templates para WhatsApp/email
+É9: Agendamento Automático	AGE-001 a AGE-008	8	Microsoft Graph + Calendar
+É14: Integrações (parcial)	INT-MSG-002..004,006, INT-LLM-002,005..009	10	MS Graph (4) + LLM (6)
+SPRINT 3 — Semana 3 (23-27/fev) — FINALIZAÇÃO (33 cards)
+Épico	Cards	Qtd	Notas
+É6: Score WSI	SCO-001 a SCO-008	8	Cálculo + visualização de scores
+É7: Gates Aprovação	GAT-001 a GAT-008	8	Gate 1 (mapeados) + Gate 2 (triados)
+É10: Notificações	NOT-001 a NOT-006	6	NOT-007 pós-MVP
+É15: Agentes IA	AGT-001..004, TRI-012, DAT-001, ENT-001, KAN-009	8	Agentes especializados
+É14: Integrações (parcial)	INT-APY-001..003	3	Apify (sourcing)
+CARDS PÓS-MVP (30 cards)
+Épico	Cards	Qtd	Notas
+É2: Wizard Conversacional	WIZ-001..007, WIZ-009..011, WIZ-014	11	Épico completo adiado
+É12: JD/Wizard Avançado	JD-001, JD-002, JDW-001, JDW-002, JDW-003	5	Preview JD + serviços avançados
+É13: Config Avançadas	CFG-001..005, IMP-001	6	Configurações LIA + importação
+É3	MAP-014	1	Revisão qualidade busca c/ André
+É5	TRI-011	1	Pré-qualificação automatizada
+É10	NOT-007	1	Notificações via MS Teams
+É14	INT-LLM-001,003,004, INT-MSG-005,007	5	Router/Fallback LLM + MS Graph avançado
+CARDS REMOVIDOS/CONSOLIDADOS (3 cards)
+Card	Motivo
+WSI-004	Removido — edição manual substituída por WSI-006 (prompt conversacional)
+KAN-005	Obsoleto — ícones de ação rápida redundantes com KAN-004
+INT-MSG-001	Consolidado em AGE-001 — config Azure unificada
+RESUMO:
+
+Sprint 1: 62 cards (Fundação)
+Sprint 2: 45 cards (Core)
+Sprint 3: 33 cards (Finalização)
+Pós-MVP: 30 cards
+Removidos: 3 cards
+TOTAL MVP: 140 cards ativos

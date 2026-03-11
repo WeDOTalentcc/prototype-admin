@@ -1,0 +1,53 @@
+NOVO CARD: TRI-013 — Sistema de Reporte de Problemas pelo Candidato
+Titulo: [FULL-STACK] Sistema de Reporte de Problemas pelo Candidato
+Tipo: Feature
+Sprint: 3
+Pontos: 5
+Prioridade: Alta
+Epic: EPIC-TRIAGEM
+Status: 📋 A Criar no Jira
+Descricao: |
+  Se a LIA alucinar ou o candidato tiver problemas durante a triagem
+  via WhatsApp, ele pode digitar um código especial (ex: "AJUDA" ou "#PROBLEMA")
+  que dispara um incidente para o recrutador responsável.
+Historia de Usuario: |
+  Como candidato, eu quero poder reportar um problema durante a triagem
+  se a IA não estiver fazendo sentido, para que um humano me ajude.
+Regras de Negocio:
+  1. Palavras-chave de escape: "AJUDA", "#PROBLEMA", "PARAR", "HUMANO"
+  2. Ao detectar: pausar conversa LIA imediatamente
+  3. Criar incidente com: candidato_id, job_id, timestamp, últimas 5 mensagens
+  4. Notificar recrutador (push + email)
+  5. Recrutador pode: assumir conversa ou resetar LIA
+  6. Candidato recebe: "Entendi! Um recrutador será notificado e entrará em contato em breve."
+  7. SLA de resposta: configurável (padrão 2h úteis)
+Requisitos Tecnicos:
+  Backend:
+    - Detecção de palavras-chave no message handler
+    - POST /api/v1/incidents (criação automática)
+    - Modelo: screening_incidents (candidate_id, job_id, trigger_keyword, last_messages, status, assigned_to)
+    - Notificação para recrutador
+  Frontend:
+    - Painel de Incidentes (lista + detalhes)
+    - Badge no sidebar: "3 incidentes pendentes"
+    - Click no incidente → ver conversa + opções
+Design & Componentes:
+  Novos Componentes:
+    - IncidentsPanel - lista de incidentes
+    - IncidentDetailView - detalhes + conversa
+    - IncidentBadge - contador no sidebar
+  Design Tokens:
+    Urgente: --electric-red (#de1c31)
+    Pendente: --wedo-yellow (#EAB308)
+    Resolvido: --wedo-green (#22C55E)
+DoD:
+  - [ ] Detecção de palavras-chave funcional
+  - [ ] Incidente criado automaticamente
+  - [ ] Notificação ao recrutador
+  - [ ] Painel de incidentes funcional
+  - [ ] Conversa pausada ao detectar problema
+Impacto	Detalhes
+UI/Frontend	Novo painel de incidentes, badge no sidebar, view de detalhes. ~3 novos componentes
+Backend	Tabela screening_incidents, endpoints de CRUD, detecção de keywords no message handler, notificações
+AI/LLM	Detecção de intent "ajuda/problema" no classificador de mensagens
+Protótipo Replit	Criar IncidentsPanel.tsx, IncidentDetailView.tsx, integrar ao sidebar

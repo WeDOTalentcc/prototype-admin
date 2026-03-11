@@ -1,0 +1,102 @@
+SEÇÃO LOCALIZAÇÕES
+
+6. Localizações (Location(s))
+
+•
+Tipo de Campo: Campo de texto com sugestões de IA e exclusão
+
+•
+Descrição: Permite filtrar candidatos por localização geográfica
+
+•
+Opções/Valores:
+
+•
+Campo de texto aberto com autocomplete
+
+•
+Suporta cidades, estados, países
+
+•
+Suporta exclusão com operador "not" (ex: "California, not Los Angeles")
+
+•
+Suporta raio de distância (ex: "Within 25 miles")
+
+
+
+•
+Como Funciona: A IA sugere localizações enquanto digita; permite adicionar múltiplas localizações; permite excluir localizações específicas
+
+•
+Tipo de Filtro: Campo de texto com IA e exclusão
+
+•
+Sugestões de Melhoria: Adicionar busca por raio de distância customizável (ex: 50km de São Paulo); permitir salvar "presets" de localizações frequentes; mostrar mapa com visualização das localizações selecionadas
+
+7. Fuso Horário (Timezone)
+
+•
+Tipo de Campo: Dropdown
+
+•
+Descrição: Filtra candidatos por fuso horário
+
+•
+Opções:
+
+•
+Eastern Standard Time (EST, UTC-5)
+
+•
+Central Standard Time (CST, UTC-6)
+
+•
+Mountain Standard Time (MST, UTC-7)
+
+•
+Pacific Standard Time (PST, UTC-8)
+
+•
+Alaska Standard Time (AKST, UTC-9)
+
+•
+Hawaii-Aleutian Standard Time (HST, UTC-10)
+
+•
+Atlantic Standard Time (AST, UTC-4)
+
+•
+(Outras opções de timezone não totalmente visíveis nos prints, mas a plataforma suporta múltiplos fusos)
+
+
+
+•
+Como Funciona: Seleciona candidatos que estão em um fuso horário específico
+
+•
+Tipo de Filtro: Dropdown com seleção única
+
+•
+Sugestões de Melhoria: Permitir seleção de múltiplos fusos horários; mostrar diferença de horário em relação ao usuário; adicionar busca por "horário comercial" (ex: "9-17h em meu horário")
+
+8. Localizações Anteriores (Past Locations)
+
+•
+Tipo de Campo: Campo de texto com sugestões
+
+•
+Descrição: Filtra candidatos que trabalharam em localizações específicas no passado
+
+•
+Opções/Valores: Campo de texto aberto com autocomplete de cidades, estados, países
+
+•
+Como Funciona: Busca no histórico de trabalho do candidato por localizações anteriores
+
+•
+Tipo de Filtro: Campo de texto com IA
+
+•
+Sugestões de Melhoria: A IA poderia sugerir localizações baseado em histórico de empresas selecionadas; permitir filtrar por "período de tempo na localização"
+

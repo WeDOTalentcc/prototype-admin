@@ -1,0 +1,157 @@
+1. BADGE PADRÃO (Neutro/Standard)
+Usado para: Origem do candidato, informações genéricas
+
+Propriedade	Valor
+Background	#F9FAFB (gray-50)
+Border	Nenhuma
+Border Radius	9999px (rounded-full)
+Padding	6px horizontal, 2px vertical
+Ícone Tamanho	8px x 8px
+Ícone Cor	#6B7280 (gray-500)
+Texto Font Size	9px
+Texto Font Weight	500 (medium)
+Texto Cor	#4B5563 (gray-600)
+2. BADGE ESCURO (Dark/Completed)
+Usado para: "Triagem concluída", status completados
+
+Propriedade	Light Mode	Dark Mode
+Background	#111827 (gray-900)	#F3F4F6 (gray-100)
+Border	Nenhuma	Nenhuma
+Border Radius	9999px	9999px
+Padding	6px horizontal, 2px vertical	idem
+Ícone Tamanho	8px x 8px	8px x 8px
+Ícone Cor	#FFFFFF (white)	#111827 (gray-900)
+Texto Font Size	9px	9px
+Texto Font Weight	700 (bold)	700 (bold)
+Texto Cor	#FFFFFF (white)	#111827 (gray-900)
+3. BADGE ACCENT/PENDENTE (Cor Pastel por Etapa)
+Usado para: "Decisão pendente", "LIA iniciará triagem", ações urgentes
+
+Propriedade	Valor
+Background	Cor pastel da coluna (ver tabela abaixo)
+Border	Nenhuma (ou mesma cor do background)
+Border Radius	9999px (rounded-full)
+Padding	6px horizontal, 2px vertical
+Ícone Tamanho	8px x 8px
+Ícone Cor	#111827 (gray-900) ou #1F2937 (gray-800)
+Texto Font Size	9px
+Texto Font Weight	600 (semibold)
+Texto Cor	#111827 (gray-900) ou #1F2937 (gray-800)
+Animação	animate-pulse (pisca)
+Cores Pastel por Etapa:
+Etapa	Hex	Nome da Cor
+Funil	#DCE4DB	Verde Menta
+Triagem	#E3DADC	Rosa Antigo
+Entrevista	#DDE1E9	Azul Acinzentado
+Final	#E5E0E2	Lilás Acinzentado
+Aprovados	#EAEAEA	Cinza Gelo
+Reprovados	#F5F5F5	Neutro
+4. BADGE COM BORDA (Outlined)
+Usado para: "Conversa em andamento", "Respondendo agora", status intermediários
+
+Propriedade	Light Mode	Dark Mode
+Background	#F9FAFB (gray-50)	#1F2937 (gray-800)
+Border	1px solid #E5E7EB (gray-200)	1px solid #374151 (gray-700)
+Border Radius	9999px	9999px
+Padding	6px horizontal, 2px vertical	idem
+Ícone Tamanho	8px x 8px	8px x 8px
+Ícone Cor	#374151 (gray-700)	#D1D5DB (gray-300)
+Texto Font Size	9px	9px
+Texto Font Weight	400 (normal)	400 (normal)
+Texto Cor	#374151 (gray-700)	#D1D5DB (gray-300)
+5. BADGE CANAL DE COMUNICAÇÃO
+Usado para: WhatsApp, Email, etc.
+
+Propriedade	Light Mode	Dark Mode
+Background	#F3F4F6 (gray-100)	#374151 (gray-750)
+Border	1px solid #D1D5DB (gray-300)	1px solid #4B5563 (gray-600)
+Border Radius	9999px	9999px
+Padding	6px horizontal, 2px vertical	idem
+Ícone Tamanho	8px x 8px	8px x 8px
+Ícone Cor	#1F2937 (gray-800)	#E5E7EB (gray-200)
+Texto Font Size	9px	9px
+Texto Font Weight	400 (normal)	400 (normal)
+Texto Cor	#1F2937 (gray-800)	#E5E7EB (gray-200)
+6. BADGE DE ENTREVISTA AGENDADA
+Usado para: "Entrevista confirmada", datas agendadas
+
+Propriedade	Valor
+Background	#111827 (gray-900)
+Border	Nenhuma
+Border Radius	9999px
+Padding	6px horizontal, 2px vertical
+Ícone	CalendarCheck
+Ícone Tamanho	8px x 8px
+Ícone Cor	#FFFFFF (white)
+Texto Font Size	9px
+Texto Font Weight	600 (semibold)
+Texto Cor	#FFFFFF (white)
+7. BADGE DE CONTRATADO/PROPOSTA ACEITA
+Usado para: Status finais positivos
+
+Propriedade	Valor
+Background	#111827 (gray-900)
+Border	Nenhuma
+Border Radius	9999px
+Padding	6px horizontal, 2px vertical
+Ícone	Trophy ou CheckCircle
+Ícone Tamanho	8px x 8px
+Ícone Cor	#FFFFFF (white)
+Texto Font Size	9px
+Texto Font Weight	700 (bold)
+Texto Cor	#FFFFFF (white)
+8. BADGE DE REPROVADO/DESISTÊNCIA
+Usado para: Status finais negativos
+
+Propriedade	Valor
+Background	#F9FAFB (gray-50)
+Border	1px solid #E5E7EB (gray-200)
+Border Radius	9999px
+Padding	6px horizontal, 2px vertical
+Ícone	XCircle
+Ícone Tamanho	8px x 8px
+Ícone Cor	#6B7280 (gray-500)
+Texto Font Size	9px
+Texto Font Weight	500 (medium)
+Texto Cor	#4B5563 (gray-600)
+RESUMO VISUAL DOS BADGES
+Tipo	Background	Texto	Borda	Animação
+Padrão	#F9FAFB	#4B5563	-	-
+Escuro	#111827	#FFFFFF	-	-
+Accent	Pastel (etapa)	#111827	-	pulse
+Com Borda	#F9FAFB	#374151	#E5E7EB	-
+Canal	#F3F4F6	#1F2937	#D1D5DB	-
+Agendado	#111827	#FFFFFF	-	-
+Contratado	#111827	#FFFFFF	-	-
+Reprovado	#F9FAFB	#4B5563	#E5E7EB	-
+CSS BASE PARA TODOS OS BADGES
+.badge-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  font-size: 9px;
+}
+.badge-standard {
+  background: #F9FAFB;
+  color: #4B5563;
+  font-weight: 500;
+}
+.badge-dark {
+  background: #111827;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+.badge-accent {
+  /* background: cor da etapa */
+  color: #111827;
+  font-weight: 600;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.badge-outlined {
+  background: #F9FAFB;
+  color: #374151;
+  border: 1px solid #E5E7EB;
+  font-weight: 400;
+}

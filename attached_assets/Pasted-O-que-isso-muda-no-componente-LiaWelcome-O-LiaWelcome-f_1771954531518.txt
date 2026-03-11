@@ -1,0 +1,54 @@
+O que isso muda no componente LiaWelcome
+O LiaWelcome fica muito mais simples — é basicamente uma variante visual do LiaMessage, mas com layout centralizado para quando o chat está vazio:
+
+LiaWelcome (simplificado):
+┌──────────────────────────────────────────────┐
+│                                               │
+│              ┌────────┐                       │
+│              │  🧠    │                       │  ← Brain icon (maior que o normal)
+│              │ (cyan) │                       │     48px vs 32px do avatar normal
+│              └────────┘                       │
+│                                               │
+│     Olá! Eu sou a LIA, sua assistente        │  ← Título (Open Sans, text-lg)
+│        de recrutamento.                       │
+│                                               │
+│   Posso te ajudar a criar vagas, buscar      │  ← Subtítulo (text-sm, gray-500)
+│   candidatos e gerenciar processos.          │
+│                                               │
+│   Me conta: no que está trabalhando hoje?    │  ← Prompt conversacional
+│                                               │
+└──────────────────────────────────────────────┘
+Props (reduzidas):
+- title: string          (default: "Olá! Eu sou a LIA...")
+- subtitle: string       (default: "Posso te ajudar a...")  
+- prompt: string         (default: "Me conta: no que está trabalhando hoje?")
+- icon: ReactNode        (default: Brain)
+- variant: 'first-time' | 'new-conversation'
+O variant: 'new-conversation' seria para quando não é a primeira vez — a LIA já conhece o recrutador:
+
+Variante 'new-conversation':
+┌──────────────────────────────────────────────┐
+│              ┌────────┐                       │
+│              │  🧠    │                       │
+│              └────────┘                       │
+│                                               │
+│     Olá de novo, Marina!                     │
+│                                               │
+│   Você tem 3 processos ativos e 12           │
+│   candidatos aguardando análise.             │
+│                                               │
+│   No que quer focar hoje?                    │
+│                                               │
+└──────────────────────────────────────────────┘
+Sobre as Sugestões Existentes
+Pelo que você descreveu, vocês já têm:
+
+Suggestion chips abaixo ou acima do prompt (frases curtas clicáveis que preenchem o input)
+Botão de ideias que abre uma lista de sugestões
+Esses mecanismos já estão documentados? Pergunto porque:
+
+O componente 3.33 Chat Suggestion Cards que temos no DS — é isso? Ou é outra coisa?
+Se é isso, precisamos garantir que o 3.33 descreva claramente que as sugestões ficam na área do input, não dentro do corpo do chat
+Isso muda também como documento o LiaConversation (container) — as sugestões seriam parte da zona do input, não da zona de mensagens.
+
+Quer me mostrar como funciona hoje na prática o mecanismo de sugestões + botão de ideias, para eu documentar com precisão? Ou posso inferir do que já temos no 3.33?

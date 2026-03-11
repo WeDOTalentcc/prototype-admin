@@ -1,0 +1,176 @@
+FLUXO GERAL DO CANDIDATO
+FUNIL → TRIAGEM → ENTREVISTA → FINAL → APROVADOS/REPROVADOS
+1. ETAPA: FUNIL
+Candidatos recém-chegados, ainda não iniciaram triagem com LIA
+
+Badges que aparecem:
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Aplicou via LinkedIn"	Padrão	#F9FAFB	source === 'linkedin'	Candidato veio do LinkedIn
+"Aplicou no site"	Padrão	#F9FAFB	source === 'website'	Candidato aplicou direto no site
+"Mapeado pela LIA"	Padrão	#F9FAFB	source === 'lia_database'	LIA encontrou no banco de talentos
+"Adicionado manual"	Padrão	#F9FAFB	source === 'recruiter'	Recrutador adicionou manualmente
+"LIA iniciará triagem"	Accent	#DCE4DB	Sempre (todos no Funil)	Indica próxima ação automática
+Lógica:
+Nenhum candidato tem score LIA ainda (score é null)
+Badge de origem mostra de onde veio o candidato
+Badge accent verde menta indica que LIA vai iniciar contato em breve
+Ícone Brain pulsa indicando processamento futuro
+2. ETAPA: TRIAGEM
+LIA está conversando com candidato via WhatsApp/Email
+
+Cenário A: Triagem em andamento (needsAction = false)
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Conversa em andamento"	Com Borda	#F9FAFB + borda	needsAction === false	LIA conversando com candidato
+"Respondendo agora"	Com Borda	#F9FAFB + borda	liatriagem === 'respondendo'	Candidato está digitando
+"WhatsApp" / "Email"	Canal	#F3F4F6 + borda	Sempre	Canal de comunicação ativo
+Cenário B: Triagem concluída, aguardando decisão (needsAction = true)
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Triagem concluída"	Escuro	#111827	needsAction === true	LIA terminou, há dados para analisar
+"Decisão pendente"	Accent	#E3DADC	needsAction === true	Recrutador precisa aprovar/reprovar
+"WhatsApp" / "Email"	Canal	#F3F4F6 + borda	Sempre	Canal usado na triagem
+Elementos especiais na Triagem:
+Tarja "Ação Necessária": Aparece no topo do card quando needsAction === true
+Borda esquerda grossa (4px #1F2937): Visual de urgência
+Score LIA: Aparece após triagem concluída (ex: 95%, 89%, 68%)
+Animação pulse: Badge "Decisão pendente" pisca para chamar atenção
+Lógica:
+Candidatos são ordenados por urgência: primeiro os que precisam de ação, depois por score
+Score baixo (< 70%) indica candidato não recomendado
+Score alto (> 85%) indica candidato promissor
+3. ETAPA: ENTREVISTA
+Candidatos aprovados na triagem, agendando/realizando entrevistas
+
+Cenário A: Entrevista não agendada ainda
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Aguardando agendamento"	Accent	#DDE1E9	agendada === false && needsAction === true	Recrutador precisa agendar
+Cenário B: Entrevista agendada
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Entrevista confirmada"	Escuro	#111827	agendada === true	Data/hora confirmada
+"15/04 às 14:00"	Padrão	#F9FAFB	agendada === true	Data e hora específica
+"Teams" / "Presencial"	Canal	#F3F4F6 + borda	Sempre	Formato da entrevista
+Cenário C: Entrevista realizada, aguardando feedback
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Entrevista realizada"	Escuro	#111827	realizada === true	Entrevista já aconteceu
+"Feedback pendente"	Accent	#DDE1E9	realizada && !feedback	Entrevistador não deu parecer
+Lógica:
+Tarja "Ação Necessária" aparece quando:
+Precisa agendar entrevista
+Precisa dar feedback pós-entrevista
+Score LIA continua visível (veio da triagem)
+Match/Fit score também visível
+4. ETAPA: FINAL
+Últimas entrevistas, decisão final, proposta
+
+Cenário A: Aguardando entrevista final
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Entrevista final pendente"	Accent	#E5E0E2	entrevistaFinal === false	Falta última etapa
+Cenário B: Proposta em análise
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Proposta enviada"	Escuro	#111827	propostaEnviada === true	Oferta foi enviada
+"Aguardando resposta"	Accent	#E5E0E2	propostaEnviada && !resposta	Candidato avaliando
+Cenário C: Negociação
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Em negociação"	Com Borda	#F9FAFB + borda	negociando === true	Ajustes na proposta
+Lógica:
+Momento crítico - badges indicam onde está a decisão
+Ação Necessária pode ser do recrutador ou aguardando candidato
+5. ETAPA: APROVADOS
+Candidatos contratados ou com proposta aceita
+
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Contratado"	Escuro	#111827	status === 'hired'	Processo concluído com sucesso
+"Proposta aceita"	Escuro	#111827	propostaAceita === true	Aguardando formalização
+"Início: 01/05"	Padrão	#F9FAFB	Se há data de início	Data prevista de início
+Lógica:
+Cards nesta coluna são resultados positivos
+Menos badges, mais informação de conclusão
+Score LIA permanece visível para histórico
+6. ETAPA: REPROVADOS
+Candidatos rejeitados ou que desistiram
+
+Badge	Tipo	Cor	Quando Aparece	Informação
+"Reprovado triagem"	Padrão	#F9FAFB	motivoRejeicao === 'triagem'	Não passou na triagem LIA
+"Reprovado entrevista"	Padrão	#F9FAFB	motivoRejeicao === 'entrevista'	Não passou nas entrevistas
+"Desistiu"	Com Borda	#F9FAFB + borda	desistiu === true	Candidato desistiu do processo
+"Proposta recusada"	Com Borda	#F9FAFB + borda	propostaRecusada === true	Recusou a oferta
+"Feedback enviado"	Escuro	#111827	feedbackEnviado === true	LIA enviou feedback ao candidato
+Lógica:
+Cards mais "apagados" visualmente (cores neutras)
+Importante manter motivo da rejeição para análise
+Badge de feedback indica que candidato foi notificado (LGPD)
+RESUMO: REGRAS DE EXIBIÇÃO
+Quando aparece a TARJA "Ação Necessária":
+candidate.needsAction === true
+Triagem concluída aguardando decisão
+Entrevista precisa ser agendada
+Feedback pendente
+Proposta precisa ser enviada
+Quando aparece SCORE LIA (Brain):
+candidate.score !== null && 
+(etapa === 'Triagem' || etapa === 'Entrevista' || etapa === 'Final' || etapa === 'Aprovados' || etapa === 'Reprovados')
+Nunca no Funil (triagem não iniciou)
+Sempre após triagem concluída
+Quando aparece MATCH/FIT (Target):
+candidate.fitScore !== null
+Disponível em todas as etapas
+Calculado com base no CV vs requisitos da vaga
+Quando usar BADGE ESCURO (sucesso/concluído):
+Triagem concluída
+Entrevista confirmada/realizada
+Proposta enviada
+Contratado/Proposta aceita
+Quando usar BADGE ACCENT (ação pendente):
+LIA iniciará triagem
+Decisão pendente
+Aguardando agendamento
+Aguardando resposta
+Sempre com animate-pulse
+Quando usar BADGE COM BORDA (status intermediário):
+Conversa em andamento
+Em negociação
+Desistiu
+Proposta recusada
+FLUXO VISUAL RESUMIDO
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FUNIL                                                                        │
+│ ┌─────────────────────┐                                                     │
+│ │ [Padrão] Origem     │ → LinkedIn/Site/LIA/Manual                         │
+│ │ [Accent] LIA iniciará│ → Próxima ação automática                         │
+│ └─────────────────────┘                                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ TRIAGEM                                                                      │
+│ ┌─────────────────────┐  OU  ┌─────────────────────────┐                   │
+│ │ [Borda] Conversa... │      │ ★ TARJA: Ação Necessária│                   │
+│ │ [Canal] WhatsApp    │      │ [Escuro] Triagem OK     │                   │
+│ └─────────────────────┘      │ [Accent] Decisão pend.  │                   │
+│                              │ [Canal] WhatsApp        │                   │
+│                              │ + Score LIA visível     │                   │
+│                              └─────────────────────────┘                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ENTREVISTA                                                                   │
+│ ┌─────────────────────────┐  OU  ┌─────────────────────────┐               │
+│ │ ★ TARJA: Ação Necess.   │      │ [Escuro] Confirmada     │               │
+│ │ [Accent] Aguard. agend. │      │ [Padrão] 15/04 às 14:00 │               │
+│ └─────────────────────────┘      │ [Canal] Teams           │               │
+│                                  └─────────────────────────┘               │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FINAL                                                                        │
+│ ┌─────────────────────────┐  OU  ┌─────────────────────────┐               │
+│ │ [Escuro] Proposta env.  │      │ [Borda] Em negociação   │               │
+│ │ [Accent] Aguard. resp.  │      │                         │               │
+│ └─────────────────────────┘      └─────────────────────────┘               │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│ APROVADOS                    │    │ REPROVADOS                   │
+│ ┌─────────────────────────┐  │    │ ┌─────────────────────────┐  │
+│ │ [Escuro] Contratado     │  │    │ │ [Padrão] Reprovado...   │  │
+│ │ [Padrão] Início: 01/05  │  │    │ │ [Escuro] Feedback env.  │  │
+│ └─────────────────────────┘  │    │ └─────────────────────────┘  │
+└──────────────────────────────┘    └──────────────────────────────┘

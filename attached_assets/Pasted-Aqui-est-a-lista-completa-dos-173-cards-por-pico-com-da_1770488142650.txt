@@ -1,0 +1,96 @@
+Aqui está a lista completa dos 173 cards por épico com datas de início e término no Jira:
+
+ÉPICO: EPIC-AUTH — 6 cards, 29 SP
+
+Card	Jira	Sprint	Início	Término	SP	Título
+AUTH-001	WT-893	0	09/fev	20/fev	3	Tela de Login
+AUTH-003	WT-895	0	09/fev	20/fev	5	Middleware de Autenticação JWT
+AUTH-002	WT-894	1	09/fev	20/fev	8	Configurar WorkOS SSO
+AUTH-004	WT-896	1	09/fev	20/fev	5	Gestão de Sessão e Refresh Token
+AUTH-005	WT-1291	1	09/fev	20/fev	5	Wildcard SSL + Google Cloud
+AUTH-006	WT-1292	1	09/fev	20/fev	3	Revisão Final Design pelo Lucas
+ÉPICO: EPIC-WIZARD — 16 cards, 107 SP
+
+Card	Jira	Sprint	Início	Término	SP	Título
+WIZ-001	WT-897	1	09/fev	20/fev	8	Interface de Chat Conversacional
+WIZ-002	WT-898	1	09/fev	20/fev	13	Orquestrador de Intenções
+WIZ-005	WT-901	1	09/fev	20/fev	5	Salvamento de Rascunho
+WIZ-006	WT-902	1	09/fev	20/fev	5	Sugestões Clicáveis no Chat
+JD-001	WT-1212	2	23/fev	06/mar	5	Preview de JD com Sugestões
+JD-002	WT-1213	2	23/fev	06/mar	5	JD Completo para Publicação
+WIZ-003	WT-899	2	23/fev	06/mar	8	Insights de Mercado
+WIZ-004	WT-900	2	23/fev	06/mar	8	Gerador de Job Description
+WIZ-007	WT-903	2	23/fev	06/mar	8	Preview da Vaga em Tempo Real
+WIZ-008	WT-904	2	23/fev	06/mar	8	Formulário de Edição Completa
+WIZ-009	WT-1182	2	23/fev	06/mar	3	Skip Calibração Conversacional
+WIZ-010	WT-1183	2	23/fev	06/mar	5	Estágio de Salário Interativo
+WIZ-011	WT-1184	2	23/fev	06/mar	8	Estágio de Competências
+WIZ-012	WT-1185	2	23/fev	06/mar	8	Estágio de Perguntas WSI
+WIZ-013	WT-1186	2	23/fev	06/mar	5	Quality Gates WSI
+WIZ-014	WT-1293	Pós	—	—	5	Revisão Metodologia Wizard ⏸️
+ÉPICO: EPIC-MAPPING — 14 cards, 73 SP
+
+Card	Jira	Sprint	Início	Término	SP	Título
+MAP-001 a MAP-013	WT-905 a WT-1286	2	23/fev	06/mar	70	Mapeamento + Talent Funnel (13 cards)
+MAP-014	WT-1294	3	09/mar	20/mar	3	Revisão Qualidade Busca com André
+ÉPICO: EPIC-WSI — 6 cards, 44 SP
+
+Card	Jira	Sprint	Início	Término	SP	Título
+WSI-001	WT-911	2	23/fev	06/mar	13	Motor de Geração de Perguntas WSI
+WSI-002	WT-912	2	23/fev	06/mar	8	Blocos de Metodologia WSI
+WSI-006	WT-1295	2	23/fev	06/mar	8	Edição via Prompt Conversacional
+WSI-003	WT-913	3	09/mar	20/mar	5	Preview de Perguntas Geradas
+WSI-004	WT-914	3	—	—	5	❌ REMOVIDO
+WSI-005	WT-915	3	09/mar	20/mar	5	Aprovação de Perguntas
+ÉPICO: EPIC-TRIAGEM — 13 cards, 89 SP
+
+Card	Jira	Sprint	Início	Término	SP	Título
+TRI-014	WT-1297	1	09/fev	20/fev	3	Pesquisa Alternativas Twilio
+TRI-001 a TRI-005, TRI-011, TRI-013		3	09/mar	20/mar	52	WhatsApp + Triagem conversacional (7 cards)
+TRI-006 a TRI-010		4	23/mar	03/abr	34	Transcrição, timeout, templates (5 cards)
+ÉPICO: EPIC-SCORE-WSI — 8 cards, 68 SP
+
+Card	Jira	Sprint	Início	Término	SP	Título
+SCO-004 a SCO-008		3	09/mar	20/mar	39	Dashboard + Comparativo (5 cards)
+SCO-001 a SCO-003		4	23/mar	03/abr	29	Motor Score WSI + Big Five + Bloom (3 cards)
+ÉPICO: EPIC-GATES — 8 cards, 52 SP
+
+Card	Jira	Sprint	Início	Término	SP	Título
+GAT-001 a GAT-007		3	09/mar	20/mar	44	Gates + Feedback + Auditoria (7 cards)
+GAT-008	WT-1298	4	23/mar	03/abr	8	Aprendizagem IA sobre Aprovações
+ÉPICO: EPIC-TEMPLATES — 8 cards, 42 SP (Sprint 3 todo: 09/mar → 20/mar)
+
+ÉPICO: EPIC-AGE-001 — 8 cards, 63 SP
+
+Card	Sprint	Início	Término	SP
+AGE-001 a AGE-003	3	09/mar	20/mar	29
+AGE-004 a AGE-008	4	23/mar	03/abr	34
+ÉPICO: EPIC-NOT-001 — 6 cards, 37 SP (Sprint 4 todo: 23/mar → 03/abr)
+ÉPICO: EPIC-NOT — 1 card, 5 SP (NOT-007 — Pós-MVP ⏸️)
+
+ÉPICO: EPIC-KAN-001 — 30 cards, 154 SP
+
+Grupo	Sprint	Início	Término	Cards	SP
+KAN-001/002, VAG-001/002/007/008	1	09/fev	20/fev	6	30
+KAN-003/004/005, VAG-003/004/005/006, KAN-009	2	23/fev	06/mar	8	45
+KAN-006/007/008/010/011/012/013, PRV-003/004/005, TAB-001/002/003	3	09/mar	20/mar	13	62
+PRV-001/002, TAB-004/005	4	23/mar	03/abr	4	26
+ÉPICO: EPIC-INT-MVP — 33 cards, 207 SP
+
+Grupo	Sprint	Início	Término	Cards	SP
+INT-LLM-001/002, INT-MSG-001, INT-TWI-001, INT-WOS-001	0	09/fev	20/fev	5	21
+INT-TWI-002, INT-WOS-002/005/006	1	09/fev	20/fev	4	26
+INT-LLM-003/005, INT-TWI-004/006, INT-WOS-003/004/007	2	23/fev	06/mar	7	50
+INT-LLM-004/006/008, INT-MSG-003/004/005/007, INT-TWI-003/005/007	3	09/mar	20/mar	10	62
+INT-APY-001/002, INT-LLM-007/009, INT-MSG-002/006	4	23/mar	03/abr	6	37
+INT-APY-003	5/Pós	—	—	1	8
+Épicos menores: JDW (3 cards, Sprint 2), CFG (5 cards, Sprint 3), IMP-001 (Sprint 4), AGT (3 cards, Sprint 4), TRI-012 (Sprint 3), DAT-001 (Sprint 4), ENT-001 (Sprint 3), KAN-009 (Sprint 2)
+
+RESUMO POR SEMANA:
+
+Semana	Período	Cards	SP
+Semana 1 (Sprint 0+1)	09/fev → 20/fev	26	140
+Semana 2 (Sprint 2)	23/fev → 06/mar	45	286
+Semana 3 (Sprint 3)	09/mar → 20/mar	64	415
+Semana 4 (Sprint 4)	23/mar → 03/abr	35	260
+Pós-MVP	Após 03/abr	3	18

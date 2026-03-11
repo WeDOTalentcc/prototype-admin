@@ -1,0 +1,85 @@
+O nó screening_collector no grafo do Wizard chama job_vacancy_service.suggest_screening_questions(), que gera perguntas básicas (experiência, disponibilidade, pretensão) → salvas no JobVacancyState.screening_questions (schema Pydantic). Isso usa uma estrutura ScreeningQuestion diferente da UnifiedScreeningQuestion do pipeline WSI.
+
+Então temos 4 produtores, cada um com formato e destino diferentes:
+
+┌──────────────────────────────────────────────────────────────────┐
+│  PRODUTORES DE PERGUNTAS (HOJE — 4 fontes desconectadas)        │
+│                                                                  │
+│  1. Modal WSI (frontend)                                         │
+│     Pipeline: wsi_screening_pipeline.py                          │
+│     Schema: UnifiedScreeningQuestion                             │
+│     Destino: JobVacancy.screening_questions (JSON)               │
+│              + job_screening_questions (tabela)                   │
+│                                                                  │
+│  2. Job Wizard (LIA conversacional)                              │
+│     Gerador: job_vacancy_service.suggest_screening_questions()   │
+│     Schema: ScreeningQuestion (diferente do ↑)                   │
+│     Destino: JobVacancyState.screening_questions (Pydantic)      │
+│     ❌ NÃO usa pipeline WSI, NÃO gera Bloom/Dreyfus             │
+│                                                                  │
+│  3. Triagem Voz (OpenMic)                                        │
+│     Gerador: wsi_voice_orchestrator → wsi_service (regenera)     │
+│     Schema: WSIQuestion                                          │
+│     Destino: wsi_sessions + wsi_questions (tabelas)              │
+│     ❌ IGNORA perguntas configuradas na vaga                     │
+│                                                                  │
+│  4. Triagem Texto/Chat (Deepgram)                                │
+│     Gerador: wsi_endpoints /generate-questions (regenera)        │
+│     Schema: WSIQuestion                                          │
+│     Destino: wsi_sessions + wsi_questions (tabelas)              │
+│     ❌ IGNORA perguntas configuradas na vaga                     │
+└──────────────────────────────────────────────────────────────────┘
+A proposta revisada com o Wizard incluído:
+
+┌──────────────────────────────────────────────────────────────────┐
+│  ARQUITETURA PROPOSTA — FONTE ÚNICA                              │
+│                                                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │  Modal WSI   │  │  Job Wizard  │  │  Sugerir via │           │
+│  │  (frontend)  │  │  (LIA chat)  │  │  chat (LIA)  │           │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘           │
+│         │                 │                 │                    │
+│         │    TODOS usam o mesmo pipeline:                        │
+│         │    wsi_screening_pipeline.py                           │
+│         │    Schema: UnifiedScreeningQuestion                    │
+│         │                 │                 │                    │
+│         ▼                 ▼                 ▼                    │
+│  ┌─────────────────────────────────────────────────┐            │
+│  │         screening_question_sets (tabela)         │            │
+│  │  ┌─────────────────────────────────────────┐    │            │
+│  │  │ id | job_vacancy_id | version | hash    │    │            │
+│  │  │ questions_snapshot (JSON) | created_by  │    │            │
+│  │  │ source ("modal"|"wizard"|"lia_chat")    │    │            │
+│  │  └─────────────────────────────────────────┘    │            │
+│  └────────────────────┬────────────────────────────┘            │
+│                       │                                          │
+│         ┌─────────────┼─────────────┐                           │
+│         ▼             ▼             ▼                            │
+│  ┌────────────┐ ┌──────────┐ ┌──────────┐                      │
+│  │ JobVacancy │ │ Triagem  │ │ Triagem  │                      │
+│  │ .screening │ │ Voz      │ │ Texto    │                      │
+│  │ _questions │ │ (OpenMic)│ │(Deepgram)│                      │
+│  │ (cache)    │ │          │ │          │                      │
+│  └────────────┘ └────┬─────┘ └────┬─────┘                      │
+│                      │            │                              │
+│                      ▼            ▼                              │
+│               ┌────────────────────────┐                        │
+│               │ wsi_sessions           │                        │
+│               │ + question_set_version │                        │
+│               │ + wsi_questions        │                        │
+│               │   (snapshot candidato) │                        │
+│               └────────────────────────┘                        │
+└──────────────────────────────────────────────────────────────────┘
+O que muda para o Wizard:
+
+Hoje: O Wizard gera perguntas básicas com suggest_screening_questions() usando um schema ScreeningQuestion simples (sem Bloom, sem Dreyfus, sem WSI). É completamente separado do pipeline WSI.
+
+Proposta: O nó screening_collector do Wizard passa a chamar o mesmo wsi_screening_pipeline.build_pipeline() que o modal usa. Recebe as competências e skills já coletadas nas etapas anteriores do Wizard e gera perguntas WSI completas. Salva na tabela screening_question_sets como source="wizard".
+
+Benefício: Se o recrutador começa pelo Wizard e depois abre o modal para ajustar, ele vê as MESMAS perguntas (carregadas da versão vigente em screening_question_sets). Se ajustar no modal, gera versão 2. Se voltar ao Wizard e a LIA sugerir ajustes, gera versão 3. Tudo rastreado.
+
+Schemas unificados:
+
+ScreeningQuestion (Wizard) → deprecado, substituído por UnifiedScreeningQuestion
+WSIQuestion (wsi_service) → mantido internamente, mas mapeado de/para UnifiedScreeningQuestion na fronteira
+UnifiedScreeningQuestion (pipeline) → schema canônico que todos usam

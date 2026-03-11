@@ -1,0 +1,46 @@
+Agora tenho uma visão muito mais clara. Já existe muita coisa implementada:
+
+O que já existe:
+
+WIZARD_STAGES com mensagens automáticas de LIA por etapa
+competencySuggestions + CompetenciesChatMessage para sugestões inline no chat
+Backend retorna technical_skills + behavioral_competencies com pesos
+wsiGenerateQuestions e generateJobScreeningQuestions no lia-api.ts
+Lógica de transição entre estágios com auto-save
+fetchDeduplicatedSkills para buscar sugestões no backend
+Plano Revisado - Ajustes no Fluxo Existente
+Fase 1: Estados de Transição (Frontend)
+Tarefa	Descrição
+1.1	Criar estado `stageTransition: 'idle'
+1.2	Componente de tela vazia + spinner quando stageTransition === 'loading'
+1.3	Painel da direita fica oculto durante transição, aparece após LIA responder
+Fase 2: Fluxo Remuneração → Competências
+Tarefa	Descrição
+2.1	Ao clicar "Confirmar Remuneração": tela direita → spinner
+2.2	LIA responde no chat com parecer sobre competências (usar WIZARD_STAGES.liaMessage existente, enriquecer)
+2.3	Backend já retorna sugestões → popular competencySuggestions
+2.4	Após resposta, painel de competências aparece (já existe lógica)
+2.5	Permitir ajustes via chat antes de confirmar (já existe handleSendMessage)
+Fase 3: Fluxo Competências → WSI Questions
+Tarefa	Descrição
+3.1	Ao clicar "Confirmar Competências": tela direita → spinner
+3.2	LIA informa que vai gerar perguntas WSI (enriquecer liaMessage)
+3.3	Chamar generateJobScreeningQuestions (já existe)
+3.4	Após resposta, painel de perguntas aparece
+Fase 4: Botões e Validações
+Tarefa	Descrição
+4.1	Botão "Confirmar" em vez de "Avançar" em todas as etapas (já feito para salary)
+4.2	Validação de habilitação específica por estágio (já existe canAdvanceToNextStage)
+4.3	Botão desabilitado até dados confirmados no painel
+Fase 5: Prompts/Mensagens Enriquecidas
+Tarefa	Descrição
+5.1	Ajustar liaMessage do estágio competencies para incluir parecer
+5.2	Ajustar liaMessage do estágio wsi-questions para explicar geração
+5.3	Mensagens devem mencionar fontes (histórico, mercado)
+Resumo: Não preciso criar novos endpoints ou serviços. O trabalho é principalmente no frontend para:
+
+Adicionar estados de transição com spinner
+Enriquecer as mensagens de LIA
+Padronizar botões "Confirmar"
+Sincronizar melhor chat ↔ painel
+Posso começar a implementação?

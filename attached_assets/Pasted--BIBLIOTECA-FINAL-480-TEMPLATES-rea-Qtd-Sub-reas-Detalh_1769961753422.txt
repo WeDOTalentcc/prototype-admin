@@ -1,0 +1,24 @@
+ BIBLIOTECA FINAL - 480 TEMPLATES
+#	Área	Qtd	Subáreas Detalhadas
+1	Tecnologia / TI	85	Desenvolvimento (25 stacks), Dados/Analytics (15), Infra/Cloud (12), Segurança (10), Design/UX (8), Gestão TI (10), Suporte (5)
+2	Finanças / Contabilidade / Tributário	55	Contabilidade (10), Fiscal/Tributário (15 - diretos, indiretos, TP, planejamento), Controladoria/FP&A (10), Tesouraria (8), Auditoria (6), Crédito/Risco (6)
+3	Recursos Humanos / People	35	R&S (8), Generalista/BP (7), DP/Folha (6), Comp&Ben (5), T&D (5), D&I/Cultura (4)
+4	Comercial / Vendas	45	Inside Sales (8), Field Sales (10), Vendas Técnicas (5), Canais/Parcerias (5), Sales Ops/RevOps (8), E-commerce (5), Backoffice (4)
+5	Marketing / Comunicação	40	Digital/Performance (12), Conteúdo/Social (8), Branding/PR (6), Produto/Trade (8), Analytics (4), Liderança (2)
+6	Operações / Supply Chain	35	Logística (10), Supply Chain (10), Compras (8), Comex (7)
+7	Engenharia	50	Civil (10), Mecânica (8), Elétrica/Eletrônica (8), Produção (8), Química/Alimentos (6), Outras (10)
+8	Jurídico / Compliance	25	Corporativo (10), Trabalhista/Previd. (5), Compliance/Governança (10)
+9	Administrativo	15	Secretariado, Facilities, Viagens, Frotas, Patrimônio
+10	Atendimento / Customer Success	25	CS (8), CX (5), Suporte/SAC (7), Implementação (5)
+11	Saúde / Hospitalar	40	Medicina (12 especialidades), Enfermagem (8), Outras profissões (12), Gestão Hospitalar (8)
+12	Educação / Treinamento	15	Professores, Designers Instrucionais, E-learning, LMS
+13	Qualidade / Processos	15	ISO, Lean Six Sigma, Melhoria Contínua, Auditoria
+💡 Destaques da Expansão
+Tributário expandido: Impostos Diretos (IRPJ/CSLL), Indiretos (ICMS/IPI/PIS/COFINS), Transfer Pricing, Planejamento, Contencioso, Internacional
+
+Engenharia completa: 10 especialidades (Civil, Mecânica, Elétrica, Eletrônica, Automação, Produção, Química, Alimentos, Ambiental, Segurança do Trabalho, Minas, Petróleo, Naval, Agronomia, Biomédica, Aeronáutica)
+
+Saúde adicionada: 12 especialidades médicas + enfermagem + profissões de saúde + gestão hospitalar
+
+Cada template terá variações de senioridade: Júnior, Pleno, Sênior, Gestão, C-Level
+

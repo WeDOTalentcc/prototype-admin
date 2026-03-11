@@ -1,0 +1,379 @@
+ # QA AUDIT — LIA Platform: Verificação de Implementações (2026-02-28)                                                            
+                                                                                                                                   
+  ## CONTEXTO                                                                                                                      
+                                                            
+  Você é um auditor técnico sênior. Sua tarefa é revisar e validar **todas as implementações realizadas no sprint de qualidade e
+  compliance** da plataforma LIA (WeDOTalent), cobrindo 7 camadas: Legal/LGPD (L), Bias/Fairness (B), Arquitetura (A), Frontend
+  (F), Monetização (M), Notificações (N) e Testes (T).
+
+  Para cada item, você deve:
+  1. **Ler os arquivos relevantes** e verificar se a implementação está correta
+  2. **Testar a lógica** identificando bugs, condições não tratadas ou integrações quebradas
+  3. **Reportar com evidências** — cite arquivo:linha para cada achado
+  4. Classificar como: ✅ OK | ⚠️  Atenção | ❌ Bug/Falha
+
+  Ao final, produza um **relatório estruturado** com resumo por camada e lista de ações corretivas priorizadas.
+
+  ---
+
+  ## CAMADA L — LEGAL / LGPD / COMPLIANCE
+
+  ### L1 — LangSmith desligado por padrão
+  **Arquivo:** `lia-agent-system/app/core/config.py`
+  - Verificar: `LANGCHAIN_TRACING_V2: bool = False` (não True)
+  - Verificar: não existe outro lugar no código que force `True` em produção
+
+  ### L3 — Human Review Gate
+  **Arquivos:** `lia-agent-system/app/api/v1/candidates.py`, `lia-agent-system/app/models/candidate.py`,
+  `lia-agent-system/alembic/versions/010_add_human_review_gate.py`
+  - Verificar: `PATCH /candidates/{id}/stage` retorna 422 quando stage é de rejeição e `user_id` está ausente
+  - Verificar: campos `rejected_by_human` e `human_reviewer_id` existem no modelo `VacancyCandidate`
+  - Verificar: a migration 010 adiciona esses campos corretamente
+  - Testar lógica: quais stages são considerados "de rejeição"? A lista está correta?
+
+  ### L4 — LGPD Cleanup Scheduler
+  **Arquivos:** `lia-agent-system/app/services/lgpd_cleanup_service.py`, `lia-agent-system/app/api/v1/lgpd_compliance.py`,
+  `lia-agent-system/app/domains/automation/services/automation_scheduler.py`,
+  `lia-agent-system/alembic/versions/013_add_scheduled_deletion_at.py`
+  - Verificar: `POST /lgpd/schedule-deletion` — persiste `scheduled_deletion_at` no candidato
+  - Verificar: `POST /lgpd/run-cleanup` — protegido com `require_admin` (retorna 403 sem role admin)
+  - Verificar: `GET /lgpd/pending-deletions` — lista candidatos com `scheduled_deletion_at` no passado
+  - Verificar: jobs agendados no AutomationScheduler (01h cleanup dry_run e 02h execução real, ou similar)
+  - Verificar: campo `scheduled_deletion_at` está mapeado no ORM (em `app/models/candidate.py` linha ~251 e `VacancyCandidate`)
+  - Bug crítico a checar: migration 013 cria a coluna no BD, mas o ORM mapeia o campo? (havia bug BUG-L4 já corrigido — confirmar)
+
+  ### L5 — Consentimento Granular (Soft Enforcement)
+  **Arquivos:** `lia-agent-system/app/services/consent_checker_service.py`, `lia-agent-system/app/api/v1/rubric_evaluation.py`,
+  `lia-agent-system/app/api/v1/candidates.py`, `lia-agent-system/app/schemas/rubric.py`
+  - Verificar: `ConsentCheckerService.check_candidate_consent()` retorna `allowed=False` para consent revogado
+  - Verificar: `ConsentCheckerService.check_candidate_consent()` retorna `allowed=True, soft_warning=True` para consent ausente
+  - Verificar: endpoint `POST /rubric_evaluation/evaluate` retorna HTTP 451 quando consent está revogado
+  - Verificar: campo `consent_warnings: List[str]` existe em `RubricEvaluationResult` (app/schemas/rubric.py)
+  - Verificar: soft_warning é propagado via `model_copy(update={"consent_warnings": [...]})` no response
+  - Verificar 5 novos endpoints em candidates.py:
+    - `GET /candidates/{id}/consents`
+    - `POST /candidates/{id}/consents`
+    - `DELETE /candidates/{id}/consents/{consent_type}`
+    - `GET /candidates/{id}/communication-preferences`
+    - `PUT /candidates/{id}/communication-preferences`
+
+  ### L7 — PII Masking Global
+  **Arquivos:** `lia-agent-system/app/main.py`, `lia-agent-system/app/shared/pii_masking.py`
+  - Verificar: `install_global_pii_masking()` é chamado em `main.py` após `configure_logging()`
+  - Verificar: `PIIMaskingFilter` mascara CPF, e-mail, telefone e nomes nos logs
+
+  ### L8 — WhatsApp Token sem Hardcode
+  **Arquivo:** `lia-agent-system/app/domains/communication/services/whatsapp_meta_service.py`
+  - Verificar: `os.getenv("WHATSAPP_VERIFY_TOKEN")` sem valor default
+  - Verificar: levanta `ValueError` (ou equivalente) se a variável não estiver configurada
+
+  ---
+
+  ## CAMADA B — BIAS / FAIRNESS
+
+  ### B1 — Nome removido do payload LLM
+  **Arquivo:** `lia-agent-system/app/domains/cv_screening/services/rubric_evaluation_service.py`
+  - Verificar: método `_extract_cv_content()` não inclui `name`, `email`, `phone` ou campos de identidade no contexto enviado ao
+  LLM
+  - Verificar: qualquer outro método que construa prompts para avaliação de CV também não vaza PII
+
+  ### B2 — GEOGRAPHIC_ADJUSTMENTS removido
+  **Arquivo:** `lia-agent-system/app/domains/cv_screening/services/calibration_profiles.py`
+  - Verificar: não existe `GEOGRAPHIC_ADJUSTMENTS` ou `"slow_progression"` com países (JP, KR, IN ou outros)
+  - Verificar: nenhum multiplicador diferente de 1.0 baseado em país de origem do candidato
+
+  ### B3 — FairnessGuard em Outputs LLM
+  **Arquivos:** `lia-agent-system/app/api/v1/interview_notes.py`, `lia-agent-system/app/api/v1/rubric_evaluation.py`
+  - Verificar: `fairness_guard.check(evaluation_result.reasoning)` presente em `POST /rubric_evaluation/evaluate`
+  - Verificar: `fairness_guard.check()` presente em `POST /interview-notes/generate-parecer` (ambos os caminhos de retorno)
+  - Verificar: quando bloqueado, reasoning é substituído por mensagem de revisão (não silenciosamente omitido)
+  - Verificar: `GenerateParecerResponse` tem campo `fairness_warnings: List[str]`
+
+  ### B4 + B4.1 — FAIRNESS_AND_COMPLIANCE em todos os prompts
+  **Arquivos (todos os 8 system_prompts):**
+  lia-agent-system/app/domains/job_management/agents/wizard_system_prompt.py
+  lia-agent-system/app/domains/sourcing/agents/sourcing_system_prompt.py
+  lia-agent-system/app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py
+  lia-agent-system/app/domains/cv_screening/agents/pipeline_system_prompt.py
+  lia-agent-system/app/domains/pipeline/agents/pipeline_system_prompt.py
+  lia-agent-system/app/domains/recruiter_assistant/agents/kanban_system_prompt.py
+  lia-agent-system/app/domains/recruiter_assistant/agents/talent_system_prompt.py
+  lia-agent-system/app/domains/hiring_policy/agents/policy_system_prompt.py
+  - Verificar: todos os 8 arquivos contêm seção de fairness/compliance (com palavra "FAIRNESS" ou "discrimina" ou "viés")
+  - Para os 3 novos (wizard, sourcing, jobs_mgmt): verificar bloco `=== FAIRNESS_AND_COMPLIANCE ===` com critérios discriminatórios
+   proibidos e citações legais (Lei 10.741/2003, CF Art. 7°XXX, etc.)
+  - Para cv_screening/pipeline_system_prompt.py: verificar bloco com critérios proibidos para movimentação + supervisão humana
+  obrigatória (EU AI Act Art. 14) + nova regra 9 em REGRAS CRITICAS
+
+  ### B5 — Testes Disparate Impact WSI
+  **Arquivo:** `lia-agent-system/tests/test_disparate_impact_wsi.py`
+  - Verificar: arquivo existe com testes de neutralidade por gênero, idade e etnia
+  - Verificar: implementação da 4/5 Rule (Adverse Impact Ratio ≥ 0.8)
+  - Executar os testes: `cd lia-agent-system && python -m pytest tests/test_disparate_impact_wsi.py -v`
+  - Reportar quantos passam/falham
+
+  ---
+
+  ## CAMADA A — ARQUITETURA / ESTABILIDADE
+
+  ### A1 — Timeout no Job Wizard
+  **Arquivo:** `lia-agent-system/app/domains/job_management/agents/job_wizard_graph.py`
+  - Verificar: `asyncio.timeout(120)` ou equivalente envolve o loop principal do wizard
+  - Verificar: timeout não silencia o erro — deve logar e retornar resposta amigável
+
+  ### A2 — Retry/Fallback Gemini
+  **Arquivo:** `lia-agent-system/app/shared/providers/llm_gemini.py`
+  - Verificar: retry implementado para resposta vazia do Gemini
+  - Verificar: log de warning quando Gemini retorna resposta vazia (não silencioso)
+  - Verificar: fallback para outro provider quando Gemini falha repetidamente
+
+  ### A3 — Checkpoints do Job Wizard
+  **Arquivos:** `lia-agent-system/app/models/agent_checkpoint.py`, `lia-agent-system/app/services/checkpoint_service.py`,
+  `lia-agent-system/app/domains/job_management/agents/job_wizard_graph.py`,
+  `lia-agent-system/alembic/versions/012_add_agent_checkpoints_table.py`
+  - Verificar: modelo `AgentCheckpoint` com upsert por (session_id, agent_type)
+  - Verificar: `checkpoint_service.save()` chamado ao final de cada turno do wizard
+  - Verificar: `checkpoint_service.restore()` chamado no início do wizard (quando session_id fornecido)
+  - Verificar: `checkpoint_service.delete()` chamado quando wizard completa a criação da vaga
+  - Verificar: migration 012 cria a tabela corretamente
+
+  ### A4 — Notas de Entrevista Persistidas
+  **Arquivos:** `lia-agent-system/app/models/interview.py`, `lia-agent-system/app/services/interview_notes_service.py`,
+  `lia-agent-system/app/api/v1/interview_notes.py`, `lia-agent-system/alembic/versions/011_add_interview_notes_table.py`
+  - Verificar: modelo `InterviewNote` com campos necessários
+  - Verificar: endpoints `GET /interview-notes/{note_id}`, `GET /interview-notes/candidate/{id}`, `PATCH /interview-notes/{id}` com
+   `response_model` tipados
+  - Verificar: proxy routes FE em `plataforma-lia/src/app/api/backend-proxy/interview-notes/`
+  - Verificar: nenhum mock dict em memória usado como storage primário
+
+  ### A5 — Circuit Breaker + Retry
+  **Arquivos:**
+  lia-agent-system/app/domains/sourcing/services/pearch_service.py
+  lia-agent-system/app/domains/interview_scheduling/services/deepgram_service.py
+  lia-agent-system/app/services/openmic_service.py
+  - Verificar em cada arquivo: import de `tenacity` (`retry`, `stop_after_attempt`, `wait_exponential`)
+  - Verificar: `@circuit_breaker(...)` como decorator EXTERNO (outer)
+  - Verificar: `@retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=5))` como decorator INTERNO (inner),
+  entre `@circuit_breaker` e `async def`
+  - Verificar parâmetros dos circuit breakers:
+    - Pearch: `failure_threshold=3, recovery_timeout=15.0`
+    - Deepgram: `failure_threshold=3, recovery_timeout=30.0`
+    - OpenMic: `failure_threshold=5, recovery_timeout=60.0` (em `create_screening_agent` E `start_screening_call`)
+  - Verificar: fallbacks module-level definidos antes da classe (não como métodos da classe)
+  - Verificar: fallbacks retornam estrutura de erro adequada com `circuit_open: True` ou `error_type: "circuit_open"`
+
+  ---
+
+  ## CAMADA M — MONETIZAÇÃO
+
+  ### M1 — Enforcing de Limites por Plano
+  **Arquivos:** `lia-agent-system/app/core/config.py`, `lia-agent-system/app/services/plan_limits_service.py`,
+  `lia-agent-system/app/api/v1/job_vacancies.py`, `plataforma-lia/src/services/lia-api.ts`
+  - Verificar: `PLAN_STARTER_*`, `PLAN_PRO_*`, `PLAN_ENTERPRISE_*` definidos em config.py
+  - Verificar: `check_active_jobs_limit` é uma FastAPI Dependency aplicada em `POST /jobs`
+  - Verificar: retorna HTTP 402 quando limite atingido
+  - Verificar: FE chama `checkPaymentRequired(response)` em `createJobVacancy()`
+
+  ### M2 — Trial com Expiração Real
+  **Arquivos:** `lia-agent-system/app/middleware/trial_enforcement.py`, `plataforma-lia/src/app/upgrade/page.tsx`,
+  `plataforma-lia/src/lib/api/handle-payment-required.ts`
+  - Verificar: `require_active_subscription` dependency retorna HTTP 402 quando:
+    - trial expirado (campo `trial_end` no passado)
+    - status `suspended` ou `cancelled`
+  - Verificar: página `/upgrade` existe e renderiza os planos
+  - Verificar: `handle-payment-required.ts` faz redirect automático para `/upgrade` em resposta 402
+
+  ### M4 — Dashboard AI Credits
+  **Arquivos:**
+  plataforma-lia/src/app/api/backend-proxy/ai-credits/route.ts
+  plataforma-lia/src/hooks/use-ai-credits.ts
+  plataforma-lia/src/components/pages/ai-credits-page.tsx
+  plataforma-lia/src/app/configuracoes/ai-credits/page.tsx
+  - Verificar: proxy route roteia para endpoints corretos: `balance`, `summary`, `by-day`, `by-agent`
+  - Verificar: `useAiCredits()` hook faz fetch de balance e summary
+  - Verificar: `useAiConsumptionHistory(days)` hook faz fetch de dados históricos
+  - Verificar: página renderiza cards, barra de progresso, gráfico (Recharts BarChart) e tabela por agente
+  - Verificar: alerta visual aparece quando `usage_percentage >= 80` (amber) ou `>= 100` (red)
+  - Verificar: página em `/configuracoes/ai-credits/page.tsx` importa e renderiza `<AiCreditsPage />`
+
+  ### M5 — Alertas de Consumo IA
+  **Arquivo:** `lia-agent-system/app/services/token_tracking_service.py`
+  - Verificar: `ALERT_THRESHOLDS = [80, 100]` definido
+  - Verificar: `_check_and_alert_thresholds()` é chamado após `record_usage()` (com `await` e try/except)
+  - Verificar: chave Redis `ai_alert:{company_id}:{threshold}` com `EX 86400` para dedup diário
+  - Verificar: notificação disparada via `NotificationService.create_notification()` com canal EMAIL + BELL
+  - Verificar: busca `admin_user_id` da empresa antes de notificar
+
+  ---
+
+  ## CAMADA N — NOTIFICAÇÕES / COMUNICAÇÕES
+
+  ### N-T1 — LIA descreve comunicação antes de confirmar
+  **Arquivo:** `lia-agent-system/app/domains/pipeline/agents/pipeline_system_prompt.py`
+  - Verificar: bloco `COMMUNICATION_TRANSPARENCY_RULES` presente
+  - Verificar: few-shot examples de descrição do dispatch (triagem e rejeição em lote)
+
+  ### N-T2/T3/T4/T5 — Badges interativos no Kanban
+  **Arquivo:** `plataforma-lia/src/components/pages/job-kanban-page.tsx`
+  - Verificar: Badge "Status da Vaga" abre Popover com ações Pausar/Fechar/Reativar
+  - Verificar: Badge "Screening Status" abre Popover com Iniciar/Pausar/Retomar/Configurar
+  - Verificar: `CloseVacancyModal` está integrado (abre a partir do Kanban, não apenas da listagem)
+  - Verificar: `JobStatusModal` está acessível individualmente por vaga no Kanban
+
+  ### N2 — Communication Matrix integrada ao Dispatch
+  **Arquivo:** `lia-agent-system/app/domains/communication/services/transition_dispatch_service.py`
+  - Verificar: `_get_matrix_entry()` busca entry por `trigger_name` com fallback company→platform
+  - Verificar: `ACTION_BEHAVIOR_TRIGGER_MAP` mapeia action_behavior para trigger_name
+  - Verificar: dispatch usa `effective_channels` da matrix (não hardcoded)
+  - Verificar: respeita flag `is_active` da matrix entry (não envia se false)
+
+  ### N3 — Preferências de Canal por Candidato
+  **Arquivos:** `lia-agent-system/app/models/candidate.py`,
+  `lia-agent-system/alembic/versions/014_candidate_channel_preferences.py`,
+  `lia-agent-system/app/services/candidate_channel_selector.py`,
+  `lia-agent-system/app/domains/communication/services/transition_dispatch_service.py`
+  - Verificar: campos `preferred_channels = Column(JSON, default=["email"])` e `channel_opt_out = Column(JSON, default=[])` no
+  modelo `Candidate`
+  - Verificar: migration 014 adiciona colunas JSONB com índices GIN
+  - Verificar: `CandidateChannelSelector.select_channels()` implementa lógica:
+    1. Intersecta preferred_channels com requested_channels
+    2. Remove channel_opt_out
+    3. Verifica LGPDConsent para canais de marketing
+    4. Fallback para `["email"]` se lista vazia
+  - Verificar: `TransitionDispatchService` chama `CandidateChannelSelector.select_channels()` antes de `_dispatch()`
+
+  ---
+
+  ## CAMADA T — TESTES
+
+  ### T1 — Testes Unitários (rubric_evaluation_service)
+  **Arquivo:** `lia-agent-system/tests/test_rubric_evaluation_service.py`
+  - Verificar: arquivo existe com ≥ 15 testes
+  - Executar: `cd lia-agent-system && python -m pytest tests/test_rubric_evaluation_service.py -v`
+  - Verificar cobertura mínima: fórmula BARS, cache (hit/miss/expirado), batch evaluation, formato legado
+
+  ### T2 — Testes de Integração (pipeline de triagem)
+  **Arquivo:** `lia-agent-system/tests/test_screening_pipeline_integration.py`
+  - Verificar: arquivo existe com ≥ 12 testes
+  - Executar: `cd lia-agent-system && python -m pytest tests/test_screening_pipeline_integration.py -v`
+  - Verificar cobertura mínima: 4 blocos do pipeline, calibração por senioridade, deduplicação de perguntas
+
+  ### T3 — Testes E2E Playwright
+  **Arquivos:** `plataforma-lia/e2e/fixtures/wizard-conversation.fixture.ts`,
+  `plataforma-lia/e2e/tests/wizard/test_job_creation_lia.spec.ts`
+  - Verificar: fixture exporta `sendWizardMessage`, `fillWizardStep`, `assertWizardProgress`, `waitForJobPublished`,
+  `openJobWizard`
+  - Verificar: spec tem exatamente 5 cenários:
+    1. Fluxo completo (login→wizard→publicar)
+    2. Campos obrigatórios faltando (LIA pede esclarecimento)
+    3. Vaga afirmativa PCD
+    4. Cancelamento sem persistência de estado
+    5. Re-entrada com retomada de checkpoint (A3)
+  - Verificar: `test.describe` agrupa todos os 5 dentro de `T3 — Criação de Vaga via LIA`
+
+  ### T4 — Testes de Carga Locust
+  **Arquivos:** `tests/load/locustfile.py`, `tests/load/load_test_config.py`, `tests/load/README.md`
+  - Verificar: `WizardUser` com `@task(3) chat_wizard` e `@task(1) get_wizard_state`
+  - Verificar: `PipelineUser` com `@task(4) transition_candidate` e `@task(2) list_candidates`
+  - Verificar: `HealthCheckUser` com `weight=1`
+  - Verificar: hook `on_quitting` imprime relatório p50/p95/p99 com targets (500ms/2s/5s)
+  - Verificar: `load_test_config.py` exporta `AUTH_HEADERS`, `TEST_JOB_IDS`, `TEST_VACANCY_CANDIDATE_IDS`,
+  `generate_wizard_message()`, `generate_pipeline_transition_payload()`
+  - Executar sintaxe: `cd lia-agent-system && python -c "import sys; sys.path.insert(0, 'tests/load'); from load_test_config import
+   generate_wizard_message, generate_pipeline_transition_payload; print(generate_wizard_message());
+  print(generate_pipeline_transition_payload())"` — deve funcionar sem erros
+
+  ---
+
+  ## VERIFICAÇÕES CROSS-CUTTING
+
+  ### Migrations em sequência
+  - Verificar que as migrations estão em ordem sem gaps:
+    - 010: human_review_gate
+    - 011: interview_notes_table
+    - 012: agent_checkpoints_table
+    - 013: scheduled_deletion_at
+    - 014: candidate_channel_preferences
+  - Verificar `down_revision` de cada migration aponta para a anterior corretamente
+
+  ### Imports e dependências circulares
+  - Verificar que os novos serviços criados (consent_checker_service, candidate_channel_selector, lgpd_cleanup_service,
+  plan_limits_service, checkpoint_service, interview_notes_service) não geram imports circulares
+  - Verificar que estão em `app/services/` (não em domínios)
+
+  ### Segurança — sem segredos hardcoded
+  - Verificar: nenhum dos novos arquivos contém API keys, tokens ou senhas hardcoded
+  - Confirmar que L8 (WhatsApp token) está sem fallback hardcoded
+
+  ---
+
+  ## FORMATO DO RELATÓRIO FINAL
+
+  Ao concluir todas as verificações, produza um relatório no seguinte formato:
+
+  QA REPORT — LIA Platform Sprint 2026-02-28
+
+  Data: [data de hoje]
+
+  RESUMO EXECUTIVO
+
+  - Total de itens verificados: XX
+  - ✅ OK: XX
+  - ⚠️  Atenção (funciona mas pode melhorar): XX
+  - ❌ Bug/Falha (requer correção): XX
+
+  RESULTADOS POR CAMADA
+
+  Camada L — Legal/LGPD
+
+  ┌─────┬────────┬────────────────────────────────────────────┐
+  │ ID  │ Status │                  Detalhe                   │
+  ├─────┼────────┼────────────────────────────────────────────┤
+  │ L1  │ ✅ OK  │ LANGCHAIN_TRACING_V2=False em config.py:58 │
+  ├─────┼────────┼────────────────────────────────────────────┤
+  │ ... │        │                                            │
+  └─────┴────────┴────────────────────────────────────────────┘
+
+  Camada B — Bias/Fairness
+
+  ...
+
+  Camada A — Arquitetura
+
+  ...
+
+  Camada M — Monetização
+
+  ...
+
+  Camada N — Notificações
+
+  ...
+
+  Camada T — Testes
+
+  ┌─────┬────────┬─────────────────┬────────┐
+  │ ID  │ Status │ Testes passando │ Falhas │
+  ├─────┼────────┼─────────────────┼────────┤
+  │ T1  │ ✅ OK  │ 18/18           │ —      │
+  ├─────┼────────┼─────────────────┼────────┤
+  │ ... │        │                 │        │
+  └─────┴────────┴─────────────────┴────────┘
+
+  BUGS ENCONTRADOS (PRIORIDADE DECRESCENTE)
+
+  1. ❌ [ID] [arquivo:linha] — Descrição do bug
+  2. ⚠️  [ID] [arquivo:linha] — Descrição do risco
+
+  ITENS NÃO VERIFICÁVEIS (requerem ambiente rodando)
+
+  - T3: Playwright E2E requer servidor + browser
+  - T4: Locust requer servidor real
+  - M5: Alertas Redis requerem Redis ativo
+
+  RECOMENDAÇÕES
+
+  1. [Ação de maior impacto]
+  2. ...
+
+  **IMPORTANTE:** Para cada ❌ Bug encontrado, proponha a correção mínima necessária no próprio relatório.

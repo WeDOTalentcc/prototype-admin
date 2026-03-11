@@ -1,0 +1,51 @@
+DIAGNÓSTICO CRUZADO: Mapa de Inteligência LIA × Diagnóstico de Agentes MVP
+
+Analisei as 20 seções do mapa de inteligência (~165 arquivos, 556 linhas) contra o nosso diagnóstico atual (2124 linhas). Segue o cruzamento:
+
+Seções TOTALMENTE COBERTAS (não precisa adicionar)
+Seção Mapa	O que contém	Onde está no diagnóstico
+S2 — Agentes ReAct (13)	4-file pattern dos 13 agentes	Seção 13 + 13B.1 + seção 14
+S3 — LangGraph Graphs (3)	Wizard, WSI, Scheduling	Seção 6 + 14 (blocos individuais)
+S4 — WSI (18 arquivos)	Pipeline WSI completo	Seção 13B.10 (acabamos de adicionar)
+S8 — Prompts (YAMLs + registry)	13 YAMLs + PromptLoader + few-shot	Seção 13B.2-13B.5 (acabamos de adicionar)
+Seções PARCIALMENTE COBERTAS (precisa complementar)
+Seção Mapa	Arquivos no mapa	O que o diagnóstico já tem	O que FALTA
+S1 — Orquestrador Central	9 arquivos (orchestrator, intent_router, fast_router, cascaded_router, task_planner, policy_engine, action_executor, pending_action, state_manager)	Seção 13 menciona CascadedRouter 6 Tiers superficialmente	Falta tabela com todos os 9 arquivos, papel de cada um, e indicação de quais são Alpha 1 vs pós-Alpha
+S5 — CV Screening	5 arquivos (cv_parser, cv_scoring, batch, question_set)	Seção 14 no bloco PipelineReAct menciona parcialmente	Falta listar os 5 serviços de screening como dependências do agente
+S6 — Sourcing	13 arquivos (pipeline, WRF, Pearch, Apify, ES, pgvector, query builders)	Seção 14 no bloco SourcingReAct menciona parcialmente	Falta detalhe dos 13 serviços de suporte do sourcing — WRF, Pearch AI, Apify, Elasticsearch, pgvector
+S9 — Tools dos Agentes	13 arquivos (registry global, scope_config, executor, candidate_tools, etc.)	Seção 8 tem contagem + seção 13 menciona shared tools	Falta registrar o tool registry global (app/tools/registry.py, scope_config.py, executor.py) e os 4 arquivos de tools centrais (candidate, job, wizard, communication, query, export)
+S11 — Robustez e Guardrails	11 arquivos (input_validation, response_filter, defensive_prompts, error_handling, context_management, guardrail model, API, migration)	Seção 5.1 cobre compliance/fairness	Falta registrar a camada de robustez (app/shared/robustness/) — 8 arquivos: input_validation, response_filter, defensive_prompts, error_handling, context_management, enhanced_base, enhanced_registry, intent_schemas
+S16 — Observabilidade	10 arquivos (monitoring, feature_flags, token_tracking, explainability, ai_cache, training_data, voice_screening)	Seção 5.4 menciona observabilidade superficialmente	Falta detalhar os 10 serviços de governança e observabilidade
+Seções NÃO COBERTAS (precisa adicionar como novas)
+Seção Mapa	Arquivos	Impacto no Alpha 1	Sugestão para o diagnóstico
+S7 — Comunicação Inteligente	23 arquivos (communication_service, interpret_context, infer_behavior, email templates, dispatcher, history, email providers (Resend/SendGrid), WhatsApp (Meta/Twilio), data_request, webhooks)	CRÍTICO — Alpha 1 precisa de comunicação email+WhatsApp	Nova subseção em 14 no bloco CommunicationReAct com todos os 23 arquivos
+S10 — Provedores LLM	13 arquivos (llm_factory, llm_provider, llm_client, llm_claude, llm_openai, llm_gemini, ats_factory, voice_provider, llm.py 955 linhas, embedding, semantic_search, smart_extractor, param_patterns)	CRÍTICO — toda IA depende disso	Nova seção "Infraestrutura LLM" no diagnóstico
+S12 — HITL Persistence	7 arquivos (hitl_service, hitl model, API, migration, testes, HITLConfirmCard.tsx, use-float-streaming.ts)	CRÍTICO — WSI e Wizard precisam de HITL	Nova subseção com wiring nos agentes (Wizard, WSI, PipelineTransition)
+S13 — Agent Quality Evaluator	3 arquivos (evaluator, health alerts, migration)	ALTO — drift detection pré-go-live	Nova subseção de qualidade
+S14 — User Agent Preferences	3 arquivos (preference service, model, migration)	MÉDIO — auto-confirm após 1ª aprovação	Breve menção como pós-Alpha
+S15 — Testes de Carga	2 arquivos (locustfile, config)	ALTO — validação pré-go-live	Breve menção na seção de testes
+S17 — Analytics e Insights	9 arquivos (job_analytics_prompt, job_insights, predictive, reports, search_analytics, wizard_analytics, monitoring)	MÉDIO — pós-Alpha para maioria	Registrar como serviços do AnalyticsReAct
+S18 — Intelligence Layer + ML	5 arquivos (intelligence_layer, feature_engineering, outcome_predictor, model_registry, proactive_worker)	MÉDIO — outcome prediction é pós-Alpha	Registrar como pós-Alpha
+S19 — Config e Infra Base	8 arquivos (config.py, database.py, logging_config, taxonomy, template_channels, email_service, email_providers, recruitment_templates)	CRÍTICO — config.py é base de tudo	Registrar como dependências de infraestrutura
+RESUMO QUANTITATIVO — O que o Mapa tem e o Diagnóstico não
+Dimensão	Mapa Inteligência	Diagnóstico Atual	Delta
+Arquivos mapeados	~165	~80-90 referenciados	~75 arquivos não documentados
+Serviços de Comunicação	23 arquivos	3-4 mencionados	~19 faltam
+Provedores LLM	13 arquivos	2 mencionados	~11 faltam
+Robustez/Guardrails	11 arquivos	4 mencionados	~7 faltam
+Sourcing services	13 arquivos	3 mencionados	~10 faltam
+Tools centrais	13 arquivos	5 mencionados	~8 faltam
+HITL (BE+FE)	7 arquivos	2 mencionados	~5 faltam
+Observabilidade	10 arquivos	3 mencionados	~7 faltam
+ML/Intelligence	5 arquivos	0 mencionados	5 faltam
+Config/Infra base	8 arquivos	1 mencionado	~7 faltam
+PROPOSTA DE ADIÇÃO — 4 novas seções
+Seção 13C — Camada de Inteligência LIA: Inventário Completo (~165 arquivos) — tabela consolidada com todos os arquivos do mapa organizado por camada: Orquestração (9), Provedores LLM (13), Robustez (11), Tools (13), Comunicação (23), Sourcing (13), HITL (7), Qualidade (3), Preferences (3), Observabilidade (10), ML (5), Config (8)
+
+Dentro de cada bloco da seção 14 — enriquecer os serviços de suporte que cada agente usa (ex: CommunicationReAct precisa dos 23 arquivos de comunicação, SourcingReAct precisa dos 13 de sourcing, PipelineReAct precisa dos 5 de screening + 18 de WSI)
+
+Seção 13D — Provedores LLM e Infraestrutura de IA — os 13 arquivos de providers, cascade, embedding, busca semântica
+
+Seção 13E — HITL, Qualidade e Observabilidade — HITL persistence + agent quality evaluator + monitoring
+
+Quer que eu avance com esta estrutura? Posso ajustar o escopo — por exemplo, se preferir que eu foque nas camadas mais críticas (Comunicação, LLM Providers, Robustez, HITL) e deixe Analytics/ML para depois.

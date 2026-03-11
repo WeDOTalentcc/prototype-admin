@@ -1,0 +1,173 @@
+Análise de Alinhamento com Documentação Existente
+✅ O Que Já Existe (e sua proposta APROVEITA)
+Componente Existente	Documento	Como Sua Proposta Usa
+Intelligence Layer	intelligence-layer-proposal.md	✅ Pattern Detector, Outcome Correlator e Confidence Adjuster são a base do "step de avaliação" proposto
+Personalização por Recrutador	recruiter-personalization-proposal.md	✅ RecruiterProfile, wizard_mode (quick/detailed), thresholds adaptativos já permitem personalizar o feedback da LIA
+Tipologia de Campos	job-wizard-enhancement-plan.md	✅ CRITICAL, PROBABLE, CONDITIONAL, DERIVED - sua proposta respeita essa classificação
+JobDraft	job-wizard-enhancement-plan.md	✅ Estado intermediário com inferred_fields, confirmed_fields, confidence_map - base para edição inline
+Confidence Policy	job-wizard-enhancement-plan.md	✅ silent_apply, apply_with_notice, ask_user, alert_conflict - define quando mostrar sugestões
+Skills Catalog	job-wizard-enhancement-plan.md	✅ Catálogo por área (Engineering, Finance, HR, etc.) - base para badges de competências
+Market Benchmark	job-wizard-enhancement-plan.md	✅ Já implementado - base para validar salário e sugerir skills do mercado
+Job Insights	job-wizard-enhancement-plan.md	✅ Vagas similares internas - base para sugerir competências
+⚠️ O Que Sua Proposta MODIFICA
+Aspecto	Fluxo Atual (FLUXO_WIZARD_VAGA_COMPLETO.md)	Proposta Nova
+Ordem das etapas	description → basic-info → competencies → salary → wsi → review → pre-publish	description+avaliação → JD → competencies → salary+benefits → wsi → review/publish (unificado)
+Geração do JD	Gerado no final (etapa review)	Gerado logo após avaliação (etapa 2)
+Etapa basic-info	Formulário separado	Edição inline dentro do JD
+Etapas review + pre-publish	Separadas (2 etapas)	Unificadas (1 etapa)
+Feedback da IA sobre qualidade	Não existe explicitamente	Step de avaliação estruturado com sugestões
+🔄 Mapeamento: Fluxo Atual → Proposta
+FLUXO ATUAL (FLUXO_WIZARD_VAGA_COMPLETO.md)           PROPOSTA ALINHADA
+──────────────────────────────────────────────────────────────────────────
+FASE 1: CONSTRUÇÃO
+├── 1. description ─────────────────────────┐
+│   └── Mensagem inicial, detecta campos    │
+│                                           ├──► 1. INPUT + AVALIAÇÃO
+├── [NÃO EXISTE] ◄──────────────────────────┘      └── Intelligence Layer:
+│   "Avaliação da IA"                                  - Pattern Detector
+│                                                      - Outcome Correlator
+│                                                      - Company defaults check
+│                                                      - Market alignment check
+│                                                      - Confidence Policy
+│
+├── 2. basic-info ──────────────────────────┐
+│   └── Formulário de campos básicos        │
+│                                           ├──► 2. JOB DESCRIPTION
+│   [JD gerado depois] ◄────────────────────┘      └── Gerado APÓS avaliação
+│                                                      └── Edição inline inclui
+│                                                          campos do basic-info
+│
+├── 3. competencies ─────────────────────────► 3. COMPETÊNCIAS (mantida)
+│   └── TechnicalSkill, BehavioralCompetency      └── + Badges "Padrão Empresa"
+│   └── weight, required, level                   └── + Mini-badges sugestão
+│   └── isWeightInferred (já existe!)             └── + Tags para busca
+│
+├── 4. salary ───────────────────────────────► 4. REMUNERAÇÃO (expandida)
+│   └── SalaryInfo, Benefit                       └── + Bônus auto-preenchido
+│                                                  └── + Benefícios do config
+│
+├── 5. wsi-questions ────────────────────────► 5. PERGUNTAS WSI (aprimorada)
+│   └── WSIQuestionCandidate                      └── + Badge "Recomendada"
+│   └── selected, batch, category                 └── + Parecer da IA
+FASE 2: ATIVAÇÃO
+├── 6. review ──────────────────────────────┐
+│   └── Resumo completo da vaga             ├──► 6. REVISÃO E PUBLICAÇÃO
+├── 7. pre-publish ─────────────────────────┘      └── Unificada
+│   └── Seleção de plataformas                    └── + Cards de etapas
+│                                                  └── + SLAs auto-preenchidos
+│                                                  └── + Email gestor
+FASE 3: SELEÇÃO
+├── 8. candidate-search ─────────────────────► 7. BUSCA E CALIBRAÇÃO
+├── 9. calibration ─────────────────────────────► (mantido)
+└── 10. active-search ──────────────────────────► (mantido)
+Aproveitamento da Infraestrutura Existente
+1. Step de Avaliação (NOVO) - Usa Infraestrutura Existente
+# A proposta cria um "evaluation_step" que COMBINA serviços já implementados:
+class EvaluationStep:
+    """Combina serviços existentes para avaliação estruturada"""
+    
+    def __init__(self):
+        # Serviços JÁ IMPLEMENTADOS (job-wizard-enhancement-plan.md)
+        self.intelligence_layer = IntelligenceLayerService()  # ✅ Existe
+        self.confidence_policy = ConfidencePolicyService()    # ✅ Existe
+        self.skills_catalog = SkillsCatalogService()          # ✅ Existe
+        self.market_benchmark = MarketBenchmarkService()      # ✅ Existe
+        self.job_insights = JobInsightsService()              # ✅ Existe
+        self.recruiter_personalization = RecruiterPersonalizationService()  # ✅ Existe
+    
+    async def evaluate(self, input_data, company_id, recruiter_id):
+        # 1. Verificar completude (usando tipologia CRITICAL)
+        completeness = self._check_completeness(input_data)
+        
+        # 2. Verificar alinhamento com empresa (company defaults)
+        company_alignment = await self._check_company_alignment(input_data, company_id)
+        
+        # 3. Verificar alinhamento com mercado (market benchmark + job insights)
+        market_alignment = await self._check_market_alignment(input_data)
+        
+        # 4. Detectar padrões de sucesso (Intelligence Layer)
+        success_patterns = await self.intelligence_layer.detect_patterns(
+            company_id, "success"
+        )
+        
+        # 5. Personalizar feedback (Recruiter Personalization)
+        personalized_feedback = await self.recruiter_personalization.get_personalized_defaults(
+            recruiter_id
+        )
+        
+        # 6. Calcular confiança e decidir ação (Confidence Policy)
+        confidence = self.confidence_policy.calculate_overall_confidence(...)
+        action = self.confidence_policy.determine_action(confidence)
+        
+        return EvaluationResponse(...)
+2. Badges "Padrão Empresa" - Usa Skills Catalog
+O skills_catalog_service.py já tem o catálogo por área. Sua proposta apenas adiciona uma verificação visual:
+
+// Frontend - já existe TechnicalSkill com category
+interface TechnicalSkill {
+  id: string
+  name: string
+  category: 'language' | 'framework' | 'database' | 'tool'
+  // NOVO: badge para indicar se é padrão da empresa
+  isCompanyStandard?: boolean
+}
+3. Pesos Inferidos - JÁ EXISTE
+No FLUXO_WIZARD_VAGA_COMPLETO.md linha 173:
+
+interface TechnicalSkill {
+  weight: number
+  weightJustification?: string
+  isWeightInferred?: boolean  // ◄── JÁ EXISTE!
+}
+A proposta apenas usa mais ativamente esse campo existente.
+
+4. Auto-preenchimento de Benefícios - JÁ EXISTE
+No job-wizard-enhancement-plan.md seção 3.2:
+
+| benefits | PROBABLE | Usar defaults da empresa |
+A tipologia PROBABLE já define que benefícios devem ser auto-preenchidos. A proposta apenas garante que isso seja mais visível.
+
+Gaps Identificados (O Que Precisa Ser CRIADO)
+Gap	O Que Falta	Onde Adicionar
+EvaluationResponse schema	Interface estruturada para resposta da avaliação	lia-agent-system/app/schemas/
+evaluation_step	Novo step no pipeline do wizard	job_intake_agent.py
+JD inline edit UI	Componente de edição inline no JD	expanded-chat-modal.tsx
+Badge "Recomendada" WSI	Flag + UI para perguntas recomendadas	WSIQuestionCandidate interface
+Unificação review/pre-publish	Merge das duas etapas	WIZARD_STAGES config
+Tags para busca	Campo separado de skills (não calibradas)	Nova interface SkillTag
+Plano Revisado (Alinhado com Documentação)
+Fase 0: Preparação (1 dia)
+ Criar EvaluationResponse schema baseado em DetectedCriteria existente
+ Definir novo WizardStage enum com 7 etapas
+ Atualizar FLUXO_WIZARD_VAGA_COMPLETO.md com novo fluxo
+Fase 1: Evaluation Step (2-3 dias)
+ Criar evaluation_step em job_intake_agent.py
+ Integrar IntelligenceLayerService para pattern detection
+ Integrar ConfidencePolicyService para threshold de sugestões
+ Integrar SkillsCatalogService para verificar skills da empresa
+ Integrar MarketBenchmarkService para validar salário
+ Integrar RecruiterPersonalizationService para ajustar feedback
+Fase 2: JD + Inline Edit (2-3 dias)
+ Mover geração de JD para após avaliação
+ Criar componente de edição inline no expanded-chat-modal.tsx
+ Mapear campos do basic-info para edição inline
+Fase 3: Competências Aprimoradas (2 dias)
+ Adicionar isCompanyStandard em TechnicalSkill
+ Criar UI de badges "Padrão Empresa"
+ Adicionar mini-badges de sugestão
+ Criar campo SkillTag[] para tags de busca
+Fase 4: Unificação e Polimento (2 dias)
+ Unificar review + pre-publish em única etapa
+ Adicionar badges "Recomendada" em WSI
+ Garantir auto-preenchimento de bônus/benefícios
+ Atualizar documentação
+Conclusão
+Sua proposta está muito bem alinhada com a arquitetura existente documentada. Os principais serviços (Intelligence Layer, Personalização, Confidence Policy, Skills Catalog, Market Benchmark) já estão implementados e apenas precisam ser orquestrados em um novo "evaluation step".
+
+As mudanças principais são:
+
+Reordenação de etapas (não reescrita)
+Novo step de avaliação (combina serviços existentes)
+UI aprimorada (badges, inline edit)
+Unificação (review + pre-publish)
+Quer que eu comece a implementação seguindo esse plano alinhado com a documentação?

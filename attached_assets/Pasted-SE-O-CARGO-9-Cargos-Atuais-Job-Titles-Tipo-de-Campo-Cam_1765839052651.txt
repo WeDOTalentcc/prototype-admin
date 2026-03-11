@@ -1,0 +1,124 @@
+SEÇÃO CARGO
+
+9. Cargos Atuais (Job Titles)
+
+•
+Tipo de Campo: Campo de texto com IA e toggle "Current Only"
+
+•
+Descrição: Filtra candidatos por cargo/posição atual
+
+•
+Opções/Valores:
+
+•
+Campo de texto aberto com autocomplete
+
+•
+A IA expande a busca para cargos similares (ex: "Software Engineer" também busca "Principal Software Engineer", "Senior Software Engineer", etc.)
+
+
+
+•
+Toggle Disponível: "Current Only" (incluir apenas cargo atual ou incluir histórico)
+
+•
+Como Funciona: Campo inteligente que sugere cargos similares; suporta múltiplas seleções
+
+•
+Tipo de Filtro: Campo de texto com IA e toggle
+
+•
+Sugestões de Melhoria: Permitir a busca por níveis de senioridade de forma mais estruturada (Júnior, Pleno, Sênior, C-Level); adicionar a opção de "funções relacionadas" para expandir a busca
+
+10. Níveis de Cargo (Job Title Levels)
+
+•
+Tipo de Campo: Dropdown
+
+•
+Descrição: Filtra candidatos por nível hierárquico do cargo
+
+•
+Opções: (Necessário verificar prints para opções completas - campo não totalmente visível)
+
+•
+Como Funciona: Seleciona candidatos com níveis específicos de cargo
+
+•
+Tipo de Filtro: Dropdown com múltipla seleção
+
+•
+Sugestões de Melhoria: Criar uma escala padronizada de níveis; permitir busca por "próximo nível" (ex: candidatos prontos para promoção)
+
+11. Funções de Cargo (Job Title Roles)
+
+•
+Tipo de Campo: Dropdown
+
+•
+Descrição: Filtra candidatos por função/área de atuação
+
+•
+Opções: (Necessário verificar prints para opções completas - campo não totalmente visível)
+
+•
+Como Funciona: Seleciona candidatos com funções específicas
+
+•
+Tipo de Filtro: Dropdown com múltipla seleção
+
+•
+Sugestões de Melhoria: Adicionar a opção de "funções relacionadas" para expandir a busca de forma inteligente
+
+12. Cargos Anteriores (Past Job Titles)
+
+•
+Tipo de Campo: Campo de texto com sugestões
+
+•
+Descrição: Filtra candidatos que tiveram cargos específicos no passado
+
+•
+Opções/Valores: Campo de texto aberto com autocomplete
+
+•
+Como Funciona: Busca no histórico de cargos do candidato
+
+•
+Tipo de Filtro: Campo de texto com IA
+
+•
+Sugestões de Melhoria: Permitir a busca por "progressão de carreira" (ex: de Desenvolvedor para Arquiteto); adicionar filtro por "tempo no cargo anterior"
+
+13. Tempo na Função Atual (Time Spent at Current Role)
+
+•
+Tipo de Campo: Campo de intervalo
+
+•
+Descrição: Define um intervalo de tempo que o candidato deve ter na função atual
+
+•
+Opções:
+
+•
+Between (entre X e Y meses/anos)
+
+•
+No Minimum (sem mínimo)
+
+•
+No Maximum (sem máximo)
+
+
+
+•
+Como Funciona: Filtra candidatos com base no tempo de permanência na função atual
+
+•
+Tipo de Filtro: Campo de intervalo com unidades de tempo
+
+•
+Sugestões de Melhoria: Adicionar indicadores como "recém-promovido" ou "em risco de sair"; permitir busca por "estabilidade na função"
+

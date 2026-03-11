@@ -1,0 +1,68 @@
+Excelente pergunta! Vou analisar a arquitetura atual para verificar essas integrações e fluxos de comunicação:
+
+Excelente pergunta! Analisando a arquitetura atual, posso confirmar que o sistema está preparado para as integrações que você mencionou. Vou detalhar:
+
+📱 Integrações de Comunicação (Sim, pelo menos 3)
+#	Integração	Arquivo/Service	Status	Funcionalidade
+1	WhatsApp	whatsapp_service.py	✅ Implementado	Mensagens, templates, botões interativos (via Twilio)
+2	OpenMic.ai	openmic_service.py	✅ Implementado	Ligações de triagem por voz automatizadas
+3	Deepgram	deepgram_service.py	✅ Implementado	Transcrição de áudio (WhatsApp voice notes)
+4	Email (SendGrid)	email_service.py + communication_dispatcher.py	✅ Implementado	Emails transacionais
+5	Microsoft Teams	teams_service.py	✅ Implementado	Notificações e integração calendário
+💾 Armazenamento de Dados
+Tabela communication_history - Registra TODA comunicação:
+candidate_id, vacancy_id, company_id (multi-tenancy)
+channel: email, whatsapp
+communication_type: email, whatsapp, triagem_invite, agendamento_invite, feedback
+status: pending → sent → delivered → read → failed
+sent_at, delivered_at, read_at (tracking)
+template_id, template_name (rastreabilidade)
+Tabela vacancy_candidates - Candidatos por vaga:
+cv_score (rubric %)
+cv_fit_score (0-5 preliminar)
+wsi_score (0-5 após triagem conversacional)
+stage, sub_status
+screening_completed_at
+🔔 Sistema de Notificações para Recrutador
+Canais disponíveis no notification_service.py:
+
+Canal	Descrição
+Bell (in-app)	Notificações no sino da plataforma
+Email	Notificações por email
+Teams	Notificações via Microsoft Teams
+WhatsApp	Alertas urgentes via WhatsApp
+Push	Push notifications no browser
+Chat LIA	Mensagens inline no chat
+Tipos de notificações proativas:
+screening_completed - Triagem finalizada
+interview_reminder - Lembrete de entrevista
+approval_request - Ação requer aprovação
+morning_briefing / afternoon_summary - Briefings
+vacancy_expiring - Vaga prestes a expirar
+📤 Disparos Automáticos para Candidatos
+Templates prontos em communication_templates.py:
+
+Evento	Template	Canais
+Contato inicial	initial_contact	Email, WhatsApp
+Lembrete de triagem	screening_reminder	Email, WhatsApp
+Aprovado na triagem	screening_passed	Email, WhatsApp
+Reprovado (com feedback)	screening_failed	Email
+Entrevista agendada	interview_scheduled	Email, WhatsApp
+Lembrete de entrevista	(existe)	Email, WhatsApp
+Reagendamento	(existe)	Email, WhatsApp
+⚠️ O que está pendente no fluxo atual:
+Disparo automático após CV Screening: O screening completa mas não dispara automaticamente o email de agradecimento ou próximos passos - isso precisa ser conectado
+
+Trigger screening_completed → Comunicação: Precisa vincular o trigger ao Analyst & Feedback Agent para:
+
+Enviar email de "obrigado por participar"
+Registrar evento no communication_history
+Notificar recrutador via bell/Teams/email
+Follow-up automático: Existe estrutura mas não está ativo
+
+Gostaria que eu implemente a conexão entre o screening completado e os disparos automáticos para candidatos? Isso incluiria:
+
+Email de agradecimento automático
+Registro do evento
+Comunicação de próximos passos (ou feedback construtivo)
+Notificação ao recrutador

@@ -1,0 +1,130 @@
+Olá! Vou te ajudar a criar uma nova vaga.
+
+Detalhe o máximo que puder sobre a vaga para otimizar o processo de construção. Vou aproveitar ao máximo as informações que já tenho da sua empresa para preencher o restante!
+
+Exemplo de como você pode descrever:
+
+"Preciso de um Desenvolvedor Python Sênior para a equipe do João Silva. Vai liderar projetos de Data Science, desenvolver APIs com FastAPI e mentorar desenvolvedores júnior."
+
+Quanto mais detalhes você fornecer, mais campos já preenchemos automaticamente:
+
+•
+Cargo + Senioridade
+•
+Gestor responsável
+•
+Principais responsabilidades
+•
+Competências técnicas (mínimo 3)
+•
+Competências comportamentais (mínimo 3)
+•
+Faixa salarial
+•
+Vaga Afirmativa (Sim/Não)
+Os campos operacionais (modelo de trabalho, localização, tipo de contrato) serão preenchidos com base nas configurações da empresa e apresentados na etapa final para sua revisão.
+
+Digite sua descrição ou anexe um JD existente para começarmos!
+
+
+
+Você
+Você
+1 min atrás
+gerente de tecnologia da informacao de nivel senior, com responsabilidade como liderar pessoas, gerir a area de infraestrutura, segurancá, desenvolvimento, liderança, comunicacao, ssenso de dono, salario de 10mil reais, nao afirmativa
+
+✅ Resposta da LIA
+LIA
+1 min atrás
+Detectei os seguintes critérios:
+
+•
+**Cargo**: Gerente De Tecnologia
+•
+**Gestor**: De Tecnologia
+•
+**Skills técnicos**: Infraestrutura
+•
+**Competências comportamentais**: Liderança, Comunicacao
+•
+**Senioridade**: Sênior
+•
+**Salário**: R$ 10.000
+•
+**Vaga Afirmativa**: Não
+•
+**Formação**: Denivel, De Nivel, De Nivel Senior
+•
+**Ferramentas**: Senior
+•
+**Benefícios**: Vale Alimentação
+Ótimo progresso! Você pode adicionar mais detalhes para enriquecer a vaga.
+
+
+
+Você
+Você
+agora
+ajustar para 11000
+
+LIA
+agora
+Para ajustar o salário, informe os novos valores.
+
+Exemplo: "ajustar para R$ 12.000 a R$ 15.000"
+
+
+
+Você
+Você
+agora
+ajustar para 11000 a 16000
+
+LIA
+agora
+✅ Faixa salarial atualizada!
+
+A remuneração foi ajustada para:
+
+• Mínimo: R$ 11.000
+
+• Máximo: R$ 16.000
+
+Você pode continuar com a configuração da vaga.
+
+
+
+Você
+Você
+agora
+ok
+
+✅ Resposta da LIA
+LIA
+agora
+Detectei os seguintes critérios:
+
+•
+**Cargo**: Gerente de Tecnologia da Informação
+•
+**Gestor**: De Tecnologia
+•
+**Skills técnicos**: Infraestrutura, Segurança da Informação, Desenvolvimento de Software
+•
+**Competências comportamentais**: Liderança, Comunicação, Senso de Dono
+•
+**Senioridade**: Sênior
+•
+**Salário**: R$ 10,000 - R$ 10,000
+•
+**Vaga Afirmativa**: Não
+•
+**Formação**: Denivel, De Nivel, De Nivel Senior
+•
+**Ferramentas**: Senior
+•
+**Benefícios**: Vale Alimentação
+Ótimo progresso! Você pode adicionar mais detalhes para enriquecer a vaga.
+
+
+

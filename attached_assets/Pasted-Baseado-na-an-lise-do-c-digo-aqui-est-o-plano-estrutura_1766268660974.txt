@@ -1,0 +1,64 @@
+Baseado na análise do código, aqui está o plano estruturado:
+
+📋 Plano de Implementação - Sistema Multi-Agent
+Estado Atual dos Agentes
+Agente	Status	Completude	Gaps Principais
+Job Intake	Scaffold	~30%	Fluxo conversacional, extração de requisitos, validação
+Screening	Fragmentado	~40%	Integração WSI + Rubricas, fluxo de voz, persistência scores
+Scheduling	Stub	~20%	Microsoft Graph, resolução de conflitos, notificações
+Communication	Placeholder	~15%	Canais omnichannel, templates, consentimento
+Task Planner	Básico	~10%	Decomposição DAG, dependências, integração orchestrator
+Policy Engine	Stub	~5%	Repositório de regras, rate-limiting, workflows
+🚀 Fase 1: P0 - Core (2-3 semanas)
+1.1 Job Intake Agent Completo
+Fluxo conversacional para criação de vagas via chat
+Extração automática de requisitos (skills, experiência, formação)
+Integração com sistema de Rubricas para gerar job_requirements
+Validação de campos obrigatórios e benefícios
+Persistência assíncrona com audit logging
+1.2 Screening Agent Completo (WSI)
+Pipeline completo: CV → Rubricas → Score → Timeline
+Integração com RubricEvaluationService já implementado
+Fluxo de triagem em batch (múltiplos candidatos)
+Eventos de timeline para cada etapa
+Red flags detection com alertas
+📅 Fase 2: P1 - Automação (2 semanas)
+2.1 Scheduling Agent
+Integração Microsoft Graph API (calendário, disponibilidade)
+Resolução automática de conflitos de horário
+Self-scheduling links para candidatos
+Notificações e lembretes automáticos
+Reagendamento inteligente
+2.2 Communication Agent
+Canal unificado (Email, WhatsApp, SMS)
+Integração com template service existente
+Consent-aware messaging (LGPD)
+Webhooks para status de entrega
+Queue de mensagens com retry
+🔧 Fase 3: P2 - Governança (1-2 semanas)
+3.1 Task Planner
+Decomposição de tarefas em DAG (grafo de dependências)
+Priorização automática baseada em deadlines
+Integração com estado do orchestrator
+Chain-of-thought para decisões complexas
+3.2 Policy Engine
+Repositório de regras de negócio (JSON/YAML)
+Rate-limiting por empresa/usuário
+Workflows de escalation
+Enforcement hooks antes de execução de agentes
+📊 Dependências
+Job Intake ──→ Sourcing ──→ Screening ──→ Scheduling
+                   │              │            │
+                   └──────────────┴────────────┴──→ Communication
+                                                         │
+                                    Task Planner ←───────┘
+                                         │
+                                    Policy Engine
+⚙️ Integrações Externas Necessárias
+Integração	Para	Já Configurada?
+Anthropic Claude	LLM principal	✅ Sim
+Google Gemini	Fallback LLM	✅ Sim
+Microsoft Graph	Scheduling	❌ Configurar
+WhatsApp Business API	Communication	❌ Configurar
+SendGrid/Resend	Email	✅ Parcial
+Quer que eu comece pela Fase 1 (P0) com o Job Intake Agent e Screening Agent? Posso criar a task list detalhada e começar a implementação.

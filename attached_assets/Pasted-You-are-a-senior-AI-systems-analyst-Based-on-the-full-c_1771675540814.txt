@@ -1,0 +1,184 @@
+You are a senior AI systems analyst. Based on the full codebase of this project, 
+generate a comprehensive technical audit report structured for an AI architecture 
+specialist. The report must be exhaustive, precise, and based exclusively on what 
+exists in the code — do not infer or assume anything not present.
+
+---
+
+## REPORT STRUCTURE
+
+### 1. EXECUTIVE SUMMARY
+- Platform purpose and business model
+- Core value proposition
+- Technology stack overview (all languages, frameworks, libraries with versions)
+- Development maturity assessment
+
+---
+
+### 2. SYSTEM ARCHITECTURE
+- High-level architecture diagram description (components, layers, data flows)
+- Monolith vs microservices classification
+- Synchronous vs asynchronous communication patterns
+- Entry points (APIs, webhooks, event listeners)
+- Background workers and task queues (Celery, RabbitMQ — topology, queues, routing keys, retry policies)
+- Caching strategy (Redis — what is cached, TTL policies, eviction strategy, cache invalidation logic)
+- State management across services
+- Session and context persistence mechanisms
+
+---
+
+### 3. DOMAIN MODEL & BUSINESS LOGIC
+- Core domains identified (e.g., candidates, jobs, recruiters, evaluations, workflows)
+- Domain boundaries and ownership
+- Ubiquitous language used in the codebase
+- Business rules encoded in the system
+- Where business logic lives (agents vs services vs DB constraints)
+
+---
+
+### 4. AI AGENT ARCHITECTURE
+- List of all AI agents with name, role, and responsibility
+- Agent orchestration model (LangGraph — graph structure, nodes, edges, conditional routing)
+- Orchestrator vs specialized agents — separation of concerns
+- Tool calling implementation (what tools each agent can invoke)
+- Agent memory: short-term (within session), long-term (cross-session), episodic
+- Context window management strategy
+- Prompt engineering patterns used (system prompts, few-shot, chain-of-thought, etc.)
+- Human-in-the-loop checkpoints — where and how human approval is enforced
+- Agent failure handling: fallback strategies, retry logic, graceful degradation
+- Inter-agent communication protocol
+- How agents are versioned or updated
+
+---
+
+### 5. LLM INTEGRATION
+- LLM providers used (models, versions, endpoints)
+- Prompt construction and template management
+- Token usage tracking and cost control mechanisms
+- Streaming vs batch response handling
+- Temperature, top_p and other parameter configurations
+- How the system prevents prompt injection
+- Output parsing and validation (structured output, JSON enforcement, fallbacks)
+- Hallucination mitigation strategies
+
+---
+
+### 6. DATA ARCHITECTURE
+- Data models and schema overview (all entities and relationships)
+- Primary database(s): type, ORM used, migration strategy
+- Vector database usage (if any) — embedding model, indexing strategy, similarity search
+- Data flow: ingestion → processing → storage → retrieval
+- Data retention and deletion policies in code
+- PII identification — where personal data is stored and how it's handled
+- Data segregation between tenants (if multi-tenant)
+
+---
+
+### 7. INTEGRATION LAYER
+- External APIs and third-party services integrated
+- Communication channels (WhatsApp, Teams, email, SMS — providers, SDKs)
+- Webhook management: incoming and outgoing
+- Authentication with external services (OAuth, API keys, service accounts)
+- Integration resilience: circuit breakers, retries, dead letter queues
+- Event-driven integrations vs polling
+
+---
+
+### 8. AI vs NON-AI BOUNDARIES
+- Explicit map of what is handled by AI agents vs deterministic code
+- Decision points where AI output triggers automated actions
+- Decision points where AI output requires human validation before action
+- Rules engine or hardcoded logic that complements or constrains AI behavior
+
+---
+
+### 9. PERFORMANCE & SCALABILITY
+- Identified bottlenecks in the current architecture
+- Horizontal scalability readiness (stateless services, worker scaling)
+- Latency analysis: agent response times, external API calls, DB queries
+- Queue depth management and backpressure strategies
+- Load balancing approach
+- Cold start issues (model loading, connection pooling)
+- Rate limiting implementation (inbound and outbound)
+
+---
+
+### 10. RELIABILITY & OBSERVABILITY
+- Logging strategy: what is logged, structured vs unstructured, log levels
+- Tracing: distributed tracing implementation (if any)
+- Metrics and monitoring: what is instrumented
+- Alerting mechanisms
+- Error classification and handling taxonomy
+- Health checks and circuit breakers
+- Recovery procedures in code (dead letter queues, retry exhaustion handling)
+
+---
+
+### 11. SECURITY & COMPLIANCE
+- Authentication and authorization model (JWT, OAuth, RBAC, ABAC)
+- Secrets management (env vars, vaults, hardcoded credentials — flag any)
+- Input sanitization and output filtering
+- API security (rate limiting, authentication, CORS policies)
+- Data encryption at rest and in transit (what is enforced in code)
+- Audit logging for sensitive actions
+- LGPD/GDPR compliance signals in the codebase
+- Consent management mechanisms
+- Data subject rights implementation (access, deletion, portability)
+
+---
+
+### 12. AI ETHICS, BIAS & GOVERNANCE
+- Protected attributes present in data models (gender, age, race, disability, etc.)
+- Where these attributes flow through AI decision pipelines
+- Bias risk assessment: which agent decisions could produce discriminatory outcomes in recruitment
+- Fairness constraints or filters implemented
+- Explainability: can the system justify AI decisions to candidates or recruiters?
+- Candidate transparency mechanisms (is the candidate informed they are interacting with AI?)
+- Opt-out mechanisms for AI-driven processes
+- Governance controls: who can modify agents, prompts, thresholds?
+- Model change management process in code
+
+---
+
+### 13. CONTINUOUS LEARNING & MODEL IMPROVEMENT
+- Feedback loops implemented (explicit and implicit)
+- Data collection for future fine-tuning
+- A/B testing or prompt experimentation infrastructure
+- Evaluation framework: how is AI output quality measured?
+- Human feedback capture mechanisms (recruiter ratings, candidate signals)
+- Dataset versioning or training data management
+
+---
+
+### 14. MULTI-TENANCY & WHITE-LABEL
+- Tenant isolation model (data, config, agents, branding)
+- Per-tenant customization capabilities in code
+- Authentication per tenant (subdomain routing, tenant resolution logic)
+- Feature flagging per tenant
+
+---
+
+### 15. TECHNICAL DEBT & RISKS
+- Code smells or anti-patterns identified
+- Missing tests (unit, integration, e2e coverage assessment)
+- Hardcoded values that should be configurable
+- Single points of failure
+- Deprecated dependencies or versions with known vulnerabilities
+- Missing documentation in critical components
+
+---
+
+### 16. RECOMMENDATIONS
+- Critical issues to address before production scale
+- Architecture improvements ranked by impact
+- Missing components for a production-grade AI platform
+- Suggested next steps for governance, compliance, and reliability
+
+---
+
+## OUTPUT FORMAT
+- Use markdown with clear headings
+- For each finding, indicate: PRESENT / PARTIAL / MISSING / RISK
+- Be specific: reference file names, function names, class names, and line numbers where relevant
+- Flag anything that appears inconsistent, unsafe, or architecturally incoherent
+- Do not summarize — be exhaustive

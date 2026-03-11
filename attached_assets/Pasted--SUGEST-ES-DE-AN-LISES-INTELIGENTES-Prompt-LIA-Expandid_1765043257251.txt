@@ -1,0 +1,63 @@
+💬 SUGESTÕES DE ANÁLISES INTELIGENTES (Prompt LIA Expandido)
+Quando você seleciona candidatos, a LIA mostra estas opções no chat:
+
+1. Analisar potencial de crescimento
+Avalia a trajetória do candidato e projeta evolução futura baseado em:
+
+Progressão de cargos anteriores
+Tempo médio em cada posição
+Skills adquiridas ao longo da carreira
+Formação acadêmica contínua
+Exemplo de output esperado:
+
+"Maria tem alto potencial de crescimento. Nos últimos 4 anos saiu de Analista Jr para Coordenadora, com média de promoção a cada 18 meses. Demonstra investimento contínuo em capacitação (MBA em andamento). Projeção: pode assumir posição de Gerência em 2-3 anos."
+
+2. Definir tipo de perfil (executor, estratégico, etc.)
+Classifica o candidato em perfis comportamentais:
+
+Executor: Foco em entrega, metas, resultados tangíveis
+Estratégico: Visão de longo prazo, planejamento, análise
+Criativo: Inovação, ideias, fora da caixa
+Relacional: Networking, comunicação, gestão de pessoas
+Exemplo de output esperado:
+
+"João apresenta perfil predominantemente Executor (65%) com traços Estratégicos (25%). Ideal para posições que demandam entrega com autonomia e capacidade de priorização."
+
+3. Resumo executivo do perfil
+Síntese completa do candidato em formato gerencial:
+
+Quem é (background)
+O que faz de melhor (diferenciais)
+Por que considerar (fit)
+Riscos/pontos de atenção
+Exemplo de output esperado:
+
+"Candidata excepcional com 92% de match. Designer UX Senior com 5+ anos em produtos digitais B2B. Liderou redesign que aumentou conversão em 40% no Nubank. Forte em Design Systems e mentoria. Ponto de atenção: pretensão salarial 15% acima do range."
+
+4. Pontos a serem desenvolvidos
+Gaps identificados que podem ser trabalhados:
+
+Skills técnicas faltantes
+Experiências não comprovadas
+Soft skills a desenvolver
+Exemplo de output esperado:
+
+"Áreas de desenvolvimento: (1) Experiência limitada com analytics - recomendo curso de Product Analytics; (2) Inglês intermediário - pode limitar atuação com times globais; (3) Nunca liderou time direto - gap para posição de gestão."
+
+5. Tipos de vagas ideais para este perfil
+Recomendações de posições compatíveis baseado no perfil completo:
+
+Exemplo de output esperado:
+
+"Vagas ideais para Ana: (1) Product Designer Senior - squad autônomo; (2) Design Lead - time de 3-5 designers; (3) UX Specialist - foco em research. Evitar: posições muito operacionais ou com alta rotatividade de projetos."
+
+Status atual: O prompt está preparado para receber estas solicitações, mas o backend ainda não processa. A integração com Claude AI para gerar estas análises está pendente.
+
+🔧 RESUMO: O QUE PRECISA DESENVOLVER
+Prioridade	Funcionalidade
+🔴 Alta	Backend de análise LIA com Claude AI (substituir dados simulados)
+🔴 Alta	Triagem WSI - fluxo completo de perguntas e respostas
+🟡 Média	Persistir favoritos no banco de dados
+🟡 Média	Persistir candidatos ocultos no banco
+🟢 Baixa	Quick actions do preview: conectar aos modais existentes
+Quer que eu priorize alguma dessas implementações?

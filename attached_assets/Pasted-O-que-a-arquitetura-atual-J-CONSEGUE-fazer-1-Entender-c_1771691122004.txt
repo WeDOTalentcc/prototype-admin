@@ -1,0 +1,111 @@
+O que a arquitetura atual JÁ CONSEGUE fazer:
+1. Entender comandos do recrutador (funciona)
+
+O Cascaded Router (Memory → Regex → LLM) roteia comandos para o domínio correto
+205 actions mapeadas nos 10 domínios
+Intent classification funciona para comandos diretos ("mova o candidato", "gere a descrição")
+2. Executar ações via tools (funciona)
+
+109 tools disponíveis para agentes executarem
+Tool calling com Claude funciona para ações pontuais
+Unified Tool Calling System com tenant scoping
+3. Scoring e triagem WSI (funciona)
+
+7 blocos de avaliação estruturados
+Calibração cruzada, multi-signal seniority
+Score preditivo por candidato
+4. Transições de pipeline com predição (funciona parcialmente)
+
+Modal de transição com sub-status inferido por LLM
+Bulk actions com predição individualizada
+Webhooks para integração
+5. Memória conversacional (funciona)
+
+ConversationMemory com LLM-generated summaries
+ReferenceResolver para "aquele candidato", "a vaga de ontem"
+Persistência entre sessões
+LIMITAÇÕES REAIS (o que NÃO faz ou faz mal):
+Limitação 1: Não é proativa — só reage
+
+A LIA espera o recrutador pedir algo. Não monitora o pipeline sozinha
+O ProactiveAlert e AutonomousAgent existem no código, mas são stubs — a lógica de monitoramento contínuo não está ativa
+Para ser proativa, precisaria de um loop de monitoramento que roda periodicamente e analisa o estado do pipeline
+Limitação 2: Execução multi-step é frágil
+
+Se o recrutador pede "agende entrevista com o João, manhã, com a Ana" — isso requer: (1) encontrar João, (2) verificar disponibilidade da Ana, (3) verificar disponibilidade do João, (4) criar evento, (5) enviar convite, (6) mover etapa
+Hoje cada passo é uma tool call separada. Se um falha, o fluxo inteiro quebra
+Falta um ExecutionPlan robusto — o que existe é um esboço, não um orquestrador de multi-step real
+Limitação 3: Não aprende com as decisões do recrutador
+
+O FeedbackLoopService e LearningPattern existem mas são passivos
+O sistema registra feedback mas não calibra o comportamento baseado nele
+Se o recrutador sempre rejeita a sugestão de sub-status da LIA, ela deveria aprender e ajustar. Hoje não faz isso
+Limitação 4: Predição existe mas não é acionável
+
+OutcomePredictor, PredictiveAnalytics calculam probabilidades
+Mas esses resultados não alimentam sugestões automáticas
+A predição é decorativa (mostra números) em vez de operacional (dispara ações)
+Limitação 5: Contexto fragmentado
+
+Cada domínio opera de forma relativamente isolada
+Se a LIA está na conversa de Job Management, ela não "vê" que o candidato na triagem acabou de receber um score alto
+O CandidateContextAggregator existe para pipeline, mas não é usado de forma transversal
+Limitação 6: Sem raciocínio de longo prazo
+
+A LIA responde mensagem por mensagem
+Não tem um "plano de trabalho" para a vaga: "esta vaga precisa de 3 candidatos finalistas até sexta, estamos com 1, preciso priorizar triagem"
+Falta pensamento estratégico sobre o processo como um todo
+O MODELO IDEAL — como deveria funcionar:
+Camada 1: Monitor Contínuo (o que falta)
+Um agente que roda em background e observa o pipeline constantemente:
+
+"5 candidatos estão há 4 dias em Triagem sem ação"
+"João respondeu o assessment, score 88 — pronto para próxima etapa"
+"A vaga de Dev Senior tem deadline em 5 dias e só 2 candidatos na entrevista"
+Gera eventos que alimentam sugestões proativas
+Camada 2: Reasoning Engine (o que existe parcialmente)
+Um "cérebro" que conecta dados de múltiplas fontes e raciocina:
+
+"João tem score WSI 88 + experiência relevante + respondeu rápido → alta probabilidade de fit → sugerir avanço imediato"
+"Maria tem score 72 mas é a única com experiência em setor financeiro que a vaga pede → não descartar, chamar para entrevista focada"
+Usa OutcomePredictor + WSI + CandidateContext + histórico de vagas similares
+Camada 3: Action Planner (o que falta)
+Quando a LIA decide agir (ou o recrutador pede), ela planeja uma sequência:
+
+Recrutador: "Agenda entrevista com os 3 finalistas"
+LIA pensa:
+  1. Identificar os 3 finalistas (query pipeline)
+  2. Para cada um:
+     a. Verificar disponibilidade (calendar API)
+     b. Encontrar slot compatível com entrevistador
+     c. Criar evento
+     d. Enviar convite (email/WhatsApp)
+     e. Mover para etapa "Entrevista Agendada"
+  3. Reportar resultado ao recrutador
+Se o passo 2b falha para um candidato, tenta alternativas em vez de parar tudo
+
+Camada 4: Learning Loop Ativo (o que falta)
+O sistema aprende e calibra continuamente:
+
+"Recrutadores desta empresa preferem entrevistas à tarde → ajustar sugestões"
+"Vagas de TI com este perfil demoram em média 18 dias → alertar se ultrapassar"
+"Este recrutador sempre muda o sub-status que a LIA sugere → recalibrar modelo"
+Camada 5: Consultoria Estratégica (visão futura)
+A LIA atua como consultora de recrutamento:
+
+"Esta vaga está com funil fraco. Sugiro ampliar o sourcing para LinkedIn e Indeed"
+"Baseado nas últimas 10 vagas similares, candidatos com certificação AWS são 3x mais retidos após 1 ano"
+"O tempo médio nesta etapa está 40% acima do benchmark. Possível gargalo no feedback dos gestores"
+Resumo — Gap entre o atual e o ideal:
+Capacidade	Atual	Ideal	Gap
+Entender comandos	Funciona	Funciona	Pequeno (melhorar referências)
+Executar ações simples	Funciona	Funciona	Nenhum
+Executar ações multi-step	Frágil	Robusto com retry	Médio
+Proatividade	Stubs/inativo	Monitor contínuo	Grande
+Predição acionável	Calcula mas não usa	Predição → sugestão → ação	Grande
+Aprendizado contínuo	Registra mas não calibra	Feedback → recalibração	Médio
+Raciocínio estratégico	Inexistente	Plano de trabalho por vaga	Grande
+Consultoria	Básica (insights)	Benchmarks + recomendações	Médio
+A arquitetura base está sólida — domínios, tools, WSI, compliance, roteamento. O que falta é conectar as peças para que trabalhem juntas de forma proativa e inteligente, em vez de cada uma operar de forma isolada esperando um comando.
+
+Quer que eu aprofunde alguma dessas camadas ou que a gente priorize quais implementar primeiro?

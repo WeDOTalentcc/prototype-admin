@@ -1,0 +1,101 @@
+16. Indústrias da Empresa (Company Industries)
+
+•
+Tipo de Campo: Campo de texto com IA e toggle "Current + Past"
+
+•
+Descrição: Filtra candidatos por indústria da empresa
+
+•
+Opções/Valores:
+
+•
+Campo de texto aberto com autocomplete
+
+•
+Exemplos: Finance Related Fields, Tech Industries, Robotics, Healthcare, Manufacturing, etc.
+
+•
+A IA sugere indústrias enquanto digita
+
+
+
+•
+Toggle Disponível: "Current + Past" (incluir experiência passada ou apenas atual)
+
+•
+Como Funciona: Campo inteligente que sugere indústrias; suporta múltiplas seleções
+
+•
+Tipo de Filtro: Campo de texto com IA e toggle
+
+•
+Sugestões de Melhoria: Ter uma árvore de categorias de indústrias para facilitar a navegação e seleção; permitir filtrar por "indústrias relacionadas"
+
+17. Tags da Empresa (Company Tags)
+
+•
+Tipo de Campo: Campo de texto com IA e toggle "Current + Past"
+
+•
+Descrição: Filtra candidatos por tags específicas atribuídas às empresas
+
+•
+Opções/Valores:
+
+•
+Campo de texto aberto com autocomplete
+
+•
+Exemplos: Machine Learning, Semiconductors, Finance, AI, Blockchain, etc.
+
+•
+A IA sugere tags enquanto digita
+
+
+
+•
+Toggle Disponível: "Current + Past" (incluir experiência passada ou apenas atual)
+
+•
+Como Funciona: Campo inteligente que sugere tags; suporta múltiplas seleções
+
+•
+Tipo de Filtro: Campo de texto com IA e toggle
+
+•
+Sugestões de Melhoria: Permitir a criação de tags customizadas por equipe de recrutamento; mostrar popularidade de cada tag
+
+18. Localização da Sede da Empresa (Company HQ Locations)
+
+•
+Tipo de Campo: Campo de texto com sugestões e toggle "Current + Past"
+
+•
+Descrição: Filtra empresas com base na localização de sua sede
+
+•
+Opções/Valores:
+
+•
+Campo de texto aberto com autocomplete
+
+•
+Exemplos: San Francisco, United States; New York, United States; London, United Kingdom; etc.
+
+
+
+•
+Toggle Disponível: "Current + Past" (incluir experiência passada ou apenas atual)
+
+•
+Como Funciona: Filtra candidatos em empresas com sede em localizações específicas
+
+•
+Tipo de Filtro: Campo de texto com sugestões e toggle
+
+•
+Sugestões de Melhoria: Permitir a busca por empresas com escritórios na localidade do candidato, mesmo que a sede seja em outro lugar; adicionar filtro por "proximidade da sede"
+
+
+

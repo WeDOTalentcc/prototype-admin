@@ -1,0 +1,63 @@
+27. COMPLIANCE E FAIRNESS
+FairnessGuard — 3 Camadas
+Arquivo: app/shared/compliance/fairness_guard.py
+
+# Camada 1 — Regex (40+ padrões):
+# Categorias: gênero, raça, idade, religião, estado_civil,
+#             maternidade_paternidade, deficiência, etc.
+# Padrão faixa etária: r"\bde\s+\d+\s+(a|até|ate)\s+\d+\s+anos\b"
+# Camada 2 — Léxico implícito:
+# Detecta linguagem indiretamente discriminatória
+# Ex: "candidato jovem e dinâmico" → flag implícito de idade
+# Camada 3 — LLM (opt-in):
+# Ativado por: FAIRNESS_LAYER3_ENABLED=True
+# Adiciona ~2s de latência
+# Para análise contextual de casos ambíguos
+# Uso padrão:
+result = await fairness_guard.check(text, context)
+result = await fairness_guard.check_explicit_bias(text)  # alias
+result.is_biased          # bool
+result.categories         # list de categorias detectadas
+result.flagged_patterns   # patterns específicos
+result.recommendation     # sugestão de correção
+Bias Audit API
+Arquivo: app/services/bias_audit_service.py
+
+Four-Fifths Rule em 4 dimensões:
+  gender, age_group, disability, region
+adverse_impact_ratio = menor_grupo / maior_grupo
+Flag se ratio < 0.80 (regra 4/5)
+Endpoints:
+  GET /api/v1/bias-audit/job/{job_id}          → auditoria atual
+  GET /api/v1/bias-audit/job/{job_id}/history  → histórico de snapshots
+Snapshots auditáveis (BiasAuditSnapshot):
+  app/models/bias_audit_snapshot.py
+  migration: 018_add_bias_audit_snapshot.py
+  Histórico SOX/ISO 27001
+Admin UI:
+  plataforma-lia/src/app/admin/compliance/auditoria/bias/page.tsx
+LGPD — Implementações Ativas
+# Footer de IA em emails (Fase 7):
+# app/shared/channels/adapters/email_adapter.py
+AI_GENERATED_FOOTER = "Esta comunicação foi gerada por IA..."
+# Aplicado automaticamente quando message.ai_generated=True
+# Campos de consentimento adicionados:
+# app/models/communication_settings.py
+DATA_SHARING_EMAIL_PROVIDERS    # consentimento para SendGrid/Mailgun/Resend
+DATA_SHARING_SMS_PROVIDERS      # consentimento para Twilio
+AI_GENERATED_COMMUNICATIONS     # consentimento para comunicações de IA
+# Human Review Sampling (5% das decisões):
+# app/services/human_review_sampling_service.py
+# Determinístico por MD5 hash — mesma decisão sempre cai na mesma categoria
+# ALWAYS_REVIEW: finalize_hiring, mass_rejection, fairness_flagged
+# Data request / consent:
+# app/api/v1/data_request.py
+# app/api/v1/consent_management.py
+Compliance Enterprise (BCB 498 / SOX / ISO 27001)
+app/api/v1/compliance_controls.py  → controles SOX/ISO
+app/api/v1/audit_logs.py           → logs de auditoria
+app/api/v1/trust_center.py         → trust center portal
+app/models/bias_audit_snapshot.py  → snapshots auditáveis
+app/shared/compliance/audit_service.py → serviço de auditoria
+Código portável completo (FairnessGuard, LGPD, Human Review) → Apêndice A
+

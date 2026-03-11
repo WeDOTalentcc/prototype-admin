@@ -1,0 +1,24 @@
+Boa pergunta. Vamos pensar nisso do ponto de vista do recrutador no dia a dia:
+
+O que faz sentido ser "Recente"?
+O critério é simples: itens que o recrutador abriu/acessou ativamente e que ele provavelmente vai querer voltar a eles. Vamos analisar cada tipo:
+
+Tipos claros de recentes:
+Tipo	Exemplo	Faz sentido?	Por quê
+Vaga	"Desenvolvedor Senior - LandTech"	Sim	O recrutador trabalha em várias vagas ao mesmo tempo e precisa alternar entre elas
+Chat LIA	"Relatório Vaga Frontend", "Análise candidatos SAP"	Sim	A LIA gera relatórios, análises, sugestões — o recrutador quer voltar a ler ou continuar a conversa
+Candidato	"João Silva"	Sim	O recrutador abre perfis de candidatos o tempo todo para revisar, comparar, tomar decisões
+Tipos que geram dúvida:
+Tipo	Exemplo	Faz sentido?	Análise
+Entrevista agendada	"Entrevista técnica - Maria Santos - 14h"	Não como recente	Isso é uma task/compromisso — já aparece no Painel de Controle MVP. Se o recrutador clica nela pra ver detalhes, o que fica no recente é a vaga ou o candidato associado, não a entrevista em si
+Tarefa da LIA (aprovar candidato, revisar shortlist)	"Aprovar João Silva para fase 2"	Não como recente	São ações pendentes — pertencem ao Painel de Controle MVP. Quando o recrutador age sobre elas, o que fica no recente é o candidato ou a vaga que ele abriu pra resolver
+Alertas	"3 candidatos aguardando feedback"	Não	Alertas são notificações, não itens de trabalho. Devem ficar no sino de notificações (que já existe no TopBar)
+Conclusão: 3 tipos de recentes
+Vagas — ao abrir o kanban de uma vaga
+Chats LIA — ao iniciar ou retomar uma conversa com a LIA
+Candidatos — ao abrir o perfil/preview de um candidato
+Tasks, entrevistas e alertas não entram nos recentes porque são ações pendentes com lifecycle próprio (aparecem no Painel de Controle, se resolvem, somem). Os recentes são itens de referência que o recrutador consulta repetidamente.
+
+É como no Claude: você não vê "alertas" ou "tarefas" nos recentes — são as conversas (itens de trabalho) que você acessou.
+
+Faz sentido essa separação? Se concordar, atualizo o plano com esses 3 tipos (vaga, chat, candidato) e proponho para aprovação.

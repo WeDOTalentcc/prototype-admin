@@ -1,0 +1,53 @@
+📊 Mapeamento: O que existe vs O que falta
+✅ JÁ IMPLEMENTADO
+Componente	Status	Detalhes
+Pipeline de Estágios	✅ Completo	9 estágios: Prospecção → Triagem → Entrevista RH → Entrevista Técnica → Entrevista Gestor → Proposta → Contratado/Reprovado/Recusada
+Sub-status por estágio	✅ Completo	Granularidade para cada estágio (ex: "Aguardando Retorno", "CV Aprovado")
+Mapeamentos ATS	✅ Completo	Gupy e Pandapé mapeados para todos os estágios
+Histórico de transições	✅ Completo	CandidateStageHistory com audit trail
+Templates de Email básicos	⚠️ Parcial	10 estágios definidos no enum, mas faltam templates
+Integração Teams	⚠️ Parcial	Webhook para mensagens existe, mas falta integração com transcrição
+Sistema de Notificações	✅ Completo	Multi-canal (Bell, Email, WhatsApp)
+Agendamento Entrevistas	✅ Completo	scheduling_service.py funcionando
+❌ O QUE FALTA IMPLEMENTAR
+Funcionalidade	Prioridade	Descrição
+1. Entrevista com Gestor	🔴 Alta	Fluxo após aprovação RH → agendar com gestor
+2. Gravação/Transcrição Teams	🔴 Alta	Capturar transcrição automática da reunião Teams
+3. Análise WSI da Transcrição	🔴 Alta	Gerar parecer LIA automático pós-entrevista
+4. Templates Email Completos	🔴 Alta	Faltam: agendamento gestor, proposta, onboarding, feedback rejeição, vaga fechada
+5. Movimentação Automática	🟡 Média	Trigger automático após ações (ex: entrevista realizada → próximo estágio)
+6. Envio Proposta	🔴 Alta	Workflow de envio e negociação de proposta
+7. Fechamento Vaga (Placement)	🔴 Alta	Quando candidato aceita → marcar vaga como fechada
+8. Onboarding Flow	🔴 Alta	Checklist pós-contratação (documentos, exame, integração)
+9. Feedback Reprovação	🟡 Média	Email personalizado para candidatos reprovados
+10. Notificação Vaga Fechada	🟡 Média	Avisar todos candidatos em processo quando vaga fecha
+11. Handling Messages	🟡 Média	Templates para comunicação intermediária
+12. Gatilhos de SLA	🟡 Média	Alertas quando candidato fica muito tempo em um estágio
+📋 FLUXO COMPLETO A IMPLEMENTAR
+1. Entrevista RH Concluída
+   ↓
+2. [FALTA] Email convite entrevista com Gestor
+   ↓
+3. [FALTA] Agendamento via Teams/Calendar
+   ↓
+4. Entrevista Gestor Realizada
+   ↓
+5. [FALTA] Captura transcrição Teams
+   ↓
+6. [FALTA] Análise WSI automática + Parecer LIA
+   ↓
+7. [FALTA] Decisão: Aprovar/Reprovar
+   ├── Aprovado → [FALTA] Email proposta
+   │   ├── Aceita → [FALTA] Workflow onboarding
+   │   │   └── [FALTA] Notificar outros candidatos (vaga fechada)
+   │   └── Recusada → [FALTA] Email feedback + voltar pipeline
+   │
+   └── Reprovado → [FALTA] Email feedback personalizado
+Quer que eu comece a implementar? Sugiro priorizar na seguinte ordem:
+
+Templates de email completos (todos os estágios)
+Fluxo Entrevista Gestor (agendamento + emails)
+Integração Teams para transcrição
+Workflow de Proposta e Onboarding
+Notificações de fechamento de vaga
+Posso começar por qual parte?

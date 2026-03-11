@@ -1,0 +1,29 @@
+puxar dados do menu configuracoes - sim
+e todas as etapas posteriores.
+
+na pagina da tabela de vagas componente de acoes: pausar vaga com desdobramentos. talvez mudar recrutador. talvez um botao de iniciar triagens (para vagas de clientes que acabaram de implantar a wedotalent com as funcionalidades de gerar perguntas de triagem através do job description, mapear candidatos na base e global, calibrar perfis e iniciar as triagens com todos os candidatos da vaga, exceto x y z em etapas avançadas. (precisariamos de uma proposta para desenvolver essa funcionalidad, certo?)
+
+nao precisariamos precisariamos do preview da vaga, eitar vaga comas funcoes de editar etapas e editar as perguntas de triagem. nao alteramos status da vaga aqui (cancelar, somente pausar). 
+
+dentro da vaga sem o prompt da lia (expandido ou super expandido).
+teriamos o kanban com as colunas, os cards com badges de status e botoees de aprovar e reprovar em funil e triagem e link do teams na etapa de entrevista. 
+
+recrutador aprova ou reprova para iniciar a triagem (candidatos buscaos na base ou global). candiadtos que se inscreveram sao triados obrigatoriamente pela lia que vai add na coluna triagem para o recrutador aprovar ou reprovar. 
+recrutador aprova na triagem para entrevista e a lia agenda as entrevistas. 
+candiatos reprovados vao para coluna reporvados e ao reprovar abre modal para editar mensagem de feedback ou lia envia automatico. 
+
+
+em acoes (componente de ações) somente triagem wsi, mover etape e reprovar. 
+mover etapa somente entre funil, triagem e reprovados. 
+
+no card do kanban icones de nota geral, nota triagem, nota cv (com os modais). botao de acoes no card com enviar triagem e adicionar a favoritos. na visao tabela. mesmos icones, botao de aprovar e reprovar na coluna inicial, candidatos que necessitam acao destacados, edicao de etapa na coluna etapa para mover para as etapas pipeline, triagem e reprovados. 
+preview do candidato. 
+
+icone de acao de enviar triagem, favoritos, icone de linkedin e outros dados, icone do cerebro para gerar analise lia. 
+
+tab perfil completo, atividades, arquivos e parecer e anlises lia
+
+analisar se precisamos da visao tela cheia do perfil do candiadto. 
+
+
+na tabela de candidatos filtros e colunas como recursos. 

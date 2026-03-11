@@ -1,0 +1,215 @@
+Fluxo Completo Mapeado (8 Etapas + Pós-Publicação)
+ETAPA 1: Detecção de Critérios (0/9 → X/9)
+┌─ CHAT ────────────────────────────────────────┐  ┌─ PAINEL: Critérios Detectados ─┐
+│ LIA: "Detalhe o máximo que puder sobre a      │  │ Etapa 1 de 8                   │
+│ vaga para otimizar o processo de construção." │  │ ⚪ Cargo                        │
+│                                               │  │ ⚪ Gestor/Área                  │
+│ Exemplo: "Preciso de um Desenvolvedor..."     │  │ ⚪ Competências técnicas        │
+│                                               │  │ ⚪ Comp. comportamentais        │
+│ Campos detectáveis automaticamente:           │  │ ...                            │
+│ • Cargo e área                                │  │ Detectando critérios... 0/9    │
+│ • Gestor responsável                          │  │ [████░░░░░░░░░░░░] 3/9        │
+│ ...                                           │  │                                │
+│ [Anexar JD] [Usar anterior] [Ver exemplos]    │  │ [Avançar] (mín. 2 critérios)   │
+└───────────────────────────────────────────────┘  └────────────────────────────────┘
+ETAPA 2: Informações Básicas
+┌─ CHAT ────────────────────────────────────────┐  ┌─ PAINEL: Informações Básicas ──┐
+│ LIA: "Preenchi com base na sua descrição e    │  │ Etapa 2 de 8                   │
+│ no setup da empresa."                         │  │                                │
+│                                               │  │ Cargo *: [Gerente De Ti]       │
+│ "Revise e ajuste os campos ao lado.           │  │ Área/Departamento *: [v]       │
+│ Se precisar alterar algo, é só me dizer       │  │ Gestor: [xxxxxxxxx]            │
+│ ou editar diretamente no painel!"             │  │ Localidade: [são paulo]        │
+│                                               │  │                                │
+│                                               │  │ Modelo: ○Presencial ●Híbrido ○Remoto
+│                                               │  │ Contrato: ●CLT ○PJ             │
+│                                               │  │                                │
+│                                               │  │ [< Voltar] [Avançar >]         │
+└───────────────────────────────────────────────┘  └────────────────────────────────┘
+ETAPA 3: Requisitos Técnicos
+┌─ CHAT ────────────────────────────────────────┐  ┌─ PAINEL: Requisitos Técnicos ──┐
+│ LIA: "Agora vamos definir as competências     │  │ Etapa 3 de 8                   │
+│ técnicas!"                                    │  │                                │
+│                                               │  │ LINGUAGENS DE PROGRAMAÇÃO      │
+│ "Detectei algumas skills com base na sua      │  │ + Adicionar linguagem          │
+│ descrição. Você pode:"                        │  │                                │
+│ • Adicionar novas linguagens, frameworks...   │  │ FRAMEWORKS                     │
+│ • Ajustar o nível de proficiência             │  │ + Adicionar framework          │
+│ • Marcar como obrigatório ou desejável        │  │                                │
+│                                               │  │ BANCOS DE DADOS                │
+│ "Edite diretamente no painel ao lado."        │  │ + Adicionar banco              │
+│                                               │  │                                │
+│                                               │  │ Total: 0 (Obrig: 0, Desej: 0)  │
+└───────────────────────────────────────────────┘  └────────────────────────────────┘
+ETAPA 4: Competências Comportamentais
+┌─ CHAT ────────────────────────────────────────┐  ┌─ PAINEL: Competências ──────────┐
+│ LIA: "Vamos definir as competências           │  │ Etapa 4 de 8                   │
+│ comportamentais!"                             │  │                                │
+│                                               │  │ [Comunicação] Peso: ●●●○○      │
+│ "Baseado no perfil da vaga e na cultura       │  │ [Liderança] Peso: ●●●●○        │
+│ da sua empresa, sugeri algumas competências." │  │ [Resolução...] Peso: ●●●○○     │
+│                                               │  │                                │
+│ Para cada uma, você pode:                     │  │ + Adicionar competência        │
+│ • Ajustar o peso (1-5) conforme a importância │  │                                │
+│ • Editar a justificativa para a avaliação     │  │ O peso define quanto essa      │
+│ • Adicionar ou remover competências           │  │ competência impacta na         │
+│                                               │  │ Nota LIA do candidato.         │
+│ "O peso define quanto essa competência        │  │                                │
+│ impacta na Nota LIA do candidato."            │  │ [< Voltar] [Avançar >]         │
+└───────────────────────────────────────────────┘  └────────────────────────────────┘
+ETAPA 5: Salário e Benefícios
+┌─ CHAT ────────────────────────────────────────┐  ┌─ PAINEL: Salário e Benefícios ──┐
+│ LIA: "Ótimo progresso! Agora vamos para       │  │ Etapa 5 de 8                    │
+│ remuneração e benefícios."                    │  │                                 │
+│                                               │  │ SALÁRIO BASE (CLT)              │
+│ "Com base nas informações previamente         │  │ De: R$ 12.000  Até: R$ 18.000   │
+│ cadastradas pela empresa e conforme nível     │  │                                 │
+│ e área/departamento da posição, os            │  │ BÔNUS ANUAL                     │
+│ benefícios e faixas salariais foram           │  │ De: R$ 10.000  Até: R$ 20.000   │
+│ sugeridos."                                   │  │ Critérios: Desempenho + metas   │
+│                                               │  │                                 │
+│ Defina:                                       │  │ BENEFÍCIOS                      │
+│ • Faixa salarial (mínimo e máximo)            │  │ ☑ Vale Refeição R$ 35/dia       │
+│ • Bônus anual e critérios                     │  │ ☑ Vale Transporte               │
+│ • Benefícios oferecidos                       │  │ ☑ Plano de Saúde                │
+│                                               │  │ ☑ Plano Odontológico            │
+│ "Esses dados ajudam a atrair candidatos       │  │ ☑ Auxílio Home Office R$ 200    │
+│ qualificados."                                │  │ + Adicionar benefício           │
+└───────────────────────────────────────────────┘  └─────────────────────────────────┘
+ETAPA 6: Perguntas de Triagem WSI ⭐
+┌─ CHAT ────────────────────────────────────────┐  ┌─ PAINEL: Perguntas WSI ─────────┐
+│ LIA: "Quase lá! Agora vamos configurar as     │  │ Etapa 6 de 8                    │
+│ perguntas de triagem rápida."                 │  │                                 │
+│                                               │  │ PERGUNTAS DE TRIAGEM WSI       │
+│ "Essas perguntas serão enviadas               │  │ 0/5 selecionadas                │
+│ automaticamente via WhatsApp para uma         │  │                                 │
+│ pré-qualificação dos candidatos."             │  │ ☐ "De 1 a 5, qual seu nível    │
+│                                               │  │    de experiência com gestão..."│
+│ A triagem incluirá:                           │  │    [Aberta] [Obrigatória]       │
+│ • Perguntas padrão da empresa (setup)         │  │                                 │
+│ • Perguntas específicas para esta vaga        │  │ ☐ "Em uma escala de 1 a 5..."   │
+│                                               │  │    [Aberta] [Obrigatória]       │
+│ ─────────────────────────────────────────     │  │                                 │
+│ LIA: "Gerei 7 perguntas de triagem baseadas   │  │ ☐ "Considerando a necessidade..."│
+│ na **metodologia WSI** e no perfil da vaga."  │  │    [Aberta] [Obrigatória]       │
+│                                               │  │                                 │
+│ Frameworks científicos usados:                │  │ [✨ Gerar mais opções]          │
+│ • **CBI** (Competency-Based Interviewing)     │  │                                 │
+│ • **Dreyfus Model** (Avaliação de Expertise)  │  │ ⓘ Selecione mais 5 pergunta(s) │
+│ • **Bloom's Taxonomy** (Níveis de Conhecim.)  │  │   para completar.               │
+│                                               │  │                                 │
+│ "Selecione **5 perguntas** que melhor se      │  │ [< Voltar] [Avançar >]          │
+│ adequam ao processo seletivo."                │  │                                 │
+└───────────────────────────────────────────────┘  └─────────────────────────────────┘
+ETAPA 7: Configuração de Pipeline (etapas do processo)
+ETAPA 8: Resumo e Publicação
+┌─ CHAT ────────────────────────────────────────┐  ┌─ PAINEL: Resumo da Vaga ────────┐
+│ LIA: "Excelente! Aqui está o resumo           │  │ Etapa 8 de 8                    │
+│ completo da vaga."                            │  │                                 │
+│                                               │  │ ▼ Informações Básicas           │
+│ "O resumo inclui automaticamente:"            │  │ ▼ Requisitos Técnicos           │
+│ • Apresentação da empresa (sobre, missão)     │  │ ▼ Competências                  │
+│ • EVP (Employee Value Proposition)            │  │ ▼ Remuneração                   │
+│ • Valores e cultura da organização            │  │ ▼ Perguntas de Triagem          │
+│ • Desafios da posição                         │  │ ▼ Pipeline                      │
+│                                               │  │                                 │
+│ "Revise todos os detalhes antes de publicar.  │  │ (clique para expandir/editar)   │
+│ Você pode clicar em qualquer seção para       │  │                                 │
+│ voltar e editar."                             │  │                                 │
+│                                               │  │                                 │
+│ "Quando estiver tudo certo, clique em         │  │                                 │
+│ **Publicar Vaga** para ativar o               │  │ [< Voltar]                      │
+│ recrutamento!"                                │  │ [✨ Publicar Vaga] (verde)      │
+└───────────────────────────────────────────────┘  └─────────────────────────────────┘
+Fluxo Pós-Publicação (sua proposta) ✅
+┌──────────────────────────────────────────────────────────────────────────────────────┐
+│  PÓS-PUBLICAÇÃO: Sourcing Automático + Aprovações Teams                              │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                      │
+│  ┌─ APÓS CLICAR "PUBLICAR VAGA" ─────────────────────────────────────────────────┐  │
+│  │                                                                                │  │
+│  │  LIA: "🎉 Vaga publicada com sucesso!                                         │  │
+│  │                                                                                │  │
+│  │  Agora vou buscar candidatos ideais na nossa base de talentos.                │  │
+│  │  Aguarde um momento enquanto analiso os perfis..."                            │  │
+│  │                                                                                │  │
+│  │  [████████░░░░░░░░░░] Buscando na base local...                               │  │
+│  │                                                                                │  │
+│  └────────────────────────────────────────────────────────────────────────────────┘  │
+│                                        ▼                                             │
+│  ┌─ RESULTADOS DA BUSCA LOCAL ───────────────────────────────────────────────────┐  │
+│  │                                                                                │  │
+│  │  LIA: "✅ Encontrei **12 candidatos** na base local que correspondem          │  │
+│  │  ao perfil da vaga!                                                           │  │
+│  │                                                                                │  │
+│  │  Vou adicionar os **5 mais aderentes** à coluna do Pipeline da vaga           │  │
+│  │  para sua análise.                                                            │  │
+│  │                                                                                │  │
+│  │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                         │  │
+│  │                                                                                │  │
+│  │  🌐 **Quer expandir a busca para candidatos externos?**                       │  │
+│  │                                                                                │  │
+│  │  A busca global acessa nossa rede de 800M+ profissionais e                    │  │
+│  │  **consome créditos** da sua conta.                                           │  │
+│  │                                                                                │  │
+│  │  [Ver Créditos Disponíveis: 150]                                              │  │
+│  │                                                                                │  │
+│  │  [✓ Sim, Expandir Busca] [Não, Continuar com Base Local]                      │  │
+│  │                                                                                │  │
+│  └────────────────────────────────────────────────────────────────────────────────┘  │
+│                                        ▼                                             │
+│  ┌─ SE CONFIRMAR BUSCA GLOBAL ───────────────────────────────────────────────────┐  │
+│  │                                                                                │  │
+│  │  LIA: "Perfeito! Iniciando busca global...                                    │  │
+│  │                                                                                │  │
+│  │  [████████████░░░░░░] Analisando perfis externos...                           │  │
+│  │                                                                                │  │
+│  │  ✅ Encontrei mais **28 candidatos** via busca global!                        │  │
+│  │  Consumidos: 28 créditos | Restantes: 122 créditos                            │  │
+│  │                                                                                │  │
+│  │  Vou adicionar os **10 melhores** ao Pipeline junto com os da base local."    │  │
+│  │                                                                                │  │
+│  └────────────────────────────────────────────────────────────────────────────────┘  │
+│                                        ▼                                             │
+│  ┌─ PIPELINE POPULADO ───────────────────────────────────────────────────────────┐  │
+│  │                                                                                │  │
+│  │  LIA: "✅ Pipeline atualizado!                                                │  │
+│  │                                                                                │  │
+│  │  Adicionei **15 candidatos** para sua análise:                                │  │
+│  │  • 5 da base local                                                            │  │
+│  │  • 10 da busca global                                                         │  │
+│  │                                                                                │  │
+│  │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                         │  │
+│  │                                                                                │  │
+│  │  📋 **Próximos passos:**                                                      │  │
+│  │                                                                                │  │
+│  │  1. Você receberá **notificações via Teams** para aprovar ou                  │  │
+│  │     reprovar cada candidato para triagem                                      │  │
+│  │                                                                                │  │
+│  │  2. Ao aprovar, inicio automaticamente a triagem com as                       │  │
+│  │     perguntas WSI que você configurou                                         │  │
+│  │                                                                                │  │
+│  │  3. Após a triagem, você receberá o resultado com o                           │  │
+│  │     **Score LIA** e minha recomendação                                        │  │
+│  │                                                                                │  │
+│  │  [Ver Pipeline] [Ver Configurações de Notificação]                            │  │
+│  │                                                                                │  │
+│  └────────────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────┘
+Resumo do Fluxo Completo
+Fase	Etapa	O que a LIA faz
+Criação	1. Detecção	Detecta critérios automaticamente da descrição
+2. Info Básicas	Pré-preenche, pede revisão
+3. Requisitos Técnicos	Sugere skills, permite ajuste
+4. Comp. Comportamentais	Sugere competências com pesos
+5. Salário/Benefícios	Sugere faixas e benefícios do setup
+6. Perguntas WSI	Gera perguntas baseadas em perfil + skills (CBI, Dreyfus, Bloom)
+7. Pipeline Config	Define etapas do processo
+8. Resumo/Publicação	Mostra tudo, botão Publicar
+Sourcing	9. Busca Local	Busca na base, adiciona ao pipeline
+10. Busca Global	Pergunta se quer expandir (créditos)
+11. População Pipeline	Adiciona candidatos encontrados
+Triagem	12. Aprovação Teams	Envia notificações para aprovar triagem
+13. Triagem Automática	Executa triagem WSI nos aprovados
+14. Resultado	Entrega Score LIA + recomendação

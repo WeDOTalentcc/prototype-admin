@@ -1,0 +1,319 @@
+Quero que você analise cada página da plataforma que vou informar e gere uma documentação completa de funcionalidades, já organizada para:
+
+Desenvolvimento técnico
+
+Criação de roadmap por fluxos
+
+Geração de cards estilo Jira
+
+Geração de tasks importáveis
+
+Apoio direto ao time de backend, frontend, dados e IA
+
+🏗️ CONTEXTO TÉCNICO DA PLATAFORMA
+
+Protótipo: Replit
+
+Tailwind CSS
+
+Python + FastAPI
+
+Integrações com agentes de IA
+
+Produto final:
+
+Backend: Ruby on Rails
+
+Frontend: Vue.js + Nuxt + Vuetify
+
+📏 REGRAS OBRIGATÓRIAS
+
+Organize a resposta por página da plataforma.
+
+Dentro de cada página, siga rigorosamente a estrutura abaixo.
+
+Não resuma.
+
+Se faltar informação, aponte a lacuna e sugira perguntas.
+
+Sempre separe claramente:
+
+Frontend
+
+Backend
+
+Dados
+
+Integrações
+
+IA (quando houver)
+
+🧩 ESTRUTURA OBRIGATÓRIA PARA CADA PÁGINA
+1️⃣ DOCUMENTAÇÃO BÁSICA DA PÁGINA
+
+Para cada página, descreva:
+
+Nome da página
+
+Objetivo principal da página
+
+Onde ela aparece na jornada do usuário
+
+Quais outros módulos da plataforma ela depende
+
+Quais módulos dependem dela
+
+Entregue também:
+
+O que já está claramente definido
+
+O que ainda está em aberto / mal definido
+
+2️⃣ LISTA COMPLETA DE FUNCIONALIDADES DA PÁGINA
+
+Liste todas as funcionalidades possíveis da página, por exemplo:
+
+Criar
+
+Editar
+
+Excluir
+
+Listar
+
+Buscar
+
+Filtrar
+
+Aprovar
+
+Reprovar
+
+Agendar
+
+Cancelar
+
+Exportar
+
+Notificar
+
+etc.
+
+Cada funcionalidade deve ter:
+
+Nome claro
+
+Pequena descrição do que faz
+
+3️⃣ DOCUMENTAÇÃO DETALHADA PARA TAREFAS (POR FUNCIONALIDADE)
+
+Para cada funcionalidade da página, gere:
+
+✅ História de Usuário
+
+Formato obrigatório:
+
+“Como [tipo de usuário], eu quero [objetivo] para [benefício].”
+
+✅ Regras de Negócio
+
+Lista numerada
+
+Explícita
+
+Sem ambiguidade
+
+✅ Fórmulas de Cálculo e Lógicas Internas
+
+Quando houver
+
+Com exemplos numéricos se aplicável
+
+✅ Inputs, Outputs, Validações e Edge Cases
+
+O que entra
+
+O que sai
+
+O que valida
+
+Casos extremos e erros possíveis
+
+✅ Entregue ao final:
+Uma lista pronta de funcionalidades que já pode virar tasks em alto nível.
+
+4️⃣ CARDS DE ESPECIFICAÇÃO (ESTILO JIRA) – POR FUNCIONALIDADE
+
+Para cada funcionalidade, gere um card com:
+
+Título
+
+Descrição
+
+História de Usuário
+
+Regras de Negócio
+
+Cálculos (se houver)
+
+Requisitos Técnicos:
+
+Backend
+
+Frontend
+
+Dados
+
+IA (se houver)
+
+Integrações
+
+Riscos
+
+Definição de Pronto (DoD)
+
+Critérios de Aceitação (AC)
+
+✅ Entregue um conjunto completo de cards já prontos.
+
+5️⃣ DIAGRAMA DA JORNADA DA PÁGINA (EM TEXTO)
+
+Descreva a jornada:
+
+🔹 Do ponto de vista do usuário:
+
+Começo
+
+Meio
+
+Fim
+
+🔹 Do ponto de vista do sistema:
+
+Eventos
+
+Chamadas de API
+
+Gravações
+
+Retornos
+
+✅ Sempre separar:
+
+[FRONT]
+
+[BACK]
+
+[DADOS]
+
+[IA]
+
+[INTEGRAÇÕES]
+
+6️⃣ ROADMAP EM FORMATO DE FLUXOS (POR PÁGINA)
+
+Organize:
+
+O que precisa ser feito primeiro
+
+O que depende do quê
+
+O que vem depois
+
+✅ Entregue:
+
+Fase 1
+
+Fase 2
+
+Fase 3
+
+etc.
+
+Em formato textual pronto para virar diagrama no Miro/FigJam.
+
+7️⃣ DOCUMENTO DE PADRÃO DE DESIGN DA PÁGINA
+
+Descreva:
+
+Paleta de cores
+
+Tipografia
+
+Grid
+
+Espaçamentos
+
+Componentes padrão (botões, cards, tabelas, modais etc.)
+
+✅ Explique:
+
+Como isso funciona no Tailwind (protótipo)
+
+Como isso deve virar Vuetify (produto final)
+
+8️⃣ USO DE INTELIGÊNCIA ARTIFICIAL NA PÁGINA (SE APLICÁVEL)
+
+Mapear:
+
+Onde a IA entra
+
+O que ela recebe
+
+O que ela devolve
+
+Tipo de modelo/agent
+
+Impacto no fluxo
+
+✅ Entregar:
+
+Pontos de IA
+
+Riscos (alucinação, custo, latência)
+
+Boas práticas de fallback e monitoramento
+
+9️⃣ REQUISITOS FUNCIONAIS DA PÁGINA
+
+Listar tudo o que a página deve fazer, do ponto de vista de negócio e usuário.
+
+✅ Em formato:
+1.
+2.
+3.
+4.
+
+Sempre ligados às user stories e critérios de aceitação.
+
+🔟 LISTA FINAL DE TASKS (IMPORTÁVEL PARA JIRA / TRELLO / LINEAR)
+
+Gerar uma lista única no formato:
+
+[Título da Task]
+
+Descrição
+
+Tipo: feature | bug | spike | tech debt
+
+Dependências
+
+Critérios de Aceitação
+
+Estimativa:
+
+Ideal
+
+Realista
+
+Pessimista
+
+📥 COMO EU VOU USAR ESTE PROMPT
+
+Sempre que eu disser algo como:
+
+“As páginas da plataforma são: Login, Dashboard, Vagas, Candidatos, Agendamento, Notificações.”
+
+Você deve:
+
+✅ Executar toda essa estrutura para cada página, uma por uma, sem pular nenhuma etapa.

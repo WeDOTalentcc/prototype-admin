@@ -1,0 +1,109 @@
+Good start. Yay. I want some bacon.
+
+Hey Paul, how are you? Good morning. Hey, good morning!
+
+How are you? Everything is great, guys!
+
+Thanks for everyone's presence. Is it worth waiting for us to get to Parra? What do you think?
+
+I think we'll only see the presentations this week.
+
+Very good. I think Giovani, maybe André, don't know each other. André, Giovanni, the newest member of the team, is giving us support. Giovanni and André are our specialists in IAC and they are also helping us. Cool. I think it's worth just doing... Hey, say it. Can someone talk? No, you can talk. I was just going to make a comment here, which I think we optimize while Parra... First, I really want to thank you for the availability of time, Saturday, but I think it's super important, especially because we're on the final stretch of things.
+
+Everyone knows that we are running out of time. We really need to deliver. And I think the most important thing is to deliver in the right way, without making mistakes. So, the idea here is to have a technical discussion, we'll talk a little more about it, butYeah. Based on this conversation, we really need to be sure that we are walking in the right way with regard to this topic, which is a new topic for everyone, for the market, which is artificial intelligence.
+
+We are going there and there. And more, we don't have time, we are pressured, we cannot make mistakes and we cannot take risks. I think it is one of the most important points. and we can't take risks. Once this thing is on the street, it will scale up. There are several topics here related to AI, I've been talking to Victor, which are very sensitive and go far beyond development only. These are topics related to legislation, governance and if we make a slip, we have very serious legal implications.
+
+We prepare our product for three laws, which are Brazilian, European and American. Why this? Because we have customers from these three countries, or will have. And if we don't meet what these customers or these laws require, imagine that we" our product. So, again, there are technical issues, but there are much bigger issues that now we Start navigating and we really need André's help. And I really wanted you to take advantage of this moment to learn from you.
+
+I think it will be a very interesting conversation about a topic, again, little known to us, with a guy who is a super specialist. And then thinking about what we have talked a lot about, where the software development market is going, you can have much broader you need to know all the dimensions of all the subjects the more you know the faster we will be able to deliver to follow the changes in the market and The more complete you are as professionals.
+
+Sorry to extend myself a little bit, but I think it's a super important topic. Parra didn't arrive, so I'll close here with what I also wanted, which is the central point, which is the following: I think we've all learned a lot in this journey. And I think the most important point is that we have learned what it is to work in the right way. And that working correctly in development involves a series of factors, from planning, product concept, product viability in the market, development process, use of tools to optimize the work.
+
+But I think the most important thing here is planning. And what we are going to do here is discuss concepts, architecture and several other things that Victor has tested. but we will now understand where we are. But the most important thing is that if we don't plan, we won't be sure, we will either have a rework, or there are risks, or we delay the product. So, again, is the opportunity for us to learn and plan correctly for us to execute once and for all and to accelerate our work more and more.
+
+I don't know if it's ok for you, if you have any questions, if anyone has any comments, but I really wanted you to take this there... Oi.
+
+Okay, fine. I came back and lost a minute of what you said, because my wife turned on her computer and she puts so much stuff to open that she dropped the internet.
+
+No, it's okay.
+
+When she turns on the PC, the internet...
+
+I'm in a hurry, but I was just saying that. So, guys, that's it, okay? I don't know if anyone has any more comments, but the idea is for us to talk a lot here today, okay?
+
+Right.
+
+And then he will bring us some feedback to discuss. And on top of that, we will start planning the next steps. Is that it?
+
+I think it's worth recording this here because sometimes we can transcribe, take some essays, sometimes we take some tutorials, right?
+
+Dude, I think I sent this meeting through the Talensis login, Landtech. I'm going to log in here, Victor, on the other Teams, but if anyone has any other tool to record there, please, while that gives me a minute.
+
+Let me see if I can...
+
+If you can, great, man.
+
+That's a little test. I didn't write down things the way I usually do, I write down things on my notepad, like you've seen there, but I took everything I wrote down from several of our conversations and condensed it and asked to generate an MD the way you usually do it. It's already a reference too. Good. Oh, it's a good idea. I've made us do this. Please, what can I say? Manda ver, Andrea. Well, first of all...
+
+Peace. Victor knows me a little better, Paulo too, but one thing I wanted to make clear initially is I come from a very strong past of... of the scientific area of artificial intelligence and then of development. So, I know about this world of science, but I also know the things that are practical, the things that are implementable in the time that we have... Comercially, and those that are not implementable.
+
+So I tried to do architecture I even talked to Victor this week, taking the most of what already exists and staying with it so we can have a... to take advantage of the development that has already been made, etc. And then I marked some things like, man, this here I think is essential to do now. Other things are marked as: "Man, this would be good if it had, maybe it would have some benefit, but it will not change the world if you go for it or not." And just like you, I've also workedAnd we have an orchestration problem today because of that.
+
+So there are things I'm going to say here I know not only because of your project, which I have read and reread several times here, but because of things that I experience in my practice as well. I'm going to share here the little file that Aya set up for me, of everything we've talked about so far. Go see. This is the proposal I would have as... It's not the ideal world, but it would be the most ideal possible, with everything we discussed, starting with Replic, with the current architecture, plus what was discussed in the various meetings we've had.
+
+It is divided into some topics, the most important I think here are these two: 7 and 8, auditability and database. These are two things that I will give some suggestions here that I think are very important to be implemented. But in general I will go through the whole structure and then I will point out what I think makes or does not make sense for the current moment of you, also knowing that there are things that I do not know.
+
+So I don't know the part of the project that is in Rails. I know it exists, but I don't know how far it is implemented there. This limits a little the vision I have of some things I said here in this document. If by chance there is something here that you say: "Man, this is not like that there" Then you already warn me because I don't know this piece of the other end thereAs conversational chat, as later tools that we have already discussed, statistical analysis, machine learning, other specific tools that can be incorporated in the future and that are also routes that if you put on the backend, it will not respond until the user is waiting on the screen.
+
+So this is the basic division of what is there. The frontend has a REST part and a WebSocket part. This WebSocket, as I understand it, is not implemented in this way today. There is no WebSocket there today in the way it is implemented.
+
+It has a WebSocket, a front-end for AeroBack-End,Ace. Brails. I use the Abtine Machine and there is a... There is an implementation It's interesting about communication and softwares.
+
+So this is also a point that is already covered thinking about the platform as a whole. So, REST WebSocket, a WebSocket for communication of these that are slower, that you can be giving feedback and such. The first thing here, the suggestion would be to use the FastAPI as a gateway in Python and not Flash.
+
+How is the name of the other one that is being used? Oh, I forgot the name.
+
+FastAPI has an advantage here, in relation to the work rate, etc. But this is not something that will change the game and I will implement the FastAPI now. So it's just a suggestion for the future. I think you would have better support with the Python's FastAPI for the gateway. Because this proposal here would aim to put together everything that exists, both the CRUDs and everything in Python, and not to have Ruby and Python.
+
+Why the proposal to put everything together? Your team is small. But if today a part of the team has more experience in Ruby, then there's not much to do, it's better to keep it the way it is with Ruby and Python. But if everyone works as well on Ruby as on Python, it would be very interesting to unify the two things and have one backend. For a number of reasons, after I made a document showing some things about Ruby, Ruby has known memory problems, especially with regard to his garbage collector, and there comes a moment that depending on how much information he exchanges,Stopping this is even known, it's called "Stop the World".
+
+It stops everything, locks, goes there and unlocks this thing, returns it to the operating system, only at this time you have a dick in your throat in your application.
+
+Since I don't know what's going on inside Ruby today, I don't know if you can see this situation. But I've seen it happen trying to run machine learning stuff, for example, inside Ruby. And sometimes even very large orchestration with the ReptileKey itself, the microserver, this happens a lot.
+
+So I don't know if it's your context, that's why I'm just pointing out this detail.
+
+Victor, would you like to say something?
+
+No, perfect. This observation is very pertinent for Ruby 1.8 to 2.0, where you had a different GARBA type of difference. After 2.1, For applied methodology, yes. Variables New ones tend to die faster and the old ones tend to stay longer. This was evolving until 3.1, where we applied WGIT and solved a lot of this problem, which is the version we use. It's obvious that we won't apply a Rubin's Bachelorette in any way, but just to be able to contextualize it, it's a problem that is 100% bypassed.
+
+Ok, so at this point, if it's more comfortable for the team to keep working in this language, ok. There are also problems with the thread. I don't know if you've explored it too, Victor, about the parallelism capacity between Ruby and Python. The libraries, to the point that I know, the parallel support libraries, because both are monothreads, the basic one, the one that makes the basic workflow. The support libraries for parallel work in Python are also superior.
+
+But if you, the way you say, don't run this kind of thing in Ruby, then you won't get to the context that this is a problem, right?
+
+So you always have a much simpler way to track to what point it was, at what point the problem occurred, avoid callback hells, right? Yes. That's it. And not just Ruby, right?
+
+Because the callback hell, the Node also suffers a lot depending on the way you architect the solution. Well, okay. So that was the first point. then the orchestration for me with Add It And Kill, ok, it's the way that makes the most sense and such, thenDo you ever intend to migrate this here to make a microserver? Or this product will not scale enough to be necessary in a microserver?
+
+That's an excellent question. It would... I'll try to answer in the best way I can. I think that for recruitment aspects, This server and the product will be able to handle it very well. But if we move forward, I believe it is worth having a separate service that can solve this in another place. Even for the project not to grow too much in an obese way and become difficult to deal with and maintain.
+
+So far, as far as ATS is concerned, the experience we have, I think it will work very well. But putting the foot, for example, in onboarding, in other things. For example, one of the examples we have is integration with our client. He takes the data, treats the data and returns it to the back-end so he can treat it. All the things that exceed the equipment, we prefer to do it externally. Thank you.
+
+So, you create a separate project to deal with this and it runs on a separate API.
+
+Yes, generally, there are trade-offs, but usually we try to deal with it like this: Bye.
+
+This is just a suggestion, but it's a little stronger because it depends on how you want to migrate, it can be very painful or very little. Today, if you incorporate the UV in the Python project, which is the Python monorepo, Can you make separate APIs, deployed separately, taking advantage of centralized resources in Libre? And then, for example, all the utility you do, everything that is reusable between several layers of API, you can play there, including modeling, which, as far as I understand, is not exactly a problem, but it can become a future problem.
+
+which you have to keep creating. For example, in today's situation, if Python needs to access the same thing that Ruby does, In the database, if you want to model, you will have to create a modeling from there and create a modeling from here. I don't know if this scenario exists, but if this scenario starts to exist, it starts to get boring, boring, boring. We've already been very angry with this in life too.
+
+And then the solution we have, because our team is not big enough to implement a microservice, you need a team of at least 10, 12 devs to put this decently in the air. Because otherwise it's a lot of work for Pokémon, right? What we did was the middle of the road, the monohap. We make the APIs separate, everything that is utility, things that are reusable goes to the libs. Then the way the monohap works is when it goes to get this API to make its deploy, it incorporates the things that are necessary from the lib, joins everything, makes the deploy and goes there.
+
+And then you have flexibility to deal with this project, which I think would be very interesting if you think about more things being added over time. So it would be very useful to ponder this, because it's easy to put the UV there the way it is today, by the structure I saw in the project.
+
+I like the idea. I think we should think with love about it. Me parece promissor.
+
+So, our... Our first version, 3 years ago, didn't have monorepo in Python. It only had monorepo in Node. The difference in maintenance between one and the other code is absurd. So much so that we dropped everything that was in Python and redid everything using UV. It took four months of work because there was already a lot of things implemented and given the stage you are in now, I think it would be very useful to think about this now so that in the future you don't screw up with exactly what we screwed up in the company.
+
+It gives a lot of flexibility. And it's the middle of the road, right? But then, you having these shared APIs, even if you have a centralized bank, When you want to change to a microservice, you just need to take this bank and share it and orchestrate the information using ReactMQ that you already have. You separate the banks, the APIs will already be separated, make each one consume its own and create the replicas using the orchestrator with the Rampage MQ, which will be a hand in the wheel, thinking about the future. In this example here, I put only three domain APIs there just to give a basic idea of how I would separate, right? But since you already have this part of the

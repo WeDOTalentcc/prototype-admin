@@ -1,0 +1,89 @@
+10. Configurações de UI Necessárias
+10.1 Tela de Alertas (Existente - Ajustar)
+Localização: Configurações > Metas & Planejamento > Alertas
+
+┌─────────────────────────────────────────────────────────────┐
+│ Configuração de Alertas                    [Salvar]         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ALERTAS DE PIPELINE                                        │
+│  ├─ SLA Próximo do Vencimento    [Email ▼] [Teams ▼] [●]   │
+│  │   └─ Threshold: [80] % do SLA                            │
+│  ├─ Candidato Sem Interação      [Teams ▼] [●]              │
+│  │   └─ Dias sem contato: [5] dias                          │
+│  └─ Pipeline Vazio               [Email ▼] [Bell ▼] [●]    │
+│      └─ Mínimo candidatos: [3]                              │
+│                                                             │
+│  ALERTAS DE METAS                                           │
+│  ├─ Meta Mensal em Risco         [Email ▼] [●]              │
+│  │   └─ % restante do mês: [20] %                           │
+│  └─ Meta Atingida                [Bell ▼] [●]               │
+│                                                             │
+│  ALERTAS DE ENTREVISTA                                      │
+│  ├─ Entrevista Não Confirmada    [Bell ▼] [Teams ▼] [●]    │
+│  │   └─ Horas antes: [24] h                                 │
+│  ├─ Feedback Pendente            [Email ▼] [●]              │
+│  │   └─ Horas após entrevista: [48] h                       │
+│  └─ No-Show                      [Bell ▼] [Email ▼] [●]    │
+│                                                             │
+│  ALERTAS DE SISTEMA                                         │
+│  ├─ Sync ATS Falhou              [Email ▼] [●]              │
+│  └─ Créditos Baixos              [Email ▼] [●]              │
+│      └─ Limite: [100] créditos                              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+10.2 Central de Comunicações (Nova Tela)
+Localização: Configurações > Central de Comunicações
+
+┌─────────────────────────────────────────────────────────────┐
+│ Central de Comunicações                                      │
+├─────────────────────────────────────────────────────────────┤
+│ [Templates] [Automações] [Políticas] [Histórico]            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  TEMPLATES DE EMAIL                                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 📧 Primeiro Contato           [Editar] [Prévia]     │   │
+│  │ 📧 Lembrete de Triagem        [Editar] [Prévia]     │   │
+│  │ 📧 Aprovação na Triagem       [Editar] [Prévia]     │   │
+│  │ 📧 Feedback de Rejeição       [Editar] [Prévia]     │   │
+│  │ 📧 Entrevista Agendada        [Editar] [Prévia]     │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  TEMPLATES DE WHATSAPP                                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 💬 Convite para Triagem       [Editar] [HSM: ✅]    │   │
+│  │ 💬 Lembrete de Entrevista     [Editar] [HSM: ⏳]    │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+10.3 Automações de Comunicação (Nova Aba)
+Localização: Configurações > Central de Comunicações > Automações
+
+┌─────────────────────────────────────────────────────────────┐
+│ Automações de Comunicação                                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  JORNADA DO CANDIDATO                                        │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Quando: Candidato sourced com match > 80%            │   │
+│  │ Ação: Enviar email "Primeiro Contato"                │   │
+│  │ Canal: [Email ▼]  Aprovação: [Obrigatória ▼]  [●]   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Quando: Triagem não concluída há 24h                 │   │
+│  │ Ação: Enviar lembrete                                │   │
+│  │ Canal: [Email ▼]  Aprovação: [Automático ▼]  [●]    │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Quando: 24h antes da entrevista                      │   │
+│  │ Ação: Enviar lembrete                                │   │
+│  │ Canal: [WhatsApp ▼]  Aprovação: [Automático ▼]  [●] │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  [+ Adicionar Automação]                                    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+

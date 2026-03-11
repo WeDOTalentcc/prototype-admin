@@ -1,0 +1,40 @@
+14.6. Plano de Migração Incremental (sem quebrar nada)
+A migração pode ser feita um domínio por vez, sem parar o sistema:
+
+FASE 0 — Infraestrutura (pré-requisito):
+├── Criar domains/base.py (DomainPrompt ABC)
+├── Criar domains/registry.py (DomainRegistry + @register_domain)
+├── Criar domains/workflow.py (DomainWorkflow LangGraph)
+├── Criar orchestrator/cascaded_router.py + fast_router.py
+├── Criar shared/ com serviços transversais (mover, não reescrever)
+└── Manter AgentRegistry + IntentRouter como fallback
+FASE 1 — Migrar primeiro domínio (sourcing — já o mais próximo de B):
+├── Criar domains/sourcing/domain.py
+├── Mover sourcing_agent.py → domains/sourcing/agents/
+├── Mover query_tools.py (parcial) → domains/sourcing/tools.py
+├── Mover serviços relacionados → domains/sourcing/services/
+├── Registrar com @register_domain
+├── Testar roteamento cascateado para intents de sourcing
+└── Se funcionar → desativar rotas antigas no AgentRegistry
+FASE 2 — Migrar job_management (o mais complexo):
+├── Decompor job_intake_agent.py em 5 agentes menores
+├── Mover job_tools.py + job_wizard_tools.py → domains/job_management/tools.py
+├── Criar domains/job_management/
+├── Mover serviços relacionados
+└── Testar wizard conversacional com novo workflow
+FASE 3–8 — Migrar domínios restantes (1 por vez):
+├── cv_screening, interviewing, wsi_assessment
+├── pipeline_management (inclui analytics_agent + communication_agent deprecated + candidate_tools)
+├── scheduling, communication (inclui email_providers/ + billing_providers/)
+└── ats_integration (inclui ats_clients/ inteiro)
+FASE 9 — Migrar recruiter_assistant + task_planning:
+├── Mover recruiter_assistant_agent.py (2.551L) → domains/recruiter_assistant/
+├── Mover task_planner_agent.py (821L) → domains/task_planning/
+└── Atualizar IntentRouter para novos caminhos
+FASE 10 — Limpeza:
+├── Remover AgentRegistry antigo
+├── Remover IntentRouter antigo
+├── Remover pasta agents/specialized/ (vazia)
+├── Remover tools/ centralizados (já redistribuídos por domínio)
+├── Remover serviços da pasta services/ que foram movidos
+└── Atualizar imports em toda a codebase

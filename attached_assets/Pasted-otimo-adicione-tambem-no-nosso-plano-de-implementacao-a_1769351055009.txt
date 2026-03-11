@@ -1,0 +1,520 @@
+otimo. adicione tambem no nosso plano de implementacao, a analise de informacoes de remuenracao, bonus e beneficios junto com as informacoes disponbilizadas e informar se a faixa de remuenracao está em linha com mercado, está em linha com o que foi cadastrado no menu configuracoes (caso haja) se poderia melhorar. o mesmo com relação ao bonus, caso haja cadastrro de politica de bonus ou variavle para posicao e nivel no sistema isso será mostrado e avisado que a inforamacao é oriunda dos dados da empresa e tambem pode fazer avaliacao em relacao ao pacote completo da posicao ou total comp. eventuais ajustes propostos vao refletir na etapa de confirmacao de dados de remuenracao e bonus e beneficios do fluxo. faz sentido? ajuste o plano, integracoes, campos, etc o que for necessario para implementar isso tambem
+
+Faz total sentido! Vou verificar os serviços existentes de remuneração e configurações para alinhar essa expansão:
+
+Agora tenho a visão completa! Vou atualizar o plano com a análise de compensação. Aqui está a proposta expandida:
+
+Plano Atualizado com Análise de Compensação
+O Que JÁ Existe (e Vamos Aproveitar)
+Componente	Localização	O Que Faz
+MarketBenchmarkService	market_benchmark_service.py	Busca salários do mercado (Glassdoor, LinkedIn, etc.)
+Benefit model	company.py	Benefícios com value, seniority_levels, departments
+IdealProfile	company.py	salary_range_min, salary_range_max por cargo/nível
+CompanyConfigurationService	company_configuration_service.py	Carrega benefícios da empresa
+get_benefits_for_seniority()	company_configuration_service.py	Filtra benefícios por senioridade
+IntelligenceLayerService	intelligence_layer_service.py	Ajustes de salário baseados em aprendizado
+O Que PRECISA SER CRIADO
+Novo Componente	Descrição
+CompensationPolicy model	Política de bônus/variável por cargo/nível (se empresa cadastrar)
+CompensationAnalysisService	Serviço que orquestra análise completa de Total Comp
+CompensationAnalysis schema	Resposta estruturada com análise de salário, bônus, benefícios
+CompensationAnalysisResult	Resultado com comparações, sugestões e origem dos dados
+Novo Modelo: CompensationPolicy
+# lia-agent-system/app/models/compensation_policy.py
+class CompensationPolicy(Base):
+    """
+    Política de compensação por nível/cargo cadastrada pela empresa.
+    Permite análise proativa de alinhamento durante criação de vaga.
+    """
+    __tablename__ = "compensation_policies"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
+    
+    # Escopo da política
+    name = Column(String(255), nullable=False)  # "Política Tech Sênior"
+    department = Column(String(100), nullable=True)  # null = aplica a todos
+    role_pattern = Column(String(200), nullable=True)  # "desenvolvedor|engenheiro|arquiteto"
+    seniority_level = Column(String(50), nullable=True)  # "senior", "pleno", etc.
+    
+    # Faixas Salariais
+    salary_min = Column(Float, nullable=True)  # R$ 18.000
+    salary_max = Column(Float, nullable=True)  # R$ 25.000
+    salary_target = Column(Float, nullable=True)  # R$ 22.000 (ponto médio desejado)
+    
+    # Política de Bônus
+    bonus_enabled = Column(Boolean, default=False)
+    bonus_type = Column(String(50), nullable=True)  # "annual", "quarterly", "on-target"
+    bonus_min_pct = Column(Float, nullable=True)  # 10% (mínimo)
+    bonus_target_pct = Column(Float, nullable=True)  # 20% (target)
+    bonus_max_pct = Column(Float, nullable=True)  # 40% (máximo)
+    bonus_criteria = Column(Text, nullable=True)  # Descrição dos critérios
+    
+    # Remuneração Variável (além de bônus)
+    variable_compensation = Column(JSON, default={})
+    # {
+    #   "plr": {"enabled": true, "avg_pct": 15},
+    #   "comissao": {"enabled": false},
+    #   "stock_options": {"enabled": true, "vesting": "4 anos"}
+    # }
+    
+    # Total Compensation Target
+    total_comp_annual_min = Column(Float, nullable=True)
+    total_comp_annual_max = Column(Float, nullable=True)
+    
+    # Metadados
+    is_active = Column(Boolean, default=True)
+    effective_from = Column(DateTime, default=datetime.utcnow)
+    effective_until = Column(DateTime, nullable=True)
+    source = Column(String(100), default="manual")  # manual, imported, ai_suggested
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+Novo Schema: CompensationAnalysis
+# lia-agent-system/app/schemas/compensation_analysis.py
+from enum import Enum
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel
+class CompensationAlignmentStatus(str, Enum):
+    ALIGNED = "aligned"           # Dentro da faixa esperada
+    BELOW_MARKET = "below_market" # Abaixo do mercado
+    ABOVE_MARKET = "above_market" # Acima do mercado
+    BELOW_POLICY = "below_policy" # Abaixo da política da empresa
+    ABOVE_POLICY = "above_policy" # Acima da política da empresa
+    NO_DATA = "no_data"           # Sem dados para comparar
+class DataSource(str, Enum):
+    COMPANY_POLICY = "company_policy"  # Dados da política da empresa
+    MARKET_BENCHMARK = "market_benchmark"  # Dados de mercado
+    INTERNAL_HISTORY = "internal_history"  # Histórico interno de vagas
+    INFERENCE = "inference"  # Inferência da IA
+    USER_INPUT = "user_input"  # Informado pelo usuário
+class SalaryAnalysis(BaseModel):
+    """Análise do componente salarial"""
+    proposed_min: float
+    proposed_max: float
+    
+    # Comparação com mercado
+    market_min: Optional[float] = None
+    market_max: Optional[float] = None
+    market_median: Optional[float] = None
+    market_alignment: CompensationAlignmentStatus = CompensationAlignmentStatus.NO_DATA
+    market_percentile: Optional[int] = None  # "Sua oferta está no P75 do mercado"
+    
+    # Comparação com política da empresa
+    policy_min: Optional[float] = None
+    policy_max: Optional[float] = None
+    policy_alignment: CompensationAlignmentStatus = CompensationAlignmentStatus.NO_DATA
+    
+    # Sugestão
+    suggested_min: Optional[float] = None
+    suggested_max: Optional[float] = None
+    suggestion_reason: Optional[str] = None
+    
+    # Origem dos dados
+    data_sources: List[DataSource] = []
+    confidence: str = "low"  # high, medium, low
+class BonusAnalysis(BaseModel):
+    """Análise do componente de bônus"""
+    proposed_pct: Optional[float] = None
+    proposed_type: Optional[str] = None  # "annual", "quarterly"
+    proposed_criteria: Optional[str] = None
+    
+    # Política da empresa
+    policy_exists: bool = False
+    policy_min_pct: Optional[float] = None
+    policy_target_pct: Optional[float] = None
+    policy_max_pct: Optional[float] = None
+    policy_type: Optional[str] = None
+    policy_alignment: CompensationAlignmentStatus = CompensationAlignmentStatus.NO_DATA
+    
+    # Sugestão
+    suggested_pct: Optional[float] = None
+    suggested_type: Optional[str] = None
+    suggestion_reason: Optional[str] = None
+    
+    # Origem dos dados
+    data_source: DataSource = DataSource.INFERENCE
+    
+class BenefitAnalysis(BaseModel):
+    """Análise dos benefícios"""
+    proposed_benefits: List[Dict[str, Any]] = []
+    company_standard_benefits: List[Dict[str, Any]] = []
+    
+    # Benefícios monetizáveis (para cálculo de Total Comp)
+    monetizable_annual_value: float = 0.0
+    monetizable_breakdown: List[Dict[str, Any]] = []
+    # [{"name": "VA", "monthly": 800, "annual": 9600}, ...]
+    
+    # Gaps e sugestões
+    missing_standard_benefits: List[str] = []
+    suggested_additions: List[str] = []
+    
+    # Origem
+    data_source: DataSource = DataSource.COMPANY_POLICY
+class TotalCompAnalysis(BaseModel):
+    """Análise do pacote total de compensação"""
+    # Cálculo proposto
+    proposed_annual_salary_min: float
+    proposed_annual_salary_max: float
+    proposed_bonus_annual: float = 0.0
+    proposed_benefits_annual: float = 0.0
+    proposed_total_comp_min: float
+    proposed_total_comp_max: float
+    
+    # Comparação com mercado
+    market_total_comp_min: Optional[float] = None
+    market_total_comp_max: Optional[float] = None
+    market_alignment: CompensationAlignmentStatus = CompensationAlignmentStatus.NO_DATA
+    
+    # Comparação com política
+    policy_total_comp_min: Optional[float] = None
+    policy_total_comp_max: Optional[float] = None
+    policy_alignment: CompensationAlignmentStatus = CompensationAlignmentStatus.NO_DATA
+    
+    # Breakdown visual
+    breakdown_chart: Dict[str, float] = {}
+    # {"salary": 70, "bonus": 15, "benefits": 15} (percentuais)
+class CompensationAnalysisResult(BaseModel):
+    """Resultado completo da análise de compensação"""
+    
+    # Análises por componente
+    salary: SalaryAnalysis
+    bonus: BonusAnalysis
+    benefits: BenefitAnalysis
+    total_comp: TotalCompAnalysis
+    
+    # Resumo executivo
+    overall_assessment: str  # "competitive", "below_market", "above_market", "needs_review"
+    summary: str  # Texto explicativo em linguagem natural
+    
+    # Alertas e recomendações
+    alerts: List[Dict[str, Any]] = []
+    # [{"level": "warning", "message": "Salário 15% abaixo do P50 do mercado"}]
+    
+    recommendations: List[Dict[str, Any]] = []
+    # [{"field": "salary_min", "current": 15000, "suggested": 18000, "reason": "..."}]
+    
+    # Sugestões para aplicar na etapa de Remuneração
+    suggested_values: Dict[str, Any] = {}
+    # {
+    #   "salary_min": 18000,
+    #   "salary_max": 22000,
+    #   "bonus_pct": 20,
+    #   "bonus_type": "annual",
+    #   "benefits_to_add": ["Gympass", "Day Off Aniversário"]
+    # }
+    
+    # Metadados
+    analyzed_at: str
+    data_sources_used: List[DataSource] = []
+    analysis_confidence: str = "medium"
+Novo Serviço: CompensationAnalysisService
+# lia-agent-system/app/services/compensation_analysis_service.py
+class CompensationAnalysisService:
+    """
+    Serviço de análise proativa de compensação.
+    Combina dados de mercado, políticas da empresa e histórico interno.
+    """
+    
+    def __init__(self):
+        self.market_benchmark = MarketBenchmarkService()
+        self.company_config = CompanyConfigurationService()
+        self.job_insights = JobInsightsService()
+    
+    async def analyze_compensation(
+        self,
+        company_id: str,
+        job_title: str,
+        seniority: str,
+        department: Optional[str] = None,
+        location: Optional[str] = None,
+        proposed_salary_min: Optional[float] = None,
+        proposed_salary_max: Optional[float] = None,
+        proposed_bonus_pct: Optional[float] = None,
+        proposed_benefits: Optional[List[str]] = None
+    ) -> CompensationAnalysisResult:
+        """
+        Analisa proposta de compensação comparando com:
+        1. Política da empresa (se cadastrada)
+        2. Dados de mercado
+        3. Histórico interno de vagas similares
+        """
+        
+        # 1. Buscar política da empresa para este cargo/nível
+        policy = await self._get_company_policy(
+            company_id, job_title, seniority, department
+        )
+        
+        # 2. Buscar benchmark de mercado
+        market_data = await self.market_benchmark.search_salary_benchmark(
+            role=job_title,
+            seniority=seniority,
+            location=location
+        )
+        
+        # 3. Buscar histórico interno
+        internal_data = await self.job_insights.get_salary_insights(
+            company_id=company_id,
+            role_pattern=job_title,
+            seniority=seniority
+        )
+        
+        # 4. Buscar benefícios da empresa
+        company_config = await self.company_config.get_configuration(company_id)
+        company_benefits = company_config.get_benefits_for_seniority(seniority)
+        
+        # 5. Analisar cada componente
+        salary_analysis = self._analyze_salary(
+            proposed_min=proposed_salary_min,
+            proposed_max=proposed_salary_max,
+            policy=policy,
+            market=market_data,
+            internal=internal_data
+        )
+        
+        bonus_analysis = self._analyze_bonus(
+            proposed_pct=proposed_bonus_pct,
+            policy=policy
+        )
+        
+        benefits_analysis = self._analyze_benefits(
+            proposed=proposed_benefits or [],
+            company_standard=company_benefits,
+            seniority=seniority
+        )
+        
+        # 6. Calcular Total Compensation
+        total_comp = self._calculate_total_comp(
+            salary_analysis,
+            bonus_analysis,
+            benefits_analysis,
+            policy
+        )
+        
+        # 7. Gerar resumo e recomendações
+        return self._build_result(
+            salary_analysis,
+            bonus_analysis,
+            benefits_analysis,
+            total_comp,
+            policy
+        )
+    
+    async def _get_company_policy(
+        self,
+        company_id: str,
+        job_title: str,
+        seniority: str,
+        department: Optional[str]
+    ) -> Optional[CompensationPolicy]:
+        """Busca política de compensação aplicável"""
+        # Busca por match de cargo + senioridade + departamento
+        # Retorna a política mais específica encontrada
+        ...
+    
+    def _analyze_salary(self, ...) -> SalaryAnalysis:
+        """Analisa componente salarial"""
+        analysis = SalaryAnalysis(
+            proposed_min=proposed_min or 0,
+            proposed_max=proposed_max or 0
+        )
+        
+        # Comparar com mercado
+        if market and market.get("min"):
+            analysis.market_min = market["min"]
+            analysis.market_max = market["max"]
+            analysis.market_median = market.get("median")
+            analysis.data_sources.append(DataSource.MARKET_BENCHMARK)
+            
+            # Determinar alinhamento
+            if proposed_max and proposed_max < market["min"] * 0.9:
+                analysis.market_alignment = CompensationAlignmentStatus.BELOW_MARKET
+            elif proposed_min and proposed_min > market["max"] * 1.1:
+                analysis.market_alignment = CompensationAlignmentStatus.ABOVE_MARKET
+            else:
+                analysis.market_alignment = CompensationAlignmentStatus.ALIGNED
+        
+        # Comparar com política da empresa
+        if policy:
+            analysis.policy_min = policy.salary_min
+            analysis.policy_max = policy.salary_max
+            analysis.data_sources.append(DataSource.COMPANY_POLICY)
+            
+            # Verificar alinhamento com política
+            if proposed_min and proposed_min < policy.salary_min:
+                analysis.policy_alignment = CompensationAlignmentStatus.BELOW_POLICY
+            elif proposed_max and proposed_max > policy.salary_max:
+                analysis.policy_alignment = CompensationAlignmentStatus.ABOVE_POLICY
+            else:
+                analysis.policy_alignment = CompensationAlignmentStatus.ALIGNED
+        
+        # Gerar sugestão se necessário
+        if analysis.market_alignment == CompensationAlignmentStatus.BELOW_MARKET:
+            analysis.suggested_min = market["min"]
+            analysis.suggested_max = market.get("median") or market["max"]
+            analysis.suggestion_reason = (
+                f"Sugerimos ajustar para a faixa de mercado ({format_brl(market['min'])} - {format_brl(market['max'])})"
+            )
+        
+        return analysis
+    
+    def _calculate_monetizable_benefits(
+        self,
+        benefits: List[Dict[str, Any]]
+    ) -> Tuple[float, List[Dict[str, Any]]]:
+        """Calcula valor anual de benefícios monetizáveis"""
+        breakdown = []
+        total = 0.0
+        
+        for benefit in benefits:
+            if benefit.get("value") and benefit.get("value_type") == "monetary":
+                monthly = benefit["value"]
+                annual = monthly * 12
+                breakdown.append({
+                    "name": benefit["name"],
+                    "monthly": monthly,
+                    "annual": annual
+                })
+                total += annual
+        
+        return total, breakdown
+Fluxo Atualizado com Análise de Compensação
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                    WIZARD DE CRIAÇÃO DE VAGA (7 ETAPAS)                              │
+├─────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                      │
+│  ETAPA 1: INPUT + AVALIAÇÃO                                                          │
+│  ┌─────────────────────────────────────────────────────────────────────────────────┐ │
+│  │ Usuário descreve a vaga                                                          │ │
+│  │                    ↓                                                             │ │
+│  │ LIA extrai: cargo, senioridade, departamento, salário mencionado                 │ │
+│  │                    ↓                                                             │ │
+│  │ ┌─── Evaluation Step (combina serviços existentes) ──────────────────────────┐  │ │
+│  │ │ • IntelligenceLayerService → padrões de sucesso                             │  │ │
+│  │ │ • ConfidencePolicyService → thresholds de confiança                         │  │ │
+│  │ │ • SkillsCatalogService → competências por área                              │  │ │
+│  │ │ • RecruiterPersonalizationService → ajustes por histórico                   │  │ │
+│  │ │ • CompensationAnalysisService → 🆕 ANÁLISE DE COMPENSAÇÃO                   │  │ │
+│  │ └─────────────────────────────────────────────────────────────────────────────┘  │ │
+│  └─────────────────────────────────────────────────────────────────────────────────┘ │
+│                    ↓                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────────┐ │
+│  │                  ANÁLISE DE COMPENSAÇÃO (NOVO)                                    │ │
+│  │                                                                                   │ │
+│  │  💰 SALÁRIO                                                                       │ │
+│  │  ├── Proposto: R$ 15.000 - R$ 18.000                                             │ │
+│  │  ├── Mercado: R$ 18.000 - R$ 25.000 (P50: R$ 21.500)                            │ │
+│  │  ├── Política Empresa: R$ 17.000 - R$ 23.000                                     │ │
+│  │  ├── ⚠️ Status: ABAIXO DO MERCADO (-17%)                                         │ │
+│  │  └── 💡 Sugestão: Ajustar para R$ 18.000 - R$ 22.000                             │ │
+│  │      └── Origem: 📊 Benchmark de mercado + 🏢 Política da empresa                │ │
+│  │                                                                                   │ │
+│  │  🎯 BÔNUS                                                                         │ │
+│  │  ├── Proposto: Não informado                                                      │ │
+│  │  ├── Política Empresa: 15-25% anual (target: 20%)                                │ │
+│  │  ├── ✅ Status: POLÍTICA EXISTENTE                                               │ │
+│  │  └── 💡 Sugestão: Adicionar bônus de 20% anual                                   │ │
+│  │      └── Origem: 🏢 Política da empresa (cadastrado no menu Configurações)       │ │
+│  │                                                                                   │ │
+│  │  🎁 BENEFÍCIOS                                                                    │ │
+│  │  ├── Padrão Empresa: VA, VR, Plano Saúde, Gympass, Day Off                       │ │
+│  │  ├── Valor Monetizável: R$ 2.500/mês (R$ 30.000/ano)                            │ │
+│  │  └── 💡 Sugestão: Incluir benefícios padrão                                      │ │
+│  │      └── Origem: 🏢 Configurações da empresa                                      │ │
+│  │                                                                                   │ │
+│  │  📊 TOTAL COMPENSATION (ANUAL)                                                    │ │
+│  │  ┌─────────────────────────────────────────────────────────────────────────────┐ │ │
+│  │  │  Proposto:  R$ 180.000 - R$ 216.000                                          │ │ │
+│  │  │  Sugerido:  R$ 259.200 - R$ 316.800                                          │ │ │
+│  │  │                                                                               │ │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────────────────┐ │ │ │
+│  │  │  │ Salário (12x): R$ 216.000 - R$ 264.000  (70%)                           │ │ │ │
+│  │  │  │ Bônus (20%):   R$ 43.200 - R$ 52.800    (17%)                           │ │ │ │
+│  │  │  │ Benefícios:    R$ 30.000/ano            (13%)                           │ │ │ │
+│  │  │  └─────────────────────────────────────────────────────────────────────────┘ │ │ │
+│  │  └─────────────────────────────────────────────────────────────────────────────┘ │ │
+│  │                                                                                   │ │
+│  │  [Aplicar Sugestões] [Ajustar Manualmente] [Prosseguir Sem Alterações]           │ │
+│  └─────────────────────────────────────────────────────────────────────────────────┘ │
+│                    ↓                                                                 │
+│                                                                                      │
+│  ETAPA 2: JOB DESCRIPTION (gerado com dados já ajustados)                           │
+│  ETAPA 3: COMPETÊNCIAS (badges "Padrão Empresa" + sugestões)                        │
+│  ETAPA 4: REMUNERAÇÃO ← 🆕 Valores pré-preenchidos com sugestões aceitas            │
+│  ETAPA 5: PERGUNTAS WSI                                                              │
+│  ETAPA 6: REVISÃO E PUBLICAÇÃO                                                       │
+│  ETAPA 7: BUSCA E CALIBRAÇÃO                                                         │
+│                                                                                      │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+Integração com Etapa 4 (Remuneração)
+// Frontend: expanded-chat-modal.tsx
+// Na etapa 4 (salary), os campos vêm pré-preenchidos com as sugestões aceitas
+interface SalaryStepProps {
+  // Valores iniciais (vindos da análise)
+  initialValues: {
+    salary_min: number;       // Sugestão aceita ou proposto
+    salary_max: number;
+    bonus_pct?: number;       // Da política da empresa
+    bonus_type?: string;      // "annual", "quarterly"
+    bonus_criteria?: string;  // Critérios
+    benefits: Benefit[];      // Padrão da empresa já selecionados
+  };
+  
+  // Metadados de origem (para badges informativos)
+  fieldOrigins: {
+    salary_min: FieldOrigin;  // { source: "market_benchmark", confidence: 0.85 }
+    salary_max: FieldOrigin;
+    bonus_pct: FieldOrigin;   // { source: "company_policy", confidence: 1.0 }
+    benefits: FieldOrigin;    // { source: "company_policy" }
+  };
+  
+  // Alertas da análise (se houver)
+  compensationAlerts?: Alert[];
+}
+Plano de Implementação Revisado
+Fase 0: Preparação (1 dia)
+ Criar modelo CompensationPolicy em app/models/compensation_policy.py
+ Criar schema CompensationAnalysis em app/schemas/compensation_analysis.py
+ Criar migration para tabela compensation_policies
+ Atualizar FLUXO_WIZARD_VAGA_COMPLETO.md
+Fase 1: CompensationAnalysisService (2 dias)
+ Criar CompensationAnalysisService em app/services/
+ Integrar com MarketBenchmarkService (já existe)
+ Integrar com CompanyConfigurationService (já existe)
+ Integrar com JobInsightsService (já existe)
+ Implementar busca de CompensationPolicy por cargo/nível
+ Implementar cálculo de Total Compensation
+ Implementar monetização de benefícios
+Fase 2: EvaluationStep (2-3 dias)
+ Criar EvaluationResponse schema completo
+ Implementar evaluation_step em job_intake_agent.py
+ Integrar CompensationAnalysisService no evaluation
+ Passar resultados para próximas etapas
+Fase 3: Frontend - Avaliação + Compensação (2-3 dias)
+ Criar componente CompensationAnalysisPanel
+ Exibir comparações (mercado, política, histórico)
+ Exibir origem dos dados com badges
+ Implementar botões "Aplicar Sugestões" / "Ajustar"
+ Passar valores aceitos para etapa 4
+Fase 4: Frontend - Etapa Remuneração Aprimorada (2 dias)
+ Receber valores pré-preenchidos da análise
+ Mostrar badges de origem ("Sugerido pela IA", "Política da Empresa")
+ Auto-preencher bônus se política existir
+ Auto-preencher benefícios padrão
+Fase 5: JD + Inline Edit + Unificação (2-3 dias)
+ Mover geração de JD para após avaliação
+ Criar componente de edição inline
+ Unificar etapas review + pre-publish
+Fase 6: Polimento + Documentação (1-2 dias)
+ Atualizar documentação
+ Testes de integração
+ Revisar fluxo completo
+Badges de Origem dos Dados
+Origem	Badge	Descrição
+company_policy	🏢 Política da Empresa	Dado cadastrado no menu Configurações
+market_benchmark	📊 Benchmark de Mercado	Dados de Glassdoor, LinkedIn, etc.
+internal_history	📈 Histórico Interno	Vagas similares da empresa
+inference	🤖 Inferência IA	Sugestão da LIA
+user_input	✏️ Informado	Valor informado pelo recrutador
+Faz sentido esse plano expandido? Posso começar a implementação!

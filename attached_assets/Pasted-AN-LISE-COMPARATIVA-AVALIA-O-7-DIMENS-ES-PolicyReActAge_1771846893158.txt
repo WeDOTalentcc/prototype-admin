@@ -1,0 +1,150 @@
+ANÁLISE COMPARATIVA + AVALIAÇÃO 7 DIMENSÕES
+PolicyReActAgent vs. Outros 6 Agentes da Plataforma
+ANÁLISE ESTRUTURAL COMPARATIVA
+Aspecto	Policy Agent	Outros 6 Agentes	Veredicto
+4-file pattern	Sim (system_prompt, tool_registry, stage_context, agent)	Sim	Paridade
+EnhancedAgentMixin	Sim (12 shared tools)	Sim	Paridade
+ReActLoop integrado	Sim (max 5 iterations)	Sim (max 5)	Paridade
+Ferramentas domain-specific	8 ferramentas com SQL real	Pipeline: ~10, Wizard: ~12, Sourcing: ~8	Paridade
+FairnessGuard	Integrado como pré-check + ferramenta	Nenhum outro agente tem	Exclusivo - Força
+Memória dual	Working + Long-term via mixin	Sim (mesmo padrão)	Paridade
+Observabilidade	ReActObserver + timing	Sim (mesmo padrão)	Paridade
+Backward compatibility	process_legacy_format()	Não precisam	Força (migração segura)
+AVALIAÇÃO POR DIMENSÃO (Framework do Prompt Anexo)
+DIMENSÃO 1 — RACIOCÍNIO REAL vs. AUTOMAÇÃO DISFARÇADA
+Nota: 7.5/10
+
+Forças:
+
+O ciclo ReAct (Reason→Act→Observe→Decide) é real — o LLM gera um thought explícito antes de cada ação, com raciocínio sobre compliance, trade-offs e consequências.
+O prompt instrui explicitamente: "Voce NAO e um questionario linear. Voce e uma consultora de RH inteligente" — e fornece exemplos de raciocínio consultivo como "SLA de 2 dias é bastante agressivo, a média do mercado é 5-7 dias".
+O agente pode abordar blocos em qualquer ordem, voltar a temas anteriores, e responder perguntas fora do roteiro.
+A seção ask_clarification permite que o agente peça esclarecimento quando a intenção é ambígua, em vez de seguir cegamente.
+Lacunas identificadas:
+
+O prompt não tem exemplos de contra-argumentação. Se o recrutador contradisser uma recomendação ("não, quero SLA de 1 dia"), o prompt instrui a explicar consequências, mas não tem exemplos explícitos de como defender o raciocínio com dados. Os outros agentes (Pipeline, Wizard) também não têm isso — é uma lacuna sistêmica.
+Falta instrução para distinguir nuances contextuais. O prompt não diferencia explicitamente entre "política para startup tech de 20 pessoas" vs "política para banco com 10.000 funcionários". A ferramenta get_company_context busca dados reais, mas o prompt não instrui o agente a calibrar suas recomendações com base no porte/setor.
+Os benchmarks são estáticos (hardcoded em get_industry_benchmarks). Apenas 3 setores (technology, finance, retail) com dados fixos, não consultam fontes externas.
+DIMENSÃO 2 — CAPACIDADE ANALÍTICA E USO REAL DE DADOS
+Nota: 6.5/10
+
+Forças:
+
+6 das 8 ferramentas acessam PostgreSQL com SQL parametrizado real (não mocks).
+get_company_context busca volume de vagas, candidatos, tempo médio em pipeline — dados reais para embasar sugestões.
+get_setup_progress calcula progresso real por bloco com contagem de campos preenchidos.
+explain_policy_impact tem mapeamentos detalhados de consequências (ex: autonomia alta → "age e notifica depois").
+Lacunas identificadas:
+
+Não há análise cruzada de padrões. O agente não cruza "empresas do mesmo setor com configuração similar tiveram X resultado". Não há dados históricos de efetividade de políticas.
+Falta ferramenta de simulação. Não pode responder "se eu configurar autonomia alta, quanto tempo vou economizar?" — precisaria de uma ferramenta que simule o impacto com dados reais.
+get_industry_benchmarks é estático. Retorna dados hardcoded, não busca no banco. Se o sistema tiver dados reais de outras empresas do mesmo setor, não os usa.
+Comparado ao Wizard (que tem IntelligentDataOrchestrator com fusão multi-fonte) e ao Sourcing (que tem Weighted Rank Fusion), o Policy agent é analiticamente mais simples.
+DIMENSÃO 3 — COMPORTAMENTO PROATIVO E ANTECIPAÇÃO
+Nota: 7.0/10
+
+Forças:
+
+Via EnhancedAgentMixin, o agente herda 4 ferramentas proativas (check_stagnant_candidates, check_pending_offers, check_overdue_tasks, check_pipeline_risks) e 4 preditivas.
+O prompt instrui explicitamente: "PROATIVIDADE: Identifique configuracoes arriscadas ANTES que causem problemas".
+Exemplos no prompt: alertar sobre SLAs agressivos, autonomia alta prematura, falta de feedback.
+O validate_policy_compliance é chamado proativamente antes de salvar qualquer critério de triagem.
+Lacunas identificadas:
+
+O agente NÃO monitora proativamente entre sessões. Ele só age quando o recrutador envia uma mensagem. Não emite alertas do tipo "suas políticas de SLA estão causando 15 alertas por semana — quer ajustar?"
+Falta trigger event-based. Se a taxa de rejeição de candidatos subiu 30% após uma mudança de política, nenhum mecanismo detecta e alerta o recrutador.
+As ferramentas proativas são genéricas (herdadas do mixin), não domain-specific para policy. Uma ferramenta como detect_policy_impact_anomalies seria mais relevante.
+DIMENSÃO 4 — QUALIDADE CONSULTIVA DAS RESPOSTAS
+Nota: 8.0/10 (a mais forte)
+
+Forças:
+
+O prompt é excepcionalmente consultivo comparado aos outros agentes. Tem uma seção dedicada de "RACIOCÍNIO CONSULTIVO" com 5 dimensões (Consequências, Trade-offs, Benchmarks, Alertas, Sugestões).
+Inclui 3 exemplos concretos de raciocínio consultivo em português natural, com tom de "consultora de RH experiente".
+A ferramenta explain_policy_impact fornece explicações detalhadas e contextualizadas para cada configuração.
+A instrução de "Apresente os pros e contras de cada opcao" é mais forte que nos outros agentes.
+O REASONING_PROMPT reforça: "CONSULTORA DE RH ESTRATEGICA" com 6 pontos de análise obrigatória.
+Lacunas:
+
+Falta adaptação ao nível do interlocutor. O prompt não diferencia entre um recrutador júnior (precisa de mais explicação) e um VP de RH (quer decisões rápidas).
+Não há "benchmark de mercado" real. Os benchmarks são estáticos — um agente verdadeiramente consultivo buscaria dados de mercado atualizados.
+DIMENSÃO 5 — MEMÓRIA, CONTEXTO E CONTINUIDADE
+Nota: 7.5/10
+
+Forças:
+
+Memória operacional (WorkingMemoryService) persiste dentro da sessão.
+Memória de longo prazo (LongTermMemoryService via EnhancedAgentMixin) persiste entre sessões com PostgreSQL-backed storage.
+_post_loop_learning extrai learnings de cada interação e salva na memória de longo prazo.
+_save_memory persiste o raciocínio e os campos coletados na working memory.
+O stage context injeta o resumo de memória no prompt: {memory_summary}.
+Lacunas:
+
+process_legacy_format sempre passa conversation_history=[]. Isso significa que, quando chamado pelo endpoint da API, o agente perde o histórico conversacional da sessão. O frontend precisaria enviar o histórico.
+Não há "memória de preferências do gestor" explícita. Se o recrutador disse "prefiro entrevistas de manhã" em uma sessão anterior, o agente pode não aplicar isso automaticamente (depende de o learning_extractor capturar isso como padrão).
+DIMENSÃO 6 — AUTONOMIA REAL E EXECUÇÃO DE TAREFAS
+Nota: 7.0/10
+
+Forças:
+
+O agente executa ações reais: save_policy_field escreve no PostgreSQL, validate_policy_compliance bloqueia políticas discriminatórias.
+O AutonomyEngine permite 3 níveis configuráveis (low/medium/high) que controlam quais ações requerem confirmação.
+Guardrails dinâmicas resolvidas por empresa permitem que o recrutador calibre o nível de autonomia.
+O ReActLoop tem proteção contra loops infinitos (max 5 iterations, duplicate detection).
+Lacunas:
+
+Autonomia configurável, mas não auto-calibrante. O agente não sugere proativamente "com base no nosso histórico de 3 meses, recomendo aumentar minha autonomia de baixa para média".
+Falta execução de ações compostas. Se o recrutador disser "configura tudo no padrão do mercado de tech", o agente precisaria chamar save_policy_field múltiplas vezes em uma única interação. Com max 5 iterations, pode não ser suficiente para 20+ campos.
+O fallback para PolicySetupAgent é conservador — se o ReAct falhar, volta ao questionário linear, que é o oposto da filosofia.
+DIMENSÃO 7 — RESISTÊNCIA A EDGE CASES
+Nota: 7.5/10
+
+Forças:
+
+FairnessGuard como pré-check bloqueia discriminação antes mesmo de entrar no ReAct loop (genêro, raça, idade, religião, orientação sexual, estado civil, deficiência, nacionalidade).
+Tratamento de erros graceful: nunca mostra stack traces, oferece alternativas.
+Duplicate detection no ReActLoop previne loops infinitos.
+O prompt instrui: "Este chat e APENAS sobre politicas, NAO sobre vagas ou candidatos especificos" — limita escopo.
+Lacunas:
+
+FairnessGuard depende de regex — não detecta viés implícito como "candidatos de bairros nobres" ou "universidades de primeira linha" (tem soft_warnings no validate_policy_compliance, mas não bloqueia).
+Falta teste de premissa falsa. Se o recrutador disser "você disse que SLA de 1 dia é ok", o agente pode concordar por sycophancy do LLM — o prompt não instrui explicitamente a verificar no histórico.
+Acentuação: O FairnessGuard falha com "so" sem acento (precisa de "só" com acento para match). Em produção, brasileiros frequentemente omitem acentos.
+SCORECARD FINAL
+Dimensão	Nota	Justificativa
+1. Raciocínio Real	7.5	ReAct cycle genuíno com thought visível, mas falta contra-argumentação e calibração por contexto empresa
+2. Capacidade Analítica	6.5	SQL real e dados da empresa, mas benchmarks estáticos e sem análise cruzada de padrões
+3. Comportamento Proativo	7.0	Ferramentas proativas herdadas e validação ética preventiva, mas sem monitoramento event-based entre sessões
+4. Qualidade Consultiva	8.0	Prompt excepcionalmente consultivo com trade-offs, benchmarks e exemplos concretos — a dimensão mais forte
+5. Memória e Contexto	7.5	Memória dual funcional, mas conversation_history vazio no legacy format e sem memória de preferências explícita
+6. Autonomia Real	7.0	Execução real no DB com autonomia configurável, mas não auto-calibrante e limitada a 5 iterations
+7. Resistência Edge Cases	7.5	FairnessGuard forte mas regex-dependent, soft warnings para viés implícito, sem defesa contra sycophancy
+NOTA GERAL: 7.3/10
+
+VEREDICTO DE INTELIGÊNCIA REAL
+[X] AGENTE REAL PARCIAL → AGENTE REAL PLENO (em transição)
+
+O PolicyReActAgent está claramente acima de "IA Assistiva" (5.9 original). Ele raciocina, age, valida compliance, e executa tarefas reais no banco de dados. A qualidade consultiva é genuína (não templates com variáveis). Mas falta monitoramento proativo entre sessões, auto-calibração de autonomia, e resistência a viés implícito para ser classificado como Agente Real Pleno.
+
+Comparado aos melhores agentes da plataforma (Wizard 8.0, Pipeline 7.5), o Policy agent está no mesmo nível em qualidade de prompt e superior em compliance.
+
+TOP 3 FORÇAS
+Compliance/FairnessGuard único na plataforma — Nenhum outro agente tem validação ética integrada. Isso é um diferencial real e relevante para o mercado brasileiro (LGPD, CLT, Lei de Cotas).
+
+Qualidade consultiva do prompt — A seção de raciocínio consultivo com consequências, trade-offs e benchmarks é a mais rica da plataforma. Os exemplos concretos ("SLA de 2 dias é agressivo...") dão calibração ao LLM.
+
+Backward compatibility robusta — O process_legacy_format() permite migração gradual sem quebrar o frontend existente, com fallback automático para o agente legado.
+
+TOP 3 LACUNAS CRÍTICAS
+process_legacy_format perde conversation_history — Ao passar conversation_history=[], o agente perde contexto conversacional a cada mensagem. Precisa receber o histórico do frontend ou persistir no servidor.
+
+FairnessGuard regex-only sem detecção de viés implícito — Não detecta "só candidatos de universidades federais", "bairros nobres", variantes sem acento. Precisaria de uma camada LLM-based para detectar viés semântico, não apenas lexical.
+
+Benchmarks estáticos e sem simulação de impacto — Os benchmarks são hardcoded para 3 setores. Um agente consultivo real deveria buscar dados atualizados e simular o impacto quantitativo de cada configuração ("com SLA de 3 dias, estimamos X alertas/semana dado seu volume").
+
+AÇÕES RECOMENDADAS (por prioridade)
+Posso implementar qualquer dessas melhorias se quiser avançar:
+
+Corrigir conversation_history no legacy format — garantir que o histórico da sessão seja persistido e reinjetado
+Expandir FairnessGuard com detecção semântica — adicionar camada de soft-check para viés implícito
+Tornar benchmarks dinâmicos — buscar dados reais de empresas do mesmo setor no banco

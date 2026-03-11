@@ -1,0 +1,123 @@
+Status Reunião: Fluxo discutido em detalhe
+
+Decisões da Reunião:
+Gate 1 (aprovar mapeados): botão aprovar/reprovar na coluna Funil do Kanban
+Gate 2 (aprovar triados): mesma mecânica, mas com feedback obrigatório
+Modal de reprovação: precisa de campo para motivo
+Feedback customizado: gerado pela IA, recrutador NÃO edita diretamente
+Aprovação em massa: seleciona vários e executa
+Histórico de decisões: super válido, sistema de auditoria
+CARD GAT-003 — AJUSTAR
+Título: Modal de Reprovação com Motivo
+Ajuste: Adicionar campo de motivo/anotação interna na reprovação. O card já tem isso descrito, confirmar que está conforme reunião.
+
+Impacto	Detalhes
+UI/Frontend	Confirmar que o componente tem: select de motivo (obrigatório), campo de anotação interna (opcional), preview de feedback gerado por IA. Arquivo: criar RejectionModal.tsx
+Backend	Validar que endpoint salva motivo + anotação + feedback gerado
+AI/LLM	Nenhum (feedback é GAT-004)
+Protótipo Replit	Verificar batch-approval-modal.tsx existente, adaptar/criar RejectionModal.tsx
+CARD GAT-004 — AJUSTAR
+Título: Geração de Feedback LIA
+Ajuste: Esclarecer que feedback é 100% gerado por IA, sem edição direta pelo recrutador. Recrutador apenas aprova ou pede regeneração.
+
+Impacto	Detalhes
+UI/Frontend	Remover textarea de edição direta. Substituir por: preview do feedback gerado + botão "Regenerar" + botão "Aprovar e Enviar"
+Backend	Endpoint de regeneração de feedback
+AI/LLM	Prompt de geração de feedback com contexto: motivo da reprovação, perfil do candidato, vaga, tom empático e profissional
+NOVO CARD: GAT-008 — Aprendizagem da IA sobre Aprovações/Reprovações
+Titulo: [AI] Aprendizagem da IA sobre Padrões de Aprovação/Reprovação
+Tipo: Feature
+Sprint: 4
+Pontos: 8
+Prioridade: Alta
+Epic: EPIC-GATES
+Status: 📋 A Criar no Jira
+Descricao: |
+  A LIA aprende com decisões de aprovação e reprovação dos recrutadores
+  para melhorar buscas futuras. Gera métricas, estatísticas e inteligência
+  com base nos padrões de aceitação/rejeição.
+Historia de Usuario: |
+  Como recrutador, eu quero que a LIA melhore suas recomendações
+  com base nas minhas decisões anteriores.
+Regras de Negocio:
+  1. Registrar perfil do candidato + decisão + motivo
+  2. Após N reprovações por motivo similar → sugerir ajuste no filtro de busca
+  3. Gerar estatísticas: taxa de aprovação por vaga, motivos mais comuns
+  4. Aprendizado por recrutador e por empresa
+  5. Suggestions proativas: "Nos últimos 30 dias, 80% dos reprovados tinham < 3 anos de experiência. Quer aumentar o filtro?"
+Requisitos Tecnicos:
+  Backend:
+    - LearningFromDecisionsService
+    - Agregações de decisões por motivo, perfil, recrutador
+    - Sugestões de ajuste de busca baseadas em padrões
+  Frontend:
+    - InsightsPanel no dashboard
+    - Sugestões inline na busca
+  AI/LLM:
+    - Análise de padrões com LLM para gerar insights textuais
+DoD:
+  - [ ] Dados de decisões registrados com contexto
+  - [ ] Agregações por motivo/perfil funcionando
+  - [ ] Pelo menos 3 tipos de sugestões proativas
+  - [ ] Dashboard com estatísticas de decisões
+Impacto	Detalhes
+UI/Frontend	Novo painel de insights de decisões no dashboard. Sugestões inline na busca
+Backend	Novo service LearningFromDecisionsService, agregações, tabela de padrões
+AI/LLM	Análise de padrões de aprovação/reprovação com LLM, geração de insights textuais
+Protótipo Replit	Componente de insights/estatísticas de decisões
+ÉPICO 8: Templates de Comunicação (EPIC-TEMPLATES) — 7→8 cards
+Status Reunião: Todos construídos no Replit
+
+Decisões da Reunião:
+Todos os templates já existem no Replit (Configurações > Comunicação e Alertas)
+Mensagem inicial WhatsApp: precisa de 2 templates (consentimento + apresentação da vaga)
+WhatsApp template creation bloqueado no front por Felipe (aguardando sincronização Meta)
+CARD TPL-001 — AJUSTAR
+Ajuste: Esclarecer que são 2 templates de abordagem: (1) Consentimento LGPD + (2) Apresentação da vaga
+
+Impacto	Detalhes
+UI/Frontend	Separar template de abordagem em 2 cards/abas: "Consentimento" e "Apresentação". Arquivo: email-templates-manager.tsx
+Backend	2 tipos distintos: approach_consent e approach_presentation
+AI/LLM	Nenhum
+Protótipo Replit	Já existe em email-templates-manager.tsx, ajustar para separar os 2 tipos
+NOVO CARD: TPL-008 — Sincronização de Templates WhatsApp com Meta
+Titulo: [BACKEND] Sincronização de Templates WhatsApp com Meta Business
+Tipo: Feature
+Sprint: 3
+Pontos: 8
+Prioridade: Alta
+Epic: EPIC-TEMPLATES
+Status: 📋 A Criar no Jira
+Descricao: |
+  Implementar sincronização bidirecional entre templates WhatsApp
+  da plataforma e o Meta Business Manager. Templates precisam ser
+  aprovados pelo Meta antes de usar para disparo.
+Historia de Usuario: |
+  Como recrutador, eu quero que meus templates WhatsApp sejam
+  automaticamente submetidos ao Meta para aprovação.
+Regras de Negocio:
+  1. Criar template na plataforma → submeter ao Meta para aprovação
+  2. Polling de status: PENDING → APPROVED / REJECTED
+  3. Se rejeitado: mostrar motivo + sugerir correção
+  4. Templates aprovados ficam disponíveis para uso
+  5. Sincronizar templates existentes no Meta → plataforma
+  6. Suportar variáveis {{1}}, {{2}} do formato Meta
+Requisitos Tecnicos:
+  Backend:
+    - MetaTemplateSync service
+    - WhatsApp Business Management API
+    - Webhook para status updates
+    - Tabela: whatsapp_template_sync (template_id, meta_template_id, status, rejection_reason)
+  Frontend:
+    - Status de aprovação no editor de templates
+    - Badge: "Pendente Meta", "Aprovado", "Rejeitado"
+DoD:
+  - [ ] Submissão ao Meta funcional
+  - [ ] Polling de status implementado
+  - [ ] Status visível no frontend
+  - [ ] Templates rejeitados com motivo
+Impacto	Detalhes
+UI/Frontend	Badge de status Meta no editor de templates, feedback de rejeição
+Backend	Integração com Meta Business Management API, webhook de status
+AI/LLM	Nenhum
+Protótipo Replit	Simulação de status de aprovação Meta nos templates WhatsApp
