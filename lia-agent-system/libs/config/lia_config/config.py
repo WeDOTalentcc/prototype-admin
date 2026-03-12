@@ -181,6 +181,8 @@ class AppSettings(BaseSettings):
     ENABLE_MICROSOFT_GRAPH: bool = True
     ENABLE_GOOGLE_CALENDAR: bool = False
     FAIRNESS_LAYER3_ENABLED: bool = False
+    # LGPD consent enforcement: False=soft (aviso+continua), True=hard (bloqueia ausência como revogado)
+    LGPD_CONSENT_ABSENT_HARD_BLOCK: bool = False
     USE_LANGGRAPH_NATIVE: bool = True        # Fase 1 (Gaps) 08/03/2026: ativado em produção
 
     # Pipeline AI flags

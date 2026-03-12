@@ -98,12 +98,36 @@ class ConsentCheckerService:
                     consent_type=consent_type,
                 )
 
-            # Caso 2: Consentimento ausente — aviso soft + CONTINUA
+            # Caso 2: Consentimento ausente — comportamento depende da flag hard/soft
             if consent is None:
+                try:
+                    from lia_config.config import settings
+                    _hard_block = settings.LGPD_CONSENT_ABSENT_HARD_BLOCK
+                except Exception:
+                    _hard_block = False
+
+                if _hard_block:
+                    logger.warning(
+                        "[LGPD] HARD_BLOCK: Consentimento ausente bloqueado — candidate=%s, "
+                        "company=%s, purpose=%s, type=%s.",
+                        candidate_id, company_id, purpose, consent_type,
+                    )
+                    await self._record_audit_log(
+                        candidate_id=candidate_id,
+                        company_id=company_id,
+                        purpose=purpose,
+                        event="consent_absent_hard_block",
+                    )
+                    return ConsentCheckResult(
+                        allowed=False,
+                        reason="absent",
+                        consent_type=consent_type,
+                    )
+
                 logger.warning(
-                    f"[LGPD] SOFT_WARNING: Consentimento ausente — candidate={candidate_id}, "
-                    f"company={company_id}, purpose={purpose}, type={consent_type}. "
-                    f"Operação de IA prosseguindo com aviso."
+                    "[LGPD] SOFT_WARNING: Consentimento ausente — candidate=%s, "
+                    "company=%s, purpose=%s, type=%s. Operação prosseguindo com aviso.",
+                    candidate_id, company_id, purpose, consent_type,
                 )
                 await self._record_audit_log(
                     candidate_id=candidate_id,
