@@ -119,6 +119,11 @@ export function getSubStatusOptionsForBehavior(actionBehavior: string, _stageId:
       { code: 'other_offer', display_name: 'Outra Proposta' },
       { code: 'personal', display_name: 'Motivo Pessoal' },
       { code: 'location', display_name: 'Localização' }
+    ],
+    'standby': [
+      { code: 'talent_pool', display_name: 'Banco de Talentos' },
+      { code: 'future_opportunity', display_name: 'Oportunidade Futura' },
+      { code: 'seasonal', display_name: 'Sazonal' }
     ]
   }
 

@@ -69,6 +69,10 @@ export interface UseAgentStreamingResult {
   isStreaming: boolean
   /** true quando a conexão WS está aberta */
   isConnected: boolean
+  /** true enquanto aguarda para reconectar (backoff ativo) */
+  isReconnecting: boolean
+  /** Número da tentativa de reconexão atual (0 = sem tentativa em curso) */
+  reconnectAttempt: number
   /** Último erro recebido, ou null */
   error: string | null
   /** Abre a conexão WS */
@@ -105,6 +109,8 @@ export function useAgentStreaming(
   const [tokens, setTokens] = useState<string>('')
   const [isStreaming, setIsStreaming] = useState<boolean>(false)
   const [isConnected, setIsConnected] = useState<boolean>(false)
+  const [isReconnecting, setIsReconnecting] = useState<boolean>(false)
+  const [reconnectAttempt, setReconnectAttempt] = useState<number>(0)
   const [error, setError] = useState<string | null>(null)
 
   const wsRef = useRef<WebSocket | null>(null)
@@ -123,6 +129,7 @@ export function useAgentStreaming(
       clearTimeout(reconnectTimerRef.current)
       reconnectTimerRef.current = null
     }
+    reconnectCountRef.current = 0
     if (wsRef.current) {
       wsRef.current.onclose = null  // evitar reconexão ao fechar manualmente
       wsRef.current.close(1000, 'Client disconnect')
@@ -131,6 +138,8 @@ export function useAgentStreaming(
     if (mountedRef.current) {
       setIsConnected(false)
       setIsStreaming(false)
+      setIsReconnecting(false)
+      setReconnectAttempt(0)
     }
   }, [])
 
@@ -146,6 +155,8 @@ export function useAgentStreaming(
         if (!mountedRef.current) return
         reconnectCountRef.current = 0
         setIsConnected(true)
+        setIsReconnecting(false)
+        setReconnectAttempt(0)
         setError(null)
       }
 
@@ -215,9 +226,20 @@ export function useAgentStreaming(
           evt.code !== 1001 &&
           reconnectCountRef.current < maxReconnectAttempts
         ) {
+          const attempt = reconnectCountRef.current + 1
           const delay = reconnectBaseDelay * Math.pow(2, reconnectCountRef.current)
-          reconnectCountRef.current += 1
+          reconnectCountRef.current = attempt
+          if (mountedRef.current) {
+            setIsReconnecting(true)
+            setReconnectAttempt(attempt)
+          }
           reconnectTimerRef.current = setTimeout(connect, delay)
+        } else if (reconnectCountRef.current >= maxReconnectAttempts) {
+          // Esgotou tentativas — sinaliza erro permanente
+          if (mountedRef.current) {
+            setIsReconnecting(false)
+            setReconnectAttempt(0)
+          }
         }
       }
     } catch (err) {
@@ -274,6 +296,8 @@ export function useAgentStreaming(
     tokens,
     isStreaming,
     isConnected,
+    isReconnecting,
+    reconnectAttempt,
     error,
     connect,
     disconnect,

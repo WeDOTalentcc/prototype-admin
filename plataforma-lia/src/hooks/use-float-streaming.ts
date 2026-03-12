@@ -23,13 +23,17 @@ export interface HITLPending {
 export interface UseFloatStreamingResult {
   isConnected: boolean
   isStreaming: boolean
+  /** true enquanto aguarda para reconectar (backoff ativo) */
+  isReconnecting: boolean
+  /** Número da tentativa de reconexão atual (0 = sem tentativa em curso) */
+  reconnectAttempt: number
   /** Tokens acumulados durante streaming — mostrar em tempo real */
   streamingContent: string
   error: string | null
   /** Preenchido quando o agente solicita aprovação humana */
   hitlPending: HITLPending | null
-  /** Envia mensagem ao agente especificando o domain */
-  sendMessage: (content: string, domain?: string) => void
+  /** Envia mensagem ao agente especificando o domain e opcionalmente o scope */
+  sendMessage: (content: string, domain?: string, scope?: string) => void
   /** Confirma ou rejeita a ação HITL pendente */
   sendApproval: (approved: boolean) => void
   connect: () => void
@@ -85,6 +89,8 @@ export function useFloatStreaming(
     tokens,
     isStreaming,
     isConnected,
+    isReconnecting,
+    reconnectAttempt,
     error,
     connect,
     disconnect,
@@ -93,9 +99,10 @@ export function useFloatStreaming(
     clearTokens,
   } = useAgentStreaming(sessionId, {}, handleEvent)
 
-  const sendMessage = useCallback((content: string, domain = '') => {
+  const sendMessage = useCallback((content: string, domain = '', scope?: string) => {
     clearTokens()
-    wsSend(content, {}, domain)
+    const context = scope ? { scope } : {}
+    wsSend(content, context, domain)
   }, [wsSend, clearTokens])
 
   const sendApproval = useCallback((approved: boolean) => {
@@ -117,6 +124,8 @@ export function useFloatStreaming(
   return {
     isConnected,
     isStreaming,
+    isReconnecting,
+    reconnectAttempt,
     streamingContent: tokens,
     error,
     hitlPending,

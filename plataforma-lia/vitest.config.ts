@@ -45,6 +45,24 @@ export default defineConfig({
           jsxImportSource: 'react',
         },
       },
+      // ── Component tests (jsdom — React components com JSX) ───────────────
+      {
+        test: {
+          name: 'components',
+          environment: 'jsdom',
+          include: ['src/components/**/__tests__/**/*.test.tsx'],
+          globals: true,
+          setupFiles: ['src/hooks/__tests__/setup.ts'],
+          alias: {
+            '@': path.resolve(dirname, 'src'),
+          },
+        },
+        esbuild: {
+          jsxInject: `import React from 'react'`,
+          jsx: 'automatic',
+          jsxImportSource: 'react',
+        },
+      },
       // ── Storybook visual tests ─────────────────────────────────────────────
       {
         extends: true,

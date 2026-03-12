@@ -64,3 +64,7 @@ build = ["bash", "-c", "cd plataforma-lia && npm run build"]
 [userenv.shared]
 SERVICE_API_TOKEN = "cyHLoZNT2lM9iJkeAbzXLEbHo4fZ9EP24_lMTnbyneo"
 USE_REACT_AGENTS = "true"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 180000

@@ -9,6 +9,8 @@ import {
 } from "../constants"
 
 const STAGE_ACTION_BEHAVIOR_MAP: Record<string, string> = {
+  'standby': 'standby',
+  'stand_by': 'standby',
   'long_list': 'passive',
   'short_list': 'passive',
   'interview_hr': 'scheduling',

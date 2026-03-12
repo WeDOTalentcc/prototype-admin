@@ -72,6 +72,11 @@ interface UniversalTransitionModalProps {
 }
 
 const ACTION_BEHAVIOR_CONFIG: Record<string, { label: string; icon: React.ReactNode; description: string }> = {
+  intake: {
+    label: 'Orientação LIA',
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
+    description: 'LIA orienta o recrutador sobre o candidato recebido',
+  },
   screening: {
     label: 'Convidar para Triagem WSI',
     icon: <ClipboardList className="w-3.5 h-3.5" />,
@@ -97,6 +102,16 @@ const ACTION_BEHAVIOR_CONFIG: Record<string, { label: string; icon: React.ReactN
     icon: <Gift className="w-3.5 h-3.5" />,
     description: 'LIA prepara e envia proposta formal',
   },
+  passive: {
+    label: 'Orientação LIA',
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
+    description: 'LIA orienta sobre a movimentação do candidato',
+  },
+  standby: {
+    label: 'Banco de Talentos',
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
+    description: 'LIA registra candidato no banco de talentos',
+  },
   conclusion_hired: {
     label: 'Enviar Boas-vindas',
     icon: <Mail className="w-3.5 h-3.5" />,
@@ -107,19 +122,11 @@ const ACTION_BEHAVIOR_CONFIG: Record<string, { label: string; icon: React.ReactN
     icon: <MessageSquare className="w-3.5 h-3.5" />,
     description: 'LIA envia feedback construtivo ao candidato',
   },
-}
-
-const DECLINE_REASONS = [
-  { code: 'salary', display_name: 'Salário' },
-  { code: 'benefits', display_name: 'Benefícios' },
-  { code: 'work_model', display_name: 'Modelo de Trabalho' },
-  { code: 'other_offer', display_name: 'Outra Proposta' },
-  { code: 'personal', display_name: 'Motivo Pessoal' },
-  { code: 'location', display_name: 'Localização' },
-]
-
-function isPassiveBehavior(behavior: string): boolean {
-  return behavior === 'intake' || behavior === 'passive'
+  conclusion_declined: {
+    label: 'Agradecimento',
+    icon: <Mail className="w-3.5 h-3.5" />,
+    description: 'LIA envia agradecimento e mantém porta aberta',
+  },
 }
 
 
@@ -147,7 +154,6 @@ export function UniversalTransitionModal({
   const [prompt, setPrompt] = useState('')
   const [channel, setChannel] = useState<'email' | 'whatsapp'>('email')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [declineReason, setDeclineReason] = useState('')
   const [perCandidateSubStatus, setPerCandidateSubStatus] = useState<Record<string, string>>({})
   const [manuallyEditedCandidates, setManuallyEditedCandidates] = useState<Set<string>>(new Set())
   const [showAllPerCandidate, setShowAllPerCandidate] = useState(false)
@@ -181,13 +187,11 @@ export function UniversalTransitionModal({
 
   const isSingle = candidates.length === 1
   const candidate = isSingle ? candidates[0] : null
-  const passive = isPassiveBehavior(currentActionBehavior)
   const fromStageInfo = RECRUITMENT_STAGES.find(s => s.name === fromStage)
   const fromStageDisplayName = fromStageInfo?.displayName || fromStage
-  const isDeclined = currentActionBehavior === 'conclusion_declined'
   const behaviorConfig = ACTION_BEHAVIOR_CONFIG[currentActionBehavior]
   const isRejectedBatch = selectedToStage === 'rejected' && candidates.length > 1
-  const showChatPanel = isLiaAutoAllowed(currentActionBehavior) && !isDeclined && action !== 'just_move'
+  const showChatPanel = isLiaAutoAllowed(currentActionBehavior) && action !== 'just_move'
 
   const transitionCandidates: CandidateContext[] = isRejectedBatch
     ? candidates.map(c => ({
@@ -245,10 +249,9 @@ export function UniversalTransitionModal({
   useEffect(() => {
     if (isOpen) {
       setSubStatus(currentSubStatusOptions.length > 0 ? currentSubStatusOptions[0].code : '')
-      setAction(passive ? 'just_move' : 'lia_auto')
+      setAction('lia_auto')
       setPrompt(initialPrompt || '')
       setChannel('email')
-      setDeclineReason('')
       setPerCandidateSubStatus({})
       setManuallyEditedCandidates(new Set())
       setShowAllPerCandidate(false)
@@ -267,7 +270,7 @@ export function UniversalTransitionModal({
         }, 300)
       }
     }
-  }, [isOpen, currentSubStatusOptions, passive, resetInterpret, initialPrompt])
+  }, [isOpen, currentSubStatusOptions, resetInterpret, initialPrompt])
 
   useEffect(() => {
     if (isRejectedBatch && Object.keys(predictedSubStatuses).length > 0) {
@@ -332,8 +335,8 @@ export function UniversalTransitionModal({
       await onConfirm({
         candidateIds: candidates.map(c => c.id),
         toStage: selectedToStage,
-        subStatus: isDeclined ? declineReason : subStatus,
-        action: passive ? 'just_move' : action,
+        subStatus,
+        action,
         prompt: prompt.trim() || undefined,
         channel: action !== 'just_move' ? channel : undefined,
         perCandidateSubStatus: isRejectedBatch ? perCandidateSubStatus : undefined,
@@ -507,45 +510,9 @@ export function UniversalTransitionModal({
               </div>
             </div>
 
-            {/* Declined: fixed reasons */}
-            {isDeclined && (
-              <div className="space-y-1.5">
-                <Label className={textStyles.label}>
-                  Motivo da recusa *
-                </Label>
-                <RadioGroup
-                  value={declineReason}
-                  onValueChange={setDeclineReason}
-                  className="space-y-1.5"
-                >
-                  {DECLINE_REASONS.map((reason) => (
-                    <div
-                      key={reason.code}
-                      className={cn(
-                        "flex items-center gap-2.5 p-2.5 rounded-md border cursor-pointer transition-colors",
-                        declineReason === reason.code
-                          ? "border-gray-900 bg-gray-50 dark:border-gray-400 dark:bg-gray-800"
-                          : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-                      )}
-                      onClick={() => setDeclineReason(reason.code)}
-                    >
-                      <RadioGroupItem value={reason.code} id={`decline-${reason.code}`} />
-                      <label
-                        htmlFor={`decline-${reason.code}`}
-                        className="text-xs text-gray-800 dark:text-gray-200 cursor-pointer"
-                      >
-                        {reason.display_name}
-                      </label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            )}
-
-            {/* Non-declined: action mode + batch per-candidate */}
-            {!isDeclined && (
-              <>
-                {/* Batch rejection: per-candidate sub-status */}
+            {/* Action mode + batch per-candidate */}
+            <>
+              {/* Batch rejection: per-candidate sub-status */}
                 {isRejectedBatch && currentSubStatusOptions.length > 0 && (
                   <div className="space-y-2">
                     <button
@@ -646,7 +613,7 @@ export function UniversalTransitionModal({
                 )}
 
                 {/* Action mode */}
-                {!passive && behaviorConfig && (
+                {behaviorConfig && (
                   <div className="space-y-1">
                     <Label className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Ação
@@ -694,7 +661,7 @@ export function UniversalTransitionModal({
                           <label htmlFor="action-manual" className="flex items-center gap-1 cursor-pointer">
                             <span className="text-[11px] font-medium text-gray-900 dark:text-gray-50">Manual</span>
                           </label>
-                          {action === 'manual' && onOpenSpecializedModal && (
+                          {action === 'manual' && onOpenSpecializedModal && ACTION_BEHAVIOR_MODALS[currentActionBehavior] && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -730,7 +697,7 @@ export function UniversalTransitionModal({
                 )}
 
                 {/* Generic action mode (no behaviorConfig) */}
-                {!passive && !behaviorConfig && (
+                {!behaviorConfig && (
                   <div className="space-y-1">
                     <Label className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Ação
@@ -772,8 +739,7 @@ export function UniversalTransitionModal({
                     </RadioGroup>
                   </div>
                 )}
-              </>
-            )}
+            </>
           </div>
 
           {/* RIGHT PANEL: Chat with LIA (follows lia-expanded-panel pattern) */}
@@ -792,7 +758,7 @@ export function UniversalTransitionModal({
         </div>
 
         {/* SUB-STATUS ROW (separate band above footer buttons) */}
-        {!isDeclined && currentSubStatusOptions.length > 0 && (
+        {currentSubStatusOptions.length > 0 && (
           <div className="flex items-center justify-end gap-2 w-full px-5 py-2.5 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
             <span className="text-[11px] font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">
               {isRejectedBatch ? 'Motivo padrão:' : isRejectedStage ? 'Motivo:' : 'Sub-status da etapa:'}
@@ -846,7 +812,7 @@ export function UniversalTransitionModal({
 
               <Button
                 onClick={handleConfirm}
-                disabled={isSubmitting || (isDeclined && !declineReason) || (isRejectedStage && !subStatus)}
+                disabled={isSubmitting || (isRejectedStage && !subStatus)}
                 className="h-9 px-4 text-xs font-semibold rounded-md transition-all duration-150 font-['Open_Sans'] bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
               >
                 {isSubmitting ? (
@@ -856,7 +822,7 @@ export function UniversalTransitionModal({
                   </>
                 ) : (
                   <>
-                    {action === 'lia_auto' && !passive ? (
+                    {action === 'lia_auto' ? (
                       <>
                         <Brain className="w-3.5 h-3.5 mr-1.5 text-wedo-cyan" />
                         Confirmar com LIA

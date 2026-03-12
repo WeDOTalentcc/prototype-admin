@@ -27,24 +27,25 @@ ACTION_BEHAVIOR_SITUATION_MAP: Dict[str, Optional[str]] = {
     "verification": "avaliacao_tecnica",
     "offer": "proposta",
     "conclusion_rejected": "rejeicao",
-    "conclusion_declined": "rejeicao",
-    "conclusion_hired": None,
-    "passive": None,
-    "intake": None,
+    "conclusion_declined": "proposta_recusada",
+    "conclusion_hired": "contratacao",
+    "passive": "movimentacao",
+    "intake": "entrada_candidato",
+    "standby": "standby",
 }
 
-# Maps action_behavior → CommunicationMatrixEntry.trigger_name
 ACTION_BEHAVIOR_TRIGGER_MAP: Dict[str, Optional[str]] = {
     "screening": "triagem_aprovado",
     "scheduling": "entrevista_agendada",
-    "evaluation": None,
-    "verification": None,
+    "evaluation": "avaliacao_enviada",
+    "verification": "verificacao_solicitada",
     "offer": "proposta_gerada",
     "conclusion_rejected": "triagem_reprovado",
-    "conclusion_declined": "triagem_reprovado",
+    "conclusion_declined": "proposta_recusada",
     "conclusion_hired": "contratacao_efetivada",
-    "passive": None,
-    "intake": None,
+    "passive": "movimentacao",
+    "intake": "entrada_candidato",
+    "standby": "standby",
 }
 
 # Channels this service can dispatch (candidate-facing external channels only)

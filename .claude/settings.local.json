@@ -914,7 +914,15 @@
       "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py -x -q 2>&1 | tail -40)",
       "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py -x -q --tb=short 2>&1)",
       "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q --no-cov 2>&1)",
-      "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --no-cov --tb=short -q 2>&1)"
+      "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --no-cov --tb=short -q 2>&1)",
+      "Bash(python -m pytest tests/unit/test_react_loop_circuit_breaker.py --no-cov --tb=short -q 2>&1)",
+      "Bash(find /home/runner/workspace/plataforma-lia/src -name \"*lia*\" -o -name \"*float*\" 2>/dev/null | grep -v node_modules | head -20)",
+      "Bash(find /home/runner/workspace/plataforma-lia/src -name \"*float*\" -o -name \"*LiaChat*\" 2>/dev/null | grep -v node_modules | head -10)",
+      "Bash(cd /home/runner/workspace/plataforma-lia && npx vitest run src/hooks/__tests__/use-current-scope.test.ts --reporter=verbose 2>&1 | tail -40)",
+      "Bash(cd /home/runner/workspace/plataforma-lia && npx vitest run src/components/lia-float/__tests__/LiaChatPanel-p2c.test.tsx 2>&1 | tail -60)",
+      "Bash(npx vitest:*)",
+      "Bash(find /home/runner/workspace -name \"*.md\" -path \"*/skills/*\" 2>/dev/null | head -10; find /home/runner/workspace -name \"feature-impact*\" 2>/dev/null | head -5)",
+      "Bash(ls /home/runner/workspace/plataforma-lia/src/hooks/use-search* /home/runner/workspace/plataforma-lia/src/hooks/use-archetypes.ts /home/runner/workspace/plataforma-lia/src/hooks/use-similar-profiles.ts 2>&1)"
     ]
   }
 }

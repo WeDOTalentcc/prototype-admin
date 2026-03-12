@@ -47,6 +47,33 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# P2-A — Circuit breaker para chamadas LLM no _reason()
+# Singleton por módulo: compartilhado entre instâncias do ReActLoop.
+# failure_threshold=3: abre após 3 falhas consecutivas (timeouts, 5xx, etc.)
+# recovery_timeout=60s: tenta recuperação após 1 minuto
+_llm_circuit_breaker = None
+
+
+def _get_llm_circuit_breaker():
+    """Lazy init do circuit breaker LLM — evita erro de import circular."""
+    global _llm_circuit_breaker
+    if _llm_circuit_breaker is None:
+        try:
+            from app.shared.resilience.circuit_breaker import CircuitBreaker, CircuitBreakerConfig
+            _llm_circuit_breaker = CircuitBreaker(
+                name="llm_react_reason",
+                config=CircuitBreakerConfig(
+                    failure_threshold=3,
+                    recovery_timeout=60.0,
+                    success_threshold=2,
+                    timeout=30.0,
+                ),
+            )
+            logger.info("[ReActLoop] LLM circuit breaker initialized (threshold=3, recovery=60s)")
+        except Exception as _cb_exc:
+            logger.warning("[ReActLoop] Circuit breaker unavailable (fail-open): %s", _cb_exc)
+    return _llm_circuit_breaker
+
 
 class ToolDefinition(BaseModel):
     """Schema for a tool that the ReAct loop can call."""
@@ -522,6 +549,26 @@ class ReActLoop:
                 state.should_respond = True
 
         except Exception as exc:
+            # P2-A: tratamento específico para circuit breaker aberto
+            try:
+                from app.shared.resilience.circuit_breaker import CircuitBreakerError as _CBError
+                if isinstance(exc, _CBError):
+                    logger.warning(
+                        "[%s] LLM circuit breaker OPEN — respondendo com fallback amigável. "
+                        "retry_after=%.1fs",
+                        self.config.domain, exc.retry_after,
+                    )
+                    state.error = "circuit_breaker_open"
+                    state.final_response = (
+                        "O serviço de IA está temporariamente indisponível devido a instabilidade. "
+                        f"Tente novamente em aproximadamente {int(exc.retry_after)} segundos. "
+                        "Se o problema persistir, entre em contato com o suporte."
+                    )
+                    state.should_respond = True
+                    return state
+            except ImportError:
+                pass  # CircuitBreakerError não disponível — cai no handler genérico
+
             logger.error(
                 f"[{self.config.domain}] ReAct loop error: {exc}",
                 exc_info=True,
@@ -676,10 +723,28 @@ Respond with a JSON object:
 
 Respond ONLY with the JSON object, no extra text."""
 
-        response = await llm_service.generate(
-            prompt=prompt,
-            provider=self.config.model_provider,
-        )
+        # P2-A: circuit breaker protege a chamada LLM
+        _cb = _get_llm_circuit_breaker()
+        if _cb is not None:
+            try:
+                from app.shared.resilience.circuit_breaker import CircuitBreakerError
+                response = await _cb.call(
+                    llm_service.generate,
+                    prompt=prompt,
+                    provider=self.config.model_provider,
+                )
+            except CircuitBreakerError as _cb_err:
+                logger.warning(
+                    "[%s] LLM circuit breaker OPEN — rejecting _reason call. retry_after=%.1fs",
+                    self.config.domain, _cb_err.retry_after,
+                )
+                raise  # propaga para o run() tratar com final_response amigável
+        else:
+            # circuit breaker indisponível → fail-open
+            response = await llm_service.generate(
+                prompt=prompt,
+                provider=self.config.model_provider,
+            )
 
         # Rough token estimate: (prompt + response) chars / 4
         state.tokens_used_estimate += (len(prompt) + len(response)) // 4
