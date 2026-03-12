@@ -44,28 +44,20 @@ class TestConsentSoftFlag:
         db = _make_db()
         db.execute.return_value = _make_result(None)  # ausente
 
-        with patch("app.services.consent_checker_service.settings") as mock_s, \
-             patch.object(
-                 __import__(
-                     "app.services.consent_checker_service",
-                     fromlist=["ConsentCheckerService"],
-                 ).ConsentCheckerService,
-                 "_record_audit_log",
-                 new=AsyncMock(),
-             ):
-            mock_s.LGPD_CONSENT_ABSENT_HARD_BLOCK = False
-            from app.services.consent_checker_service import ConsentCheckerService
-            svc = ConsentCheckerService(db=db)
-            svc._record_audit_log = AsyncMock()
+        from app.services.consent_checker_service import ConsentCheckerService
+        svc = ConsentCheckerService(db=db)
+        svc._record_audit_log = AsyncMock()
 
+        with patch("lia_config.config.settings") as mock_s:
+            mock_s.LGPD_CONSENT_ABSENT_HARD_BLOCK = False
             result = await svc.check_candidate_consent(
                 candidate_id="cand-1",
                 company_id="comp-1",
                 purpose="ai_screening",
             )
-            assert result.allowed is True
-            assert result.soft_warning is True
-            assert result.reason == "absent"
+        assert result.allowed is True
+        assert result.soft_warning is True
+        assert result.reason == "absent"
 
     @pytest.mark.asyncio
     async def test_absent_soft_gera_event_soft_warning(self):
@@ -215,13 +207,12 @@ class TestConsentFlagFailSafe:
 
 class TestConsentFlagExiste:
 
-    def test_flag_existe_no_settings(self):
-        from lia_config.config import Settings
-        assert hasattr(Settings.model_fields, "LGPD_CONSENT_ABSENT_HARD_BLOCK") or \
-               hasattr(Settings, "LGPD_CONSENT_ABSENT_HARD_BLOCK")
+    def test_flag_acessivel_via_settings(self):
+        """A flag deve ser acessível na instância de settings."""
+        from lia_config.config import settings
+        assert hasattr(settings, "LGPD_CONSENT_ABSENT_HARD_BLOCK")
 
     def test_flag_default_e_false(self):
-        from lia_config.config import Settings
-        field = Settings.model_fields.get("LGPD_CONSENT_ABSENT_HARD_BLOCK")
-        if field:
-            assert field.default is False
+        """Default deve ser False para não quebrar comportamento existente."""
+        from lia_config.config import settings
+        assert settings.LGPD_CONSENT_ABSENT_HARD_BLOCK is False
