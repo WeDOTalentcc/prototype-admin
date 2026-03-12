@@ -961,7 +961,28 @@
       "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/ -q --timeout=60 --cov=app --cov-report=term-missing --ignore=tests/e2e --ignore=tests/test_agents --ignore=tests/load 2>&1 | grep -E \"^app/.*0%\" | head -30)",
       "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/ -q --timeout=60 --cov=app --cov-report=term-missing --ignore=tests/e2e --ignore=tests/test_agents --ignore=tests/load 2>&1 | grep -E \"^app/.*[1-9][0-9]?\\\\%\" | sort -t'%' -k1 -n | head -30)",
       "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_followup_service.py tests/unit/test_wsi_abandoned_service.py -v --timeout=30 2>&1 | tail -40)",
-      "Bash(python -m pytest tests/unit/test_followup_service.py tests/unit/test_wsi_abandoned_service.py -v 2>&1 | tail -40)"
+      "Bash(python -m pytest tests/unit/test_followup_service.py tests/unit/test_wsi_abandoned_service.py -v 2>&1 | tail -40)",
+      "Bash(find /home/runner/workspace/lia-agent-system/alembic/versions -name \"*technical*\" -o -name \"*test*\" | grep -i \"\\\\.py$\" | head -20)",
+      "Bash(find /home/runner/workspace -path \"*/app/models/candidate_list.py\" | head -1 | xargs cat)",
+      "Bash(grep -r \"PyPDF2\\\\|pypdf\\\\|python-docx\\\\|pandas\\\\|openpyxl\" requirements*.txt pyproject.toml setup.py 2>/dev/null | head -20)",
+      "Bash(ls -1 /home/runner/workspace/lia-agent-system/alembic/versions/ | grep -E \"\\\\.py$\" | tail -40)",
+      "Bash(find . -name \"requirements*.txt\" -o -name \"pyproject.toml\" -o -name \"setup.py\" 2>/dev/null | head -5)",
+      "Bash(grep -r \"share_token\\\\|shared_url\\\\|manager_view\" /home/runner/workspace/lia-agent-system/app --include=\"*.py\" 2>/dev/null | head -5)",
+      "Bash(ls -la /home/runner/workspace/lia-agent-system/app/domains/sourcing/agents/ | grep -E \"\\\\.py$\")",
+      "Bash(find /home/runner/workspace/lia-agent-system -name \"*circuit*breaker*\" -type f 2>/dev/null | head -20)",
+      "Bash(ls -la /home/runner/workspace/lia-agent-system/app/domains/cv_screening/agents/ | grep -E \"\\\\.py$\")",
+      "Bash(grep -l \"ragas\" /home/runner/workspace/lia-agent-system/tests/unit/*.py 2>/dev/null)",
+      "Bash(grep -l \"ragas\" /home/runner/workspace/lia-agent-system/tests/fairness/*.py 2>/dev/null)",
+      "Bash(grep -r \"SET LOCAL\" /home/runner/workspace/lia-agent-system --include=\"*.py\" 2>/dev/null | head -5)",
+      "Bash(grep -r \"company_id\" /home/runner/workspace/lia-agent-system/app/models/*.py | grep \"WHERE\\\\|filter\" | head -3)",
+      "Bash(grep -n \"golden_dataset_bias\\\\|GOLDEN_DATASET_BIAS\" /home/runner/workspace/lia-agent-system/tests/**/*.py 2>/dev/null | head -10)",
+      "Bash(python -m pytest tests/unit/test_aud_audit_fixes.py -q --tb=short --no-header --no-cov 2>&1 | tail -50)",
+      "Bash(python -m pytest tests/ --ignore=tests/e2e --ignore=tests/test_agents --ignore=tests/load -q --tb=short --no-header --no-cov 2>&1 | tail -20)",
+      "Bash(python -m pytest tests/unit/test_aud_audit_fixes.py -v --no-header --no-cov 2>&1 | tail -45)",
+      "Bash(python -m pytest tests/unit/test_aud4_hitl_and_domain_circuits.py -v --tb=short --no-header --no-cov 2>&1 | tail -50)",
+      "Bash(python -m pytest tests/unit/test_aud4_hitl_and_domain_circuits.py tests/unit/test_aud_audit_fixes.py -q --tb=short --no-header --no-cov 2>&1 | tail -10)",
+      "Bash(python -m pytest tests/unit/test_aud4_hitl_and_domain_circuits.py tests/unit/test_aud_audit_fixes.py -q --tb=short --no-header --no-cov 2>&1 | tail -30)",
+      "Bash(git push:*)"
     ]
   }
 }

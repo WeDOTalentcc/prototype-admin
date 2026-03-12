@@ -258,6 +258,13 @@ Serviço central: `app/services/notification_service.py`
 - **MLInsightsCard + P4 wiring** (12/03/2026): `src/components/ml-insights-card.tsx` — card expansível de previsões IA (time-to-fill, salary range, market percentile). Lazy-fetch: só chama API ao expandir, cache local (`hasFetched`). Wired em `job-kanban-page.tsx` entre header da vaga e tabs de navegação. 7 testes em `src/components/__tests__/ml-insights-card.test.tsx`.
 - **Follow-up Automático WSI — Gap A / Passo 6B Alpha 1** (12/03/2026): `app/jobs/followup_service.py` — `process_email_followups(db)` consulta notificações `wsi_invite` não abertas há >24h via `email_tracking_events`. MAX_FOLLOWUPS=7. `_mark_no_response()` após esgotar reenvios. LGPD opt-out check. Celery task `followup.process_pending` + beat `followup-check-hourly` (crontab minute=0, expires=3500). 9 testes em `tests/unit/test_followup_service.py`.
 - **WSI Triagem Abandonada — Gap B / Passo 7A Alpha 1** (12/03/2026): `app/jobs/wsi_abandoned_service.py` — `check_abandoned_sessions(db)` consulta `wsi_sessions` `in_progress` sem atividade. FIRST_REMINDER_HOURS=48 (1º lembrete candidato), SECOND_REMINDER_HOURS=96 (2º lembrete + Bell+Teams ao recruiter via `job_vacancies.created_by`). `reminder_count` persistido via `jsonb_set()` no `metadata`. Celery task `wsi.check_abandoned` + beat `wsi-abandoned-check` (crontab minute=0 hour=*/4, expires=14000). 8 testes em `tests/unit/test_wsi_abandoned_service.py`.
+- **Auditoria de Profundidade — Sprints AUD-1 a AUD-5** (12/03/2026): 13 findings confirmados de relatório externo. Implementados:
+  - **AUD-1 (ACH-001)**: `ANTI_SYCOPHANCY_OPERATIONAL` injetado nos 6 prompts faltantes: `analytics`, `communication`, `automation`, `ats_integration`, `sourcing`, `pipeline` system_prompts.
+  - **AUD-2 (ACH-004/010/011/014)**: Circuit breakers aplicados — `OPENAI_CIRCUIT` em `llm_openai.py` (4 métodos), `GEMINI_CIRCUIT` em `llm_gemini.py` (4 métodos). Novos circuits: `GUPY_CIRCUIT`, `PANDAPE_CIRCUIT`, `STACKONE_CIRCUIT`, `SENDGRID_CIRCUIT`, `RESEND_CIRCUIT` em `circuit_breaker.py` + `ALL_CIRCUITS`. Decoradores `@circuit_breaker_decorator` aplicados em: `app/services/ats_clients/` (gupy, pandape, stackone, merge), `app/services/email_providers/` (sendgrid, resend), `app/domains/ats_integration/services/ats_clients/` (gupy, pandape, stackone, merge), `app/domains/communication/services/email_providers/` (sendgrid, resend). `WORKOS_CIRCUIT` aplicado via `_fetch_workos_metrics()` helper em `workos.py`.
+  - **AUD-4 (ACH-005)**: HITL adicionado em `SourcingReActAgent.process()` — bloqueia envio de abordagem (stage="outreach" + confirmação) e solicita aprovação via `hitl_service.request_approval()` + `store_resume_info()`. Fail-open se HITL service indisponível. `CommunicationReActAgent.process()` — bloqueia `initial_contact`, `rejection_feedback`, `offer_letter` via `_HITL_MESSAGE_TYPES`. Ambos integram `audit_service.log_decision()`. 17 testes em `tests/unit/test_aud4_hitl_and_domain_circuits.py`.
+  - **AUD-3 (ACH-006)**: `audit_service.log_decision()` adicionado em `PolicySetupAgent._process_answer()` — registra cada campo configurado com `decision_type="policy_update"`, fail-safe.
+  - **AUD-5 (ACH-025/023/018)**: `bandit` scan adicionado ao CI (`continue-on-error: true`). Job `load-tests` não-bloqueante criado (só roda em `main`). `mockUsers` e `MOCK_BILLING_DATA` removidos de `admin/clientes/[clientId]/usuarios/page.tsx` e `faturamento/page.tsx` — substituídos por estado de erro real.
+  - 36 testes em `tests/unit/test_aud_audit_fixes.py`.
 
 ---
 
@@ -300,7 +307,7 @@ Serviço central: `app/services/notification_service.py`
 
 ## Sprints G1–G7 — COMPLETOS (08/03/2026)
 
-> Estado atual: Sprints A–F + G1–G7 + SEG-1–SEG-5 + SEG-GAPS concluídos. Coverage: **29%+** (gate pytest.ini: 25%). 4193 testes passando.
+> Estado atual: Sprints A–F + G1–G7 + SEG-1–SEG-5 + SEG-GAPS + AUD-1–AUD-5 + AUD-4 concluídos. Coverage: **29%+** (gate pytest.ini: 25%). 4284+ testes passando.
 
 ### G1 — HITL Multi-tenant Fix ✅
 - `domain` + `company_id` adicionados a `request_approval()` em: `job_wizard_graph.py`, `wsi_interview_graph.py`, `pipeline_transition_agent.py`
