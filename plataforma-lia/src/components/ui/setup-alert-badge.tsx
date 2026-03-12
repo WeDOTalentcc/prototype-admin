@@ -41,15 +41,24 @@ export function SetupAlertBadge() {
   const isAdminPage = pathname?.startsWith(ADMIN_PREFIX)
 
   useEffect(() => {
+    let sabBackoff = 0
+
     const fetchProgress = async () => {
       try {
+        if (sabBackoff > 0) {
+          await new Promise(r => setTimeout(r, sabBackoff))
+        }
         const response = await fetch('/api/backend-proxy/settings/progress')
+        if (response.status === 429) {
+          sabBackoff = Math.min((sabBackoff || 2000) * 2, 300000)
+          return
+        }
         if (response.ok) {
+          sabBackoff = 0
           const data = await response.json()
           setProgress(data)
         }
-      } catch (error) {
-        console.error('Failed to fetch settings progress:', error)
+      } catch {
       } finally {
         setIsLoading(false)
       }

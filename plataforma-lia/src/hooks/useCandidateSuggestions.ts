@@ -21,12 +21,22 @@ interface UseCandidateSuggestionsResult {
   mutate: () => void
 }
 
+let backoffMs = 0
+
 const fetcher = async (url: string) => {
   try {
+    if (backoffMs > 0) {
+      await new Promise(r => setTimeout(r, backoffMs))
+    }
     const res = await fetch(url)
+    if (res.status === 429) {
+      backoffMs = Math.min((backoffMs || 1000) * 2, 120000)
+      return { suggestions: [] }
+    }
     if (!res.ok) {
       return { suggestions: [] }
     }
+    backoffMs = 0
     return res.json()
   } catch {
     return { suggestions: [] }

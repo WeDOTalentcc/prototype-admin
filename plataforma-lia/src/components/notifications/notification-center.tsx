@@ -25,7 +25,12 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
+let ncBackoffMs = 0
+
 async function fetchNotificationsApi(endpoint: string, options?: RequestInit) {
+  if (ncBackoffMs > 0) {
+    await new Promise(r => setTimeout(r, ncBackoffMs))
+  }
   const response = await fetch(`/api/backend-proxy${endpoint}`, {
     headers: {
       'Content-Type': 'application/json',
@@ -33,9 +38,14 @@ async function fetchNotificationsApi(endpoint: string, options?: RequestInit) {
     },
     ...options,
   })
+  if (response.status === 429) {
+    ncBackoffMs = Math.min((ncBackoffMs || 1000) * 2, 120000)
+    return { success: false, data: { notifications: [] } }
+  }
   if (!response.ok) {
     return { success: false, data: { notifications: [] } }
   }
+  ncBackoffMs = 0
   const data = await response.json()
   return data
 }

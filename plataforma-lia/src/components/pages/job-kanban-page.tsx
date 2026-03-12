@@ -2187,6 +2187,14 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   }, [dynamicStages, candidatesData])
 
   const hasShownProactiveSuggestion = useRef(false)
+  const lastBriefingJobId = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (currentJob?.id && currentJob.id !== lastBriefingJobId.current) {
+      hasShownProactiveSuggestion.current = false
+      lastBriefingJobId.current = currentJob.id
+    }
+  }, [currentJob?.id])
 
   useEffect(() => {
     if (liaMessages.length > 0 || hasShownProactiveSuggestion.current || !currentJob?.id) return

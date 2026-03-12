@@ -19,9 +19,54 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 
 from app.core.auth import get_current_user
+from app.auth.dependencies import get_current_user_or_demo
 from app.services.token_budget_service import check_budget, get_plan_for_company
 
 logger = logging.getLogger(__name__)
+
+
+async def require_token_budget_lenient(
+    current_user=Depends(get_current_user_or_demo),
+) -> None:
+    """Same as require_token_budget but falls back to demo user when no auth token."""
+    company_id: Optional[str] = None
+    try:
+        company_id = str(
+            getattr(current_user, "company_id", None)
+            or getattr(current_user, "organization_id", None)
+            or ""
+        )
+        if not company_id:
+            return
+
+        plan_code = await get_plan_for_company(company_id)
+        allowed, used_today, daily_limit = await check_budget(company_id, plan_code)
+
+        if not allowed:
+            logger.warning(
+                "[TokenBudgetDep] Budget esgotado company_id=%s used=%d limit=%d plan=%s",
+                company_id, used_today, daily_limit, plan_code,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={
+                    "error": "budget_exhausted",
+                    "message": (
+                        f"Limite diário de uso de IA atingido "
+                        f"({used_today:,} / {daily_limit:,} tokens). "
+                        "O budget será renovado à meia-noite UTC."
+                    ),
+                    "used_today": used_today,
+                    "daily_limit": daily_limit,
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.warning(
+            "[TokenBudgetDep] Erro ao verificar budget (company_id=%s) — continuando: %s",
+            company_id, exc,
+        )
 
 
 async def require_token_budget(

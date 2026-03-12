@@ -191,17 +191,30 @@ export function NotificationSystem({
   const [error, setError] = useState<string | null>(null)
   const lastFetchRef = useRef<number>(0)
 
+  const backoffRef = useRef(0)
+
   const fetchNotifications = useCallback(async () => {
     try {
+      if (backoffRef.current > 0) {
+        await new Promise(r => setTimeout(r, backoffRef.current))
+      }
       setIsLoading(true)
       setError(null)
       
       const response = await fetch(`/api/backend-proxy/notifications?user_id=${userId}&limit=50`)
       
+      if (response.status === 429) {
+        backoffRef.current = Math.min((backoffRef.current || 1000) * 2, 120000)
+        setNotifications([])
+        return
+      }
+      
       if (!response.ok) {
         setNotifications([])
         return
       }
+
+      backoffRef.current = 0
       
       const data = await response.json()
       

@@ -16,8 +16,16 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`[Orchestrator Job Chat] Backend error: ${response.status} ${response.statusText}`)
       const errorData = await response.json().catch(() => ({}))
+      if (response.status === 403 || response.status === 401) {
+        return NextResponse.json(
+          { success: false, content: 'Sessão expirada ou não autenticada. Tente recarregar a página.', error: 'auth_error' },
+          { status: 200 }
+        )
+      }
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`[Orchestrator Job Chat] Backend ${response.status}: ${JSON.stringify(errorData).slice(0, 200)}`)
+      }
       return NextResponse.json(
         { error: 'Erro ao processar chat da vaga', details: errorData },
         { status: response.status }
@@ -27,7 +35,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('[Orchestrator Job Chat] Proxy error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Orchestrator Job Chat] Proxy error:', (error as Error)?.message || error)
+    }
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
@@ -45,7 +55,12 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(`[Orchestrator Job Chat] Backend error: ${response.status} ${response.statusText}`)
+      if (response.status === 403 || response.status === 401) {
+        return NextResponse.json({ intents: [] }, { status: 200 })
+      }
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`[Orchestrator Job Chat] Intents ${response.status}`)
+      }
       return NextResponse.json(
         { error: 'Erro ao buscar intents do job chat' },
         { status: response.status }
@@ -55,7 +70,9 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('[Orchestrator Job Chat] Intents proxy error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Orchestrator Job Chat] Intents proxy error:', (error as Error)?.message || error)
+    }
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
