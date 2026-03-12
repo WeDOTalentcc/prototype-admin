@@ -145,6 +145,11 @@ class EnhancedAgentMixin:
             )
 
         # 3. Último recurso: lista estática
+        logger.warning(
+            "[%s] All guardrail sources failed (autonomy engine + DB) — "
+            "using static defaults. Verify AutonomyEngine and GuardrailRepository configs.",
+            self._enhanced_domain,
+        )
         return _DEFAULT_GUARDRAIL_TOOLS
     
     def _get_shared_insight_tools(self) -> List[ToolDefinition]:

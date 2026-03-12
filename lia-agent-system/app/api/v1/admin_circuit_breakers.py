@@ -122,12 +122,24 @@ async def reset_all_circuit_breakers(_user=Depends(require_admin)) -> Dict[str, 
     os serviços externos estão operacionais.
     """
     reset_all_circuits()  # instâncias de classe
+    failed: list[str] = []
     for name in list(_circuits.keys()):
-        reset_circuit(name)
+        try:
+            reset_circuit(name)
+        except Exception as exc:
+            logger.warning(
+                "[CircuitBreakerAdmin] Failed to reset functional circuit '%s': %s", name, exc
+            )
+            failed.append(name)
 
     total = len(ALL_CIRCUITS) + len(_circuits)
     logger.warning(
         "[CircuitBreakerAdmin] Reset-all: %d circuits → CLOSED por user=%s",
         total, getattr(_user, "id", "admin"),
     )
-    return {"action": "reset_all", "total_reset": total, "new_state": "closed"}
+    return {
+        "action": "reset_all",
+        "total_reset": total - len(failed),
+        "new_state": "closed",
+        **({"failed_circuits": failed} if failed else {}),
+    }

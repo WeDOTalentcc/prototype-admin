@@ -169,6 +169,17 @@ class PolicyEngineService:
         start_time = time.time()
         rules_evaluated = 0
         
+        # Safely parse company_id to UUID — invalid strings fall back to no-tenant filter
+        _company_uuid: Optional[UUID] = None
+        if company_id:
+            try:
+                _company_uuid = UUID(company_id)
+            except (ValueError, AttributeError):
+                logger.warning(
+                    "[PolicyEngine] Invalid company_id format — treating as global rules: %s",
+                    company_id,
+                )
+
         async with AsyncSessionLocal() as session:
             try:
                 query = select(BusinessRule).where(
@@ -176,7 +187,7 @@ class PolicyEngineService:
                         BusinessRule.is_active == True,
                         or_(
                             BusinessRule.company_id == None,
-                            BusinessRule.company_id == UUID(company_id) if company_id else True
+                            BusinessRule.company_id == _company_uuid if _company_uuid else True,
                         )
                     )
                 ).order_by(BusinessRule.priority.asc())

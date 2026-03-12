@@ -108,6 +108,10 @@ export function useFloatStreaming(
   const sendApproval = useCallback((approved: boolean) => {
     const pending = hitlRef.current
     if (!pending) return
+    // Clear ref immediately to prevent double-submit on rapid clicks.
+    // For approval: UI (hitlPending state) stays until handleEvent('message') clears it.
+    // For rejection: clear UI immediately below.
+    hitlRef.current = null
     sendRaw({
       type: 'approval_response',
       approved,
@@ -116,7 +120,6 @@ export function useFloatStreaming(
     })
     if (!approved) {
       // rejeição imediata — limpa o estado sem aguardar backend
-      hitlRef.current = null
       setHitlPending(null)
     }
   }, [sendRaw])

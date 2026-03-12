@@ -929,7 +929,9 @@
       "Bash(cd /home/runner/workspace/lia-agent-system && timeout 90 python -m pytest tests/unit/test_kanban_llm_fallback.py -v --no-header --no-cov 2>&1)",
       "Bash(find /home/runner/workspace/plataforma-lia/src/components/pages/candidates -name \"*.tsx\" -type f 2>/dev/null | head -20)",
       "Bash(npx tsc:*)",
-      "Bash(find /home/runner/workspace -name \"feature-impact*\" -o -name \"feature_impact*\" 2>/dev/null | head -20)"
+      "Bash(find /home/runner/workspace -name \"feature-impact*\" -o -name \"feature_impact*\" 2>/dev/null | head -20)",
+      "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_diagnostico7_fixes.py -x -q 2>&1 | tail -30)",
+      "Bash(python -m pytest tests/unit/test_kanban_llm_fallback.py tests/unit/test_generate_report_tool.py -x -q --no-cov 2>&1 | tail -10)"
     ]
   }
 }
