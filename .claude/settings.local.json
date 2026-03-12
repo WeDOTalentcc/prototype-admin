@@ -918,7 +918,8 @@
       "Bash(python -c \"from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin; print\\('OK:', hasattr\\(EnhancedAgentMixin, '_fairness_pre_check'\\)\\)\")",
       "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q 2>&1)",
       "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q 2>&1; echo \"EXIT:$?\")",
-      "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q --no-cov 2>&1)"
+      "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q --no-cov 2>&1)",
+      "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --no-cov --tb=short -q 2>&1)"
     ]
   }
 }
