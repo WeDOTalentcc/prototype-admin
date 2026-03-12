@@ -11,6 +11,7 @@ from datetime import datetime
 import httpx
 
 from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
+from app.shared.resilience.circuit_breaker import STACKONE_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class StackOneClient(ATSClient):
             headers["x-account-id"] = self.config.company_id
         return headers
     
+    @circuit_breaker_decorator(STACKONE_CIRCUIT)
     async def test_connection(self) -> bool:
         """Test StackOne API connection."""
         try:
@@ -153,6 +155,7 @@ class StackOneClient(ATSClient):
             raw_data=data
         )
     
+    @circuit_breaker_decorator(STACKONE_CIRCUIT)
     async def get_candidate(self, candidate_id: str) -> Optional[ATSCandidate]:
         """Get candidate from StackOne."""
         try:
@@ -178,6 +181,7 @@ class StackOneClient(ATSClient):
             logger.error(f"Failed to get StackOne candidate {candidate_id}: {e}")
             raise
     
+    @circuit_breaker_decorator(STACKONE_CIRCUIT)
     async def list_candidates(
         self,
         job_id: Optional[str] = None,
@@ -212,6 +216,7 @@ class StackOneClient(ATSClient):
             logger.error(f"Failed to list StackOne candidates: {e}")
             raise
     
+    @circuit_breaker_decorator(STACKONE_CIRCUIT)
     async def create_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
         """Create candidate in StackOne."""
         emails = []
@@ -269,6 +274,7 @@ class StackOneClient(ATSClient):
             logger.error(f"Failed to create StackOne candidate: {e}")
             raise
     
+    @circuit_breaker_decorator(STACKONE_CIRCUIT)
     async def update_candidate(
         self,
         candidate_id: str,
@@ -339,6 +345,7 @@ class StackOneClient(ATSClient):
             logger.error(f"Failed to update StackOne candidate status: {e}")
             return False
     
+    @circuit_breaker_decorator(STACKONE_CIRCUIT)
     async def add_note(
         self,
         candidate_id: str,
@@ -409,6 +416,7 @@ class StackOneClient(ATSClient):
             raw_data=data
         )
     
+    @circuit_breaker_decorator(STACKONE_CIRCUIT)
     async def get_job(self, job_id: str) -> Optional[ATSJob]:
         """Get job from StackOne."""
         try:
@@ -432,6 +440,7 @@ class StackOneClient(ATSClient):
             logger.error(f"Failed to get StackOne job {job_id}: {e}")
             raise
     
+    @circuit_breaker_decorator(STACKONE_CIRCUIT)
     async def list_jobs(
         self,
         status: Optional[str] = None,

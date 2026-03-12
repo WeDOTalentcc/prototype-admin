@@ -120,6 +120,20 @@ class PolicySetupAgent:
                 session.completed = True
                 reply = await self._generate_completion_reply(message, q, extracted, session)
 
+        try:
+            from app.shared.compliance.audit_service import audit_service
+            await audit_service.log_decision(
+                company_id=str(session.company_id),
+                agent_name="policy_setup_agent",
+                decision_type="policy_update",
+                action=f"field_updated:{q.get('field', 'unknown')}",
+                decision="completed" if session.completed else "in_progress",
+                reasoning=[f"Q{q['id']}: {q['question'][:80]}"],
+                criteria_used=[q.get("field", "")],
+            )
+        except Exception as _audit_exc:
+            logger.debug("[PolicySetupAgent] AuditService skipped: %s", _audit_exc)
+
         return {
             "reply": reply,
             "current_block": q["block_name"],

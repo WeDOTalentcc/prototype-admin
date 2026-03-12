@@ -217,6 +217,77 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             logger.debug("[SourcingReActAgent] FairnessGuard check skipped: %s", _fg_exc)
             _soft_warnings = []
 
+        # AUD-4: HITL — abordagem (outreach) exige aprovação humana antes de enviar
+        _current_stage = input.context.get("current_stage", "")
+        _hitl_approved = input.context.get("hitl_approved", False)
+        if _current_stage == "outreach" and not _hitl_approved:
+            _msg_lower = input.message.strip().lower()
+            if any(w in _msg_lower for w in _CONFIRMATION_WORDS):
+                try:
+                    from app.services.hitl_service import hitl_service
+                    from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                    thread_id = str(input.session_id)
+                    candidate_ids = input.context.get("selected_candidates", [])
+                    candidate_count = len(candidate_ids) if candidate_ids else 1
+                    pending_id = await hitl_service.request_approval(
+                        thread_id=thread_id,
+                        action="send_outreach",
+                        description=f"Enviar mensagem de abordagem para {candidate_count} candidato(s)",
+                        data={
+                            "stage": _current_stage,
+                            "candidate_count": candidate_count,
+                            "candidate_ids": candidate_ids,
+                            "job_id": input.context.get("job_id", ""),
+                        },
+                        ws_session_id=thread_id,
+                        domain="sourcing",
+                        company_id=str(input.company_id or ""),
+                    )
+                    await hitl_service.store_resume_info(
+                        thread_id=thread_id,
+                        domain="sourcing",
+                        session_id=thread_id,
+                        agent_input_dict={
+                            "message": input.message,
+                            "context": {**input.context, "hitl_approved": True, "hitl_pending_id": pending_id},
+                            "session_id": str(input.session_id),
+                            "company_id": str(input.company_id or ""),
+                            "user_id": str(input.user_id or ""),
+                            "conversation_history": input.conversation_history or [],
+                        },
+                        hitl_context="sourcing_outreach",
+                    )
+                    try:
+                        await audit_service.log_decision(
+                            company_id=str(input.company_id or ""),
+                            agent_name="sourcing_react_agent",
+                            decision_type="send_outreach",
+                            action="hitl_requested:send_outreach",
+                            decision="pending_review",
+                            reasoning=["Envio de abordagem requer aprovação HITL (LGPD)"],
+                            criteria_used=["outreach_confirmation"],
+                            human_review_required=True,
+                            criteria_ignored=list(PROTECTED_CRITERIA),
+                        )
+                    except Exception as _ae:
+                        logger.debug("[SourcingReActAgent][AUD-4] AuditService skipped: %s", _ae)
+                    logger.info("[SourcingReActAgent][AUD-4] HITL solicitado session=%s", input.session_id)
+                    return AgentOutput(
+                        message=(
+                            "Aguardando aprovação para enviar mensagens de abordagem. "
+                            "Um recrutador precisa confirmar antes do envio."
+                        ),
+                        confidence=1.0,
+                        metadata={
+                            "hitl_pending": True,
+                            "hitl_pending_id": pending_id,
+                            "thread_id": thread_id,
+                            "domain": self.domain_name,
+                        },
+                    )
+                except Exception as _hitl_exc:
+                    logger.warning("[SourcingReActAgent][AUD-4] HITL check failed (fail-open): %s", _hitl_exc)
+
         from app.core.config import settings
         if settings.USE_LANGGRAPH_NATIVE:
             return await self._process_langgraph(input)

@@ -81,34 +81,6 @@ const invoiceStatusConfig: Record<string, { label: string, variant: 'success' | 
   cancelled: { label: 'Cancelado', variant: 'default', icon: Ban },
 }
 
-const MOCK_BILLING_DATA: BillingData = {
-  subscription: {
-    id: 'sub_123',
-    status: 'active',
-    plan_name: 'Professional',
-    plan_id: 'plan_professional',
-    mrr: 299000,
-    next_billing_date: '2025-02-01',
-    billing_cycle: 'monthly',
-    started_at: '2024-03-15'
-  },
-  invoices: [
-    { id: 'inv_1', date: '2025-01-01', due_date: '2025-01-10', amount: 299000, status: 'paid', description: 'Plano Professional - Janeiro/2025' },
-    { id: 'inv_2', date: '2024-12-01', due_date: '2024-12-10', amount: 299000, status: 'paid', description: 'Plano Professional - Dezembro/2024' },
-    { id: 'inv_3', date: '2024-11-01', due_date: '2024-11-10', amount: 299000, status: 'paid', description: 'Plano Professional - Novembro/2024' },
-    { id: 'inv_4', date: '2024-10-01', due_date: '2024-10-10', amount: 299000, status: 'paid', description: 'Plano Professional - Outubro/2024' }
-  ],
-  payment_methods: [
-    { id: 'pm_1', type: 'credit_card', last_four: '4242', brand: 'Visa', is_default: true, expires_at: '12/2027' },
-    { id: 'pm_2', type: 'pix', is_default: false }
-  ],
-  summary: {
-    total_paid: 1196000,
-    total_pending: 0,
-    invoices_count: 4,
-    ltv_estimated: 3588000
-  }
-}
 
 function BillingSkeleton() {
   return (
@@ -190,15 +162,15 @@ export default function ClientFaturamentoPage({
       const response = await fetch(`/api/backend-proxy/billing?client_id=${clientId}`)
       
       if (!response.ok) {
-        setBillingData(MOCK_BILLING_DATA)
+        setError('Erro ao carregar dados de faturamento. Tente novamente.')
         return
       }
-      
+
       const data = await response.json()
       setBillingData(data.data || data)
     } catch (err) {
       console.error('Error fetching billing data:', err)
-      setBillingData(MOCK_BILLING_DATA)
+      setError('Erro ao carregar dados de faturamento. Verifique sua conexão.')
     } finally {
       setLoading(false)
     }

@@ -1,4 +1,5 @@
 """ATS Integration ReAct Agent — System Prompt."""
+from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 
 
 def get_ats_integration_system_prompt() -> str:
@@ -61,4 +62,4 @@ Siga sempre o ciclo:
 1. `fetch_candidate_from_ats` → importar candidato específico, ou
 2. `bulk_sync_candidates` → importar em lote (com trigger PULL_FROM_ATS)
 
-Responda sempre em português do Brasil. Seja direto, técnico e orientado a resultados."""
+Responda sempre em português do Brasil. Seja direto, técnico e orientado a resultados.""" + f"\n\n{ANTI_SYCOPHANCY_OPERATIONAL}"

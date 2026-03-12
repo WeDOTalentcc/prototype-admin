@@ -395,6 +395,56 @@ GOOGLE_CALENDAR_CIRCUIT = CircuitBreaker(
     )
 )
 
+GUPY_CIRCUIT = CircuitBreaker(
+    "gupy",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=45.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
+PANDAPE_CIRCUIT = CircuitBreaker(
+    "pandape",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=45.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
+STACKONE_CIRCUIT = CircuitBreaker(
+    "stackone",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=45.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
+SENDGRID_CIRCUIT = CircuitBreaker(
+    "sendgrid",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=30.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
+RESEND_CIRCUIT = CircuitBreaker(
+    "resend",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=30.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
 ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "anthropic": ANTHROPIC_CIRCUIT,
     "openai": OPENAI_CIRCUIT,
@@ -403,6 +453,11 @@ ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "workos": WORKOS_CIRCUIT,
     "merge": MERGE_CIRCUIT,
     "google_calendar": GOOGLE_CALENDAR_CIRCUIT,
+    "gupy": GUPY_CIRCUIT,
+    "pandape": PANDAPE_CIRCUIT,
+    "stackone": STACKONE_CIRCUIT,
+    "sendgrid": SENDGRID_CIRCUIT,
+    "resend": RESEND_CIRCUIT,
 }
 
 

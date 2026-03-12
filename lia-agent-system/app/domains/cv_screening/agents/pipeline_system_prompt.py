@@ -7,6 +7,8 @@ and follow the conversational philosophy of the platform.
 """
 from typing import Any, Dict
 
+from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
+
 
 PIPELINE_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a gerenciar candidatos no pipeline de recrutamento (Kanban).
@@ -183,4 +185,4 @@ def get_pipeline_system_prompt(stage: str, context: Dict[str, Any]) -> str:
         stage_context=stage_context,
         memory_summary=memory_summary or "Nenhuma memoria de trabalho disponivel (primeira interacao).",
     )
-    return f"{PIPELINE_SYSTEM_PROMPT}\n\n{reasoning}"
+    return f"{PIPELINE_SYSTEM_PROMPT}\n\n{reasoning}\n\n{ANTI_SYCOPHANCY_OPERATIONAL}"

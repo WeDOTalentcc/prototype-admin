@@ -12,6 +12,7 @@ from datetime import datetime
 import logging
 
 from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob, SyncResult
+from app.shared.resilience.circuit_breaker import MERGE_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,7 @@ class MergeClient(ATSClient):
             headers["X-Account-Token"] = account_token or self.config.company_id or ""
         return headers
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def test_connection(self) -> bool:
         """Test connection to Merge API."""
         try:
@@ -58,6 +60,7 @@ class MergeClient(ATSClient):
             logger.error(f"[MERGE] Connection test failed: {e}")
             return False
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def get_candidate(self, ats_candidate_id: str) -> Optional[ATSCandidate]:
         """Get candidate from Merge."""
         try:
@@ -73,6 +76,7 @@ class MergeClient(ATSClient):
             logger.error(f"[MERGE] Failed to get candidate {ats_candidate_id}: {e}")
             return None
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def get_candidates(
         self,
         job_id: Optional[str] = None,
@@ -154,6 +158,7 @@ class MergeClient(ATSClient):
             logger.error(f"[MERGE] Failed to parse candidate: {e}")
             return None
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def create_candidate(self, candidate_data: Dict[str, Any]) -> SyncResult:
         """Create candidate in Merge/linked ATS."""
         try:
@@ -211,6 +216,7 @@ class MergeClient(ATSClient):
                 error=str(e)
             )
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def update_candidate(
         self,
         ats_candidate_id: str,
@@ -244,6 +250,7 @@ class MergeClient(ATSClient):
                 error=str(e)
             )
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def update_candidate_stage(
         self,
         ats_candidate_id: str,
@@ -283,6 +290,7 @@ class MergeClient(ATSClient):
                 error=str(e)
             )
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def add_note(
         self,
         ats_candidate_id: str,
@@ -322,6 +330,7 @@ class MergeClient(ATSClient):
                 error=str(e)
             )
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def get_job(self, ats_job_id: str) -> Optional[ATSJob]:
         """Get job from Merge."""
         try:
@@ -337,6 +346,7 @@ class MergeClient(ATSClient):
             logger.error(f"[MERGE] Failed to get job {ats_job_id}: {e}")
             return None
     
+    @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def get_jobs(
         self,
         status: Optional[str] = None,

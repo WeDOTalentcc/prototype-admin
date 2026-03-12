@@ -32,6 +32,7 @@ from app.auth.workos_schemas import (
     SCIMGroupAction, SCIMGroupMembership as SCIMGroupMembershipSchema, SCIMActionResponse
 )
 from app.models.client_account import ClientAccount
+from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -864,6 +865,38 @@ async def get_sso_status(
     }
 
 
+@circuit_breaker_decorator(WORKOS_CIRCUIT)
+async def _fetch_workos_metrics(workos_api_key: str, organization_id: str, local_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Fetch real-time metrics from WorkOS API, protected by circuit breaker."""
+    import httpx
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        headers = {"Authorization": f"Bearer {workos_api_key}"}
+
+        dirs_response = await client.get(
+            "https://api.workos.com/directory_sync/directories",
+            headers=headers,
+            params={"organization_id": organization_id}
+        )
+        directories = dirs_response.json().get("data", []) if dirs_response.status_code == 200 else []
+
+        conns_response = await client.get(
+            "https://api.workos.com/sso/connections",
+            headers=headers,
+            params={"organization_id": organization_id}
+        )
+        connections = conns_response.json().get("data", []) if conns_response.status_code == 200 else []
+
+        return {
+            "source": "workos_api",
+            "organization_id": organization_id,
+            "sso_users_count": local_data["sso_users_count"],
+            "scim_users_count": local_data["scim_users_count"],
+            "groups_count": local_data["groups_count"],
+            "directories_count": len(directories),
+            "connections_count": len(connections),
+        }
+
+
 @router.get("/admin/realtime-metrics")
 async def get_realtime_metrics(
     company_id: str = Query(...),
@@ -932,34 +965,7 @@ async def get_realtime_metrics(
         return local_data
     
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            headers = {"Authorization": f"Bearer {workos_api_key}"}
-            
-            # Filter directories by organization_id
-            dirs_response = await client.get(
-                "https://api.workos.com/directory_sync/directories",
-                headers=headers,
-                params={"organization_id": organization_id}
-            )
-            directories = dirs_response.json().get("data", []) if dirs_response.status_code == 200 else []
-            
-            # Filter connections by organization_id
-            conns_response = await client.get(
-                "https://api.workos.com/sso/connections",
-                headers=headers,
-                params={"organization_id": organization_id}
-            )
-            connections = conns_response.json().get("data", []) if conns_response.status_code == 200 else []
-            
-            return {
-                "source": "workos_api",
-                "organization_id": organization_id,
-                "sso_users_count": local_data["sso_users_count"],
-                "scim_users_count": local_data["scim_users_count"],
-                "groups_count": local_data["groups_count"],
-                "directories_count": len(directories),
-                "connections_count": len(connections),
-            }
+        return await _fetch_workos_metrics(workos_api_key, organization_id, local_data)
     except Exception as e:
         logger.warning(f"Error fetching WorkOS API metrics: {e}")
         return local_data

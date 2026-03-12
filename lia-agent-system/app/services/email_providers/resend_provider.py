@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 from .base import EmailProvider, EmailMessage, EmailResult
+from app.shared.resilience.circuit_breaker import RESEND_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,7 @@ class ResendProvider(EmailProvider):
             else:
                 logger.warning("RESEND_API_KEY not found - emails will be simulated")
     
+    @circuit_breaker_decorator(RESEND_CIRCUIT)
     async def send_email(
         self,
         to: str,

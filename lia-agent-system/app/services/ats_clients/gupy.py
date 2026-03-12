@@ -10,6 +10,7 @@ from datetime import datetime
 import httpx
 
 from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
+from app.shared.resilience.circuit_breaker import GUPY_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class GupyClient(ATSClient):
             "Accept": "application/json"
         }
     
+    @circuit_breaker_decorator(GUPY_CIRCUIT)
     async def test_connection(self) -> bool:
         """Test Gupy API connection."""
         try:
@@ -91,6 +93,7 @@ class GupyClient(ATSClient):
             raw_data=data
         )
     
+    @circuit_breaker_decorator(GUPY_CIRCUIT)
     async def get_candidate(self, candidate_id: str) -> Optional[ATSCandidate]:
         """Get candidate from Gupy."""
         try:
@@ -114,6 +117,7 @@ class GupyClient(ATSClient):
             logger.error(f"Failed to get Gupy candidate {candidate_id}: {e}")
             raise
     
+    @circuit_breaker_decorator(GUPY_CIRCUIT)
     async def list_candidates(
         self,
         job_id: Optional[str] = None,
@@ -145,6 +149,7 @@ class GupyClient(ATSClient):
             logger.error(f"Failed to list Gupy candidates: {e}")
             raise
     
+    @circuit_breaker_decorator(GUPY_CIRCUIT)
     async def create_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
         """Create candidate in Gupy."""
         gupy_data = {
@@ -173,6 +178,7 @@ class GupyClient(ATSClient):
             logger.error(f"Failed to create Gupy candidate: {e}")
             raise
     
+    @circuit_breaker_decorator(GUPY_CIRCUIT)
     async def update_candidate(
         self,
         candidate_id: str,
@@ -236,6 +242,7 @@ class GupyClient(ATSClient):
             logger.error(f"Failed to update Gupy candidate status: {e}")
             return False
     
+    @circuit_breaker_decorator(GUPY_CIRCUIT)
     async def add_note(
         self,
         candidate_id: str,
@@ -279,6 +286,7 @@ class GupyClient(ATSClient):
             raw_data=data
         )
     
+    @circuit_breaker_decorator(GUPY_CIRCUIT)
     async def get_job(self, job_id: str) -> Optional[ATSJob]:
         """Get job from Gupy."""
         try:
@@ -301,6 +309,7 @@ class GupyClient(ATSClient):
             logger.error(f"Failed to get Gupy job {job_id}: {e}")
             raise
     
+    @circuit_breaker_decorator(GUPY_CIRCUIT)
     async def list_jobs(
         self,
         status: Optional[str] = None,

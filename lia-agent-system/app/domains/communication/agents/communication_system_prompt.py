@@ -1,4 +1,5 @@
 """Communication ReAct Agent — System Prompt."""
+from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 
 
 def get_communication_system_prompt() -> str:
@@ -50,4 +51,4 @@ Siga SEMPRE o padrão Thought → Action → Observation:
 - Personalização sempre que possível (nome do candidato, vaga referente)
 - Registro de toda comunicação para auditoria (garantido pelo serviço interno)
 
-Responda sempre em português do Brasil. Seja objetivo, transparente e orientado à conformidade."""
+Responda sempre em português do Brasil. Seja objetivo, transparente e orientado à conformidade.""" + f"\n\n{ANTI_SYCOPHANCY_OPERATIONAL}"

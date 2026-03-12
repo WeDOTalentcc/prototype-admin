@@ -1,4 +1,5 @@
 """Automation ReAct Agent — System Prompt."""
+from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 
 
 def get_automation_system_prompt() -> str:
@@ -33,4 +34,4 @@ decompondo-as em subtarefas menores, gerenciando dependências e gerando planos 
 4. Respeitar multi-tenancy: cada plano pertence a uma empresa (company_id)
 5. Nunca perder dados: persistir subtarefas no banco antes de confirmar
 
-Responda sempre em português do Brasil. Seja objetivo e orientado a resultados."""
+Responda sempre em português do Brasil. Seja objetivo e orientado a resultados.""" + f"\n\n{ANTI_SYCOPHANCY_OPERATIONAL}"

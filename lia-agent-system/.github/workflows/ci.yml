@@ -65,6 +65,12 @@ jobs:
             --ignore=tests/load \
             -q --tb=short --no-header
 
+      - name: Security scan (bandit)
+        continue-on-error: true
+        run: |
+          pip install bandit[toml] --quiet
+          bandit -r app/ -ll -q --exclude app/tests 2>&1 | tail -20
+
       - name: Verify LangSmith config
         continue-on-error: true
         env:
@@ -81,6 +87,32 @@ jobs:
           name: coverage-report
           path: htmlcov/
           retention-days: 7
+
+  load-tests:
+    name: Load Tests (non-blocking)
+    runs-on: ubuntu-latest
+    needs: test
+    continue-on-error: true
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -e . || pip install -r requirements.txt
+
+      - name: Run load tests
+        run: |
+          python -m pytest tests/load/ \
+            -q --tb=short --no-header --no-cov 2>&1 | tail -30
 
   lint:
     name: Lint

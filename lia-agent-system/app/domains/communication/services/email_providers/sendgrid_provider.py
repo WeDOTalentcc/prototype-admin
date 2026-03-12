@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 from .base import EmailProvider, EmailMessage, EmailResult
+from app.shared.resilience.circuit_breaker import SENDGRID_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,7 @@ class SendGridProvider(EmailProvider):
             else:
                 logger.warning("SENDGRID_API_KEY not found - emails will be simulated")
     
+    @circuit_breaker_decorator(SENDGRID_CIRCUIT)
     async def send_email(
         self,
         to: str,

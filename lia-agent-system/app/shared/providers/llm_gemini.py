@@ -6,6 +6,7 @@ from typing import Dict, Any, List, Optional
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_result
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
+from app.shared.resilience.circuit_breaker import GEMINI_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class GeminiLLMProvider(LLMProviderABC):
             self._client = genai.Client(api_key=api_key, http_options={'api_version': '', 'base_url': base_url})
         return self._client
     
+    @circuit_breaker_decorator(GEMINI_CIRCUIT)
     @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=3), retry=retry_if_result(_is_empty_response))
     async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
@@ -52,6 +54,7 @@ class GeminiLLMProvider(LLMProviderABC):
             logger.warning("Gemini returned empty response for generate(). Retrying...")
         return LLMResponse(text=text, provider=self._provider_name, model=model or self._default_model, raw_response=response)
     
+    @circuit_breaker_decorator(GEMINI_CIRCUIT)
     @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=3), retry=retry_if_result(_is_empty_response))
     async def generate_with_system(self, system_prompt, user_message, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         from google.genai import types
@@ -64,6 +67,7 @@ class GeminiLLMProvider(LLMProviderABC):
             logger.warning("Gemini returned empty response for generate_with_system(). Retrying...")
         return LLMResponse(text=text, provider=self._provider_name, model=model or self._default_model, raw_response=response)
     
+    @circuit_breaker_decorator(GEMINI_CIRCUIT)
     async def generate_with_tools(self, messages, tools, system_prompt=None, max_tokens=4096, **kwargs):
         from google.genai import types
         client = self._get_client()
@@ -104,6 +108,7 @@ class GeminiLLMProvider(LLMProviderABC):
         return LLMToolResponse(text="".join(text_parts) if text_parts else None, tool_calls=tool_calls, is_tool_call=bool(tool_calls),
                               provider=self._provider_name, model=self._default_model, raw_response=response)
     
+    @circuit_breaker_decorator(GEMINI_CIRCUIT)
     async def generate_structured(self, messages, output_schema, system_prompt=None, max_tokens=4096, **kwargs):
         from google.genai import types
         import json

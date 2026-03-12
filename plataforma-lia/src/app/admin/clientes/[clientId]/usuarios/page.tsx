@@ -70,13 +70,6 @@ const statusConfig: Record<string, { label: string, icon: React.ComponentType<{ 
   inactive: { label: 'Inativo', icon: XCircle, variant: 'default' }
 }
 
-const mockUsers: User[] = [
-  { id: '1', name: 'Maria Silva', email: 'maria.silva@empresa.com', role: 'admin', status: 'active', lastLogin: '2025-01-15T10:30:00', createdAt: '2024-06-15' },
-  { id: '2', name: 'João Santos', email: 'joao.santos@empresa.com', role: 'recruiter', status: 'active', lastLogin: '2025-01-14T16:45:00', createdAt: '2024-08-20' },
-  { id: '3', name: 'Ana Costa', email: 'ana.costa@empresa.com', role: 'recruiter', status: 'active', lastLogin: '2025-01-15T09:15:00', createdAt: '2024-09-10' },
-  { id: '4', name: 'Pedro Lima', email: 'pedro.lima@empresa.com', role: 'manager', status: 'pending', createdAt: '2025-01-10' },
-  { id: '5', name: 'Carla Mendes', email: 'carla.mendes@empresa.com', role: 'viewer', status: 'inactive', lastLogin: '2024-12-20T14:00:00', createdAt: '2024-07-05' }
-]
 
 function TableSkeleton() {
   return (
@@ -157,14 +150,16 @@ export default function ClientUsuariosPage({
         } else if (Array.isArray(data)) {
           setUsers(data)
         } else {
-          setUsers(mockUsers)
+          setUsers([])
         }
       } else {
-        setUsers(mockUsers)
+        setUsers([])
+        toast.error('Erro ao carregar usuários. Tente novamente.')
       }
     } catch (err) {
       console.error('Erro ao carregar usuários:', err)
-      setUsers(mockUsers)
+      setUsers([])
+      toast.error('Erro ao carregar usuários. Verifique sua conexão.')
     } finally {
       setIsLoading(false)
     }

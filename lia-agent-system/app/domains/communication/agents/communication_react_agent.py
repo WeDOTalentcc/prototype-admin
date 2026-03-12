@@ -109,12 +109,109 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             metadata={"source": "langgraph_native", "domain": self.domain_name},
         )
 
+    async def _process_langgraph(self, input: AgentInput) -> AgentOutput:
+        """Override: adiciona audit SEG-5 após execução LangGraph nativa."""
+        output = await super()._process_langgraph(input)
+
+        # SEG-5: AuditService — caminho LangGraph nativo
+        try:
+            from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+            stage = input.context.get("current_stage", "intent-detection")
+            await audit_service.log_decision(
+                company_id=str(input.company_id or ""),
+                agent_name="communication_react_agent",
+                decision_type="send_communication",
+                action=f"communication_langgraph:{stage}",
+                decision="completed",
+                reasoning=[f"Comunicação via LangGraph native no stage {stage}"],
+                criteria_used=[stage],
+                criteria_ignored=list(PROTECTED_CRITERIA),
+                confidence=output.confidence,
+            )
+        except Exception as _audit_exc:
+            logger.debug("[CommunicationReActAgent][SEG-5/LG] AuditService skipped: %s", _audit_exc)
+
+        return output
+
     # ------------------------------------------------------------------
     # Dual-path: LangGraph nativo ou ReActLoop legado
     # ------------------------------------------------------------------
 
+    # Message types that require human approval before sending (LGPD + EU AI Act Art.14)
+    _HITL_MESSAGE_TYPES = frozenset({"initial_contact", "rejection_feedback", "offer_letter"})
+
     async def process(self, input: AgentInput) -> AgentOutput:
         """Dual-path: LangGraph nativo (USE_LANGGRAPH_NATIVE=True) ou ReActLoop."""
+        # AUD-4: HITL — primeiro contato e feedback de rejeição exigem aprovação humana
+        _hitl_approved = input.context.get("hitl_approved", False)
+        _msg_type = input.context.get("message_type", "")
+        if not _hitl_approved and _msg_type in self._HITL_MESSAGE_TYPES:
+            try:
+                from app.services.hitl_service import hitl_service
+                from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                thread_id = str(input.session_id)
+                candidate_id = input.context.get("candidate_id", "")
+                pending_id = await hitl_service.request_approval(
+                    thread_id=thread_id,
+                    action="send_communication",
+                    description=f"Enviar comunicação '{_msg_type}' para candidato {candidate_id}",
+                    data={
+                        "message_type": _msg_type,
+                        "candidate_id": candidate_id,
+                        "channel": input.context.get("channel", "email"),
+                        "company_id": str(input.company_id or ""),
+                    },
+                    ws_session_id=thread_id,
+                    domain="communication",
+                    company_id=str(input.company_id or ""),
+                )
+                await hitl_service.store_resume_info(
+                    thread_id=thread_id,
+                    domain="communication",
+                    session_id=thread_id,
+                    agent_input_dict={
+                        "message": input.message,
+                        "context": {**input.context, "hitl_approved": True, "hitl_pending_id": pending_id},
+                        "session_id": str(input.session_id),
+                        "company_id": str(input.company_id or ""),
+                        "user_id": str(input.user_id or ""),
+                        "conversation_history": input.conversation_history or [],
+                    },
+                    hitl_context="communication_send",
+                )
+                try:
+                    await audit_service.log_decision(
+                        company_id=str(input.company_id or ""),
+                        agent_name="communication_react_agent",
+                        decision_type="send_communication",
+                        action=f"hitl_requested:{_msg_type}",
+                        decision="pending_review",
+                        reasoning=[f"Comunicação '{_msg_type}' requer aprovação HITL (LGPD Art. 7)"],
+                        criteria_used=[_msg_type],
+                        candidate_id=str(candidate_id),
+                        human_review_required=True,
+                        criteria_ignored=list(PROTECTED_CRITERIA),
+                    )
+                except Exception as _ae:
+                    logger.debug("[CommunicationReActAgent][AUD-4] AuditService skipped: %s", _ae)
+                logger.info("[CommunicationReActAgent][AUD-4] HITL solicitado session=%s type=%s", input.session_id, _msg_type)
+                return AgentOutput(
+                    message=(
+                        f"Aguardando aprovação para enviar **{_msg_type}** ao candidato. "
+                        "Um recrutador precisa confirmar antes do envio."
+                    ),
+                    confidence=1.0,
+                    metadata={
+                        "hitl_pending": True,
+                        "hitl_pending_id": pending_id,
+                        "thread_id": thread_id,
+                        "domain": self.domain_name,
+                        "message_type": _msg_type,
+                    },
+                )
+            except Exception as _hitl_exc:
+                logger.warning("[CommunicationReActAgent][AUD-4] HITL check failed (fail-open): %s", _hitl_exc)
+
         try:
             from app.core.config import settings
             if settings.USE_LANGGRAPH_NATIVE:

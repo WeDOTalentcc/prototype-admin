@@ -10,6 +10,7 @@ from datetime import datetime
 import httpx
 
 from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
+from app.shared.resilience.circuit_breaker import PANDAPE_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ class PandapeClient(ATSClient):
             headers["X-Company-Id"] = self.config.company_id
         return headers
     
+    @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def test_connection(self) -> bool:
         """Test Pandapé API connection."""
         try:
@@ -94,6 +96,7 @@ class PandapeClient(ATSClient):
             raw_data=data
         )
     
+    @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def get_candidate(self, candidate_id: str) -> Optional[ATSCandidate]:
         """Get candidate from Pandapé."""
         try:
@@ -117,6 +120,7 @@ class PandapeClient(ATSClient):
             logger.error(f"Failed to get Pandapé candidate {candidate_id}: {e}")
             raise
     
+    @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def list_candidates(
         self,
         job_id: Optional[str] = None,
@@ -150,6 +154,7 @@ class PandapeClient(ATSClient):
             logger.error(f"Failed to list Pandapé candidates: {e}")
             raise
     
+    @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def create_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
         """Create candidate in Pandapé."""
         pandape_data = {
@@ -179,6 +184,7 @@ class PandapeClient(ATSClient):
             logger.error(f"Failed to create Pandapé candidate: {e}")
             raise
     
+    @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def update_candidate(
         self,
         candidate_id: str,
@@ -244,6 +250,7 @@ class PandapeClient(ATSClient):
             logger.error(f"Failed to update Pandapé candidate status: {e}")
             return False
     
+    @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def add_note(
         self,
         candidate_id: str,
@@ -289,6 +296,7 @@ class PandapeClient(ATSClient):
             raw_data=data
         )
     
+    @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def get_job(self, job_id: str) -> Optional[ATSJob]:
         """Get job from Pandapé."""
         try:
@@ -311,6 +319,7 @@ class PandapeClient(ATSClient):
             logger.error(f"Failed to get Pandapé job {job_id}: {e}")
             raise
     
+    @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def list_jobs(
         self,
         status: Optional[str] = None,

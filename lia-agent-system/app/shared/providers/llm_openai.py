@@ -4,6 +4,7 @@ import logging
 from typing import Dict, Any, List, Optional
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
+from app.shared.resilience.circuit_breaker import OPENAI_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class OpenAILLMProvider(LLMProviderABC):
             self._client = OpenAI(api_key=api_key)
         return self._client
     
+    @circuit_breaker_decorator(OPENAI_CIRCUIT)
     async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
         response = client.chat.completions.create(model=model or self._default_model, messages=[{"role": "user", "content": prompt}], temperature=temperature, max_tokens=max_tokens)
@@ -41,6 +43,7 @@ class OpenAILLMProvider(LLMProviderABC):
         usage = {"input_tokens": response.usage.prompt_tokens, "output_tokens": response.usage.completion_tokens} if response.usage else {}
         return LLMResponse(text=text, provider=self._provider_name, model=model or self._default_model, usage=usage, raw_response=response)
     
+    @circuit_breaker_decorator(OPENAI_CIRCUIT)
     async def generate_with_system(self, system_prompt, user_message, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
         response = client.chat.completions.create(model=model or self._default_model, messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}], temperature=temperature, max_tokens=max_tokens)
@@ -48,6 +51,7 @@ class OpenAILLMProvider(LLMProviderABC):
         usage = {"input_tokens": response.usage.prompt_tokens, "output_tokens": response.usage.completion_tokens} if response.usage else {}
         return LLMResponse(text=text, provider=self._provider_name, model=model or self._default_model, usage=usage, raw_response=response)
     
+    @circuit_breaker_decorator(OPENAI_CIRCUIT)
     async def generate_with_tools(self, messages, tools, system_prompt=None, max_tokens=4096, **kwargs):
         import json
         client = self._get_client()
@@ -63,6 +67,7 @@ class OpenAILLMProvider(LLMProviderABC):
             return LLMToolResponse(tool_calls=tool_calls, is_tool_call=True, provider=self._provider_name, model=self._default_model, raw_response=response)
         return LLMToolResponse(text=choice.message.content, is_tool_call=False, provider=self._provider_name, model=self._default_model, raw_response=response)
     
+    @circuit_breaker_decorator(OPENAI_CIRCUIT)
     async def generate_structured(self, messages, output_schema, system_prompt=None, max_tokens=4096, **kwargs):
         import json
         client = self._get_client()

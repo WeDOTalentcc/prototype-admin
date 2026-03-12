@@ -5,6 +5,7 @@ This is the core instruction set that shapes how LIA behaves during the
 talent sourcing flow. It must be in Portuguese and follow the conversational
 philosophy of the platform.
 """
+from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 
 SOURCING_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a encontrar e abordar talentos para uma vaga.
@@ -185,4 +186,4 @@ def get_sourcing_system_prompt(stage: str, context: dict) -> str:
         stage_context=stage_context,
         memory_summary=memory_summary or "Nenhuma memoria de trabalho disponivel (primeira interacao).",
     )
-    return f"{SOURCING_SYSTEM_PROMPT}\n\n{reasoning}"
+    return f"{SOURCING_SYSTEM_PROMPT}\n\n{reasoning}\n\n{ANTI_SYCOPHANCY_OPERATIONAL}"

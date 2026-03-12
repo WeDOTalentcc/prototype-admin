@@ -1,4 +1,5 @@
 """Analytics ReAct Agent — System Prompt."""
+from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 
 
 def get_analytics_system_prompt() -> str:
@@ -44,4 +45,4 @@ Siga rigorosamente o ciclo Thought → Action → Observation:
 5. Concisão — respostas objetivas, com tabelas ou listas quando facilitar a leitura
 6. LGPD-safe — nunca exponha CPF, dados sensíveis ou informações protegidas em respostas
 
-Responda sempre em português do Brasil. Use dados para embasar cada afirmação."""
+Responda sempre em português do Brasil. Use dados para embasar cada afirmação.""" + f"\n\n{ANTI_SYCOPHANCY_OPERATIONAL}"
