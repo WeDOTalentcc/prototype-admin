@@ -3751,7 +3751,7 @@ grep -rn "my_tool" app/domains/*/agents/*tool_registry*
 
 3. Para cada desconexão, escolher: CONECTAR ou REMOVER (código morto).
 
-**Padrão de código a seguir:** Para frontend: hook importado + chamado. Para backend: rota registrada + proxy. Para tool: no registry + agente usa. Código morto deve ser removido. Referência: Dimensão 1 (Wiring), PARTE IX nota 6.
+**Padrão de código a seguir:** Para frontend: hook importado + chamado. Para backend: rota registrada + proxy. Para tool: no registry + agente usa. Código morto deve ser removido. Referência: Dimensão 1 (Wiring), PARTE XI nota 6.
 
 **Arquivos a modificar:**
 - Variável por item (cada achado de wiring desconectado terá arquivos diferentes)
@@ -4824,7 +4824,983 @@ RM-18 (Padrão 4 arquivos) ──→ RM-19 (Stage context)
 
 ---
 
-# PARTE IX: NOTAS FINAIS
+# PARTE X: AUDITORIA DA CAMADA DE INTELIGÊNCIA
+
+> **Origem:** Seções derivadas da análise cruzada de `docs/mapa_inteligencia_lia_completo.md`, `lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md` e `lia-agent-system/docs/ai-architecture-audit.md`. Cada checklist verifica se as capacidades DESCRITAS nesses documentos existem DE FATO no código e funcionam conforme o padrão esperado.
+>
+> **Regra geral:** Para cada item, o auditor deve: (1) verificar se o arquivo existe, (2) verificar se contém a implementação descrita (não é stub), (3) verificar se está conectado ao fluxo real (importado e invocado). Classificação: **OK** = existe e funciona, **PARCIAL** = existe mas incompleto/desconectado, **FALHA** = existe mas quebrado/stub, **AUSENTE** = não encontrado no codebase.
+
+---
+
+## CI-1. Orquestrador e Roteamento
+
+O orquestrador é o ponto de entrada central que recebe mensagens, classifica intenção e roteia para o agente/fluxo correto. Descrito como CascadedRouter com 3 tiers (cache → regex → LLM), mais 3 mecanismos de execução distintos.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| Orchestrator principal | `app/orchestrator/orchestrator.py` | Ponto de entrada — recebe requisição, coordena, retorna |
+| MainOrchestrator | `app/orchestrator/main_orchestrator.py` | Ciclo de vida completo de alto nível |
+| CascadedRouter | `app/orchestrator/cascaded_router.py` | Router em 3 tiers: semantic cache → fast_router → intent_router |
+| FastRouter | `app/orchestrator/fast_router.py` | Tier 2: regex/keywords sem LLM |
+| IntentRouter | `app/orchestrator/intent_router.py` | Tier 3: classificação via LLM |
+| SemanticCache | `app/orchestrator/semantic_cache.py` | Tier 1: cache semântico (alias) |
+| VectorSemanticCache | `app/orchestrator/vector_semantic_cache.py` | Cache semântico via pgvector cosine similarity |
+| TenantBudget | `app/orchestrator/tenant_budget.py` | Controle de budget de tokens por tenant |
+| NavigationIntent | `app/orchestrator/navigation_intent.py` | Grupos de intent de navegação |
+| LLMCascade | `app/orchestrator/llm_cascade.py` | Cascata LLM (Haiku→Sonnet→Opus) |
+| ActionExecutor | `app/orchestrator/action_executor.py` | Execução de ações com confirmação |
+| PendingAction | `app/orchestrator/pending_action.py` | Estado de ações pendentes (multi-turn) |
+| StateManager | `app/orchestrator/state_manager.py` | Persistência de estado de sessão |
+| PolicyEngine | `app/orchestrator/policy_engine.py` | Políticas de negócio e guardrails |
+| TaskPlanner | `app/orchestrator/task_planner.py` | Decomposição de tarefas complexas |
+| ContextAdapter | `app/orchestrator/context_adapter.py` | Adaptação de contexto entre componentes |
+| MemoryResolver | `app/orchestrator/memory_resolver.py` | Resolução de memória para o agente |
+
+### Checklist de Auditoria
+
+- [ ] **CI-1.1** CascadedRouter implementa 3 tiers na ordem correta: (1) semantic cache, (2) fast_router (regex), (3) intent_router (LLM)
+- [ ] **CI-1.2** SemanticCache/VectorSemanticCache usa pgvector com cosine similarity para lookup de intents já classificados
+- [ ] **CI-1.3** FastRouter classifica por regex/keywords sem invocação de LLM — verificar que não há chamada a LLM neste tier
+- [ ] **CI-1.4** IntentRouter invoca LLM apenas quando tiers anteriores falham — verificar condicionalidade
+- [ ] **CI-1.5** TenantBudget implementa pre-call budget check ANTES de cada invocação LLM (Crença 09)
+- [ ] **CI-1.6** TenantBudget possui limites configuráveis por tenant (não hardcoded)
+- [ ] **CI-1.7** LLMCascade implementa cascata de modelo barato→caro (ex: Haiku→Sonnet→Opus) com fallback automático
+- [ ] **CI-1.8** NavigationIntent agrupa intents de navegação: Configurações, Indicadores, WSI
+- [ ] **CI-1.9** ActionExecutor implementa confirmação humana antes de ações de alto impacto (HITL)
+- [ ] **CI-1.10** PendingAction gerencia estado multi-turno de ações que aguardam confirmação
+- [ ] **CI-1.11** PolicyEngine aplica políticas de negócio como guardrails antes/depois da execução
+- [ ] **CI-1.12** TaskPlanner decompõe tarefas complexas em subtarefas sequenciais
+- [ ] **CI-1.13** Orchestrator roteia para os 3 mecanismos de execução: ConversationGraph, JobWizardGraph, ReActLoop
+- [ ] **CI-1.14** StateManager persiste estado entre turnos de conversa com isolamento por tenant
+- [ ] **CI-1.15** MemoryResolver carrega contexto relevante (working + long-term memory) antes de invocar agente
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Arquivos existem | 17/17 (100%) |
+| Tiers do CascadedRouter implementados | 3/3 |
+| Pre-call budget check presente | Obrigatório (Crença 09) |
+| Fallback chain testável | LLM cascade com ≥ 2 providers |
+| Isolamento multi-tenant | Presente em cache, budget e state |
+
+---
+
+## CI-2. Grafos LangGraph e State Machines
+
+Fluxos multi-etapa complexos implementados com LangGraph StateGraph. A documentação descreve ConversationGraph (47 nós, 4 subgrafos), JobWizardGraph (6 nós), WSIInterviewGraph e InterviewGraph.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| ConversationGraph | `app/shared/agents/conversation.py` (**documentado mas pode não existir — verificar**) | Grafo principal (47 nós, 4 subgrafos) — ponto de entrada do chat |
+| JobWizardGraph | `app/domains/job_management/agents/job_wizard_graph.py` | Grafo do wizard de vagas (6 nós) |
+| JobVacancyNodes | `app/domains/job_management/agents/job_vacancy_nodes.py` | Nós do grafo de vagas |
+| WSIInterviewGraph | `app/domains/cv_screening/agents/wsi_interview_graph.py` | Grafo da entrevista WSI |
+| InterviewGraph | `app/domains/interview_scheduling/agents/interview_graph.py` | Grafo de agendamento de entrevistas |
+| InterviewNodes | `app/domains/interview_scheduling/agents/interview_scheduling_nodes.py` | Nós do grafo de agendamento |
+| LangGraphBase | `app/shared/agents/langgraph_base.py` | Base genérica para grafos LangGraph stateful |
+| LangGraphReActBase | `app/shared/agents/langgraph_react_base.py` | Base para agentes ReAct com LangGraph prebuilt |
+| BaseStateMachine | `app/shared/agents/base_state_machine.py` | State machine base para agentes |
+| StateMachine | `app/shared/agents/state_machine.py` | State machine implementada |
+| Checkpointer | `app/shared/agents/checkpointer.py` | PostgresSaver wrapper com isolamento por tenant |
+| SharedNodes | `app/shared/agents/nodes.py` | Nós compartilhados reutilizáveis |
+| TimedToolNode | `app/shared/agents/timed_tool_node.py` | Nó de tool com timeout configurável |
+
+### Checklist de Auditoria
+
+- [ ] **CI-2.1** ConversationGraph existe e implementa StateGraph com ≥ 40 nós
+- [ ] **CI-2.2** ConversationGraph contém 4 subgrafos: core, job wizard, interview, sourcing
+- [ ] **CI-2.3** ConversationGraph define ConversationState como TypedDict com campos obrigatórios (messages, intent, entities, tenant_id)
+- [ ] **CI-2.4** JobWizardGraph implementa 6 nós: intent_classifier → field_extractor → tool_router → tool_executor → response_generator → stage_transition
+- [ ] **CI-2.5** JobWizardGraph usa conditional edges para roteamento entre nós
+- [ ] **CI-2.6** JobWizardGraph define JobWizardState como TypedDict
+- [ ] **CI-2.7** WSIInterviewGraph implementa grafo para conduzir entrevista WSI em tempo real
+- [ ] **CI-2.8** InterviewGraph implementa grafo para agendamento de entrevistas (≥ 6 nós)
+- [ ] **CI-2.9** Todos os grafos possuem proteção contra loops infinitos (max_iterations ou recursion_limit)
+- [ ] **CI-2.10** Todos os grafos usam interrupt_before para pontos de decisão que requerem HITL
+- [ ] **CI-2.11** Checkpointer implementa PostgresSaver com isolamento por tenant (thread_id inclui tenant_id)
+- [ ] **CI-2.12** TimedToolNode implementa timeout configurável (evita hanging de tools)
+- [ ] **CI-2.13** BaseStateMachine define estados e transições válidas com proteção contra transições ilegais
+- [ ] **CI-2.14** SharedNodes são efetivamente reutilizados em múltiplos grafos (não são dead code)
+- [ ] **CI-2.15** LangGraphBase e LangGraphReActBase são usados como base classes pelos grafos de domínio
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Grafos existem | 4/4 (ConversationGraph, JobWizardGraph, WSIInterview, Interview) |
+| Proteção contra loops | Presente em 100% dos grafos |
+| interrupt_before HITL | Presente em grafos com ações de alto impacto |
+| Checkpointer multi-tenant | Isolamento verificado |
+| State schemas tipados | TypedDict em todos os grafos |
+
+---
+
+## CI-3. Memória em 3 Níveis
+
+O sistema de memória opera em 3 níveis: Working Memory (sessão), Conversation Memory (cross-sessão via pgvector), Long-Term Memory (permanente com decay). MemoryIntegration unifica os 3 níveis.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| WorkingMemory | `app/shared/agents/working_memory.py` | Memória de trabalho durante uma execução (sessão) |
+| LongTermMemory | `app/shared/agents/long_term_memory.py` | Memória permanente com decay — insights cross-sessão |
+| MemoryIntegration | `app/shared/agents/memory_integration.py` | Integração: `get_enriched_context()` unifica 3 níveis |
+| ConversationState | `app/shared/memory/conversation_state.py` | Estado de conversação |
+| ConversationMemory | `app/services/conversation_memory.py` | Memória conversacional cross-sessão (pgvector) |
+| ConversationManager | `app/services/conversation_manager.py` | Gerenciamento de conversas |
+| MemoryService | `app/services/memory_service.py` | Serviço de memória centralizado |
+| CandidateListStore | `app/shared/memory/candidate_list_store.py` | Store de listas de candidatos em memória |
+| ReferenceResolver | `app/shared/memory/reference_resolver.py` | Resolução de referências em memória |
+| EnhancedAgentMixin | `app/shared/agents/enhanced_agent_mixin.py` | Mixin que adiciona working + LTM a qualquer agente |
+| LearningExtractor | `app/shared/agents/learning_extractor.py` | Extrai aprendizados da interação para LTM |
+
+### Checklist de Auditoria
+
+- [ ] **CI-3.1** WorkingMemory mantém contexto apenas durante uma execução/sessão (não persiste entre sessões)
+- [ ] **CI-3.2** WorkingMemory armazena: mensagens recentes, entidades extraídas, ferramentas usadas, estado do agente
+- [ ] **CI-3.3** ConversationMemory usa pgvector para busca semântica cross-sessão
+- [ ] **CI-3.4** ConversationMemory armazena embeddings das interações anteriores com TTL configurável
+- [ ] **CI-3.5** LongTermMemory implementa memória permanente com decay factor (insights perdem relevância ao longo do tempo)
+- [ ] **CI-3.6** LongTermMemory armazena aprendizados por recrutador (personalização individual)
+- [ ] **CI-3.7** MemoryIntegration.get_enriched_context() unifica os 3 níveis: working + conversation + long-term
+- [ ] **CI-3.8** MemoryIntegration é efetivamente chamado pelo orquestrador antes de invocar agentes
+- [ ] **CI-3.9** EnhancedAgentMixin injeta working + LTM automaticamente em todos os agentes que herdam dele
+- [ ] **CI-3.10** LearningExtractor extrai insights ao final de cada interação e persiste no LTM
+- [ ] **CI-3.11** Isolamento multi-tenant: cada tenant acessa apenas sua própria memória em TODOS os 3 níveis
+- [ ] **CI-3.12** Working Memory tem limite de tamanho (max tokens/mensagens) para evitar context overflow
+- [ ] **CI-3.13** Conversation Memory tem retenção configurável (TTL) e limpeza automática
+- [ ] **CI-3.14** Long-Term Memory tem mecanismo de decay (insights antigos perdem peso)
+- [ ] **CI-3.15** CandidateListStore e ReferenceResolver resolvem referências anafóricas ("ele", "o primeiro") na conversa
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| 3 níveis implementados | Working + Conversation + Long-Term |
+| get_enriched_context() funcional | Unifica 3 níveis efetivamente |
+| Isolamento multi-tenant | Presente em todos os 3 níveis |
+| Decay factor no LTM | Implementado (não peso fixo) |
+| Limite de tamanho | Presente no Working Memory |
+
+---
+
+## CI-4. Comunicação Multi-Canal
+
+Sistema com 5 adapters (email, WhatsApp, SMS, Teams, in-app), múltiplos providers (Twilio, Resend, SendGrid, Meta), dispatcher inteligente, webhook handling, e controles de opt-out/quarantine.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| MultiChannelService | `app/shared/channels/multi_channel_service.py` | Serviço multi-canal centralizado |
+| ChannelAdapter | `app/shared/channels/channel_adapter.py` | Interface base de adapter de canal |
+| ChannelRouter | `app/shared/channels/channel_router.py` | Roteamento entre canais |
+| EmailAdapter | `app/shared/channels/adapters/email_adapter.py` | Adapter de email |
+| WhatsAppAdapter | `app/shared/channels/adapters/whatsapp_adapter.py` | Adapter de WhatsApp |
+| SMSAdapter | `app/shared/channels/adapters/sms_adapter.py` | Adapter de SMS |
+| TeamsAdapter | `app/shared/channels/adapters/teams_adapter.py` | Adapter de Teams |
+| InAppAdapter | `app/shared/channels/adapters/in_app_adapter.py` | Adapter in-app |
+| CommunicationDispatcher | `app/services/communication_dispatcher.py` | Dispatcher — decide canal e executa envio |
+| CommunicationService | `app/services/communication_service.py` | Serviço principal de comunicação |
+| EmailService | `app/services/email_service.py` | Envio de email |
+| ResendProvider | `app/domains/communication/services/email_providers/resend_provider.py` | Provider Resend |
+| SendGridProvider | `app/domains/communication/services/email_providers/sendgrid_provider.py` | Provider SendGrid |
+| WhatsAppService | `app/services/whatsapp_service.py` | WhatsApp (modo simulado) |
+| WhatsAppMetaService | `app/services/whatsapp_meta_service.py` | WhatsApp via Meta/Graph API |
+| WhatsAppTwilioService | `app/services/whatsapp_twilio_service.py` | WhatsApp via Twilio |
+| WhatsAppFactory | `app/services/whatsapp_factory.py` | Factory de provedores WhatsApp |
+| TeamsService | `app/services/teams_service.py` | Integração com Microsoft Teams |
+| TeamsBot | `app/services/teams_bot.py` | Bot framework para Teams |
+| WebhookService | `app/services/webhook_service.py` | Webhook handling |
+| CommunicationHistoryService | `app/services/communication_history_service.py` | Histórico por candidato |
+| TransitionDispatchService | `app/domains/communication/services/transition_dispatch_service.py` | Dispatch automático em transições |
+| InferBehaviorService | `app/domains/communication/services/infer_behavior_service.py` | Inferência de comportamento |
+| InterpretContextLLM | `app/domains/communication/services/interpret_context_llm_service.py` | Interpretação de contexto via LLM |
+| EmailTemplatesData | `app/domains/communication/services/email_templates_data.py` | Templates de email |
+
+### Checklist de Auditoria
+
+- [ ] **CI-4.1** MultiChannelService suporta 5 canais: email, WhatsApp, SMS, Teams, in-app
+- [ ] **CI-4.2** Cada adapter implementa a interface ChannelAdapter com métodos send() e check_status()
+- [ ] **CI-4.3** ChannelRouter implementa lógica de seleção de canal (preferência do candidato, disponibilidade, fallback)
+- [ ] **CI-4.4** CommunicationDispatcher seleciona canal e despacha mensagem com retry automático
+- [ ] **CI-4.5** EmailService suporta 2+ providers (Resend, SendGrid) com fallback entre eles
+- [ ] **CI-4.6** WhatsAppFactory implementa factory pattern para alternar entre providers (Twilio, Meta)
+- [ ] **CI-4.7** TeamsService e TeamsBot integram com Microsoft Graph API para comunicação com recrutadores
+- [ ] **CI-4.8** WebhookService recebe e processa callbacks de providers (delivery receipts, respostas)
+- [ ] **CI-4.9** Opt-out de comunicação é respeitado por TODOS os canais antes do envio
+- [ ] **CI-4.10** Rate limiting existe por canal (ex: max WhatsApp/hora por tenant) para evitar spam
+- [ ] **CI-4.11** AI_GENERATED_FOOTER é adicionado automaticamente a toda mensagem gerada por IA (Crença 03 — Transparência)
+- [ ] **CI-4.12** Quarantine/blocklist existe para destinatários que reportaram spam ou bounced
+- [ ] **CI-4.13** CommunicationHistoryService registra todo envio com canal, status, timestamp e tenant
+- [ ] **CI-4.14** TransitionDispatchService dispara comunicação automaticamente em transições de pipeline
+- [ ] **CI-4.15** InferBehaviorService ajusta tom e conteúdo com base no comportamento do candidato
+- [ ] **CI-4.16** InterpretContextLLM entende contexto da situação para gerar mensagem adequada
+- [ ] **CI-4.17** Todos os canais possuem PII masking em logs de envio (Crença 04)
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Adapters implementados | 5/5 (email, WhatsApp, SMS, Teams, in-app) |
+| Providers com fallback | ≥ 2 providers por canal principal |
+| Opt-out respeitado | 100% dos canais |
+| AI_GENERATED_FOOTER | Presente em toda mensagem gerada por IA |
+| Rate limiting | Configurado por canal e tenant |
+
+---
+
+## CI-5. Processamento Assíncrono
+
+RabbitMQ como message broker, Celery para workers/tasks, DomainTaskManager com controles de concorrência, Dead Letter Queue para mensagens falhadas, e Celery Beat para agendamento.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| CeleryApp | `app/core/celery_app.py` | Configuração do Celery app |
+| CeleryConfig | `app/shared/messaging/celery_config.py` | Configuração de filas e exchanges |
+| CeleryTasks | `app/jobs/celery_tasks.py` | Definição das tasks Celery |
+| EnhancedTaskManager | `app/shared/async_processing/enhanced_task_manager.py` | Task manager com max_concurrent e queue_size |
+| TaskManager | `app/shared/async_processing/task_manager.py` | Task manager base |
+| TaskScheduler | `app/shared/async_processing/task_scheduler.py` | Agendamento de tasks |
+| TaskPersistence | `app/shared/async_processing/task_persistence.py` | Persistência de tasks e DLQ |
+| TaskQueue | `app/shared/async_processing/task_queue.py` | Fila de tasks |
+| AutomationScheduler | `app/services/automation_scheduler.py` | Agendamento de automações |
+| PlannedTaskService | `app/services/planned_task_service.py` | Serviço de tasks planejadas |
+| TaskMonitoringAPI | `app/api/v1/task_monitoring.py` | API de monitoramento de tasks |
+
+### Checklist de Auditoria
+
+- [ ] **CI-5.1** CeleryApp está configurado e conecta ao RabbitMQ como broker
+- [ ] **CI-5.2** CeleryConfig define exchanges e queues por domínio (routing keys separadas)
+- [ ] **CI-5.3** CeleryTasks define tasks para operações pesadas: screening batch, embedding, comunicação em massa
+- [ ] **CI-5.4** EnhancedTaskManager implementa `max_concurrent` (limite de tasks simultâneas por domínio)
+- [ ] **CI-5.5** EnhancedTaskManager implementa `queue_size` (limite de fila para backpressure)
+- [ ] **CI-5.6** Dead Letter Queue (DLQ) está configurada em TaskPersistence para mensagens que falharam após retries
+- [ ] **CI-5.7** DLQ possui mecanismo de replay (reprocessamento manual de mensagens falhadas)
+- [ ] **CI-5.8** TaskScheduler/AutomationScheduler implementa agendamento periódico (Celery Beat ou APScheduler)
+- [ ] **CI-5.9** ASYNC_ELIGIBLE_ACTIONS por domínio — existe lista explícita de quais ações podem ser executadas async
+- [ ] **CI-5.10** Tasks possuem timeout configurável (não executam indefinidamente)
+- [ ] **CI-5.11** Tasks possuem retry policy: max_retries, exponential backoff, e condições de retry
+- [ ] **CI-5.12** TaskMonitoringAPI expõe status de tasks em execução, falhadas e em DLQ
+- [ ] **CI-5.13** Isolamento multi-tenant: tasks de um tenant não afetam outro (filas ou prioridades separadas)
+- [ ] **CI-5.14** Observabilidade: logs estruturados de task start/complete/fail com duração e tenant_id
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Celery + RabbitMQ configurados | Ambos funcionais |
+| DLQ ativa | Com replay mechanism |
+| max_concurrent implementado | Por domínio |
+| Retry policy | Presente em todas as tasks |
+| Monitoramento | API de monitoring funcional |
+
+---
+
+## CI-6. Cache em 3 Camadas
+
+3 camadas de cache: Session Cache (in-memory), Redis Cache (8 namespaces com TTLs), Database Cache. CacheManagerService gerencia com graceful degradation e scoping multi-tenant.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| CacheManagerService | `app/shared/resilience/cache_manager_service.py` | Gerenciador central de cache multi-camada |
+| CacheStrategy | `app/shared/cache_strategy.py` | Estratégias de cache (TTL, eviction) |
+| AICacheService | `app/services/ai_cache_service.py` | Cache específico para respostas de IA |
+| ResponseCacheService | `app/services/response_cache_service.py` | Cache de respostas HTTP |
+| EmbeddingCacheService | `app/services/embedding_cache_service.py` | Cache de embeddings |
+| JDTemplateCacheService | `app/services/jd_template_cache_service.py` | Cache de templates de JD |
+| SemanticCache | `app/orchestrator/semantic_cache.py` | Cache semântico de intents |
+| VectorSemanticCache | `app/orchestrator/vector_semantic_cache.py` | Cache semântico via pgvector |
+| CircuitBreaker | `app/shared/resilience/circuit_breaker.py` | Circuit breaker (relacionado) |
+| StatsManager | `app/shared/resilience/stats_manager.py` | Estatísticas de cache hits/misses |
+
+### Checklist de Auditoria
+
+- [ ] **CI-6.1** CacheManagerService implementa 3 camadas: in-memory (L1), Redis (L2), database (L3)
+- [ ] **CI-6.2** Redis Cache define namespaces distintos com TTLs específicos (≥ 8 namespaces documentados)
+- [ ] **CI-6.3** Cada namespace Redis tem TTL configurado e documentado (ex: session=1h, intent=24h, embedding=7d)
+- [ ] **CI-6.4** Session Cache (in-memory) tem eviction policy (LRU ou size-based) para evitar memory leak
+- [ ] **CI-6.5** Database Cache é usado como L3 para dados que sobrevivem a restart do Redis
+- [ ] **CI-6.6** Graceful degradation: falha do Redis não derruba a aplicação — fallback para DB ou bypass
+- [ ] **CI-6.7** CacheManagerService implementa cache invalidation (manual e TTL-based)
+- [ ] **CI-6.8** Multi-tenant scoping: chaves de cache incluem tenant_id para isolamento
+- [ ] **CI-6.9** StatsManager registra hit/miss rates por namespace para otimização
+- [ ] **CI-6.10** SemanticCache/VectorSemanticCache é efetivamente consultado antes de chamadas LLM (Crença 09)
+- [ ] **CI-6.11** EmbeddingCacheService evita recomputação de embeddings já calculados
+- [ ] **CI-6.12** CircuitBreaker protege chamadas ao Redis — timeout + fallback configurados
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| 3 camadas implementadas | L1 (memory) + L2 (Redis) + L3 (DB) |
+| Graceful degradation | Redis down não derruba app |
+| Multi-tenant scoping | tenant_id nas chaves de cache |
+| TTLs configurados | Por namespace |
+| Cache hit rates monitorados | StatsManager funcional |
+
+---
+
+## CI-7. Sourcing e Busca Inteligente
+
+Dual search (Elasticsearch BM25 + PGVector semântico), WRF (Weighted Ranking Function), pre_wrf_filter, integrações externas (Pearch AI, Apify), e analytics de busca.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| SourcingPipeline | `app/domains/sourcing/services/sourcing_pipeline.py` | Pipeline principal de sourcing |
+| WRFService | `app/domains/sourcing/services/wrf_service.py` | Weighted Ranking Function |
+| PreWRFFilter | `app/domains/sourcing/services/pre_wrf_filter.py` | Filtro pré-WRF (eligibilidade) |
+| ESAnalyzer | `app/domains/sourcing/services/es_analyzer.py` | Busca via Elasticsearch BM25 |
+| PGVAnalyzer | `app/domains/sourcing/services/pgv_analyzer.py` | Busca via pgvector (semântica) |
+| SearchAnalytics | `app/domains/sourcing/services/search_analytics.py` | Analytics de buscas |
+| QueryBuilders | `app/domains/sourcing/services/query_builders.py` | Construtores de queries |
+| VacancySearch | `app/domains/sourcing/services/vacancy_search.py` | Busca por vagas |
+| CandidateSearchRouteService | `app/domains/sourcing/services/candidate_search_route_service.py` | Roteamento de busca |
+| EvaluationCriteria | `app/domains/sourcing/services/evaluation_criteria.py` | Critérios de avaliação |
+| PearchService | `app/domains/sourcing/services/pearch_service.py` | Integração Pearch AI |
+| ApifyService | `app/domains/sourcing/services/apify_service.py` | Integração Apify (web scraping) |
+| ApifyMCPClient | `app/domains/sourcing/services/apify_mcp_client.py` | Cliente MCP para Apify |
+| WRFDynamicK | `app/services/wrf_dynamic_k_service.py` | WRF com K dinâmico |
+| HybridSearchService | `app/services/hybrid_search_service.py` | Busca híbrida (ES + PGV) |
+| SemanticSearchService | `app/shared/intelligence/semantic_search_service.py` | Busca semântica compartilhada |
+| EmbeddingService | `app/shared/intelligence/embedding_service.py` | Serviço de embeddings |
+
+### Checklist de Auditoria
+
+- [ ] **CI-7.1** Dual search implementado: Elasticsearch BM25 (keyword) + PGVector (semântico) rodando em paralelo
+- [ ] **CI-7.2** WRFService combina scores de ambas as buscas com pesos configuráveis por tipo de vaga
+- [ ] **CI-7.3** WRFDynamicK ajusta dinamicamente o K (número de resultados) com base na qualidade dos matches
+- [ ] **CI-7.4** PreWRFFilter aplica filtros de eligibilidade ANTES do ranking WRF (eficiência)
+- [ ] **CI-7.5** ESAnalyzer usa BM25 com boosting por campos relevantes (título, skills, experiência)
+- [ ] **CI-7.6** PGVAnalyzer usa cosine similarity com embeddings pré-computados
+- [ ] **CI-7.7** EmbeddingService gera e armazena embeddings de candidatos e vagas
+- [ ] **CI-7.8** SearchAnalytics registra métricas de busca: queries, resultados, cliques, conversão
+- [ ] **CI-7.9** PearchService e ApifyService integram fontes externas de candidatos
+- [ ] **CI-7.10** CandidateSearchRouteService roteia entre busca interna e externa com base em critérios
+- [ ] **CI-7.11** QueryBuilders geram queries otimizadas para cada backend (ES, pgvector)
+- [ ] **CI-7.12** HybridSearchService unifica resultados de ES + PGV com deduplicação
+- [ ] **CI-7.13** FairnessGuard é aplicado nos resultados de busca ANTES de apresentar ao recrutador (Crença 02)
+- [ ] **CI-7.14** Isolamento multi-tenant: busca retorna apenas candidatos do tenant correto
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Dual search funcional | ES BM25 + PGVector ambos operacionais |
+| WRF com pesos configuráveis | Por tipo de vaga/tenant |
+| Pre-WRF filter ativo | Filtra antes de ranquear |
+| Analytics de busca | Métricas registradas |
+| FairnessGuard pós-busca | Aplicado antes de exibir resultados |
+
+---
+
+## CI-8. Machine Learning e Predição
+
+Serviços de ML: OutcomePredictor, FeatureEngineering, ModelRegistry, PredictiveAnalytics, JobPattern, LearningHub. Verificar se são implementações reais ou stubs.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| OutcomePredictor | `app/services/ml/outcome_predictor.py` | Predição de sucesso de contratação |
+| FeatureEngineering | `app/services/ml/feature_engineering.py` | Engenharia de features para ML |
+| ModelRegistry | `app/services/ml/model_registry.py` | Registry de modelos ML (versionamento) |
+| PredictiveAnalytics | `app/services/predictive_analytics_service.py` | 7 tipos de predição |
+| JobPattern | `app/services/job_pattern_service.py` | Padrões históricos de vagas |
+| LearningHub | `app/services/learning_hub_service.py` | Hub de aprendizado da plataforma |
+| OutcomeCorrelator | `app/services/outcome_correlator_service.py` | Correlação de outcomes |
+| PatternDetector | `app/services/pattern_detector_service.py` | Detecção de padrões |
+| PipelinePrediction | `app/services/pipeline_prediction_service.py` | Predição de pipeline |
+| PipelineVelocity | `app/services/pipeline_velocity_service.py` | Velocidade do pipeline |
+| LearningLoop | `app/services/learning_loop_service.py` | Loop de aprendizado |
+| FeedbackLearning | `app/services/feedback_learning_service.py` | Aprendizado por feedback |
+| LearningAnalytics | `app/services/learning_analytics_service.py` | Analytics de aprendizado |
+
+### Checklist de Auditoria
+
+- [ ] **CI-8.1** OutcomePredictor é implementação REAL com modelo treinado (não heurística hardcoded)
+- [ ] **CI-8.2** OutcomePredictor usa features de FeatureEngineering (não features ad hoc)
+- [ ] **CI-8.3** FeatureEngineering extrai features estruturadas de candidatos e vagas para alimentar modelos
+- [ ] **CI-8.4** ModelRegistry implementa versionamento de modelos com rollback capability
+- [ ] **CI-8.5** PredictiveAnalytics implementa ≥ 5 tipos de predição (tempo de contratação, fit, churn, etc.)
+- [ ] **CI-8.6** PredictiveAnalytics usa modelos treinados ou LLM-based (não fórmulas artificiais tipo `max(0.6, min(x*3, 0.95))`)
+- [ ] **CI-8.7** JobPattern detecta padrões históricos em vagas similares para calibrar avaliações
+- [ ] **CI-8.8** LearningHub agrega aprendizados de múltiplas fontes (feedback, outcomes, interações)
+- [ ] **CI-8.9** OutcomeCorrelator correlaciona predições com outcomes reais para feedback loop
+- [ ] **CI-8.10** PatternDetector identifica anomalias e tendências em dados de recrutamento
+- [ ] **CI-8.11** LearningLoop implementa ciclo completo: predição → outcome → feedback → retrain/adjust
+- [ ] **CI-8.12** Nenhum serviço de ML retorna confidence score sem base em dados reais (Nota Final #8)
+- [ ] **CI-8.13** ModelDrift é monitorado: alertas quando predições divergem de outcomes reais
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Serviços existem | ≥ 10/13 |
+| Implementações reais (não stubs) | 100% dos que existem |
+| Feedback loop implementado | Predição → Outcome → Adjust |
+| Confidence baseada em dados reais | Zero fórmulas artificiais |
+| Model drift monitorado | Alertas configurados |
+
+---
+
+## CI-9. Intelligence Layer Services
+
+Serviços de inteligência: SmartExtractor, RAG, embedding_service, semantic_search_service, MarketBenchmark, InferBehavior, InterpretContextLLM.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| SmartExtractor | `app/shared/intelligence/smart_extractor.py` | Extração inteligente de dados de documentos |
+| EmbeddingService | `app/shared/intelligence/embedding_service.py` | Geração de embeddings vetoriais |
+| SemanticSearchService | `app/shared/intelligence/semantic_search_service.py` | Busca semântica via similaridade vetorial |
+| RAGService | `app/services/rag_service.py` | Retrieval-Augmented Generation |
+| RAGPipelineService | `app/services/rag_pipeline_service.py` | Pipeline RAG completo |
+| MarketBenchmark | `app/services/market_benchmark_service.py` | Benchmarks de mercado (salários, competências) |
+| InferBehavior | `app/domains/communication/services/infer_behavior_service.py` | Inferência de comportamento do candidato |
+| InterpretContextLLM | `app/domains/communication/services/interpret_context_llm_service.py` | Interpretação de contexto via LLM |
+| IntelligenceLayerService | `app/services/intelligence_layer_service.py` | Orquestração da camada de inteligência |
+| SuggestionInteraction | `app/services/suggestion_interaction_service.py` | Interações de sugestão inteligente |
+| ManagerInference | `app/services/manager_inference_service.py` | Inferência sobre gestores |
+| KnowledgeBaseService | `app/services/knowledge_base_service.py` | Base de conhecimento |
+| ParamPatterns | `app/shared/intelligence/param_patterns.py` | Patterns de parâmetros para extração |
+
+### Checklist de Auditoria
+
+- [ ] **CI-9.1** SmartExtractor extrai dados estruturados de CVs, JDs e documentos não estruturados via LLM
+- [ ] **CI-9.2** SmartExtractor produz output tipado (Pydantic model) — não apenas texto livre
+- [ ] **CI-9.3** RAGService implementa augment_with_context(): busca documentos relevantes e injeta como contexto ao LLM
+- [ ] **CI-9.4** RAGPipelineService orquestra: embedding → retrieval → ranking → augmentation → generation
+- [ ] **CI-9.5** EmbeddingService gera embeddings e os persiste para reuso (não recomputa a cada chamada)
+- [ ] **CI-9.6** SemanticSearchService usa pgvector para busca por similaridade em embeddings armazenados
+- [ ] **CI-9.7** MarketBenchmark fornece dados de benchmark setorial: salários, competências, tempo de contratação
+- [ ] **CI-9.8** MarketBenchmark usa dados dos 8 benchmarks de referência (ABRH, GPTW, Gupy, Robert Half, etc.)
+- [ ] **CI-9.9** InferBehavior infere comportamento do candidato a partir de histórico de interações
+- [ ] **CI-9.10** InterpretContextLLM interpreta contexto da situação (estágio, canal, histórico) para gerar comunicação adequada
+- [ ] **CI-9.11** IntelligenceLayerService orquestra os serviços de inteligência como fachada unificada
+- [ ] **CI-9.12** SuggestionInteraction gera sugestões proativas contextualizadas para o recrutador
+- [ ] **CI-9.13** KnowledgeBaseService fornece base de conhecimento consultável via RAG
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Serviços existem | ≥ 10/13 |
+| RAG funcional | Retrieval + Augmentation + Generation |
+| SmartExtractor com output tipado | Pydantic models na saída |
+| Embeddings persistidos | Cache efetivo |
+| MarketBenchmark com dados reais | ≥ 3 fontes de benchmark |
+
+---
+
+## CI-10. Automação Inteligente
+
+StageAutomationEngine, AutomationScheduler, 16 tipos de triggers, 18 alertas proativos, AutonomyEngine (níveis de autonomia), ProactiveWorker, prediction_action_bridge.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| StageAutomationEngine | `app/services/stage_automation_engine.py` | Engine de automação por estágio |
+| AutomationScheduler | `app/services/automation_scheduler.py` | Agendamento de automações |
+| AutomationService | `app/services/automation_service.py` | Serviço principal de automação |
+| AutomationTriggerService | `app/services/automation_trigger_service.py` | 16 tipos de triggers |
+| AutomationHandlers | `app/services/automation_handlers.py` | Handlers de automação |
+| ProactiveAlertService | `app/services/proactive_alert_service.py` | 18 alertas proativos |
+| ProactiveService | `app/services/proactive_service.py` | Serviço proativo geral |
+| AutonomyEngine | `app/shared/agents/autonomy_engine.py` | Engine de autonomia (níveis configuráveis) |
+| AutonomousAgentService | `app/services/autonomous_agent_service.py` | Serviço de agente autônomo |
+| ProactiveWorker | `app/shared/agents/proactive_worker.py` | Worker proativo |
+| PredictionActionBridge | `app/domains/automation/services/prediction_action_bridge.py` | Ponte predição → ação |
+| StageTransitionAutomation | `app/services/stage_transition_automation.py` | Automação de transições |
+| EventActionConnector | `app/domains/automation/services/event_action_connector.py` | Conector evento → ação |
+| LearningAutomation | `app/domains/automation/services/learning_automation.py` | Automação de aprendizado |
+| PatternApplier | `app/domains/automation/services/pattern_applier.py` | Aplicação de padrões |
+| PipelineMonitor | `app/domains/automation/services/pipeline_monitor.py` | Monitor de pipeline |
+| PlannedTaskService | `app/domains/automation/services/planned_task_service.py` | Serviço de tasks planejadas |
+| ConfidencePolicyService | `app/services/confidence_policy_service.py` | Política de confiança (3 níveis) |
+
+### Checklist de Auditoria
+
+- [ ] **CI-10.1** StageAutomationEngine implementa automações por estágio do pipeline (não genérica)
+- [ ] **CI-10.2** AutomationTriggerService define ≥ 16 tipos de triggers (candidato aplicou, tempo expirou, score calculado, etc.)
+- [ ] **CI-10.3** ProactiveAlertService implementa ≥ 18 tipos de alertas proativos para o recrutador
+- [ ] **CI-10.4** AutonomyEngine implementa níveis de autonomia configuráveis por empresa (Crença 12)
+- [ ] **CI-10.5** AutonomyEngine começa com autonomia mínima e escala com confiança demonstrada
+- [ ] **CI-10.6** AutonomyEngine define pelo menos 3 níveis: ASSISTANT (sugere), SEMI-AUTO (sugere + executa com aprovação), AUTO (executa)
+- [ ] **CI-10.7** ConfidencePolicyService implementa 3 níveis: APPLY_SILENT (>= 0.85), APPLY_NOTIFY (0.70-0.84), ASK_USER (< 0.70)
+- [ ] **CI-10.8** PredictionActionBridge conecta predições de ML a ações automáticas (ex: predição de churn → alerta proativo)
+- [ ] **CI-10.9** ProactiveWorker executa verificações periódicas e gera sugestões sem esperar input do recrutador
+- [ ] **CI-10.10** EventActionConnector mapeia eventos de negócio a ações automáticas
+- [ ] **CI-10.11** AutomationScheduler agenda execuções periódicas (diárias, semanais)
+- [ ] **CI-10.12** Todas as automações de alto impacto passam por HITL (Crença 01)
+- [ ] **CI-10.13** Isolamento multi-tenant: automações de um tenant não afetam outro
+- [ ] **CI-10.14** PipelineMonitor detecta anomalias no pipeline e dispara alertas
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Triggers implementados | ≥ 16 tipos |
+| Alertas proativos | ≥ 18 tipos |
+| Níveis de autonomia | ≥ 3 com escalação progressiva |
+| ConfidencePolicy | 3 níveis com thresholds corretos |
+| HITL em ações de alto impacto | Obrigatório |
+
+---
+
+## CI-11. Integração ATS
+
+ats_sync_service, 4 clientes (Gupy, Pandapé, Merge, StackOne), criptografia de credenciais, idempotency, retry automático.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| ATSSyncService | `app/services/ats_sync_service.py` | Serviço principal de sincronização ATS |
+| ATSBase | `app/services/ats_clients/base.py` | Interface base para clientes ATS |
+| GupyClient | `app/services/ats_clients/gupy.py` | Cliente ATS Gupy |
+| PandapeClient | `app/services/ats_clients/pandape.py` | Cliente ATS Pandapé |
+| MergeClient | `app/services/ats_clients/merge.py` | Cliente Merge (unificado) |
+| StackOneClient | `app/services/ats_clients/stackone.py` | Cliente StackOne |
+| ATSFactory | `app/shared/providers/ats_factory.py` | Factory de provedores ATS |
+| Encryption | `app/shared/encryption.py` | Criptografia de credenciais |
+| ATSJobHistory | `app/services/ats_job_history_service.py` | Histórico de jobs ATS |
+| ATSIntegrationAgent | `app/domains/ats_integration/agents/ats_integration_react_agent.py` | Agente ReAct de integração |
+| GupyService | `app/services/gupy_service.py` | Serviço Gupy (legacy) |
+| PandapeService | `app/services/pandape_service.py` | Serviço Pandapé (legacy) |
+| MergeATSService | `app/services/merge_ats_service.py` | Serviço Merge (legacy) |
+
+### Checklist de Auditoria
+
+- [ ] **CI-11.1** ATSSyncService implementa sincronização bidirecional (import + export) de candidatos e vagas
+- [ ] **CI-11.2** ATSBase define interface com métodos obrigatórios: sync_candidates, sync_jobs, get_status
+- [ ] **CI-11.3** 4 clientes ATS implementados: Gupy, Pandapé, Merge, StackOne — todos herdam de ATSBase
+- [ ] **CI-11.4** ATSFactory implementa factory pattern para instanciar o cliente correto por configuração do tenant
+- [ ] **CI-11.5** Credenciais de ATS são criptografadas em repouso (Fernet ou similar) via `app/shared/encryption.py`
+- [ ] **CI-11.6** Credenciais NUNCA aparecem em logs (PII masking intercepta antes de logar)
+- [ ] **CI-11.7** Sincronização é idempotente (re-executar não duplica registros) — verificar uso de IDs externos
+- [ ] **CI-11.8** Retry automático com exponential backoff em chamadas a APIs de ATS
+- [ ] **CI-11.9** Circuit breaker protege chamadas a cada provedor ATS (Crença 07)
+- [ ] **CI-11.10** ATSJobHistory registra histórico de sincronizações para auditoria
+- [ ] **CI-11.11** Isolamento multi-tenant: cada tenant conecta a seu próprio ATS com credenciais isoladas
+- [ ] **CI-11.12** ATSIntegrationAgent (ReAct) pode executar sincronização sob demanda via chat
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Clientes ATS | 4/4 (Gupy, Pandapé, Merge, StackOne) |
+| Criptografia de credenciais | Fernet at-rest |
+| Idempotência | Presente em sync operations |
+| Circuit breaker | Por provedor ATS |
+| Retry automático | Exponential backoff |
+
+---
+
+## CI-12. HITL Persistence
+
+HITLService com Redis fast-path + PostgreSQL, modelos HITLPendingAction/HITLAuditTrail, interrupt_before nos grafos, aprovação via WebSocket.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| HITLService | `app/services/hitl_service.py` | Serviço principal HITL (Redis + PostgreSQL) |
+| HITLModels | `app/models/hitl.py` | Modelos: HITLPendingAction, HITLAuditTrail |
+| PendingAction | `app/orchestrator/pending_action.py` | Ações pendentes no orquestrador |
+| ActionExecutor | `app/orchestrator/action_executor.py` | Executor com confirmação humana |
+| Checkpointer | `app/shared/agents/checkpointer.py` | Checkpointing para interrupt_before |
+| HumanReviewSampling | `app/services/human_review_sampling_service.py` | Amostragem para revisão humana |
+| ConfidencePolicyService | `app/services/confidence_policy_service.py` | Política de confiança |
+| ApprovalModel | `app/models/approval.py` | Modelo de aprovação |
+| WebSocketModule | `app/shared/websocket/` | Módulo WebSocket |
+
+### Checklist de Auditoria
+
+- [ ] **CI-12.1** HITLService implementa dual storage: Redis (fast-path para ações pendentes) + PostgreSQL (persistência definitiva)
+- [ ] **CI-12.2** HITLPendingAction modelo define: action_type, payload, requester_id, tenant_id, status, created_at, expires_at
+- [ ] **CI-12.3** HITLAuditTrail modelo registra: quem aprovou/rejeitou, quando, motivo, e a ação original
+- [ ] **CI-12.4** HITLAuditTrail é append-only (imutável) para compliance (Crença 08)
+- [ ] **CI-12.5** interrupt_before é usado em grafos LangGraph para pausar execução em pontos de decisão humana
+- [ ] **CI-12.6** interrupt_before está presente em todos os grafos que executam ações de alto impacto (rejeição, movimentação, comunicação)
+- [ ] **CI-12.7** Aprovação via WebSocket: frontend recebe notificação real-time de ações pendentes
+- [ ] **CI-12.8** Ações pendentes têm timeout (expires_at) — se não aprovadas, expiram automaticamente
+- [ ] **CI-12.9** HumanReviewSampling implementa amostragem estatística de decisões automáticas para revisão
+- [ ] **CI-12.10** ConfidencePolicyService roteia para HITL quando confiança < 0.70 (ASK_USER)
+- [ ] **CI-12.11** Frontend exibe card de confirmação (HITLConfirmCard) com contexto suficiente para decisão
+- [ ] **CI-12.12** Isolamento multi-tenant: ações pendentes visíveis apenas para o tenant correto
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Dual storage (Redis + PG) | Ambos funcionais |
+| Audit trail append-only | Imutável |
+| interrupt_before nos grafos | Em todos os pontos de alto impacto |
+| Timeout de ações pendentes | Configurado |
+| WebSocket para aprovação | Real-time |
+
+---
+
+## CI-13. Fluxos End-to-End do Produto
+
+Verificação de que os 10 fluxos descritos no ai-architecture-audit (seção 2) existem no código como implementações funcionais, não apenas documentação.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| WizardAgent / JobWizardGraph | `app/domains/job_management/agents/wizard_react_agent.py`, `job_wizard_graph.py` | F1: Wizard de criação de vaga |
+| PipelineAgent | `app/domains/cv_screening/agents/pipeline_react_agent.py` | F2, F6, F10: Triagem e jornada candidato |
+| WSIScreeningPipeline | `app/services/wsi_screening_pipeline.py` | F6: Pipeline WSI completo |
+| WSIQuestionGenerator | `app/services/wsi_question_generator.py` | F7: Geração de perguntas |
+| WhatsAppService | `app/services/whatsapp_service.py` | F3, F8: Comunicação e inscrição WhatsApp |
+| WhatsAppMetaService | `app/services/whatsapp_meta_service.py` | F3: WhatsApp via Meta API |
+| TeamsBot | `app/services/teams_bot.py` | F4: Comunicação Teams |
+| EmailService | `app/services/email_service.py` | F5: Comunicação Email |
+| CommunicationDispatcher | `app/services/communication_dispatcher.py` | F3-F5: Dispatcher multi-canal |
+| TalentAgent | `app/domains/recruiter_assistant/agents/talent_react_agent.py` | F9: Ajuda ao recrutador |
+| CVScoringService | `app/services/cv_scoring_service.py` | F10: Scoring de CV |
+| ConsentCheckerService | `app/services/consent_checker_service.py` | F8: Consentimento do candidato |
+| WebhookService | `app/services/webhook_service.py` | F3, F8: Webhooks de entrada |
+| OrchestratorRoutes | `app/api/orchestrator_routes.py` | Rota principal do chat (todos os fluxos) |
+
+### Fluxos a verificar
+
+| # | Fluxo | Seção de Referência | Domínios Envolvidos |
+|---|-------|---------------------|---------------------|
+| F1 | Wizard de Criação de Vaga | §2.1 | job_management |
+| F2 | Jornada Completa do Candidato | §2.2 | cv_screening, sourcing, communication |
+| F3 | Comunicação WhatsApp com Candidatos | §2.3 | communication |
+| F4 | Comunicação Teams com Recrutadores | §2.4 | communication |
+| F5 | Comunicação Email | §2.5 | communication |
+| F6 | Triagem e Scoring WSI Detalhado | §2.6 | cv_screening |
+| F7 | Criação de Perguntas de Triagem via Edição de Vaga | §2.7 | cv_screening, job_management |
+| F8 | Inscrição de Candidato via WhatsApp | §2.8 | communication, cv_screening |
+| F9 | Pedido de Ajuda do Recrutador Quando IA Falha | §2.9 | recruiter_assistant |
+| F10 | Comportamento Completo da IA na Triagem | §2.10 | cv_screening |
+
+### Checklist de Auditoria
+
+- [ ] **CI-13.1** **F1 — Wizard**: JobWizardGraph/WizardAgent implementa coleta passo-a-passo de dados da vaga, validação e criação
+- [ ] **CI-13.2** **F1 — Wizard**: JD é gerada via LLM com sugestões de skills, requisitos e descrição
+- [ ] **CI-13.3** **F2 — Jornada Candidato**: Pipeline completo existe: aplicação → triagem → avaliação → entrevista → proposta
+- [ ] **CI-13.4** **F2 — Jornada Candidato**: Transições de estágio são rastreadas com audit trail
+- [ ] **CI-13.5** **F3 — WhatsApp**: WhatsApp é canal funcional para comunicação com candidatos (não apenas simulado)
+- [ ] **CI-13.6** **F3 — WhatsApp**: Webhook recebe respostas do candidato e as processa no pipeline
+- [ ] **CI-13.7** **F4 — Teams**: Integração Teams permite interação do recrutador com LIA via bot
+- [ ] **CI-13.8** **F4 — Teams**: TeamsBot implementa BotBuilder com autenticação Azure AD
+- [ ] **CI-13.9** **F5 — Email**: Envio de email funcional com providers reais (Resend, SendGrid)
+- [ ] **CI-13.10** **F5 — Email**: Templates de email são personalizáveis e suportam variáveis dinâmicas
+- [ ] **CI-13.11** **F6 — WSI**: Pipeline WSI implementa 7 blocos de avaliação com scoring determinístico + IA
+- [ ] **CI-13.12** **F6 — WSI**: WSI scoring usa calibração por senioridade (Dreyfus × Bloom)
+- [ ] **CI-13.13** **F7 — Perguntas Triagem**: Perguntas são geradas por IA com calibração por taxonomia de Bloom
+- [ ] **CI-13.14** **F7 — Perguntas Triagem**: Perguntas são ajustáveis dinamicamente durante a entrevista
+- [ ] **CI-13.15** **F8 — Inscrição WhatsApp**: Candidato pode se inscrever em vaga via WhatsApp (fluxo completo)
+- [ ] **CI-13.16** **F8 — Inscrição WhatsApp**: Consentimento é coletado ANTES de processar dados do candidato
+- [ ] **CI-13.17** **F9 — Ajuda Recrutador**: Existe fallback quando IA não consegue resolver — escalação para modo manual
+- [ ] **CI-13.18** **F9 — Ajuda Recrutador**: Recrutador pode sobrescrever qualquer decisão da IA (Crença 01)
+- [ ] **CI-13.19** **F10 — Comportamento IA Triagem**: IA nunca rejeita automaticamente sem gate de revisão (Inegociável #2)
+- [ ] **CI-13.20** **F10 — Comportamento IA Triagem**: FairnessGuard ativo em 100% das decisões de screening
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Fluxos com implementação real | ≥ 8/10 |
+| Fluxos com wiring completo (front→back→agente→serviço) | ≥ 6/10 |
+| Consentimento antes de processamento | 100% dos fluxos com candidatos |
+| FairnessGuard em fluxos de avaliação | 100% |
+| Escalação humana disponível | 100% dos fluxos |
+
+---
+
+## CI-14. Telas do Produto e Pontos de IA
+
+Verificação de que as 7 telas com touchpoints de IA descritas no ai-architecture-audit (seção 2.0) existem no frontend com os componentes de IA conectados ao backend.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| OrchestratorRoutes | `app/api/orchestrator_routes.py` | Backend: rota principal do chat |
+| KanbanAssistantAPI | `app/api/v1/kanban_assistant.py` | Backend: API do Kanban assistant |
+| KanbanAssistantService | `app/services/kanban_assistant_service.py` | Backend: serviço do Kanban |
+| JDEnrichmentService | `app/services/jd_enrichment_service.py` | Backend: enriquecimento de JD |
+| CVScoringService | `app/services/cv_scoring_service.py` | Backend: scoring de candidatos |
+| CompanyConfigurationService | `app/services/company_configuration_service.py` | Backend: configuração de empresa |
+| ConfidencePolicyService | `app/services/confidence_policy_service.py` | Backend: política de confiança |
+| LiaScoreService | `app/services/lia_score_service.py` | Backend: score LIA |
+| LiaFieldConfigService | `app/services/lia_field_config_service.py` | Backend: configuração de campos LIA |
+
+> **Nota:** Os componentes frontend (`jobs-page.tsx`, `ExpandedChatModal`, Kanban, etc.) devem ser localizados na árvore do frontend. Se o frontend não está no mesmo repositório, o auditor deve verificar no repositório correspondente. Os paths de backend acima são os endpoints e serviços que esses componentes consomem.
+
+### Telas a verificar
+
+| # | Tela | Componente Frontend Esperado | Pontos de IA |
+|---|------|------------------------------|--------------|
+| T1 | Gestão de Vagas — Tabela | `jobs-page.tsx` | Busca inteligente, LIA chat, insights, sugestões, pipeline score |
+| T2 | Gestão de Vagas — Painel LIA Expandido | `jobs-page.tsx` (estado expandido) | Suggestion cards, queries guide, áudio |
+| T3 | Wizard de Criação / Super Chat | `ExpandedChatModal` | Chat conversacional, JD generation, skills suggestion |
+| T4 | Super Chat Fullscreen | `ExpandedChatModal` (fullscreen) | Wizard completo, painéis contextuais |
+| T5 | Kanban Pipeline | Componente Kanban | LIA contextual, drag-and-drop, sugestões por coluna |
+| T6 | Painel do Candidato | Perfil do candidato | WSI score, histórico, comunicação, avaliação |
+| T7 | Dashboard Admin/Configurações | Configurações | Políticas de contratação, níveis de autonomia |
+
+### Checklist de Auditoria
+
+- [ ] **CI-14.1** **T1**: Componente de tabela de vagas existe com integração de busca inteligente (AISearchToggle)
+- [ ] **CI-14.2** **T1**: Pipeline LIA (barras visuais) exibe score por estágio calculado pelo backend
+- [ ] **CI-14.3** **T1**: Badge de sugestões proativas (💡) conectado a `useLiaSuggestions` hook
+- [ ] **CI-14.4** **T2**: Painel LIA expandido renderiza à esquerda da tabela com suggestion cards
+- [ ] **CI-14.5** **T2**: Suggestion cards são geradas pelo backend (não hardcoded no frontend)
+- [ ] **CI-14.6** **T3**: ExpandedChatModal implementa chat à esquerda + side panel contextual à direita
+- [ ] **CI-14.7** **T3**: Progress tracker no wizard mostra campos preenchidos vs. pendentes
+- [ ] **CI-14.8** **T4**: Modo fullscreen ocupa 100% com todos os painéis contextuais (JD preview, skills, critérios)
+- [ ] **CI-14.9** **T5**: Kanban com drag-and-drop que dispara transição de estágio com confirmação
+- [ ] **CI-14.10** **T5**: LIA contextual no Kanban gera sugestões por coluna/estágio
+- [ ] **CI-14.11** **T6**: Painel do candidato exibe WSI score com breakdown por dimensão
+- [ ] **CI-14.12** **T6**: Histórico de comunicação (email, WhatsApp) visível no painel
+- [ ] **CI-14.13** **T7**: Configurações permitem ajustar nível de autonomia da IA por empresa
+- [ ] **CI-14.14** **T7**: Configurações de políticas de contratação (CompanyHiringPolicy) editáveis
+- [ ] **CI-14.15** Todas as telas seguem o design system: LIA à esquerda, conteúdo ao centro, preview à direita
+- [ ] **CI-14.16** Todas as telas são acessíveis: aria-labels, keyboard navigation, WCAG 2.1 AA (Crença 13)
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Telas existem no frontend | ≥ 5/7 |
+| Pontos de IA conectados ao backend | ≥ 70% dos pontos descritos |
+| Design system consistente | Layout LIA-esquerda em todas as telas |
+| Acessibilidade | WCAG 2.1 AA em todas as telas |
+
+---
+
+## CI-15. Token Tracking e Controle de Custos
+
+token_tracking_service, tenant_budget, pre-call budget check, cascata de modelo (barato→caro), LLM fallback chain, cost alerting.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| TokenTrackingService | `app/services/token_tracking_service.py` | Registro de consumo de tokens por chamada |
+| TokenBudgetService | `app/services/token_budget_service.py` | Orçamento de tokens por tenant |
+| TenantBudget | `app/orchestrator/tenant_budget.py` | Budget check no orquestrador |
+| LLMCascade | `app/orchestrator/llm_cascade.py` | Cascata de modelos (barato→caro) |
+| LLMFactory | `app/shared/providers/llm_factory.py` | Factory com fallback chain |
+| LLMClaude | `app/shared/providers/llm_claude.py` | Provider Claude |
+| LLMGemini | `app/shared/providers/llm_gemini.py` | Provider Gemini |
+| LLMOpenAI | `app/shared/providers/llm_openai.py` | Provider OpenAI |
+| LLMClient | `app/shared/providers/llm_client.py` | Cliente LLM base |
+| LLMProvider | `app/shared/providers/llm_provider.py` | Interface de provider |
+| BillingService | `app/services/billing_service.py` | Serviço de billing |
+| PlanLimitsService | `app/services/plan_limits_service.py` | Limites por plano |
+| AIConsumption | `app/models/ai_consumption.py` | Modelo de consumo de IA |
+| DriftAlertService | `app/services/drift_alert_service.py` | Alertas de drift de custos |
+
+### Checklist de Auditoria
+
+- [ ] **CI-15.1** TokenTrackingService registra tokens consumidos por chamada: input_tokens, output_tokens, modelo, tenant_id, custo_estimado
+- [ ] **CI-15.2** TokenBudgetService define orçamento por tenant com limites diários/mensais
+- [ ] **CI-15.3** TenantBudget implementa pre-call budget check ANTES de invocar LLM (Crença 09)
+- [ ] **CI-15.4** Pre-call check bloqueia chamada quando budget excedido (não apenas loga)
+- [ ] **CI-15.5** LLMCascade implementa cascata: modelo barato primeiro (Haiku/Flash), escala para caro (Sonnet/Opus) apenas quando necessário
+- [ ] **CI-15.6** LLMFactory implementa fallback chain: Provider1 → Provider2 → Provider3 → Erro 503
+- [ ] **CI-15.7** Fallback chain é testável end-to-end (Production Readiness Gate #2)
+- [ ] **CI-15.8** 3 providers LLM implementados: Claude (Anthropic), Gemini (Google), OpenAI
+- [ ] **CI-15.9** Cada provider implementa a interface LLMProvider com métodos consistentes
+- [ ] **CI-15.10** Circuit breaker protege cada provider individualmente (Crença 07)
+- [ ] **CI-15.11** Cost alerting: alertas disparam quando custo diário/mensal excede threshold
+- [ ] **CI-15.12** DriftAlertService detecta aumento anômalo de custos (> 20% em relação à média)
+- [ ] **CI-15.13** AIConsumption modelo persiste dados de consumo para dashboards e relatórios
+- [ ] **CI-15.14** PlanLimitsService aplica limites de consumo por plano de assinatura
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Pre-call budget check | Obrigatório (Crença 09) |
+| Cascata de modelo | ≥ 2 tiers (barato → caro) |
+| Fallback chain | ≥ 3 providers com fallback |
+| Token tracking | Por chamada, com custo estimado |
+| Cost alerting | Alertas configurados |
+
+---
+
+## CI-16. Explainability e User Preferences
+
+explainability_service, ExecutionLogStore, API de explicabilidade, UserAgentPreferenceService (auto-confirm), agent_quality_evaluator.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| ExplainabilityService | `app/services/explainability_service.py` | Explicabilidade das decisões da IA |
+| ExecutionLogStore | `app/shared/agents/execution_log_store.py` | Store de logs de execução |
+| UserAgentPreferenceService | `app/services/user_agent_preference_service.py` | Preferências do recrutador (auto-confirm) |
+| AgentQualityEvaluator | `app/services/agent_quality_evaluator.py` | Avaliação de qualidade do agente |
+| AgentQualityEvaluation | `app/models/agent_quality_evaluation.py` | Modelo de avaliação |
+| Observability | `app/shared/agents/observability.py` | Observabilidade dos agentes |
+| Confidence | `app/shared/agents/confidence.py` | Estimativa de confiança |
+| RecruiterPersonalization | `app/services/recruiter_personalization_service.py` | Personalização por recrutador |
+| LearningConfirmation | `app/services/learning_confirmation_service.py` | Confirmação de aprendizado |
+| LearningOutcome | `app/services/learning_outcome_service.py` | Outcomes de aprendizado |
+
+### Checklist de Auditoria
+
+- [ ] **CI-16.1** ExplainabilityService gera explicações legíveis para cada decisão da IA (Crença 03)
+- [ ] **CI-16.2** ExplainabilityService fornece API consultável: `/api/v1/explainability/{decision_id}`
+- [ ] **CI-16.3** Explicações incluem: input, raciocínio, ferramentas usadas, output, confiança
+- [ ] **CI-16.4** "Por que fui rejeitado?" é respondível com raciocínio rastreável (Crença 03)
+- [ ] **CI-16.5** ExecutionLogStore registra cada etapa do agente: thought, action, observation, final_answer
+- [ ] **CI-16.6** ExecutionLogStore é consultável para debugging e auditoria post-mortem
+- [ ] **CI-16.7** UserAgentPreferenceService permite recrutador configurar auto-confirm para ações de baixo risco
+- [ ] **CI-16.8** Auto-confirm respeita limites: NUNCA auto-confirma rejeições ou comunicações de alto impacto
+- [ ] **CI-16.9** AgentQualityEvaluator avalia qualidade das respostas do agente (relevância, completude, tom)
+- [ ] **CI-16.10** AgentQualityEvaluation modelo persiste avaliações para análise longitudinal
+- [ ] **CI-16.11** RecruiterPersonalization adapta comportamento da LIA por recrutador (threshold: 10+ vagas)
+- [ ] **CI-16.12** Confidence implementa estimativa de confiança baseada em dados reais (não fórmula artificial)
+- [ ] **CI-16.13** Observability registra métricas: latência, tokens, confiança, erros — por agente e execução
+- [ ] **CI-16.14** LearningConfirmation e LearningOutcome fecham o loop: decisão → resultado → ajuste
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| API de explicabilidade | Funcional e consultável |
+| ExecutionLogStore | Registra todas as etapas |
+| User preferences | Configuráveis por recrutador |
+| Auto-confirm nunca em alto impacto | Verificado |
+| Confidence baseada em dados reais | Zero fórmulas artificiais |
+
+---
+
+## CI-17. Agentes ReAct — Completude e Padrão 4-File
+
+Verificação de que TODOS os agentes ReAct seguem o padrão 4-file (agent, system_prompt, tool_registry, stage_context) e estão registrados no ReactAgentRegistry.
+
+### Arquivos a inspecionar
+
+| Agente | Base Path | Domínio |
+|--------|-----------|---------|
+| WizardAgent | `app/domains/job_management/agents/wizard_*` | job_management |
+| PipelineAgent | `app/domains/cv_screening/agents/pipeline_*` | cv_screening |
+| SourcingAgent | `app/domains/sourcing/agents/sourcing_*` | sourcing |
+| AutomationAgent | `app/domains/automation/agents/automation_*` | automation |
+| TalentAgent | `app/domains/recruiter_assistant/agents/talent_*` | recruiter_assistant |
+| KanbanAgent | `app/domains/recruiter_assistant/agents/kanban_*` | recruiter_assistant |
+| JobsMgmtAgent | `app/domains/recruiter_assistant/agents/jobs_mgmt_*` | recruiter_assistant |
+| PolicyAgent | `app/domains/policy/agents/` | policy |
+| PipelineTransitionAgent | `app/domains/pipeline/agents/pipeline_transition_*` | pipeline |
+| AnalyticsAgent | `app/domains/analytics/agents/analytics_*` | analytics |
+| CommunicationAgent | `app/domains/communication/agents/communication_*` | communication |
+| ATSIntegrationAgent | `app/domains/ats_integration/agents/ats_integration_*` | ats_integration |
+| Registry | `app/shared/agents/react_agent_registry.py` | shared |
+| ReActLoop | `app/shared/agents/react_loop.py` | shared |
+
+### Checklist de Auditoria
+
+- [ ] **CI-17.1** Cada agente ReAct possui 4 arquivos: `*_react_agent.py`, `*_system_prompt.py`, `*_tool_registry.py`, `*_stage_context.py`
+- [ ] **CI-17.2** ReactAgentRegistry registra todos os agentes com nome, domínio e classe
+- [ ] **CI-17.3** ReactAgentRegistry é usado pelo orquestrador para instanciar agentes (não import direto)
+- [ ] **CI-17.4** ReActLoop implementa ciclo: REASON → ACT → OBSERVE → DECIDE com max_iterations
+- [ ] **CI-17.5** Cada system_prompt contém seções obrigatórias: persona, capabilities, constraints, anti-sycophancy
+- [ ] **CI-17.6** Cada system_prompt inclui few-shot examples relevantes ao domínio
+- [ ] **CI-17.7** Cada tool_registry define lista explícita de ferramentas com type hints e docstrings
+- [ ] **CI-17.8** Cada stage_context define comportamento por estágio do pipeline
+- [ ] **CI-17.9** Todos os agentes herdam de base adequada (AgentInterface, EnhancedAgentMixin ou LangGraphReActBase)
+- [ ] **CI-17.10** Todos os system_prompts incluem seção de anti-sycophancy (Crença 11 — sem exceção)
+- [ ] **CI-17.11** Todos os agentes aplicam FairnessGuard na entrada e saída (Crença 02)
+- [ ] **CI-17.12** Todos os agentes incluem calibração por contexto de empresa (STARTUP/PME/CORPORAÇÃO)
+- [ ] **CI-17.13** Agentes que avaliam candidatos possuem PII masking antes de enviar ao LLM (Crença 04)
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| Padrão 4-file seguido | 100% dos agentes ReAct |
+| Registrados no registry | 100% |
+| Anti-sycophancy em prompts | 100% |
+| FairnessGuard ativo | 100% dos agentes que avaliam candidatos |
+| Few-shot examples | Presentes em 100% dos prompts |
+
+---
+
+## CI-18. Compliance e Governança Compartilhada
+
+Verificação dos componentes compartilhados de compliance, governança, e resiliência que suportam toda a plataforma.
+
+### Arquivos a inspecionar
+
+| Componente | Path esperado | Papel |
+|------------|---------------|-------|
+| FairnessGuard | `app/shared/compliance/fairness_guard.py` | Guard anti-discriminação 3 camadas |
+| AuditService | `app/shared/compliance/audit_service.py` | Serviço de trilha de auditoria |
+| AuditModels | `app/shared/compliance/audit_models.py` | Modelos de auditoria |
+| AuditWriter | `app/shared/compliance/audit_writer.py` | Writer de registros de auditoria |
+| AuditCallback | `app/shared/compliance/audit_callback.py` | Callback de auditoria |
+| AuditStorage | `app/shared/compliance/audit_storage.py` | Storage de auditoria |
+| FactChecker | `app/shared/compliance/fact_checker.py` | Verificação de fatos |
+| GuardrailRepository | `app/shared/compliance/guardrail_repository.py` | Repository de guardrails |
+| PIIMasking | `app/shared/pii_masking.py` | PII masking global |
+| PromptInjection | `app/shared/prompt_injection.py` | Proteção contra prompt injection |
+| CircuitBreaker | `app/shared/resilience/circuit_breaker.py` | Circuit breaker |
+| FeatureFlagService | `app/shared/governance/feature_flag_service.py` | Feature flags |
+| AgentMonitoring | `app/shared/governance/agent_monitoring_service.py` | Monitoramento de agentes |
+| ABTesting | `app/shared/ab_testing.py` | A/B testing |
+| StructuredLogging | `app/shared/structured_logging.py` | Logging estruturado |
+| Tracing | `app/shared/tracing.py` | Distributed tracing |
+| PolicyMiddleware | `app/shared/policy_middleware.py` | Middleware de políticas |
+| DelegationFallback | `app/shared/delegation_fallback.py` | Fallback de delegação |
+
+### Checklist de Auditoria
+
+- [ ] **CI-18.1** FairnessGuard implementa 3 camadas: regex (40+ patterns), léxico implícito (15+ termos), LLM semântico
+- [ ] **CI-18.2** FairnessGuard é middleware automático (não depende de chamada manual por cada agente)
+- [ ] **CI-18.3** AuditService gera trilha de auditoria append-only e imutável
+- [ ] **CI-18.4** AuditTrail inclui: quem, o quê, quando, resultado, tenant_id
+- [ ] **CI-18.5** PIIMasking está ativo no root logger (não apenas por app) — CPF, email, telefone, nomes mascarados
+- [ ] **CI-18.6** PIIMasking intercepta ANTES de persistir logs (não após)
+- [ ] **CI-18.7** PromptInjection detecta e bloqueia tentativas de injection nos inputs
+- [ ] **CI-18.8** CircuitBreaker implementa 3 estados: CLOSED → OPEN → HALF-OPEN com thresholds configuráveis
+- [ ] **CI-18.9** CircuitBreaker protege TODAS as integrações externas (LLM providers, ATS, communication)
+- [ ] **CI-18.10** FeatureFlagService permite habilitar/desabilitar features por tenant
+- [ ] **CI-18.11** AgentMonitoring registra métricas de saúde dos agentes (uptime, latência, erros)
+- [ ] **CI-18.12** StructuredLogging usa formato JSON com campos obrigatórios: timestamp, level, tenant_id, request_id
+- [ ] **CI-18.13** Tracing implementa distributed tracing com propagação de correlation_id
+- [ ] **CI-18.14** PolicyMiddleware aplica políticas de empresa automaticamente em todas as rotas
+- [ ] **CI-18.15** ABTesting suporta testes A/B para prompts e modelos com registro de outcomes
+- [ ] **CI-18.16** FactChecker verifica afirmações factuais do LLM contra dados do banco
+
+### Critérios de Aprovação
+
+| Critério | Threshold |
+|----------|-----------|
+| FairnessGuard 3 camadas | Todas implementadas |
+| FairnessGuard como middleware | Automático (não manual) |
+| Audit trail imutável | Append-only verificado |
+| PIIMasking no root logger | Global |
+| CircuitBreaker em integrações | 100% das externas |
+
+---
+
+# PARTE XI: NOTAS FINAIS
 
 1. **Não assuma — investigue.** Sempre leia o código real antes de classificar um item. "Existe" e "funciona" são coisas diferentes.
 2. **Priorize por impacto.** Violações de Inegociáveis são P0 — não importa quão pequenas pareçam.
