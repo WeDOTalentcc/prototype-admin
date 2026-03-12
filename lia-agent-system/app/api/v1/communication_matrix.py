@@ -328,7 +328,7 @@ async def reset_matrix_to_defaults(
                 is_automatic=entry_data["is_automatic"],
                 template_id=entry_data["template_id"],
                 requires_approval=entry_data["requires_approval"],
-                is_active=True,
+                is_active=entry_data.get("is_active", True),
                 display_order=entry_data["display_order"],
             )
             db.add(entry)
@@ -404,7 +404,7 @@ async def seed_matrix_entries(
                 is_automatic=entry_data["is_automatic"],
                 template_id=entry_data["template_id"],
                 requires_approval=entry_data["requires_approval"],
-                is_active=True,
+                is_active=entry_data.get("is_active", True),
                 display_order=entry_data["display_order"],
             )
             db.add(entry)
@@ -471,7 +471,7 @@ async def copy_defaults_to_company(
                 is_automatic=entry_data["is_automatic"],
                 template_id=entry_data["template_id"],
                 requires_approval=entry_data["requires_approval"],
-                is_active=True,
+                is_active=entry_data.get("is_active", True),
                 display_order=entry_data["display_order"],
             )
             db.add(entry)
