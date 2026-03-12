@@ -183,7 +183,7 @@ NotificationItem.displayName = 'NotificationItem'
 export function NotificationSystem({ 
   onNotificationClick, 
   userId = "default_user",
-  pollingInterval = 30000
+  pollingInterval = 60000
 }: NotificationSystemProps) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)

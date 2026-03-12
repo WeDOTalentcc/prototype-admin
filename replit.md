@@ -42,6 +42,8 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 -   **FairnessGuard in Agent Outputs**: Integrated `FairnessGuard.check()` and `check_implicit_bias()` across various agent outputs to prevent bias and ensure fairness.
 -   **LGPD Log Retention (L6)**: Implemented scheduled deletion for `ai_consumption` logs after 365 days.
 -   **BiasAuditService + API**: Calculates adverse impact using the Four-Fifths Rule across demographic dimensions for specific jobs, with API endpoints for reporting.
+-   **Proactive Predictive Briefing**: When entering a job, LIA proactively presents a briefing with pipeline stats, candidate alerts, and ML predictions (time-to-fill, salary range) instead of a separate MLInsightsCard widget. All AI interaction flows through LIA chat.
+-   **Polling Optimization**: Frontend polling intervals reduced to prevent 429 cascading — ai-suggestions 60s, notifications 60s, setup-progress 120s.
 
 # External Dependencies
 -   Anthropic (Claude API)

@@ -117,7 +117,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
   useEffect(() => {
     isMounted.current = true
     fetchSummary()
-    const interval = setInterval(fetchSummary, 30000)
+    const interval = setInterval(fetchSummary, 60000)
     return () => {
       isMounted.current = false
       clearInterval(interval)

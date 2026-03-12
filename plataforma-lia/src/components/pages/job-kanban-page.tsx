@@ -32,7 +32,6 @@ import { UniversalTransitionModal, useUniversalTransition, type UniversalTransit
 import { useAuth } from "@/components/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { useShortList } from "@/hooks/use-short-list"
-import { MLInsightsCard } from "@/components/ml-insights-card"
 import { useNavigationPersistence } from "@/hooks/use-navigation-persistence"
 import { useTalentFunnel } from "@/hooks/use-talent-funnel"
 import { useCandidateSuggestions, getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
@@ -2053,7 +2052,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         throw new Error('API returned unsuccessful response')
       }
     } catch (error) {
-      console.error('LIA API error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[LIA] Orchestrator indisponível, usando fallback:', (error as Error)?.message || error)
+      }
       try {
         const jobContext = {
           title: currentJob.title,
@@ -2188,26 +2189,101 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   const hasShownProactiveSuggestion = useRef(false)
 
   useEffect(() => {
-    if (computedSuggestions.length > 0 && liaMessages.length === 0 && !hasShownProactiveSuggestion.current) {
-      hasShownProactiveSuggestion.current = true
+    if (liaMessages.length > 0 || hasShownProactiveSuggestion.current || !currentJob?.id) return
+    hasShownProactiveSuggestion.current = true
+
+    const buildBriefing = async () => {
+      const total = allTableCandidates.length
+      const stageMap: Record<string, number> = {}
+      allTableCandidates.forEach(c => {
+        const s = c.stage || 'sourcing'
+        stageMap[s] = (stageMap[s] || 0) + 1
+      })
+      const stageLabels: Record<string, string> = {
+        sourcing: 'Sourcing', screening: 'Screening', interview_hr: 'Entrevista RH',
+        interview_technical: 'Entrevista Técnica', interview_manager: 'Entrevista Gestor',
+        offer: 'Proposta', hired: 'Contratado'
+      }
+      const pipelineLines = Object.entries(stageMap)
+        .map(([k, v]) => `${stageLabels[k] || k}: ${v}`)
+        .join(' | ')
+
       const staleCount = computedSuggestions.filter(s => s.type === 'stale_candidate').length
       const highScoreCount = computedSuggestions.filter(s => s.type === 'high_score').length
       const lowScoreCount = computedSuggestions.filter(s => s.type === 'low_score').length
-      let parts: string[] = []
-      if (staleCount > 0) parts.push(`${staleCount} candidato${staleCount > 1 ? 's' : ''} parado${staleCount > 1 ? 's' : ''} há mais de 7 dias`)
-      if (highScoreCount > 0) parts.push(`${highScoreCount} candidato${highScoreCount > 1 ? 's' : ''} com score alto para priorizar`)
-      if (lowScoreCount > 0) parts.push(`${lowScoreCount} candidato${lowScoreCount > 1 ? 's' : ''} com score baixo para revisar`)
-      if (parts.length > 0) {
-        const message = `Olá! Analisei os candidatos desta vaga e notei:\n\n• ${parts.join('\n• ')}\n\nQuer que eu sugira ações específicas?`
-        setLiaMessages([{
+
+      let alertParts: string[] = []
+      if (staleCount > 0) alertParts.push(`${staleCount} candidato${staleCount > 1 ? 's' : ''} parado${staleCount > 1 ? 's' : ''} ha mais de 7 dias`)
+      if (highScoreCount > 0) alertParts.push(`${highScoreCount} candidato${highScoreCount > 1 ? 's' : ''} com score alto para priorizar`)
+      if (lowScoreCount > 0) alertParts.push(`${lowScoreCount} candidato${lowScoreCount > 1 ? 's' : ''} com score baixo para revisar`)
+
+      let mlSection = ''
+      try {
+        const companyId = _companyIdForSL
+        const jobPayload = {
+          title: currentJob.title,
+          department: currentJob.department,
+          seniority: currentJob.seniority,
+          location: currentJob.location,
+          work_model: currentJob.workModel,
+          employment_type: currentJob.employmentType,
+        }
+        const [ttfRes, salRes] = await Promise.allSettled([
+          fetch('/api/backend-proxy/ml/predict/time-to-fill', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ company_id: companyId, job_data: jobPayload }),
+          }).then(r => r.ok ? r.json() : null),
+          fetch('/api/backend-proxy/ml/predict/salary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ company_id: companyId, job_data: jobPayload }),
+          }).then(r => r.ok ? r.json() : null),
+        ])
+
+        const ttf = ttfRes.status === 'fulfilled' ? ttfRes.value : null
+        const sal = salRes.status === 'fulfilled' ? salRes.value : null
+
+        const mlParts: string[] = []
+        if (ttf?.predicted_days) {
+          mlParts.push(`Tempo estimado: **${ttf.predicted_days} dias** (${ttf.range_min}-${ttf.range_max}d)`)
+        }
+        if (sal?.suggested_min && sal?.suggested_max) {
+          const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v)
+          mlParts.push(`Faixa salarial sugerida: **${fmt(sal.suggested_min)} - ${fmt(sal.suggested_max)}** (percentil ${sal.market_percentile || '—'}%)`)
+        }
+        if (mlParts.length > 0) {
+          mlSection = `\n\n**Previsoes IA:**\n• ${mlParts.join('\n• ')}`
+        }
+      } catch {
+        // ML predictions unavailable — briefing still shows pipeline data
+      }
+
+      const sections: string[] = []
+      sections.push(`**Pipeline:** ${total} candidato${total !== 1 ? 's' : ''} — ${pipelineLines}`)
+      if (alertParts.length > 0) {
+        sections.push(`**Alertas:**\n• ${alertParts.join('\n• ')}`)
+      }
+      if (mlSection) {
+        sections.push(mlSection.trim())
+      }
+      sections.push('Posso ajudar com analises, comparacoes ou acoes. O que precisa?')
+
+      const message = `Ola! Preparei o briefing desta vaga:\n\n${sections.join('\n\n')}`
+
+      setLiaMessages(prev => {
+        if (prev.length > 0) return prev
+        return [{
           id: `proactive-${Date.now()}`,
           type: 'response',
           content: message,
           timestamp: Date.now()
-        }])
-      }
+        }]
+      })
     }
-  }, [computedSuggestions, liaMessages.length])
+
+    buildBriefing()
+  }, [currentJob?.id, allTableCandidates.length, computedSuggestions, liaMessages.length])
 
   // Wrapper function for orchestrated messages to pass to ExpandedChatModal
   const handleOrchestratedMessage = async (message: string): Promise<{
@@ -5281,22 +5357,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                 Compartilhar
               </Button>
             </div>
-          </div>
-
-          {/* ML Insights — previsões de tempo e salário (P4) */}
-          <div className="px-4 mt-2 mb-1">
-            <MLInsightsCard
-              companyId={_companyIdForSL}
-              jobData={{
-                title: currentJob.title,
-                department: currentJob.department,
-                seniority: currentJob.seniority,
-                location: currentJob.location,
-                work_model: currentJob.workModel,
-                employment_type: currentJob.employmentType,
-              }}
-              className="max-w-xs"
-            />
           </div>
 
           {/* Tab Navigation */}

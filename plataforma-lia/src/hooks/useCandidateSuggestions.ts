@@ -49,7 +49,7 @@ export function useCandidateSuggestions(
     endpoint,
     fetcher,
     {
-      refreshInterval: 30000,
+      refreshInterval: 60000,
       revalidateOnFocus: true,
     }
   )
