@@ -492,7 +492,7 @@
 
 - ReAct loop pattern consistente via `lia_agents_core`
 - EnhancedAgentMixin com FairnessGuard pre-check, audit callback
-- DomainWorkflow com FairnessGuard automático (flag `enable_fairness_guard=True`)
+- `DomainWorkflow` (`app/domains/workflow.py:L83-L109`) com FairnessGuard automático (flag `enable_fairness_guard=True`)
 - Prompt YAML loading com versioning
 - Memory: conversation_memory + working_memory + long_term_memory
 - Autonomy engine com níveis progressivos
