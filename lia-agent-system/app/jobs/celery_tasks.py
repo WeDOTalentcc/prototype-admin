@@ -528,6 +528,10 @@ def send_daily_briefing_task(self) -> dict:
 
         async with AsyncSessionLocal() as db:
             from sqlalchemy import select
+            # Batch global por design: cada BriefingService.generate_daily_briefing()
+            # é company-scoped internamente via user.company_id.
+            # Não há vazamento cross-tenant pois o briefing é gerado por user_id
+            # e a notificação Bell é roteada para o próprio usuário.
             result = await db.execute(
                 select(User).where(User.is_active == True)  # noqa: E712
             )

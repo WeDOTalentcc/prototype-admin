@@ -950,7 +950,8 @@
       "Bash(python -m pytest tests/unit/ -q --no-header --no-cov 2>&1 | tail -8)",
       "Bash(python -m pytest tests/unit/test_diagnostico7_fixes.py tests/unit/test_p3_features.py -q --no-header --no-cov 2>&1 | tail -5)",
       "Bash(find /home/runner/workspace/plataforma-lia/src -type f \\\\\\( -name \"*import*\" -o -name \"*jd*\" \\\\\\) | grep -E \"\\\\.\\(tsx|ts\\)$\")",
-      "Bash(grep -n \"activeSearchTab === 'ia-natural'\" /home/runner/workspace/plataforma-lia/src/components/pages/jobs-page.tsx)"
+      "Bash(grep -n \"activeSearchTab === 'ia-natural'\" /home/runner/workspace/plataforma-lia/src/components/pages/jobs-page.tsx)",
+      "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_p3_features.py tests/unit/test_diagnostico7_fixes.py -q --no-header --no-cov 2>&1 | tail -5)"
     ]
   }
 }
