@@ -908,7 +908,8 @@
       "Bash(python -m pytest tests/unit/test_anti_sycophancy_prompts.py -v --no-cov 2>&1 | tail -25)",
       "Bash(python -m pytest tests/unit/test_talent_guardrail_tools.py -v --no-cov 2>&1 | tail -25)",
       "Bash(python -m pytest tests/unit/test_jobs_negation_detection.py -v --no-cov 2>&1 | tail -20)",
-      "Bash(python -m pytest tests/unit/test_prompt_deduplication.py -v --no-cov 2>&1 | tail -25)"
+      "Bash(python -m pytest tests/unit/test_prompt_deduplication.py -v --no-cov 2>&1 | tail -25)",
+      "Bash(python -m pytest tests/unit/test_consent_hard_soft_flag.py --no-cov --tb=short -q 2>&1)"
     ]
   }
 }
