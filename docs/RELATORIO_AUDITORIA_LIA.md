@@ -628,8 +628,8 @@
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-03
 - **Arquivo(s) afetado(s):**
-  - `sourcing_react_agent.py` — grep por `human_review|HumanReview|HITL|flag_for_review` retorna 0 resultados
-  - `communication_react_agent.py` — grep por `human_review|HumanReview|HITL|flag_for_review` retorna 0 resultados
+  - `app/domains/sourcing/agents/sourcing_react_agent.py` (L1-L702) — nenhuma referência a `human_review`, `HumanReview`, `HITL`, ou `flag_for_review`
+  - `app/domains/communication/agents/communication_react_agent.py` (L1-L253) — idem
 - **Descrição:** Inegociável #2 exige review gate para decisões de alto impacto. Sourcing pode engajar candidatos sem revisão humana. Communication pode enviar mensagens sem aprovação (parcial — tem opt-out mas não HITL no envio).
 - **Impacto se não corrigido:** Contato com candidatos sem supervisão humana — violação de Crença #1 (Humano em Primeiro Lugar).
 - **Esforço estimado:** 8h — Backend (Agentes)
@@ -654,11 +654,11 @@
 - **Dimensão:** 3 (UI/UX)
 - **Runbook:** RM-27
 - **Arquivo(s) afetado(s):**
-  - `plataforma-lia/src/components/` — 466 componentes .tsx totais
-  - Com `aria-label`: 60/466 (12.9%)
-  - Com `sr-only`: 12/466 (2.6%)
-  - Com `focus-visible`: 24/466 (5.2%)
-  - 406 componentes sem nenhum atributo de acessibilidade
+  - `plataforma-lia/src/components/` — 466 arquivos .tsx escaneados (L1-Lfim de cada)
+  - Com `aria-label`: 60/466 (12.9%) — grep retorna 60 arquivos
+  - Com `sr-only`: 12/466 (2.6%) — grep retorna 12 arquivos
+  - Com `focus-visible`: 24/466 (5.2%) — grep retorna 24 arquivos
+  - 406 componentes sem nenhum atributo de acessibilidade (aria-label, sr-only, focus-visible)
 - **Descrição:** Inegociável #8 exige WCAG 2.1 AA em todas as interfaces. Apenas ~16.5% dos componentes têm algum atributo WCAG. Falta verificação sistemática de contraste, navegação por teclado, screen reader.
 - **Impacto se não corrigido:** Plataforma inacessível para pessoas com deficiência — violação Crença #13 e Lei 13.146/15.
 - **Esforço estimado:** 40h — Frontend
@@ -684,15 +684,15 @@
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-09
 - **Arquivo(s) afetado(s):**
-  - `sourcing_system_prompt.py` — grep por `confidence|APPLY_SILENT|APPLY_NOTIFY|ASK_USER` retorna 0
-  - `talent_system_prompt.py` — grep retorna 0
-  - `kanban_system_prompt.py` — grep retorna 0
-  - `jobs_mgmt_system_prompt.py` — grep retorna 0
-  - `analytics_system_prompt.py` — grep retorna 0
-  - `communication_system_prompt.py` — grep retorna 0
-  - `automation_system_prompt.py` — grep retorna 0
-  - `ats_integration_system_prompt.py` — grep retorna 0
-  - **Referência positiva:** `confidence_policy_service.py` — serviço existe, mas 8/12 agentes não o invocam
+  - `app/domains/sourcing/agents/sourcing_system_prompt.py` (L1-L188) — nenhuma referência a `confidence`, `APPLY_SILENT`, `APPLY_NOTIFY` ou `ASK_USER`
+  - `app/domains/recruiter_assistant/agents/talent_system_prompt.py` (L1-L176) — idem
+  - `app/domains/recruiter_assistant/agents/kanban_system_prompt.py` (L1-L186) — idem
+  - `app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py` (L1-L185) — idem
+  - `app/domains/analytics/agents/analytics_system_prompt.py` (L1-L47) — idem
+  - `app/domains/communication/agents/communication_system_prompt.py` (L1-L53) — idem
+  - `app/domains/automation/agents/automation_system_prompt.py` (L1-L36) — idem
+  - `app/domains/ats_integration/agents/ats_integration_system_prompt.py` (L1-L64) — idem
+  - **Referência positiva:** `app/services/confidence_policy_service.py` — serviço existe com 3 níveis (APPLY_SILENT ≥0.85, APPLY_NOTIFY 0.70-0.84, ASK_USER <0.70), mas 8/12 agentes não o invocam
 - **Descrição:** EU AI Act Art. 13 exige que sistemas de alto risco reportem confiança. 8 de 12 agentes não reportam confidence score nos outputs.
 - **Impacto se não corrigido:** Sem confiança, recrutador não sabe quando questionar a IA.
 - **Esforço estimado:** 8h — Backend (LLM/Prompts)
@@ -732,9 +732,15 @@
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-14
 - **Arquivo(s) afetado(s):**
-  - System prompts de: talent, kanban, jobs_mgmt, analytics, communication, automation, ats_integration — sem seções `Recrutador:`/`LIA (thought):` de few-shot
-  - **Referência positiva:** `wizard_system_prompt.py:L145-L155` — contém exemplos conversacionais com `Recrutador:` e `LIA (thought):`
-  - **Referência positiva:** `sourcing_system_prompt.py` — contém seção de exemplos
+  - `app/domains/recruiter_assistant/agents/talent_system_prompt.py` (L1-L176) — nenhuma seção `Recrutador:`/`LIA (thought):` de few-shot
+  - `app/domains/recruiter_assistant/agents/kanban_system_prompt.py` (L1-L186) — idem
+  - `app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py` (L1-L185) — idem
+  - `app/domains/analytics/agents/analytics_system_prompt.py` (L1-L47) — idem
+  - `app/domains/communication/agents/communication_system_prompt.py` (L1-L53) — idem
+  - `app/domains/automation/agents/automation_system_prompt.py` (L1-L36) — idem
+  - `app/domains/ats_integration/agents/ats_integration_system_prompt.py` (L1-L64) — idem
+  - **Referência positiva:** `wizard_system_prompt.py:L145-L155` — contém `Recrutador:` e `LIA (thought):`
+  - **Referência positiva:** `sourcing_system_prompt.py` (L1-L188) — contém seção de exemplos
 - **Descrição:** Few-shot examples melhoram significativamente a qualidade de output do LLM. 7 agentes não têm exemplos no prompt.
 - **Impacto se não corrigido:** Output inconsistente e baixa qualidade em agentes sem exemplos.
 - **Esforço estimado:** 12h — Backend (LLM/Prompts)
@@ -757,8 +763,8 @@
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-10
 - **Arquivo(s) afetado(s):**
-  - `workos.py` (1662 linhas) — grep por `circuit|Circuit` retorna 0 resultados
-  - `WORKOS_CIRCUIT` definido no circuit breaker registry mas não importado/decorado no endpoint
+  - `app/api/v1/workos.py` (L1-L1662) — nenhuma referência a `circuit_breaker`, `@circuit`, ou `CircuitBreaker` em 1662 linhas
+  - `app/shared/resilience/circuit_breaker.py` — `WORKOS_CIRCUIT` definido no registry mas não importado/decorado no endpoint
 - **Descrição:** `WORKOS_CIRCUIT` definido no registry mas endpoint usa httpx direto.
 - **Impacto se não corrigido:** Falha de WorkOS (auth provider) bloqueia login de todos os users.
 - **Esforço estimado:** 2h — Backend (Auth/Resiliência)
@@ -785,8 +791,10 @@
 - **Dimensão:** 7 (Consistência)
 - **Runbook:** RM-42
 - **Arquivo(s) afetado(s):**
-  - `app/domains/policy/` — domínio policy com agente próprio
-  - `app/domains/hiring_policy/` — domínio hiring_policy com padrão levemente diferente
+  - `app/domains/policy/agents/system_prompt.py` (L1-L55) — prompt genérico
+  - `app/domains/hiring_policy/agents/policy_system_prompt.py` (L1-L272) — prompt expandido com mesma finalidade
+  - `app/domains/policy/agents/` (740 linhas total: agent.py, system_prompt.py, tool_registry.py, stage_context.py)
+  - `app/domains/hiring_policy/agents/` (2376 linhas total: policy_react_agent.py, policy_system_prompt.py, policy_tool_registry.py, policy_stage_context.py)
 - **Descrição:** Dois domínios para policy com padrões levemente diferentes.
 - **Impacto se não corrigido:** Confusão de routing, manutenção duplicada.
 - **Esforço estimado:** 8h — Backend (Arquitetura)
@@ -797,9 +805,9 @@
 - **Dimensão:** 7 (Consistência)
 - **Runbook:** RM-42
 - **Arquivo(s) afetado(s):**
-  - `app/tools/` — tools legados (diretório flat)
-  - `app/domains/*/tools/` — tools migrados para estrutura por domínio
-  - Exemplo: tools de pipeline existem em ambos
+  - `app/tools/query_tools.py` (L1-Lfim) — tools legados em diretório flat (13 arquivos .py)
+  - `app/domains/sourcing/tools/query_tools.py` (L1-Lfim) — mesma funcionalidade em estrutura por domínio
+  - Duplicação potencial em sourcing, cv_screening, pipeline onde ambos os diretórios existem
 - **Descrição:** Mesmos tools existem em dois locais (legado em `app/tools/`, novo em `app/domains/*/tools/`).
 - **Impacto se não corrigido:** Edição no lugar errado não tem efeito; riscos de divergência.
 - **Esforço estimado:** 6h — Backend (Refatoração)
@@ -823,11 +831,10 @@
 - **Dimensão:** 9 (Arquitetura de Agentes)
 - **Runbook:** RM-19
 - **Arquivo(s) afetado(s):**
-  - `app/domains/analytics/agents/analytics_stage_context.py` (79 linhas) — arquivo existe mas verificar se é consumido pelo agente
-  - `app/domains/communication/agents/communication_stage_context.py` (64 linhas) — idem
-  - `app/domains/automation/agents/automation_stage_context.py` (46 linhas) — idem
-  - `app/domains/ats_integration/agents/ats_integration_stage_context.py` (67 linhas) — idem
-  - **Nota:** Arquivos existem porém a integração com o ReAct loop de cada agente precisa ser verificada
+  - `app/domains/analytics/agents/analytics_stage_context.py` (L1-L79) — arquivo existe mas não importado em `analytics_react_agent.py`
+  - `app/domains/communication/agents/communication_stage_context.py` (L1-L64) — idem
+  - `app/domains/automation/agents/automation_stage_context.py` (L1-L46) — idem
+  - `app/domains/ats_integration/agents/ats_integration_stage_context.py` (L1-L67) — idem
 - **Descrição:** Stage context files existem mas podem não estar integrados no fluxo de execução dos agentes menores.
 - **Impacto se não corrigido:** Agentes com contexto de pipeline disponível mas potencialmente não utilizado.
 - **Esforço estimado:** 4h — Backend (Agentes)
@@ -838,8 +845,9 @@
 - **Dimensão:** 8 (Documentação)
 - **Runbook:** RM-43
 - **Arquivo(s) afetado(s):**
-  - 210 arquivos de endpoint API em `app/api/`
-  - Muitos endpoints sem `description=`, `response_model=`, ou `openapi_extra=`
+  - `app/api/v1/` — 210 arquivos de endpoint
+  - Exemplo: `app/api/v1/workos.py:L186` — `@public_auth_router.get("/check-sso-domain")` sem `description=`
+  - Exemplo: `app/api/v1/workos.py:L257` — `@auth_router.post("/sync-user")` sem documentação de exemplos
 - **Descrição:** Muitos endpoints sem OpenAPI descriptions, examples, response schemas.
 - **Impacto se não corrigido:** Integrações externas difíceis de implementar.
 - **Esforço estimado:** 20h — Backend (Documentação)
@@ -850,8 +858,15 @@
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-17
 - **Arquivo(s) afetado(s):**
-  - **Referência positiva:** `app/shared/prompts/job_wizard.py:L278` — `rejection: Rejeição/negação de sugestão` (implementação parcial no wizard)
-  - 9 system prompts de domínio escaneados (sourcing 188L, talent, kanban, jobs_mgmt, analytics 47L, communication 53L, automation 36L, ats_integration 64L) — nenhum contém seção de negation detection
+  - **Referência positiva:** `app/shared/prompts/job_wizard.py:L278` — `rejection: Rejeição/negação de sugestão`
+  - `app/domains/sourcing/agents/sourcing_system_prompt.py` (L1-L188) — sem negation detection
+  - `app/domains/recruiter_assistant/agents/talent_system_prompt.py` (L1-L176) — idem
+  - `app/domains/recruiter_assistant/agents/kanban_system_prompt.py` (L1-L186) — idem
+  - `app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py` (L1-L185) — idem
+  - `app/domains/analytics/agents/analytics_system_prompt.py` (L1-L47) — idem
+  - `app/domains/communication/agents/communication_system_prompt.py` (L1-L53) — idem
+  - `app/domains/automation/agents/automation_system_prompt.py` (L1-L36) — idem
+  - `app/domains/ats_integration/agents/ats_integration_system_prompt.py` (L1-L64) — idem
 - **Descrição:** Detecção de negação (quando recrutador diz "não quero X") implementada parcialmente no wizard. Outros agentes podem interpretar incorretamente pedidos negativos.
 - **Impacto se não corrigido:** IA inclui candidatos que deveriam ser excluídos (ou vice-versa).
 - **Esforço estimado:** 6h — Backend (LLM/Prompts)
@@ -870,17 +885,19 @@
 - **Esforço estimado:** 16h — Backend (Compliance/Data)
 - **Depende de:** Nenhum
 
-### ACH-023 — Load test não documentado
+### ACH-023 — Load test existente mas sem integração CI e sem evidência de execução
 - **Prioridade:** P2
 - **Dimensão:** 14 (Performance)
 - **Runbook:** RM-44
 - **Arquivo(s) afetado(s):**
-  - Repositório inteiro escaneado: nenhum arquivo `locustfile.py`, `k6.js`, `artillery.yml`, `gatling.scala` encontrado
-  - Nenhum diretório `tests/load/`, `tests/performance/`, ou `benchmarks/` encontrado
-  - Production Readiness #14 exige P95 < 5s em carga
-- **Descrição:** Sem evidência de load test executado ou configurado.
-- **Impacto se não corrigido:** Sistema pode falhar sob carga sem saber.
-- **Esforço estimado:** 8h — Infra/QA
+  - `tests/load/locustfile.py` (L1-L9844) — configuração Locust existe
+  - `tests/load/load_test_config.py` (L1-L2982) — config complementar existe
+  - `tests/load/README.md` — documentação mínima
+  - Nenhum `.github/workflows/` ou CI step referenciando load tests encontrado
+  - Production Readiness #14 exige P95 < 5s em carga — sem relatório de execução
+- **Descrição:** Load tests existem (Locust) mas sem evidência de execução regular, integração CI, ou relatório de resultados.
+- **Impacto se não corrigido:** Load tests não executados regularmente perdem efetividade.
+- **Esforço estimado:** 4h — Infra/QA
 - **Depende de:** Nenhum
 
 ### ACH-024 — Backup e rollback não documentados
@@ -888,8 +905,9 @@
 - **Dimensão:** 14 (Performance)
 - **Runbook:** RM-44
 - **Arquivo(s) afetado(s):**
-  - `docs/` escaneado: nenhum documento `RUNBOOK_BACKUP.md`, `DISASTER_RECOVERY.md` ou similar encontrado
-  - `alembic/` contém migrations mas sem procedimento de rollback documentado
+  - `docs/` (65+ arquivos .md, L1-Lfim cada) — nenhum `RUNBOOK_BACKUP.md`, `DISASTER_RECOVERY.md` ou procedimento de rollback
+  - `alembic/versions/` (37 migrations, L1-Lfim cada) — migrations existem mas sem procedimento documentado de rollback
+  - `.github/workflows/deploy.yml` (L1-Lfim) — pipeline de deploy sem step de backup pré-deploy
   - Production Readiness #12 (backup verificado) e #13 (rollback documentado) não atendidos
 - **Descrição:** Sem documento de backup/restore ou rollback procedure.
 - **Impacto se não corrigido:** Impossível recuperar de falha catastrófica.
@@ -901,8 +919,10 @@
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-44
 - **Arquivo(s) afetado(s):**
-  - Repositório escaneado: nenhum `.github/workflows/*security*`, `Snykfile`, `.trivyignore`, `.bandit`, `safety` config encontrado
-  - Nenhum arquivo de CI/CD com step de security scan
+  - `.github/workflows/ci.yml` (L1-Lfim) — sem step de security scanning (Snyk, Trivy, Bandit, safety)
+  - `.github/workflows/deploy.yml` (L1-Lfim) — sem step de security scanning pré-deploy
+  - `.github/workflows/e2e-tests.yml` (L1-Lfim) — apenas testes E2E, sem security
+  - Nenhum `Snykfile`, `.trivyignore`, `.bandit`, `safety` config no repositório
   - Production Readiness #15 exige 0 vulnerabilidades critical/high
 - **Descrição:** Sem pipeline de security scanning automatizado.
 - **Impacto se não corrigido:** Vulnerabilidades podem existir sem detecção.
@@ -928,9 +948,9 @@
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-21
 - **Arquivo(s) afetado(s):**
-  - Repositório inteiro escaneado: nenhum arquivo, módulo ou referência a RAGAS (`ragas`, `faithfulness_score`, `relevance_score`) encontrado
-  - `PLAYBOOK_AUDITORIA_PROFUNDA.md` define metas (Faithfulness ≥0.90, Relevance ≥0.85) mas sem implementação correspondente
-  - Novo serviço `app/services/ragas_evaluation_service.py` a criar
+  - `lia-agent-system/` (241 arquivos .py de testes, L1-Lfim) — nenhum importa `ragas`, `faithfulness_score`, ou `relevance_score`
+  - `app/services/` — nenhum arquivo `*ragas*`, `*evaluation*quality*` encontrado
+  - `docs/PLAYBOOK_AUDITORIA_PROFUNDA.md` define metas (Faithfulness ≥0.90, Relevance ≥0.85) mas sem implementação correspondente
 - **Descrição:** Playbook define metas RAGAS mas framework de avaliação de qualidade LLM não existe no código.
 - **Impacto se não corrigido:** Sem métricas de qualidade de output do LLM.
 - **Esforço estimado:** 24h — Backend (LLM Quality)
@@ -941,9 +961,9 @@
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-23
 - **Arquivo(s) afetado(s):**
-  - Diretório `tests/` escaneado: nenhum arquivo `test_red_team*`, `test_prompt_injection*`, `test_jailbreak*`, `test_bias_elicitation*` encontrado
-  - 6 cenários obrigatórios (prompt injection, data exfiltration, bias elicitation, jailbreak, privilege escalation, score manipulation) sem cobertura de testes
-  - Novo diretório `tests/security/red_team/` a criar
+  - `tests/` (241 arquivos .py, L1-Lfim, em 10 subdiretórios: contract/, e2e/, fairness/, integration/, load/, test_agents/, test_domains/) — nenhum `test_red_team*`, `test_prompt_injection*`, `test_jailbreak*`
+  - `tests/fairness/` (L1-Lfim de cada arquivo) — testes de fairness existem mas não cobrem cenários adversariais de red teaming
+  - 6 cenários obrigatórios (prompt injection, data exfiltration, bias elicitation, jailbreak, privilege escalation, score manipulation) sem cobertura
 - **Descrição:** Suite de red teaming para segurança de IA não existe como testes automatizados.
 - **Impacto se não corrigido:** Vulnerabilidades de segurança de IA não detectadas.
 - **Esforço estimado:** 32h — Backend/Security (QA)
@@ -967,9 +987,10 @@
 - **Dimensão:** 5 (Types/Contracts)
 - **Runbook:** RM-09
 - **Arquivo(s) afetado(s):**
-  - `app/domains/cv_screening/services/wsi_service.py` — verificação necessária de implementação de `normalize_score`, `normalization_factor`, `version_adjust`
-  - Playbook define trigger: variância >5%, factor: 0.7-1.3 — implementação não confirmada no código
-- **Descrição:** Score normalization definido no playbook mas implementação não verificável no serviço WSI.
+  - `app/domains/cv_screening/services/wsi_service.py` (1295 linhas) — `normalize_weights()` existe em L77-L101 mas normaliza pesos, não scores entre versões
+  - `wsi_service.py:L397` — `normalized_weights = normalize_weights(weights)` — usado internamente
+  - Playbook define trigger: variância >5% entre versões, factor: 0.7-1.3 — sem implementação de `version_score_normalization` encontrada em L1-L1295
+- **Descrição:** Weight normalization existe mas score normalization entre VERSÕES de perguntas (playbook requirement) não implementado.
 - **Impacto se não corrigido:** Candidatos avaliados com versões diferentes de perguntas recebem scores incomparáveis.
 - **Esforço estimado:** 8h — Backend (Screening)
 - **Depende de:** Nenhum
@@ -979,9 +1000,10 @@
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-26
 - **Arquivo(s) afetado(s):**
-  - `docs/` escaneado (todos os .md): nenhum documento `FRIA.md`, `FUNDAMENTAL_RIGHTS.md`, `EU_AI_ACT_ASSESSMENT.md` encontrado
-  - `lia-agent-system/docs/` inclui `CONCEITOS_IA_WEDOTALENT.md`, `MAPA_CAMADA_INTELIGENCIA.md`, `ai-architecture-audit.md` — nenhum cobre FRIA
-  - EU AI Act Art. 6 + Anexo III exige documento antes do deploy para sistemas high-risk (IA em recrutamento)
+  - `docs/` (65+ arquivos .md, L1-Lfim cada) — nenhum `FRIA.md`, `FUNDAMENTAL_RIGHTS.md`, `EU_AI_ACT_ASSESSMENT.md`
+  - `lia-agent-system/docs/` (7 arquivos .md, L1-Lfim cada: `CONCEITOS_IA_WEDOTALENT.md`, `MAPA_CAMADA_INTELIGENCIA.md`, `ai-architecture-audit.md`) — nenhum cobre FRIA
+  - `docs/DIAGNOSTICO_COMPLIANCE_IA_COMPLETO.md` (L1-Lfim) — cobre compliance geral mas não FRIA específico (Art. 6 + Anexo III)
+  - EU AI Act Art. 6 + Anexo III exige documento FRIA antes do deploy para sistemas high-risk (IA em recrutamento)
 - **Descrição:** FRIA é documento obrigatório pelo EU AI Act para sistemas de IA em recrutamento. Não existe no repositório.
 - **Impacto se não corrigido:** Non-compliance com EU AI Act.
 - **Esforço estimado:** 16h — Legal/Compliance

@@ -31,6 +31,8 @@ import { CandidateDecisionFlowModal } from "@/components/candidate-decision-flow
 import { UniversalTransitionModal, useUniversalTransition, type UniversalTransitionConfirmData, type KanbanCandidate } from "@/components/kanban"
 import { useAuth } from "@/components/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { useShortList } from "@/hooks/use-short-list"
+import { MLInsightsCard } from "@/components/ml-insights-card"
 import { useNavigationPersistence } from "@/hooks/use-navigation-persistence"
 import { useTalentFunnel } from "@/hooks/use-talent-funnel"
 import { useCandidateSuggestions, getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
@@ -386,6 +388,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   const { saveJobsState } = useNavigationPersistence()
   const { user } = useAuth()
   const talentFunnel = useTalentFunnel()
+  const _companyIdForSL = (user as any)?.company || 'demo'
+  const _jobIdForSL = job?.id?.toString()
+  const { shortLists, createShortList: _createSL, addCandidate: _addToSL, removeCandidate: _removeFromSL } = useShortList(_companyIdForSL, _jobIdForSL)
   
   const { 
     suggestions: aiSuggestions, 
@@ -1448,6 +1453,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
   // Favorites State  
   const [favoriteCandidates, setFavoriteCandidates] = useState<Set<string>>(new Set())
+  const [shortListedCandidateIds, setShortListedCandidateIds] = useState<Set<string>>(new Set())
+  const [activeShortListId, setActiveShortListId] = useState<string | null>(null)
 
   // Viewed Candidates State
   const [viewedCandidateIds, setViewedCandidateIds] = useState<Set<string>>(new Set())
@@ -2661,6 +2668,26 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
     talentFunnel.toggleFavoriteCandidate(candidateId)
     // Local state will be synced via the useEffect above
   }
+
+  const handleToggleShortList = useCallback(async (candidateId: string) => {
+    const isInList = shortListedCandidateIds.has(candidateId)
+    let listId: string | null = activeShortListId || shortLists[0]?.id || null
+
+    if (!listId) {
+      const newList = await _createSL(_jobIdForSL || '', `Short List — ${job?.title || 'Vaga'}`)
+      if (!newList) return
+      listId = newList.id
+      setActiveShortListId(newList.id)
+    }
+
+    if (isInList) {
+      const ok = await _removeFromSL(listId, candidateId)
+      if (ok) setShortListedCandidateIds(prev => { const next = new Set(prev); next.delete(candidateId); return next })
+    } else {
+      const ok = await _addToSL(listId, candidateId)
+      if (ok) setShortListedCandidateIds(prev => new Set([...prev, candidateId]))
+    }
+  }, [shortListedCandidateIds, activeShortListId, shortLists, _createSL, _addToSL, _removeFromSL, _jobIdForSL, job?.title])
 
   // Handler for interactive sub-status change (from InteractiveSubStatusCell)
   const handleInteractiveStatusChange = async (
@@ -4285,9 +4312,17 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         Enviar Feedback
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(candidate.id); }} 
-                        className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
+                      <DropdownMenuItem
+                        onClick={(e) => { e.stopPropagation(); handleToggleShortList(candidate.id); }}
+                        className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
+                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                      >
+                        <Bookmark className={`w-3.5 h-3.5 mr-2 ${shortListedCandidateIds.has(candidate.id) ? 'fill-gray-900 text-gray-900 dark:fill-gray-50 dark:text-gray-50' : 'text-gray-500'}`} />
+                        {shortListedCandidateIds.has(candidate.id) ? 'Remover da Short List' : 'Adicionar à Short List'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(candidate.id); }}
+                        className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
                         style={{ fontFamily: 'Open Sans, sans-serif' }}
                       >
                         <Heart className={`w-3.5 h-3.5 mr-2 ${favoriteCandidates.has(candidate.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
@@ -5246,6 +5281,22 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                 Compartilhar
               </Button>
             </div>
+          </div>
+
+          {/* ML Insights — previsões de tempo e salário (P4) */}
+          <div className="px-4 mt-2 mb-1">
+            <MLInsightsCard
+              companyId={_companyIdForSL}
+              jobData={{
+                title: currentJob.title,
+                department: currentJob.department,
+                seniority: currentJob.seniority,
+                location: currentJob.location,
+                work_model: currentJob.workModel,
+                employment_type: currentJob.employmentType,
+              }}
+              className="max-w-xs"
+            />
           </div>
 
           {/* Tab Navigation */}
