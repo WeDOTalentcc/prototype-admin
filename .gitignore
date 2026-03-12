@@ -2,6 +2,10 @@
 .local/
 .cache/
 .config/
+.pythonlibs/
+.upm/
+.replit
+replit.nix
 
 # Python
 __pycache__/
@@ -14,11 +18,14 @@ dist/
 build/
 .venv/
 venv/
+ppt_env/
+*.so
 
 # Node
 node_modules/
 .next/
 .nuxt/
+out/
 dist/
 *.tsbuildinfo
 
@@ -40,18 +47,30 @@ Thumbs.db
 # Logs
 *.log
 logs/
-.config/.vscode-server/
-.local/state/
-.config/.vscode-server/
-.local/state/
-node_modules/
-__pycache__/
-*.pyc
-.cache/
-.config/.vscode-server/
-.local/state/
-node_modules/
-__pycache__/
-*.pyc
-.cache/
-.github/
+
+# Large assets - not for GitHub
+attached_assets/
+RECRUITER_AGENT_V5_DOCUMENTACAO_COMPLETA.md
+
+# Build output and exports
+plataforma-lia/out/
+plataforma-lia/exports/
+
+# Virtual envs in docs
+plataforma-lia/docs/ppt_env/
+
+# Generated/candidate images
+plataforma-lia/public/images/candidates/
+
+# Audit logs (runtime generated)
+lia-agent-system/audit_logs/
+
+# Agent skills (Replit-managed)
+.agents/
+
+# Storybook assets (large PNGs)
+plataforma-lia/src/stories/assets/*.png
+
+# Temporary
+/tmp/
+*.tmp

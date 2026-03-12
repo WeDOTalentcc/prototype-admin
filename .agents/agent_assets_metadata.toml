@@ -1,8 +1,0 @@
-uploads = []
-generated = []
-
-[[outputs]]
-id = "ctFn_rmUfm-JFxktf6cLZ"
-uri = "file://docs/proposta-skill-document-factory.md"
-type = "text"
-title = "Proposta v2: Skill Document Factory — Pacotes de Implementação Autocontidos"
