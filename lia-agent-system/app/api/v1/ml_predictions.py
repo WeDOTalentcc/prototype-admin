@@ -8,12 +8,15 @@ Provides REST API access to ML predictions for:
 - Hiring insights
 """
 from typing import Optional, List
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.ml import OutcomePredictor, OutcomeFeatureEngineer, ModelRegistry, get_model_registry
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ml", tags=["ML Predictions"])
 
@@ -140,12 +143,47 @@ async def predict_optimal_salary(
 ):
     """
     Predict optimal salary range for a job vacancy.
-    
+
     Considers role, seniority, company history, and
     market benchmarks to suggest competitive salary ranges.
     """
+    # FairnessGuard: checar linguagem discriminatória no job_data antes de predizer
+    _job_text = " ".join(str(v) for v in request.job_data.values() if isinstance(v, str))
+    if _job_text.strip():
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _fg_result = FairnessGuard().check(_job_text[:1000])
+            if _fg_result.is_blocked:
+                logger.warning(
+                    "[ml/predict/salary] FairnessGuard blocked company=%s: %s",
+                    request.company_id, _fg_result.blocked_terms,
+                )
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        "Dados da vaga contêm critérios discriminatórios. "
+                        f"{_fg_result.educational_message or 'Remova critérios protegidos antes de solicitar previsão salarial.'}"
+                    ),
+                )
+            if _fg_result.soft_warnings:
+                logger.warning(
+                    "[ml/predict/salary] FairnessGuard warnings company=%s: %s",
+                    request.company_id, _fg_result.soft_warnings,
+                )
+        except HTTPException:
+            raise
+        except Exception:
+            pass  # fail-safe
+
     predictor = OutcomePredictor()
-    
+
+    # Audit: registrar solicitação de previsão salarial
+    logger.info(
+        "[ml/predict/salary] request company=%s job_title=%s",
+        request.company_id,
+        request.job_data.get("title", "unknown"),
+    )
+
     try:
         prediction = await predictor.predict_optimal_salary(
             db=db,

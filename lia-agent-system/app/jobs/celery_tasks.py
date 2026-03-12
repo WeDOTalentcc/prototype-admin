@@ -568,6 +568,13 @@ def send_daily_briefing_task(self) -> dict:
                             user.id, notif_exc,
                         )
 
+                    # Audit: briefing enviado com sucesso
+                    logger.info(
+                        "[briefing.send_daily] sent user=%s company=%s urgent=%d",
+                        user.id,
+                        getattr(user, "company_id", "unknown"),
+                        len(briefing.get("urgent_actions", [])),
+                    )
                     sent += 1
                 except Exception as exc:
                     logger.error(
@@ -575,6 +582,10 @@ def send_daily_briefing_task(self) -> dict:
                     )
                     errors += 1
 
+        logger.info(
+            "[briefing.send_daily] batch complete sent=%d skipped=%d errors=%d",
+            sent, skipped, errors,
+        )
         return {"sent": sent, "skipped": skipped, "errors": errors}
 
     try:

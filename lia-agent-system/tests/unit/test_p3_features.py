@@ -197,3 +197,98 @@ class TestDailyBriefingTask:
         for pattern, cfg in routes.items():
             if "briefing" in pattern:
                 assert cfg.get("queue") in ("onboarding_low", "celery")
+
+
+# ─────────────────────────────────────────────────────────────────
+# FairnessGuard no JD upload
+# ─────────────────────────────────────────────────────────────────
+
+class TestJDUploadFairnessGuard:
+    """FairnessGuard bloqueia JDs com linguagem discriminatoria."""
+
+    @pytest.fixture
+    def client(self):
+        from fastapi.testclient import TestClient
+        from fastapi import FastAPI
+        from app.api.v1.jd_import import router
+        from app.auth.dependencies import get_current_user_or_demo
+        from app.core.database import get_db
+        from unittest.mock import MagicMock
+
+        app = FastAPI()
+        app.include_router(router, prefix="/api/v1")
+
+        mock_user = MagicMock()
+        mock_user.id = "00000000-0000-0000-0000-000000000001"
+        mock_user.company_id = "00000000-0000-0000-0000-000000000001"
+
+        async def override_auth():
+            return mock_user
+
+        async def override_db():
+            return AsyncMock()
+
+        app.dependency_overrides[get_current_user_or_demo] = override_auth
+        app.dependency_overrides[get_db] = override_db
+        return TestClient(app, raise_server_exceptions=False)
+
+    def test_discriminatory_jd_blocked_by_fairness_guard(self, client):
+        """JD com linguagem discriminatoria deve retornar 422."""
+        with patch("app.shared.compliance.fairness_guard.FairnessGuard") as mock_fg_cls:
+            from unittest.mock import MagicMock
+            mock_result = MagicMock()
+            mock_result.is_blocked = True
+            mock_result.blocked_terms = ["jovem", "solteiro"]
+            mock_result.educational_message = "Criterios discriminatorios detectados."
+            mock_fg_cls.return_value.check.return_value = mock_result
+
+            content = b"Buscamos jovem solteiro sem filhos para vaga de engenheiro."
+            response = client.post(
+                "/api/v1/import/upload-file",
+                files={"file": ("vaga.txt", content, "text/plain")},
+            )
+            assert response.status_code == 422
+            assert "discriminat" in response.json()["detail"].lower()
+
+    def test_fairness_soft_warning_does_not_block(self, client):
+        """Soft warning nao bloqueia importacao — apenas loga."""
+        with patch("app.api.v1.jd_import.FairnessGuard") as mock_fg_cls:
+            mock_result = MagicMock()
+            mock_result.is_blocked = False
+            mock_result.soft_warnings = ["Possivel vies implicito detectado"]
+            mock_result.blocked_terms = []
+            mock_fg_cls.return_value.check.return_value = mock_result
+
+            with patch("app.api.v1.jd_import.JDImportService") as mock_svc_cls:
+                mock_svc = MagicMock()
+                mock_imported = MagicMock()
+                mock_imported.to_dict.return_value = {"id": "jd-fw", "title": "Eng"}
+                mock_svc.import_jd = AsyncMock(return_value=mock_imported)
+                mock_svc_cls.return_value = mock_svc
+
+                content = b"Vaga para desenvolvedor com experiencia em sistemas."
+                response = client.post(
+                    "/api/v1/import/upload-file",
+                    files={"file": ("vaga.txt", content, "text/plain")},
+                )
+                # Nao bloqueado — continua normalmente
+                assert response.status_code != 422
+                mock_svc.import_jd.assert_called_once()
+
+    def test_fairness_guard_failure_is_fail_safe(self, client):
+        """Se FairnessGuard lancar excecao, upload deve continuar (fail-safe)."""
+        with patch("app.api.v1.jd_import.FairnessGuard", side_effect=ImportError("modulo indisponivel")):
+            with patch("app.api.v1.jd_import.JDImportService") as mock_svc_cls:
+                mock_svc = MagicMock()
+                mock_imported = MagicMock()
+                mock_imported.to_dict.return_value = {"id": "jd-fs", "title": "Dev"}
+                mock_svc.import_jd = AsyncMock(return_value=mock_imported)
+                mock_svc_cls.return_value = mock_svc
+
+                content = b"Vaga de desenvolvedor full stack com 3 anos de experiencia."
+                response = client.post(
+                    "/api/v1/import/upload-file",
+                    files={"file": ("vaga.txt", content, "text/plain")},
+                )
+                # Fail-safe: continua mesmo com FairnessGuard indisponivel
+                assert response.status_code != 422

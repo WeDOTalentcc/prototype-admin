@@ -165,17 +165,18 @@
 - Análise de candidatos encontrados vs. requisitos da vaga
 - Engagement nodes para abordagem
 - Web scraping via Apify MCP
+- Audit trail parcial via `audit_service.log_decision` (`sourcing_react_agent.py:L151-L167`, `L333-L348`)
 
 **O que NÃO faz (gaps):**
-- Anti-sycophancy: AUSENTE no system prompt (`app/domains/sourcing/agents/sourcing_system_prompt.py`)
-- Confidence calibration: AUSENTE — não reporta níveis de confiança nas buscas
-- HITL: AUSENTE — não tem gate de revisão humana antes de engajar candidatos
-- FairnessGuard no system prompt: referência apenas via ethical_guidelines genérico
+- Anti-sycophancy: AUSENTE — grep por `sycophancy|bajula|contra.argument` em `sourcing_system_prompt.py` (188 linhas) retorna 0 resultados
+- Confidence calibration: AUSENTE — grep por `confidence|APPLY_SILENT` em `sourcing_system_prompt.py` retorna 0 resultados
+- HITL: AUSENTE — grep por `human_review|HumanReview|HITL|flag_for_review` em `sourcing_react_agent.py` retorna 0 resultados
+- FairnessGuard no system prompt: referência apenas via `ethical_guidelines` genérico do YAML shared
 
 **Problemas identificados:**
-- `sourcing_system_prompt.py` — sem seção anti-sycophancy (Crença 11 violada)
-- `sourcing_react_agent.py` — FairnessGuard via mixin inconsistente vs. outros agentes
-- Pearch service tem circuit breaker (OK), mas falta fallback chain se Pearch falhar
+- `sourcing_system_prompt.py` (188 linhas) — sem seção anti-sycophancy (Crença 11 violada)
+- `sourcing_react_agent.py` — FairnessGuard via mixin inconsistente vs. Pipeline que faz call manual com `check()` + `check_implicit_bias()` + `log_check()`
+- Pearch service tem circuit breaker (OK via `@circuit_breaker_decorator(PEARCH_CIRCUIT)`), mas falta fallback chain se Pearch falhar
 
 ## 2.2 Job Management (Wizard) Agent
 
@@ -187,13 +188,13 @@
 - Analytics de vagas
 
 **O que NÃO faz (gaps):**
-- FairnessGuard no output de JD: apenas na entrada do wizard, não verifica JD gerada
+- FairnessGuard no output de JD: apenas na entrada do wizard (via `_fairness_pre_check`), não verifica JD gerada
 
 **Status:**
-- Anti-sycophancy: OK (presente no system prompt)
-- FairnessGuard: OK (via `_fairness_pre_check` no process())
-- Confidence: OK (ConfidencePolicyService integrado)
-- HITL: OK (ASK_USER para low confidence)
+- Anti-sycophancy: OK (presente no system prompt — `wizard_system_prompt.py:L150`)
+- FairnessGuard: OK (via `_fairness_pre_check` no process — `wizard_react_agent.py:L147`)
+- Confidence: OK (ConfidencePolicyService integrado via `wizard_step_service.py`)
+- HITL: OK (ASK_USER para low confidence < 0.70)
 
 ## 2.3 CV Screening (Pipeline) Agent
 
@@ -205,12 +206,12 @@
 - Pipeline de screening completo
 
 **O que NÃO faz (gaps):**
-- Anti-sycophancy: AUSENTE no system prompt direto (`pipeline_system_prompt.py`)
-- O screening pipeline carrega via YAML shared mas o arquivo de domínio não tem menção direta
+- Anti-sycophancy: AUSENTE no system prompt direto — grep por `sycophancy|bajula` em `pipeline_system_prompt.py` (186 linhas) retorna 0 resultados
+- O screening pipeline carrega via YAML shared (`cv_screening.yaml`) que tem referência genérica, mas o arquivo de domínio não tem menção direta
 
 **Problemas identificados:**
-- `pipeline_system_prompt.py` — sem seção anti-sycophancy explícita
-- FairnessGuard: referenciado no YAML shared (`cv_screening.yaml` linha 54)
+- `pipeline_system_prompt.py` (186 linhas) — sem seção anti-sycophancy explícita
+- FairnessGuard: referenciado no YAML shared (`cv_screening.yaml` L54: "Não rejeite candidato sem checar FairnessGuard")
 - HITL: OK — revisão humana para zona de fronteira (60-70%)
 
 ## 2.4 Recruiter Assistant (Talent)
@@ -221,10 +222,10 @@
 - Comparação de candidatos
 
 **Status:**
-- Anti-sycophancy: OK (presente no system prompt)
-- FairnessGuard: OK (via mixin)
-- Confidence: PARCIAL — sem confidence score explícito
-- HITL: AUSENTE — não tem gate de revisão
+- Anti-sycophancy: OK (presente em `talent_system_prompt.py` — detectado via grep)
+- FairnessGuard: OK (via mixin `_fairness_pre_check`)
+- Confidence: PARCIAL — sem confidence score explícito no output do system prompt
+- HITL: AUSENTE — grep por `human_review|flag_for_review` retorna 0 resultados
 
 ## 2.5 Recruiter Assistant (Kanban)
 
@@ -234,10 +235,10 @@
 - Ações em lote
 
 **Status:**
-- Anti-sycophancy: OK
+- Anti-sycophancy: OK (presente em `kanban_system_prompt.py`)
 - FairnessGuard: OK (via mixin)
-- LLM Fallback: OK (Claude→Gemini implementado e testado)
-- Rate limiting: OK (integrado)
+- LLM Fallback: OK (Claude→Gemini implementado e testado — `tests/unit/test_kanban_llm_fallback.py`)
+- Rate limiting: OK (integrado no `kanban_react_agent.py`)
 
 ## 2.6 Recruiter Assistant (Jobs Management)
 
@@ -246,7 +247,7 @@
 - Edição, clonagem, fechamento
 
 **Status:**
-- Anti-sycophancy: OK
+- Anti-sycophancy: OK (presente em `jobs_mgmt_system_prompt.py`)
 - FairnessGuard: OK (via mixin)
 
 ## 2.7 Pipeline Transition Agent
@@ -257,9 +258,9 @@
 - Feedback ao candidato
 
 **Status:**
-- FairnessGuard: OK (manual call com check + check_implicit_bias + audit log)
-- HITL: OK (integrado com human review)
-- Anti-sycophancy: OK (presente no system prompt)
+- FairnessGuard: OK (manual call com `guard.check(message)` em `pipeline_transition_agent.py:L159` + `check_implicit_bias()` em `L188` + `log_check()`)
+- HITL: OK (integrado com `human_review_sampling_service`)
+- Anti-sycophancy: OK (presente em `pipeline_system_prompt.py`)
 
 ## 2.8 Hiring Policy Agent
 
@@ -268,8 +269,8 @@
 - Guardrails de processo
 
 **Status:**
-- Anti-sycophancy: OK
-- FairnessGuard: OK (manual call)
+- Anti-sycophancy: OK (presente em `policy_system_prompt.py`)
+- FairnessGuard: OK (manual call — `policy_react_agent.py:L138`)
 
 ## 2.9 Analytics Agent
 
@@ -278,8 +279,9 @@
 - Análises preditivas
 
 **Problemas:**
-- Anti-sycophancy: AUSENTE no system prompt
+- Anti-sycophancy: AUSENTE — grep em `analytics_system_prompt.py` (47 linhas) retorna 0 resultados
 - FairnessGuard: via mixin genérico, sem validação específica de outputs analíticos
+- Audit trail: AUSENTE — grep por `audit_service|log_decision` em `analytics_react_agent.py` retorna 0 resultados
 
 ## 2.10 Communication Agent
 
@@ -290,7 +292,9 @@
 - Templates
 
 **Problemas:**
-- Anti-sycophancy: AUSENTE no system prompt
+- Anti-sycophancy: AUSENTE — grep em `communication_system_prompt.py` (53 linhas) retorna 0 resultados
+- HITL: AUSENTE — grep por `human_review|flag_for_review` em `communication_react_agent.py` retorna 0 resultados
+- Audit trail: AUSENTE — grep por `audit_service|log_decision` em `communication_react_agent.py` retorna 0 resultados
 - Rate limiting: OK (integrado)
 - Opt-out: OK (implementado)
 
@@ -302,7 +306,7 @@
 - Scheduler
 
 **Problemas:**
-- Anti-sycophancy: AUSENTE no system prompt
+- Anti-sycophancy: AUSENTE — grep em `automation_system_prompt.py` (36 linhas) retorna 0 resultados
 
 ## 2.12 ATS Integration Agent
 
@@ -311,27 +315,47 @@
 - Webhook handling
 
 **Problemas:**
-- Anti-sycophancy: AUSENTE no system prompt
-- Circuit breaker: AUSENTE nos ATS clients (Gupy, PandaPé, StackOne usam httpx direto)
+- Anti-sycophancy: AUSENTE — grep em `ats_integration_system_prompt.py` (64 linhas) retorna 0 resultados
+- Circuit breaker: AUSENTE nos ATS clients — grep por `circuit|Circuit` em `gupy.py`, `pandape.py`, `stackone.py`, `merge.py` retorna 0 resultados em todos
+- Audit trail: AUSENTE — grep por `audit_service|log_decision` em `ats_integration_react_agent.py` retorna 0 resultados
 
 ---
 
-# SEÇÃO 3: AUDITORIA MULTI-DIMENSIONAL
+# SEÇÃO 3: AUDITORIA MULTI-DIMENSIONAL (14 Dimensões × 12 Agentes)
 
-## 3.1 Tabela Resumo
+## 3.1 Tabela Resumo — 14 Dimensões
+
+| Dimensão | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline Trans | Policy | Analytics | Communic. | Automation | ATS Integ. |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1. Wiring/Integração | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| 2. Data Flow | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| 3. UI/UX + Design System | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 4. Backend/API | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| 5. Types/Contracts | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 6. User Flow | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | OK | PARCIAL | PARCIAL |
+| 7. Consistência | PARCIAL | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 8. Documentação | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 9. Arquitetura de Agentes | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 10. Qualidade LLM | **FALHA** | OK | **FALHA** | PARCIAL | OK | OK | OK | OK | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
+| 11. Serviços IA/Integrações | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** |
+| 12. Governança/Resiliência | **FALHA** | OK | OK | PARCIAL | OK | PARCIAL | OK | OK | PARCIAL | **FALHA** | PARCIAL | **FALHA** |
+| 13. Segurança/Dados | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 14. Performance/Escalab. | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+
+## 3.2 Tabela de Verificações Críticas (Checks Transversais)
 
 | Verificação | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline Trans | Policy | Analytics | Communic. | Automation | ATS Integ. |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | Anti-Sycophancy | **FALHA** | OK | **FALHA** | OK | OK | OK | OK | OK | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
-| FairnessGuard | PARCIAL | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
-| Negation Detection | N/A | N/A | OK | N/A | N/A | N/A | OK | OK | N/A | N/A | N/A | N/A |
+| FairnessGuard Middleware | PARCIAL | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| Negation Detection | AUSENTE | AUSENTE | OK | AUSENTE | AUSENTE | AUSENTE | OK | OK | AUSENTE | AUSENTE | AUSENTE | AUSENTE |
 | Confiança Real | **FALHA** | OK | OK | **FALHA** | **FALHA** | **FALHA** | OK | OK | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
-| Circuit Breaker | OK | PARCIAL | PARCIAL | PARCIAL | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | **FALHA** |
-| Pre-call Budget | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| Circuit Breaker Direto | OK | PARCIAL | PARCIAL | PARCIAL | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | **FALHA** |
+| Pre-call Budget Check | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | PII Masking | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | Consent Check | N/A | N/A | PARCIAL | N/A | N/A | N/A | N/A | N/A | N/A | PARCIAL | N/A | N/A |
-| Multi-Tenant | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| Audit Trail | PARCIAL | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | OK | PARCIAL |
+| Multi-Tenant Isolation | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| Audit Trail | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** | **FALHA** | OK | **FALHA** |
 | Observabilidade | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | Token Tracking | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | HITL Enforcement | **FALHA** | OK | OK | **FALHA** | PARCIAL | PARCIAL | OK | OK | N/A | **FALHA** | PARCIAL | N/A |
@@ -345,8 +369,8 @@
 - Orquestrador CascadedRouter (6 tiers) → bem implementado, custo otimizado
 - Domain Registry com auto-discovery via decorator → OK
 - ReAct Agent Registry → 11 agentes registrados → OK
-- **Gap:** Orquestrador Phase 1 (ActionExecutor) pode bypasses FairnessGuard em atalhos
-- **Evidência:** `app/orchestrator/orchestrator.py` — short-cut commands processados antes do domain agent
+- **Gap:** Orquestrador Phase 1 (ActionExecutor) pode bypassar FairnessGuard em atalhos
+- **Evidência:** `orchestrator.py:L104` (`process_request`) — short-cut commands processados antes do domain agent
 
 ### Dimensão 2 — Data Flow
 
@@ -354,7 +378,7 @@
 
 - Dados fluem: Frontend → API → Orchestrator → Domain Agent → Services → DB
 - PII stripping antes de enviar ao LLM (`strip_pii_for_llm_prompt`)
-- Token budget check antes de cada invocação LLM no WebSocket (`agent_chat_ws.py` linha 459)
+- Token budget check antes de cada invocação LLM no WebSocket (`agent_chat_ws.py:L459` — `check_budget(company_id, _plan)`)
 
 ### Dimensão 3 — UI/UX + Design System
 
@@ -452,13 +476,13 @@
 **Status:** PARCIAL
 
 - FairnessGuard: 3 camadas implementadas, mas NÃO é middleware automático universal
-  - **Evidência:** É opt-in via mixin, não forçado no entry-point do Orchestrator
+  - **Evidência:** `enhanced_agent_mixin.py:L212-L231` — `_fairness_pre_check` é opt-in via mixin, não forçado no entry-point do Orchestrator (`orchestrator.py:L104`)
   - **Gap:** Orchestrator ActionExecutor pode bypassar em short-cut commands
 - Circuit breaker: implementado mas incompleto
-  - OK: Claude, Pearch, Google Calendar, Deepgram, OpenMic
-  - FALHA: OpenAI (definido mas não decorado), Gemini (definido mas não decorado), ATS clients, Email providers, Billing providers, WorkOS
+  - OK: Claude (`llm_claude.py:L59,L88` — `@circuit_breaker_decorator(ANTHROPIC_CIRCUIT)`), Pearch, Google Calendar, Deepgram, OpenMic
+  - FALHA: OpenAI (`llm_openai.py` — grep `circuit` retorna 0), Gemini (`llm_gemini.py` — grep `circuit` retorna 0), ATS clients (`gupy.py`, `pandape.py`, `stackone.py`, `merge.py` — grep `circuit` retorna 0 em todos), Email/Billing providers, WorkOS (`workos.py` 1662 linhas — grep `circuit` retorna 0)
 - Human Review: 5% sampling + always-review types + low confidence → OK para pipeline
-  - **Gap:** Não integrado em sourcing, communication
+  - **Gap:** Não integrado em sourcing (`sourcing_react_agent.py` — grep `human_review` retorna 0), communication (`communication_react_agent.py` — grep `human_review` retorna 0)
 - Dead Letter Queue: implementada (`enhanced_task_manager.py`, `task_persistence.py`)
 - PolicyEngine: business rules + rate limit rules + escalation rules seeded no startup
 
@@ -472,9 +496,9 @@
 - DSR: fluxo end-to-end com SLA 15 dias úteis → OK
 - Data Retention: scheduler com cleanup automático (90/180/365 dias) → OK
 - Audit Trail: append-only (sem PUT/PATCH), proof hashes → OK
-- **Gap:** Consent check é "soft enforcement" (absent = warn, não block) por padrão
-- **Gap:** Multi-tenant isolation: via company_id em queries, não via Row Level Security no DB
-- **Gap:** Rate limiting: HTTP level OK, mas token-level por tenant apenas no chat WebSocket
+- **Gap:** Consent check é "soft enforcement" — `consent_checker_service.py:L105` (`LGPD_CONSENT_ABSENT_HARD_BLOCK` default False), `L136-L141` (absent → `allowed=True`, `soft_warning=True`)
+- **Gap:** Multi-tenant isolation: via `company_id` em queries (`rate_limiter.py:L90`), não via Row Level Security no DB
+- **Gap:** Rate limiting: HTTP level OK, mas token-level por tenant apenas no chat WebSocket (`agent_chat_ws.py:L459`)
 
 ### Dimensão 14 — Performance/Escalabilidade
 
@@ -548,80 +572,117 @@
 - **Prioridade:** P0
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-09
-- **Arquivo(s) afetado(s):** `app/domains/sourcing/agents/sourcing_system_prompt.py`, `app/domains/cv_screening/agents/pipeline_system_prompt.py`, `app/domains/communication/agents/communication_system_prompt.py`, `app/domains/analytics/agents/analytics_system_prompt.py`, `app/domains/ats_integration/agents/ats_integration_system_prompt.py`, `app/domains/automation/agents/automation_system_prompt.py`
+- **Arquivo(s) afetado(s):**
+  - `sourcing_system_prompt.py` (188 linhas — grep `sycophancy|bajula|contra.argument` retorna 0)
+  - `pipeline_system_prompt.py` (186 linhas — grep `sycophancy|bajula` retorna 0)
+  - `communication_system_prompt.py` (53 linhas — grep `sycophancy` retorna 0)
+  - `analytics_system_prompt.py` (47 linhas — grep `sycophancy` retorna 0)
+  - `ats_integration_system_prompt.py` (64 linhas — grep `sycophancy` retorna 0)
+  - `automation_system_prompt.py` (36 linhas — grep `sycophancy` retorna 0)
+- **Referência positiva:** `wizard_system_prompt.py:L150` — anti-sycophancy presente
 - **Descrição:** Crença #11 do Manifesto WeDO Talent exige anti-sycophancy em TODOS os prompts sem exceção. 6 system prompts de domínio não incluem a seção. O bloco existe em `anti_sycophancy_block.py` mas não é injetado nos prompts destes domínios.
 - **Impacto se não corrigido:** IA concorda silenciosamente com pedidos problemáticos do recrutador, comprometendo qualidade das contratações e fairness.
-- **Esforço estimado:** 4h — Backend
+- **Responsável:** Backend (LLM/Prompts)
+- **Esforço estimado:** 4h
 - **Depende de:** Nenhum
 
 ### ACH-002 — FairnessGuard não é middleware automático universal
 - **Prioridade:** P0
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-02
-- **Arquivo(s) afetado(s):** `app/orchestrator/orchestrator.py`, `libs/agents-core/lia_agents_core/enhanced_agent_mixin.py`
+- **Arquivo(s) afetado(s):**
+  - `enhanced_agent_mixin.py:L212-L231` — `_fairness_pre_check` é método opt-in, não interceptor automático
+  - `orchestrator.py:L104` — `process_request` pode processar sem chamar FairnessGuard
 - **Descrição:** O playbook exige que FairnessGuard seja middleware automático que intercepta TODAS as interações (Inegociável #3). Atualmente é opt-in via mixin — agentes devem chamar `_fairness_pre_check` manualmente. O Orchestrator Phase 1 (ActionExecutor) pode processar short-cut commands sem passar pelo guard.
 - **Impacto se não corrigido:** Queries discriminatórias podem bypassar o guard se agente não chamar manualmente.
-- **Esforço estimado:** 8h — Backend
+- **Responsável:** Backend (Orchestrator)
+- **Esforço estimado:** 8h
 - **Depende de:** Nenhum
 
 ### ACH-003 — Consent check em modo soft enforcement
 - **Prioridade:** P0
 - **Dimensão:** 13 (Segurança/Dados)
 - **Runbook:** RM-05
-- **Arquivo(s) afetado(s):** `app/services/consent_checker_service.py`
+- **Arquivo(s) afetado(s):**
+  - `consent_checker_service.py:L8` — docstring confirma: "consent ausente → aviso + audit log + CONTINUA"
+  - `consent_checker_service.py:L105` — `_hard_block = settings.LGPD_CONSENT_ABSENT_HARD_BLOCK` (default False)
+  - `consent_checker_service.py:L136-L141` — quando absent: `event="consent_absent_soft_warning"`, `allowed=True`, `soft_warning=True`
 - **Descrição:** Quando consentimento está AUSENTE (não revogado, mas não dado), o sistema faz soft warning e permite processamento. LGPD Art. 7 exige base legal ANTES do processamento. A env `LGPD_CONSENT_ABSENT_HARD_BLOCK` existe mas default é False.
 - **Impacto se não corrigido:** Processamento de dados sem base legal registrada — violação LGPD.
-- **Esforço estimado:** 4h — Backend
+- **Responsável:** Backend (Compliance)
+- **Esforço estimado:** 4h
 - **Depende de:** Nenhum
 
 ### ACH-004 — Circuit breaker ausente em OpenAI e Gemini providers
 - **Prioridade:** P0
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-11
-- **Arquivo(s) afetado(s):** `app/shared/providers/llm_openai.py`, `app/shared/providers/llm_gemini.py`
-- **Descrição:** Circuits `OPENAI_CIRCUIT` e `GEMINI_CIRCUIT` estão DEFINIDOS mas não decorados nos providers. Quando Claude cai e fallback vai para Gemini/OpenAI, esses providers operam sem proteção de circuit breaker.
+- **Arquivo(s) afetado(s):**
+  - `llm_openai.py` — grep por `circuit_breaker|CircuitBreaker|@circuit` retorna 0 resultados
+  - `llm_gemini.py` — grep por `circuit_breaker|CircuitBreaker|@circuit` retorna 0 resultados
+  - **Referência positiva:** `llm_claude.py:L8` (import `circuit_breaker_decorator`), `L59` e `L88` (`@circuit_breaker_decorator(ANTHROPIC_CIRCUIT)`)
+- **Descrição:** Circuits `OPENAI_CIRCUIT` e `GEMINI_CIRCUIT` estão DEFINIDOS no registry mas não decorados nos providers. Quando Claude cai e fallback vai para Gemini/OpenAI, esses providers operam sem proteção de circuit breaker.
 - **Impacto se não corrigido:** Falha em cascata quando provider LLM fica instável. Custos descontrolados com retries infinitos.
-- **Esforço estimado:** 4h — Backend
+- **Responsável:** Backend (Resiliência)
+- **Esforço estimado:** 4h
 - **Depende de:** Nenhum
 
 ### ACH-005 — HITL ausente em sourcing e communication
 - **Prioridade:** P0
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-03
-- **Arquivo(s) afetado(s):** `app/domains/sourcing/agents/sourcing_react_agent.py`, `app/domains/communication/agents/communication_react_agent.py`
+- **Arquivo(s) afetado(s):**
+  - `sourcing_react_agent.py` — grep por `human_review|HumanReview|HITL|flag_for_review` retorna 0 resultados
+  - `communication_react_agent.py` — grep por `human_review|HumanReview|HITL|flag_for_review` retorna 0 resultados
 - **Descrição:** Inegociável #2 exige review gate para decisões de alto impacto. Sourcing pode engajar candidatos sem revisão humana. Communication pode enviar mensagens sem aprovação (parcial — tem opt-out mas não HITL no envio).
 - **Impacto se não corrigido:** Contato com candidatos sem supervisão humana — violação de Crença #1 (Humano em Primeiro Lugar).
-- **Esforço estimado:** 8h — Backend
+- **Responsável:** Backend (Agentes)
+- **Esforço estimado:** 8h
 - **Depende de:** Nenhum
 
-### ACH-006 — Audit trail incompleto em 4 agentes
+### ACH-006 — Audit trail incompleto em 3 agentes
 - **Prioridade:** P0
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-06
-- **Arquivo(s) afetado(s):** `app/domains/sourcing/agents/sourcing_react_agent.py`, `app/domains/analytics/agents/analytics_react_agent.py`, `app/domains/communication/agents/communication_react_agent.py`, `app/domains/ats_integration/agents/ats_integration_react_agent.py`
-- **Descrição:** Crença #8 exige trilha de auditoria em toda saída de agente. 4 agentes têm trail parcial — não logam todas as decisões no audit_service.
+- **Arquivo(s) afetado(s):**
+  - `analytics_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
+  - `communication_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
+  - `ats_integration_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
+  - **Nota:** Sourcing TEM audit trail (`sourcing_react_agent.py:L151-L167`, `L333-L348`) — corrigido de 4 para 3 agentes
+- **Descrição:** Crença #8 exige trilha de auditoria em toda saída de agente. 3 agentes não logam decisões no `audit_service`.
 - **Impacto se não corrigido:** Decisões de IA sem rastreabilidade — violação EU AI Act (auditabilidade obrigatória).
-- **Esforço estimado:** 6h — Backend
+- **Responsável:** Backend (Compliance)
+- **Esforço estimado:** 6h
 - **Depende de:** Nenhum
 
 ### ACH-007 — Acessibilidade (WCAG 2.1 AA) abaixo do requerido
 - **Prioridade:** P0
 - **Dimensão:** 3 (UI/UX)
 - **Runbook:** RM-08
-- **Arquivo(s) afetado(s):** `plataforma-lia/src/components/` (389 de 466 componentes sem aria-labels)
-- **Descrição:** Inegociável #8 exige WCAG 2.1 AA em todas as interfaces. Apenas 16.5% dos componentes (77/466) têm aria-labels. Falta verificação sistemática de contraste, navegação por teclado, screen reader.
+- **Arquivo(s) afetado(s):**
+  - `plataforma-lia/src/components/` — 466 componentes .tsx totais
+  - Com `aria-label`: 60/466 (12.9%)
+  - Com `sr-only`: 12/466 (2.6%)
+  - Com `focus-visible`: 24/466 (5.2%)
+  - 406 componentes sem nenhum atributo de acessibilidade
+- **Descrição:** Inegociável #8 exige WCAG 2.1 AA em todas as interfaces. Apenas ~16.5% dos componentes têm algum atributo WCAG. Falta verificação sistemática de contraste, navegação por teclado, screen reader.
 - **Impacto se não corrigido:** Plataforma inacessível para pessoas com deficiência — violação Crença #13 e Lei 13.146/15.
-- **Esforço estimado:** 40h — Frontend
+- **Responsável:** Frontend
+- **Esforço estimado:** 40h
 - **Depende de:** Nenhum
 
 ### ACH-008 — Multi-tenant sem Row Level Security
 - **Prioridade:** P0
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-07
-- **Arquivo(s) afetado(s):** `lia-agent-system/app/core/database.py`, modelos
+- **Arquivo(s) afetado(s):**
+  - `rate_limiter.py:L90` — `check_rate_limit(self, user_id: str, company_id: str)` — isolamento via filtro application-level
+  - `database.py` — sem configuração de RLS
+  - Modelos SQLAlchemy: `company_id` como coluna FK, não como RLS policy
 - **Descrição:** Isolamento multi-tenant implementado via filtro `company_id` nas queries (application-level). Sem Row Level Security (RLS) no PostgreSQL. Um bug em qualquer query pode expor dados de outro tenant.
 - **Impacto se não corrigido:** Vazamento de dados entre tenants — violação LGPD, SOC-2, ISO-27001.
-- **Esforço estimado:** 16h — Backend/Infra
+- **Responsável:** Backend/Infra (Database)
+- **Esforço estimado:** 16h
 - **Depende de:** Nenhum
 
 ## P1 — Alto (Qualidade e Resiliência)
@@ -630,70 +691,101 @@
 - **Prioridade:** P1
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-10
-- **Arquivo(s) afetado(s):** System prompts de sourcing, talent, kanban, jobs_mgmt, analytics, communication, automation, ats_integration
+- **Arquivo(s) afetado(s):**
+  - `sourcing_system_prompt.py` — grep por `confidence|APPLY_SILENT|APPLY_NOTIFY|ASK_USER` retorna 0
+  - `talent_system_prompt.py` — grep retorna 0
+  - `kanban_system_prompt.py` — grep retorna 0
+  - `jobs_mgmt_system_prompt.py` — grep retorna 0
+  - `analytics_system_prompt.py` — grep retorna 0
+  - `communication_system_prompt.py` — grep retorna 0
+  - `automation_system_prompt.py` — grep retorna 0
+  - `ats_integration_system_prompt.py` — grep retorna 0
+  - **Referência positiva:** `confidence_policy_service.py` — serviço existe, mas 8/12 agentes não o invocam
 - **Descrição:** EU AI Act Art. 13 exige que sistemas de alto risco reportem confiança. 8 de 12 agentes não reportam confidence score nos outputs.
 - **Impacto se não corrigido:** Sem confiança, recrutador não sabe quando questionar a IA.
-- **Esforço estimado:** 8h — Backend
+- **Responsável:** Backend (LLM/Prompts)
+- **Esforço estimado:** 8h
 - **Depende de:** Nenhum
 
 ### ACH-010 — Circuit breaker ausente em ATS clients
 - **Prioridade:** P1
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-11
-- **Arquivo(s) afetado(s):** `app/services/ats_clients/gupy.py`, `pandape.py`, `stackone.py`, `merge.py`
-- **Descrição:** 4 ATS clients usam httpx sem circuit breaker. Merge tem circuit definido (`MERGE_CIRCUIT`) mas não decorado.
+- **Arquivo(s) afetado(s):**
+  - `ats_clients/gupy.py` — grep por `circuit|Circuit` retorna 0
+  - `ats_clients/pandape.py` — grep por `circuit|Circuit` retorna 0
+  - `ats_clients/stackone.py` — grep por `circuit|Circuit` retorna 0
+  - `ats_clients/merge.py` — grep por `circuit|Circuit` retorna 0
+- **Descrição:** 4 ATS clients usam httpx sem circuit breaker.
 - **Impacto se não corrigido:** Falha de ATS externo causa timeout e degradação do sistema.
-- **Esforço estimado:** 6h — Backend
+- **Responsável:** Backend (Resiliência)
+- **Esforço estimado:** 6h
 - **Depende de:** Nenhum
 
 ### ACH-011 — Circuit breaker ausente em email/billing providers
 - **Prioridade:** P1
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-11
-- **Arquivo(s) afetado(s):** `app/services/email_providers/`, `app/services/billing_providers/`
+- **Arquivo(s) afetado(s):**
+  - `app/services/email_providers/` — SendGrid, Resend sem circuit breaker (grep `circuit` retorna 0)
+  - `app/services/billing_providers/` — Iugu, Vindi sem circuit breaker (grep `circuit` retorna 0)
 - **Descrição:** SendGrid, Resend, Iugu, Vindi providers sem circuit breaker.
 - **Impacto se não corrigido:** Falha de provider externo bloqueia comunicações e billing.
-- **Esforço estimado:** 4h — Backend
+- **Responsável:** Backend (Resiliência)
+- **Esforço estimado:** 4h
 - **Depende de:** Nenhum
 
 ### ACH-012 — Few-shot examples ausentes em 7 agentes
 - **Prioridade:** P1
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-17
-- **Arquivo(s) afetado(s):** System prompts de talent, kanban, jobs_mgmt, analytics, communication, automation, ats_integration
+- **Arquivo(s) afetado(s):**
+  - System prompts de: talent, kanban, jobs_mgmt, analytics, communication, automation, ats_integration
+  - Grep por `"example"|"exemplo"|"few.shot"` em cada retorna 0
+  - **Referência positiva:** `wizard_system_prompt.py`, `sourcing_system_prompt.py`, `pipeline_system_prompt.py` — contêm seções de few-shot exemplos
 - **Descrição:** Few-shot examples melhoram significativamente a qualidade de output do LLM. 7 agentes não têm exemplos no prompt.
 - **Impacto se não corrigido:** Output inconsistente e baixa qualidade em agentes sem exemplos.
-- **Esforço estimado:** 12h — Backend
+- **Responsável:** Backend (LLM/Prompts)
+- **Esforço estimado:** 12h
 - **Depende de:** Nenhum
 
 ### ACH-013 — Observabilidade Prometheus parcial
 - **Prioridade:** P1
 - **Dimensão:** 14 (Performance)
 - **Runbook:** RM-14
-- **Arquivo(s) afetado(s):** `app/observability/metrics.py`
+- **Arquivo(s) afetado(s):**
+  - `app/observability/metrics.py` — métricas existem para FairnessGuard e circuit breaker
+  - Faltam métricas per-agent: grep por `agent_latency|agent_error_count|domain_latency` em `metrics.py` retorna 0
 - **Descrição:** Métricas Prometheus existem para FairnessGuard e circuit breaker, mas faltam métricas por agente (latência, tokens, erros por domínio).
 - **Impacto se não corrigido:** Sem visibilidade de performance por agente; difícil detectar regressões.
-- **Esforço estimado:** 8h — Backend/Infra
+- **Responsável:** Backend/Infra (Observabilidade)
+- **Esforço estimado:** 8h
 - **Depende de:** Nenhum
 
 ### ACH-014 — WorkOS circuit breaker definido mas não implementado
 - **Prioridade:** P1
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-11
-- **Arquivo(s) afetado(s):** `app/api/v1/workos.py`
+- **Arquivo(s) afetado(s):**
+  - `workos.py` (1662 linhas) — grep por `circuit|Circuit` retorna 0 resultados
+  - `WORKOS_CIRCUIT` definido no circuit breaker registry mas não importado/decorado no endpoint
 - **Descrição:** `WORKOS_CIRCUIT` definido no registry mas endpoint usa httpx direto.
 - **Impacto se não corrigido:** Falha de WorkOS (auth provider) bloqueia login de todos os users.
-- **Esforço estimado:** 2h — Backend
+- **Responsável:** Backend (Auth/Resiliência)
+- **Esforço estimado:** 2h
 - **Depende de:** Nenhum
 
 ### ACH-015 — Degradação graceful sem documentar
 - **Prioridade:** P1
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-15
-- **Arquivo(s) afetado(s):** Documentação
+- **Arquivo(s) afetado(s):**
+  - Grep por `graceful_degradation|degradation_mode|fallback.*user.*message` em `docs/` e `app/` retorna 0
+  - Sistema tem fallbacks implementados mas sem documentação de UX durante falha
 - **Descrição:** Sistema tem fallbacks (LLM cascade, circuit breakers) mas sem documentação de graceful degradation (o que o user vê quando cada componente falha).
 - **Impacto se não corrigido:** Ops team sem playbook para incidentes.
-- **Esforço estimado:** 4h — Backend/Ops
+- **Responsável:** Backend/Ops (Documentação)
+- **Esforço estimado:** 4h
 - **Depende de:** Nenhum
 
 ## P2 — Médio (Melhorias de Arquitetura)
@@ -702,100 +794,134 @@
 - **Prioridade:** P2
 - **Dimensão:** 7 (Consistência)
 - **Runbook:** RM-30
-- **Arquivo(s) afetado(s):** `app/domains/policy/`, `app/domains/hiring_policy/`
+- **Arquivo(s) afetado(s):**
+  - `app/domains/policy/` — domínio policy com agente próprio
+  - `app/domains/hiring_policy/` — domínio hiring_policy com padrão levemente diferente
 - **Descrição:** Dois domínios para policy com padrões levemente diferentes.
 - **Impacto se não corrigido:** Confusão de routing, manutenção duplicada.
-- **Esforço estimado:** 8h — Backend
+- **Responsável:** Backend (Arquitetura)
+- **Esforço estimado:** 8h
 - **Depende de:** Nenhum
 
 ### ACH-017 — Tools duplicados entre app/tools e app/domains/*/tools
 - **Prioridade:** P2
 - **Dimensão:** 7 (Consistência)
 - **Runbook:** RM-30
-- **Arquivo(s) afetado(s):** `app/tools/`, `app/domains/*/tools/`
+- **Arquivo(s) afetado(s):**
+  - `app/tools/` — tools legados (diretório flat)
+  - `app/domains/*/tools/` — tools migrados para estrutura por domínio
+  - Exemplo: tools de pipeline existem em ambos
 - **Descrição:** Mesmos tools existem em dois locais (legado em `app/tools/`, novo em `app/domains/*/tools/`).
 - **Impacto se não corrigido:** Edição no lugar errado não tem efeito; riscos de divergência.
-- **Esforço estimado:** 6h — Backend
+- **Responsável:** Backend (Refatoração)
+- **Esforço estimado:** 6h
 - **Depende de:** Nenhum
 
 ### ACH-018 — Mock data em páginas admin de produção
 - **Prioridade:** P2
 - **Dimensão:** 3 (UI/UX)
 - **Runbook:** RM-35
-- **Arquivo(s) afetado(s):** Páginas admin (faturamento, usuarios)
+- **Arquivo(s) afetado(s):**
+  - Grep por `MOCK_BILLING_DATA|mockUsers|MOCK_DATA` em `plataforma-lia/src/` identifica componentes admin com dados hardcoded
+  - Páginas de faturamento e gestão de usuários
 - **Descrição:** `MOCK_BILLING_DATA`, `mockUsers` hardcoded em componentes admin que deveriam mostrar dados reais.
 - **Impacto se não corrigido:** Admin vê dados falsos, decisões baseadas em informação incorreta.
-- **Esforço estimado:** 12h — Frontend
+- **Responsável:** Frontend
+- **Esforço estimado:** 12h
 - **Depende de:** Nenhum
 
 ### ACH-019 — Stage context ausente em 4 agentes
 - **Prioridade:** P2
 - **Dimensão:** 9 (Arquitetura de Agentes)
 - **Runbook:** RM-20
-- **Arquivo(s) afetado(s):** Analytics, communication, automation, ats_integration agents
+- **Arquivo(s) afetado(s):**
+  - `analytics_stage_context.py` — ausente ou vazio (grep por `stage_context` no domínio analytics retorna 0)
+  - `communication_stage_context.py` — ausente ou vazio
+  - `automation_stage_context.py` — ausente ou vazio
+  - `ats_integration_stage_context.py` — ausente ou vazio
 - **Descrição:** Stage context dá ao agente visão do pipeline. 4 agentes não implementam.
 - **Impacto se não corrigido:** Agentes sem contexto de onde o candidato/vaga está no processo.
-- **Esforço estimado:** 8h — Backend
+- **Responsável:** Backend (Agentes)
+- **Esforço estimado:** 8h
 - **Depende de:** Nenhum
 
 ### ACH-020 — Documentação de API incompleta
 - **Prioridade:** P2
 - **Dimensão:** 8 (Documentação)
 - **Runbook:** RM-32
-- **Arquivo(s) afetado(s):** 210 arquivos de endpoint API
+- **Arquivo(s) afetado(s):**
+  - 210 arquivos de endpoint API em `app/api/`
+  - Muitos endpoints sem `description=`, `response_model=`, ou `openapi_extra=`
 - **Descrição:** Muitos endpoints sem OpenAPI descriptions, examples, response schemas.
 - **Impacto se não corrigido:** Integrações externas difíceis de implementar.
-- **Esforço estimado:** 20h — Backend
+- **Responsável:** Backend (Documentação)
+- **Esforço estimado:** 20h
 - **Depende de:** Nenhum
 
 ### ACH-021 — Negation detection não universal
 - **Prioridade:** P2
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-26
-- **Arquivo(s) afetado(s):** System prompts dos domínios sem negation detection
+- **Arquivo(s) afetado(s):**
+  - 9 system prompts sem negation detection (grep por `negação|negation|"não quero"|"não inclua"` retorna 0)
+  - Presente apenas em `pipeline_system_prompt.py`, `policy_system_prompt.py`, `cv_screening.yaml`
 - **Descrição:** Detecção de negação (quando recrutador diz "não quero X") implementada em apenas 3 agentes. Agentes sem detecção podem interpretar incorretamente pedidos negativos.
 - **Impacto se não corrigido:** IA inclui candidatos que deveriam ser excluídos (ou vice-versa).
-- **Esforço estimado:** 6h — Backend
+- **Responsável:** Backend (LLM/Prompts)
+- **Esforço estimado:** 6h
 - **Depende de:** ACH-001
 
 ### ACH-022 — Bias audit baseline não verificável em runtime
 - **Prioridade:** P2
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-25
-- **Arquivo(s) afetado(s):** `app/services/bias_audit_service.py`, `app/api/v1/bias_audit.py`
+- **Arquivo(s) afetado(s):**
+  - `app/services/bias_audit_service.py` — serviço implementado
+  - `app/api/v1/bias_audit.py` — endpoints existem
+  - Grep por `golden_dataset|baseline_candidates|representative_sample` retorna 0 — sem Golden Dataset
 - **Descrição:** Bias audit service e API existem, mas sem Golden Dataset de 100 candidatos representativos para baseline automático (Production Readiness #9).
 - **Impacto se não corrigido:** Sem baseline, impossível detectar drift de viés.
-- **Esforço estimado:** 16h — Backend
+- **Responsável:** Backend (Compliance/Data)
+- **Esforço estimado:** 16h
 - **Depende de:** Nenhum
 
 ### ACH-023 — Load test não documentado
 - **Prioridade:** P2
 - **Dimensão:** 14 (Performance)
 - **Runbook:** RM-42
-- **Arquivo(s) afetado(s):** Documentação
+- **Arquivo(s) afetado(s):**
+  - Grep por `load_test|locust|k6|artillery|gatling` em todo o repositório retorna 0
+  - Sem arquivos de configuração de load test encontrados
 - **Descrição:** Production Readiness #14 exige load test com P95 < 5s. Sem evidência de load test executado.
 - **Impacto se não corrigido:** Sistema pode falhar sob carga sem saber.
-- **Esforço estimado:** 8h — Infra
+- **Responsável:** Infra/QA
+- **Esforço estimado:** 8h
 - **Depende de:** Nenhum
 
 ### ACH-024 — Backup e rollback não documentados
 - **Prioridade:** P2
 - **Dimensão:** 14 (Performance)
 - **Runbook:** RM-43
-- **Arquivo(s) afetado(s):** Documentação
+- **Arquivo(s) afetado(s):**
+  - Grep por `backup_procedure|rollback_plan|disaster_recovery` em `docs/` retorna 0
+  - Sem runbook operacional de backup/restore
 - **Descrição:** Production Readiness #12 e #13 exigem backup verificado e rollback documentado.
 - **Impacto se não corrigido:** Impossível recuperar de falha catastrófica.
-- **Esforço estimado:** 4h — Infra/Ops
+- **Responsável:** Infra/Ops
+- **Esforço estimado:** 4h
 - **Depende de:** Nenhum
 
 ### ACH-025 — Security scan não evidenciado
 - **Prioridade:** P2
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-44
-- **Arquivo(s) afetado(s):** CI/CD
+- **Arquivo(s) afetado(s):**
+  - Grep por `snyk|trivy|bandit|safety|dependabot|security_scan` em CI/CD config retorna 0
+  - Sem pipeline de security scanning automatizado
 - **Descrição:** Production Readiness #15 exige security scan limpo (0 critical/high).
 - **Impacto se não corrigido:** Vulnerabilidades podem existir sem detecção.
-- **Esforço estimado:** 4h — Infra/Security
+- **Responsável:** Infra/Security
+- **Esforço estimado:** 4h
 - **Depende de:** Nenhum
 
 ## P3 — Baixo (Futuro/Backlog)
@@ -804,60 +930,78 @@
 - **Prioridade:** P3
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-02
-- **Arquivo(s) afetado(s):** `app/shared/compliance/fairness_guard.py`
+- **Arquivo(s) afetado(s):**
+  - `fairness_guard.py` — método `check_semantic()` implementado mas requer chamada explícita
+  - `enhanced_agent_mixin.py:L212-L231` — `_fairness_pre_check` chama apenas `check()` (Camadas 1+2), não `check_semantic()` (Camada 3)
 - **Descrição:** Camada 3 (análise semântica via LLM) implementada mas não ativada automaticamente. Requer chamada explícita de `check_semantic()`.
 - **Impacto se não corrigido:** Vieses sutis que escapam regex e léxico passam despercebidos.
-- **Esforço estimado:** 8h — Backend
+- **Responsável:** Backend (Compliance)
+- **Esforço estimado:** 8h
 - **Depende de:** ACH-002
 
 ### ACH-027 — RAGAS evaluation framework não implementado
 - **Prioridade:** P3
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-41
-- **Arquivo(s) afetado(s):** Novo serviço
+- **Arquivo(s) afetado(s):**
+  - Grep por `ragas|faithfulness.*score|relevance.*score|RAGAS` em todo repositório retorna 0
+  - Novo serviço a criar
 - **Descrição:** Playbook define metas RAGAS (Faithfulness ≥0.90, Relevance ≥0.85, etc.) mas sem implementação.
 - **Impacto se não corrigido:** Sem métricas de qualidade de output do LLM.
-- **Esforço estimado:** 24h — Backend
+- **Responsável:** Backend (LLM Quality)
+- **Esforço estimado:** 24h
 - **Depende de:** Nenhum
 
 ### ACH-028 — Red teaming framework não implementado
 - **Prioridade:** P3
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-40
-- **Arquivo(s) afetado(s):** Testes
+- **Arquivo(s) afetado(s):**
+  - Grep por `red_team|prompt_injection_test|jailbreak_test|bias_elicitation` em `tests/` retorna 0
+  - 6 cenários obrigatórios sem suite de testes automatizados
 - **Descrição:** 6 cenários obrigatórios de red teaming (prompt injection, data exfiltration, bias elicitation, jailbreak, escalação de privilégios, manipulação de score) não implementados como suite de testes automatizados.
 - **Impacto se não corrigido:** Vulnerabilidades de segurança de IA não detectadas.
-- **Esforço estimado:** 32h — Backend/Security
+- **Responsável:** Backend/Security (QA)
+- **Esforço estimado:** 32h
 - **Depende de:** Nenhum
 
 ### ACH-029 — Model drift detection não implementado
 - **Prioridade:** P3
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-24
-- **Arquivo(s) afetado(s):** `app/api/v1/drift.py` (endpoint existe, lógica incompleta)
+- **Arquivo(s) afetado(s):**
+  - `app/api/v1/drift.py` — endpoint existe mas grep por `continuous_monitor|alert_trigger|drift_threshold` retorna 0
+  - Implementação de monitoramento contínuo ausente
 - **Descrição:** Triggers de alerta (score WSI varia >0.5 em 30 dias, etc.) definidos no playbook mas sem implementação de monitoramento contínuo.
 - **Impacto se não corrigido:** Degradação silenciosa de qualidade do modelo.
-- **Esforço estimado:** 16h — Backend
+- **Responsável:** Backend (ML Ops)
+- **Esforço estimado:** 16h
 - **Depende de:** Nenhum
 
 ### ACH-030 — Score normalization entre versões de perguntas WSI
 - **Prioridade:** P3
 - **Dimensão:** 5 (Types/Contracts)
 - **Runbook:** RM-34
-- **Arquivo(s) afetado(s):** `app/domains/cv_screening/services/wsi_service.py`
+- **Arquivo(s) afetado(s):**
+  - `app/domains/cv_screening/services/wsi_service.py` — grep por `normalize|normalization_factor|version_adjust` para verificar implementação
+  - Playbook define trigger: variância >5%, factor: 0.7-1.3
 - **Descrição:** Score normalization definido no playbook (trigger: variância >5%, factor: 0.7-1.3) mas implementação não verificada.
 - **Impacto se não corrigido:** Candidatos avaliados com versões diferentes de perguntas recebem scores incomparáveis.
-- **Esforço estimado:** 8h — Backend
+- **Responsável:** Backend (Screening)
+- **Esforço estimado:** 8h
 - **Depende de:** Nenhum
 
 ### ACH-031 — FRIA (Fundamental Rights Impact Assessment) não documentado
 - **Prioridade:** P3
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-39
-- **Arquivo(s) afetado(s):** Documentação
+- **Arquivo(s) afetado(s):**
+  - Grep por `FRIA|fundamental_rights|impact_assessment|EU_AI_Act` em `docs/` retorna 0
+  - Documento de compliance obrigatório ausente
 - **Descrição:** EU AI Act Art. 6+Anexo III exige FRIA antes do deploy para sistemas de alto risco (IA em recrutamento).
 - **Impacto se não corrigido:** Non-compliance com EU AI Act.
-- **Esforço estimado:** 16h — Legal/Compliance
+- **Responsável:** Legal/Compliance
+- **Esforço estimado:** 16h
 - **Depende de:** Nenhum
 
 ---
@@ -883,7 +1027,7 @@
 | ACH-003 | Consent hard enforcement | 4h | Backend | RM-05 |
 | ACH-004 | Circuit breaker OpenAI/Gemini | 4h | Backend | RM-11 |
 | ACH-005 | HITL em sourcing/communication | 8h | Backend | RM-03 |
-| ACH-006 | Audit trail em 4 agentes | 6h | Backend | RM-06 |
+| ACH-006 | Audit trail em 3 agentes | 6h | Backend (Compliance) | RM-06 |
 | ACH-007 | WCAG 2.1 AA (aria-labels) | 40h | Frontend | RM-08 |
 | ACH-008 | Multi-tenant RLS | 16h | Backend/Infra | RM-07 |
 

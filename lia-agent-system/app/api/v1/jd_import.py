@@ -373,6 +373,31 @@ async def upload_jd_file(
     except Exception:
         pass  # fail-safe: prosseguir sem stripping se módulo indisponível
 
+    # FairnessGuard: detectar linguagem discriminatória no JD antes de importar
+    fairness_warnings: list[str] = []
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        _result = _fg.check(raw_text[:2000])  # checar amostra inicial
+        if _result.is_blocked:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"Job description contém linguagem discriminatória e não pode ser importada. "
+                    f"{_result.educational_message or 'Revise o conteúdo e remova critérios protegidos.'}"
+                ),
+            )
+        if _result.soft_warnings:
+            fairness_warnings = _result.soft_warnings
+            logger.warning(
+                "[jd-import/upload] FairnessGuard soft_warnings company=%s file=%s: %s",
+                get_user_company_id(current_user), filename, _result.soft_warnings,
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # fail-safe
+
     # Importar via JDImportService
     company_id = parse_company_id(get_user_company_id(current_user))
     service = JDImportService()
@@ -391,7 +416,20 @@ async def upload_jd_file(
         parse_immediately=True,
     )
 
-    return {**imported.to_dict(), "source_filename": filename}
+    # Audit log estruturado (LGPD/SOX rastreabilidade)
+    logger.info(
+        "[jd-import/upload] imported company=%s file=%s size_bytes=%d title=%s fairness_warnings=%d",
+        company_id,
+        filename,
+        len(content),
+        jd_data["title"],
+        len(fairness_warnings),
+    )
+
+    result = {**imported.to_dict(), "source_filename": filename}
+    if fairness_warnings:
+        result["fairness_warnings"] = fairness_warnings
+    return result
 
 
 @router.get("/data-coverage", response_model=DataCoverageResponse)

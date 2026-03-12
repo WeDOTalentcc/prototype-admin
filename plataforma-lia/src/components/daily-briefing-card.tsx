@@ -11,6 +11,7 @@ import {
   AlertCircle, Target, Zap
 } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
+import { useJWTAuth } from "@/contexts/auth-context"
 
 interface UrgentAction {
   id: string
@@ -167,12 +168,15 @@ function getDefaultBriefing(): BriefingData {
   }
 }
 
-export function DailyBriefingCard({ 
-  userName, 
+export function DailyBriefingCard({
+  userName,
   onNavigate,
-  onActionClick 
+  onActionClick
 }: DailyBriefingCardProps) {
   const { user } = useAuth()
+  const { user: jwtUser } = useJWTAuth()
+  // Usa user.id real via JWT; fallback para 'default_user' se não autenticado
+  const userId = jwtUser?.id || 'default_user'
   const [briefing, setBriefing] = useState<BriefingData | null>(() => getDefaultBriefing())
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState(true)
@@ -202,7 +206,7 @@ export function DailyBriefingCard({
 
   const fetchBriefing = async () => {
     try {
-      const response = await fetch(`${API_BASE}/briefing/?user_id=default_user`)
+      const response = await fetch(`${API_BASE}/briefing?user_id=${userId}`)
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data) {
@@ -220,7 +224,7 @@ export function DailyBriefingCard({
       const response = await fetch(`${API_BASE}/briefing`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: 'default_user' })
+        body: JSON.stringify({ user_id: userId })
       })
       if (response.ok) {
         const result = await response.json()
