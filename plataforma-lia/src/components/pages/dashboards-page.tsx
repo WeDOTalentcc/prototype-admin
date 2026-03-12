@@ -14,6 +14,7 @@ import { BigFiveDashboardPage } from "./big-five-dashboard-page"
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { DailyBriefingCard } from "@/components/daily-briefing-card"
 
 // Tipos de dashboards disponíveis
 type DashboardType = "estrategicos" | "previsoes-ia" | "people-analytics" | "modelos-trabalho" | "funil-performance" | "war-room" | "competencias" | "voice-screening" | "agent-activity"
@@ -98,11 +99,16 @@ const dashboardMenuItems: DashboardMenuItem[] = [
   }
 ]
 
-export function DashboardsPage() {
+interface DashboardsPageProps {
+  onNavigate?: (page: string) => void
+}
+
+export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
   const [activeDashboard, setActiveDashboard] = useState<DashboardType>("people-analytics")
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(true)
   const [isMenuLocked, setIsMenuLocked] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
+  const [showBriefing, setShowBriefing] = useState(true)
 
   // Renderizar o dashboard selecionado
   const renderDashboardContent = () => {
@@ -293,7 +299,16 @@ export function DashboardsPage() {
         </div>
 
         {/* Conteúdo do Dashboard Selecionado */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3">
+          {showBriefing && (
+            <DailyBriefingCard
+              onNavigate={onNavigate}
+              onActionClick={(action) => {
+                if (action === 'view_jobs' || action === 'view_job') onNavigate?.('Vagas')
+                if (action === 'provide_feedback' || action === 'view_candidate') onNavigate?.('Funil de Talentos')
+              }}
+            />
+          )}
           {renderDashboardContent()}
         </div>
       </div>

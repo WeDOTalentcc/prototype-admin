@@ -1335,6 +1335,34 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
   // Estados para sistema de abas e prompt expandido (replicado do Funil de Talentos)
   const [activeSearchTab, setActiveSearchTab] = useState<'ia-natural' | 'job-description' | 'templates'>('ia-natural')
   const [jobDescriptionText, setJobDescriptionText] = useState("")
+  const [isUploadingJD, setIsUploadingJD] = useState(false)
+  const [jdUploadError, setJdUploadError] = useState<string | null>(null)
+  const jdFileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleJDFileUpload = async (file: File) => {
+    setIsUploadingJD(true)
+    setJdUploadError(null)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const titleParam = file.name.replace(/\.[^/.]+$/, "")
+      const res = await fetch(
+        `/api/backend-proxy/jd-import/upload?title=${encodeURIComponent(titleParam)}`,
+        { method: "POST", body: formData },
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        setJdUploadError(data.error || "Falha ao processar arquivo")
+        return
+      }
+      const text = data.description || data.responsibilities_text || ""
+      if (text) setJobDescriptionText(text)
+    } catch {
+      setJdUploadError("Erro de conexão ao processar arquivo")
+    } finally {
+      setIsUploadingJD(false)
+    }
+  }
   const [liaWidth, setLiaWidth] = useState(400) // Largura padrão 400px - ElevenLabs pattern
   const [isResizingLIA, setIsResizingLIA] = useState(false)
   
@@ -4199,18 +4227,47 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           />
                           {/* Botões de Anexo */}
                           <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                            <input
+                              ref={jdFileInputRef}
+                              type="file"
+                              accept=".txt,.md,.pdf,.docx"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleJDFileUpload(file)
+                                e.target.value = ""
+                              }}
+                            />
                             <button
                               type="button"
-                              className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                              title="Anexar documento (PDF, Word, TXT)"
-                              onClick={() => {
-                                console.log('Anexar documento')
-                              }}
+                              className="p-1.5 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50"
+                              title="Anexar documento (.txt, .md, .pdf, .docx — máx 5MB)"
+                              disabled={isUploadingJD}
+                              onClick={() => jdFileInputRef.current?.click()}
                             >
-                              <Paperclip className="w-3.5 h-3.5 text-gray-500" />
+                              {isUploadingJD ? (
+                                <svg className="w-3.5 h-3.5 text-gray-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                </svg>
+                              ) : (
+                                <Paperclip className="w-3.5 h-3.5 text-gray-500" />
+                              )}
                             </button>
                           </div>
                         </div>
+
+                        {/* Erro de upload */}
+                        {jdUploadError && (
+                          <p className="text-[10px] text-red-500 px-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            {jdUploadError}
+                          </p>
+                        )}
+
+                        {/* Aviso LGPD */}
+                        <p className="text-[10px] text-gray-400 px-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          O arquivo pode conter dados pessoais. Revise o conteúdo antes de importar. (LGPD)
+                        </p>
 
                         {/* Botão Criar Vaga */}
                         <Button

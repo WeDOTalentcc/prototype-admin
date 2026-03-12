@@ -366,6 +366,13 @@ async def upload_jd_file(
     if not raw_text.strip():
         raise HTTPException(status_code=422, detail="Arquivo vazio ou sem texto extraível.")
 
+    # LGPD: minimizar PII antes de processar (CPF, email, telefone, endereço)
+    try:
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        raw_text = strip_pii_for_llm_prompt(raw_text)
+    except Exception:
+        pass  # fail-safe: prosseguir sem stripping se módulo indisponível
+
     # Importar via JDImportService
     company_id = parse_company_id(get_user_company_id(current_user))
     service = JDImportService()

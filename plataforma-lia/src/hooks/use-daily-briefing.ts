@@ -9,7 +9,7 @@
  * Vue/Nuxt: mapeia para composable useDailyBriefing() em setup().
  */
 import { useState, useEffect, useCallback } from "react"
-import { useAuth } from "@/components/auth-context"
+import { useJWTAuth } from "@/contexts/auth-context"
 
 export interface UrgentAction {
   id: string
@@ -68,7 +68,7 @@ export interface UseDailyBriefingResult {
 }
 
 export function useDailyBriefing(): UseDailyBriefingResult {
-  const { user } = useAuth()
+  const { user } = useJWTAuth()
   const [briefing, setBriefing] = useState<DailyBriefingData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

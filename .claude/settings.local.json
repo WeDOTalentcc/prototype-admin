@@ -936,7 +936,21 @@
       "Bash(grep -r \"UploadFile\\\\|file: File\\\\|POST.*upload\" /home/runner/workspace/lia-agent-system/app/api/v1/*.py | head -20)",
       "Bash(find /home/runner/workspace/plataforma-lia/src -type f -path \"*policy*\" -o -path \"*template*\" 2>/dev/null | head -20)",
       "Bash(ls /home/runner/workspace/plataforma-lia/src/app/api/backend-proxy/ | grep -E \"briefing|ml|jd\" 2>/dev/null; find /home/runner/workspace/plataforma-lia/src -name \"use-daily-briefing*\" -o -name \"use-ml-predictions*\" 2>/dev/null)",
-      "Bash(find /home/runner/workspace/plataforma-lia/src -name \"use-daily-briefing*\" -o -name \"use-ml-predictions*\" 2>/dev/null; ls /home/runner/workspace/plataforma-lia/src/app/api/backend-proxy/ | grep -E \"ml|policy-engine\" 2>/dev/null)"
+      "Bash(find /home/runner/workspace/plataforma-lia/src -name \"use-daily-briefing*\" -o -name \"use-ml-predictions*\" 2>/dev/null; ls /home/runner/workspace/plataforma-lia/src/app/api/backend-proxy/ | grep -E \"ml|policy-engine\" 2>/dev/null)",
+      "Bash(grep -r \"ml\\\\|predictions\\\\|predictive\\\\|ML\" /home/runner/workspace/lia-agent-system/app/api/v1/ --include=\"*.py\" -l 2>/dev/null | head -10)",
+      "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_p3_features.py -x -q --no-header 2>&1 | head -60)",
+      "Bash(python -m pytest tests/unit/test_p3_features.py -x -q --no-header 2>&1 | head -70)",
+      "Bash(python -c \"from lia_config.celery_app import celery_app; print\\(list\\(celery_app.conf.beat_schedule.keys\\(\\)\\)\\)\" 2>/dev/null)",
+      "Bash(python -m pytest tests/unit/test_p3_features.py -x -q --no-header 2>&1 | head -20)",
+      "Bash(python -m pytest tests/unit/test_p3_features.py -x -q --no-header 2>&1 | head -60)",
+      "Bash(python -m pytest tests/unit/test_diagnostico7_fixes.py tests/unit/test_p3_features.py -q --no-header --no-cov 2>&1 | tail -15)",
+      "Bash(python -m pytest tests/unit/ -q --no-header --no-cov -x 2>&1 | tail -20)",
+      "Bash(python -m pytest tests/unit/test_coverage_boost_2.py::test_lgpd_schedule_deletion_returns_datetime -q --no-header --no-cov 2>&1 | tail -20)",
+      "Bash(python -m pytest tests/unit/ -q --no-header --no-cov --ignore=tests/unit/test_coverage_boost_2.py 2>&1 | tail -5)",
+      "Bash(python -m pytest tests/unit/ -q --no-header --no-cov 2>&1 | tail -8)",
+      "Bash(python -m pytest tests/unit/test_diagnostico7_fixes.py tests/unit/test_p3_features.py -q --no-header --no-cov 2>&1 | tail -5)",
+      "Bash(find /home/runner/workspace/plataforma-lia/src -type f \\\\\\( -name \"*import*\" -o -name \"*jd*\" \\\\\\) | grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(grep -n \"activeSearchTab === 'ia-natural'\" /home/runner/workspace/plataforma-lia/src/components/pages/jobs-page.tsx)"
     ]
   }
 }
