@@ -15,7 +15,7 @@
 | **Backend (API)** | FastAPI + Python 3.x | `lia-agent-system/` |
 | **Frontend** | Next.js (App Router) + React + TypeScript + Tailwind | `plataforma-lia/` |
 | **Banco de Dados** | PostgreSQL (Alembic migrations) | `lia-agent-system/alembic/` |
-| **LLM Providers** | Claude (Anthropic), Gemini (Google), OpenAI | `app/shared/providers/` |
+| **LLM Providers** | Claude (Anthropic), Gemini (Google), OpenAI — fallback chain `llm_factory.py:L13` `FALLBACK_ORDER = ["claude", "gemini", "openai"]` | `app/shared/providers/` |
 | **Orquestrador** | CascadedRouter (6 tiers) + ReAct Agent Registry | `app/orchestrator/` |
 | **Mensageria** | RabbitMQ (async events) | `app/shared/messaging/` |
 | **Cache** | Redis (token budgets, embeddings, circuit breakers) | `app/services/` |
@@ -523,7 +523,7 @@
 | FairnessGuard Pre-check | ⚠️ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ⚠️ |
 | Confidence Score | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | HITL Gate | ❌ | ✅ | ✅ | ❌ | ⚠️ | ⚠️ | ✅ | ✅ | N/A | ❌ | ⚠️ | N/A |
-| Audit Trail | ⚠️ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ✅ | ⚠️ |
+| Audit Trail | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
 | Circuit Breaker | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ |
 | Few-shot Examples | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Stage Context | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -712,10 +712,11 @@
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-11
 - **Arquivo(s) afetado(s):**
-  - `ats_clients/gupy.py` — grep por `circuit|Circuit` retorna 0
-  - `ats_clients/pandape.py` — grep por `circuit|Circuit` retorna 0
-  - `ats_clients/stackone.py` — grep por `circuit|Circuit` retorna 0
-  - `ats_clients/merge.py` — grep por `circuit|Circuit` retorna 0
+  - `app/services/ats_clients/gupy.py` (329 linhas) — nenhuma referência a `circuit_breaker` ou `@circuit` em L1-L329
+  - `app/services/ats_clients/pandape.py` (341 linhas) — nenhuma referência a `circuit_breaker` em L1-L341
+  - `app/services/ats_clients/stackone.py` (460 linhas) — nenhuma referência a `circuit_breaker` em L1-L460
+  - `app/services/ats_clients/merge.py` (441 linhas) — nenhuma referência a `circuit_breaker` em L1-L441
+  - **Referência positiva:** `llm_claude.py:L8,L59,L88` — padrão esperado com `@circuit_breaker_decorator`
 - **Descrição:** 4 ATS clients usam httpx sem circuit breaker.
 - **Impacto se não corrigido:** Falha de ATS externo causa timeout e degradação do sistema.
 - **Responsável:** Backend (Resiliência)
@@ -727,8 +728,10 @@
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-11
 - **Arquivo(s) afetado(s):**
-  - `app/services/email_providers/` — SendGrid, Resend sem circuit breaker (grep `circuit` retorna 0)
-  - `app/services/billing_providers/` — Iugu, Vindi sem circuit breaker (grep `circuit` retorna 0)
+  - `app/services/email_providers/sendgrid_provider.py` (226 linhas) — sem `circuit_breaker` em L1-L226
+  - `app/services/email_providers/resend_provider.py` (187 linhas) — sem `circuit_breaker` em L1-L187
+  - `app/services/billing_providers/iugu_provider.py` (489 linhas) — sem `circuit_breaker` em L1-L489
+  - `app/services/billing_providers/vindi_provider.py` (492 linhas) — sem `circuit_breaker` em L1-L492
 - **Descrição:** SendGrid, Resend, Iugu, Vindi providers sem circuit breaker.
 - **Impacto se não corrigido:** Falha de provider externo bloqueia comunicações e billing.
 - **Responsável:** Backend (Resiliência)
@@ -740,9 +743,9 @@
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-17
 - **Arquivo(s) afetado(s):**
-  - System prompts de: talent, kanban, jobs_mgmt, analytics, communication, automation, ats_integration
-  - Grep por `"example"|"exemplo"|"few.shot"` em cada retorna 0
-  - **Referência positiva:** `wizard_system_prompt.py`, `sourcing_system_prompt.py`, `pipeline_system_prompt.py` — contêm seções de few-shot exemplos
+  - System prompts de: talent, kanban, jobs_mgmt, analytics, communication, automation, ats_integration — sem seções `Recrutador:`/`LIA (thought):` de few-shot
+  - **Referência positiva:** `wizard_system_prompt.py:L145-L155` — contém exemplos conversacionais com `Recrutador:` e `LIA (thought):`
+  - **Referência positiva:** `sourcing_system_prompt.py` — contém seção de exemplos
 - **Descrição:** Few-shot examples melhoram significativamente a qualidade de output do LLM. 7 agentes não têm exemplos no prompt.
 - **Impacto se não corrigido:** Output inconsistente e baixa qualidade em agentes sem exemplos.
 - **Responsável:** Backend (LLM/Prompts)
@@ -754,8 +757,8 @@
 - **Dimensão:** 14 (Performance)
 - **Runbook:** RM-14
 - **Arquivo(s) afetado(s):**
-  - `app/observability/metrics.py` — métricas existem para FairnessGuard e circuit breaker
-  - Faltam métricas per-agent: grep por `agent_latency|agent_error_count|domain_latency` em `metrics.py` retorna 0
+  - `app/observability/metrics.py` (130 linhas) — contém métricas para FairnessGuard e circuit breaker
+  - L1-L130 escaneadas: nenhuma métrica com prefixo `agent_` ou `domain_` para tracking per-agent (latência, tokens, erros)
 - **Descrição:** Métricas Prometheus existem para FairnessGuard e circuit breaker, mas faltam métricas por agente (latência, tokens, erros por domínio).
 - **Impacto se não corrigido:** Sem visibilidade de performance por agente; difícil detectar regressões.
 - **Responsável:** Backend/Infra (Observabilidade)
@@ -775,13 +778,15 @@
 - **Esforço estimado:** 2h
 - **Depende de:** Nenhum
 
-### ACH-015 — Degradação graceful sem documentar
+### ACH-015 — Degradação graceful sem documentação operacional
 - **Prioridade:** P1
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-15
 - **Arquivo(s) afetado(s):**
-  - Grep por `graceful_degradation|degradation_mode|fallback.*user.*message` em `docs/` e `app/` retorna 0
-  - Sistema tem fallbacks implementados mas sem documentação de UX durante falha
+  - Fallback LLM existe: `llm_factory.py:L13` (`FALLBACK_ORDER = ["claude", "gemini", "openai"]`), `L55-L89` (`generate_with_fallback`)
+  - Redis graceful: `token_budget_service.py:L87` — "Redis indisponível → permitir com warning"
+  - Sentry graceful: `sentry.py:L11` — "módulo é gracefully degradável"
+  - **Ausente:** Nenhum documento de runbook operacional mapeando componente→impacto_no_user→ação_ops. Nenhum arquivo `docs/RUNBOOK_DEGRADATION.md` ou similar encontrado
 - **Descrição:** Sistema tem fallbacks (LLM cascade, circuit breakers) mas sem documentação de graceful degradation (o que o user vê quando cada componente falha).
 - **Impacto se não corrigido:** Ops team sem playbook para incidentes.
 - **Responsável:** Backend/Ops (Documentação)
@@ -822,27 +827,29 @@
 - **Dimensão:** 3 (UI/UX)
 - **Runbook:** RM-35
 - **Arquivo(s) afetado(s):**
-  - Grep por `MOCK_BILLING_DATA|mockUsers|MOCK_DATA` em `plataforma-lia/src/` identifica componentes admin com dados hardcoded
-  - Páginas de faturamento e gestão de usuários
+  - `plataforma-lia/src/app/admin/clientes/[clientId]/usuarios/page.tsx:L73` — `const mockUsers: User[] = [` hardcoded
+  - `plataforma-lia/src/app/admin/clientes/[clientId]/usuarios/page.tsx:L160,L163,L167` — `setUsers(mockUsers)` em produção
+  - `plataforma-lia/src/app/admin/clientes/[clientId]/faturamento/page.tsx:L84` — `const MOCK_BILLING_DATA: BillingData = {` hardcoded
 - **Descrição:** `MOCK_BILLING_DATA`, `mockUsers` hardcoded em componentes admin que deveriam mostrar dados reais.
 - **Impacto se não corrigido:** Admin vê dados falsos, decisões baseadas em informação incorreta.
 - **Responsável:** Frontend
 - **Esforço estimado:** 12h
 - **Depende de:** Nenhum
 
-### ACH-019 — Stage context ausente em 4 agentes
+### ACH-019 — Stage context: arquivos existem mas não integrados em 4 agentes
 - **Prioridade:** P2
 - **Dimensão:** 9 (Arquitetura de Agentes)
 - **Runbook:** RM-20
 - **Arquivo(s) afetado(s):**
-  - `analytics_stage_context.py` — ausente ou vazio (grep por `stage_context` no domínio analytics retorna 0)
-  - `communication_stage_context.py` — ausente ou vazio
-  - `automation_stage_context.py` — ausente ou vazio
-  - `ats_integration_stage_context.py` — ausente ou vazio
-- **Descrição:** Stage context dá ao agente visão do pipeline. 4 agentes não implementam.
-- **Impacto se não corrigido:** Agentes sem contexto de onde o candidato/vaga está no processo.
+  - `app/domains/analytics/agents/analytics_stage_context.py` (79 linhas) — arquivo existe mas verificar se é consumido pelo agente
+  - `app/domains/communication/agents/communication_stage_context.py` (64 linhas) — idem
+  - `app/domains/automation/agents/automation_stage_context.py` (46 linhas) — idem
+  - `app/domains/ats_integration/agents/ats_integration_stage_context.py` (67 linhas) — idem
+  - **Nota:** Arquivos existem porém a integração com o ReAct loop de cada agente precisa ser verificada
+- **Descrição:** Stage context files existem mas podem não estar integrados no fluxo de execução dos agentes menores.
+- **Impacto se não corrigido:** Agentes com contexto de pipeline disponível mas potencialmente não utilizado.
 - **Responsável:** Backend (Agentes)
-- **Esforço estimado:** 8h
+- **Esforço estimado:** 4h
 - **Depende de:** Nenhum
 
 ### ACH-020 — Documentação de API incompleta
@@ -863,9 +870,9 @@
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-26
 - **Arquivo(s) afetado(s):**
-  - 9 system prompts sem negation detection (grep por `negação|negation|"não quero"|"não inclua"` retorna 0)
-  - Presente apenas em `pipeline_system_prompt.py`, `policy_system_prompt.py`, `cv_screening.yaml`
-- **Descrição:** Detecção de negação (quando recrutador diz "não quero X") implementada em apenas 3 agentes. Agentes sem detecção podem interpretar incorretamente pedidos negativos.
+  - **Referência positiva:** `app/shared/prompts/job_wizard.py:L278` — `rejection: Rejeição/negação de sugestão` (implementação parcial no wizard)
+  - 9 system prompts de domínio escaneados (sourcing 188L, talent, kanban, jobs_mgmt, analytics 47L, communication 53L, automation 36L, ats_integration 64L) — nenhum contém seção de negation detection
+- **Descrição:** Detecção de negação (quando recrutador diz "não quero X") implementada parcialmente no wizard. Outros agentes podem interpretar incorretamente pedidos negativos.
 - **Impacto se não corrigido:** IA inclui candidatos que deveriam ser excluídos (ou vice-versa).
 - **Responsável:** Backend (LLM/Prompts)
 - **Esforço estimado:** 6h
@@ -876,10 +883,10 @@
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-25
 - **Arquivo(s) afetado(s):**
-  - `app/services/bias_audit_service.py` — serviço implementado
-  - `app/api/v1/bias_audit.py` — endpoints existem
-  - Grep por `golden_dataset|baseline_candidates|representative_sample` retorna 0 — sem Golden Dataset
-- **Descrição:** Bias audit service e API existem, mas sem Golden Dataset de 100 candidatos representativos para baseline automático (Production Readiness #9).
+  - `app/services/bias_audit_service.py` (289 linhas) — serviço implementado com métricas de viés
+  - `app/api/v1/bias_audit.py` (148 linhas) — endpoints REST existem
+  - L1-L289 de `bias_audit_service.py` e L1-L148 de `bias_audit.py` escaneadas: nenhuma referência a `golden_dataset`, `baseline_candidates` ou `representative_sample` (Production Readiness #9 exige 100 candidatos baseline)
+- **Descrição:** Bias audit service e API existem, mas sem Golden Dataset de 100 candidatos representativos para baseline automático.
 - **Impacto se não corrigido:** Sem baseline, impossível detectar drift de viés.
 - **Responsável:** Backend (Compliance/Data)
 - **Esforço estimado:** 16h
@@ -890,9 +897,10 @@
 - **Dimensão:** 14 (Performance)
 - **Runbook:** RM-42
 - **Arquivo(s) afetado(s):**
-  - Grep por `load_test|locust|k6|artillery|gatling` em todo o repositório retorna 0
-  - Sem arquivos de configuração de load test encontrados
-- **Descrição:** Production Readiness #14 exige load test com P95 < 5s. Sem evidência de load test executado.
+  - Repositório inteiro escaneado: nenhum arquivo `locustfile.py`, `k6.js`, `artillery.yml`, `gatling.scala` encontrado
+  - Nenhum diretório `tests/load/`, `tests/performance/`, ou `benchmarks/` encontrado
+  - Production Readiness #14 exige P95 < 5s em carga
+- **Descrição:** Sem evidência de load test executado ou configurado.
 - **Impacto se não corrigido:** Sistema pode falhar sob carga sem saber.
 - **Responsável:** Infra/QA
 - **Esforço estimado:** 8h
@@ -903,9 +911,10 @@
 - **Dimensão:** 14 (Performance)
 - **Runbook:** RM-43
 - **Arquivo(s) afetado(s):**
-  - Grep por `backup_procedure|rollback_plan|disaster_recovery` em `docs/` retorna 0
-  - Sem runbook operacional de backup/restore
-- **Descrição:** Production Readiness #12 e #13 exigem backup verificado e rollback documentado.
+  - `docs/` escaneado: nenhum documento `RUNBOOK_BACKUP.md`, `DISASTER_RECOVERY.md` ou similar encontrado
+  - `alembic/` contém migrations mas sem procedimento de rollback documentado
+  - Production Readiness #12 (backup verificado) e #13 (rollback documentado) não atendidos
+- **Descrição:** Sem documento de backup/restore ou rollback procedure.
 - **Impacto se não corrigido:** Impossível recuperar de falha catastrófica.
 - **Responsável:** Infra/Ops
 - **Esforço estimado:** 4h
@@ -916,9 +925,10 @@
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-44
 - **Arquivo(s) afetado(s):**
-  - Grep por `snyk|trivy|bandit|safety|dependabot|security_scan` em CI/CD config retorna 0
-  - Sem pipeline de security scanning automatizado
-- **Descrição:** Production Readiness #15 exige security scan limpo (0 critical/high).
+  - Repositório escaneado: nenhum `.github/workflows/*security*`, `Snykfile`, `.trivyignore`, `.bandit`, `safety` config encontrado
+  - Nenhum arquivo de CI/CD com step de security scan
+  - Production Readiness #15 exige 0 vulnerabilidades critical/high
+- **Descrição:** Sem pipeline de security scanning automatizado.
 - **Impacto se não corrigido:** Vulnerabilidades podem existir sem detecção.
 - **Responsável:** Infra/Security
 - **Esforço estimado:** 4h
@@ -944,9 +954,10 @@
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-41
 - **Arquivo(s) afetado(s):**
-  - Grep por `ragas|faithfulness.*score|relevance.*score|RAGAS` em todo repositório retorna 0
-  - Novo serviço a criar
-- **Descrição:** Playbook define metas RAGAS (Faithfulness ≥0.90, Relevance ≥0.85, etc.) mas sem implementação.
+  - Repositório inteiro escaneado: nenhum arquivo, módulo ou referência a RAGAS (`ragas`, `faithfulness_score`, `relevance_score`) encontrado
+  - `PLAYBOOK_AUDITORIA_PROFUNDA.md` define metas (Faithfulness ≥0.90, Relevance ≥0.85) mas sem implementação correspondente
+  - Novo serviço `app/services/ragas_evaluation_service.py` a criar
+- **Descrição:** Playbook define metas RAGAS mas framework de avaliação de qualidade LLM não existe no código.
 - **Impacto se não corrigido:** Sem métricas de qualidade de output do LLM.
 - **Responsável:** Backend (LLM Quality)
 - **Esforço estimado:** 24h
@@ -957,9 +968,10 @@
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-40
 - **Arquivo(s) afetado(s):**
-  - Grep por `red_team|prompt_injection_test|jailbreak_test|bias_elicitation` em `tests/` retorna 0
-  - 6 cenários obrigatórios sem suite de testes automatizados
-- **Descrição:** 6 cenários obrigatórios de red teaming (prompt injection, data exfiltration, bias elicitation, jailbreak, escalação de privilégios, manipulação de score) não implementados como suite de testes automatizados.
+  - Diretório `tests/` escaneado: nenhum arquivo `test_red_team*`, `test_prompt_injection*`, `test_jailbreak*`, `test_bias_elicitation*` encontrado
+  - 6 cenários obrigatórios (prompt injection, data exfiltration, bias elicitation, jailbreak, privilege escalation, score manipulation) sem cobertura de testes
+  - Novo diretório `tests/security/red_team/` a criar
+- **Descrição:** Suite de red teaming para segurança de IA não existe como testes automatizados.
 - **Impacto se não corrigido:** Vulnerabilidades de segurança de IA não detectadas.
 - **Responsável:** Backend/Security (QA)
 - **Esforço estimado:** 32h
@@ -970,9 +982,10 @@
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-24
 - **Arquivo(s) afetado(s):**
-  - `app/api/v1/drift.py` — endpoint existe mas grep por `continuous_monitor|alert_trigger|drift_threshold` retorna 0
-  - Implementação de monitoramento contínuo ausente
-- **Descrição:** Triggers de alerta (score WSI varia >0.5 em 30 dias, etc.) definidos no playbook mas sem implementação de monitoramento contínuo.
+  - `app/api/v1/drift.py` (138 linhas) — endpoints existem: `run_drift_batch` (L93), `get_drift_status` (L118)
+  - L1-L138 escaneadas: nenhuma referência a monitoramento contínuo (`continuous_monitor`, `scheduler`, `cron`, `periodic_check`)
+  - `_to_response` helper (L58) converte status mas sem trigger de alerta automático
+- **Descrição:** Endpoints de drift existem mas sem scheduler de monitoramento contínuo. Triggers de alerta (score WSI varia >0.5 em 30 dias) definidos no playbook mas sem implementação.
 - **Impacto se não corrigido:** Degradação silenciosa de qualidade do modelo.
 - **Responsável:** Backend (ML Ops)
 - **Esforço estimado:** 16h
@@ -983,9 +996,9 @@
 - **Dimensão:** 5 (Types/Contracts)
 - **Runbook:** RM-34
 - **Arquivo(s) afetado(s):**
-  - `app/domains/cv_screening/services/wsi_service.py` — grep por `normalize|normalization_factor|version_adjust` para verificar implementação
-  - Playbook define trigger: variância >5%, factor: 0.7-1.3
-- **Descrição:** Score normalization definido no playbook (trigger: variância >5%, factor: 0.7-1.3) mas implementação não verificada.
+  - `app/domains/cv_screening/services/wsi_service.py` — verificação necessária de implementação de `normalize_score`, `normalization_factor`, `version_adjust`
+  - Playbook define trigger: variância >5%, factor: 0.7-1.3 — implementação não confirmada no código
+- **Descrição:** Score normalization definido no playbook mas implementação não verificável no serviço WSI.
 - **Impacto se não corrigido:** Candidatos avaliados com versões diferentes de perguntas recebem scores incomparáveis.
 - **Responsável:** Backend (Screening)
 - **Esforço estimado:** 8h
@@ -996,9 +1009,10 @@
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-39
 - **Arquivo(s) afetado(s):**
-  - Grep por `FRIA|fundamental_rights|impact_assessment|EU_AI_Act` em `docs/` retorna 0
-  - Documento de compliance obrigatório ausente
-- **Descrição:** EU AI Act Art. 6+Anexo III exige FRIA antes do deploy para sistemas de alto risco (IA em recrutamento).
+  - `docs/` escaneado (todos os .md): nenhum documento `FRIA.md`, `FUNDAMENTAL_RIGHTS.md`, `EU_AI_ACT_ASSESSMENT.md` encontrado
+  - `lia-agent-system/docs/` inclui `CONCEITOS_IA_WEDOTALENT.md`, `MAPA_CAMADA_INTELIGENCIA.md`, `ai-architecture-audit.md` — nenhum cobre FRIA
+  - EU AI Act Art. 6 + Anexo III exige documento antes do deploy para sistemas high-risk (IA em recrutamento)
+- **Descrição:** FRIA é documento obrigatório pelo EU AI Act para sistemas de IA em recrutamento. Não existe no repositório.
 - **Impacto se não corrigido:** Non-compliance com EU AI Act.
 - **Responsável:** Legal/Compliance
 - **Esforço estimado:** 16h
@@ -1014,34 +1028,34 @@
 |:----------:|:------------:|:-----------------:|:---------------------:|:-----------:|
 | **P0** | 8 | 90h | Backend + Frontend | Imediato |
 | **P1** | 7 | 44h | Backend | Sprint N+1 |
-| **P2** | 10 | 92h | Backend + Frontend + Infra | Sprint N+2/N+3 |
+| **P2** | 10 | 88h | Backend + Frontend + Infra | Sprint N+2/N+3 |
 | **P3** | 6 | 104h | Backend + Security + Legal | Backlog |
-| **Total** | **31** | **330h** | — | — |
+| **Total** | **31** | **326h** | — | — |
 
 ## 6.2 Detalhamento P0 (Imediato)
 
 | ID | Achado | Esforço | Responsável | Runbook |
 |:---|:-------|:-------:|:-----------:|:-------:|
-| ACH-001 | Anti-sycophancy em 6 agentes | 4h | Backend | RM-09 |
-| ACH-002 | FairnessGuard como middleware | 8h | Backend | RM-02 |
-| ACH-003 | Consent hard enforcement | 4h | Backend | RM-05 |
-| ACH-004 | Circuit breaker OpenAI/Gemini | 4h | Backend | RM-11 |
-| ACH-005 | HITL em sourcing/communication | 8h | Backend | RM-03 |
+| ACH-001 | Anti-sycophancy em 6 agentes | 4h | Backend (LLM/Prompts) | RM-09 |
+| ACH-002 | FairnessGuard como middleware | 8h | Backend (Orchestrator) | RM-02 |
+| ACH-003 | Consent hard enforcement | 4h | Backend (Compliance) | RM-05 |
+| ACH-004 | Circuit breaker OpenAI/Gemini | 4h | Backend (Resiliência) | RM-11 |
+| ACH-005 | HITL em sourcing/communication | 8h | Backend (Agentes) | RM-03 |
 | ACH-006 | Audit trail em 3 agentes | 6h | Backend (Compliance) | RM-06 |
 | ACH-007 | WCAG 2.1 AA (aria-labels) | 40h | Frontend | RM-08 |
-| ACH-008 | Multi-tenant RLS | 16h | Backend/Infra | RM-07 |
+| ACH-008 | Multi-tenant RLS | 16h | Backend/Infra (Database) | RM-07 |
 
 ## 6.3 Detalhamento P1 (Sprint N+1)
 
 | ID | Achado | Esforço | Responsável | Runbook |
 |:---|:-------|:-------:|:-----------:|:-------:|
-| ACH-009 | Confidence em 8 agentes | 8h | Backend | RM-10 |
-| ACH-010 | Circuit breaker ATS clients | 6h | Backend | RM-11 |
-| ACH-011 | Circuit breaker email/billing | 4h | Backend | RM-11 |
-| ACH-012 | Few-shot examples | 12h | Backend | RM-17 |
-| ACH-013 | Observabilidade Prometheus | 8h | Backend/Infra | RM-14 |
-| ACH-014 | WorkOS circuit breaker | 2h | Backend | RM-11 |
-| ACH-015 | Graceful degradation docs | 4h | Backend/Ops | RM-15 |
+| ACH-009 | Confidence em 8 agentes | 8h | Backend (LLM/Prompts) | RM-10 |
+| ACH-010 | Circuit breaker ATS clients | 6h | Backend (Resiliência) | RM-11 |
+| ACH-011 | Circuit breaker email/billing | 4h | Backend (Resiliência) | RM-11 |
+| ACH-012 | Few-shot examples | 12h | Backend (LLM/Prompts) | RM-17 |
+| ACH-013 | Observabilidade Prometheus | 8h | Backend/Infra (Observabilidade) | RM-14 |
+| ACH-014 | WorkOS circuit breaker | 2h | Backend (Auth/Resiliência) | RM-11 |
+| ACH-015 | Graceful degradation docs | 4h | Backend/Ops (Documentação) | RM-15 |
 
 ## 6.4 Verificação de Crenças
 

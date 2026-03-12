@@ -252,7 +252,7 @@ class TestJDUploadFairnessGuard:
 
     def test_fairness_soft_warning_does_not_block(self, client):
         """Soft warning nao bloqueia importacao — apenas loga."""
-        with patch("app.api.v1.jd_import.FairnessGuard") as mock_fg_cls:
+        with patch("app.shared.compliance.fairness_guard.FairnessGuard") as mock_fg_cls:
             mock_result = MagicMock()
             mock_result.is_blocked = False
             mock_result.soft_warnings = ["Possivel vies implicito detectado"]
@@ -277,7 +277,7 @@ class TestJDUploadFairnessGuard:
 
     def test_fairness_guard_failure_is_fail_safe(self, client):
         """Se FairnessGuard lancar excecao, upload deve continuar (fail-safe)."""
-        with patch("app.api.v1.jd_import.FairnessGuard", side_effect=ImportError("modulo indisponivel")):
+        with patch("app.shared.compliance.fairness_guard.FairnessGuard", side_effect=ImportError("modulo indisponivel")):
             with patch("app.api.v1.jd_import.JDImportService") as mock_svc_cls:
                 mock_svc = MagicMock()
                 mock_imported = MagicMock()
