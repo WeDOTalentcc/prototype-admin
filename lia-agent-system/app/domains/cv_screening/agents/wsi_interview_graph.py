@@ -98,7 +98,6 @@ class WSIInterviewState:
     technical_score: float = 0.0
     behavioral_score: float = 0.0
     situational_score: float = 0.0
-    eligibility_score: float = 0.0
 
     # Score final
     wsi_final_score: Optional[float] = None
@@ -197,7 +196,6 @@ def _wsi_state_to_dict(state: "WSIInterviewState") -> dict:
         "technical_score": state.technical_score,
         "behavioral_score": state.behavioral_score,
         "situational_score": state.situational_score,
-        "eligibility_score": state.eligibility_score,
         "wsi_final_score": state.wsi_final_score,
         "recommendation": state.recommendation,
         "stage": state.stage.value,
@@ -236,7 +234,6 @@ def _wsi_state_from_dict(d: dict) -> "WSIInterviewState":
         technical_score=d.get("technical_score", 0.0),
         behavioral_score=d.get("behavioral_score", 0.0),
         situational_score=d.get("situational_score", 0.0),
-        eligibility_score=d.get("eligibility_score", 0.0),
         wsi_final_score=d.get("wsi_final_score"),
         recommendation=d.get("recommendation", ""),
         stage=WSIInterviewStage(d.get("stage", "init")),
@@ -547,11 +544,12 @@ class WSIInterviewNodes:
             from app.services.wsi_deterministic_scorer import calculate_final_wsi_score as deterministic_final
 
             state.wsi_final_score = deterministic_final(
-                technical=state.technical_score,
-                behavioral=state.behavioral_score,
-                situational=state.situational_score,
-                eligibility=state.eligibility_score,
-            )
+                technical_scores=[("technical", state.technical_score, 1.0)],
+                behavioral_scores=[
+                    ("behavioral", state.behavioral_score, 0.6),
+                    ("situational", state.situational_score, 0.4),
+                ],
+            ).get("final_score", 0.0)
 
             if state.wsi_final_score >= 7.0:
                 state.recommendation = "aprovado"
@@ -1065,7 +1063,6 @@ class WSIInterviewGraph:
                 "technical": round(state.technical_score, 2),
                 "behavioral": round(state.behavioral_score, 2),
                 "situational": round(state.situational_score, 2),
-                "eligibility": round(state.eligibility_score, 2),
                 "final": state.wsi_final_score,
             },
             "recommendation": state.recommendation,

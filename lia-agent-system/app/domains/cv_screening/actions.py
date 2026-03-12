@@ -13,7 +13,6 @@ CV_SCREENING_ACTIONS: List[DomainAction] = [
     DomainAction(action_id="dynamic_cutoff", name="Corte dinâmico", description="Aplicar corte dinâmico (top 25%)"),
     DomainAction(action_id="detect_red_flags", name="Detectar red flags", description="Detectar red flags no CV"),
     DomainAction(action_id="check_saturation", name="Verificar saturação", description="Verificar saturação do pipeline"),
-    DomainAction(action_id="check_eligibility", name="Verificar elegibilidade", description="Verificar elegibilidade do candidato"),
     DomainAction(action_id="classify_bloom", name="Classificar Bloom", description="Classificar respostas pela Taxonomia de Bloom"),
     DomainAction(action_id="classify_dreyfus", name="Classificar Dreyfus", description="Classificar nível de proficiência Dreyfus"),
     DomainAction(action_id="map_big_five", name="Mapear Big Five", description="Mapear traços Big Five comportamentais"),
