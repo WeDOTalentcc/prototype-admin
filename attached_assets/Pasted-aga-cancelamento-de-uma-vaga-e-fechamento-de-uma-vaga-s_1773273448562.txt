@@ -1,0 +1,759 @@
+aga, cancelamento de uma vaga e fechamento de uma vaga sendo que para fechar uma vaga eu tenho dois caminhos, eu posso dar um placement em um candidato movendo-o para a coluna       
+contratado ou eu tambem tenho a opcao de fechar uma vaga por outro motivo como cancelamento de headcount etc. eu tambem tenho um caminho que é clicar em editar na vaga e mudar o      
+status. nao me lembro se consigo alterar o status para feechada ou cancelada pelo icone /badge de status no cabecalho. tambem temos algo parecido com triagem. pausar o encerrar.      
+precisamos revisar estes fluxos para definir como fazer. no caso de placement ha um processo que precisa ser cumprido como informar salario final de contratacao, data de inicio,      
+bonus, enviar mensagem de parabens e orientacoes para onboarding. eu tambem preciso disparar mensagem de feedback construtivo para todos os candiadtos do processo. o feedback é       
+personalizado eu acho. ao concluir o processo o candidato precisa ter um status de contratado dentro da plataforma que que pode se integrar com o ats do cliente caso haja. tem a      
+camada de agentes envolvidos neste caso tambem... enfim. precisamos revisar passo a passo o que existe no codigo, o que falta, comparaom melhores praticas de ferramentas de mercado.  
+no caso de pausa de vaga por exemplo, enviamos mensagem de aviso para os candiadtos? e quando eu reativo, aiso tambem? vamos come                                                      
+        car avaliando o documento fazendo um diagnostico, rodando feature impact para avaliar codigo existente para definirmos um primeiro fluxo jira-cards-job-creation-lifecycle.md  
+
+● Vou fazer uma exploração ampla e paralela do código para ter uma visão completa antes de montar o diagnóstico. Vou investigar modelos, serviços, endpoints, frontend e fluxo de
+  placement em simultâneo.
+
+● 4 Explore agents finished (ctrl+o to expand)
+   ├─ Explorar modelos e status de vagas · 38 tool uses · 76.5k tokens
+   │  ⎿  Done
+   ├─ Explorar endpoints de vagas e pipeline · 39 tool uses · 74.6k tokens
+   │  ⎿  Done
+   ├─ Explorar frontend - vagas e kanban · 42 tool uses · 72.2k tokens
+   │  ⎿  Done
+   └─ Explorar agentes e wizard de vagas · 41 tool uses · 91.7k tokens
+      ⎿  Done
+
+● Excelente! Tenho um diagnóstico rico dos 4 agentes. Vou verificar o formato dos Jira cards existentes e depois montar o documento completo.
+
+● Searched for 3 patterns (ctrl+o to expand)
+
+● O arquivo já existe. Vou lê-lo para entender o que já está lá, e depois ler um dos Jira cards existentes para entender o padrão de formato.
+
+● Read 2 files (ctrl+o to expand)
+
+● Tenho todos os dados necessários. Vou agora montar o diagnóstico completo e os novos cards para o documento. O arquivo atual tem 31k tokens então vou adicionar como nova seção ao
+  final.
+
+● Read 1 file (ctrl+o to expand)
+
+● Tenho tudo que preciso. Vou agora escrever a seção de diagnóstico e os novos cards diretamente no documento.
+
+● Bash(cat >> /home/runner/workspace/docs/jira-cards-job-creation-lifecycle.md << 'DOCEOF'…)
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ nao escreva novos cards no documento eu quero so o diagnostico aqui                                                                                                                  
+
+● Entendido. Aqui está o diagnóstico completo:
+
+  ---
+  DIAGNÓSTICO — Ciclo de Vida de Vagas
+
+  1. O QUE EXISTE NO CÓDIGO
+
+  Modelos e status (Backend)
+
+  ┌───────────────────────────────────────────────────────────────────────────────────┬──────────────────┐
+  │                                     Artefato                                      │      Estado      │
+  ├───────────────────────────────────────────────────────────────────────────────────┼──────────────────┤
+  │ JobVacancy.status: Rascunho → Ativa → Pausada → Concluída → Cancelada → Arquivada │ ✅ Completo      │
+  ├───────────────────────────────────────────────────────────────────────────────────┼──────────────────┤
+  │ ALLOWED_STATUS_TRANSITIONS (máquina de estados no BE)                             │ ✅ Definido      │
+  ├───────────────────────────────────────────────────────────────────────────────────┼──────────────────┤
+  │ Timestamps: closed_at, open_date, published_at, open_date                         │ ✅ Presentes     │
+  ├───────────────────────────────────────────────────────────────────────────────────┼──────────────────┤
+  │ JobVacancyAuditLog (action, old/new value, changed_by)                            │ ✅ Modelo existe │
+  ├───────────────────────────────────────────────────────────────────────────────────┼──────────────────┤
+  │ RecruitmentStage com is_hired=True para coluna Contratado                         │ ✅ Completo      │
+  ├───────────────────────────────────────────────────────────────────────────────────┼──────────────────┤
+  │ CandidateStageHistory (audit trail de transições)                                 │ ✅ Completo      │
+  ├───────────────────────────────────────────────────────────────────────────────────┼──────────────────┤
+  │ Modelo de Placement (salário final, data início, bônus)                           │ ❌ NÃO EXISTE    │
+  ├───────────────────────────────────────────────────────────────────────────────────┼──────────────────┤
+  │ Campos pause_reason e cancel_reason em JobVacancy                                 │ ❌ NÃO EXISTEM   │
+  └───────────────────────────────────────────────────────────────────────────────────┴──────────────────┘
+
+  Transições válidas atuais:
+  Rascunho   → [Ativa, Cancelada, Arquivada]
+  Ativa      → [Pausada, Concluída, Cancelada, Arquivada]
+  Pausada    → [Ativa, Cancelada, Arquivada]
+  Concluída  → [Arquivada]          ← sem reabertura
+  Cancelada  → [Arquivada]          ← sem reabertura
+  Arquivada  → []
+
+  Endpoints REST (Backend)
+
+  ┌─────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────┐
+  │                          Endpoint                           │                      Estado                       │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ POST /job-vacancies/bulk/pause                              │ ✅ Existe                                         │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ POST /job-vacancies/bulk/resume                             │ ✅ Existe                                         │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ POST /job-vacancies/bulk/archive                            │ ✅ Existe                                         │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ PATCH /job-vacancies/{id}/status                            │ ✅ Existe (genérico)                              │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ POST /{vacancy_id}/close                                    │ ✅ Existe (com hired_candidate_id + notificações) │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ POST /handle-trigger/candidate-hired                        │ ✅ Existe (automation trigger)                    │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ PATCH /candidates/{id}/stage                                │ ✅ Existe (move candidato no pipeline)            │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ POST /{vacancy_id}/pause (individual)                       │ ⚠️  Só existe versão bulk                          │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ POST /{vacancy_id}/placement (captura dados de contratação) │ ❌ NÃO EXISTE                                     │
+  ├─────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+  │ POST /{vacancy_id}/cancel com motivo obrigatório            │ ⚠️  Só via PATCH status sem motivo                 │
+  └─────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────┘
+
+  O que POST /bulk/pause já faz: atualiza status, audit log, webhook dispatch, event dispatcher.
+  O que NÃO faz: não salva pause_reason (campo inexistente), não envia notificações para candidatos.
+
+  O que POST /{vacancy_id}/close já faz: aceita hired_candidate_id, hired_notification, other_notifications, chama CommunicationService.
+  O que NÃO faz: não captura dados de placement (salário, data, bônus), não persiste motivo do fechamento, feedback não é personalizado.
+
+  Frontend
+
+  ┌─────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────┐
+  │                        Artefato                         │                               Estado                               │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ JobStatusModal (pausar/reativar)                        │ ✅ UI completa com checkbox "notifyApplicants" e template selector │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ CloseVacancyModal (fechar com notificações)             │ ✅ UI existe — sem dados de placement                              │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ Coluna "Contratado" no Kanban                           │ ✅ Existe com is_hired=True                                        │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ Drag candidato → coluna Contratado → confirm_hire modal │ ✅ Trigger existe                                                  │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ CandidateDecisionFlowModal — step confirm_hire          │ ⚠️  Placeholder — menciona onboarding mas sem lógica real           │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ Badge de status no header da vaga                       │ ✅ Exibe o status atual                                            │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ Badge de status clicável com menu de transições         │ ⚠️  Incerto — exibe mas não confirmado se clique abre ações         │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ Modal de Cancelamento de Vaga                           │ ❌ NÃO EXISTE — "Cancelada" só aparece em mock data                │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ Captura de dados de placement no modal de fechamento    │ ❌ NÃO EXISTE                                                      │
+  ├─────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────┤
+  │ Wiring das notificações da pausa para o BE              │ ⚠️  UI tem checkbox mas backend não processa o parâmetro            │
+  └─────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────┘
+
+  ---
+  2. GAPS CRÍTICOS
+
+  GAP A — Sem modelo de Placement (CRÍTICO)
+  Não há tabela para persistir salário final, data de início, bônus, tipo de contrato. A "contratação" hoje é apenas a transição de stage do candidato para "hired". Impede: analytics
+  de compensation, reporting, ATS sync completo, integração HRIS, auditoria SOX.
+
+  GAP B — Notificação a candidatos na pausa não está wired
+  JobStatusModal tem o checkbox e o template selector, mas bulk/pause ignora esses parâmetros. Candidatos em processo não recebem aviso quando a vaga é pausada.
+
+  GAP C — Sem motivo persistido na pausa e no cancelamento
+  Audit log registra que o status mudou, mas não "por que". Campos pause_reason e cancel_reason não existem no modelo. Afeta rastreabilidade e compliance para clientes regulados (BCB
+  498/SOX).
+
+  GAP D — Sem fluxo de cancelamento dedicado no FE
+  Não há modal de cancelamento. A opção "Cancelada" aparece só em mock data (jobs2-page.tsx). Recrutador não tem forma guiada de cancelar uma vaga com motivo.
+
+  GAP E — Dados de placement não capturados no fechamento
+  CandidateDecisionFlowModal.confirm_hire é placeholder (menciona "onboarding" mas sem lógica). CloseVacancyModal envia notificação mas não coleta salário, data, bônus. O endpoint
+  POST /close não persiste esses dados.
+
+  GAP F — Feedback construtivo não é personalizado por IA
+  CloseVacancyModal usa um template único para todos os candidatos. CandidateFeedbackService tem send_gate_feedback() funcional mas não gera mensagem individual por candidato no
+  fechamento de vaga.
+
+  GAP G — ATS sync no hire não é automático via Kanban
+  POST /handle-trigger/candidate-hired faz ATS sync, mas é um trigger separado. O fluxo natural (arrastar para Contratado → PATCH /candidates/{id}/stage) não dispara ATS sync
+  automaticamente.
+
+  ---
+  3. COMPARAÇÃO COM MERCADO
+
+  ┌─────────────────────────────────────────────────────────────────┬───────────────┬─────────────┬─────────────┬───────────────────────────────┐
+  │                             Feature                             │  Greenhouse   │    Lever    │    Gupy     │           LIA Atual           │
+  ├─────────────────────────────────────────────────────────────────┼───────────────┼─────────────┼─────────────┼───────────────────────────────┤
+  │ Fechar por placement com captura de offer (salário, start date) │ ✅            │ ✅          │ ✅          │ ⚠️  Parcial                    │
+  ├─────────────────────────────────────────────────────────────────┼───────────────┼─────────────┼─────────────┼───────────────────────────────┤
+  │ Fechar sem placement com motivo obrigatório                     │ ✅            │ ✅          │ ✅          │ ⚠️  Via PATCH sem modal guiado │
+  ├─────────────────────────────────────────────────────────────────┼───────────────┼─────────────┼─────────────┼───────────────────────────────┤
+  │ Motivo de pausa/cancelamento auditável                          │ ✅            │ ✅          │ ✅          │ ❌ Campo inexistente          │
+  ├─────────────────────────────────────────────────────────────────┼───────────────┼─────────────┼─────────────┼───────────────────────────────┤
+  │ Notificar candidatos ao pausar                                  │ ✅            │ ✅          │ ⚠️           │ ⚠️  UI existe, wiring não      │
+  ├─────────────────────────────────────────────────────────────────┼───────────────┼─────────────┼─────────────┼───────────────────────────────┤
+  │ Feedback construtivo personalizado no fechamento                │ ✅ Individual │ ⚠️  Genérico │ ⚠️  Genérico │ ⚠️  Genérico                   │
+  ├─────────────────────────────────────────────────────────────────┼───────────────┼─────────────┼─────────────┼───────────────────────────────┤
+  │ ATS sync automático ao contratar                                │ ✅            │ ✅          │ ✅          │ ⚠️  Parcial                    │
+  └─────────────────────────────────────────────────────────────────┴───────────────┴─────────────┴─────────────┴───────────────────────────────┘
+
+  ---
+  4. FLUXOS QUE PRECISAM SER CONSTRUÍDOS
+
+  F1 — Pausa de Vaga: motivo obrigatório + notificação opcional para candidatos ativos + pause_reason persistido
+  F1B — Reativação: notificação opcional "processo retomado"
+  F2 — Cancelamento: modal dedicado + motivo + move candidatos para "Reprovado" + notificação
+  F3A — Fechamento por Placement: PlacementModal (salário, data, bônus) + move candidato → Contratado + fecha vaga → Concluída
+  F3B — Notificações pós-placement: mensagem de parabéns para contratado + feedback (com opção personalizado por IA) para os demais
+  F4 — Fechamento sem placement: motivo + notificações + status "Concluída"
+  F5 — Badge de status interativo: click no badge → dropdown com transições disponíveis por status atual
+
+  ---
+  5. DEPENDÊNCIA CRÍTICA (bloqueante)
+
+  Tudo começa por:
+
+  Migration + Modelo Placement + campos pause_reason/cancel_reason/close_reason em job_vacancies
+
+  Sem isso, os cards de placement, pausa com motivo e cancelamento não têm onde persistir dados. É o card que deve entrar primeiro na sprint.
+
+  ---
+  Quer que eu agora:
+  1. Escreva os novos cards no documento (jira-cards-job-creation-lifecycle.md)?
+  2. Defina os fluxos em mais detalhe antes de escrever os cards?
+  3. Comece pelo feature impact formal (/feature-impact) de algum dos fluxos específicos?
+
+✻ Baked for 53s
+
+❯ eu quero que voce defina os fluxos com mais detalhes comecando pela feature impact eu quero definir um modelo para depois montar um plano para avaliar e depois estudar a            
+implementacao. nao vamos fazer cards agora. quero avaliar como fazer para implementar estas funcionalidades futuramente. qual o melhor caminho lembrando que, precisamos aproveitar ao 
+ maximo os modais existentes como o de email para envio de feedback quando quero fazer manual. modal de trasicao com opcao de envio automatico para disparo dos feedbacks              
+personalizados talvez. modal de conclusa/placement seria um adicional? e a mensagem de agradecimento para o candidato? acho que a duvida reside ai, sao algumas etapas dados do        
+candidato, envio de mensagem de parabens com possibilidade de customizacao, envio de feedback personalizado e automatizado para todos os candidatos ou de maneira manual e             
+padronizada. alteracao do status da vaga (isso no caso de placement). no caso de cancelamento eu vou em editar e altero e abre um modal com o motivo? e pausa a mesma coisa? e depois  
+abrre o modal para envio automatizado e personalizado ou escolho o manual e abre o modal de envio de email/whatsapp para disparo manual e padronizado? para vagas pausadas o mesmo? e  
+se eu altero o status (pausar ou cancelar/fechar) pelo cabecalho seria este mesmo processo?                                                                                            
+
+● Boa pergunta — é exatamente aqui que está o nó. Vamos pensar juntos antes de qualquer plano de implementação.
+
+  ---
+  ANÁLISE DE FLUXOS — Modelo UX + Feature Impact
+
+  O PRINCÍPIO QUE DEVE GUIAR TUDO
+
+  Evitar criar novos modais desnecessariamente. A plataforma já tem:
+  - JobStatusModal — pausa/reativação (com UI de notificações já pronta)
+  - CloseVacancyModal — fechamento com mensagem para contratado + demais
+  - CandidateDecisionFlowModal — confirm_hire (placeholder hoje)
+  - O padrão de envio de email/WhatsApp já está em JobStatusModal (template + canal + texto)
+
+  A questão central é: quais desses reusar, quais expandir, e o que realmente precisa ser novo.
+
+  ---
+  FLUXO 1 — PAUSA DE VAGA
+
+  Pontos de entrada: badge do header | botão na actions bar | editar vaga → mudar status
+  → Todos abrem o mesmo modal
+
+  JobStatusModal (isPauseMode=true) já existe e já tem:
+  - Seleção de motivo (dropdown)
+  - Checkbox "notificar recrutadores"
+  - Checkbox "notificar candidatos em processo" com template selector
+
+  O que está faltando é só o wiring:
+  - Passar pause_reason + notify_candidates + mensagem para o endpoint bulk/pause
+  - Salvar pause_reason no banco (campo que não existe)
+  - Backend processar a notificação via Celery
+
+  Conclusão: Nenhum modal novo. Só wiring backend + migration com campo pause_reason.
+
+  ---
+  FLUXO 1B — REATIVAÇÃO
+
+  JobStatusModal (isPauseMode=false) já existe.
+  Mesma lógica: adicionar opção de notificar candidatos que processo retomou.
+  Conclusão: Zero componente novo.
+
+  ---
+  FLUXO 2 — CANCELAMENTO DE VAGA
+
+  O usuário pergunta: "vou em editar e altero → abre modal com motivo?"
+
+  Sim — e este é o padrão mais limpo:
+
+  Editar vaga → campo status → seleciona "Cancelada"
+                OU
+  Badge header → dropdown → "Cancelar Vaga"
+                ↓
+    Mesmo modal: JobStatusModal em novo modo cancel
+                 (ou modal separado CancelJobModal — ver análise abaixo)
+
+  A dúvida real: usar JobStatusModal com um terceiro modo (isCancel=true) ou criar CancelJobModal?
+
+  Recomendação: JobStatusModal com modo cancel porque:
+  - O padrão visual é idêntico: motivo (obrigatório) + listagem de candidatos afetados + notificação
+  - A diferença é o tom (irreversível, ação destrutiva — botão vermelho) e as opções de motivo
+  - Reaproveita toda a lógica de template + canal já implementada
+
+  O modal neste modo mostraria:
+  1. Motivo do cancelamento (obrigatório): headcount freeze, budget, reestruturação, duplicada, outra
+  2. Candidatos afetados: lista com contador
+  3. Notificação para candidatos: toggle + template editável + canal
+  4. Botão destrutivo vermelho: "Cancelar Vaga"
+
+  ---
+  FLUXO 3 — FECHAMENTO E PLACEMENT
+
+  Aqui está a maior complexidade. O usuário identificou corretamente as etapas:
+
+  1. Dados de contratação (salary, start date, bônus)
+  2. Mensagem de parabéns para o contratado (com customização)
+  3. Feedback para os demais (automático personalizado OU manual padronizado)
+  4. Alteração do status da vaga → Concluída
+
+  A questão é: como encadear essas etapas?
+
+  Proposta de arquitetura em dois momentos distintos:
+
+  MOMENTO A — Confirmar a contratação (ação do Kanban)
+
+  Arrastar candidato → coluna "Contratado"
+          ↓
+  PlacementModal (NOVO — mas pequeno e focado)
+    • Dados de placement: salário final, tipo contrato, data início, bônus/notas
+    • Botão: "Confirmar Contratação"
+          ↓
+    Salva Placement no banco
+    Move candidato para stage=hired
+    Pergunta inline no mesmo modal:
+    "Deseja encerrar o processo seletivo agora?"  [Sim] [Depois]
+          ↓ se Sim
+    Abre CloseVacancyModal (encadeado automaticamente)
+
+  MOMENTO B — Comunicações de fechamento
+
+  Este é o CloseVacancyModal enhanced em dois steps:
+
+  CloseVacancyModal
+    ├── Step 1: Mensagem para o candidato contratado
+    │     • Template pré-preenchido: "Parabéns, [nome]! Você foi selecionado..."
+    │     • Campo editável para customizar
+    │     • Inclui: data de início, próximos passos (editável)
+    │     • Canal: Email | WhatsApp | Ambos
+    │     • [Pular] ou [Próximo]
+    │
+    └── Step 2: Feedback para os demais candidatos
+          • Toggle:
+            ○ "Automático — LIA personaliza por candidato" → apenas confirmar, envia em background
+            ● "Manual — usar modelo padrão" → abre campo de edição de template
+          • Lista de candidatos (todos selecionados por padrão)
+          • Canal: Email | WhatsApp | Ambos
+          • [Enviar e Finalizar]
+
+  Por que esse encadeamento funciona:
+  - PlacementModal é focado: só captura dados de negócio (salary, date, bonus)
+  - CloseVacancyModal fica responsável pelo que já era sua função: comunicações
+  - O usuário pode confirmar o placement sem fechar a vaga (headcount > 1)
+  - Se fechar "Depois", o CloseVacancyModal pode ser aberto manualmente pelo badge/header
+
+  A mensagem de agradecimento para o contratado:
+
+  Está no Step 1 do CloseVacancyModal. Já há estrutura para isso hoje — só precisa de template pré-preenchido e campo editável. Não é um modal separado.
+
+  ---
+  FLUXO 4 — FECHAMENTO SEM PLACEMENT
+
+  Badge header → "Fechar sem Placement"
+       OU
+  Editar vaga → status → "Concluída"
+          ↓
+  JobStatusModal em modo "close_no_placement"
+    (ou o mesmo CancelJobModal com motivo diferente)
+    • Motivo: ciclo_esgotado | contratacao_interna | stand_by | outro
+    • Se stand_by → sugerir "Pausar" ao invés de fechar
+    • Notificação para candidatos
+          ↓ se confirmar
+    Abre CloseVacancyModal só com Step 2 (sem Step 1 do contratado)
+
+  ---
+  FLUXO 5 — BADGE DE STATUS NO HEADER
+
+  O badge hoje só exibe. A questão é: clique abre dropdown ou vai para editar?
+
+  Recomendação: dropdown de transições rápidas diretamente no badge.
+
+  Por quê? Porque "ir em editar" para pausar uma vaga é muito passos para uma ação operacional comum. O recrutador faz isso frequentemente.
+
+  Click no badge → v-menu com ações disponíveis por status:
+
+    [Ativa]   → ⏸ Pausar Processo
+                🏆 Fechar com Placement
+                📋 Fechar sem Placement
+                🚫 Cancelar Vaga
+
+    [Pausada] → ▶ Reativar
+                🚫 Cancelar Vaga
+
+    [Rascunho]→ 📤 Publicar Vaga
+                🚫 Cancelar Rascunho
+
+    [Concluída/Cancelada] → 📦 Arquivar
+
+  Cada opção abre o modal correspondente (os mesmos flows acima). O badge não executa nada diretamente — só roteia para o modal correto.
+
+  ---
+  SÍNTESE: O QUE PRECISA SER CRIADO vs REAPROVEITADO
+
+  ┌────────────────────────────┬──────────────────────────────────┬───────────────────────────────────────┐
+  │        O que fazer         │               Como               │              Componente               │
+  ├────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────┤
+  │ Pausa com notificação      │ Wiring do que existe             │ JobStatusModal (só backend + campos)  │
+  ├────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────┤
+  │ Reativação com notificação │ Wiring do que existe             │ JobStatusModal (idem)                 │
+  ├────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────┤
+  │ Cancelamento               │ Novo modo no JobStatusModal      │ Modo cancel + botão destrutivo        │
+  ├────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────┤
+  │ Fechamento sem placement   │ Novo modo no JobStatusModal      │ Modo close_no_placement               │
+  ├────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────┤
+  │ Dados de placement         │ Novo modal pequeno               │ PlacementModal (salary, date, bonus)  │
+  ├────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────┤
+  │ Mensagem ao contratado     │ Enhance CloseVacancyModal step 1 │ Já tem estrutura, precisa de template │
+  ├────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────┤
+  │ Feedback demais candidatos │ Enhance CloseVacancyModal step 2 │ Toggle auto/manual                    │
+  ├────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────┤
+  │ Badge interativo           │ Novo dropdown no badge           │ JobStatusBadge com v-menu             │
+  └────────────────────────────┴──────────────────────────────────┴───────────────────────────────────────┘
+
+  Componente 100% novo necessário: apenas PlacementModal (pequeno, 1 step de dados) e o dropdown do badge.
+  Tudo mais é evolução do que existe.
+
+  ---
+  FEATURE IMPACT — 12 DIMENSÕES
+
+  ┌─────┬───────────────────┬──────────┬───────────────────────────────────────────────────────────────────────────────────────────────┐
+  │  #  │     Dimensão      │ Impacto  │                                            Por quê                                            │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 1   │ Modelo de dados   │ 🔴 Alto  │ Novo modelo Placement + campos pause_reason/cancel_reason/close_reason em job_vacancies       │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 2   │ API REST          │ 🟡 Médio │ POST /placements novo; enhance bulk/pause, bulk/resume, PATCH status, POST /close             │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 3   │ Agentes LIA       │ 🟡 Médio │ close_job tool conectar ao Placement; send_gate_feedback no fechamento                        │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 4   │ Frontend UI       │ 🟡 Médio │ 1 modal novo pequeno (PlacementModal) + enhance de 2 modais existentes + badge dropdown       │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 5   │ Comunicações      │ 🔴 Alto  │ 4 novos templates (pausa, reativação, cancelamento, parabéns contratado) + toggle auto/manual │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 6   │ ATS sync          │ 🟡 Médio │ Wire automático Kanban → on_candidate_hired → sync                                            │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 7   │ LGPD / Compliance │ 🟡 Médio │ final_salary é dado sensível: role-gated, PII masking em logs                                 │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 8   │ Fairness          │ 🟢 Baixo │ Feedback construtivo deve passar por FairnessGuard                                            │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 9   │ Multi-tenancy     │ 🟢 Baixo │ Padrão já estabelecido — apenas seguir                                                        │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 10  │ Testes            │ 🟡 Médio │ ~40-50 novos testes                                                                           │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 11  │ Portabilidade Vue │ 🟡 Médio │ PlacementModal.vue + enhance dos 2 modais existentes                                          │
+  ├─────┼───────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 12  │ Design System     │ 🟢 Baixo │ Seguir padrões de modal existentes                                                            │
+  └─────┴───────────────────┴──────────┴───────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  ---
+  BLOQUEANTE QUE DEVE VIR PRIMEIRO
+
+  Tudo depende de uma migration:
+
+  -- job_vacancies
+  ADD COLUMN pause_reason   VARCHAR(100)
+  ADD COLUMN cancel_reason  VARCHAR(100)
+  ADD COLUMN close_reason   VARCHAR(100)
+
+  -- tabela nova: placements
+  id, company_id, job_vacancy_id, candidate_id, vacancy_candidate_id,
+  final_salary (Numeric, role-gated), contract_type, start_date,
+  bonus_details (JSON), notes, created_by, created_at, ats_synced
+
+  Sem isso, os flows A, B e C não têm onde persistir dados essenciais.
+
+  ---
+  Faz sentido esta leitura? Quer aprofundar algum dos fluxos antes de definir o plano de implementação?
+
+✻ Brewed for 2m 0s
+
+❯ gosto da ideia. so nao ficou claro para mim se você vai mostrar a lista de candidatos com seus nomes etc no modal? tenho duvidas sobre a experiencia e complexidade. se a vgativer   
+500 candidatos, como fazer? entendi corretamente?                                                                                                                                      
+
+● Boa pergunta — e você tocou num ponto crítico de UX que precisa ser resolvido antes de qualquer implementação.
+
+  ---
+  O PROBLEMA DA LISTA DE CANDIDATOS NO MODAL
+
+  O que existe hoje no CloseVacancyModal
+
+  O modal atual mostra uma lista com checkbox por candidato. Isso funciona para vagas com 5-15 pessoas, mas quebra completamente com 50, 200 ou 500 candidatos.
+
+  Ninguém vai revisar 500 nomes num modal. A experiência seria inutilizável.
+
+  ---
+  Como o mercado resolve
+
+  Greenhouse, Lever, Gupy não mostram lista individual no momento do fechamento. O que mostram é:
+
+  - Um contador: "487 candidatos receberão esta mensagem"
+  - Um resumo por stage: "30 em Triagem · 15 em Entrevista RH · 5 em Short List · 200 em Funil"
+  - A ação se aplica a todos os que não estão em stage terminal (reprovado/desistiu/contratado)
+
+  A seleção individual só aparece em casos muito específicos, como "rejeitar candidatos de uma etapa específica" — não no fechamento geral.
+
+  ---
+  Proposta revisada para o modal de feedback
+
+  CloseVacancyModal — Step 2: Feedback para Demais Candidatos
+
+  ┌─────────────────────────────────────────────────────┐
+  │  Candidatos que receberão o feedback                │
+  │                                                     │
+  │  ┌──────────────────────────────────────────────┐   │
+  │  │  📊  487 candidatos                          │   │
+  │  │                                              │   │
+  │  │  Funil / Sourcing      ████  312             │   │
+  │  │  Triagem               ██    98              │   │
+  │  │  Entrevista RH         █     42              │   │
+  │  │  Short List            ▌     20              │   │
+  │  │  Proposta              ▌     15              │   │
+  │  │                                              │   │
+  │  │  [excluir uma etapa ▾]   [ver lista →]       │   │
+  │  └──────────────────────────────────────────────┘   │
+  │                                                     │
+  │  Como enviar?                                       │
+  │  ○ Automático — LIA gera mensagem por candidato     │
+  │  ● Manual — usar modelo padrão                      │
+  │                                                     │
+  │  [campo de template editável]                       │
+  │  "Olá {nome}, agradecemos sua participação..."      │
+  │                                                     │
+  │  Canal: [Email] [WhatsApp] [Ambos]                  │
+  │                                                     │
+  │  [← Voltar]              [Enviar e Finalizar →]     │
+  └─────────────────────────────────────────────────────┘
+
+  ---
+  As três ações possíveis na lista
+
+  1. "Excluir uma etapa" — dropdown para excluir candidatos de um stage inteiro
+  ex: "Não enviar para candidatos do Funil/Sourcing" — faz sentido quando são leads frios que nunca interagiram de verdade
+
+  2. "Ver lista →" — abre um painel lateral (drawer) com a lista paginada, apenas para conferência. Não é necessário para enviar — é opcional.
+
+  3. Nada — confirma para todos. Que é o caminho feliz da maioria dos casos.
+
+  ---
+  Modo Automático vs Manual — como fica
+
+  ┌──────────────────────┬───────────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────────────────┐
+  │                      │                         Automático (LIA)                          │                      Manual (template)                      │
+  ├──────────────────────┼───────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ O que o recrutar faz │ Só confirma                                                       │ Edita o template                                            │
+  ├──────────────────────┼───────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ O que acontece       │ LIA gera mensagem individual por candidato em background (Celery) │ Mesma mensagem para todos, com {nome} e {vaga} substituídos │
+  ├──────────────────────┼───────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Exibe lista?         │ Não — só o contador e resumo por stage                            │ Não — só o contador e resumo por stage                      │
+  ├──────────────────────┼───────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Quando faz sentido   │ Processo seletivo de qualidade, poucos candidatos chegaram longe  │ Alto volume, funil amplo, candidatos de stages iniciais     │
+  └──────────────────────┴───────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────┘
+
+  No modo automático, o recrutar não precisa ver nada — ele confia que a LIA vai personalizar. O trabalho pesado vai para o background.
+
+  ---
+  Resumo da decisão de UX
+
+  - Nunca mostrar lista individual no modal de fechamento — impraticável acima de 20 candidatos
+  - Mostrar: contador + breakdown por stage — informativo, rápido, escala para qualquer volume
+  - Dar controle por stage, não por indivíduo — "excluir sourcing" é suficiente para 99% dos casos
+  - Ver lista individual é função de relatório/dashboard, não do modal de fechamento
+
+  ---
+  Isso resolve a sua dúvida? Quer agora fechar o modelo completo dos 5 fluxos neste formato e depois montar o plano de implementação?
+
+✻ Crunched for 44s
+
+❯ eu gosto muito da ideia so quero seguir o padrao parecido de modal com o chat da lia na lateral direita, o modal pode ser maior mas esse padrao estilo conversacional precisa ser    
+preservado. estilo modal de transicao. a escolha dos canais email shatsapp ambos é no modal de envio de mensagem que é manual. neste caso é sempre para ambos os canais como default   
+concorda?                                                                                                                                                                              
+
+● Concordo totalmente — tanto no padrão visual quanto no default de canais.
+
+  ---
+  MODELO REVISADO — COM PADRÃO CONVERSACIONAL
+
+  Por que o padrão do modal de transição funciona aqui
+
+  O modal de transição (e o chat da LIA) tem algumas características que fazem sentido para estes fluxos:
+  - Painel lateral direito — não interrompe o contexto visual da vaga/kanban
+  - Um foco por step — não sobrecarrega com tudo de uma vez
+  - Estilo guiado — sente como uma conversa, não um formulário
+
+  Para placement e fechamento isso é ideal porque são fluxos com etapas sequenciais com decisões no meio.
+
+  ---
+  CANAIS — LÓGICA SIMPLIFICADA
+
+  Sua intuição está certa:
+
+  ┌──────────────────┬────────────────────────────────────────────────────────┬──────────────────────────────────────────────────┐
+  │       Modo       │                         Canal                          │                   Onde decide                    │
+  ├──────────────────┼────────────────────────────────────────────────────────┼──────────────────────────────────────────────────┤
+  │ Automático (LIA) │ Ambos por default — email + WhatsApp quando disponível │ Não pergunta                                     │
+  ├──────────────────┼────────────────────────────────────────────────────────┼──────────────────────────────────────────────────┤
+  │ Manual           │ Recrutador escolhe                                     │ Dentro do modal de envio de mensagem (existente) │
+  └──────────────────┴────────────────────────────────────────────────────────┴──────────────────────────────────────────────────┘
+
+  Isso simplifica muito o flow principal. O modal de fechamento não precisa de seletor de canal. Quem tem essa responsabilidade é o modal de composição de mensagem, que o recrutador
+  já conhece e usa para outras comunicações.
+
+  ---
+  MODELO REVISADO DOS FLUXOS EM PAINEL LATERAL
+
+  PAUSA / CANCELAMENTO / FECHAMENTO SEM PLACEMENT
+
+  (mesma estrutura, contexto muda)
+
+  Painel lateral direito — estilo conversacional
+
+  ┌──────────────────────────────────────┐
+  │  ⏸  Pausar Processo Seletivo         │
+  │  Desenvolvedor Full Stack · Varejo   │
+  ├──────────────────────────────────────┤
+  │                                      │
+  │  Por que está pausando?              │
+  │  ┌────────────────────────────────┐  │
+  │  │ Revisão de headcount        ▾  │  │
+  │  └────────────────────────────────┘  │
+  │                                      │
+  │  ──────────────────────────────────  │
+  │                                      │
+  │  487 candidatos no processo          │
+  │  Funil 312 · Triagem 98 · RH 42 ...  │
+  │                                      │
+  │  Notificar candidatos?               │
+  │  ○ Sim — enviar aviso de pausa       │
+  │  ● Não                               │
+  │                                      │
+  │  [Se Sim → "Compor mensagem →"]      │
+  │   abre modal de envio existente      │
+  │                                      │
+  │  ──────────────────────────────────  │
+  │                                      │
+  │            [Cancelar] [Pausar Vaga]  │
+  └──────────────────────────────────────┘
+
+  "Compor mensagem →" abre o modal de envio existente (com template, canal, preview) — o mesmo que o recrutador já usa para comunicações manuais. Nada novo aqui.
+
+  ---
+  PLACEMENT — CONFIRMAR CONTRATAÇÃO
+
+  Painel lateral direito
+
+  ┌──────────────────────────────────────┐
+  │  🏆  Confirmar Contratação           │
+  │  Desenvolvedor Full Stack · Varejo   │
+  ├──────────────────────────────────────┤
+  │                                      │
+  │  Candidato selecionado               │
+  │  ● João Silva  · Short List          │
+  │                                      │
+  │  Dados da contratação                │
+  │  Salário final     R$ __________     │
+  │  Tipo de contrato  [CLT          ▾]  │
+  │  Data de início    [__/__/____]      │
+  │  Bônus / obs.      ________________  │
+  │                                      │
+  │  ──────────────────────────────────  │
+  │                                      │
+  │  Encerrar processo após esta         │
+  │  contratação?                        │
+  │  ● Sim                               │
+  │  ○ Não (headcount múltiplo)          │
+  │                                      │
+  │       [Cancelar] [Confirmar →]       │
+  └──────────────────────────────────────┘
+
+  Ao confirmar → o painel avança para o próximo step no mesmo painel (não abre outro modal).
+
+  ---
+  STEP SEGUINTE — MENSAGEM PARA O CONTRATADO
+
+  Painel lateral direito — continua
+
+  ┌──────────────────────────────────────┐
+  │  🏆  Confirmar Contratação  ✓        │  ← step anterior confirmado
+  │  ✉  Mensagem ao contratado          │  ← step atual
+  ├──────────────────────────────────────┤
+  │                                      │
+  │  Enviar parabéns para João Silva?    │
+  │                                      │
+  │  ● Sim — enviar mensagem             │
+  │  ○ Não agora                         │
+  │                                      │
+  │  [Se Sim → "Compor mensagem →"]      │
+  │   abre modal de envio existente      │
+  │   (template de parabéns pré-carregado│
+  │    com nome, cargo, data de início)  │
+  │                                      │
+  │  ──────────────────────────────────  │
+  │                                      │
+  │                    [← Voltar] [→]    │
+  └──────────────────────────────────────┘
+
+  ---
+  STEP SEGUINTE — FEEDBACK PARA OS DEMAIS
+
+  Painel lateral direito — continua
+
+  ┌──────────────────────────────────────┐
+  │  🏆  Confirmar Contratação  ✓        │
+  │  ✉  Mensagem ao contratado  ✓        │
+  │  📋 Feedback demais candidatos       │  ← step atual
+  ├──────────────────────────────────────┤
+  │                                      │
+  │  487 candidatos ativos               │
+  │  ┌────────────────────────────────┐  │
+  │  │ Funil          312             │  │
+  │  │ Triagem         98             │  │
+  │  │ Entrevista RH   42             │  │
+  │  │ Short List      20             │  │
+  │  │ Proposta        15             │  │
+  │  │                [excluir etapa] │  │
+  │  └────────────────────────────────┘  │
+  │                                      │
+  │  Como enviar?                        │
+  │  ● Automático — LIA personaliza      │
+  │    Todos os canais disponíveis ✓     │
+  │    [Confirmar e enviar em background]│
+  │                                      │
+  │  ○ Manual — modelo padrão            │
+  │    [Compor mensagem →]               │
+  │    abre modal de envio existente     │
+  │                                      │
+  │  ──────────────────────────────────  │
+  │                                      │
+  │            [← Voltar] [Finalizar]    │
+  └──────────────────────────────────────┘
+
+  ---
+  O QUE FICA CLARO COM ESTE MODELO
+
+  O painel de placement/fechamento é um wizard conversacional com 3 steps sequenciais. Não pergunta sobre canal — delega isso ao modal de envio existente.
+
+  O modal de envio de mensagem (existente, já tem canal/template/preview) é chamado como um sub-fluxo opcional em dois momentos: mensagem ao contratado + feedback manual. O recrutador
+   já conhece este modal.
+
+  Modo automático não precisa de modal de mensagem — só confirma e vai para background. Canal = ambos por default, sem perguntar.
+
+  Pausa e cancelamento seguem o mesmo padrão de painel lateral simples (1 step): motivo + opção de notificar → se notificar, abre modal de envio existente.
+
+  ---
+  REUTILIZAÇÃO REAL
+
+  ┌─────────────────────┬─────────────────────────────────────────────┬────────────────────────────┐
+  │        Flow         │          Modal de envio existente?          │      Novo componente?      │
+  ├─────────────────────┼─────────────────────────────────────────────┼────────────────────────────┤
+  │ Pausa               │ Opcional (se notificar)                     │ Não                        │
+  ├─────────────────────┼─────────────────────────────────────────────┼────────────────────────────┤
+  │ Reativação          │ Opcional (se notificar)                     │ Não                        │
+  ├─────────────────────┼─────────────────────────────────────────────┼────────────────────────────┤
+  │ Cancelamento        │ Opcional (se notificar)                     │ Não                        │
+  ├─────────────────────┼─────────────────────────────────────────────┼────────────────────────────┤
+  │ Placement           │ Opcional (msg contratado + feedback manual) │ Painel placement (pequeno) │
+  ├─────────────────────┼─────────────────────────────────────────────┼────────────────────────────┤
+  │ Feedback automático │ Não precisa                                 │ Não                        │
+  └─────────────────────┴─────────────────────────────────────────────┴────────────────────────────┘
+
+  Faz sentido assim? Posso agora montar o modelo formal completo para base do plano de implementação?
