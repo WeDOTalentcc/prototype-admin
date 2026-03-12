@@ -917,7 +917,8 @@
       "Bash(python -c \"\nfrom lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin\nprint\\('_fairness_pre_check exists:', hasattr\\(EnhancedAgentMixin, '_fairness_pre_check'\\)\\)\n\nfrom app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent\nprint\\('TalentReActAgent mixin:', issubclass\\(TalentReActAgent, EnhancedAgentMixin\\)\\)\n\nimport inspect, asyncio\nclass _TestAgent\\(EnhancedAgentMixin\\):\n    _enhanced_domain = 'test'\n\nagent = _TestAgent\\(\\)\nresult = asyncio.run\\(agent._fairness_pre_check\\('somente homens para esta vaga'\\)\\)\nprint\\('blocked discriminatory input:', result is not None\\)\nresult2 = asyncio.run\\(agent._fairness_pre_check\\('dev Python senior'\\)\\)\nprint\\('clean input returns None:', result2 is None\\)\n\" 2>&1)",
       "Bash(python -c \"from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin; print\\('OK:', hasattr\\(EnhancedAgentMixin, '_fairness_pre_check'\\)\\)\")",
       "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q 2>&1)",
-      "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q 2>&1; echo \"EXIT:$?\")"
+      "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q 2>&1; echo \"EXIT:$?\")",
+      "Bash(python -m pytest tests/unit/test_fairness_guard_mixin.py --tb=short -q --no-cov 2>&1)"
     ]
   }
 }
