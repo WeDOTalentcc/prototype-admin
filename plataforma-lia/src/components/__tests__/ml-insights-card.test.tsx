@@ -92,8 +92,7 @@ describe("MLInsightsCard", () => {
   })
 
   it("exibe faixa salarial quando disponível", async () => {
-    const { useMLPredictions } = require("@/hooks/use-ml-predictions")
-    useMLPredictions.mockReturnValue({
+    mockUseML.mockReturnValue({
       ...defaultHookReturn,
       salary: {
         suggested_min: 10000,
@@ -115,8 +114,7 @@ describe("MLInsightsCard", () => {
   })
 
   it("exibe mensagem de erro e botão de refresh", () => {
-    const { useMLPredictions } = require("@/hooks/use-ml-predictions")
-    useMLPredictions.mockReturnValue({
+    mockUseML.mockReturnValue({
       ...defaultHookReturn,
       error: "Erro de conexão com o backend",
     })

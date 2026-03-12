@@ -254,6 +254,8 @@ Serviço central: `app/services/notification_service.py`
 - **P3-3 Policy Templates por Setor** (12/03/2026): Proxy FE `src/app/api/backend-proxy/policy-engine/apply-sector/route.ts`. UI em `src/app/admin/configuracoes/politicas/page.tsx` — seção "Templates por Setor" com Select (6 setores) + botão "Aplicar Template".
 - **P3-4 ML Preditiva FE** (12/03/2026): `src/hooks/use-ml-predictions.ts` — `useMLPredictions()` composable com `fetchInsights`, `fetchTimeToFill`, `fetchSalary`. Proxies: `src/app/api/backend-proxy/ml/insights/route.ts`, `ml/predict/time-to-fill/route.ts`, `ml/predict/salary/route.ts`.
 - **Testes P3** (12/03/2026): BE: `tests/unit/test_p3_features.py` — 13 testes (beat schedule, task registration, JD upload validations). FE Vitest: `src/hooks/__tests__/use-daily-briefing.test.ts` (6 testes) + `src/hooks/__tests__/use-ml-predictions.test.ts` (8 testes).
+- **Short List UI Wiring** (12/03/2026): `src/components/pages/job-kanban-page.tsx` — `useShortList` importado e wired com `_companyIdForSL`/`_jobIdForSL`. `handleToggleShortList()` cria lista automaticamente se não existir (auto-create). DropdownMenuItem "Adicionar à Short List" com `Bookmark` icon adicionado ao menu de ações de cada candidato. State: `shortListedCandidateIds: Set<string>` + `activeShortListId: string | null`. 6 testes em `src/hooks/__tests__/use-short-list.test.ts`.
+- **MLInsightsCard + P4 wiring** (12/03/2026): `src/components/ml-insights-card.tsx` — card expansível de previsões IA (time-to-fill, salary range, market percentile). Lazy-fetch: só chama API ao expandir, cache local (`hasFetched`). Wired em `job-kanban-page.tsx` entre header da vaga e tabs de navegação. 7 testes em `src/components/__tests__/ml-insights-card.test.tsx`.
 
 ---
 

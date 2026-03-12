@@ -26,8 +26,8 @@
 
 | Métrica | Valor |
 |:--------|:------|
-| Domínios de agente | 12 (sourcing, job_management, cv_screening, pipeline, recruiter_assistant ×3, hiring_policy, policy, analytics, communication, automation, ats_integration) |
-| Agentes ReAct registrados | 11 |
+| Domínios de agente | 14 (sourcing, job_management, cv_screening, pipeline, recruiter_assistant ×3, hiring_policy, policy, interview_scheduling, analytics, communication, automation, ats_integration) |
+| Agentes registrados | 12 (11 ReAct + 1 Graph/LangGraph) |
 | System prompts (domínio) | 16 arquivos |
 | Tool registries | 12 domínio + 7 shared |
 | Endpoints API (.py) | 210 arquivos |
@@ -143,6 +143,25 @@
 | Agent | `ATSIntegrationReActAgent` → `app/domains/ats_integration/agents/ats_integration_react_agent.py` |
 | System Prompt | `app/domains/ats_integration/agents/ats_integration_system_prompt.py` |
 | Tool Registry | `app/domains/ats_integration/agents/ats_integration_tool_registry.py` |
+
+### Policy
+| Camada | Componente |
+|:-------|:-----------|
+| Agent | `PolicyAgent` → `app/domains/policy/agents/agent.py` (L1-L371) |
+| System Prompt | `app/domains/policy/agents/system_prompt.py` (L1-L55) |
+| Tool Registry | `app/domains/policy/agents/tool_registry.py` (L1-L8) |
+| Stage Context | `app/domains/policy/agents/stage_context.py` (L1-L306) |
+| **Nota** | Domínio duplica funcionalidade de `hiring_policy` — ver ACH-016 |
+
+### Interview Scheduling (Graph Agent)
+| Camada | Componente |
+|:-------|:-----------|
+| Agent | `InterviewGraph` → `app/domains/interview_scheduling/agents/interview_graph.py` (L1-L381) — **Graph agent** (LangGraph), não ReAct |
+| Nodes | `app/domains/interview_scheduling/agents/interview_scheduling_nodes.py` (L1-L418) |
+| System Prompt | `app/prompts/domains/interview_scheduling.yaml` (L1-L70) |
+| State Schema | `app/schemas/interview_scheduling_state.py` (L1-L181) |
+| Services | `scheduling_service.py` (L1-L1059), `calendar_service.py` (L1-L423), `deepgram_service.py` (L1-L350), `interview_transcript_analysis_service.py` (L1-L1035) |
+| Models | `interview.py` (L1-L163), `self_scheduling.py` (L1-L175) |
 
 ## 1.4 Mapa de Tools por Scope
 
@@ -319,46 +338,76 @@
 - Circuit breaker: AUSENTE nos ATS clients — grep por `circuit|Circuit` em `gupy.py`, `pandape.py`, `stackone.py`, `merge.py` retorna 0 resultados em todos
 - Audit trail: AUSENTE — grep por `audit_service|log_decision` em `ats_integration_react_agent.py` retorna 0 resultados
 
+## 2.13 Policy Agent
+
+**O que faz:**
+- Agente genérico de políticas (duplica parcialmente `hiring_policy`) — `app/domains/policy/agents/agent.py` (L1-L371)
+- Avaliação de conformidade com políticas empresariais
+
+**Problemas:**
+- Anti-sycophancy: OK — presente em `system_prompt.py` (L1-L55)
+- FairnessGuard: OK — chamada manual em `agent.py`
+- Audit trail: AUSENTE — grep por `audit_service|log_decision` em `agent.py` (L1-L371) retorna 0 resultados
+- HITL: AUSENTE — sem gate de revisão humana
+- Domínio duplicado com `hiring_policy` — ver ACH-016
+
+## 2.14 Interview Scheduling Agent (Graph)
+
+**O que faz:**
+- Agendamento automatizado de entrevistas — `app/domains/interview_scheduling/agents/interview_graph.py` (L1-L381)
+- **Arquitetura Graph (LangGraph)**, não ReAct — usa nós discretos em `interview_scheduling_nodes.py` (L1-L418)
+- Integração com calendários via `calendar_service.py` (L1-L423)
+- Transcrição de entrevistas via `deepgram_service.py` (L1-L350) e análise via `interview_transcript_analysis_service.py` (L1-L1035)
+- Self-scheduling pelo candidato via `self_scheduling.py` (L1-L175)
+
+**Problemas:**
+- Anti-sycophancy: NÃO AVALIADO — usa prompt YAML (`interview_scheduling.yaml`, L1-L70), padrão diferente dos system prompts .py
+- FairnessGuard: AUSENTE — sem referência a `fairness_guard` em `interview_graph.py` (L1-L381) ou `interview_scheduling_nodes.py` (L1-L418)
+- Audit trail: AUSENTE — grep por `audit_service|log_decision` em `interview_graph.py` (L1-L381) retorna 0 resultados
+- HITL: AUSENTE — agendamento pode ocorrer sem revisão humana
+- Few-shot: AUSENTE — `interview_scheduling.yaml` (70 linhas) sem exemplos conversacionais
+- Circuit breaker: NÃO VERIFICADO — `scheduling_service.py` (L1-L1059) e `calendar_service.py` (L1-L423) fazem chamadas externas sem circuit breaker visível
+
 ---
 
-# SEÇÃO 3: AUDITORIA MULTI-DIMENSIONAL (14 Dimensões × 12 Agentes)
+# SEÇÃO 3: AUDITORIA MULTI-DIMENSIONAL (14 Dimensões × 14 Agentes)
 
 ## 3.1 Tabela Resumo — 14 Dimensões
 
-| Dimensão | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline Trans | Policy | Analytics | Communic. | Automation | ATS Integ. |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1. Wiring/Integração | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| 2. Data Flow | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| 3. UI/UX + Design System | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
-| 4. Backend/API | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| 5. Types/Contracts | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
-| 6. User Flow | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | OK | PARCIAL | PARCIAL |
-| 7. Consistência | PARCIAL | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
-| 8. Documentação | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
-| 9. Arquitetura de Agentes | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
-| 10. Qualidade LLM | **FALHA** | OK | **FALHA** | PARCIAL | OK | OK | OK | OK | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
-| 11. Serviços IA/Integrações | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** |
-| 12. Governança/Resiliência | **FALHA** | OK | OK | PARCIAL | OK | PARCIAL | OK | OK | PARCIAL | **FALHA** | PARCIAL | **FALHA** |
-| 13. Segurança/Dados | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
-| 14. Performance/Escalab. | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| Dimensão | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline Trans | H.Policy | Policy | Interv.Sched | Analytics | Communic. | Automation | ATS Integ. |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1. Wiring/Integração | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | OK | OK | OK | OK | OK |
+| 2. Data Flow | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | OK | OK | OK | OK | OK |
+| 3. UI/UX + Design System | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 4. Backend/API | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| 5. Types/Contracts | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 6. User Flow | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | OK | PARCIAL | OK | PARCIAL | PARCIAL |
+| 7. Consistência | PARCIAL | OK | OK | OK | OK | OK | OK | **FALHA** | PARCIAL | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 8. Documentação | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 9. Arquitetura de Agentes | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 10. Qualidade LLM | **FALHA** | OK | **FALHA** | PARCIAL | OK | OK | OK | OK | PARCIAL | **FALHA** | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
+| 11. Serviços IA/Integrações | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** |
+| 12. Governança/Resiliência | **FALHA** | OK | OK | PARCIAL | OK | PARCIAL | OK | OK | **FALHA** | **FALHA** | PARCIAL | **FALHA** | PARCIAL | **FALHA** |
+| 13. Segurança/Dados | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| 14. Performance/Escalab. | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
 
 ## 3.2 Tabela de Verificações Críticas (Checks Transversais)
 
-| Verificação | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline Trans | Policy | Analytics | Communic. | Automation | ATS Integ. |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Anti-Sycophancy | **FALHA** | OK | **FALHA** | OK | OK | OK | OK | OK | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
-| FairnessGuard Middleware | PARCIAL | OK | OK | OK | OK | OK | OK | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
-| Negation Detection | AUSENTE | AUSENTE | OK | AUSENTE | AUSENTE | AUSENTE | OK | OK | AUSENTE | AUSENTE | AUSENTE | AUSENTE |
-| Confiança Real | **FALHA** | OK | OK | **FALHA** | **FALHA** | **FALHA** | OK | OK | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
-| Circuit Breaker Direto | OK | PARCIAL | PARCIAL | PARCIAL | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | PARCIAL | **FALHA** |
-| Pre-call Budget Check | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| PII Masking | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| Consent Check | N/A | N/A | PARCIAL | N/A | N/A | N/A | N/A | N/A | N/A | PARCIAL | N/A | N/A |
-| Multi-Tenant Isolation | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| Audit Trail | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** | **FALHA** | OK | **FALHA** |
-| Observabilidade | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| Token Tracking | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| HITL Enforcement | **FALHA** | OK | OK | **FALHA** | PARCIAL | PARCIAL | OK | OK | N/A | **FALHA** | PARCIAL | N/A |
+| Verificação | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline Trans | H.Policy | Policy | Interv.Sched | Analytics | Communic. | Automation | ATS Integ. |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Anti-Sycophancy | **FALHA** | OK | **FALHA** | OK | OK | OK | OK | OK | OK | N/A | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
+| FairnessGuard Middleware | PARCIAL | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| Negation Detection | AUSENTE | AUSENTE | OK | AUSENTE | AUSENTE | AUSENTE | OK | OK | AUSENTE | AUSENTE | AUSENTE | AUSENTE | AUSENTE | AUSENTE |
+| Confiança Real | **FALHA** | OK | OK | **FALHA** | **FALHA** | **FALHA** | OK | OK | PARCIAL | **FALHA** | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
+| Circuit Breaker Direto | OK | PARCIAL | PARCIAL | PARCIAL | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | **FALHA** | PARCIAL | PARCIAL | PARCIAL | **FALHA** |
+| Pre-call Budget Check | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| PII Masking | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| Consent Check | N/A | N/A | PARCIAL | N/A | N/A | N/A | N/A | N/A | N/A | PARCIAL | N/A | PARCIAL | N/A | N/A |
+| Multi-Tenant Isolation | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| Audit Trail | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** | **FALHA** | **FALHA** | **FALHA** | OK | **FALHA** |
+| Observabilidade | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| Token Tracking | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| HITL Enforcement | **FALHA** | OK | OK | **FALHA** | PARCIAL | PARCIAL | OK | OK | **FALHA** | **FALHA** | N/A | **FALHA** | PARCIAL | N/A |
 
 ## 3.2 Detalhamento por Dimensão
 
@@ -453,11 +502,11 @@
 **Status:** PARCIAL
 
 - Anti-sycophancy block existe com 3 variantes (OPERATIONAL, FULL, ORCHESTRATOR)
-- **Gap crítico:** 6 de 12 agentes NÃO incluem anti-sycophancy no system prompt
+- **Gap crítico:** 6 de 14 agentes NÃO incluem anti-sycophancy no system prompt (+ interview_scheduling não avaliado — prompt YAML)
 - Few-shot examples: biblioteca extensiva em `app/shared/prompts/examples/`
 - Defensive prompts: ambiguity detection + out-of-scope handling
 - **Gap:** Negation detection não é universal (apenas em cv_screening, pipeline, policy)
-- **Gap:** Confidence calibration ausente em 8 de 12 agentes
+- **Gap:** Confidence calibration ausente em 10 de 14 agentes
 
 ### Dimensão 11 — Serviços IA/Integrações
 
@@ -534,19 +583,19 @@
 ## 4.2 Padrões que Deveriam Ser Universais
 
 ### Nível 1 — Obrigatório em TODOS (hoje ausente em muitos)
-1. **Anti-sycophancy** — Crença #11 exige em TODOS os prompts. Hoje: 6/12 agentes (50%) → **FALHA CRÍTICA**
+1. **Anti-sycophancy** — Crença #11 exige em TODOS os prompts. Hoje: 6/14 agentes (~43%) → **FALHA CRÍTICA**
 2. **FairnessGuard como middleware automático** — Hoje é opt-in via mixin → deveria ser forçado no Orchestrator
-3. **Confidence score em outputs** — Hoje: 4/12 agentes reportam confiança
+3. **Confidence score em outputs** — Hoje: 4/14 agentes reportam confiança
 4. **HITL gate para ações de alto impacto** — Hoje: inconsistente entre agentes
 
 ### Nível 2 — Obrigatório em agentes que tocam candidatos
 1. **Negation detection** — Apenas 3 agentes (cv_screening, pipeline, policy)
 2. **Consent check antes de processar** — Apenas no screening, soft enforcement
-3. **Audit trail em todas as decisões** — 8/12 agentes com trail completo
+3. **Audit trail em todas as decisões** — 8/14 agentes com trail completo (policy e interview_scheduling ausentes)
 
 ### Nível 3 — Desejável para maturidade
-1. **Few-shot examples** — 5/12 agentes com exemplos
-2. **Stage context** — 8/12 agentes com contexto de etapa
+1. **Few-shot examples** — 5/14 agentes com exemplos (interview_scheduling também ausente)
+2. **Stage context** — 8/14 agentes com contexto de etapa
 3. **Métricas por agente** — Prometheus metrics parciais
 
 ## 4.3 Tools Declarados vs Usados
@@ -568,7 +617,7 @@
 
 ## P0 — Crítico (Violação de Inegociáveis)
 
-### ACH-001 — Anti-Sycophancy ausente em 6 de 12 agentes
+### ACH-001 — Anti-Sycophancy ausente em 6+ de 14 agentes
 - **Prioridade:** P0
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-08
@@ -635,7 +684,7 @@
 - **Esforço estimado:** 8h — Backend (Agentes)
 - **Depende de:** Nenhum
 
-### ACH-006 — Audit trail incompleto em 3 agentes
+### ACH-006 — Audit trail incompleto em 5 agentes
 - **Prioridade:** P0
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-05
@@ -643,8 +692,10 @@
   - `analytics_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
   - `communication_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
   - `ats_integration_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
-  - **Nota:** Sourcing TEM audit trail (`sourcing_react_agent.py:L151-L167`, `L333-L348`) — corrigido de 4 para 3 agentes
-- **Descrição:** Crença #8 exige trilha de auditoria em toda saída de agente. 3 agentes não logam decisões no `audit_service`.
+  - `app/domains/policy/agents/agent.py` (L1-L371) — grep por `audit_service|log_decision` retorna 0 resultados
+  - `app/domains/interview_scheduling/agents/interview_graph.py` (L1-L381) — grep por `audit_service|log_decision` retorna 0 resultados
+  - **Nota:** Sourcing TEM audit trail (`sourcing_react_agent.py:L151-L167`, `L333-L348`) — corrigido para 5 agentes
+- **Descrição:** Crença #8 exige trilha de auditoria em toda saída de agente. 5 agentes não logam decisões no `audit_service`.
 - **Impacto se não corrigido:** Decisões de IA sem rastreabilidade — violação EU AI Act (auditabilidade obrigatória).
 - **Esforço estimado:** 6h — Backend (Compliance)
 - **Depende de:** Nenhum
@@ -692,8 +743,8 @@
   - `app/domains/communication/agents/communication_system_prompt.py` (L1-L53) — idem
   - `app/domains/automation/agents/automation_system_prompt.py` (L1-L36) — idem
   - `app/domains/ats_integration/agents/ats_integration_system_prompt.py` (L1-L64) — idem
-  - **Referência positiva:** `app/services/confidence_policy_service.py` — serviço existe com 3 níveis (APPLY_SILENT ≥0.85, APPLY_NOTIFY 0.70-0.84, ASK_USER <0.70), mas 8/12 agentes não o invocam
-- **Descrição:** EU AI Act Art. 13 exige que sistemas de alto risco reportem confiança. 8 de 12 agentes não reportam confidence score nos outputs.
+  - **Referência positiva:** `app/services/confidence_policy_service.py` — serviço existe com 3 níveis (APPLY_SILENT ≥0.85, APPLY_NOTIFY 0.70-0.84, ASK_USER <0.70), mas 10/14 agentes não o invocam
+- **Descrição:** EU AI Act Art. 13 exige que sistemas de alto risco reportem confiança. 10 de 14 agentes não reportam confidence score nos outputs.
 - **Impacto se não corrigido:** Sem confiança, recrutador não sabe quando questionar a IA.
 - **Esforço estimado:** 8h — Backend (LLM/Prompts)
 - **Depende de:** Nenhum
