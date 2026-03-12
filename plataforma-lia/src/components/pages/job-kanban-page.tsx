@@ -9523,8 +9523,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         onClose={() => {
           setShowBigFiveModal(false)
           setSelectedCandidateForModal(null)
+          setScoreModalCandidate(null)
         }}
-        candidate={selectedCandidateForModal}
+        candidate={selectedCandidateForModal || scoreModalCandidate}
       />
 
       {decisionFlowCandidate && (
@@ -9904,13 +9905,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         onClose={() => setShowEnglishTestModal(false)}
         candidate={scoreModalCandidate}
       />
-      {showBigFiveModal && scoreModalCandidate && (
-        <BigFiveModal
-          isOpen={showBigFiveModal}
-          onClose={() => setShowBigFiveModal(false)}
-          candidate={scoreModalCandidate}
-        />
-      )}
 
       {/* UniversalTransitionModal - Modal universal para transições de etapa */}
       <UniversalTransitionModal
