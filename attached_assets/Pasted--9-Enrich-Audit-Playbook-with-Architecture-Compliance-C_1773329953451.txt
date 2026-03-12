@@ -1,0 +1,51 @@
+#9 - Enrich Audit Playbook with Architecture, Compliance & Capabilities
+What & Why
+The self-contained audit playbook at .local/tasks/lia-deep-audit-playbook.md (970 lines, Task #8) covers governance foundations, FairnessGuard, LGPD basics, screening compliance, and agent governance. However, analysis of 5 additional reference documents (~21,000 lines total) revealed ~20 major sections that must be embedded to make the playbook truly comprehensive. Without these, an auditor using only the playbook would miss critical architecture patterns, compliance gaps, legislative requirements, and capability audits.
+
+Done looks like
+The playbook .local/tasks/lia-deep-audit-playbook.md is updated with all sections below embedded directly (no external references needed)
+The document remains self-contained — any agent can run a complete audit using only this file
+All new sections include concrete verification steps, not just descriptions
+The playbook grows to approximately 1800-2200 lines while remaining well-organized
+Existing content is preserved; new content is added in appropriate locations within the document structure
+Out of scope
+Creating separate documents — everything goes into the single playbook file
+Implementing any code fixes — this is documentation only
+Changing the existing report format (PARTE VIII) — only add new audit dimensions/checks to it
+Tasks
+Add Architecture Patterns section (new PARTE or sub-section of PARTE VI) — Embed the 3 Canonical Patterns (ADR-002): ReAct Loop (unpredictable/conversational), LangGraph StateGraph (predictable/auditable), Direct Service (CRUD <2s). Include decision table for when to use each. Add the 4-File Agent Template standard (*_react_agent.py, *_tool_registry.py, *_system_prompt.py, *_stage_context.py) with verification checklist. Add current domain-to-pattern mapping (12 domains, 16 agent implementations). Add the ADR decision log summary (ADR-001 through ADR-004).
+
+Add DomainWorkflow Pipeline section — Embed the 7-step pipeline: PRE_CHECK (FairnessGuard) → RESOLVE_REFERENCES → SMART_EXTRACT → ANALYZE_INTENT → EXECUTE → FORMAT → POST_CHECK (FactChecker). Include verification items for each step. Add FactChecker details: salary range validation (R$1,500-200,000), candidate counts (max 50,000), percentages (0-100), dates (2020-2030), Top-N (1-20). Note critical gap: FactChecker NOT applied in ReAct loop direct path (G-FC2).
+
+Add AutonomyEngine & GuardrailRepository section — Embed AutonomyEngine 3 levels: Low (all destructive actions require confirmation), Medium (subset auto-confirmed), High (only finalize_hiring, delete_job require confirmation). Add fallback chain: AutonomyEngine → GuardrailRepository (DB) → static list. Add GuardrailRepository 3-tier hierarchy: global → tenant → domain. Note guardrails stored in DB (migration 020), editable via CRUD without redeploy. List the 13 required seed guardrails.
+
+Add Critical PII Gap section — This is the most important addition. Clearly distinguish two separate PII concerns: (a) PII masking in LOGS (implemented via PIIMaskingFilter — OK), and (b) PII in LLM PROMPTS (CRITICAL gap G-M1 — candidate name, CPF, email may be sent to LLM provider). Add verification: does strip_pii_for_llm_prompt or prompt_pii_filter exist AND is it called before every LLM call? Add blind review requirement: candidate_anonymizer must remove name, age, photo, inferred gender before screening/ranking prompts (G-M2, G-M3). Add to audit checklist.
+
+Add HumanReviewSamplingService verification — Embed: 5% deterministic sampling (MD5 hash of decision_id). Always-review actions: finalize_hiring, mass_rejection, fairness_flagged. Critical verification: must be INTEGRATED in DomainWorkflow._execute() main flow, not just existing as standalone class (gap G-C1 — EU AI Act Art. 14 requires human oversight). Add AuditCallback details: automatic LLM call auditing middleware, injected transparently (agents don't know they're being audited). Captures prompt/response preview, tokens, latency, tool calls.
+
+Add Legislative Context section (new sub-section in PARTE III or new PARTE) — Embed full legislative framework from DIAGNOSTICO_COMPLIANCE doc. Must include: LGPD (Lei 13.709/2018) — already partially covered, enrich with specific articles. PL 2338/2023 (Brazilian AI Act) — status, expected Q3/Q4 2026, high-risk classification for recruitment AI, key requirements. EU AI Act (Reg. 2024/1689) — expand existing brief mention to full article-by-article compliance table (Art. 6, 9, 10, 11, 12, 13, 14, 15, 26, 52, 62). NYC Local Law 144 — annual bias audit by independent auditor, public disclosure, 10-day candidate notice, race/ethnicity and gender audit, alternative accommodation, 4-year data retention. EEOC Guidelines — Four-Fifths Rule, adverse impact. BCB-498/CMN 4893 — banking homologation. SOC-2 Type II, SOX, ISO 27001, ISO 42001 (AI Management System — Eightfold first certified).
+
+Add Market Benchmarking section — Embed competitive comparison table from DIAGNOSTICO doc: WeDO/LIA vs Eightfold, Gupy, HireVue, Greenhouse, Paradox, Findem across 15+ compliance capabilities (bias audit, independent auditor, ISO 42001, FairnessGuard, explainability, HITL, PII masking, consent management, SOC-2, LGPD tools, model drift, red teaming, BARS, circuit breakers, LLM fallback). Include WeDO differentials and gaps vs market leaders.
+
+Add Compliance Findings Matrix reference — Embed the 136-finding severity matrix structure: Crítico 18, Alto 48, Médio 49, Baixo 21, across 4 tracks: T002 (IA/Agents), T003 (LGPD/Data), T004 (Audit), T005 (Fairness/DEI). Include the complete gap taxonomy with IDs (G-M1 through G-FC2) and the prioritized recommendations (R1-R11) from the diagnostic. This gives auditors a baseline to compare against.
+
+Add ML/Automation/Semantic capabilities audit section — Embed verification items for: ML Predictive (OutcomePredictor, FeatureEngineering, ModelRegistry, prediction-action bridge), Automation Engine (16 trigger types, ProactiveAlertService with 5 categories, PipelineMonitor for SLA/stagnation, AutonomousAgentService), Semantic Search (hybrid RAG: BM25/tsvector + pgvector cosine, alpha blend parameter). These are capabilities that may or may not be implemented — auditor must verify actual integration vs standalone existence.
+
+Add Prompt Engineering Standards section — Embed: YAML structure requirement for prompts (not inline Python), compliance blocks that must be copied exactly (never rewritten by agents), persona "LIA" consistency across all agents, EU AI Act Art. 14/52 references required in ethical guidelines blocks. Add anti-patterns catalog from GUIA PARTE VII (at minimum: inline prompts in Python code, missing compliance blocks, inconsistent persona, hardcoded thresholds, silent fallbacks without logging).
+
+Add Deterministic vs Non-Deterministic boundary verification — Expand Crença 10 into a concrete audit dimension. Include decision table: which operations MUST be deterministic (rejection, stage movement, compliance checks) vs which MAY use LLM (analysis, recommendations, conversation). Verification: every rejection path must have a deterministic guard, not rely solely on LLM output.
+
+Add Observability details — Expand existing brief mention. Embed Prometheus metrics list: router_tier_hit_total, router_latency_ms, router_confidence_histogram, fairness_blocks_total, agent_iterations_total, circuit_breaker_state. Add ReActObserver telemetry. Add recommendation from André: single trace_agent_node() method (pending). Add known gap: decision_final field truncated at 500 chars (critical for audit trail completeness).
+
+Update PARTE VII audit procedure — Add new verification items to the 14-dimension checklist to cover all new sections. Add a new FASE or sub-phase: "FASE 2.5: Architecture Pattern Verification" covering agent template compliance, DomainWorkflow integration, AutonomyEngine configuration, and PII-before-LLM verification. Update PARTE VIII report format to include new sections for architecture patterns, legislative compliance status, and market benchmarking comparison.
+
+Relevant files
+.local/tasks/lia-deep-audit-playbook.md
+docs/GUIA_ARQUITETURA_IA_v1.0.md:340-440
+docs/GUIA_ARQUITETURA_IA_v1.0.md:1-100
+docs/DIAGNOSTICO_COMPLIANCE_IA_COMPLETO.md:1-120
+docs/DIAGNOSTICO_COMPLIANCE_IA_COMPLETO.md:475-655
+docs/DIAGNOSTICO_COMPLIANCE_IA_COMPLETO.md:660-750
+docs/mapa_inteligencia_lia_completo.md
+lia-agent-system/docs/ai-architecture-audit.md
+ANALISE_COMPARATIVA_V5_vs_LIA.md
