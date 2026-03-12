@@ -189,6 +189,39 @@ describe('useFloatStreaming', () => {
     expect(result.current.hitlPending).toBeNull()
   })
 
+  it('sendApproval(true) duplo → envia apenas uma vez (guard double-submit)', () => {
+    const onComplete = vi.fn()
+    const { result } = renderHook(() =>
+      useFloatStreaming('session-ds', onComplete)
+    )
+
+    act(() => {
+      capturedOnEvent?.({
+        type: 'approval_required',
+        pending_id: 'p-ds',
+        thread_id: 't-ds',
+        action: 'move_candidate',
+        description: 'Mover',
+        data: {},
+      })
+    })
+
+    // Dois cliques rápidos em "Aprovar"
+    act(() => {
+      result.current.sendApproval(true)
+      result.current.sendApproval(true)
+    })
+
+    // Deve ter enviado apenas UMA vez
+    expect(mockSendRaw).toHaveBeenCalledTimes(1)
+    expect(mockSendRaw).toHaveBeenCalledWith({
+      type: 'approval_response',
+      approved: true,
+      thread_id: 't-ds',
+      pending_id: 'p-ds',
+    })
+  })
+
   it('sendApproval sem pending → no-op, não chama sendRaw', () => {
     const onComplete = vi.fn()
     const { result } = renderHook(() =>

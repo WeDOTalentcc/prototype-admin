@@ -2455,6 +2455,8 @@ def test_pii_filter_removes_cpf():
     assert "joao@email.com" not in result
 ```
 
+**Padrão de código a seguir:** Usar `PIIMaskingFilter` existente em `app/shared/pii_masking.py` como referência. O novo `PromptPIIFilter` deve seguir o mesmo padrão de regex + replacement. Referência: Anexo A (PL-1 — `_prepare()` é o ponto de injeção canônico).
+
 **Arquivos a modificar:**
 - Criar: `app/shared/prompt_pii_filter.py`
 - Modificar: `app/shared/agents/react_loop.py` (ou equivalente)
@@ -2509,6 +2511,8 @@ async def execute(self, input_data: AgentInput) -> AgentOutput:
 
 4. Verificar que NENHUM domínio faz override de `execute()` pulando `_pre_check()`.
 
+**Padrão de código a seguir:** Seguir o padrão de `FairnessGuard.check()` existente em `app/shared/compliance/fairness_guard.py`. A integração deve usar o padrão DomainWorkflow com hook `_pre_check()` no base class. Referência: Anexo A (pipeline canônico: classify → route → **pre_check** → execute → validate → format → respond). Tabela de anti-padrões: AP-2.3 (Anexo B).
+
 **Arquivos a modificar:**
 - `app/shared/agents/domain_workflow.py` (ou equivalente de base workflow)
 - Verificar: cada `app/domains/*/workflow.py` que faz override
@@ -2560,6 +2564,8 @@ if self._is_destructive_action(action):
 ```python
 HITL_ACTIONS = ["reject_candidate", "move_to_rejected", "batch_reject"]
 ```
+
+**Padrão de código a seguir:** Seguir o padrão de `HumanReviewSamplingService` em `app/services/human_review_sampling_service.py`. A lista `HITL_ACTIONS` deve ser explícita em cada `tool_registry.py`. Referência: Anexo A (tools com `requires_confirmation=True`), Crença 01, Inegociável #2.
 
 **Arquivos a modificar:**
 - `app/domains/cv_screening/agents/pipeline_tool_registry.py`
@@ -2615,6 +2621,8 @@ async def revoke_consent(candidate_id: str, consent_type: str):
     await consent_service.revoke(candidate_id, consent_type)
     await stop_all_processing(candidate_id)  # Hard stop
 ```
+
+**Padrão de código a seguir:** Seguir o padrão de consent management com SHA256 hash. HTTP 451 para consent ausente. 7 tipos granulares. Referência: PARTE IV (6 Pilares LGPD), Tabela de Retenção. Padrão: `consent_service.check()` como guard no início do workflow.
 
 **Arquivos a modificar:**
 - `app/shared/agents/domain_workflow.py` (adicionar `_check_consent` no base)
@@ -2681,6 +2689,8 @@ async def _audit_log(self, action: str, details: dict, company_id: str):
     )
 ```
 
+**Padrão de código a seguir:** Tabela `audit_log` deve ser append-only com trigger PostgreSQL. Usar `audit_service.log()` com formato estruturado. Referência: Crença 08, Anexo C (schemas de observabilidade), SOC 2 Type II requirements.
+
 **Arquivos a modificar:**
 - `app/services/audit_service.py`
 - Migration para trigger de imutabilidade
@@ -2741,6 +2751,8 @@ async def test_no_cross_tenant_leak():
     # Verificar que retorna vazio
 ```
 
+**Padrão de código a seguir:** TODA query SQL deve incluir `.filter(Model.company_id == company_id)`. Session IDs devem usar namespace `f"{company_id}:{session_id}"`. Referência: AP-3.1 a AP-3.4 (Anexo B), Dimensão 13.4.
+
 **Arquivos a modificar:**
 - Todos os repositories/services que fazem queries
 - Middleware de autenticação
@@ -2789,6 +2801,8 @@ async def _check_ai_opt_out(self, candidate_id: str):
 ```python
 AI_DISCLOSURE = "Esta comunicação foi gerada com auxílio de Inteligência Artificial."
 ```
+
+**Padrão de código a seguir:** Flag `ai_evaluation_opt_out` no modelo de candidato. AI disclosure footer obrigatório (`AI_GENERATED_FOOTER`). Referência: LGPD Art. 20, EU AI Act Art. 14/52, Crença 03.
 
 **Arquivos a modificar:**
 - Migration para `candidate_preferences`
@@ -2862,6 +2876,8 @@ Se não há dados disponíveis, diga explicitamente: "Não tenho dados para emba
 grep -rn "CONTRA-ARGUMENTAÇÃO\|anti.sycophancy\|ANTI_SYCOPHANCY" app/domains/*/agents/*system_prompt*
 ```
 
+**Padrão de código a seguir:** System prompt deve ter 10 seções obrigatórias. Seção [7] = contra-argumentação com 8 benchmarks setoriais (ABRH, GPTW, Gupy, Robert Half, LinkedIn, Glassdoor, IBGE/PNAD, MTE/CAGED). Referência: Anexo A (anatomia de prompt 10 seções), Crença 11.
+
 **Arquivos a modificar:**
 - `app/domains/[cada_dominio]/agents/[agente]_system_prompt.py` (todos os 14 agentes)
 
@@ -2916,6 +2932,8 @@ def calculate_real_confidence(keyword_matches, llm_classification, historical_ac
    - >= 0.85 → APPLY_SILENT
    - 0.70-0.84 → APPLY_NOTIFY
    - < 0.70 → ASK_USER
+
+**Padrão de código a seguir:** Confiança deve ser calculada com dados reais: keyword_matches + llm_confidence + historical_accuracy. Nunca `max(X, min(Y, Z))`. Referência: Crença 10, ConfidencePolicy 3 níveis (Anexo E, G-C2).
 
 **Arquivos a modificar:**
 - `app/shared/agents/intent_router.py` (ou equivalente)
@@ -2976,6 +2994,8 @@ async def alert_circuit_open(breaker_name):
     )
 ```
 
+**Padrão de código a seguir:** Usar padrão `CircuitBreaker` com 3 estados (CLOSED → OPEN → HALF_OPEN). `failure_threshold=5`, `recovery_timeout=30s`. Referência: Crença 07, Production Readiness #1/#2, AP-5.3 (Anexo B).
+
 **Arquivos a modificar:**
 - `app/shared/circuit_breaker.py` (verificar/criar)
 - Cada service que faz chamada externa
@@ -3025,6 +3045,8 @@ async def complete(self, prompt, company_id, **kwargs):
 ```
 
 3. Configurar alertas em 80% e 100% do budget.
+
+**Padrão de código a seguir:** Pre-call check ANTES de `llm_client.complete()`. `BudgetExhaustedError` quando budget=0. Alertas em 80% e 100%. Referência: Crença 09, Production Readiness #6, Dimensão 12.4.
 
 **Arquivos a modificar:**
 - `app/shared/agents/llm_client.py` (ou equivalente)
@@ -3077,6 +3099,8 @@ HEALTH_ALERT_RULES = {
 }
 ```
 
+**Padrão de código a seguir:** Todo agente deve instanciar `ReActObserver` no `__init__`. Observer coleta: iteration_count, tool_calls, token_usage, error_rate, latency_p95. Referência: AP-1.6 (Anexo B), Anexo C (schemas de observabilidade).
+
 **Arquivos a modificar:**
 - `app/shared/agents/react_observer.py`
 - Cada agente que não tem observer configurado
@@ -3125,6 +3149,8 @@ async def complete_with_fallback(prompt, company_id, **kwargs):
    - Mock: Claude offline → deve usar OpenAI
    - Mock: Claude + OpenAI offline → deve usar Gemini
    - Mock: Todos offline → deve retornar 503 com mensagem clara
+
+**Padrão de código a seguir:** Fallback chain: `LLM_FALLBACK_CHAIN = [anthropic, openai, google]`. Tentar próximo provider quando `CircuitBreakerOpen` ou `ProviderError`. 503 só quando todos falham. Referência: Production Readiness #2, Crença 07.
 
 **Arquivos a modificar:**
 - `app/shared/agents/llm_client.py`
@@ -3178,6 +3204,8 @@ FEW_SHOT_EXAMPLES = [
 grep -rn "FEW_SHOT\|few_shot\|examples" app/domains/*/agents/*system_prompt*
 ```
 
+**Padrão de código a seguir:** Mínimo 3 few-shot examples por agente: 1 caminho feliz, 1 edge case, 1 recusa ética. Formato JSON com `thought/action/tool_name/tool_args/response`. Referência: Anexo A (seção [10] do prompt), MP-2.2 (Anexo K).
+
 **Arquivos a modificar:**
 - `app/domains/[cada_dominio]/agents/[agente]_system_prompt.py`
 
@@ -3220,6 +3248,8 @@ async def execute(self, input_data):
     return result
 ```
 
+**Padrão de código a seguir:** Usar `FairnessGuard.check_implicit_bias()` na resposta do agente. Soft warning (não bloqueia), registra e sanitiza. Hook: `_post_check()` no DomainWorkflow base. Referência: Gap G-RL1 (Anexo E), Parte II (FairnessGuard Camada 2).
+
 **Arquivos a modificar:**
 - `app/shared/agents/domain_workflow.py`
 - `app/shared/agents/react_loop.py`
@@ -3256,6 +3286,8 @@ if output.metadata.get("contains_candidate_data"):
 else:
     output.response = PromptPIIFilter.sanitize_prompt(output.response)
 ```
+
+**Padrão de código a seguir:** Aplicar `PromptPIIFilter.sanitize_prompt()` na saída. Exceção: quando `contains_candidate_data=True`, marcar `pii_present=True` sem mascarar. Referência: Gap G-RL2 (Anexo E), RM-01 (mesma classe).
 
 **Arquivos a modificar:**
 - `app/shared/agents/domain_workflow.py` (post-check)
@@ -3298,6 +3330,8 @@ def classify_intent(text: str):
             confidence=raw_intent.confidence * 0.5  # Reduzir confiança
         )
 ```
+
+**Padrão de código a seguir:** Padrão `NEGATION_PATTERNS` com regex para pt-BR e en-US. Quando negação detectada, prefixar intent com `negate_` e reduzir confiança × 0.5. Referência: Dimensão 10.2, Crença 10.
 
 **Arquivos a modificar:**
 - `app/shared/agents/intent_router.py`
@@ -3343,6 +3377,12 @@ done
 
 3. Migrar lógica dispersa para os arquivos canônicos.
 
+**Padrão de código a seguir:** 4 arquivos canônicos por domínio: `react_agent.py` (herda BaseAgent), `tool_registry.py` (lista ToolDefinition), `system_prompt.py` (10 seções), `stage_context.py` (contexto dinâmico). Referência: Anexo A completo.
+
+**Arquivos a modificar:**
+- Cada `app/domains/*/agents/` que não segue o padrão de 4 arquivos
+- Referência de gabarito: Anexo A (arquivos 1-4 com boilerplate completo)
+
 **Esforço estimado:** 6h (por agente fora do padrão) | **Responsável:** Backend
 
 **Critério de aceitação:**
@@ -3354,6 +3394,8 @@ done
 ### RM-19: Stage Context Ausente ou Incompleto
 
 **O que está errado:** Agente não recebe contexto específico do estágio em que o candidato/vaga está.
+
+**Por que importa:** Sem contexto de estágio, o agente dá respostas genéricas. Candidato em fase de oferta recebe instruções de sourcing — experiência confusa e decisões incorretas.
 
 **Depende de:** RM-18
 
@@ -3374,13 +3416,26 @@ def get_stage_context(stage: str) -> str:
 
 2. Injetar via `extra_context` no agente.
 
+**Padrão de código a seguir:** Dicionário `STAGE_CONTEXTS` com contexto por estágio do pipeline. Injetar via `extra_context` no agente. Referência: Anexo A (arquivo 4 do padrão canônico).
+
+**Arquivos a modificar:**
+- Criar: `app/domains/<domínio>/agents/stage_context.py` (para cada domínio sem)
+- Modificar: `app/shared/agents/react_loop.py` (injetar `extra_context` com stage)
+
 **Esforço estimado:** 4h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Todo domínio tem `stage_context.py` com dicionário `STAGE_CONTEXTS`
+- [ ] Agente recebe contexto correto para cada estágio (verificar via logs)
+- [ ] Estágio desconhecido → fallback explícito ("Estágio desconhecido — peça clarificação")
 
 ---
 
 ### RM-20: Memória sem Decay Factor / sem Limite
 
 **O que está errado:** Memória do agente cresce indefinidamente ou não aplica decay factor para informações antigas.
+
+**Por que importa:** Memória ilimitada causa context overflow (tokens), alucinações por contexto antigo irrelevante, e custo crescente de tokens. Decay factor garante que informações recentes tenham prioridade.
 
 **Referência:** AP-5.4 (Anexo B)
 
@@ -3399,13 +3454,26 @@ if relevance < 0.1:
     archive_or_delete(memory_entry)
 ```
 
+**Padrão de código a seguir:** Working memory: `conversation_history[-5:]`. Long-term memory: `DECAY_FACTOR=0.95`, arquivar quando `relevance < 0.1`. Referência: AP-5.4 (Anexo B), Anexo A (memória 3 níveis).
+
+**Arquivos a modificar:**
+- Modificar: `app/shared/agents/react_loop.py` (limitar working memory)
+- Criar/Modificar: `app/services/memory_service.py` (decay factor)
+
 **Esforço estimado:** 4h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] `conversation_history` nunca excede 5 entradas no working memory
+- [ ] Memória com `relevance < 0.1` é arquivada automaticamente
+- [ ] Decay aplicado em cada consulta de longo prazo
 
 ---
 
 ### RM-21: Drift Detection Desligado ou Não Configurado
 
 **O que está errado:** Os 4 triggers de drift detection não estão ativos ou não geram alertas.
+
+**Por que importa:** Sem drift detection, degradações graduais (score inflation, latência crescente, custo disparando) passam despercebidas até causar impacto visível ao cliente. Production Readiness exige monitoramento contínuo.
 
 **Referência:** Screening Compliance, Anexo C
 
@@ -3427,13 +3495,27 @@ CELERY_BEAT_SCHEDULE = {
    - Custo de IA aumenta > 20% → alerta P2
    - Latência P95 aumenta > 50% → alerta P2
 
+**Padrão de código a seguir:** 4 jobs Celery beat: score drift (>0.5/30d), approval drift (>10%), cost drift (>20%), latency drift (P95 >50%). Referência: Screening Compliance (Model Drift Detection), Anexo C.
+
+**Arquivos a modificar:**
+- Modificar: `app/celery_config.py` ou equivalente (adicionar 4 jobs)
+- Criar: `app/tasks/drift_detection.py`
+- Criar: `app/services/drift_alert_service.py`
+
 **Esforço estimado:** 4h | **Responsável:** Backend + Infra
+
+**Critério de aceitação:**
+- [ ] 4 jobs Celery beat configurados e rodando (verificar via `celery inspect scheduled`)
+- [ ] Score drift > 0.5 em 30 dias → alerta P1 gerado
+- [ ] Métricas de drift visíveis no dashboard
 
 ---
 
 ### RM-22: Guardrails Não Configurados no Banco
 
 **O que está errado:** A tabela `guardrails` existe (migration 020) mas não tem seed data ou não está sendo consultada pelo workflow.
+
+**Por que importa:** Guardrails no banco permitem configuração por empresa (multi-tenant) e ativação/desativação sem deploy. Sem seed data, workflows rodam sem proteções — equivale a não ter guardrails.
 
 **Referência:** Anexo D
 
@@ -3453,13 +3535,26 @@ async def _load_guardrails(self, company_id):
     return await guardrail_repo.get_active(company_id=company_id)
 ```
 
+**Padrão de código a seguir:** 13 guardrails canônicos devem existir na tabela com `is_active=true`. Usar seed migration. `DomainWorkflow._load_guardrails()` consulta por `company_id`. Referência: Anexo D (lista completa dos 13 guardrails).
+
+**Arquivos a modificar:**
+- Criar: migration seed para inserir 13 guardrails canônicos
+- Modificar: `app/shared/agents/domain_workflow.py` (adicionar `_load_guardrails()`)
+
 **Esforço estimado:** 3h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] `SELECT COUNT(*) FROM guardrails WHERE is_active = true` retorna >= 13
+- [ ] `DomainWorkflow._load_guardrails(company_id)` retorna lista filtrada por empresa
+- [ ] Guardrail desativado → workflow não o aplica
 
 ---
 
 ### RM-23: Testes de Fairness Fora do CI/CD
 
 **O que está errado:** Testes de fairness (golden dataset, four-fifths rule) existem mas não rodam automaticamente no CI.
+
+**Por que importa:** Testes de fairness que não rodam no CI ficam desatualizados e são ignorados. Four-fifths rule como gate de deploy é exigência EEOC/OFCCP e melhor prática para recrutamento IA.
 
 **Referência:** Screening Compliance, Nível 1 (Pre-Deployment)
 
@@ -3490,13 +3585,29 @@ def check_four_fifths(results_by_group):
             raise FairnessGateFailure(f"Grupo {group}: ratio {ratio:.2f} < 0.80")
 ```
 
+**Padrão de código a seguir:** Golden dataset: 100 candidatos (25/quartil, mix trajetórias). Four-fifths rule como gate: `ratio < 0.80` bloqueia deploy. CI/CD: `pytest tests/fairness/ -v`. Referência: Parte V (Framework de Teste de Viés), PARTE III (Bias Audit Dashboard).
+
+**Arquivos a modificar:**
+- Criar: `tests/fairness/test_four_fifths.py`
+- Criar: `tests/fairness/golden_dataset.json` (100 candidatos)
+- Criar: `scripts/run_four_fifths_check.py`
+- Modificar: `.gitlab-ci.yml` ou equivalente CI (adicionar stage fairness)
+
 **Esforço estimado:** 6h | **Responsável:** Backend + Infra
+
+**Critério de aceitação:**
+- [ ] Golden dataset com 100 candidatos (25 por quartil)
+- [ ] `pytest tests/fairness/` passa no CI
+- [ ] Four-fifths ratio < 0.80 → pipeline falha (gate)
+- [ ] Resultados por grupo demográfico visíveis no relatório
 
 ---
 
 ### RM-24: ConfidencePolicy Limitada a Um Agente
 
 **O que está errado:** `ConfidencePolicyService` só é usado no Job Wizard (gap G-C3). Decisões de triagem, sourcing e pipeline não usam.
+
+**Por que importa:** Se apenas o Wizard usa ConfidencePolicy, triagem e sourcing tomam decisões com alta incerteza sem pedir confirmação humana. Viola Crença 10 (determinismo) e EU AI Act Art. 14 (human oversight).
 
 **Referência:** Dimensão 10.4, Gap G-C3
 
@@ -3518,13 +3629,28 @@ async def _apply_confidence_policy(self, action, confidence, company_id):
 
 2. Aplicar em TODOS os domínios que tomam decisões sobre candidatos.
 
+**Padrão de código a seguir:** Integrar `ConfidencePolicyService.evaluate()` no DomainWorkflow base, não apenas no Wizard. 3 níveis: APPLY_SILENT (>=0.85), APPLY_NOTIFY (0.70-0.84), ASK_USER (<0.70). Referência: Crença 10, Parte IV (EU AI Act), Gap G-C3 (Anexo E).
+
+**Arquivos a modificar:**
+- Modificar: `app/shared/agents/domain_workflow.py` (integrar `_apply_confidence_policy`)
+- Modificar: `app/services/confidence_policy_service.py` (generalizar para todos domínios)
+- Modificar: cada `app/domains/*/workflow.py` que toma decisões sobre candidatos
+
 **Esforço estimado:** 6h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Confiança >= 0.85 → ação executada silenciosamente
+- [ ] Confiança 0.70-0.84 → ação executada + notificação ao recrutador
+- [ ] Confiança < 0.70 → recrutador confirma antes de executar
+- [ ] Todos os domínios usam ConfidencePolicy (não apenas Wizard)
 
 ---
 
 ### RM-25: Wiring Desconectado
 
 **O que está errado:** Componente/endpoint/hook/tool existe no código mas não está conectado ao fluxo real. "Existe" mas não "funciona".
+
+**Por que importa:** Código desconectado cria ilusão de funcionalidade. Recrutador vê botão que não funciona, endpoint existe mas nunca é chamado. A Dimensão 1 (Wiring) é o achado mais frequente nas auditorias.
 
 **Referência:** Dimensão 1 (Integração/Wiring) — o achado mais comum nas auditorias
 
@@ -3549,13 +3675,27 @@ grep -rn "my_tool" app/domains/*/agents/*tool_registry*
 
 3. Para cada desconexão, escolher: CONECTAR ou REMOVER (código morto).
 
+**Padrão de código a seguir:** Para frontend: hook importado + chamado. Para backend: rota registrada + proxy. Para tool: no registry + agente usa. Código morto deve ser removido. Referência: Dimensão 1 (Wiring), PARTE IX nota 6.
+
+**Arquivos a modificar:**
+- Variável por item (cada achado de wiring desconectado terá arquivos diferentes)
+- Referência: usar comandos `grep` listados acima para identificar os arquivos
+
 **Esforço estimado:** Variável (1-4h por item) | **Responsável:** Backend ou Frontend
+
+**Critério de aceitação:**
+- [ ] Todo hook importado é efetivamente chamado por pelo menos um componente
+- [ ] Todo endpoint tem rota registrada E proxy configurado
+- [ ] Toda tool está no registry E é referenciada pelo system prompt do agente
+- [ ] Código morto removido (nenhum import sem uso)
 
 ---
 
 ### RM-26: EU AI Act Compliance Gaps nos Prompts
 
 **O que está errado:** System prompts não referenciam obrigações do EU AI Act (Art. 14, 52, Anexo III).
+
+**Por que importa:** EU AI Act entra em vigor com penalidades de até 35M EUR ou 7% do faturamento global. Sistemas de IA em recrutamento são classificados como alto risco (Anexo III). Compliance nos prompts é obrigatório.
 
 **Referência:** Gap G-P1, Dimensão 13.6
 
@@ -3573,13 +3713,26 @@ EU_AI_ACT_SECTION = """
 """
 ```
 
+**Padrão de código a seguir:** Adicionar bloco `EU_AI_ACT_SECTION` referenciando Art. 14, 52, Anexo III nos system prompts. Classificação: alto risco. Referência: PARTE IV (EU AI Act), Gap G-P1 (Anexo E), MP-1.1 (Anexo K).
+
+**Arquivos a modificar:**
+- Modificar: cada `app/domains/*/agents/system_prompt.py` (adicionar seção EU AI Act)
+- Criar: `app/shared/compliance/eu_ai_act_section.py` (bloco reutilizável)
+
 **Esforço estimado:** 3h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Todos os system prompts incluem seção EU AI Act
+- [ ] Art. 14, 52 e Anexo III referenciados explicitamente
+- [ ] Classificação "alto risco" presente
 
 ---
 
 ### RM-27: WCAG 2.1 AA Não Atendido
 
 **O que está errado:** Componentes frontend não atendem WCAG 2.1 AA (faltam aria-labels, contraste insuficiente, navegação por teclado ausente).
+
+**Por que importa:** Acessibilidade é Inegociável #8 da plataforma e requisito legal em muitos mercados. Candidatos com deficiência visual ou motora não conseguem usar a plataforma sem WCAG 2.1 AA.
 
 **Referência:** Inegociável #8, Crença 13, Dimensão 3
 
@@ -3601,7 +3754,21 @@ npx axe-cli http://localhost:3000 --rules wcag2aa
 
 3. Para cada violação encontrada pelo axe-core, corrigir o componente.
 
+**Padrão de código a seguir:** Usar axe-core para audit. Checklist: `aria-label`, `role`, contraste >=4.5:1, `focus-visible`, `sr-only`, tab order, `prefers-reduced-motion`. Referência: Crença 13, Inegociável #8, Dimensão 3.
+
+**Arquivos a modificar:**
+- Todos os componentes em `plataforma-lia/src/components/`
+- Todos os componentes de página em `plataforma-lia/src/app/(protected)/`
+- Criar: `tests/a11y/axe_audit.test.ts`
+
 **Esforço estimado:** 8h | **Responsável:** Frontend
+
+**Critério de aceitação:**
+- [ ] `npx axe-cli` retorna 0 violações WCAG 2.1 AA
+- [ ] Todo botão sem texto visível tem `aria-label`
+- [ ] Contraste >= 4.5:1 em todo texto normal
+- [ ] Tab order lógico em todos os formulários
+- [ ] `prefers-reduced-motion` respeitado em animações
 
 ---
 
@@ -3613,150 +3780,460 @@ npx axe-cli http://localhost:3000 --rules wcag2aa
 
 ### RM-28: Outreach Automatizado (Gap CG-1)
 
-**O que está errado:** LIA não tem capacidade de enviar sequences automatizadas de outreach para candidatos passivos.
+**O que está errado:** LIA não tem capacidade de enviar sequences automatizadas de outreach para candidatos passivos. Concorrentes (Tezi, Gem, Findem, Eightfold) oferecem nativamente.
+
+**Por que importa:** Gap competitivo de alta prioridade. Clientes que usam sourcing ativo esperam poder enviar sequences personalizadas sem sair da plataforma.
 
 **Referência:** Anexo L, MC-3.1 CG-1
 
-**Roadmap de implementação:**
+**Passo-a-passo para resolver:**
 
-1. **Modelagem** (8h): Criar modelos `OutreachSequence`, `OutreachStep`, `OutreachExecution`
-2. **Backend** (16h): Criar domínio `outreach` com agent + tools (create_sequence, start_sequence, pause_sequence, get_metrics)
-3. **Integração** (8h): Conectar com Communication Agent para envio via email/WhatsApp
-4. **Frontend** (8h): UI para criar/gerenciar sequences
+1. Criar modelos de dados:
+```python
+class OutreachSequence(Base):
+    __tablename__ = "outreach_sequences"
+    id = Column(UUID, primary_key=True)
+    company_id = Column(UUID, ForeignKey("companies.id"))
+    name = Column(String)
+    steps = relationship("OutreachStep")
+    status = Column(Enum("draft", "active", "paused", "completed"))
 
-**Esforço total:** 40h | **Responsável:** Backend + Frontend
+class OutreachStep(Base):
+    __tablename__ = "outreach_steps"
+    id = Column(UUID, primary_key=True)
+    sequence_id = Column(UUID, ForeignKey("outreach_sequences.id"))
+    step_order = Column(Integer)
+    channel = Column(Enum("email", "whatsapp", "linkedin"))
+    template = Column(Text)
+    delay_hours = Column(Integer)
+
+class OutreachExecution(Base):
+    __tablename__ = "outreach_executions"
+    id = Column(UUID, primary_key=True)
+    sequence_id = Column(UUID, ForeignKey("outreach_sequences.id"))
+    candidate_id = Column(UUID, ForeignKey("candidates.id"))
+    current_step = Column(Integer)
+    status = Column(Enum("in_progress", "replied", "completed", "opted_out"))
+```
+
+2. Criar domínio `outreach` com padrão 4 arquivos (RM-18):
+   - `outreach_react_agent.py` — agente com tools: create_sequence, start_sequence, pause_sequence, get_metrics, add_candidates, view_execution_status
+   - `outreach_tool_registry.py` — 6 tools com schema tipado
+   - `outreach_system_prompt.py` — com anti-sycophancy e FairnessGuard
+   - `outreach_stage_context.py` — contexto por status da sequence
+
+3. Integrar com Communication Agent para envio real via email/WhatsApp.
+
+4. Frontend: criar UI para visualizar/criar sequences com drag-and-drop de steps.
+
+**Padrão de código a seguir:** Seguir padrão canônico de 4 arquivos (Anexo A). Communication via `CommunicationMatrix` existente. Rate limiting via `check_rate_limit` tool existente. FairnessGuard obrigatório em templates de outreach. Referência: MC-2.4 (Communication Agent patterns), Crença 02 (fairness em comunicações).
+
+**Arquivos a modificar:**
+- Criar: `app/domains/outreach/` (domínio completo com 4 arquivos)
+- Criar: migration para tabelas `outreach_sequences`, `outreach_steps`, `outreach_executions`
+- Modificar: `app/domains/communication/` (integrar envio)
+- Criar: `plataforma-lia/src/app/(protected)/outreach/` (UI)
+
+**Esforço estimado:** 40h | **Responsável:** Backend + Frontend
+
+**Critério de aceitação:**
+- [ ] Sequence criada com 3 steps (email dia 1, email dia 3, WhatsApp dia 5)
+- [ ] Candidato adicionado → recebe primeiro email automaticamente
+- [ ] Candidato responde → sequence pausa automaticamente
+- [ ] Opt-out → nunca mais recebe outreach dessa sequence
+- [ ] Métricas visíveis: taxa de resposta, opt-out, step reached
 
 ---
 
 ### RM-29: Profile Enrichment Multi-Fonte (Gap CG-2)
 
-**O que está errado:** LIA só busca candidatos no banco interno. Não enriquece perfis com dados de LinkedIn, GitHub, etc.
+**O que está errado:** LIA só busca candidatos no banco interno. Não enriquece perfis com dados de LinkedIn, GitHub, portfólios.
+
+**Por que importa:** Concorrentes (Tezi: 750M+ perfis, Findem: 3D data fusion, Eightfold: 1.6B perfis) oferecem enriquecimento automático que dá ao recrutador dados mais completos para tomar decisões.
 
 **Referência:** Anexo L, MC-3.1 CG-2
 
-**Roadmap:**
+**Passo-a-passo para resolver:**
 
-1. **API integrations** (16h): Integrar com APIs de enriquecimento (Proxycurl, People Data Labs)
-2. **Data merging** (12h): Lógica de merge de dados de múltiplas fontes sem duplicar
-3. **Privacy compliance** (8h): Garantir LGPD compliance no enriquecimento
-4. **Frontend** (4h): Mostrar fontes de dados no perfil do candidato
+1. Criar service de enriquecimento:
+```python
+class ProfileEnrichmentService:
+    PROVIDERS = {
+        "proxycurl": ProxycurlAdapter,
+        "people_data_labs": PDLAdapter,
+        "github": GitHubAdapter,
+    }
 
-**Esforço total:** 40h | **Responsável:** Backend
+    async def enrich(self, candidate_id: str, company_id: str) -> EnrichedProfile:
+        candidate = await get_candidate(candidate_id, company_id)
+        enriched_data = {}
+        for provider_name, adapter in self.PROVIDERS.items():
+            try:
+                data = await adapter.fetch(candidate.email, candidate.linkedin_url)
+                enriched_data[provider_name] = data
+            except Exception as e:
+                logger.warning(f"Enrichment failed for {provider_name}: {e}")
+        return self._merge_data(candidate, enriched_data)
+
+    def _merge_data(self, candidate, enriched_data: dict) -> EnrichedProfile:
+        merged = candidate.to_dict()
+        for source, data in enriched_data.items():
+            for field, value in data.items():
+                if field not in merged or merged[field] is None:
+                    merged[field] = value
+                    merged[f"{field}_source"] = source
+        return EnrichedProfile(**merged)
+```
+
+2. Adicionar tool `enrich_profile` ao Sourcing Agent (A1).
+
+3. Garantir LGPD compliance: consent para enriquecimento com fontes externas, registrar fonte de cada dado.
+
+4. Frontend: indicar visualmente quais dados vieram de enriquecimento vs. candidato.
+
+**Padrão de código a seguir:** Padrão adapter por provider com interface comum. Circuit breaker por provider externo (RM-10). PII dos dados enriquecidos passa pelo filtro (RM-01). Consent check obrigatório antes de enriquecer (RM-04). Referência: AP-5.3 (chamada externa assíncrona), Crença 04 (privacidade).
+
+**Arquivos a modificar:**
+- Criar: `app/services/profile_enrichment_service.py`
+- Criar: `app/adapters/proxycurl.py`, `app/adapters/pdl.py`, `app/adapters/github_profile.py`
+- Modificar: `app/domains/sourcing/agents/sourcing_tool_registry.py` (adicionar tool)
+- Criar: migration para campo `enrichment_sources` no candidato
+
+**Esforço estimado:** 40h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Candidato com LinkedIn URL → perfil enriquecido com dados adicionais
+- [ ] Fonte de cada dado rastreada (`field_source`)
+- [ ] Consent check antes de enriquecer
+- [ ] Circuit breaker em cada provider externo
+- [ ] Fallback gracioso quando provider offline
 
 ---
 
 ### RM-30: WhatsApp ↔ WSI Direto (Gap CG-3)
 
-**O que está errado:** WSI Interview (Graph G2) não funciona via WhatsApp — apenas via web.
+**O que está errado:** WSI Interview (Graph G2) funciona apenas via web. Candidatos não podem fazer a entrevista WSI pelo WhatsApp.
+
+**Por que importa:** Paradox e DigaAI oferecem entrevistas conversacionais via WhatsApp nativamente. Em mercados mobile-first (ex: Brasil), WhatsApp tem penetração muito superior à web.
 
 **Referência:** Anexo L, MC-3.1 CG-3
 
-**Roadmap:**
+**Passo-a-passo para resolver:**
 
-1. **WhatsApp adapter** (12h): Adaptar WSI Graph para receber/enviar via WhatsApp API
-2. **Session management** (8h): Gerenciar estado da entrevista WSI via conversação assíncrona
-3. **Media handling** (4h): Suportar respostas em áudio/texto pelo WhatsApp
+1. Criar adapter WhatsApp para o WSI Graph:
+```python
+class WhatsAppWSIAdapter:
+    async def start_interview(self, candidate_id: str, job_id: str):
+        session = await WSISession.create(candidate_id, job_id, channel="whatsapp")
+        first_question = await wsi_graph.get_first_question(session)
+        await whatsapp_service.send(candidate_id, first_question.text)
+        return session
 
-**Esforço total:** 24h | **Responsável:** Backend
+    async def handle_response(self, candidate_id: str, message: str):
+        session = await WSISession.get_active(candidate_id)
+        if not session:
+            return
+        result = await wsi_graph.process_answer(session, message)
+        if result.has_next_question:
+            await whatsapp_service.send(candidate_id, result.next_question.text)
+        else:
+            await whatsapp_service.send(candidate_id, result.completion_message)
+            await session.complete()
+```
+
+2. Gerenciar estado da sessão WSI para conversação assíncrona (candidato pode responder horas depois).
+
+3. Suportar respostas em texto e áudio (transcrever áudio antes de processar).
+
+4. Rate limiting: máximo 1 pergunta WSI por mensagem, intervalo mínimo entre mensagens.
+
+**Padrão de código a seguir:** Usar `CommunicationMatrix` existente para templates WhatsApp. Session state persistido em banco (não in-memory). `WSIInterviewGraph` recebe channel como parâmetro. Referência: MC-2.3 (Pipeline Agent patterns), `send_whatsapp` tool existente no Communication Agent.
+
+**Arquivos a modificar:**
+- Criar: `app/adapters/whatsapp_wsi_adapter.py`
+- Modificar: `app/domains/cv_screening/agents/wsi_interview_graph.py` (aceitar channel)
+- Criar: migration para campo `channel` em `wsi_sessions`
+- Modificar: webhook WhatsApp para rotear para WSI adapter
+
+**Esforço estimado:** 24h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Candidato inicia entrevista WSI pelo WhatsApp
+- [ ] Cada pergunta enviada como mensagem separada
+- [ ] Candidato responde em texto → processado normalmente
+- [ ] Candidato não responde em 24h → lembrete automático
+- [ ] Score WSI final idêntico ao canal web
 
 ---
 
 ### RM-31: Blind Review / Candidate Anonymizer (Gap CG-4)
 
-**O que está errado:** Atributos protegidos (nome, idade, gênero, foto) não são removidos antes de enviar ao LLM para triagem/ranking.
+**O que está errado:** Atributos protegidos (nome, idade, gênero, foto) não são removidos antes de enviar dados de candidato ao LLM para triagem/ranking.
+
+**Por que importa:** Eightfold faz blind review automático. Sem anonymization, o LLM pode ser influenciado por atributos protegidos mesmo com instruções anti-viés no prompt. Referência: Gap G-M2/G-M3.
 
 **Depende de:** RM-01 (PII filter)
 
-**Referência:** Anexo L, MC-3.1 CG-4, Gap G-M2/G-M3
+**Referência:** Anexo L, MC-3.1 CG-4, Gap G-M2/G-M3 (Anexo E)
 
-**Roadmap:**
+**Passo-a-passo para resolver:**
 
-1. **Criar `candidate_anonymizer.py`** (8h):
+1. Criar módulo `candidate_anonymizer.py`:
 ```python
 class CandidateAnonymizer:
     PROTECTED_FIELDS = ['name', 'age', 'gender', 'photo', 'ethnicity',
-                        'marital_status', 'nationality', 'religion']
+                        'marital_status', 'nationality', 'religion',
+                        'date_of_birth', 'photo_url']
 
     def anonymize(self, candidate_data: dict) -> dict:
         anonymized = candidate_data.copy()
         for field in self.PROTECTED_FIELDS:
             if field in anonymized:
                 anonymized[field] = f"[REDACTED_{field.upper()}]"
+        anonymized['_anonymized'] = True
+        anonymized['_anonymized_fields'] = [f for f in self.PROTECTED_FIELDS if f in candidate_data]
         return anonymized
+
+    def is_anonymized(self, candidate_data: dict) -> bool:
+        return candidate_data.get('_anonymized', False)
 ```
 
-2. **Integrar no pipeline de screening** (4h): Antes de enviar ao LLM, anonymizer processa
-3. **Frontend: toggle blind review** (4h): Recrutador pode ativar/desativar blind review
+2. Integrar no pipeline de screening ANTES de enviar ao LLM:
+```python
+async def _prepare_candidate_for_llm(self, candidate_data, company_id):
+    anonymizer = CandidateAnonymizer()
+    config = await get_company_config(company_id)
+    if config.blind_review_enabled:
+        return anonymizer.anonymize(candidate_data)
+    return candidate_data
+```
 
-**Esforço total:** 16h | **Responsável:** Backend
+3. Frontend: toggle blind review na configuração da empresa (Hiring Policy).
+
+4. Verificar que dados originais são preservados em banco — apenas o prompt é anonymizado.
+
+**Padrão de código a seguir:** `CandidateAnonymizer` complementa `PromptPIIFilter` (RM-01). PII filter mascara formatos (CPF, email), anonymizer remove atributos protegidos semânticos (nome, gênero). Usar juntos. Referência: MP-2.3 (Padrões de Fairness, Eightfold attribute masking), Crença 02, Parte II (FairnessGuard Camada 1).
+
+**Arquivos a modificar:**
+- Criar: `app/shared/candidate_anonymizer.py`
+- Modificar: `app/domains/cv_screening/agents/pipeline_react_agent.py` (integrar antes de LLM)
+- Modificar: `app/domains/hiring_policy/` (adicionar config blind_review)
+- Criar: `tests/unit/test_candidate_anonymizer.py`
+
+**Esforço estimado:** 16h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Com blind review ON: prompt ao LLM contém `[REDACTED_NAME]` ao invés do nome
+- [ ] Score WSI com blind review ON vs OFF: variância < 0.5 (prova que não dependia do nome)
+- [ ] Dados originais intactos no banco
+- [ ] Config por empresa via Hiring Policy
 
 ---
 
 ### RM-32: Calibração Contínua de Busca (Gap CG-6)
 
-**O que está errado:** Sourcing Agent não aprende com feedback do recrutador para melhorar buscas futuras.
+**O que está errado:** Sourcing Agent não aprende com o feedback do recrutador (accept/reject candidatos) para melhorar buscas futuras.
+
+**Por que importa:** Tezi e Findem auto-calibram baseado em feedback. Sem isso, o recrutador precisa refinar critérios manualmente a cada busca.
 
 **Referência:** Anexo L, MC-3.2 CG-6
 
-**Roadmap:**
+**Passo-a-passo para resolver:**
 
-1. **Feedback loop** (12h): Capturar accept/reject do recrutador em cada candidato
-2. **Re-ranking model** (12h): Usar feedback para ajustar pesos de busca
-3. **Auto-suggest refinements** (8h): Sugerir mudanças nos critérios baseado em padrão de accepts
+1. Criar modelo de feedback:
+```python
+class SearchFeedback(Base):
+    __tablename__ = "search_feedback"
+    id = Column(UUID, primary_key=True)
+    company_id = Column(UUID, ForeignKey("companies.id"))
+    search_criteria_id = Column(UUID)
+    candidate_id = Column(UUID, ForeignKey("candidates.id"))
+    action = Column(Enum("accepted", "rejected", "shortlisted", "ignored"))
+    timestamp = Column(DateTime)
+```
 
-**Esforço total:** 32h | **Responsável:** Backend
+2. Criar service de calibração:
+```python
+class SearchCalibrationService:
+    async def learn_from_feedback(self, search_id: str, company_id: str):
+        feedback = await get_feedback(search_id, company_id)
+        accepted = [f for f in feedback if f.action in ("accepted", "shortlisted")]
+        rejected = [f for f in feedback if f.action == "rejected"]
+        adjustments = self._compute_adjustments(accepted, rejected)
+        return adjustments
+
+    def _compute_adjustments(self, accepted, rejected):
+        accepted_skills = self._extract_common_skills(accepted)
+        rejected_skills = self._extract_common_skills(rejected)
+        return {
+            "boost_skills": accepted_skills - rejected_skills,
+            "reduce_skills": rejected_skills - accepted_skills,
+            "adjust_seniority": self._compute_seniority_adjustment(accepted),
+        }
+```
+
+3. Integrar sugestão de refinamento no Sourcing Agent:
+   - Após N rejeições, sugerir proativamente ajustes nos critérios
+   - Após aceitar candidatos com skills extras, sugerir adicionar essas skills
+
+4. Adicionar tool `get_search_calibration` ao Sourcing Agent.
+
+**Padrão de código a seguir:** Feedback loop como service separado, não embutido no agente. Padrão observer para capturar feedback. Sugestões proativas seguem padrão anti-sycophancy (RM-08) — calibrar com dados, não opinião. Referência: MP-2.1 (Anexo K — calibração contínua como estado da arte).
+
+**Arquivos a modificar:**
+- Criar: `app/services/search_calibration_service.py`
+- Criar: migration para `search_feedback`
+- Modificar: `app/domains/sourcing/agents/sourcing_tool_registry.py` (adicionar tool)
+- Modificar: `app/domains/sourcing/agents/sourcing_system_prompt.py` (instruções de calibração)
+
+**Esforço estimado:** 32h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Após 5 rejects consecutivos → sugestão proativa de ajuste
+- [ ] Skills comuns nos aceitos são boosted na próxima busca
+- [ ] Métricas de calibração: taxa de accept antes vs. depois
 
 ---
 
 ### RM-33: NPS / Sentiment Analysis (Gap CG-7)
 
-**O que está errado:** Respostas de candidatos (email, WhatsApp) não são analisadas para sentiment.
+**O que está errado:** Respostas de candidatos (email, WhatsApp) não são analisadas para sentiment. Não há NPS tracking por etapa do pipeline.
+
+**Por que importa:** Paradox oferece sentiment analysis nativamente. Sentiment negativo em comunicações pode indicar problemas no processo que o recrutador não percebe.
 
 **Referência:** Anexo L, MC-3.2 CG-7
 
-**Roadmap:**
+**Passo-a-passo para resolver:**
 
-1. **Sentiment analyzer** (8h): Classificar respostas em positivo/neutro/negativo
-2. **NPS tracking** (4h): Calcular NPS por etapa do pipeline
-3. **Alertas** (4h): Alertar quando sentiment negativo > threshold
+1. Criar sentiment analyzer:
+```python
+class CandidateSentimentAnalyzer:
+    SENTIMENT_LABELS = ["positive", "neutral", "negative"]
 
-**Esforço total:** 16h | **Responsável:** Backend
+    async def analyze(self, message: str, company_id: str) -> SentimentResult:
+        result = await llm_client.classify(
+            prompt=f"Classifique o sentiment desta resposta de candidato: '{message}'",
+            labels=self.SENTIMENT_LABELS,
+            company_id=company_id
+        )
+        return SentimentResult(
+            sentiment=result.label,
+            confidence=result.confidence,
+            keywords=result.keywords
+        )
+```
+
+2. Integrar no webhook de respostas (email e WhatsApp):
+```python
+async def on_candidate_reply(candidate_id, message, channel, company_id):
+    sentiment = await sentiment_analyzer.analyze(message, company_id)
+    await save_sentiment(candidate_id, sentiment, channel)
+    if sentiment.sentiment == "negative" and sentiment.confidence > 0.8:
+        await alert_recruiter(candidate_id, sentiment)
+```
+
+3. NPS tracking por etapa:
+```python
+async def calculate_stage_nps(job_id, stage, company_id):
+    sentiments = await get_sentiments_by_stage(job_id, stage, company_id)
+    promoters = sum(1 for s in sentiments if s.sentiment == "positive")
+    detractors = sum(1 for s in sentiments if s.sentiment == "negative")
+    total = len(sentiments)
+    return ((promoters - detractors) / total) * 100 if total > 0 else None
+```
+
+4. Dashboard: mostrar NPS por etapa no pipeline view.
+
+**Padrão de código a seguir:** LLM classification com budget check (RM-11). Sentiment salvo na tabela existente de communication history. Alertas via canais existentes. Referência: Crença 06 (melhoria contínua com métricas), `get_communication_history` tool existente.
+
+**Arquivos a modificar:**
+- Criar: `app/services/candidate_sentiment_service.py`
+- Modificar: webhook de email/WhatsApp para chamar sentiment analyzer
+- Modificar: `app/domains/analytics/agents/analytics_tool_registry.py` (tool `get_sentiment_metrics`)
+- Criar: migration para campo `sentiment` em `communication_history`
+
+**Esforço estimado:** 16h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Resposta negativa de candidato → alerta ao recrutador
+- [ ] NPS por etapa visível no pipeline
+- [ ] Sentiment classificado com confiança > 0.7
 
 ---
 
 ### RM-34: Cascata de Confiança T3 Automática (Gap CG-5)
 
-**O que está errado:** Quando o router não tem confiança suficiente, deveria escalar automaticamente para LLM classification (T3), mas a cascata não é automática.
+**O que está errado:** Quando o intent router (T1 cache + T2 keywords) não atinge confiança suficiente, deveria escalar automaticamente para LLM classification (T3), mas a cascata não é automática.
+
+**Por que importa:** Sem cascata automática, queries ambíguas caem em fallback genérico ao invés de serem classificadas corretamente pelo LLM. Isso degrada a experiência do recrutador.
 
 **Depende de:** RM-09 (Confiança real)
 
 **Referência:** Anexo L, MC-3.1 CG-5, Gap CG-5 (Anexo E)
 
-**Roadmap:**
+**Passo-a-passo para resolver:**
 
-1. **Automatizar cascata** (8h):
+1. Automatizar cascata no router:
 ```python
-async def route(self, message, company_id):
-    # T1: Cache
-    cached = await cache.get(message_hash)
-    if cached and cached.confidence >= 0.85:
-        return cached.result
+async def route(self, message: str, company_id: str) -> RouteResult:
+    t1_result = await self._try_cache(message)
+    if t1_result and t1_result.confidence >= 0.85:
+        self._metrics.record("t1_cache_hit")
+        return t1_result
 
-    # T2: Keywords
-    keyword_result = self.keyword_match(message)
-    if keyword_result.confidence >= 0.70:
-        return keyword_result
+    t2_result = self._keyword_match(message)
+    if t2_result.confidence >= 0.70:
+        self._metrics.record("t2_keyword_hit")
+        await self._cache_result(message, t2_result)
+        return t2_result
 
-    # T3: LLM (automático se T1+T2 insuficientes)
-    llm_result = await self.llm_classify(message, company_id)
-    await cache.set(message_hash, llm_result)
-    return llm_result
+    t3_result = await self._llm_classify(message, company_id)
+    self._metrics.record("t3_llm_classify")
+    await self._cache_result(message, t3_result)
+    return t3_result
 ```
 
-2. **Rate limiting T3** (4h): Limitar chamadas LLM para classificação
-3. **Métricas de cascata** (4h): Medir % de queries resolvidas em T1, T2, T3
+2. Rate limiting para T3:
+```python
+T3_RATE_LIMIT = 100  # max LLM classifications per company per hour
 
-**Esforço total:** 16h | **Responsável:** Backend
+async def _llm_classify(self, message, company_id):
+    if await self._t3_rate_exceeded(company_id):
+        return RouteResult(intent="general", confidence=0.5, tier="t3_limited")
+    # ... LLM call
+```
+
+3. Métricas de cascata:
+```python
+async def get_cascade_metrics(self, company_id: str, period: str):
+    return {
+        "t1_hit_rate": await self._get_tier_rate("t1", company_id, period),
+        "t2_hit_rate": await self._get_tier_rate("t2", company_id, period),
+        "t3_hit_rate": await self._get_tier_rate("t3", company_id, period),
+        "avg_confidence_by_tier": await self._get_confidence_by_tier(company_id, period),
+    }
+```
+
+4. Verificar que cache key é segura (não MD5 — ver Gap G-R2):
+```python
+import hashlib
+cache_key = hashlib.sha256(f"{company_id}:{message}".encode()).hexdigest()
+```
+
+**Padrão de código a seguir:** Router em cascata T1→T2→T3 com métricas por tier. Rate limiting T3 por company. Cache key SHA-256 (não MD5). ConfidencePolicy integrada (RM-24). Referência: Crença 09 (custos), Crença 10 (determinismo vs IA), Gap G-R2 (Anexo E).
+
+**Arquivos a modificar:**
+- Modificar: `app/shared/agents/intent_router.py`
+- Criar: `app/services/cascade_metrics_service.py`
+- Modificar: `app/domains/analytics/agents/analytics_tool_registry.py` (tool `get_cascade_metrics`)
+
+**Esforço estimado:** 16h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Query clara ("mostre o pipeline") → resolve em T2 sem LLM call
+- [ ] Query ambígua ("e aí, como tá?") → escala para T3 automaticamente
+- [ ] T3 rate limiting ativo (100/hora/company)
+- [ ] Métricas de cascata visíveis: % T1, % T2, % T3
 
 ---
 
