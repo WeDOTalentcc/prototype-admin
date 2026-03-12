@@ -16,7 +16,7 @@ from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -298,6 +298,93 @@ async def get_similar_jobs(
     )
     
     return await service.get_similar_jobs(db, context, limit)
+
+
+@router.post("/import/upload-file", response_model=Dict[str, Any])
+async def upload_jd_file(
+    file: UploadFile = File(..., description="Arquivo JD (.txt, .pdf, .docx, .md)"),
+    title: str = Query("", description="Título da vaga (opcional, extraído do arquivo se vazio)"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+) -> Dict[str, Any]:
+    """
+    Importa uma Job Description a partir de upload de arquivo (P3-2).
+
+    Suporta: .txt, .md, .pdf (extrai texto via pypdf se disponível), .docx (extrai via python-docx).
+    O texto extraído é passado para JDImportService.import_jd() para parse estruturado.
+
+    Returns:
+        JD importada e parseada com campos extraídos (título, skills, requisitos, benefícios).
+    """
+    # Validar tipo de arquivo
+    allowed_extensions = {".txt", ".md", ".pdf", ".docx"}
+    filename = file.filename or ""
+    ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tipo de arquivo não suportado: '{ext}'. Use: {', '.join(sorted(allowed_extensions))}",
+        )
+
+    # Validar tamanho (máx 5MB)
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Arquivo muito grande. Máximo: 5MB")
+
+    # Extrair texto conforme tipo
+    raw_text: str = ""
+    if ext in {".txt", ".md"}:
+        raw_text = content.decode("utf-8", errors="replace")
+    elif ext == ".pdf":
+        try:
+            import io
+            import pypdf  # type: ignore[import]
+            reader = pypdf.PdfReader(io.BytesIO(content))
+            raw_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        except ImportError:
+            # pypdf não instalado — retorna texto vazio com aviso
+            raise HTTPException(
+                status_code=422,
+                detail="Parse de PDF não disponível neste ambiente. Use .txt ou .docx.",
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail=f"Erro ao ler PDF: {exc}")
+    elif ext == ".docx":
+        try:
+            import io
+            import docx  # type: ignore[import]
+            doc = docx.Document(io.BytesIO(content))
+            raw_text = "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+        except ImportError:
+            raise HTTPException(
+                status_code=422,
+                detail="Parse de DOCX não disponível neste ambiente. Use .txt.",
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail=f"Erro ao ler DOCX: {exc}")
+
+    if not raw_text.strip():
+        raise HTTPException(status_code=422, detail="Arquivo vazio ou sem texto extraível.")
+
+    # Importar via JDImportService
+    company_id = parse_company_id(get_user_company_id(current_user))
+    service = JDImportService()
+
+    jd_data = {
+        "title": title or filename.rsplit(".", 1)[0],
+        "description": raw_text,
+        "source_file": filename,
+    }
+
+    imported = await service.import_jd(
+        db=db,
+        company_id=company_id,
+        jd_data=jd_data,
+        source="file_upload",
+        parse_immediately=True,
+    )
+
+    return {**imported.to_dict(), "source_filename": filename}
 
 
 @router.get("/data-coverage", response_model=DataCoverageResponse)

@@ -2392,6 +2392,13 @@ Incluir no relatório final:
 | RM-25 | Wiring desconectado (componente existe mas não é chamado) | P2 | Variável | Backend/FE | — |
 | RM-26 | EU AI Act compliance gaps nos prompts | P2 | 3h | Backend | — |
 | RM-27 | WCAG 2.1 AA não atendido | P2 | 8h | Frontend | — |
+| RM-38 | Data flow quebrado ou incompleto (Dimensão 2) | P2 | 2-4h/item | Backend+FE | — |
+| RM-39 | Backend/API incorreto ou incompleto (Dimensão 6) | P2 | 2-4h/item | Backend | — |
+| RM-40 | Types/Contracts inconsistentes (Dimensão 7) | P2 | 4h | Backend+FE | — |
+| RM-41 | User flow quebrado ou incompleto (Dimensão 8) | P2 | 2-4h/item | Frontend | — |
+| RM-42 | Inconsistência entre componentes (Dimensão 9) | P2 | 4-8h | Frontend | — |
+| RM-43 | Documentação desatualizada ou ausente (Dimensão 11) | P2 | 4h | Backend+FE | — |
+| RM-44 | Performance / escalabilidade insuficiente (Dimensão 14) | P2 | 8h | Backend | — |
 | RM-36 | Pipeline não validado / stages sem verificação | P2 | 6h | Backend+FE | — |
 | RM-28 | Outreach automatizado (gap competitivo CG-1) | P3 | 40h | Backend+FE | — |
 | RM-29 | Profile enrichment multi-fonte (CG-2) | P3 | 40h | Backend | — |
@@ -3841,6 +3848,346 @@ npx axe-cli http://localhost:3000 --rules wcag2aa
 
 ---
 
+### RM-38: Data Flow Quebrado ou Incompleto (Dimensão 2)
+
+**O que está errado:** Dados não fluem corretamente entre componentes. Exemplos: frontend envia payload mas backend ignora campos, API retorna dados que frontend não renderiza, transformações perdem campos no caminho.
+
+**Por que importa:** Data flow quebrado causa dados fantasma (existem no banco mas não aparecem na UI), campos que o usuário preenche mas são descartados silenciosamente, e inconsistência entre o que o backend sabe e o que o frontend mostra.
+
+**Referência:** Dimensão 2 (Data Flow), AP-4.2 (Anexo B)
+
+**Passo-a-passo para resolver:**
+
+1. Mapear o fluxo de dados completo para a feature auditada:
+```bash
+grep -rn "fieldName" plataforma-lia/src/ --include="*.ts" --include="*.tsx"
+grep -rn "field_name" lia-agent-system/app/ --include="*.py"
+```
+
+2. Verificar cada ponto de transformação:
+   - Frontend form → API request: campo está no payload?
+   - API request → backend handler: campo é lido do request?
+   - Backend handler → banco: campo é persistido?
+   - Banco → API response: campo é retornado?
+   - API response → frontend: campo é renderizado?
+
+3. Para cada campo fantasma, decidir: CONECTAR (se deveria funcionar) ou REMOVER (se foi abandonado).
+
+**Padrão de código a seguir:** Todo campo deve ter caminho completo: form → payload → handler → DB → response → render. Se qualquer ponto está ausente, o campo é "fantasma". Usar TypeScript types compartilhados para garantir consistência frontend↔backend. Referência: Dimensão 2, AP-4.2.
+
+**Arquivos a modificar:**
+- Variável por feature (depende de qual data flow está quebrado)
+- Verificar: schemas de API, handlers, componentes de formulário
+
+**Esforço estimado:** 2-4h por data flow quebrado | **Responsável:** Backend + Frontend
+
+**Critério de aceitação:**
+- [ ] Campo preenchido no formulário → persiste no banco → aparece na UI
+- [ ] Nenhum campo enviado pelo frontend é silenciosamente ignorado pelo backend
+- [ ] API response inclui todos os campos que o frontend renderiza
+
+---
+
+### RM-39: Backend/API Incorreto ou Incompleto (Dimensão 6)
+
+**O que está errado:** Endpoints de API existem mas retornam dados incorretos, não tratam erros adequadamente, ou têm lógica de negócio com bugs.
+
+**Por que importa:** API incorreta causa comportamento errado em toda a plataforma. Se um endpoint de movimentação de candidato não valida transições, candidatos podem ser movidos para stages inválidos.
+
+**Referência:** Dimensão 6 (Backend/API), Dimensão 1 (Wiring)
+
+**Passo-a-passo para resolver:**
+
+1. Verificar endpoints críticos:
+```bash
+grep -rn "@router\.\|@app\." lia-agent-system/app/ --include="*.py" | grep -E "post|put|patch|delete"
+```
+
+2. Para cada endpoint, verificar:
+   - Input validation: payload é validado com Pydantic/schema?
+   - Error handling: exceções retornam status code correto?
+   - Business logic: regras de negócio estão corretas?
+   - Response: retorna dados completos e consistentes?
+
+3. Corrigir:
+```python
+@router.post("/candidates/{id}/move")
+async def move_candidate(id: str, body: MoveCandidateRequest, company_id: str = Depends(get_company)):
+    if not body.to_stage:
+        raise HTTPException(400, "to_stage é obrigatório")
+    candidate = await get_candidate(id, company_id)
+    if not candidate:
+        raise HTTPException(404, "Candidato não encontrado")
+    result = await pipeline_service.move(candidate, body.to_stage, company_id)
+    return {"status": "success", "data": result}
+```
+
+**Padrão de código a seguir:** Todo endpoint: Pydantic validation, `company_id` via Depends, HTTPException com status correto, response padronizada `{"status": ..., "data": ...}`. Referência: Dimensão 6, padrão FastAPI.
+
+**Arquivos a modificar:**
+- Variável por endpoint (verificar cada rota em `app/api/`)
+- Referência: padrão de rotas existentes em `app/api/v1/`
+
+**Esforço estimado:** 2-4h por endpoint com problema | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Todo endpoint valida input com Pydantic
+- [ ] Erros retornam status code HTTP correto (400, 404, 500)
+- [ ] company_id é verificado em toda query (multi-tenant)
+- [ ] Response tem formato consistente
+
+---
+
+### RM-40: Types/Contracts Inconsistentes (Dimensão 7)
+
+**O que está errado:** Tipos TypeScript no frontend não correspondem aos schemas Pydantic no backend. Contratos de API não documentados ou desatualizados.
+
+**Por que importa:** Tipos inconsistentes causam erros em runtime que TypeScript deveria prevenir em compile time. Frontend espera `candidateId` mas backend envia `candidate_id`. Sem contrato claro, cada mudança no backend pode quebrar o frontend silenciosamente.
+
+**Referência:** Dimensão 7 (Types/Contracts)
+
+**Passo-a-passo para resolver:**
+
+1. Verificar consistência de naming:
+```bash
+grep -rn "interface.*Candidate\|type.*Candidate" plataforma-lia/src/ --include="*.ts"
+grep -rn "class.*Candidate.*Model\|class.*Candidate.*Schema" lia-agent-system/app/ --include="*.py"
+```
+
+2. Para cada API endpoint, verificar que o tipo TypeScript corresponde ao schema Pydantic:
+   - camelCase (frontend) ↔ snake_case (backend) mapeado corretamente
+   - Campos opcionais marcados como `?` no TypeScript e `Optional` no Pydantic
+   - Enums têm mesmos valores nos dois lados
+
+3. Criar tipos compartilhados ou schema de contrato:
+```typescript
+export interface CandidateResponse {
+  id: string;
+  name: string;
+  email: string;
+  stage: 'sourcing' | 'screening' | 'interview' | 'offer' | 'standby';
+  wsiScore?: number;
+}
+```
+
+**Padrão de código a seguir:** Tipos TypeScript devem espelhar schemas Pydantic. camelCase no frontend, snake_case no backend, com conversão no proxy/API layer. Usar `zod` para validação runtime no frontend. Referência: Dimensão 7.
+
+**Arquivos a modificar:**
+- `plataforma-lia/src/types/` (criar ou atualizar tipos compartilhados)
+- `lia-agent-system/app/schemas/` (schemas Pydantic)
+
+**Esforço estimado:** 4h | **Responsável:** Frontend + Backend
+
+**Critério de aceitação:**
+- [ ] Todo tipo TypeScript tem correspondente Pydantic
+- [ ] Naming convention consistente (camelCase ↔ snake_case mapeado)
+- [ ] Campos opcionais marcados corretamente em ambos os lados
+
+---
+
+### RM-41: User Flow Quebrado ou Incompleto (Dimensão 8)
+
+**O que está errado:** Fluxo do usuário tem caminhos mortos (botão leva a lugar nenhum), estados não tratados (loading infinito, erro sem mensagem), ou passos faltando (ação concluída mas UI não atualiza).
+
+**Por que importa:** Fluxo quebrado frustra o recrutador e pode levar a perda de dados. Candidato movido no kanban mas UI não reflete a mudança. Formulário submetido mas sem feedback de sucesso/erro.
+
+**Referência:** Dimensão 8 (User Flow)
+
+**Passo-a-passo para resolver:**
+
+1. Mapear cada fluxo crítico:
+   - Criar vaga → configurar pipeline → publicar
+   - Receber candidato → triar → agendar entrevista → fazer oferta
+   - Chat com LIA → ação executada → feedback visual
+
+2. Para cada fluxo, verificar:
+   - [ ] Estado de loading visível enquanto processa
+   - [ ] Erro exibe mensagem clara (não tela branca)
+   - [ ] Sucesso atualiza a UI imediatamente (optimistic update ou refetch)
+   - [ ] Navegação pós-ação é correta (volta para lista, vai para detalhe, etc.)
+
+3. Corrigir usando padrão de mutation:
+```typescript
+const mutation = useMutation({
+  mutationFn: moveCandidate,
+  onSuccess: () => {
+    queryClient.invalidateQueries(['candidates', jobId]);
+    toast.success('Candidato movido com sucesso');
+  },
+  onError: (error) => {
+    toast.error(`Erro ao mover candidato: ${error.message}`);
+  },
+});
+```
+
+**Padrão de código a seguir:** Todo fluxo: loading state → sucesso com feedback + invalidação de cache → erro com mensagem clara. Usar `react-query` mutations com `onSuccess`/`onError`. Referência: Dimensão 8, Design System v4.2.1.
+
+**Arquivos a modificar:**
+- Variável por fluxo (componentes de página e hooks)
+- Verificar: `plataforma-lia/src/app/(protected)/` (pages com forms/actions)
+
+**Esforço estimado:** 2-4h por fluxo quebrado | **Responsável:** Frontend
+
+**Critério de aceitação:**
+- [ ] Nenhum botão leva a tela branca ou erro silencioso
+- [ ] Todo formulário mostra loading durante submit e feedback ao concluir
+- [ ] Navegação pós-ação é intuitiva (não fica em página vazia)
+
+---
+
+### RM-42: Inconsistência entre Componentes (Dimensão 9)
+
+**O que está errado:** Componentes similares usam padrões diferentes (ex: dois modais com APIs diferentes, tabelas com props inconsistentes, nomenclatura variável para mesmos conceitos).
+
+**Por que importa:** Inconsistência dificulta manutenção, confunde desenvolvedores, e cria UX fragmentada para o recrutador. O mesmo conceito ("score") aparece como porcentagem em uma tela e como decimal em outra.
+
+**Referência:** Dimensão 9 (Consistência), Design System v4.2.1
+
+**Passo-a-passo para resolver:**
+
+1. Inventariar componentes duplicados:
+```bash
+grep -rn "Modal\|Dialog" plataforma-lia/src/components/ --include="*.tsx" -l
+grep -rn "Table\|DataGrid" plataforma-lia/src/components/ --include="*.tsx" -l
+```
+
+2. Para cada par de componentes similares:
+   - Unificar API (mesmas props para mesma funcionalidade)
+   - Usar Design System tokens (cores, tipografia, espaçamento)
+   - Padronizar nomenclatura (score sempre 0-100, datas sempre ISO)
+
+3. Criar componentes base reutilizáveis quando há duplicação.
+
+**Padrão de código a seguir:** Usar componentes do Design System v4.2.1. Regra 90/10 (90% componentes padronizados). Tokens canônicos para cores/tipografia. Referência: Dimensão 9, skill `design-standardize`.
+
+**Arquivos a modificar:**
+- `plataforma-lia/src/components/ui/` (componentes base)
+- Componentes duplicados identificados no inventário
+
+**Esforço estimado:** 4-8h (depende da quantidade de inconsistências) | **Responsável:** Frontend
+
+**Critério de aceitação:**
+- [ ] Score exibido no mesmo formato em todas as telas (0-100 ou 0-1, não ambos)
+- [ ] Modais usam mesma API de componente base
+- [ ] Cores e tipografia seguem tokens do Design System
+
+---
+
+### RM-43: Documentação Desatualizada ou Ausente (Dimensão 11)
+
+**O que está errado:** Documentação técnica (READMEs, comentários de API, guias de setup) está desatualizada, incompleta, ou ausente para módulos críticos.
+
+**Por que importa:** Documentação ausente faz novos desenvolvedores perderem tempo entendendo código. Documentação desatualizada é pior que ausente — causa decisões baseadas em informação errada.
+
+**Referência:** Dimensão 11 (Documentação), Production Readiness
+
+**Passo-a-passo para resolver:**
+
+1. Verificar documentação mínima para cada módulo:
+   - README com setup e arquitetura
+   - Docstrings em funções públicas
+   - Schemas de API documentados (FastAPI auto-gera via Pydantic)
+
+2. Priorizar documentação de:
+   - Módulos com mais contribuidores
+   - APIs consumidas por múltiplos clientes
+   - Lógica de negócio complexa (scoring, fairness, routing)
+
+3. Para cada módulo sem documentação:
+```python
+class FairnessGuard:
+    """Guardrail de fairness com 3 camadas de verificação.
+
+    Camada 1 (Lexical): Detecta termos discriminatórios via regex.
+    Camada 2 (Semântica): Analisa viés implícito via LLM.
+    Camada 3 (Estatística): Verifica four-fifths rule nos resultados.
+
+    Usage:
+        guard = FairnessGuard()
+        result = guard.check(input_text, company_id)
+        if result.action == "BLOCK_AND_WARN":
+            raise FairnessViolation(result.reason)
+    """
+```
+
+**Padrão de código a seguir:** Docstrings obrigatórias em classes e funções públicas. README por módulo com setup + arquitetura. FastAPI schemas auto-documentados. Referência: Dimensão 11, Production Readiness #11.
+
+**Arquivos a modificar:**
+- Módulos sem docstrings em `lia-agent-system/app/`
+- READMEs em `lia-agent-system/` e `plataforma-lia/`
+
+**Esforço estimado:** 4h | **Responsável:** Backend + Frontend
+
+**Critério de aceitação:**
+- [ ] Todo módulo público tem docstring explicando propósito e uso
+- [ ] APIs FastAPI auto-documentadas via `/docs`
+- [ ] README de setup funciona para dev novo
+
+---
+
+### RM-44: Performance / Escalabilidade Insuficiente (Dimensão 14)
+
+**O que está errado:** Queries N+1, falta de caching, endpoints lentos (>2s P95), falta de paginação, ou operações síncronas que deveriam ser assíncronas.
+
+**Por que importa:** Performance ruim degrada experiência do recrutador e aumenta custos de infra. Query N+1 num kanban com 500 candidatos pode levar >10s. Sem paginação, listar candidatos de empresa grande trava o browser.
+
+**Referência:** Dimensão 14 (Performance), Production Readiness #3/#4
+
+**Passo-a-passo para resolver:**
+
+1. Identificar queries N+1:
+```python
+# ANTES (N+1):
+candidates = await db.query(Candidate).filter_by(job_id=job_id).all()
+for c in candidates:
+    c.stage = await db.query(Stage).get(c.stage_id)  # N queries extras
+
+# DEPOIS (joinedload):
+candidates = await db.query(Candidate).options(
+    joinedload(Candidate.stage)
+).filter_by(job_id=job_id).all()
+```
+
+2. Adicionar paginação em listagens:
+```python
+@router.get("/candidates")
+async def list_candidates(page: int = 1, per_page: int = 50, company_id = Depends(get_company)):
+    offset = (page - 1) * per_page
+    total = await db.query(func.count(Candidate.id)).filter_by(company_id=company_id).scalar()
+    items = await db.query(Candidate).filter_by(company_id=company_id).offset(offset).limit(per_page).all()
+    return {"items": items, "total": total, "page": page, "per_page": per_page}
+```
+
+3. Adicionar caching para dados que mudam pouco (configurações, guardrails):
+```python
+from functools import lru_cache
+@lru_cache(maxsize=128, ttl=300)
+async def get_company_config(company_id):
+    return await db.query(CompanyConfig).filter_by(company_id=company_id).first()
+```
+
+4. Operações longas devem ser assíncronas (Celery tasks):
+   - Enriquecimento de perfil
+   - Geração de relatórios
+   - Envio de outreach em massa
+
+**Padrão de código a seguir:** `joinedload` para evitar N+1. Paginação obrigatória em listagens (`page`/`per_page`). Cache com TTL para configs. Celery para operações >5s. Referência: Dimensão 14, Production Readiness #3/#4, AP-5.5 (Anexo B).
+
+**Arquivos a modificar:**
+- Endpoints de listagem em `app/api/v1/` (adicionar paginação)
+- Queries com N+1 (adicionar `joinedload`/`selectinload`)
+- Operações longas (mover para Celery tasks)
+
+**Esforço estimado:** 8h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Nenhuma query N+1 nos endpoints principais (verificar via SQLAlchemy echo)
+- [ ] Toda listagem paginada (`page`/`per_page` obrigatórios)
+- [ ] P95 latency < 2s nos endpoints principais
+- [ ] Operações >5s executam via Celery (não bloqueiam request)
+
+---
+
 ### RM-36: Pipeline Não Validado / Stages Sem Verificação
 
 **O que está errado:** Pipeline de recrutamento pode ter stages mal configurados, sem validação de transições (candidato pula etapa, stage sem critérios de saída, stage "standby" filtrado incorretamente no frontend).
@@ -4469,9 +4816,9 @@ RM-18 (Padrão 4 arquivos) ──→ RM-19 (Stage context)
 |:----------:|:----:|:-------------:|:-----------:|:---------------------:|
 | P0 | 8 | 58h (~8 dias) | Imediato (bloqueador) | Backend |
 | P1 | 10 | 46h (~6 dias) | Sprint N+1 | Backend |
-| P2 | 11 | 56h (~7 dias) | Sprint N+2 a N+4 | Backend + Frontend |
+| P2 | 18 | ~100h (~13 dias) | Sprint N+2 a N+4 | Backend + Frontend |
 | P3 | 8 | 224h (~28 dias) | Backlog (roadmap) | Backend + Frontend |
-| **Total** | **37** | **384h (~48 dias)** | — | — |
+| **Total** | **44** | **~428h (~54 dias)** | — | — |
 
 **Nota:** Nem todos os runbooks serão aplicáveis a cada auditoria. O auditor deve identificar quais se aplicam e gerar o resumo executivo com os itens relevantes.
 

@@ -935,7 +935,8 @@
       "Bash(grep -rn \"reset-all\\\\|reset_all\\\\|total_reset\\\\|failed_circuits\" /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\" 2>/dev/null | head -20)",
       "Bash(grep -r \"UploadFile\\\\|file: File\\\\|POST.*upload\" /home/runner/workspace/lia-agent-system/app/api/v1/*.py | head -20)",
       "Bash(find /home/runner/workspace/plataforma-lia/src -type f -path \"*policy*\" -o -path \"*template*\" 2>/dev/null | head -20)",
-      "Bash(ls /home/runner/workspace/plataforma-lia/src/app/api/backend-proxy/ | grep -E \"briefing|ml|jd\" 2>/dev/null; find /home/runner/workspace/plataforma-lia/src -name \"use-daily-briefing*\" -o -name \"use-ml-predictions*\" 2>/dev/null)"
+      "Bash(ls /home/runner/workspace/plataforma-lia/src/app/api/backend-proxy/ | grep -E \"briefing|ml|jd\" 2>/dev/null; find /home/runner/workspace/plataforma-lia/src -name \"use-daily-briefing*\" -o -name \"use-ml-predictions*\" 2>/dev/null)",
+      "Bash(find /home/runner/workspace/plataforma-lia/src -name \"use-daily-briefing*\" -o -name \"use-ml-predictions*\" 2>/dev/null; ls /home/runner/workspace/plataforma-lia/src/app/api/backend-proxy/ | grep -E \"ml|policy-engine\" 2>/dev/null)"
     ]
   }
 }

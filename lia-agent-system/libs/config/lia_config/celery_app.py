@@ -98,5 +98,11 @@ celery_app.conf.update(
             "schedule": crontab(hour=5, minute=0),  # 02h Brasília / UTC-3
             "options": {"expires": 7200},
         },
+        # Briefing diário às 06h Brasília (UTC-3 → 09h UTC) — P3-1
+        "briefing-daily": {
+            "task": "briefing.send_daily",
+            "schedule": crontab(hour=9, minute=0),  # 06h Brasília / UTC-3
+            "options": {"expires": 3600},
+        },
     },
 )

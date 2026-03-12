@@ -7,6 +7,7 @@ Tasks registradas:
   - agents.triagem.run           — triagem curricular em lote
   - agents.sourcing.search       — busca de candidatos via Pearch (async)
   - communication.email.send_bulk — envio de email em massa
+  - briefing.send_daily          — envia briefing diário a todos os recrutadores ativos (P3-1)
 """
 import asyncio
 
@@ -495,3 +496,85 @@ def send_bulk_email_task(self, email_data: dict, company_id: str) -> dict:
         logger.error("communication.email.send_bulk falhou company=%s (retry %d): %s",
                      company_id, self.request.retries, exc)
         raise self.retry(exc=exc, countdown=countdown)
+
+
+# ---------------------------------------------------------------------------
+# P3-1 — Briefing diário automático para recrutadores
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="briefing.send_daily", bind=True, max_retries=2)
+def send_daily_briefing_task(self) -> dict:
+    """
+    Gera e envia briefing diário para todos os recrutadores ativos.
+
+    Agendado diariamente às 06h Brasília via Celery Beat (beat_schedule: briefing-daily).
+    Para cada recrutador ativo:
+      1. Gera briefing via BriefingService (com cache Redis TTL=6h)
+      2. Dispara notificação Bell (in-app) via NotificationService
+      3. Dispara email de resumo se recrutador tiver email ativo
+
+    Returns:
+        Dict com { sent, skipped, errors }
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from app.services.briefing_service import BriefingService
+        from app.auth.models import User
+
+        briefing_service = BriefingService()
+        sent = 0
+        skipped = 0
+        errors = 0
+
+        async with AsyncSessionLocal() as db:
+            from sqlalchemy import select
+            result = await db.execute(
+                select(User).where(User.is_active == True)  # noqa: E712
+            )
+            users = result.scalars().all()
+
+            for user in users:
+                try:
+                    briefing = await briefing_service.generate_daily_briefing(
+                        user_id=str(user.id), db=db
+                    )
+
+                    # Bell notification — best-effort
+                    try:
+                        from app.services.notification_service import notification_service
+                        urgent_count = len(briefing.get("urgent_actions", []))
+                        title = "☀️ Briefing do dia"
+                        body = (
+                            f"{urgent_count} ações urgentes pendentes"
+                            if urgent_count > 0
+                            else "Seu pipeline está atualizado"
+                        )
+                        await notification_service.send_notification(
+                            user_id=str(user.id),
+                            company_id=str(user.company_id) if hasattr(user, "company_id") else None,
+                            channel="bell",
+                            title=title,
+                            body=body,
+                            data={"type": "daily_briefing", "briefing_date": briefing.get("date")},
+                            db=db,
+                        )
+                    except Exception as notif_exc:
+                        logger.warning(
+                            "briefing.send_daily: notificação falhou user=%s: %s",
+                            user.id, notif_exc,
+                        )
+
+                    sent += 1
+                except Exception as exc:
+                    logger.error(
+                        "briefing.send_daily: erro para user=%s: %s", user.id, exc
+                    )
+                    errors += 1
+
+        return {"sent": sent, "skipped": skipped, "errors": errors}
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.error("briefing.send_daily falhou: %s", exc)
+        raise self.retry(exc=exc, countdown=300)
