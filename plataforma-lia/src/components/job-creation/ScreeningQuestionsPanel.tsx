@@ -54,23 +54,14 @@ const WSI_BLOCKS = [
   { 
     id: 2, 
     name: 'Perguntas Padrão da Empresa', 
-    description: 'Perguntas configuradas pela empresa',
-    duration: '2 min', 
+    description: 'Perguntas configuradas pela empresa (incluindo elegibilidade)',
+    duration: '3 min', 
     editable: true,
     type: 'company',
     icon: Building2
   },
   { 
     id: 3, 
-    name: 'Elegibilidade WSI', 
-    description: 'Perguntas de elegibilidade da metodologia WSI',
-    duration: '2 min', 
-    editable: true,
-    type: 'eligibility',
-    icon: Target
-  },
-  { 
-    id: 4, 
     name: 'Avaliação Técnica', 
     description: 'Skills com pesos e rubricas automáticas',
     duration: '5 min', 
@@ -79,7 +70,7 @@ const WSI_BLOCKS = [
     icon: Zap
   },
   { 
-    id: 5, 
+    id: 4, 
     name: 'Análise Situacional e Fit', 
     description: 'Perguntas situacionais com follow-ups',
     duration: '4 min', 
@@ -88,7 +79,7 @@ const WSI_BLOCKS = [
     icon: Users
   },
   { 
-    id: 6, 
+    id: 5, 
     name: 'Resultado e Encerramento', 
     description: 'Índice WSI automático e feedback',
     duration: '3 min', 
@@ -412,14 +403,13 @@ export function ScreeningQuestionsPanel({
 
     const distributionItems = Object.entries(blockDistribution).map(([key, count]) => {
       const blockNames: Record<string, string> = {
-        '3': 'Elegibilidade',
-        '4': 'Técnico',
-        '5': 'Situacional',
         '2': 'Empresa',
+        '3': 'Técnico',
+        '4': 'Situacional',
       }
       const name = blockNames[key] || `Bloco ${key}`
       return { key, name, count }
-    }).filter(item => ['2', '3', '4', '5'].includes(item.key))
+    }).filter(item => ['2', '3', '4'].includes(item.key))
 
     if (distributionItems.length === 0) return null
 
@@ -585,7 +575,7 @@ export function ScreeningQuestionsPanel({
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-medium text-gray-800">{block.name}</span>
-                {block.id === 3 && isAffirmative && (
+                {block.id === 2 && isAffirmative && (
                   <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border bg-purple-50 text-purple-700 border-purple-200">
                     Vaga Afirmativa
                   </Badge>
@@ -693,7 +683,7 @@ export function ScreeningQuestionsPanel({
       if (cat.includes('tech')) badges.push({ label: 'Skills', color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-700' })
       if (cat.includes('behav') || cat.includes('situa')) badges.push({ label: 'Experiência', color: 'bg-purple-50 text-purple-600 border-purple-200' })
       if (cat.includes('cult')) badges.push({ label: 'Cultural', color: 'bg-green-50 text-green-600 border-green-200' })
-      if (badges.length === 0) badges.push({ label: 'Elegibilidade', color: 'bg-orange-50 text-orange-600 border-orange-200' })
+      if (badges.length === 0) badges.push({ label: 'Geral', color: 'bg-orange-50 text-orange-600 border-orange-200' })
       return badges
     }
 

@@ -51,7 +51,7 @@ class WSIInterviewStage(str, Enum):
 @dataclass
 class WSIQuestionBlock:
     block_id: str
-    block_type: str  # "eligibility" | "technical" | "behavioral" | "situational"
+    block_type: str  # "technical" | "behavioral" | "situational"
     question: str
     competency: str
     bloom_level: int  # 1-6
@@ -616,8 +616,6 @@ class WSIInterviewNodes:
             state.technical_score = (state.technical_score + normalized) / 2
         elif block_type in ("behavioral", "situational"):
             state.behavioral_score = (state.behavioral_score + normalized) / 2
-        elif block_type == "eligibility":
-            state.eligibility_score = (state.eligibility_score + normalized) / 2
 
     def _build_fallback_questions(self) -> List[WSIQuestionBlock]:
         """Perguntas de fallback quando o pipeline não consegue gerar questões."""

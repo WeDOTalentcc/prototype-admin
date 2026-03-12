@@ -69,16 +69,6 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
         "handler": "app.services.wsi_question_adjuster.adjust_questions",
     },
     {
-        "tool_id": "check_eligibility",
-        "name": "Verificar Elegibilidade",
-        "description": "Check candidate eligibility",
-        "parameters": {
-            "candidate_id": {"type": "string", "description": "ID do candidato", "required": True},
-            "job_id": {"type": "string", "description": "ID da vaga", "required": True},
-        },
-        "handler": "app.services.eligibility_verification_service.verify_eligibility",
-    },
-    {
         "tool_id": "normalize_scores",
         "name": "Normalizar Scores",
         "description": "Normalize scores across candidates",

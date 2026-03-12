@@ -13,11 +13,10 @@ logger = logging.getLogger(__name__)
 WSI_BLOCKS = {
     0: {"name": "Abordagem Inicial", "editable": False},
     1: {"name": "Apresentação da Oportunidade", "editable": False},
-    2: {"name": "Perguntas Padrão da Empresa", "editable": True},
-    3: {"name": "Elegibilidade WSI", "editable": True, "description": "Perguntas eliminatórias e de fit básico"},
-    4: {"name": "Avaliação Técnica", "editable": True, "description": "Skills técnicas com pesos e rubricas"},
-    5: {"name": "Análise Situacional e Fit", "editable": True, "description": "Perguntas situacionais, comportamentais e culturais"},
-    6: {"name": "Resultado e Encerramento", "editable": False},
+    2: {"name": "Perguntas Padrão da Empresa", "editable": True, "description": "Perguntas da empresa incluindo elegibilidade"},
+    3: {"name": "Avaliação Técnica", "editable": True, "description": "Skills técnicas com pesos e rubricas"},
+    4: {"name": "Análise Situacional e Fit", "editable": True, "description": "Perguntas situacionais, comportamentais e culturais"},
+    5: {"name": "Resultado e Encerramento", "editable": False},
 }
 
 MAX_ITERATIONS_PER_BLOCK = 5

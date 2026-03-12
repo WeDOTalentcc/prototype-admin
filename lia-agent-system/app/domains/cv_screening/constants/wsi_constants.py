@@ -39,21 +39,7 @@ WSI_BLOCK_NAMES: dict[int, str] = {
     0: "Abordagem Inicial",
     1: "Apresentação da Oportunidade",
     2: "Perguntas Padrão da Empresa",
-    3: "Elegibilidade e Formação",           # renomeado: era "Elegibilidade WSI"
-    4: "Competências Técnicas",               # alinhado com dimensão Score Card
-    5: "Competências Comportamentais e Fit",  # alinhado com dimensões behavioral + contextual
-    6: "Resultado e Encerramento",
+    3: "Competências Técnicas",
+    4: "Competências Comportamentais e Fit",
+    5: "Resultado e Encerramento",
 }
-
-# ---------------------------------------------------------------------------
-# Formação Acadêmica — pré-qualificador (não pontuado)
-# Verificação de requisitos legais e certificações obrigatórias.
-# Resultado: pass/fail — não entra no cálculo do score WSI.
-# Bloco: 3 (Elegibilidade e Formação)
-# ---------------------------------------------------------------------------
-
-FORMACAO_PRE_QUALIFIER_LABEL: str = "Formação Acadêmica"
-FORMACAO_PRE_QUALIFIER_DESCRIPTION: str = (
-    "Verificação de requisitos legais de formação (OAB, CREA, CRM, etc.) "
-    "e certificações técnicas obrigatórias. Não pontuado — pass/fail."
-)

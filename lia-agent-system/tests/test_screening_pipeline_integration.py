@@ -81,7 +81,6 @@ class TestModelDistributions:
 
     def test_compact_has_all_keys(self):
         dist = MODEL_DISTRIBUTIONS["compact"]
-        assert "eligibility" in dist
         assert "technical" in dist
         assert "behavioral" in dist
 
@@ -205,16 +204,12 @@ class TestPipelineBuild:
         ), patch(
             "app.domains.cv_screening.services.wsi_screening_pipeline.wsi_screening_generator"
         ) as mock_gen:
-            # Mock dos métodos PRIVADOS do gerador WSI.
-            # _build_technical_block chama _generate_technical_questions (underscore).
-            # _build_behavioral_block chama _generate_behavioral_questions + _generate_cultural_questions.
-            # _build_eligibility_block usa templates internos — não usa o gerador.
             mock_gen._generate_technical_questions.return_value = [
                 MagicMock(
                     id=f"tech-{i}",
                     text=f"Descreva um projeto com {skill}.",
                     category="technical",
-                    block_id=4,
+                    block_id=3,
                     source="wsi_generated",
                     bloom_level=4, bloom_label="Analisar",
                     dreyfus_stage=4, dreyfus_label="Proficiente",
@@ -230,7 +225,7 @@ class TestPipelineBuild:
                     id=f"beh-{i}",
                     text=f"Conte sobre uma situação de {comp}.",
                     category="behavioral",
-                    block_id=5,
+                    block_id=4,
                     source="wsi_generated",
                     bloom_level=4, bloom_label="Analisar",
                     dreyfus_stage=3, dreyfus_label="Competente",
@@ -315,8 +310,8 @@ class TestPipelineBuild:
         """Competências comportamentais devem gerar perguntas no bloco 5."""
         request = make_request(behavioral_competencies=["Liderança", "Adaptabilidade"])
         result = self._build(request)
-        block_5_questions = [q for q in result.questions if q.block_id == 5]
-        assert len(block_5_questions) > 0
+        block_4_questions = [q for q in result.questions if q.block_id == 4]
+        assert len(block_4_questions) > 0
 
 
 # ---------------------------------------------------------------------------
@@ -356,7 +351,6 @@ class TestResponseSchema:
         ), patch(
             "app.domains.cv_screening.services.wsi_screening_pipeline.wsi_screening_generator"
         ) as mock_gen:
-            mock_gen.generate_eligibility_questions.return_value = []
             mock_gen.generate_technical_questions.return_value = []
             mock_gen.generate_behavioral_questions.return_value = []
             return PIPELINE.build_pipeline(request, [])

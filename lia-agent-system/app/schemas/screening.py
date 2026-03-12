@@ -9,43 +9,6 @@ from uuid import UUID
 _logger = logging.getLogger(__name__)
 
 
-class FormacaoPreQualifierResult(BaseModel):
-    """Resultado do pré-qualificador de Formação Acadêmica (Bloco 3).
-
-    Verifica se o candidato atende requisitos legais de formação e
-    certificações obrigatórias (OAB, CREA, CRM, etc.).
-    Não pontuado — pass/fail apenas. Não entra no cálculo do score WSI.
-    """
-    required_certifications: List[str] = Field(
-        default=[],
-        description="Certificações/formações exigidas pela vaga (ex: ['OAB', 'CREA'])"
-    )
-    candidate_certifications: List[str] = Field(
-        default=[],
-        description="Certificações/formações extraídas do CV do candidato"
-    )
-    passes: bool = Field(
-        ...,
-        description="True se o candidato atende todos os requisitos legais de formação"
-    )
-    note: str = Field(
-        default="",
-        description="Observação contextual (ex: 'Bootcamp equivale a diploma para esta vaga')"
-    )
-
-    @model_validator(mode="after")
-    def _check_note_fairness(self) -> "FormacaoPreQualifierResult":
-        if self.note:
-            from app.shared.compliance.fairness_guard import FairnessGuard
-            warnings = FairnessGuard().check_implicit_bias(self.note)
-            if warnings:
-                _logger.warning(
-                    "FairnessGuard: implicit bias em FormacaoPreQualifierResult.note",
-                    extra={"warnings": warnings},
-                )
-        return self
-
-
 class BigFiveProfile(BaseModel):
     openness: int = Field(default=50, ge=0, le=100, description="Abertura a novas experiências")
     conscientiousness: int = Field(default=50, ge=0, le=100, description="Organização e responsabilidade")
@@ -69,7 +32,7 @@ class ScreeningQuestionRequest(BaseModel):
 class ScreeningQuestion(BaseModel):
     id: str = Field(..., description="Unique question identifier")
     text: str = Field(..., description="The question text in Portuguese")
-    category: Literal["behavioral", "technical", "cultural", "eligibility"] = Field(..., description="Question category")
+    category: Literal["behavioral", "technical", "cultural"] = Field(..., description="Question category")
     trait: Optional[str] = Field(None, description="Big Five trait if behavioral question")
     skill: Optional[str] = Field(None, description="Technical skill if technical question")
     bloom_level: int = Field(default=3, ge=1, le=6, description="Bloom's Taxonomy level (1-6)")
@@ -91,14 +54,13 @@ class ScreeningQuestionResponse(BaseModel):
     behavioral_questions: List[ScreeningQuestion] = Field(default=[], description="Behavioral questions grouped")
     technical_questions: List[ScreeningQuestion] = Field(default=[], description="Technical questions grouped")
     cultural_questions: List[ScreeningQuestion] = Field(default=[], description="Cultural questions grouped")
-    eligibility_questions: List[ScreeningQuestion] = Field(default=[], description="WSI eligibility questions grouped")
     total_count: int = Field(default=0, description="Total number of questions")
     metadata: Dict[str, Any] = Field(default={}, description="Generation metadata")
 
 
 class RegenerateQuestionsRequest(BaseModel):
     context: ScreeningQuestionRequest = Field(..., description="Original job context")
-    category: Optional[Literal["behavioral", "technical", "cultural", "eligibility"]] = Field(
+    category: Optional[Literal["behavioral", "technical", "cultural"]] = Field(
         None, description="Category to regenerate, or all if None"
     )
     exclude_ids: List[str] = Field(default=[], description="Question IDs to exclude from regeneration")
@@ -109,8 +71,8 @@ class UnifiedScreeningQuestion(BaseModel):
     id: str = Field(..., description="Unique question identifier")
     text: str = Field(..., description="The question text in Portuguese")
     category: str = Field(..., description="Question category: behavioral, technical, cultural, eligibility, company")
-    block_id: int = Field(..., description="WSI block ID: 2 (company), 3 (eligibility), 4 (technical), 5 (behavioral/situational)")
-    source: Literal["company", "wsi_generated", "wsi_eligibility"] = Field(default="wsi_generated", description="Question source")
+    block_id: int = Field(..., description="WSI block ID: 2 (company), 3 (technical), 4 (behavioral/situational)")
+    source: Literal["company", "wsi_generated"] = Field(default="wsi_generated", description="Question source")
     trait: Optional[str] = Field(None, description="Big Five trait if behavioral question")
     skill: Optional[str] = Field(None, description="Technical skill if technical question")
     bloom_level: int = Field(default=3, ge=1, le=6, description="Bloom's Taxonomy level")
@@ -166,7 +128,3 @@ class WSIScreeningPipelineResponse(BaseModel):
     metadata: Dict[str, Any] = Field(default={})
     seniority_resolution: Optional[Dict[str, Any]] = Field(default=None, description="Metadata da resolução de senioridade multi-signal")
     quality_warnings: List[str] = Field(default=[])
-    formacao_pre_qualifier: Optional[FormacaoPreQualifierResult] = Field(
-        default=None,
-        description="Resultado do pré-qualificador de Formação Acadêmica (Bloco 3 — pass/fail)"
-    )

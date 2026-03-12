@@ -291,11 +291,11 @@ export function WSIQuestionsStage({
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-4 h-4 text-amber-600" />
             <span className="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">
-              Perguntas de Elegibilidade
+              Perguntas da Empresa
             </span>
           </div>
           <p className="text-xs text-amber-900">
-            Nenhuma pergunta de elegibilidade cadastrada.
+            Nenhuma pergunta padrão cadastrada.
           </p>
           <p className="text-[10px] text-amber-800 mt-1 flex items-center gap-1">
             <Settings className="w-3 h-3" />

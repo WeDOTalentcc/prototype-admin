@@ -81,21 +81,13 @@ const WSI_BLOCKS = [
   { 
     id: 2, 
     name: 'Perguntas Padrão da Empresa', 
-    description: 'Perguntas configuradas pela empresa',
-    duration: '2 min', 
+    description: 'Perguntas configuradas pela empresa (incluindo elegibilidade)',
+    duration: '3 min', 
     editable: true,
     type: 'company'
   },
   { 
     id: 3, 
-    name: 'Elegibilidade WSI', 
-    description: 'Perguntas de elegibilidade da metodologia WSI',
-    duration: '2 min', 
-    editable: true,
-    type: 'eligibility'
-  },
-  { 
-    id: 4, 
     name: 'Avaliação Técnica', 
     description: 'Skills com pesos e rubricas automáticas',
     duration: '5 min', 
@@ -103,7 +95,7 @@ const WSI_BLOCKS = [
     type: 'technical'
   },
   { 
-    id: 5, 
+    id: 4, 
     name: 'Análise Situacional e Fit', 
     description: 'Perguntas situacionais com follow-ups',
     duration: '4 min', 
@@ -111,7 +103,7 @@ const WSI_BLOCKS = [
     type: 'situational'
   },
   { 
-    id: 6, 
+    id: 5, 
     name: 'Resultado e Encerramento', 
     description: 'Índice WSI automático e feedback',
     duration: '3 min', 
@@ -351,6 +343,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
               if (block.id === 4) return isBlock4(q)
               return false
             })
+
             
             const eliminatoryCount = blockQuestions.filter((q: any) => q.type === 'eliminatory' || q.required).length
             const informativeCount = blockQuestions.length - eliminatoryCount

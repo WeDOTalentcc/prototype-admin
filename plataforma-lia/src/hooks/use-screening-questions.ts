@@ -13,7 +13,7 @@ export interface BigFiveProfile {
 export interface ScreeningQuestion {
   id: string
   text: string
-  category: 'behavioral' | 'technical' | 'cultural' | 'eligibility'
+  category: 'behavioral' | 'technical' | 'cultural'
   trait?: string
   skill?: string
   bloom_level: number
@@ -43,7 +43,6 @@ export interface ScreeningQuestionsResponse {
   behavioral_questions: ScreeningQuestion[]
   technical_questions: ScreeningQuestion[]
   cultural_questions: ScreeningQuestion[]
-  eligibility_questions: ScreeningQuestion[]
   total_count: number
   metadata: {
     seniority: string
@@ -60,16 +59,15 @@ interface UseScreeningQuestionsResult {
   behavioralQuestions: ScreeningQuestion[]
   technicalQuestions: ScreeningQuestion[]
   culturalQuestions: ScreeningQuestion[]
-  eligibilityQuestions: ScreeningQuestion[]
   isLoading: boolean
   error: string | null
   metadata: ScreeningQuestionsResponse['metadata'] | null
   generateQuestions: (context: ScreeningQuestionRequest) => Promise<void>
-  regenerateCategory: (category: 'behavioral' | 'technical' | 'cultural' | 'eligibility') => Promise<void>
+  regenerateCategory: (category: 'behavioral' | 'technical' | 'cultural') => Promise<void>
   toggleQuestion: (questionId: string) => void
   getSelectedQuestions: () => ScreeningQuestion[]
-  selectAll: (category?: 'behavioral' | 'technical' | 'cultural' | 'eligibility') => void
-  deselectAll: (category?: 'behavioral' | 'technical' | 'cultural' | 'eligibility') => void
+  selectAll: (category?: 'behavioral' | 'technical' | 'cultural') => void
+  deselectAll: (category?: 'behavioral' | 'technical' | 'cultural') => void
 }
 
 export function useScreeningQuestions(): UseScreeningQuestionsResult {
@@ -77,7 +75,6 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
   const [behavioralQuestions, setBehavioralQuestions] = useState<ScreeningQuestion[]>([])
   const [technicalQuestions, setTechnicalQuestions] = useState<ScreeningQuestion[]>([])
   const [culturalQuestions, setCulturalQuestions] = useState<ScreeningQuestion[]>([])
-  const [eligibilityQuestions, setEligibilityQuestions] = useState<ScreeningQuestion[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<ScreeningQuestionsResponse['metadata'] | null>(null)
@@ -108,7 +105,6 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
       setBehavioralQuestions(data.behavioral_questions)
       setTechnicalQuestions(data.technical_questions)
       setCulturalQuestions(data.cultural_questions)
-      setEligibilityQuestions(data.eligibility_questions || [])
       setMetadata(data.metadata)
     } catch (err) {
       console.error('Error generating screening questions:', err)
@@ -118,7 +114,7 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
     }
   }, [])
 
-  const regenerateCategory = useCallback(async (category: 'behavioral' | 'technical' | 'cultural' | 'eligibility') => {
+  const regenerateCategory = useCallback(async (category: 'behavioral' | 'technical' | 'cultural') => {
     if (!currentContext) {
       setError('No context available for regeneration')
       return
@@ -161,8 +157,6 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
         setTechnicalQuestions(newQuestions)
       } else if (category === 'cultural') {
         setCulturalQuestions(newQuestions)
-      } else if (category === 'eligibility') {
-        setEligibilityQuestions(newQuestions)
       }
     } catch (err) {
       console.error('Error regenerating questions:', err)
@@ -180,14 +174,13 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
     setBehavioralQuestions(prev => prev.map(updateQuestion))
     setTechnicalQuestions(prev => prev.map(updateQuestion))
     setCulturalQuestions(prev => prev.map(updateQuestion))
-    setEligibilityQuestions(prev => prev.map(updateQuestion))
   }, [])
 
   const getSelectedQuestions = useCallback(() => {
     return questions.filter(q => q.is_selected)
   }, [questions])
 
-  const selectAll = useCallback((category?: 'behavioral' | 'technical' | 'cultural' | 'eligibility') => {
+  const selectAll = useCallback((category?: 'behavioral' | 'technical' | 'cultural') => {
     const selectQuestion = (q: ScreeningQuestion) =>
       !category || q.category === category ? { ...q, is_selected: true } : q
 
@@ -201,12 +194,9 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
     if (!category || category === 'cultural') {
       setCulturalQuestions(prev => prev.map(q => ({ ...q, is_selected: true })))
     }
-    if (!category || category === 'eligibility') {
-      setEligibilityQuestions(prev => prev.map(q => ({ ...q, is_selected: true })))
-    }
   }, [])
 
-  const deselectAll = useCallback((category?: 'behavioral' | 'technical' | 'cultural' | 'eligibility') => {
+  const deselectAll = useCallback((category?: 'behavioral' | 'technical' | 'cultural') => {
     const deselectQuestion = (q: ScreeningQuestion) =>
       !category || q.category === category ? { ...q, is_selected: false } : q
 
@@ -220,9 +210,6 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
     if (!category || category === 'cultural') {
       setCulturalQuestions(prev => prev.map(q => ({ ...q, is_selected: false })))
     }
-    if (!category || category === 'eligibility') {
-      setEligibilityQuestions(prev => prev.map(q => ({ ...q, is_selected: false })))
-    }
   }, [])
 
   return {
@@ -230,7 +217,6 @@ export function useScreeningQuestions(): UseScreeningQuestionsResult {
     behavioralQuestions,
     technicalQuestions,
     culturalQuestions,
-    eligibilityQuestions,
     isLoading,
     error,
     metadata,
@@ -252,7 +238,7 @@ export interface UnifiedScreeningQuestion {
   text: string
   category: string
   block_id: number
-  source: 'company' | 'wsi_generated' | 'wsi_eligibility'
+  source: 'company' | 'wsi_generated'
   trait?: string
   skill?: string
   bloom_level: number
@@ -318,7 +304,6 @@ interface UseWSIScreeningPipelineResult {
   questions: UnifiedScreeningQuestion[]
   blocks: WSIBlockSummary[]
   companyQuestions: UnifiedScreeningQuestion[]
-  eligibilityQuestions: UnifiedScreeningQuestion[]
   technicalQuestions: UnifiedScreeningQuestion[]
   behavioralQuestions: UnifiedScreeningQuestion[]
   isLoading: boolean
@@ -379,9 +364,8 @@ export function useWSIScreeningPipeline(): UseWSIScreeningPipelineResult {
   }, [])
 
   const companyQuestions = questions.filter(q => q.block_id === 2)
-  const eligibilityQuestions = questions.filter(q => q.block_id === 3)
-  const technicalQuestions = questions.filter(q => q.block_id === 4)
-  const behavioralQuestions = questions.filter(q => q.block_id === 5)
+  const technicalQuestions = questions.filter(q => q.block_id === 3)
+  const behavioralQuestions = questions.filter(q => q.block_id === 4)
 
   const toggleQuestion = useCallback((questionId: string) => {
     setQuestions(prev =>
@@ -437,7 +421,6 @@ export function useWSIScreeningPipeline(): UseWSIScreeningPipelineResult {
     questions,
     blocks,
     companyQuestions,
-    eligibilityQuestions,
     technicalQuestions,
     behavioralQuestions,
     isLoading,

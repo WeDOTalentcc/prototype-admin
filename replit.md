@@ -23,7 +23,7 @@ The platform's frontend is built with Next.js, React, and TypeScript, leveraging
 -   **Intelligent Conversational Interface (LIA)**: The primary interaction model is "Chat as primary interface" for job creation and candidate screening, featuring intent classification, multi-step reasoning, and session persistence.
 -   **AI Stage Automation**: Employs a state machine for managing recruitment stages with "Smart Transition Automation".
 -   **UI/UX Design**: Adheres to an "ElevenLabs pattern" with a monochromatic palette, cyan accents, a 3-font system, interactive pipeline flows, sortable columns, advanced pagination, and a command palette, all aligned with Design System v4.2.1.
--   **WSI Screening**: A 7-block AI-powered methodology for comprehensive candidate evaluation.
+-   **WSI Screening**: A 6-block (0-5) AI-powered methodology for comprehensive candidate evaluation. Block 3 "Elegibilidade e Formação" was removed; eligibility questions migrated to Block 2 (company questions). Blocks: 0=Abordagem, 1=Apresentação, 2=Empresa (incl. elegibilidade), 3=Técnicas, 4=Comportamentais/Fit, 5=Encerramento.
 -   **Semantic Search**: AI-powered search functionality, enhanced with Redis caching.
 -   **Intelligent Interview Notes System**: Integrates WSI for dual rating and AI-generated questions.
 -   **Compliance (3-Pillar Architecture)**: Designed to comply with LGPD, SOX, and EU AI Act, incorporating FairnessGuard and FactChecker for bias detection and factual accuracy, including logging, data retention, and PII masking.

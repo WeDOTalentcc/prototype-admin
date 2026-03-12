@@ -77,7 +77,7 @@ function CompanyDefaultQuestions({
         <div className="px-4 pb-4 space-y-2">
           {questions.length === 0 ? (
             <p className="text-[11px] font-['Open_Sans',sans-serif] text-gray-400 dark:text-gray-500 text-center py-4 italic">
-              Nenhuma pergunta padrão configurada. Acesse <strong>Configurações → Perguntas de Elegibilidade</strong>.
+              Nenhuma pergunta padrão configurada. Acesse <strong>Configurações → Perguntas Padrão</strong>.
             </p>
           ) : (
             questions.map(q => {
@@ -363,7 +363,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
       if (data.success && data.questions) {
         const grouped: Record<number, any[]> = {}
         data.questions.forEach((q: any) => {
-          const bid = q.block_id || 3
+          const bid = q.block_id || 2
           if (!grouped[bid]) grouped[bid] = []
           grouped[bid].push({ ...q, id: q.id || `q_gen_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, generated: true })
         })
@@ -447,15 +447,15 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
         ]
       }
       const generated: Record<number, any[]> = {}
-      ;[2, 3, 4, 5].forEach(bid => {
+      ;[2, 3, 4].forEach(bid => {
         const templates = mockTemplates[bid] || mockTemplates[2]
         generated[bid] = templates.slice(0, perBlock).map((text, i) => ({
           id: `q_gen_${Date.now()}_${bid}_${i}`,
           question: text,
           text: text,
-          type: bid === 2 ? 'eliminatory' : bid === 3 ? 'eliminatory' : 'classificatory',
-          category: bid === 2 ? 'company' : bid === 3 ? 'eligibility' : bid === 4 ? 'technical' : 'behavioral',
-          framework: bid === 2 ? 'Company' : bid === 5 ? 'BigFive' : 'CBI',
+          type: bid === 2 ? 'eliminatory' : 'classificatory',
+          category: bid === 2 ? 'company' : bid === 3 ? 'technical' : 'behavioral',
+          framework: bid === 2 ? 'Company' : bid === 4 ? 'BigFive' : 'CBI',
           block_id: bid,
           skill_targeted: '',
           generated: true
@@ -1400,8 +1400,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       id: q.id,
                       question: q.text || q.question,
                       text: q.text || q.question,
-                      category: q.category || (q.question_type === 'eliminatory' ? 'eligibility' : q.question_type === 'technical' ? 'technical' : 'behavioral'),
-                      block_id: q.block_id || 4,
+                      category: q.category || (q.question_type === 'technical' ? 'technical' : 'behavioral'),
+                      block_id: q.block_id || 3,
                       type: q.is_eliminatory ? 'eliminatory' : (q.question_type || 'open'),
                       required: q.is_eliminatory ?? false,
                       weight: 0.75,
@@ -2123,8 +2123,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                             <div className="flex items-start gap-3">
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                                  <Badge className={`text-[10px] px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' : item.category === 'technical' || item.category === 'técnica' ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' : item.category === 'eligibility' || item.category === 'elegibilidade' ? 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
-                                                    {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'eligibility' ? 'Elegibilidade' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
+                                                  <Badge className={`text-[10px] px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' : item.category === 'technical' || item.category === 'técnica' ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
+                                                    {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
                                                   </Badge>
                                                   {(item.type === 'eliminatory' || item.is_eliminatory) && (
                                                     <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Eliminatória</Badge>

@@ -35,31 +35,29 @@ async def _generate_tts_audio(text: str) -> Optional[str]:
         return None
 
 WSI_BLOCKS = [
-    {"index": 0, "name": "Elegibilidade", "block_type": "eligibility", "competency": "availability_fit", "questions": [
+    {"index": 0, "name": "Técnico", "block_type": "technical", "competency": "technical_skills", "questions": [
         "Para começar, gostaria de confirmar algumas informações. Você tem disponibilidade para início imediato ou em qual prazo?",
         "Qual sua pretensão salarial para esta posição?",
-    ]},
-    {"index": 1, "name": "Técnico", "block_type": "technical", "competency": "technical_skills", "questions": [
         "Conte-me sobre sua experiência mais relevante para esta vaga. Quais tecnologias ou ferramentas você domina?",
         "Descreva um projeto técnico desafiador que você liderou ou participou. Qual foi seu papel e o resultado?",
     ]},
-    {"index": 2, "name": "Comportamental", "block_type": "behavioral", "competency": "interpersonal_skills", "questions": [
+    {"index": 1, "name": "Comportamental", "block_type": "behavioral", "competency": "interpersonal_skills", "questions": [
         "Me conte sobre uma situação em que você precisou lidar com um conflito no ambiente de trabalho. Como você agiu?",
         "Descreva um momento em que você recebeu um feedback difícil. Como reagiu e o que mudou?",
     ]},
-    {"index": 3, "name": "Situacional", "block_type": "situational", "competency": "problem_solving", "questions": [
+    {"index": 2, "name": "Situacional", "block_type": "situational", "competency": "problem_solving", "questions": [
         "Imagine que você recebe uma demanda urgente de dois gestores diferentes ao mesmo tempo. Como você priorizaria?",
         "Se você percebesse que um colega está cometendo um erro que pode impactar o projeto, como abordaria a situação?",
     ]},
-    {"index": 4, "name": "Autodeclaração", "block_type": "behavioral", "competency": "self_assessment", "questions": [
+    {"index": 3, "name": "Autodeclaração", "block_type": "behavioral", "competency": "self_assessment", "questions": [
         "Em uma escala de 1 a 5, como você avalia sua capacidade de trabalhar sob pressão?",
         "Quais são seus três principais pontos fortes profissionais?",
     ]},
-    {"index": 5, "name": "Motivação", "block_type": "behavioral", "competency": "motivation", "questions": [
+    {"index": 4, "name": "Motivação", "block_type": "behavioral", "competency": "motivation", "questions": [
         "O que te motivou a se candidatar para esta vaga?",
         "Onde você se vê profissionalmente nos próximos 2-3 anos?",
     ]},
-    {"index": 6, "name": "Encerramento", "block_type": "behavioral", "competency": "cultural_fit", "questions": [
+    {"index": 5, "name": "Encerramento", "block_type": "behavioral", "competency": "cultural_fit", "questions": [
         "Há algo mais que você gostaria de compartilhar sobre seu perfil ou experiência?",
     ]},
 ]
@@ -253,8 +251,6 @@ def _calculate_final_score(response_scores: List[Dict[str, Any]]) -> Tuple[float
         block_type = rs.get("block_type", "behavioral")
         if block_type == "technical":
             technical_scores.append(("", score, 1.0))
-        elif block_type == "eligibility":
-            technical_scores.append(("", score, 0.5))
         else:
             behavioral_scores.append(("", score, 1.0))
 

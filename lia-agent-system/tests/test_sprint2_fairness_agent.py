@@ -64,34 +64,21 @@ class TestFairnessGuardImplicitBias:
 
 class TestFormacaoNoteImplicitBias:
     """
-    Testa que FormacaoPreQualifierResult.note dispara log de aviso
-    quando contém termos com viés implícito.
+    FormacaoPreQualifierResult was removed (Block 3 elimination).
+    These tests verify that the FairnessGuard still detects bias in free-text notes.
     """
 
     def setup_method(self):
         self.guard = FairnessGuard()
 
-    def test_neutral_note_no_log(self):
-        from app.schemas.screening import FormacaoPreQualifierResult
-        import logging
-        with patch.object(logging.getLogger("app.schemas.screening"), "warning") as mock_warn:
-            FormacaoPreQualifierResult(
-                passes=True,
-                note="Candidato possui OAB ativa — requisito atendido.",
-            )
-            mock_warn.assert_not_called()
+    def test_neutral_note_passes_fairness(self):
+        result = self.guard.check("Candidato possui OAB ativa — requisito atendido.")
+        assert not result.is_blocked
 
     def test_biased_note_triggers_warning(self):
-        """
-        Se o campo note contiver linguagem discriminatória,
-        o model_validator deve chamar logger.warning.
-        """
-        from app.schemas.screening import FormacaoPreQualifierResult
-        import logging
         biased_note = "apenas candidatos jovens atendem ao perfil de formação esperado"
-        # Verifica que o model_validator não levanta exceção (apenas loga)
-        result = FormacaoPreQualifierResult(passes=True, note=biased_note)
-        assert result.note == biased_note  # valor não é alterado pelo validator
+        result = self.guard.check(biased_note)
+        assert result.is_blocked
 
 
 # ---------------------------------------------------------------------------

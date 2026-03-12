@@ -10,7 +10,7 @@ import {
   ChevronDown, ChevronUp, ThumbsUp,
   ThumbsDown, Mic, Phone,
   Code, BookOpen, Zap, Trophy, ArrowUp, ArrowDown, Minus,
-  Download, Share2, Loader2, Star, GraduationCap
+  Download, Share2, Loader2, Star
 } from "lucide-react"
 import { liaApi, WSIResultDetails, WSICandidateRanking, WSIVacancyRanking } from "@/services/lia-api"
 
@@ -376,29 +376,6 @@ export function TriagemDetailsModal({
                 </div>
               </div>
 
-              {details.formacao_pre_qualifier && (
-                <div className={`border p-3 rounded-md ${details.formacao_pre_qualifier.passes ? 'border-green-100 bg-green-50/40 dark:bg-green-950/20 dark:border-green-900' : 'border-red-100 bg-red-50/40 dark:bg-red-950/20 dark:border-red-900'}`}>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950 dark:text-gray-50" style={font}>
-                      <GraduationCap className="w-4 h-4 text-gray-700" />
-                      Formação Acadêmica (Pré-qualificador)
-                    </h3>
-                    <Badge variant="outline" className={`text-[10px] ${details.formacao_pre_qualifier.passes ? 'text-green-700 border-green-200 dark:text-green-400 dark:border-green-800' : 'text-red-700 border-red-200 dark:text-red-400 dark:border-red-800'}`}>
-                      {details.formacao_pre_qualifier.passes ? 'Aprovado' : 'Não Atende'}
-                    </Badge>
-                  </div>
-                  {details.formacao_pre_qualifier.note && (
-                    <p className="text-[11px] text-gray-600 mt-1" style={font}>{details.formacao_pre_qualifier.note}</p>
-                  )}
-                  {details.formacao_pre_qualifier.required_certifications?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {details.formacao_pre_qualifier.required_certifications.map((cert: string) => (
-                        <Badge key={cert} variant="outline" className="text-[9px]">{cert}</Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
 
               <div className="border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', overflow: 'hidden' }}>
                 <div className="cursor-pointer p-3 flex items-center justify-between hover:bg-gray-50 transition-colors" onClick={() => toggleSection('responses')} style={{ borderBottom: expandedSections.has('responses') ? '1px solid #F3F4F6' : 'none' }}>

@@ -29,7 +29,7 @@ class ScreeningQuestionRequest(BaseModel):
 class ScreeningQuestion(BaseModel):
     id: str = Field(..., description="Unique question identifier")
     text: str = Field(..., description="The question text in Portuguese")
-    category: Literal["behavioral", "technical", "cultural", "eligibility"] = Field(..., description="Question category")
+    category: Literal["behavioral", "technical", "cultural"] = Field(..., description="Question category")
     trait: Optional[str] = Field(None, description="Big Five trait if behavioral question")
     skill: Optional[str] = Field(None, description="Technical skill if technical question")
     bloom_level: int = Field(default=3, ge=1, le=6, description="Bloom's Taxonomy level (1-6)")
@@ -51,14 +51,13 @@ class ScreeningQuestionResponse(BaseModel):
     behavioral_questions: List[ScreeningQuestion] = Field(default=[], description="Behavioral questions grouped")
     technical_questions: List[ScreeningQuestion] = Field(default=[], description="Technical questions grouped")
     cultural_questions: List[ScreeningQuestion] = Field(default=[], description="Cultural questions grouped")
-    eligibility_questions: List[ScreeningQuestion] = Field(default=[], description="WSI eligibility questions grouped")
     total_count: int = Field(default=0, description="Total number of questions")
     metadata: Dict[str, Any] = Field(default={}, description="Generation metadata")
 
 
 class RegenerateQuestionsRequest(BaseModel):
     context: ScreeningQuestionRequest = Field(..., description="Original job context")
-    category: Optional[Literal["behavioral", "technical", "cultural", "eligibility"]] = Field(
+    category: Optional[Literal["behavioral", "technical", "cultural"]] = Field(
         None, description="Category to regenerate, or all if None"
     )
     exclude_ids: List[str] = Field(default=[], description="Question IDs to exclude from regeneration")
@@ -69,8 +68,8 @@ class UnifiedScreeningQuestion(BaseModel):
     id: str = Field(..., description="Unique question identifier")
     text: str = Field(..., description="The question text in Portuguese")
     category: str = Field(..., description="Question category: behavioral, technical, cultural, eligibility, company")
-    block_id: int = Field(..., description="WSI block ID: 2 (company), 3 (eligibility), 4 (technical), 5 (behavioral/situational)")
-    source: Literal["company", "wsi_generated", "wsi_eligibility"] = Field(default="wsi_generated", description="Question source")
+    block_id: int = Field(..., description="WSI block ID: 2 (company), 3 (technical), 4 (behavioral/situational)")
+    source: Literal["company", "wsi_generated"] = Field(default="wsi_generated", description="Question source")
     trait: Optional[str] = Field(None, description="Big Five trait if behavioral question")
     skill: Optional[str] = Field(None, description="Technical skill if technical question")
     bloom_level: int = Field(default=3, ge=1, le=6, description="Bloom's Taxonomy level")

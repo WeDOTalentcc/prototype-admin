@@ -2,10 +2,9 @@
 WSI Screening Pipeline Service - Unified orchestrator for all WSI screening blocks.
 
 Orchestrates:
-- Block 2: Company default screening questions (from database)
-- Block 3: WSI Eligibility questions (deduplicated against company questions)
-- Block 4: Technical assessment (Bloom/Dreyfus via wsi_question_service)
-- Block 5: Behavioral/Situational (Big Five/CBI via wsi_question_generator)
+- Block 2: Company default screening questions + eligibility (from database)
+- Block 3: Technical assessment (Bloom/Dreyfus via wsi_question_service)
+- Block 4: Behavioral/Situational (Big Five/CBI via wsi_question_generator)
 """
 import logging
 from typing import List, Optional, Dict, Any
@@ -61,17 +60,11 @@ def _build_pipeline_calibration_context(request, seniority: str) -> CalibrationC
         company_size=getattr(request, 'company_size', None),
     )
 
-# Nomes canônicos importados de wsi_constants — não redefinir aqui.
-# Blocos 2-5 do roteiro WSI:
-#   2 = Perguntas Padrão da Empresa
-#   3 = Elegibilidade e Formação
-#   4 = Competências Técnicas
-#   5 = Competências Comportamentais e Fit
-BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4, 5)}
+BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4)}
 
 MODEL_DISTRIBUTIONS = {
-    "compact": {"eligibility": 2, "technical": 3, "behavioral": 3, "total": 8},
-    "full": {"eligibility": 3, "technical": 5, "behavioral": 4, "total": 12},
+    "compact": {"technical": 4, "behavioral": 4, "total": 8},
+    "full": {"technical": 6, "behavioral": 6, "total": 12},
 }
 
 AFFIRMATIVE_QUESTIONS = {
@@ -174,15 +167,13 @@ class WSIScreeningPipeline:
         company_target = 0
 
         if total_target == model_total:
-            elig_target = model["eligibility"]
             tech_target = model["technical"]
             behav_target = model["behavioral"]
         else:
             ratio = total_target / model_total
-            elig_target = max(1, round(model["eligibility"] * ratio))
             tech_target = max(1, round(model["technical"] * ratio))
             behav_target = max(1, round(model["behavioral"] * ratio))
-            distributed = elig_target + tech_target + behav_target
+            distributed = tech_target + behav_target
             if distributed < total_target:
                 tech_target += total_target - distributed
             elif distributed > total_target:
@@ -194,39 +185,27 @@ class WSIScreeningPipeline:
                     tech_target -= 1
                     diff -= 1
 
-        # --- Block 2: Company Questions ---
+        # --- Block 2: Company Questions (includes eligibility configured by recruiter) ---
         if request.include_company_questions and company_questions_raw:
             block_2_company = self._build_company_block(
                 company_questions_raw,
                 request.company_question_categories,
             )
-            company_texts = [q.text for q in block_2_company]
             company_target = len(block_2_company)
             all_questions.extend(block_2_company)
             self.logger.info(f"Block 2: {len(block_2_company)} company questions")
 
-        # --- Block 3: WSI Eligibility ---
-        block_3 = self._build_eligibility_block(
-            request, company_texts, elig_target, effective_seniority
-        )
-        all_questions.extend(block_3)
-        if len(block_3) < 2:
-            quality_warnings.append(
-                f"Apenas {len(block_3)} perguntas de elegibilidade WSI. Recomendado: 2+"
-            )
-        self.logger.info(f"Block 3: {len(block_3)} eligibility questions")
-
         if request.is_affirmative:
             affirmative_text = AFFIRMATIVE_QUESTIONS.get(
                 request.affirmative_type,
-                "Que bom te ter aqui! 😊 Essa é uma vaga com ação afirmativa. Você se identifica com o perfil da ação afirmativa desta posição? Sua resposta não elimina você do processo — é apenas para nos ajudar a promover diversidade."
+                "Que bom te ter aqui! Essa é uma vaga com ação afirmativa. Você se identifica com o perfil da ação afirmativa desta posição? Sua resposta não elimina você do processo — é apenas para nos ajudar a promover diversidade."
             )
             affirmative_q = UnifiedScreeningQuestion(
                 id=f"wsi-affirmative-{request.affirmative_type or 'general'}",
                 text=affirmative_text,
-                category="eligibility",
-                block_id=3,
-                source="wsi_eligibility",
+                category="company",
+                block_id=2,
+                source="company",
                 bloom_level=1,
                 bloom_label=BLOOM_LEVELS.get(1, "Lembrar"),
                 dreyfus_stage=1,
@@ -241,27 +220,27 @@ class WSIScreeningPipeline:
                 order=0,
             )
             all_questions.append(affirmative_q)
-            self.logger.info(f"Injected affirmative action question: {request.affirmative_type or 'general'}")
+            self.logger.info(f"Injected affirmative action question into Block 2: {request.affirmative_type or 'general'}")
 
-        # --- Block 4: Technical ---
-        block_4 = self._build_technical_block(request, tech_target, effective_seniority)
+        # --- Block 3: Technical ---
+        block_3 = self._build_technical_block(request, tech_target, effective_seniority)
+        all_questions.extend(block_3)
+        if len(block_3) < 2:
+            quality_warnings.append(
+                f"Apenas {len(block_3)} perguntas técnicas. Recomendado: 3+"
+            )
+        self.logger.info(f"Block 3: {len(block_3)} technical questions")
+
+        # --- Block 4: Behavioral / Situational ---
+        block_4 = self._build_behavioral_block(request, behav_target, effective_seniority)
         all_questions.extend(block_4)
         if len(block_4) < 2:
             quality_warnings.append(
-                f"Apenas {len(block_4)} perguntas técnicas. Recomendado: 3+"
+                f"Apenas {len(block_4)} perguntas comportamentais. Recomendado: 2+"
             )
-        self.logger.info(f"Block 4: {len(block_4)} technical questions")
+        self.logger.info(f"Block 4: {len(block_4)} behavioral questions")
 
-        # --- Block 5: Behavioral / Situational ---
-        block_5 = self._build_behavioral_block(request, behav_target, effective_seniority)
-        all_questions.extend(block_5)
-        if len(block_5) < 2:
-            quality_warnings.append(
-                f"Apenas {len(block_5)} perguntas comportamentais. Recomendado: 2+"
-            )
-        self.logger.info(f"Block 5: {len(block_5)} behavioral questions")
-
-        wsi_count = len(block_3) + len(block_4) + len(block_5)
+        wsi_count = len(block_3) + len(block_4)
         wsi_target = total_target - company_target
         if wsi_count < wsi_target:
             deficit = wsi_target - wsi_count
@@ -280,16 +259,6 @@ class WSIScreeningPipeline:
             if deficit > 0:
                 extra_tech = self._build_technical_block(request, tech_target + deficit + 2, effective_seniority)
                 for q in extra_tech:
-                    if deficit <= 0:
-                        break
-                    if q.id not in existing_ids:
-                        all_questions.append(q)
-                        existing_ids.add(q.id)
-                        deficit -= 1
-
-            if deficit > 0:
-                extra_elig = self._build_eligibility_block(request, [], elig_target + deficit, effective_seniority)
-                for q in extra_elig:
                     if deficit <= 0:
                         break
                     if q.id not in existing_ids:
@@ -401,77 +370,6 @@ class WSIScreeningPipeline:
             )
         return questions
 
-    def _build_eligibility_block(
-        self,
-        request: WSIScreeningPipelineRequest,
-        company_texts: List[str],
-        target_count: int,
-        effective_seniority: str = "pleno",
-    ) -> List[UnifiedScreeningQuestion]:
-        if WSI_CONTEXTUAL_CALIBRATION_ENABLED:
-            _cal_ctx = _build_pipeline_calibration_context(request, effective_seniority)
-            _cal_result = calibrate_or_fallback(_cal_ctx)
-            dreyfus_stage = _cal_result.dreyfus_target
-            bloom_levels = _cal_result.bloom_levels
-        else:
-            dreyfus_stage = SENIORITY_TO_DREYFUS.get(effective_seniority, 3)
-            bloom_levels = SENIORITY_TO_BLOOM.get(effective_seniority, [3, 4])
-        bloom_level = bloom_levels[0] if bloom_levels else 2
-
-        templates = [
-            {
-                "text": "Qual sua disponibilidade para início? Existe algum período de aviso prévio ou compromisso atual que precisemos considerar?",
-                "signals": ["Disponibilidade imediata", "Planejamento", "Transparência"],
-                "weight": 0.9,
-            },
-            {
-                "text": "Esta posição requer trabalho presencial/híbrido/remoto. Isso é compatível com sua situação atual? Há alguma restrição de localização?",
-                "signals": ["Adaptação ao modelo", "Localização", "Flexibilidade"],
-                "weight": 0.9,
-            },
-            {
-                "text": "Considerando a faixa salarial da vaga, como isso se alinha com suas expectativas de remuneração?",
-                "signals": ["Alinhamento salarial", "Expectativas", "Flexibilidade"],
-                "weight": 0.85,
-            },
-        ]
-
-        questions: List[UnifiedScreeningQuestion] = []
-        for tmpl in templates:
-            if len(questions) >= target_count:
-                break
-            if _is_duplicate(tmpl["text"], company_texts):
-                self.logger.info(f"Eligibility question deduplicated: {tmpl['text'][:50]}...")
-                continue
-            questions.append(
-                UnifiedScreeningQuestion(
-                    id=f"wsi-elig-{len(questions)+1}",
-                    text=tmpl["text"],
-                    category="eligibility",
-                    block_id=3,
-                    source="wsi_eligibility",
-                    bloom_level=bloom_level,
-                    bloom_label=BLOOM_LEVELS.get(bloom_level, "Compreender"),
-                    dreyfus_stage=dreyfus_stage,
-                    dreyfus_label=DREYFUS_STAGES.get(dreyfus_stage, "Competente"),
-                    framework="WSI",
-                    weight=tmpl["weight"],
-                    is_eliminatory=True,
-                    question_type="open",
-                    expected_signals=tmpl["signals"],
-                    scoring_criteria={
-                        "5": "Resposta clara e totalmente alinhada com requisitos",
-                        "4": "Resposta adequada com pequenas ressalvas",
-                        "3": "Resposta básica com alinhamento parcial",
-                        "2": "Resposta vaga ou com potenciais impedimentos",
-                        "1": "Desalinhamento claro com requisitos da vaga",
-                    },
-                    is_selected=True,
-                    order=0,
-                )
-            )
-        return questions
-
     def _build_technical_block(
         self,
         request: WSIScreeningPipelineRequest,
@@ -498,7 +396,7 @@ class WSIScreeningPipeline:
                     id=q.id,
                     text=q.text,
                     category="technical",
-                    block_id=4,
+                    block_id=3,
                     source="wsi_generated",
                     trait=q.trait,
                     skill=q.skill,
@@ -546,7 +444,7 @@ class WSIScreeningPipeline:
                     id=q.id,
                     text=q.text,
                     category=q.category,
-                    block_id=5,
+                    block_id=4,
                     source="wsi_generated",
                     trait=q.trait,
                     skill=q.skill,

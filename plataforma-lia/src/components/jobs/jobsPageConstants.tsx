@@ -61,21 +61,13 @@ export const WSI_BLOCKS: WSIBlock[] = [
   { 
     id: 2, 
     name: 'Perguntas Padrão da Empresa', 
-    description: 'Perguntas configuradas pela empresa',
-    duration: '2 min', 
+    description: 'Perguntas configuradas pela empresa (incluindo elegibilidade)',
+    duration: '3 min', 
     editable: true,
     type: 'company'
   },
   {
     id: 3,
-    name: 'Elegibilidade e Formação',
-    description: 'Verificação de elegibilidade, requisitos legais e formação acadêmica',
-    duration: '2 min',
-    editable: true,
-    type: 'eligibility'
-  },
-  {
-    id: 4,
     name: 'Competências Técnicas',
     description: 'Skills com pesos e rubricas automáticas',
     duration: '5 min',
@@ -83,7 +75,7 @@ export const WSI_BLOCKS: WSIBlock[] = [
     type: 'technical'
   },
   {
-    id: 5,
+    id: 4,
     name: 'Competências Comportamentais e Fit',
     description: 'Perguntas situacionais com follow-ups e fit cultural',
     duration: '4 min',
@@ -91,7 +83,7 @@ export const WSI_BLOCKS: WSIBlock[] = [
     type: 'situational'
   },
   { 
-    id: 6, 
+    id: 5, 
     name: 'Resultado e Encerramento', 
     description: 'Índice WSI automático e feedback',
     duration: '3 min', 
@@ -126,7 +118,7 @@ Podemos iniciar agora? Leva menos de 10 minutos! 🚀`,
 Agora vou fazer algumas perguntas rápidas para entender melhor seu perfil. Responda naturalmente, como se estivéssemos conversando! 💬`,
     note: "Pitch conversacional • Gerado a partir dos dados da vaga"
   },
-  6: {
+  5: {
     title: "Resultado e Encerramento",
     message: `Muito obrigada pelas suas respostas, {candidato.nome}! 🙏
 

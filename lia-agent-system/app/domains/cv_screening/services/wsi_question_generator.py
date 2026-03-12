@@ -265,22 +265,19 @@ class WSIScreeningQuestionGenerator:
         behavioral_questions = self._generate_behavioral_questions(context)
         technical_questions = self._generate_technical_questions(context)
         cultural_questions = self._generate_cultural_questions(context)
-        eligibility_questions = self._generate_eligibility_questions(context)
         
-        all_questions = eligibility_questions + behavioral_questions + technical_questions + cultural_questions
+        all_questions = behavioral_questions + technical_questions + cultural_questions
         
         for i, q in enumerate(all_questions):
             q.order = i
         
         target_count = context.question_count
         if len(all_questions) > target_count:
-            eligibility_count = min(3, len(eligibility_questions))
-            behavioral_count = max(2, (target_count - eligibility_count) // 3)
-            technical_count = max(2, (target_count - eligibility_count - behavioral_count) * 2 // 3)
-            cultural_count = target_count - eligibility_count - behavioral_count - technical_count
+            behavioral_count = max(2, target_count // 3)
+            technical_count = max(2, (target_count - behavioral_count) * 2 // 3)
+            cultural_count = target_count - behavioral_count - technical_count
             
             all_questions = (
-                eligibility_questions[:eligibility_count] +
                 behavioral_questions[:behavioral_count] +
                 technical_questions[:technical_count] +
                 cultural_questions[:cultural_count]
@@ -319,7 +316,6 @@ class WSIScreeningQuestionGenerator:
             behavioral_questions=behavioral_questions,
             technical_questions=technical_questions,
             cultural_questions=cultural_questions,
-            eligibility_questions=eligibility_questions,
             total_count=len(all_questions),
             metadata=metadata
         )
@@ -497,73 +493,6 @@ class WSIScreeningQuestionGenerator:
         
         return questions
     
-    def _generate_eligibility_questions(
-        self,
-        context: ScreeningQuestionRequest
-    ) -> List[ScreeningQuestion]:
-        """Generate WSI methodology eligibility questions for basic fit assessment."""
-        questions = []
-        if WSI_CONTEXTUAL_CALIBRATION_ENABLED:
-            _cal_ctx = _build_calibration_context(context, context.seniority)
-            _cal_result = calibrate_or_fallback(_cal_ctx)
-            dreyfus_stage = _cal_result.dreyfus_target
-            bloom_levels = _cal_result.bloom_levels
-        else:
-            dreyfus_stage = SENIORITY_TO_DREYFUS.get(context.seniority, 3)
-            bloom_levels = SENIORITY_TO_BLOOM.get(context.seniority, [3, 4])
-        bloom_level = bloom_levels[0] if bloom_levels else 2
-        
-        eligibility_templates = [
-            {
-                "text": "Qual sua disponibilidade para início? O que impactaria essa data?",
-                "signals": ["Disponibilidade imediata", "Planejamento", "Transparência"],
-                "weight": 0.9
-            },
-            {
-                "text": "Considerando a faixa salarial da vaga, como isso se alinha com suas expectativas?",
-                "signals": ["Alinhamento salarial", "Flexibilidade", "Clareza de expectativas"],
-                "weight": 0.9
-            },
-            {
-                "text": "Esta posição é {modelo_trabalho}. Como você se organiza nesse formato?",
-                "signals": ["Adaptação ao modelo", "Organização", "Produtividade remota/presencial"],
-                "weight": 0.8
-            }
-        ]
-        
-        for template in eligibility_templates:
-            text = template["text"]
-            if "{modelo_trabalho}" in text:
-                modelo = "híbrido" 
-                text = text.replace("{modelo_trabalho}", modelo)
-            
-            question = ScreeningQuestion(
-                id=str(uuid.uuid4()),
-                text=text,
-                category="eligibility",
-                trait=None,
-                skill=None,
-                bloom_level=bloom_level,
-                bloom_label=BLOOM_LEVELS.get(bloom_level, "Compreender"),
-                dreyfus_stage=dreyfus_stage,
-                dreyfus_label=DREYFUS_STAGES.get(dreyfus_stage, "Competente"),
-                framework="CBI",
-                weight=template.get("weight", 0.8),
-                expected_signals=template.get("signals", []),
-                scoring_criteria={
-                    "5": "Resposta clara e alinhada com requisitos da vaga",
-                    "4": "Resposta adequada com pequenas ressalvas",
-                    "3": "Resposta básica com alinhamento parcial",
-                    "2": "Resposta vaga ou com potenciais impedimentos",
-                    "1": "Desalinhamento claro com requisitos da vaga"
-                },
-                is_selected=True,
-                order=0
-            )
-            questions.append(question)
-        
-        return questions
-    
     def regenerate_category(
         self,
         context: ScreeningQuestionRequest,
@@ -587,8 +516,6 @@ class WSIScreeningQuestionGenerator:
             questions = self._generate_technical_questions(context)
         elif category == "cultural":
             questions = self._generate_cultural_questions(context)
-        elif category == "eligibility":
-            questions = self._generate_eligibility_questions(context)
         else:
             questions = []
         

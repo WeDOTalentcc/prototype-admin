@@ -90,14 +90,14 @@ class WSIVoiceOrchestrator:
                 continue
             category = q.get("category", "technical")
             framework_map = {
-                "eligibility": "CBI",
                 "technical": "Bloom",
                 "behavioral": "BigFive",
+                "company": "CBI",
             }
             type_map = {
-                "eligibility": "contextual",
                 "technical": "autodeclaration",
                 "behavioral": "situational",
+                "company": "contextual",
             }
             question = WSIQuestion(
                 id=q.get("id", f"qs_{idx}"),
