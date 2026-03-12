@@ -335,23 +335,20 @@ Serviço central: `app/services/notification_service.py`
 
 > Estado atual: Sprints A–F + G1–G7 concluídos. Coverage: 29.05% (gate 25%). 1344 testes passando.
 
-### Sprint F1 — HITL Persistence ← PRÓXIMO
-**Arquivos:** `alembic/versions/031_add_hitl_tables.py`, `app/models/hitl.py`, `app/services/hitl_service.py`
-- Tabela `hitl_pending_actions`: (id, company_id, thread_id, domain, action, description, data JSON, agent_input JSON, status, ws_session_id, created_at, expires_at, resolved_at, resolved_by, comment)
-- Tabela `hitl_audit_trail`: (id, company_id, thread_id, pending_id, action, approved, comment, resolved_by, resolved_at)
-- `HITLService`: Redis = cache fast-path, DB = source of truth persistente
-- 15+ testes em `tests/unit/test_hitl_persistence.py`
+### Sprint F1 — HITL Persistence ✅ (já implementado antes da sprint)
+**Verificado em 12/03/2026:** `app/models/hitl.py` (models), `alembic/versions/032_add_hitl_tables.py` (migration), `app/services/hitl_service.py` (DB best-effort + Redis fast-path) — tudo já existia. Nada a fazer.
 
 ### Sprint F2 — Coverage Gate Unification
 **Arquivos:** `pytest.ini`
 - `--cov-fail-under=12` → `--cov-fail-under=25` (full suite já atinge 25.39%)
 - Alinhamento com `ci.yml` que já usa 25%
 
-### Sprint F3 — Sprint E FE Hooks Wiring (Conclusão)
-**Arquivos:** `plataforma-lia/src/components/pages/candidates-page.tsx`
-- Importar e chamar `useCandidatesList()` + `useBulkCandidateDataRequests()`
-- Remover useState duplicados que os hooks já gerenciam (loading, error, total, currentPage)
-- Hooks existem em: `src/hooks/use-candidates-list.ts`, `src/hooks/use-candidate-data-requests.ts`
+### Sprint F3 — Sprint E FE Hooks Wiring ✅ (12/03/2026)
+- `useCandidatesListMapped` wired como `candidatesListHook`; manual initial useEffect (143L) removido
+- Sync effect: `candidatesListHook.{candidates,loading}` → `{setCandidates, setIsLoading}` quando hook atualiza
+- `totalCandidatesInBase` removida (era dead state — nunca lida no JSX)
+- `useBulkCandidateDataRequests` já estava wired desde Sprint E
+- 10 testes: `src/hooks/__tests__/use-candidates-list.test.ts`
 
 ### Sprint F4 — Short List Endpoint
 **Arquivos BE:** `app/api/v1/short_lists.py`, `app/services/short_list_service.py`, `app/models/short_list.py`, `alembic/versions/032_add_short_list_tables.py`
@@ -360,11 +357,8 @@ Serviço central: `app/services/notification_service.py`
 - Registrar router em `app/main.py`
 - 20+ testes unitários BE
 
-### Sprint F5 — Sprint E Phase 3 (Extração de Componentes)
-**Arquivos:** `candidates-page.tsx` (12.404L), novos componentes em `src/components/pages/candidates/`
-- `CandidateSearchBar.tsx` — props: searchTerm, onSearch, onClear, searchMode, isLoading
-- `CandidateTabs.tsx` — props: activeTab, onTabChange, tabs[], counts
-- Meta: reduzir de 12.404 → ~11.600 linhas
+### Sprint F5 — Sprint E Phase 3 ✅ (já implementado antes da sprint)
+**Verificado em 12/03/2026:** `CandidateSearchBar.tsx` e `CandidateTabs.tsx` já extraídos e usados no JSX (linhas 6911, 6924). `SearchResultsHeader.tsx` também extraído (Sprint G3). Nada a fazer.
 
 ---
 
@@ -431,10 +425,9 @@ Serviço central: `app/services/notification_service.py`
 - `app/domains/cv_screening/agents/wsi_interview_graph.py` — `interrupt_before=["lg_generate_feedback"]`
 - `app/domains/pipeline/agents/pipeline_transition_agent.py` — pre-check HITL antes de `_process_langgraph()`
 - `app/api/v1/agent_chat_ws.py` — 3 casos de resume: cv_screening (ainvoke None), wizard (ainvoke None), genérico (agent.process)
-- **Pendente Sprint F1:** tabelas de persistência (031_add_hitl_tables.py)
+- Sprint F1 ✅: tabelas de persistência já implementadas (032_add_hitl_tables.py)
 
 ### Sprint E (FE God Object) — Phase 1 + 2 concluídas
 - Hooks extraídos e wired: `use-candidate-filters.ts`, `use-candidate-selection.ts`
-- Hooks extraídos mas **NÃO wired**: `use-candidates-list.ts`, `use-candidate-data-requests.ts`
-- **Pendente Sprint F3:** wiring dos 2 hooks restantes
-- **Pendente Sprint F5:** extração de CandidateSearchBar + CandidateTabs
+- Sprint F3 ✅: `useCandidatesListMapped` wired; manual useEffect (143L) removido; 10 testes
+- Sprint F5 ✅: `CandidateSearchBar` + `CandidateTabs` extraídos e usados no JSX

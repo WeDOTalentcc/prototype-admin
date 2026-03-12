@@ -145,9 +145,13 @@ async def test_fallback_log_warning_emitted():
 
 @pytest.mark.asyncio
 async def test_non_api_error_not_caught():
-    """ValueError (lógica interna) NÃO ativa fallback — deve propagar."""
+    """ValueError (lógica interna) NÃO ativa fallback — retorna erro sem criar 2º loop."""
     agent = _make_agent()
     inp = _make_input()
+
+    # Patch _build_error_output to return a predictable value
+    error_output = MagicMock()
+    agent._build_error_output = MagicMock(return_value=error_output)
 
     primary_loop = MagicMock()
     primary_loop.run = AsyncMock(side_effect=ValueError("schema validation failed: missing field"))
@@ -163,7 +167,9 @@ async def test_non_api_error_not_caught():
     mock_config.model_copy = MagicMock(return_value=MagicMock())
 
     with _common_patches(agent, make_loop, mock_config):
-        with pytest.raises(ValueError, match="schema validation"):
-            await agent._process_react_loop(inp)
+        result = await agent._process_react_loop(inp)
 
+    # apenas 1 loop criado — sem fallback
     assert call_count == 1
+    # _build_error_output foi chamado (outer except capturou)
+    agent._build_error_output.assert_called_once()

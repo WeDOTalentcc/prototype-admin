@@ -1,5 +1,5 @@
 /**
- * Testes — useCandidatesList (H.2b)
+ * Testes — useCandidatesList + useCandidatesListMapped (F3 / H.2b)
  *
  * Camada 2 (Unitário FE — Vitest + @testing-library/react)
  *
@@ -10,10 +10,12 @@
  * - Erro de rede → error state preenchido, candidates []
  * - Paginação: goToPage atualiza currentPage e rebusca
  * - Filtro de status: immediate (sem debounce)
+ * - useCandidatesListMapped aplica transform CandidateLocal → Candidate
  */
 import { renderHook, act, waitFor } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 import { useCandidatesList } from "../use-candidates-list"
+import { useCandidatesListMapped } from "../use-candidates-list-mapped"
 
 // ── Mock do liaApi ──────────────────────────────────────────────────────────
 const mockGetCandidates = vi.fn()
@@ -182,5 +184,32 @@ describe("useCandidatesList", () => {
     await waitFor(() =>
       expect(mockGetCandidates.mock.calls.length).toBeGreaterThan(callsBefore)
     )
+  })
+})
+
+// ── useCandidatesListMapped (F3) ─────────────────────────────────────────────
+
+describe("F3 — useCandidatesListMapped", () => {
+  it("retorna candidates transformados com todos os campos do hook", async () => {
+    const { result } = renderHook(() => useCandidatesListMapped())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    // Expõe os mesmos campos do useCandidatesList
+    expect(Array.isArray(result.current.candidates)).toBe(true)
+    expect(typeof result.current.total).toBe("number")
+    expect(typeof result.current.currentPage).toBe("number")
+    expect(typeof result.current.totalPages).toBe("number")
+    expect(typeof result.current.perPage).toBe("number")
+    expect(typeof result.current.refresh).toBe("function")
+    expect(typeof result.current.goToPage).toBe("function")
+  })
+
+  it("candidates vêm do mesmo mock que useCandidatesList", async () => {
+    const { result } = renderHook(() => useCandidatesListMapped())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    // MOCK_RESPONSE tem 2 candidates
+    expect(result.current.candidates).toHaveLength(2)
+    expect(result.current.total).toBe(2)
   })
 })

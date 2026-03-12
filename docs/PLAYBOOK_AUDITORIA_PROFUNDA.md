@@ -1956,6 +1956,382 @@ app/prompts/                         ← SHIMS (não modificar)
 
 ---
 
+# ANEXO K: MELHORES PRÁTICAS DE MERCADO — CRITÉRIOS DE AVALIAÇÃO
+
+> O auditor deve usar esta seção para avaliar não apenas se o código segue os padrões internos, mas se está alinhado com as melhores práticas de mercado em IA para recrutamento.
+
+---
+
+## MP-1. Frameworks Regulatórios e Standards Aplicáveis
+
+### MP-1.1 Frameworks Obrigatórios
+
+| Framework | Aplicação | Critérios-chave para Auditoria |
+|-----------|-----------|-------------------------------|
+| **EU AI Act (2024)** | Sistemas de IA em recrutamento = Alto Risco (Anexo III) | Art. 14: human oversight obrigatório; Art. 52: transparência; Art. 9: risk management; Art. 10: data governance; FRIA obrigatória |
+| **LGPD (Brasil)** | Todo processamento de dados de candidatos | Art. 6: finalidade/adequação/necessidade; Art. 12: dados anonimizados; Art. 18: direitos do titular; Art. 20: revisão humana em decisões automatizadas |
+| **EEOC / Title VII (EUA)** | Clientes americanos | Four-fifths rule (Adverse Impact); disparate impact analysis; ADA compliance em assessments |
+| **NIST AI RMF 1.0** | Voluntário, referência de mercado | Govern, Map, Measure, Manage — 4 funções; categorização de riscos; teste de viés contínuo |
+| **ISO/IEC 42001:2023** | Certificação de gestão de IA | Sistema de gestão de IA; avaliação de riscos; monitoramento contínuo; documentação de decisões |
+| **SOC 2 Type II** | Clientes enterprise | Segurança, disponibilidade, integridade de processamento, confidencialidade, privacidade |
+
+### MP-1.2 Checklist de Compliance Regulatório
+
+- [ ] FRIA (Fundamental Rights Impact Assessment) documentada para o WSI
+- [ ] Candidate Anonymization antes de enviar dados ao LLM (blind review)
+- [ ] Human-in-the-loop em todas as decisões de rejeição
+- [ ] Opt-out disponível para avaliação por IA
+- [ ] Explicabilidade: "Por que fui rejeitado?" respondível com trace auditável
+- [ ] Data minimization nos prompts enviados ao LLM
+- [ ] Consentimento granular para comunicações automatizadas
+- [ ] Retenção de dados com prazos definidos e cleanup automático
+- [ ] Right to erasure (LGPD Art. 18) implementado e testado
+- [ ] AI disclosure em todas as comunicações geradas por IA
+
+## MP-2. Melhores Práticas de Engenharia de Agentes IA
+
+### MP-2.1 Arquitetura de Agentes (Estado da Arte 2026)
+
+| Prática | Descrição | Status Esperado | Como Verificar |
+|---------|-----------|----------------|----------------|
+| Multi-agent orchestration | Agentes especializados por domínio com orquestrador central | Implementado | Verificar `orchestrator.py` + domain registry |
+| Tool calling nativo | Usar APIs nativas do modelo (Claude tool_use, GPT function_calling) | Implementado | Verificar se tools usam formato nativo do provider |
+| MCP (Model Context Protocol) | Protocolo padronizado de contexto — futuro próximo | Monitorar | Avaliar roadmap de migração |
+| Structured output / JSON mode | Forçar formato JSON na saída do LLM | Implementado | Verificar `_parse_reasoning()` + fallback |
+| Streaming responses | Respostas em tempo real via WebSocket/SSE | Implementado | Verificar `agent_chat_ws.py` |
+| Guardrails-as-code em banco | Guardrails editáveis sem deploy | Implementado | Verificar migration 020 + Admin UI |
+| LLM evaluation framework | Avaliação contínua via LLM-as-judge | Implementado (custom) | Verificar `AgentQualityEvaluator` — considerar migrar para Ragas/DeepEval |
+| Observability integrada | Tracing + métricas + alertas automáticos | Implementado | Verificar LangSmith + Prometheus + health alerts |
+| Memory management | Memória em camadas (sessão, cross-sessão, permanente) | Implementado | Verificar os 3 níveis e decay factor |
+| Graceful degradation | Fallback chain de LLM + modo sem IA | Parcial | Verificar fallback Claude→OpenAI→Gemini + manual fallback |
+
+### MP-2.2 Padrões de Prompt Engineering (Referência Mercado)
+
+| Prática | Descrição | Como Verificar no Código |
+|---------|-----------|--------------------------|
+| Role-based prompting | System prompt com papel claro e limitado | Verificar seção [1] do prompt |
+| Few-shot examples | 2-3 exemplos concretos incluindo edge cases | Verificar seção [10] + `few_shot_examples.py` |
+| Chain-of-Thought (CoT) | Forçar raciocínio explícito antes da resposta | Verificar campo `"thought"` no JSON de saída |
+| Output schema enforcement | Schema JSON definido e validado | Verificar `_parse_reasoning()` |
+| Negative examples | Exemplos do que NÃO fazer (bloqueio ético) | Verificar se few-shot inclui exemplos de recusa |
+| Dynamic context injection | Contexto variável separado do system prompt | Verificar `extra_context` vs system prompt fixo |
+| Prompt versioning | Versionamento de prompts para auditoria | Verificar se prompts têm versão ou hash |
+| Temperature control | Temperatura baixa para decisões, alta para criação | Verificar `temperature` por tipo de operação |
+| Token budget awareness | Controle de custo por interação | Verificar `token_budget` no ReActConfig |
+| Bias-aware prompting | Instruções explícitas anti-viés no prompt | Verificar seção [2] princípios inegociáveis |
+
+### MP-2.3 Padrões de Fairness (Referência Eightfold/Greenhouse)
+
+| Prática | Líder de Mercado | Como Verificar na LIA |
+|---------|-----------------|----------------------|
+| Attribute masking pré-LLM | Eightfold (remove nome, foto, gênero, idade) | Verificar `pii_masking.py` — gap G-M2: blind review ausente |
+| Four-fifths rule automated | Greenhouse (monitoramento contínuo) | Verificar `bias_audit_service.py` + golden_dataset |
+| Adverse impact analysis | Eightfold (por grupo protegido) | Verificar `AUDIT_DIMENSIONS` = 4 dimensões |
+| Bias audit dashboard | Eightfold + Greenhouse | Verificar Admin UI `/admin/compliance/auditoria/bias` |
+| Model card / transparency report | Eightfold (publicado) | Verificar se existe documentação pública de fairness |
+| Regular fairness testing | Eightfold (contínuo) + EEOC | Verificar se testes de fairness estão em CI/CD |
+| Red teaming | Paradox + Greenhouse | Verificar `< 1% jailbreak` target no FairnessGuard |
+| Explainable rejections | Greenhouse | Verificar gate-differentiated feedback (4 templates) |
+
+### MP-2.4 Padrões de Segurança e Privacidade (Referência SOC 2/ISO)
+
+| Prática | Descrição | Como Verificar |
+|---------|-----------|----------------|
+| PII masking em logs | Nenhum dado pessoal em logs de produção | `grep -r "logger\." \| grep -v "pii_masking"` |
+| Prompt injection protection | Detectar e bloquear tentativas de injection | Verificar `prompt_injection.py` em todos os endpoints |
+| Data minimization em prompts | Enviar apenas dados necessários ao LLM | Verificar se prompts incluem CPF, email, telefone brutos |
+| Encryption at rest e in transit | TLS 1.3+ para dados em trânsito, AES-256 at rest | Verificar configuração de banco e API |
+| Secret management | Nenhum secret hardcoded, vault/env vars | `grep -r "sk-\|api_key=" --include="*.py" \| grep -v ".env"` |
+| Rate limiting | Proteção contra abuso | Verificar middleware de rate limiting |
+| Audit trail imutável | Log de auditoria que não pode ser alterado | Verificar `audit_service.py` + tabela `audit_log` |
+| Data retention policy | Cleanup automático com prazos definidos | Verificar `data_retention_job.py` + Celery beat |
+
+---
+
+# ANEXO L: MAPA DE CAPACIDADES POR AGENTE — INVENTÁRIO COMPLETO
+
+> O auditor deve preencher este mapa para cada agente, documentando capacidades implementadas, ausentes e oportunidades identificadas por comparação com concorrentes.
+
+---
+
+## MC-1. Inventário de Agentes LIA
+
+### MC-1.1 Agentes ReAct (Raciocínio Livre)
+
+| # | Agente | Domínio | Arquivo | Tools |
+|---|--------|---------|---------|-------|
+| A1 | SourcingReActAgent | sourcing | `sourcing/agents/sourcing_react_agent.py` | 10 |
+| A2 | PipelineReActAgent | cv_screening | `cv_screening/agents/pipeline_react_agent.py` | 10 |
+| A3 | CommunicationReActAgent | communication | `communication/agents/communication_react_agent.py` | 5 |
+| A4 | AnalyticsReActAgent | analytics | `analytics/agents/analytics_react_agent.py` | 6 |
+| A5 | ATSIntegrationReActAgent | ats_integration | `ats_integration/agents/ats_integration_react_agent.py` | 5 |
+| A6 | AutomationReActAgent | automation | `automation/agents/automation_react_agent.py` | 6 |
+| A7 | PolicyReActAgent | hiring_policy | `hiring_policy/agents/policy_react_agent.py` | 10 |
+| A8 | WizardReActAgent | job_management | `job_management/agents/wizard_react_agent.py` | 10 |
+| A9 | KanbanReActAgent | recruiter_assistant | `recruiter_assistant/agents/kanban_react_agent.py` | 10 |
+| A10 | TalentReActAgent | recruiter_assistant | `recruiter_assistant/agents/talent_react_agent.py` | 10 |
+| A11 | JobsMgmtReActAgent | recruiter_assistant | `recruiter_assistant/agents/jobs_mgmt_react_agent.py` | 10 |
+
+### MC-1.2 Agentes Graph (Fluxo Estruturado)
+
+| # | Agente | Domínio | Arquivo | Nós |
+|---|--------|---------|---------|-----|
+| G1 | JobWizardGraph | job_management | `job_management/agents/job_wizard_graph.py` | 6 |
+| G2 | WSIInterviewGraph | cv_screening | `cv_screening/agents/wsi_interview_graph.py` | Entrevista WSI |
+| G3 | InterviewGraph | interview_scheduling | `interview_scheduling/agents/interview_graph.py` | Agendamento |
+
+---
+
+## MC-2. Mapa Detalhado de Capacidades por Agente
+
+### MC-2.1 Template de Avaliação (Usar para cada agente)
+
+Para cada agente, o auditor deve preencher:
+
+```
+AGENTE: [nome]
+DOMÍNIO: [domínio]
+
+CAPACIDADES IMPLEMENTADAS:
+- [ ] [capacidade 1]: [status OK/PARCIAL/FALHA] — evidência: [arquivo:linha]
+- [ ] [capacidade 2]: ...
+
+CAPACIDADES AUSENTES (vs. concorrentes):
+- [ ] [capacidade X]: oferecida por [concorrente] — impacto: [alto/médio/baixo]
+
+OPORTUNIDADES:
+- [oportunidade 1]: [descrição + referência de mercado]
+
+ANTI-PADRÕES ENCONTRADOS:
+- [anti-padrão]: [referência AP-X.X]
+
+CONFORMIDADE COM PADRÃO 4 ARQUIVOS:
+- [ ] react_agent.py: [OK/FALHA]
+- [ ] tool_registry.py: [OK/FALHA]
+- [ ] system_prompt.py: [OK/FALHA]
+- [ ] stage_context.py: [OK/FALHA]
+```
+
+### MC-2.2 Sourcing Agent (A1) — Capacidades vs. Concorrentes
+
+| Capacidade | LIA | Tezi Max | Findem | Gem | Eightfold | Status LIA |
+|-----------|-----|----------|--------|-----|-----------|-----------|
+| Busca por skills/cargo/localização | `search_candidates` | 750M+ perfis | 3D data + atributos | AI sourcing | 1.6B perfis | Implementado |
+| Outreach automatizado personalizado | Ausente | Email "on behalf of" | CRM sequences | Automated outreach | Campaigns | **Gap — Alta Prioridade** |
+| Calibração contínua de busca | Ausente | Auto-calibrate after feedback | Talent analytics | Auto-calibration | Deep learning | **Gap — Média** |
+| Shortlist inteligente | `add_to_shortlist` | Auto-shortlist | AI ranking | Gem Assist | AI match score | Implementado |
+| Profile enrichment (multi-fonte) | Ausente | LinkedIn + GitHub + sites | 3D data fusion | Chrome extension | Data enrichment | **Gap — Alta** |
+| Boolean search / natural language | `set_search_criteria` (NL) | NL + deep search | Attribute-based | NL search | NL + skills graph | Implementado |
+| Análise comparativa de candidatos | `compare_candidates` | Ausente | Side-by-side | Compare view | AI comparison | Implementado |
+| Scoring de fit com vaga | `score_candidate` (WSI) | Match scoring | Fit score | Gem Score | Talent Match | Implementado |
+| Fairness check em critérios | `check_search_fairness` | Ausente | Ausente | Ausente | Bias detection | **Diferencial LIA** |
+
+### MC-2.3 Pipeline/Screening Agent (A2) — Capacidades vs. Concorrentes
+
+| Capacidade | LIA | Paradox | DigaAI | Beam AI | Eightfold | Status LIA |
+|-----------|-----|---------|--------|---------|-----------|-----------|
+| Visualizar perfil completo | `view_candidate_profile` | Ausente (chat-first) | Ausente | Dashboard | Full profile | Implementado |
+| Movimentação de etapa | `move_candidate` + `batch_move` | Auto-move | Auto-stage | Auto-transition | Workflow | Implementado |
+| Análise de CV por IA | `analyze_cv` | Screening questions | AI interview | Resume parsing | Deep learning CV | Implementado |
+| Screening WSI (entrevista IA) | `run_wsi_screening` + Graph G2 | Conversational screening | Voice/video AI | Ausente | Assessment | **Diferencial LIA** |
+| Scoring determinístico | `wsi_deterministic_scorer.py` | Ausente (chat-based) | Score automático | Ausente | AI scoring | **Diferencial LIA** |
+| Agendamento de entrevista | `schedule_interview` | Auto-schedule | Ausente | Calendar AI | Smart scheduling | Implementado |
+| Comunicação multicanal | `send_communication` | WhatsApp + SMS + web | WhatsApp + web | Email + SMS | Email + portal | Implementado |
+| Batch operations | `batch_move` | Ausente | Ausente | Bulk actions | Bulk processing | Implementado |
+| Human review sampling | 5% LGPD sampling | Ausente | Ausente | Ausente | Ausente | **Diferencial LIA** |
+| Gate-differentiated feedback | 4 templates por gate | Generic rejection | Ausente | Ausente | Generic | **Diferencial LIA** |
+
+### MC-2.4 Communication Agent (A3) — Capacidades vs. Concorrentes
+
+| Capacidade | LIA | Paradox | Gem | Greenhouse | Status LIA |
+|-----------|-----|---------|-----|------------|-----------|
+| Email com IA | `send_email` | Ausente (chat-only) | AI email sequences | Email templates | Implementado |
+| WhatsApp | `send_whatsapp` | WhatsApp nativo | Ausente | Ausente | Implementado |
+| Histórico de comunicação | `get_communication_history` | Chat history | CRM timeline | Activity feed | Implementado |
+| Agendamento de mensagens | `schedule_message` | Ausente | Scheduled sequences | Ausente | Implementado |
+| Rate limiting | `check_rate_limit` | Ausente | Ausente | Ausente | Implementado |
+| AI footer obrigatório | `AI_GENERATED_FOOTER` | Self-identify | Ausente | Ausente | **Diferencial LIA** |
+| Email tracking (pixel+click) | `email_tracking_service.py` | Ausente | Open tracking | Basic tracking | Implementado |
+| Templates por canal | Comunicação via CommunicationMatrix | Multi-channel | Sequences | Templates | Implementado |
+| Personalização por IA | Geração via LLM | Conversational AI | AI personalization | AI suggestions | Implementado |
+| NPS/sentiment em respostas | Ausente | Sentiment analysis | Ausente | Ausente | **Gap — Média** |
+
+### MC-2.5 Job Wizard Agent (A8 + G1) — Capacidades vs. Concorrentes
+
+| Capacidade | LIA | Gem | Greenhouse | Tezi | Status LIA |
+|-----------|-----|-----|------------|------|-----------|
+| Criação guiada de vaga | Graph G1 (6 nós) | AI job creation | AI job posts | Job intake form | Implementado |
+| Validação anti-viés | `validate_job_requirements` (FairnessGuard) | Ausente | Bias scanner | Ausente | **Diferencial LIA** |
+| Benchmark salarial | `get_salary_benchmarks` (SQL + mercado) | Salary insights | Compensation data | Ausente | Implementado |
+| Geração de JD enriquecida | `generate_enriched_jd` | AI JD generation | AI job posts | Ausente | Implementado |
+| Health check pré-publicação | `check_job_draft_health` | Ausente | Ausente | Ausente | **Diferencial LIA** |
+| Sugestões de skills/benefícios | `get_job_suggestions` | AI suggestions | Ausente | Ausente | Implementado |
+| Compliance check em perguntas | FairnessGuard em screening questions | Ausente | EEOC guidance | Ausente | **Diferencial LIA** |
+
+### MC-2.6 Analytics Agent (A4) — Capacidades vs. Concorrentes
+
+| Capacidade | LIA | Gem | Eightfold | Greenhouse | Findem | Status LIA |
+|-----------|-----|-----|-----------|------------|--------|-----------|
+| Insights por vaga | `get_job_insights` | Pipeline analytics | Talent analytics | Pipeline reports | People analytics | Implementado |
+| Previsão de métricas | `predict_hiring_metrics` | Predictive analytics | Workforce planning | Ausente | Talent forecasting | Implementado |
+| Relatórios de candidatos | `generate_candidate_report` | Candidate reports | Talent profiles | Candidate reports | Candidate insights | Implementado |
+| Performance de agentes IA | `get_agent_performance` | Ausente | Ausente | Ausente | Ausente | **Diferencial LIA** |
+| Search analytics | `get_search_analytics` | Sourcing analytics | Sourcing metrics | Source tracking | Search analytics | Implementado |
+| Bias audit dashboard | Sim (Admin UI) | Ausente | Bias detection | EEOC reports | Ausente | **Diferencial LIA** |
+| Drift detection | 4 triggers automatizados | Ausente | Model monitoring | Ausente | Ausente | **Diferencial LIA** |
+
+### MC-2.7 Hiring Policy Agent (A7) — Capacidades vs. Concorrentes
+
+| Capacidade | LIA | Greenhouse | Eightfold | Status LIA |
+|-----------|-----|------------|-----------|-----------|
+| Configuração guiada de políticas | `get_current_policy` + `save_policy_field` | Settings panel | Configuration | Implementado |
+| Validação de compliance | `validate_policy_compliance` (FairnessGuard) | EEOC check | Bias check | **Diferencial LIA** |
+| Benchmarks por setor | `get_industry_benchmarks` + `get_platform_benchmarks` | Industry data | Ausente | Implementado |
+| Detecção de anomalias | `detect_policy_impact_anomalies` | Ausente | Ausente | **Diferencial LIA** |
+| Impacto de configurações | `explain_policy_impact` | Ausente | Ausente | **Diferencial LIA** |
+| Setup progress tracking | `get_setup_progress` | Onboarding wizard | Setup guide | Implementado |
+
+### MC-2.8 Recruiter Assistant — Kanban (A9) + Talent (A10) + Jobs (A11)
+
+| Capacidade | LIA | Gem | Greenhouse | Tezi | Status LIA |
+|-----------|-----|-----|------------|------|-----------|
+| Pipeline summary | `get_pipeline_summary` | Pipeline view | Pipeline dashboard | Ausente | Implementado |
+| Bottleneck detection | `identify_bottlenecks` | Ausente | Ausente | Ausente | **Diferencial LIA** |
+| Candidate aging report | `get_candidate_aging` | Stale candidate alerts | Ausente | Ausente | **Diferencial LIA** |
+| Stage comparison | `compare_stages` | Ausente | Stage analytics | Ausente | Implementado |
+| Movement suggestions | `suggest_movements` | Ausente | Ausente | Ausente | **Diferencial LIA** |
+| Pipeline benchmarks (SQL) | `get_pipeline_benchmarks` (SQL real) | Pipeline metrics | Benchmark reports | Ausente | Implementado |
+| Ranking de candidatos | `rank_candidates` | Gem Score | Scorecard | Match score | Implementado |
+| Comparação lado a lado | `compare_candidates` | Compare view | Compare | Ausente | Implementado |
+| Shortlist creation | `create_shortlist` | Shortlist | Shortlist | Auto-shortlist | Implementado |
+| SLA monitoring | `check_sla` | Ausente | Ausente | Ausente | **Diferencial LIA** |
+| Busca com fairness check | `check_search_fairness` | Ausente | Ausente | Ausente | **Diferencial LIA** |
+
+---
+
+## MC-3. Gaps Competitivos Consolidados — Oportunidades por Prioridade
+
+### MC-3.1 Alta Prioridade (Concorrentes já oferecem, impacto direto em vendas)
+
+| # | Capacidade Ausente | Oferecida por | Agente Afetado | Esforço |
+|---|-------------------|---------------|----------------|---------|
+| CG-1 | Outreach automatizado personalizado (email sequences) | Tezi, Gem, Findem, Eightfold | Sourcing (A1) | Alto |
+| CG-2 | Profile enrichment multi-fonte (LinkedIn + GitHub + social) | Tezi, Findem, Gem (extensão Chrome) | Sourcing (A1) | Alto |
+| CG-3 | Integração direta WhatsApp ↔ WSI (entrevista pelo WhatsApp) | Paradox (nativo), DigaAI | WSI Graph (G2) | Médio |
+| CG-4 | Blind review / candidate anonymizer pré-LLM | Eightfold (masking automático) | Pipeline (A2) | Médio |
+| CG-5 | Cascata de confiança T3 automática | Estado da arte LLM routing | Orchestrator | Médio |
+
+### MC-3.2 Média Prioridade (Diferenciação competitiva)
+
+| # | Capacidade Ausente | Oferecida por | Agente Afetado | Esforço |
+|---|-------------------|---------------|----------------|---------|
+| CG-6 | Calibração contínua de busca (auto-adjust com feedback) | Tezi, Findem | Sourcing (A1) | Alto |
+| CG-7 | NPS/sentiment analysis em respostas de candidatos | Paradox | Communication (A3) | Médio |
+| CG-8 | AI video interview (vídeo assíncrono) | DigaAI, Paradox | WSI (G2) — novo canal | Alto |
+| CG-9 | Avaliação com Ragas/DeepEval (benchmark padronizado) | Estado da arte ML | Quality Evaluator | Médio |
+| CG-10 | Career page AI chatbot (widget público) | Paradox Olivia, Gem | Novo agente | Alto |
+| CG-11 | Workforce planning / talent mapping | Eightfold, Findem | Analytics (A4) — expansão | Alto |
+
+### MC-3.3 Diferencial LIA (Capacidades que concorrentes NÃO têm)
+
+O auditor deve verificar que estes diferenciais estão REALMENTE implementados e funcionais:
+
+| # | Diferencial | Implementação | Verificação |
+|---|------------|---------------|-------------|
+| D-1 | FairnessGuard 3 camadas (regex + léxico + LLM) | `fairness_guard.py` | Testar com 6 cenários de red teaming |
+| D-2 | Scoring determinístico WSI (sem LLM) | `wsi_deterministic_scorer.py` | Verificar que score é reproduzível |
+| D-3 | Human Review Sampling 5% (LGPD Art. 20) | `human_review_sampling_service.py` | Verificar MD5 sampling determinístico |
+| D-4 | Gate-differentiated feedback (4 templates) | `candidate_feedback_service.py` | Testar os 4 templates |
+| D-5 | Policy impact detection (anomalias) | `policy_react_agent.py` | Verificar `detect_policy_impact_anomalies` |
+| D-6 | Anti-sycophancy com benchmarks setoriais | System prompts | Verificar seção [7] do prompt |
+| D-7 | Guardrails editáveis sem deploy (banco) | `guardrails` table + Admin UI | Testar CRUD via API |
+| D-8 | Bottleneck detection + movement suggestions | `kanban_react_agent.py` | Verificar tools `identify_bottlenecks` + `suggest_movements` |
+| D-9 | Pipeline benchmarks via SQL real | `jobs_mgmt_react_agent.py` | Verificar que usa dados reais, não mock |
+| D-10 | Drift detection (4 triggers + alertas automáticos) | `model_drift_service.py` | Verificar Celery beat + alertas |
+| D-11 | AI footer em emails (EU AI Act compliance) | `email_adapter.py` | Verificar `AI_GENERATED_FOOTER` ativo |
+| D-12 | Agent performance monitoring (auto-observabilidade) | `analytics_react_agent.py` | Verificar `get_agent_performance` tool |
+
+---
+
+## MC-4. Benchmark Competitivo Consolidado
+
+### MC-4.1 Tabela de Cobertura Funcional vs. Concorrentes
+
+| Capacidade | LIA | Tezi | Paradox | DigaAI | Findem | Eightfold | Gem | Greenhouse | Beam AI |
+|-----------|:---:|:----:|:-------:|:------:|:------:|:---------:|:---:|:----------:|:-------:|
+| AI Sourcing | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| AI Screening/Triagem | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ |
+| AI Interview (WSI) | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Scoring Determinístico | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Job Wizard (criação guiada) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Pipeline Management | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Communication (email+WA) | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Outreach Automatizado | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| FairnessGuard (3 camadas) | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| Bias Audit Dashboard | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| ATS Integration | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | N/A | ✅ |
+| Analytics/Reporting | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Hiring Policy Config | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Drift Detection | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Human Review Sampling | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Multi-tenant | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| WhatsApp Nativo | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Video Interview AI | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Career Page Chatbot | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| LGPD Compliance Nativo | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+**Contagem de capacidades:**
+- LIA: 16/20 (80%)
+- Eightfold: 12/20 (60%) — líder em AI/ML mas sem comunicação multicanal
+- Gem: 9/20 (45%) — forte em CRM/sourcing
+- Greenhouse: 8/20 (40%) — forte em ATS/compliance
+- Tezi: 7/20 (35%) — forte em sourcing autônomo
+- Paradox: 7/20 (35%) — forte em conversacional/WhatsApp
+
+---
+
+## MC-5. Procedimento de Mapeamento de Capacidades (Para o Auditor)
+
+### Passo 1: Inventário de Tools por Agente
+
+Para cada agente, executar:
+
+```bash
+grep -E "name=|description=" app/domains/[domain]/agents/[domain]_tool_registry.py
+```
+
+### Passo 2: Verificar Wiring (Tool existe vs. está conectado)
+
+Para cada tool listada no registry:
+1. Verificar se a função implementada faz algo real (não é stub)
+2. Verificar se o service que a tool chama acessa dados reais (não mock)
+3. Verificar se há testes para a tool
+4. Classificar: REAL / STUB / MOCK / PARCIAL
+
+### Passo 3: Comparar com Matriz de Concorrentes
+
+Para cada capacidade ausente (❌) na tabela MC-4.1:
+1. Avaliar impacto no negócio (alto/médio/baixo)
+2. Avaliar esforço de implementação
+3. Priorizar: CG-1 a CG-N
+
+### Passo 4: Validar Diferenciais
+
+Para cada diferencial listado em MC-3.3:
+1. Executar cenário de teste manual
+2. Verificar que funciona end-to-end (não apenas existe no código)
+3. Classificar: FUNCIONAL / PARCIAL / APENAS CÓDIGO
+
+### Passo 5: Gerar Relatório
+
+Incluir no relatório final:
+- Tabela de capacidades por agente (preenchida)
+- Gaps competitivos priorizados
+- Diferenciais validados vs. apenas implementados
+- Recomendações de roadmap baseadas em gaps
+
+---
+
 # PARTE IX: NOTAS FINAIS
 
 1. **Não assuma — investigue.** Sempre leia o código real antes de classificar um item. "Existe" e "funciona" são coisas diferentes.

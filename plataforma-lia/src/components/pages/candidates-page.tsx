@@ -6,9 +6,9 @@
  *   @see hooks/use-candidate-filters.ts   — TableFilters state + getDefaultTableFilters
  *   @see hooks/use-candidate-selection.ts — multi-select + bulk action state
  *
- * TODO phase 2: Replace inline useState declarations at lines ~3430-3480 (filters)
- * and ~901-902 (selection) with calls to the above hooks.
- * Sprint F5 (done): CandidateTabs + CandidateSearchBar extracted to components/pages/candidates/.
+ * Sprint F3 (done): useCandidatesListMapped wired; manual initial useEffect removed.
+ *   candidatesListHook syncs candidates + isLoading; search handlers still override via setCandidates.
+ * Sprint F5 (done): CandidateTabs + CandidateSearchBar extracted + used in JSX.
  * TODO phase 3 remaining: Extract CandidateTableSection component.
  */
 "use client"
@@ -443,13 +443,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
 
   // Estados simples usando useState
   const [candidates, setCandidates] = useState<Candidate[]>([])
-  const [totalCandidatesInBase, setTotalCandidatesInBase] = useState<number | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isSearchActive, setIsSearchActive] = useState(false)
 
-  // Sprint G4: hook de candidatos com transform inline (CandidateLocal → Candidate)
-  // Disponível para uso incremental; candidatos locais ainda gerenciados via useState acima.
-  const _candidatesListMapped = useCandidatesListMapped()
+  // F3: hook de candidatos — fonte de verdade para carga inicial do backend
+  const candidatesListHook = useCandidatesListMapped()
 
   // Data requests em bulk para os candidatos visíveis — Sprint E F3 (aditivo, não conflita)
   const {
@@ -460,149 +458,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     enabled: candidates.length > 0,
   })
 
-  // Carregar candidatos do backend (dados reais) - apenas uma vez na montagem
+  // F3: sync hook data → local state (base view candidates + loading)
+  // Search handlers override candidates via setCandidates when results arrive;
+  // hook is the source of truth for the base/local candidates view.
   useEffect(() => {
-    setIsLoading(true)
-    liaApi.listCandidates(undefined, undefined, 0, 100)
-      .then(response => {
-        if (response.items && response.items.length > 0) {
-          const backendCandidates: Candidate[] = response.items.map((c: CandidateLocal, index: number) => {
-            const experience = c.years_of_experience || ((index % 12) + 1)
-            const monthlySalary = c.current_salary || getSalaryByExperience(experience, index)
-            return {
-              id: c.id,
-              candidateId: c.id.substring(0, 5).toUpperCase(),
-              name: c.name,
-              email: c.email || '',
-              secondary_email: c.secondary_email,
-              phone: c.phone || '',
-              mobile_phone: c.mobile_phone,
-              secondary_phone: c.secondary_phone,
-              linkedin_url: c.linkedin_url,
-              github_url: c.github_url,
-              portfolio_url: c.portfolio_url,
-              avatar_url: c.avatar_url,
-              
-              date_of_birth: c.date_of_birth,
-              gender: c.gender,
-              nationality: c.nationality,
-              marital_status: c.marital_status,
-              cpf: c.cpf,
-              
-              current_title: c.current_title,
-              current_company: c.current_company || '',
-              seniority_level: c.seniority_level,
-              years_of_experience: experience,
-              self_introduction: c.self_introduction,
-              
-              technical_skills: c.technical_skills || [],
-              soft_skills: c.soft_skills || [],
-              languages: c.languages || {},
-              certifications: c.certifications || [],
-              interests: c.interests || [],
-              
-              location_city: c.location_city,
-              location_state: c.location_state,
-              location_country: c.location_country,
-              address_street: c.address_street,
-              address_number: c.address_number,
-              address_district: c.address_district,
-              address_zip: c.address_zip,
-              address_complement: c.address_complement,
-              
-              is_remote: c.is_remote,
-              willing_to_relocate: c.willing_to_relocate,
-              mobility: c.mobility,
-              work_model_preference: c.work_model_preference,
-              contract_type_preference: c.contract_type_preference,
-              
-              current_salary: monthlySalary,
-              salary_currency: c.salary_currency || 'BRL',
-              desired_salary_min: c.desired_salary_min,
-              desired_salary_max: c.desired_salary_max,
-              salary_expectation_clt: c.salary_expectation_clt,
-              salary_expectation_pj: c.salary_expectation_pj,
-              salary_expectation_freelance: c.salary_expectation_freelance,
-              
-              resume_url: c.resume_url,
-              resume_text: c.resume_text,
-              cover_letter: c.cover_letter,
-              
-              source: c.source,
-              ats_source_name: c.ats_source_name,
-              ats_candidate_id: c.ats_candidate_id,
-              pearch_profile_id: c.pearch_profile_id,
-              
-              lia_score: c.lia_score,
-              lia_insights: c.lia_insights || {},
-              skills_match_percentage: c.skills_match_percentage,
-              
-              status: c.status,
-              is_active: c.is_active,
-              is_blacklisted: c.is_blacklisted,
-              blacklist_reason: c.blacklist_reason,
-              
-              preferred_contact_method: c.preferred_contact_method,
-              best_time_to_contact: c.best_time_to_contact,
-              communication_consent: c.communication_consent,
-              
-              completed_register: c.completed_register,
-              accept_terms: c.accept_terms,
-              
-              tags: c.tags || [],
-              notes: c.notes,
-              additional_data: c.additional_data || {},
-              
-              created_at: c.created_at,
-              updated_at: c.updated_at,
-              last_contacted_at: c.last_contacted_at,
-              last_activity_at: c.last_activity_at,
-              
-              position: c.current_title || 'Não especificado',
-              monthlySalary: monthlySalary,
-              location: c.location_city || 'Não especificado',
-              workModel: (c.work_model_preference as 'remoto' | 'híbrido' | 'presencial') || 'remoto',
-              score: c.lia_score || 75,
-              currentSalary: `R$ ${monthlySalary.toLocaleString('pt-BR')}`,
-              expectedSalary: c.desired_salary_max ? `R$ ${c.desired_salary_max.toLocaleString('pt-BR')}` : `R$ ${Math.floor(monthlySalary * 1.2).toLocaleString('pt-BR')}`,
-              contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
-              linkedin: c.linkedin_url || '',
-              skills: c.technical_skills || [],
-              experience: experience,
-              workHistory: generateWorkHistory(c, experience),
-              education: generateEducation(c, experience),
-              avatar: c.avatar_url,
-              liaAnalysis: {
-                score: c.lia_score || 75,
-                strengths: c.lia_insights?.strengths || ['Perfil técnico sólido'],
-                concerns: c.lia_insights?.concerns || [],
-                recommendation: c.lia_insights?.recommendation || 'Avaliar com atenção'
-              },
-              has_email: Boolean(c.email),
-              has_phone: Boolean(c.phone),
-              is_opentowork: c.is_opentowork,
-              is_decision_maker: c.is_decision_maker,
-              is_top_universities: c.is_top_universities,
-              is_startup: c.is_startup || c.company_info?.is_startup,
-              expertise: c.expertise,
-              outreach_message: c.outreach_message
-            }
-          })
-          setCandidates(backendCandidates)
-          setTotalCandidatesInBase(response.total || backendCandidates.length)
-        } else {
-          setCandidates([])
-          setTotalCandidatesInBase(0)
-        }
-        setIsLoading(false)
-      })
-      .catch(error => {
-        console.error('❌ CandidatesPage: Erro ao carregar candidatos:', error)
-        setIsLoading(false)
-        setCandidates([])
-        setTotalCandidatesInBase(null)
-      })
-  }, [])
+    setCandidates(candidatesListHook.candidates)
+    setIsLoading(candidatesListHook.loading)
+  }, [candidatesListHook.candidates, candidatesListHook.loading])
 
   useEffect(() => {
     if (!candidates.length) return
