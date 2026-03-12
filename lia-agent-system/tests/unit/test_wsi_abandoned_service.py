@@ -160,6 +160,7 @@ class TestWsiAbandonedService:
 class TestWsiAbandonedCeleryTask:
     def test_task_registrada_no_celery(self):
         """wsi.check_abandoned deve estar registrado."""
+        import app.jobs.celery_tasks  # noqa: F401 — registra tasks no Celery
         from app.core.celery_app import celery_app
         assert "wsi.check_abandoned" in celery_app.tasks
 

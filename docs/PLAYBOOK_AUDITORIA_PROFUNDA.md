@@ -890,88 +890,857 @@ Para features novas ou ajustes identificados, mapear impacto em:
 
 ---
 
-# PARTE VIII: FORMATO DO RELATÓRIO
+# PARTE VIII: FORMATO DO RELATÓRIO — GUIA COMPLETO DE GERAÇÃO
 
-O relatório final deve seguir EXATAMENTE esta estrutura:
+> **Este é o guia definitivo para gerar o relatório de auditoria profunda.** Cada seção do relatório final está conectada aos procedimentos específicos do playbook (DP, CI, RM) que o auditor deve executar para preencher cada parte. O relatório final terá 8 seções obrigatórias + 2 anexos.
+
+---
+
+## VISÃO GERAL: ESTRUTURA DO RELATÓRIO FINAL
+
+O relatório final DEVE conter estas seções na seguinte ordem:
+
+| # | Seção do Relatório | Procedimentos Fonte | Resultado Esperado |
+|---|-------------------|--------------------|--------------------|
+| 0 | Resumo Executivo | Todas as seções | 1-2 páginas com achados críticos |
+| 1 | Mapeamento da Arquitetura | DP-01, DP-02, DP-03 | Inventário + stack + tools |
+| 2 | Análise Detalhada por Prompt | DP-04, DP-05, DP-06, DP-07 | 1 bloco por prompt |
+| 3 | Auditoria Multi-Dimensional | DP-09.1 a DP-09.11 | Matrizes transversais |
+| 4 | Análise Comparativa de Capacidades | DP-08, DP-10, DP-11, DP-12 | Mapa + padronização |
+| 5 | Análise de Funcionalidades Transversais | DP-13, DP-14 | Histórico, relatórios |
+| 6 | Prioridades de Correção | DP-15, DP-16 | Achados P0-P3 + arquivos |
+| 7 | Resumo Executivo de Esforço | DP-15, DP-16 | Tabela para sprint planning |
+| A | Anexo: Arquivos-Chave | DP-16 | Índice completo de arquivos |
+| B | Anexo: Referência Cruzada Runbooks | DP-20, RM-01..RM-44 | Mapa problema → solução |
+
+---
+
+## SEÇÃO 0: RESUMO EXECUTIVO
+
+**Procedimentos fonte:** Consolidação de todas as seções.
+
+**Quando escrever:** APÓS completar todas as outras seções (é a última a ser escrita, primeira a ser lida).
+
+**Template obrigatório:**
+
+```markdown
+# RELATÓRIO DE AUDITORIA PROFUNDA — PLATAFORMA LIA
+**Data:** [DD/MM/AAAA]
+**Auditor(es):** [nomes]
+**Versão do código:** [commit hash ou tag]
+**Escopo:** [N] prompts/assistentes, [M] agentes, [K] domínios
+
+## Resumo Executivo
+
+### Números-Chave
+- **Prompts auditados:** [N]
+- **Achados totais:** [X] (P0: [a], P1: [b], P2: [c], P3: [d])
+- **Dimensões avaliadas:** 14
+- **Tools verificados:** [T] (implementados: [I], stubs: [S], ausentes: [A])
+
+### Status Geral por Prompt
+| Prompt | Achados P0 | Achados P1 | Status Geral |
+|--------|-----------|-----------|-------------|
+| P1 [Nome] | [n] | [n] | SAUDÁVEL / EM RISCO / CRÍTICO |
+| P2 [Nome] | [n] | [n] | |
+| ... | | | |
+
+### Top 5 Achados Críticos
+1. **[ACH-XXX]** — [Título] — Impacto: [descrição em 1 linha]
+2. ...
+
+### Recomendação Principal
+[1-2 parágrafos com a recomendação mais importante para o CTO/Head de Engenharia]
+```
+
+---
 
 ## SEÇÃO 1: MAPEAMENTO DA ARQUITETURA
-- Tabela de componentes compartilhados
-- Stack completo por prompt (uma tabela por prompt)
-- Mapa de tools por scope
+
+**Procedimentos fonte:** DP-01 (Inventário), DP-02 (Stack), DP-03 (Tools)
+
+**Passos para o auditor:**
+
+1. Executar **DP-01** → Produz a tabela de inventário de prompts
+2. Executar **DP-02** para cada prompt → Produz N tabelas de stack (14 camadas)
+3. Executar **DP-03** para cada scope → Produz N tabelas de tools (query/action)
+
+### 1.1 Componentes Compartilhados da Arquitetura
+
+Antes dos stacks individuais, listar os componentes que são compartilhados por TODOS os prompts:
+
+```markdown
+### Componentes Compartilhados
+
+| Componente | Classe/Módulo | Arquivo | Usado por |
+|-----------|--------------|---------|-----------|
+| Orquestrador | Orchestrator | lia-agent-system/app/orchestrator/orchestrator.py | Todos (via Float) |
+| Router | CascadedRouter | lia-agent-system/app/orchestrator/cascaded_router.py | Float |
+| Intent Classifier | IntentRouter | lia-agent-system/app/orchestrator/intent_router.py | Float |
+| FairnessGuard | FairnessGuard | lia-agent-system/app/shared/compliance/fairness_guard.py | Policy, Wizard (parcial) |
+| PII Masking | PIIMaskingFilter | lia-agent-system/app/shared/pii_masking.py | Todos |
+| Audit Callback | AuditCallback | lia-agent-system/libs/audit/lia_audit/audit_callback.py | Todos |
+| ReAct Loop | ReActLoop | lia-agent-system/libs/agents-core/lia_agents_core/react_loop.py | Todos os ReAct agents |
+| Enhanced Mixin | EnhancedAgentMixin | lia-agent-system/libs/agents-core/lia_agents_core/enhanced_agent_mixin.py | Todos os agents |
+| Token Tracking | TokenTrackingService | lia-agent-system/app/services/token_tracking_service.py | Todos |
+| Conversation Memory | ConversationMemory | lia-agent-system/app/services/conversation_memory.py | Float, Kanban |
+| LLM Factory | LLMFactory | lia-agent-system/app/shared/providers/llm_factory.py | Todos |
+| Circuit Breaker | CircuitBreaker | lia-agent-system/app/shared/resilience/circuit_breaker.py | Integrações externas |
+| Scope Config | PromptScope | lia-agent-system/app/tools/scope_config.py | Todos |
+| Tool Registry | ToolRegistry | lia-agent-system/app/tools/registry.py | Todos |
+| HITL Service | HITLService | lia-agent-system/app/services/hitl_service.py | Kanban, Jobs, Wizard |
+| Consent Checker | ConsentCheckerService | lia-agent-system/app/services/consent_checker_service.py | WSI, CV Screening |
+| Confidence Policy | ConfidencePolicyService | lia-agent-system/app/services/confidence_policy_service.py | Orquestrador |
+```
+
+**Como verificar:** Executar os comandos de DP-02 passos 1-11 para identificar quais componentes são compartilhados.
+
+### 1.2 Inventário de Prompts/Assistentes
+
+**Usar saída de DP-01.**
+
+```markdown
+### Inventário de Prompts
+
+| # | Nome | Scope | Arquivo Principal | Linhas | Agente | Domínio |
+|---|------|-------|-------------------|--------|--------|---------|
+| P1 | Talent Funnel | TALENT_FUNNEL | .../talent_assistant_prompts.py | (N) | TalentReActAgent | RecruiterAssistant |
+| P2 | Job Table | JOB_TABLE | .../jobs_management_prompts.py | (N) | JobsMgmtReActAgent | RecruiterAssistant |
+| P3 | Kanban (IN_JOB) | IN_JOB | .../kanban_assistant_prompts.py | (N) | KanbanReActAgent | RecruiterAssistant |
+| P4 | Float (Global) | GLOBAL | orchestrator.py + intent_router.py | (N) | Orchestrator | Orquestração |
+| P5 | Hiring Policy | HIRING_POLICY | .../policy_system_prompt.py | (N) | PolicyReActAgent | HiringPolicy |
+| P6 | Job Wizard | JOB_WIZARD | .../wizard_system_prompt.py | (N) | WizardReActAgent | JobManagement |
+```
+
+### 1.3 Stack Completo por Prompt
+
+**Usar saída de DP-02.** Gerar uma tabela de 14 camadas para CADA prompt.
+
+**Exemplo preenchido (P3 — Kanban):**
+
+```markdown
+### Stack Completo — Kanban Assistant (P3)
+
+| Camada | Componente | Arquivo |
+|--------|-----------|---------|
+| Agente | KanbanReActAgent | lia-agent-system/app/domains/recruiter_assistant/agents/kanban_react_agent.py |
+| Domínio | RecruiterAssistantDomain | lia-agent-system/app/domains/recruiter_assistant/domain.py |
+| System Prompt | LIA_SYSTEM_PROMPT (kanban) | lia-agent-system/app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py |
+| Reasoning Prompt | (integrado ao system prompt) | (mesmo arquivo) |
+| Tool Registry | kanban_tool_registry | lia-agent-system/app/domains/recruiter_assistant/agents/kanban_tool_registry.py |
+| Tools | 26 tools (14 query + 12 action) | lia-agent-system/app/domains/recruiter_assistant/tools/ |
+| Serviço(s) | KanbanAssistantService | lia-agent-system/app/domains/recruiter_assistant/services/kanban_assistant_service.py |
+| Compliance | FairnessGuard (parcial, via tools) | lia-agent-system/app/shared/compliance/fairness_guard.py |
+| Frontend — Página | JobKanbanPage | plataforma-lia/src/components/pages/job-kanban-page.tsx |
+| Frontend — Chat | TransitionChatPanel | plataforma-lia/src/components/kanban/components/TransitionChatPanel.tsx |
+| Frontend — Hooks | (via float hooks) | plataforma-lia/src/hooks/ |
+| Frontend — Context | (via LiaFloatProvider) | plataforma-lia/src/contexts/lia-float-context.tsx |
+| API Proxy | /api/backend-proxy/lia/kanban-assistant | → Backend /api/v1/kanban_assistant |
+| WebSocket | ws://.../ws/chat/{session_id} | Streaming de tokens + HITL |
+```
+
+**Repetir para cada prompt (P1..P6).** Camadas marcadas como "AUSENTE" são achados.
+
+### 1.4 Tools por Scope
+
+**Usar saída de DP-03.** Gerar uma tabela de tools para CADA scope.
+
+**Exemplo preenchido (IN_JOB):**
+
+```markdown
+### Tools no scope IN_JOB (14 query + 12 action = 26 tools)
+
+**Query (14):** get_job_details, get_vacancy_funnel, get_candidate_details, get_activity_summary, get_pending_actions, compare_candidates, get_candidate_stats, get_bottleneck_analysis, get_job_velocity, get_job_quality_metrics, get_stakeholder_metrics, get_prediction_metrics, get_job_benchmark, get_smart_alerts
+
+**Action (12):** update_candidate_stage, bulk_update_candidates_stage, reject_candidate, shortlist_candidate, add_to_list, hide_candidate, wsi_screening, send_email, send_whatsapp, schedule_interview, send_feedback
+
+| Tool | Tipo | Implementado? | Arquivo |
+|------|------|--------------|---------|
+| get_job_details | Query | SIM | .../analytics_query_tools.py |
+| get_vacancy_funnel | Query | SIM | .../analytics_query_tools.py |
+| ... | ... | ... | ... |
+| wsi_screening | Action | SIM (HITL) | .../kanban_tool_registry.py |
+| send_email | Action | SIM | .../communication_tools.py |
+```
+
+**Repetir para cada scope.** Tools com "NÃO" ou "STUB" são achados críticos.
+
+---
 
 ## SEÇÃO 2: ANÁLISE DETALHADA POR PROMPT
-Para cada prompt:
-- O que faz (capacidades implementadas)
-- O que NÃO faz (gaps)
-- Problemas identificados (com evidências: arquivo + linha)
-- Oportunidades de melhoria
+
+**Procedimentos fonte:** DP-04 (O que faz), DP-05 (O que NÃO faz), DP-06 (Problemas), DP-07 (Oportunidades)
+
+**Passos para o auditor:**
+
+1. Para CADA prompt identificado em DP-01:
+   a. Executar **DP-04** → Listar capacidades implementadas
+   b. Executar **DP-05** → Listar gaps
+   c. Executar **DP-06** → Identificar problemas com evidências
+   d. Executar **DP-07** → Propor oportunidades
+
+2. Usar o template de **DP-17** para padronizar a saída
+
+**Template obrigatório por prompt (copiar e preencher):**
+
+```markdown
+## [N]. PROMPT [NOME] ([Scope])
+
+**Arquivo principal:** `[caminho]` ([N] linhas)
+**Scope:** PromptScope.[SCOPE]
+**Agente:** [Classe do agente]
+
+### Stack completo vinculado
+(tabela de 14 camadas — ver Seção 1.3)
+
+### Tools no scope [SCOPE] ([N] query + [M] action = [T] tools)
+**Query ([N]):** (listar)
+**Action ([M]):** (listar)
+
+### O que faz
+[Descrição em 1-2 linhas do papel do assistente]
+
+**Capacidades implementadas:**
+- [N] tipos de [análise/comando]: (listar cada um)
+- Detecção de intent: [método] — keywords + LLM fallback / ReAct LLM direto / CascadedRouter N-tier
+- Construção de contexto: [como monta o prompt dinâmico]
+- Resolução de ações UI: [função] — mapeia [N] tipos de ação para o frontend
+- [N] tools de query: (listar)
+- [N] tools de action: (listar)
+- Mecanismos especiais: [HITL / anti-sycophancy / memória / confirmação dupla / name matching / etc.]
+
+### O que NÃO faz
+- Sem [capacidade ausente 1]: [por que importa para o recrutador]
+- Sem [capacidade ausente 2]: [impacto]
+- ...
+
+### Problemas identificados
+1. **[Título do problema]:** [Descrição técnica] — Arquivo: `[caminho]`, Evidência: [linha ou trecho]
+   - Severidade: CRÍTICO / ALTO / MÉDIO / BAIXO
+   - Runbook associado: RM-[XX]
+2. ...
+
+### Oportunidades
+- [Oportunidade 1]: [Benefício esperado] — Esforço: Baixo/Médio/Alto
+- [Oportunidade 2]: [Benefício] — Esforço: [nível]
+- ...
+```
+
+**Exemplo preenchido (P5 — Hiring Policy):**
+
+```markdown
+## 5. PROMPT DE POLÍTICAS DE RECRUTAMENTO (Hiring Policy)
+
+**Arquivo principal:** `lia-agent-system/app/domains/hiring_policy/agents/policy_system_prompt.py`
+**Scope:** PromptScope.HIRING_POLICY
+**Agente:** PolicyReActAgent
+
+### O que faz
+Consultora de RH que ajuda a configurar regras globais da empresa — pipeline, agendamento, comunicação, triagem e autonomia da LIA.
+
+**Capacidades implementadas:**
+- 5 blocos de configuração: Pipeline/Processo, Agendamento, Comunicação, Triagem, Autonomia da LIA
+- ReAct agent real: Ciclo thought-action-observation com JSON estruturado
+- Validação ética obrigatória: validate_policy_compliance ANTES de salvar qualquer critério de triagem
+- 10 critérios proibidos: Gênero, raça, idade, religião, orientação sexual, estado civil, PCD, nacionalidade, aparência, situação familiar
+- Anti-sycophancy: PRESENTE — regras explícitas contra concordar para evitar conflito
+- Contra-argumentação com dados: Usa benchmarks do setor para sustentar posições
+- Calibração por contexto: Adapta por porte (startup/PME/corporação) e setor (tech/finance/retail/healthcare)
+- Memória de trabalho: Reasoning prompt inclui memory_summary e stage_context
+
+### O que NÃO faz
+- Sem preview de impacto: Não mostra simulação de como as políticas afetariam vagas existentes
+- Sem versionamento de políticas: Não guarda histórico de mudanças (quem mudou o quê, quando)
+- Sem exportação: Não exporta políticas em PDF ou formato compartilhável
+- Sem templates de políticas: Não oferece "pacotes" pré-configurados por indústria
+
+### Problemas identificados
+1. **Tools podem não existir:** O prompt referencia get_industry_benchmarks, get_company_context, get_setup_progress — verificar implementação real — `policy_system_prompt.py`
+   - Severidade: ALTO
+   - Runbook: RM-25 (Wiring Desconectado)
+2. **Prompt muito longo:** ~4.000 tokens só de system prompt — pode competir com contexto da conversa
+   - Severidade: MÉDIO
+   - Runbook: CI-01
+
+### Oportunidades
+- Simulação de impacto: "Se aplicar SLA de 3 dias, quantas vagas ficariam em alerta?" — Esforço: Alto
+- Versionamento com diff visual — Esforço: Médio
+- Templates de políticas por indústria — Esforço: Médio
+- Onboarding guiado para empresas novas — Esforço: Baixo
+```
+
+---
 
 ## SEÇÃO 3: AUDITORIA MULTI-DIMENSIONAL
 
-Tabela resumo com todas as dimensões críticas:
+**Procedimentos fonte:** DP-09.1 a DP-09.11
 
-| Verificação | Prompt 1 | Prompt 2 | ... | Prompt N |
-|:---|:---:|:---:|:---:|:---:|
-| Anti-Sycophancy | OK/FALHA | OK/FALHA | ... | OK/FALHA |
-| FairnessGuard Middleware | OK/FALHA | ... | ... | ... |
-| Negation Detection | OK/FALHA/N/A | ... | ... | ... |
-| Confiança Real | OK/FALHA | ... | ... | ... |
-| Circuit Breaker Direto | OK/FALHA | ... | ... | ... |
-| Pre-call Budget Check | OK/FALHA | ... | ... | ... |
-| PII Masking | OK/FALHA | ... | ... | ... |
-| Consent Check | OK/FALHA/N/A | ... | ... | ... |
-| Multi-Tenant Isolation | OK/FALHA | ... | ... | ... |
-| Audit Trail | OK/FALHA | ... | ... | ... |
-| Observabilidade | OK/FALHA | ... | ... | ... |
-| Token Tracking | OK/FALHA | ... | ... | ... |
-| HITL Enforcement | OK/FALHA/N/A | ... | ... | ... |
+**Passos para o auditor:**
 
-Depois, detalhamento por dimensão com evidências.
+1. Executar **DP-09.1** (Anti-Sycophancy) → Preencher matriz
+2. Executar **DP-09.2** (Intent Detection) → Preencher matriz
+3. Executar **DP-09.3** (FairnessGuard) → Preencher matriz
+4. Executar **DP-09.4** (HITL) → Preencher matriz
+5. Executar **DP-09.5** (Circuit Breaker) → Preencher matriz
+6. Executar **DP-09.6** (Token Budget) → Preencher matriz
+7. Executar **DP-09.7** (PII Masking) → Preencher matriz
+8. Executar **DP-09.8** (Consent) → Preencher matriz
+9. Executar **DP-09.9** (Multi-Tenant) → Preencher matriz
+10. Executar **DP-09.10** (Audit Trail) → Preencher matriz
+11. **Consolidar em DP-09.11** → Matriz final
+
+### 3.1 Matrizes Individuais por Dimensão
+
+Para cada dimensão, usar o template de DP-09 correspondente. Incluir:
+- A tabela preenchida
+- Evidências para cada célula (arquivo:linha)
+- Achados derivados (com severidade)
+
+**Exemplo preenchido — Anti-Sycophancy (DP-09.1):**
+
+```markdown
+### Dimensão: Anti-Sycophancy (Crença #11)
+
+| Prompt | Anti-Sycophancy | Contra-Argumentação | Benchmarks Setoriais |
+|--------|----------------|---------------------|---------------------|
+| P1 Talent Funnel | AUSENTE | AUSENTE | AUSENTE |
+| P2 Job Table | AUSENTE | AUSENTE | AUSENTE |
+| P3 Kanban (IN_JOB) | AUSENTE | AUSENTE | AUSENTE |
+| P4 Float (Global) | AUSENTE | AUSENTE | AUSENTE |
+| P5 Hiring Policy | PRESENTE | PRESENTE | PRESENTE |
+| P6 Job Wizard | PRESENTE | PRESENTE | PRESENTE |
+
+**ACHADO CRÍTICO:** Apenas 2 dos 6 prompts implementam anti-sycophancy. Os prompts P1, P2, P3 e P4 podem concordar silenciosamente com pedidos que comprometam qualidade de contratação (ex: "quero só candidatos de universidades top" — sem contra-argumentar sobre viés).
+
+- **Evidência P5 (PRESENTE):** `policy_system_prompt.py` — seção "=== PREVENÇÃO DE SYCOPHANCY ==="
+- **Evidência P1 (AUSENTE):** `talent_assistant_prompts.py` — grep por "sycophancy" retorna 0 resultados
+- **Runbook:** RM-08 (Anti-Sycophancy Ausente no System Prompt)
+```
+
+**Repetir para cada dimensão (DP-09.2 a DP-09.10).**
+
+### 3.2 ConfidencePolicyService (sub-seção de DP-09.2)
+
+Incluir verificação dos thresholds de confiança:
+
+| Threshold | Spec | Implementação | Status |
+|-----------|------|--------------|--------|
+| APPLY_SILENT | >= 0.85 | >= 0.85 | OK / FALHA |
+| APPLY_NOTIFY | 0.70-0.84 | 0.70-0.84 | OK / FALHA |
+| ASK_USER | < 0.70 | < 0.70 (floor 0.50) | OK / FALHA |
+
+### 3.3 Matriz Consolidada (Tabela Final)
+
+**Usar saída de DP-09.11.** Esta é a tabela mais importante do relatório:
+
+| Dimensão | P1 Talent | P2 Jobs | P3 Kanban | P4 Float | P5 Policy | P6 Wizard |
+|----------|----------|---------|-----------|----------|-----------|-----------|
+| Anti-Sycophancy | OK/FALHA | OK/FALHA | OK/FALHA | OK/FALHA | OK/FALHA | OK/FALHA |
+| FairnessGuard Input | | | | | | |
+| FairnessGuard Tools | | | | | | |
+| HITL Enforcement | | | | | | |
+| Negation Detection | | | | | | |
+| Confiança Real | | | | | | |
+| Circuit Breaker Direto | | | | | | |
+| Pre-call Budget Check | | | | | | |
+| PII Masking | | | | | | |
+| Consent Check | | | | | | |
+| Multi-Tenant Isolation | | | | | | |
+| Audit Trail | | | | | | |
+| Observabilidade | | | | | | |
+| Token Tracking | | | | | | |
+
+**Regras de interpretação:**
+- Linha toda OK → Dimensão saudável sistêmica
+- Qualquer FALHA em Inegociável (FairnessGuard, HITL, Consent, PII) → **P0 CRÍTICO**
+- Qualquer FALHA em Crença (Anti-Sycophancy) → **P0 CRÍTICO**
+- Mais de 50% FALHA em uma dimensão → **Problema sistêmico** (a correção deve ser arquitetural, não por prompt)
+- Prompt com mais de 3 FALHAs → **Prompt em risco** (priorizar na correção)
+- Coluna toda OK → Prompt exemplar (usar como referência para os outros)
+
+---
 
 ## SEÇÃO 4: ANÁLISE COMPARATIVA DE CAPACIDADES
-- Mapa grande de capacidades (tabela Prompt x Capacidade)
-- O que deveria ser padrão (3 níveis)
-- Tools declarados vs usados vs oportunidades
-- Propostas de histórico de chats, relatórios, capacidades preditivas
 
-## SEÇÃO 5: PRIORIDADES DE CORREÇÃO COM RUNBOOKS
+**Procedimentos fonte:** DP-08 (Mapa), DP-10 (Padronização), DP-11 (Tools Preditivos), DP-12 (Assistente Completo)
 
-Classificar TODOS os achados em:
+**Passos para o auditor:**
 
-**P0 — Crítico (Violação de Inegociáveis):** Deve ser corrigido ANTES de qualquer deploy.
-**P1 — Alto (Qualidade e Resiliência):** Deve ser corrigido no próximo sprint.
-**P2 — Médio (Melhorias de Arquitetura):** Planejado para sprints futuros.
-**P3 — Baixo (Futuro):** Backlog de melhorias.
+1. Executar **DP-08** → Gerar mapa Capacidade × Prompt (usar as 7 categorias obrigatórias: Análise, Preditivo, Ações, Proativo, Relatórios, Chat/Conversa)
+2. Executar **DP-10** → Definir 3 níveis de padronização
+3. Executar **DP-11** → Mapear tools preditivos subutilizados
+4. Executar **DP-12** → Verificar checklist de "assistente completo"
 
-Para cada item, usar este template:
+### 4.1 Mapa de Capacidades Atual
 
+**Usar tabela de DP-08.** Valores: SIM, PARCIAL, DECLARADO, via routing, N/A, — (traço).
+
+Incluir TODAS as 7 categorias com seus sub-itens (ver template completo em DP-08).
+
+### 4.2 O que Deveria Ser Padrão
+
+**Usar saída de DP-10.** Organizar em 3 níveis:
+
+**NÍVEL 1 — Padrão para TODOS os prompts (sem exceção):**
+
+| Capacidade | Justificativa | Hoje (X/N prompts) | Runbook |
+|------------|--------------|--------------------|---------| 
+| Anti-sycophancy | Crença #11 do Manifesto | (verificar) | RM-08 |
+| FairnessGuard no input | Inegociável #3 | (verificar) | RM-02 |
+| Negation detection | Qualidade de intent | (verificar) | RM-17 |
+| Confiança real | Decisões baseadas em dados | (verificar) | RM-09 |
+
+**NÍVEL 2 — Padrão para prompts operacionais (exceto Policy):**
+
+| Capacidade | Justificativa | Hoje | Esforço |
+|------------|--------------|------|---------|
+| Gerar relatórios | Todos os contextos operacionais | (verificar) | Médio |
+| Histórico de conversas | Retomar análises | (verificar) | Baixo (backend existe) |
+| Novo/limpar chat | Separar contextos | (verificar) | Baixo (API existe) |
+| Capacidade preditiva | Dropout, forecast | (verificar) | Médio |
+| Smart alerts | SLA, at-risk | (verificar) | Médio |
+| Pendências | Produtividade | (verificar) | Baixo |
+| Sugestões proativas | Proatividade da LIA | (verificar) | Alto |
+
+**NÍVEL 3 — Específico por tipo de prompt:**
+
+| Tipo de Prompt | Requisitos Específicos | Justificativa |
+|---------------|----------------------|---------------|
+| Configuracional (Policy) | Setup guiado, validação ética, checklist | Natureza não-recorrente |
+| Conversacional (Float) | Routing, cross-domain, briefing diário | Hub central |
+| Workflow (Wizard) | Stages, validação, preview, compliance | Fluxo estruturado |
+| Analítico (Talent, Jobs) | KPIs, tendências, export | Visão macro |
+| Operacional (Kanban) | Pipeline, movimentação, triagem | Ação direta |
+
+### 4.3 Tools Preditivos — Mapa de Subutilização
+
+**Usar saída de DP-11.** Incluir:
+
+| Tool | Existe em | Usado por | Deveria ser usado por | Gap |
+|------|-----------|-----------|----------------------|-----|
+| predict_dropout_risk | predictive_tools.py | P3 Kanban | P1, P2, P3, P6 | 3 prompts |
+| get_pipeline_forecast | predictive_tools.py | P3 Kanban | P2, P3 | 1 prompt |
+| get_ml_predictions | analytics_query_tools.py | Ninguém | P1, P4 | 2 prompts |
+| get_conversion_patterns | analytics_query_tools.py | Ninguém | P1, P2, P3 | 3 prompts |
+| get_smart_alerts | analytics_query_tools.py | P3 Kanban | P1, P2, P3, P4 | 3 prompts |
+| get_at_risk_candidates | kanban_tool_registry.py | P3 Kanban | P1, P3 | 1 prompt |
+| get_pending_actions | analytics_query_tools.py | P4 Float (parcial) | P1, P2, P3, P4 | 3 prompts |
+
+Proposta de ativação por prompt (ver DP-11 para detalhes).
+
+### 4.4 Cada Prompt como Assistente Completo
+
+**Usar saída de DP-12.** Verificar capacidades padronizadas:
+
+| Capacidade Padrão | P1 Talent | P2 Jobs | P3 Kanban | P4 Float | P6 Wizard |
+|-------------------|----------|---------|-----------|----------|-----------|
+| "O que preciso fazer?" | | | | | |
+| "Me dê um resumo" | | | | | |
+| "Gera um relatório" | | | | | |
+| "O que está em risco?" | | | | | |
+| "Sugira próximos passos" | | | | | |
+| "Compare X com Y" | | | | | |
+| Histórico de chats | | | | | |
+| Anti-sycophancy | | | | | |
+| Negation detection | | | | | |
+
+---
+
+## SEÇÃO 5: ANÁLISE DE FUNCIONALIDADES TRANSVERSAIS
+
+**Procedimentos fonte:** DP-13 (Histórico de Chats), DP-14 (Geração de Relatórios)
+
+### 5.1 Histórico de Chats
+
+**Usar saída de DP-13.**
+
+**Estado atual do backend (APIs existentes):**
+
+| Endpoint | Método | Descrição | Status |
+|----------|--------|-----------|--------|
+| /api/v1/conversations | GET | Lista conversas paginadas | (verificar) |
+| /api/v1/conversations | POST | Cria nova conversa | (verificar) |
+| /api/v1/conversations/{id}/clear | POST | Limpa mensagens | (verificar) |
+| /api/v1/conversations/{id}/archive | POST | Soft-delete | (verificar) |
+| /api/v1/conversations/{id} | DELETE | Hard-delete | (verificar) |
+
+**Estado por prompt:**
+
+| Prompt | Backend | UI Histórico | UI Novo Chat | UI Limpar | Recomendação |
+|--------|---------|-------------|-------------|-----------|-------------|
+| P1 Talent | (verificar) | (verificar) | (verificar) | (verificar) | SIM/NÃO |
+| P2 Jobs | | | | | |
+| P3 Kanban | | | | | SIM (por vaga) |
+| P4 Float | | | | | SIM (central) |
+| P5 Policy | | | | | NÃO (setup linear) |
+| P6 Wizard | | | | | POR VAGA |
+
+**Ciclo de vida da conversa:**
+- Chats ficam inativos após X horas sem interação
+- Auto-archive após 48h sem atividade
+- ConversationMemory faz summarization após 10 mensagens
+- Recrutador pode: continuar, criar novo, arquivar, limpar
+
+### 5.2 Geração de Relatórios
+
+**Usar saída de DP-14.**
+
+| Prompt | Tipo de Relatório | Formato | Status Atual | Tool Existente |
+|--------|-------------------|---------|-------------|----------------|
+| P1 Talent | Pool (distribuição, scores, diversidade) | Markdown + dados | (verificar) | (verificar) |
+| P2 Jobs | Portfolio (KPIs, SLAs, tendências) | Markdown + tabelas | (verificar) | export_analytics |
+| P3 Kanban | Vaga (funil, velocidade, gargalos) | Markdown + métricas | (verificar) | PARCIAL |
+| P4 Float | Consolidado (briefing executivo) | Markdown + resumo | (verificar) | generate_report |
+| P5 Policy | Compliance (políticas, gaps) | Markdown + checklist | (verificar) | NÃO |
+| P6 Wizard | Pré-publicação (completude, riscos) | Markdown + score | (verificar) | check_job_draft_health |
+
+---
+
+## SEÇÃO 6: PRIORIDADES DE CORREÇÃO COM RUNBOOKS
+
+**Procedimentos fonte:** DP-15 (Priorização), DP-16 (Arquivos-Chave)
+
+**Passos para o auditor:**
+
+1. Coletar TODOS os problemas de:
+   - Seção 2 (DP-06 — problemas por prompt)
+   - Seção 3 (DP-09 — problemas transversais)
+   - Seção 4 (DP-10, DP-11 — gaps de padronização)
+   - Seção 5 (DP-13, DP-14 — funcionalidades ausentes)
+2. Classificar por prioridade usando os critérios de DP-15
+3. Associar cada achado ao runbook correspondente (RM-01..RM-44)
+4. Mapear arquivos-chave usando DP-16
+
+### 6.1 Critérios de Classificação
+
+| Prioridade | Critério | Exemplos Típicos | Prazo |
+|-----------|---------|-----------------|-------|
+| **P0 — Crítico** | Viola Inegociáveis WeDO ou pode causar decisões discriminatórias | FairnessGuard ausente como middleware, anti-sycophancy ausente em 4/6 prompts, tools declarados mas não implementados | ANTES do próximo deploy |
+| **P1 — Alto** | Afeta qualidade, resiliência ou produz resultados incorretos | HITL incompleto, confiança artificial, consent soft enforcement, GUARDRAIL_TOOLS estreito | Próximo sprint |
+| **P2 — Médio** | Degradação de performance, manutenibilidade ou arquitetura | Circuit breaker ausente em agentes, scope manual, duplicação de prompts, frontend monolítico | Sprint N+2/N+3 |
+| **P3 — Baixo** | Melhoria desejável, feature futura | Upload JD, simulação de políticas, proatividade, templates por indústria | Backlog |
+
+### 6.2 Template de Achado
+
+Para cada achado, usar este formato:
+
+```markdown
+### [ACH-XXX] — [Título do Achado]
+- **Prioridade:** P0 / P1 / P2 / P3
+- **Dimensão:** [Dimensão 1-14 / DP-XX que identificou o problema]
+- **Prompt(s) afetado(s):** [P1, P3, P4 — ou "Todos"]
+- **Runbook:** [RM-XX] (PARTE VII/IX do playbook)
+- **Arquivo(s) afetado(s):**
+  - `[caminho/arquivo1.py]`
+  - `[caminho/arquivo2.tsx]`
+- **Descrição:** [O que está errado — com evidência técnica]
+- **Evidência:** [comando grep/trecho de código que comprova]
+- **Impacto se não corrigido:** [Consequência concreta para o produto/usuário/compliance]
+- **Correção proposta:** [O QUE FAZER — não apenas "melhorar"]
+- **Esforço estimado:** [horas] — Responsável: [Backend / Frontend / Infra / Full-stack]
+- **Depende de:** [ACH-YYY, se houver dependência]
 ```
-### [ID] — [Título do Achado]
-- **Prioridade:** P0/P1/P2/P3
-- **Dimensão:** [Dimensão 1-14 que identificou o problema]
-- **Runbook:** [RM-XX] (ver Anexo M)
-- **Arquivo(s) afetado(s):** [caminhos]
-- **Descrição:** [o que está errado]
-- **Impacto se não corrigido:** [consequência]
-- **Esforço estimado:** [horas] — [Responsável: Backend/Frontend/Infra]
-- **Depende de:** [outro achado, se houver]
+
+### 6.3 Exemplo de Achados Preenchidos
+
+```markdown
+### ACH-001 — FairnessGuard Não É Middleware Automático
+- **Prioridade:** P0
+- **Dimensão:** Dimensão 12 — Governança e Resiliência IA (DP-09.3)
+- **Prompt(s) afetado(s):** Todos (P1..P6)
+- **Runbook:** RM-02
+- **Arquivo(s) afetado(s):**
+  - `lia-agent-system/libs/agents-core/lia_agents_core/react_loop.py`
+  - `lia-agent-system/libs/agents-core/lia_agents_core/enhanced_agent_mixin.py`
+- **Descrição:** O FairnessGuard não é middleware obrigatório no ReActLoop ou EnhancedAgentMixin. Cada agente precisa chamar manualmente — e a maioria NÃO chama no input.
+- **Evidência:** `grep -n "fairness" react_loop.py` retorna 0 resultados
+- **Impacto se não corrigido:** Viola Inegociável #3. Inputs com viés discriminatório podem passar sem detecção em 4 dos 6 prompts.
+- **Correção proposta:** Mover FairnessGuard.check() para dentro do ReActLoop.run() ou EnhancedAgentMixin._pre_process() como gatekeeper automático.
+- **Esforço estimado:** 4h — Backend
+- **Depende de:** Nenhum
+
+### ACH-002 — Anti-Sycophancy Ausente em 4 dos 6 Prompts
+- **Prioridade:** P0
+- **Dimensão:** Dimensão 10 — Qualidade LLM (DP-09.1)
+- **Prompt(s) afetado(s):** P1, P2, P3, P4
+- **Runbook:** RM-08
+- **Arquivo(s) afetado(s):**
+  - `lia-agent-system/app/domains/recruiter_assistant/prompts/talent_assistant_prompts.py`
+  - `lia-agent-system/app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py`
+  - `lia-agent-system/app/domains/recruiter_assistant/prompts/jobs_management_prompts.py`
+  - `lia-agent-system/app/orchestrator/orchestrator.py`
+- **Descrição:** Apenas os prompts de Hiring Policy e Job Wizard implementam anti-sycophancy. Os 4 restantes podem concordar silenciosamente com pedidos discriminatórios ou contra-produtivos.
+- **Evidência:** `grep -n "sycophancy" talent_assistant_prompts.py` retorna 0 resultados
+- **Impacto se não corrigido:** Viola Crença #11. Recrutador pode pedir "só candidatos de universidades top" e a LIA aceitar sem questionar.
+- **Correção proposta:** Adicionar seções "=== PREVENÇÃO DE SYCOPHANCY ===" e "=== CONTRA-ARGUMENTAÇÃO ===" nos 4 prompts, seguindo o modelo de policy_system_prompt.py.
+- **Esforço estimado:** 8h — Backend
+- **Depende de:** Nenhum
 ```
 
-O campo **Runbook** deve apontar para o item correspondente no Anexo M, onde o time encontrará instruções passo-a-passo para resolver o problema.
+---
 
-## SEÇÃO 6: RESUMO EXECUTIVO DE ESFORÇO
+## SEÇÃO 7: RESUMO EXECUTIVO DE ESFORÇO
 
-Tabela consolidada para planejamento de sprint:
+**Procedimentos fonte:** DP-15, DP-16
+
+### 7.1 Tabela Consolidada para Sprint Planning
 
 | Prioridade | Qtd. Achados | Esforço Total (h) | Responsável Principal | Sprint Alvo |
 |:----------:|:------------:|:-----------------:|:---------------------:|:-----------:|
-| P0 | X | Xh | Backend | Imediato |
-| P1 | X | Xh | Backend/Frontend | Sprint N+1 |
-| P2 | X | Xh | Backend | Sprint N+2/N+3 |
-| P3 | X | Xh | Backend/Frontend | Backlog |
-| **Total** | **X** | **Xh** | — | — |
+| P0 — Crítico | (contar) | (somar) | Backend | Imediato |
+| P1 — Alto | (contar) | (somar) | Backend/Frontend | Sprint N+1 |
+| P2 — Médio | (contar) | (somar) | Backend | Sprint N+2/N+3 |
+| P3 — Baixo | (contar) | (somar) | Backend/Frontend | Backlog |
+| **Total** | **(somar)** | **(somar)** | — | — |
 
-Depois, tabela detalhada: Runbook → Arquivo(s) principal(is) → Esforço (h) → Responsável → Depende de
+### 7.2 Tabela Detalhada de Execução
+
+| ACH-ID | Título | Prioridade | Runbook | Arquivo(s) Principal(is) | Esforço (h) | Responsável | Depende de |
+|--------|--------|-----------|---------|-------------------------|------------|-------------|-----------|
+| ACH-001 | (título) | P0 | RM-XX | (caminho) | Xh | Backend | — |
+| ACH-002 | (título) | P0 | RM-XX | (caminho) | Xh | Backend | — |
+| ... | | | | | | | |
+
+### 7.3 Ordem de Execução Recomendada
+
+Agrupar por dependências e sugerir ordem de execução:
+
+```markdown
+**Sprint 1 (Imediato — P0):**
+1. ACH-001 → RM-02 (FairnessGuard middleware) — 4h Backend — SEM dependências
+2. ACH-002 → RM-08 (Anti-sycophancy 4 prompts) — 8h Backend — SEM dependências
+3. ACH-003 → RM-17 (Negation detection) — 6h Backend — SEM dependências
+4. ACH-004 → RM-25 (Tools declarados vs implementados) — 4h Backend — SEM dependências
+   → Total Sprint 1: ~22h
+
+**Sprint 2 (P1):**
+5. ACH-005 → RM-XX — Xh — Depende de ACH-001
+6. ...
+   → Total Sprint 2: ~XXh
+
+**Backlog (P2/P3):**
+7. ...
+```
+
+---
+
+## ANEXO A DO RELATÓRIO: ARQUIVOS-CHAVE PARA CORREÇÕES
+
+**Procedimento fonte:** DP-16
+
+Índice completo de todos os arquivos relevantes, organizado por categoria:
+
+```markdown
+### Backend — Prompts
+- lia-agent-system/app/domains/recruiter_assistant/prompts/talent_assistant_prompts.py
+- lia-agent-system/app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py
+- lia-agent-system/app/domains/recruiter_assistant/prompts/jobs_management_prompts.py
+- lia-agent-system/app/domains/job_management/agents/wizard_system_prompt.py
+- lia-agent-system/app/domains/hiring_policy/agents/policy_system_prompt.py
+- lia-agent-system/app/prompts/shared/agent_prompts.yaml
+- lia-agent-system/app/shared/prompts/job_wizard.py
+- lia-agent-system/app/shared/prompts/prompt_registry.py
+- lia-agent-system/app/shared/prompts/templates.py
+
+### Backend — Agentes
+- lia-agent-system/app/domains/recruiter_assistant/agents/talent_react_agent.py
+- lia-agent-system/app/domains/recruiter_assistant/agents/kanban_react_agent.py
+- lia-agent-system/app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py
+- lia-agent-system/app/domains/job_management/agents/wizard_react_agent.py
+- lia-agent-system/app/domains/job_management/agents/job_wizard_graph.py
+- lia-agent-system/app/domains/hiring_policy/agents/policy_react_agent.py
+- lia-agent-system/app/domains/cv_screening/agents/pipeline_react_agent.py
+- lia-agent-system/app/domains/cv_screening/agents/wsi_interview_graph.py
+- lia-agent-system/app/domains/sourcing/agents/sourcing_react_agent.py
+- lia-agent-system/app/domains/analytics/agents/analytics_react_agent.py
+- lia-agent-system/app/domains/communication/agents/communication_react_agent.py
+- lia-agent-system/app/domains/ats_integration/agents/ats_integration_react_agent.py
+
+### Backend — Orquestração
+- lia-agent-system/app/orchestrator/orchestrator.py
+- lia-agent-system/app/orchestrator/intent_router.py
+- lia-agent-system/app/orchestrator/cascaded_router.py
+- lia-agent-system/app/orchestrator/task_planner.py
+- lia-agent-system/app/orchestrator/policy_engine.py
+- lia-agent-system/app/orchestrator/state_manager.py
+- lia-agent-system/app/orchestrator/semantic_cache.py
+- lia-agent-system/app/orchestrator/vector_semantic_cache.py
+- lia-agent-system/app/shared/execution/plan_detector.py
+- lia-agent-system/app/shared/execution/plan_executor.py
+- lia-agent-system/app/domains/registry.py
+- lia-agent-system/app/domains/workflow.py
+
+### Backend — Tools e Scope
+- lia-agent-system/app/tools/scope_config.py
+- lia-agent-system/app/tools/registry.py
+- lia-agent-system/app/domains/job_management/tools/job_wizard_tools.py
+- lia-agent-system/app/domains/job_management/agents/wizard_tool_registry.py
+- lia-agent-system/app/domains/recruiter_assistant/agents/talent_tool_registry.py
+- lia-agent-system/app/domains/recruiter_assistant/agents/kanban_tool_registry.py
+
+### Backend — Serviços
+- lia-agent-system/app/services/llm.py
+- lia-agent-system/app/shared/providers/llm_factory.py
+- lia-agent-system/app/shared/providers/llm_claude.py
+- lia-agent-system/app/shared/providers/llm_gemini.py
+- lia-agent-system/app/shared/providers/llm_openai.py
+- lia-agent-system/app/services/conversation_memory.py
+- lia-agent-system/app/services/market_benchmark_service.py
+- lia-agent-system/app/services/skills_catalog_service.py
+- lia-agent-system/app/services/config_completeness_service.py
+- lia-agent-system/app/services/pearch_service.py
+- lia-agent-system/app/domains/job_management/services/jd_enrichment_service.py
+- lia-agent-system/app/domains/recruiter_assistant/services/kanban_assistant_service.py
+- lia-agent-system/app/domains/analytics/services/job_analytics_prompt_service.py
+
+### Backend — Compliance e Governança
+- lia-agent-system/app/shared/compliance/fairness_guard.py
+- lia-agent-system/app/shared/compliance/audit_service.py
+- lia-agent-system/app/shared/compliance/fact_checker.py
+- lia-agent-system/app/shared/compliance/guardrail_repository.py
+
+### Backend — Resiliência e Observabilidade
+- lia-agent-system/libs/agents-core/lia_agents_core/react_loop.py
+- lia-agent-system/libs/agents-core/lia_agents_core/enhanced_agent_mixin.py
+- lia-agent-system/libs/agents-core/lia_agents_core/langgraph_react_base.py
+- lia-agent-system/libs/audit/lia_audit/audit_callback.py
+- lia-agent-system/libs/audit/lia_audit/audit_writer.py
+- lia-agent-system/libs/agents-core/lia_agents_core/execution_log_store.py
+- lia-agent-system/libs/agents-core/lia_agents_core/observability.py
+- lia-agent-system/app/services/token_tracking_service.py
+- lia-agent-system/app/services/confidence_policy_service.py
+- lia-agent-system/app/services/consent_checker_service.py
+- lia-agent-system/app/services/hitl_service.py
+- lia-agent-system/app/shared/pii_masking.py
+- lia-agent-system/app/shared/resilience/circuit_breaker.py
+- lia-agent-system/app/shared/resilience/cache_manager_service.py
+- lia-agent-system/app/api/v1/data_subject_requests.py
+
+### Frontend — Componentes
+- plataforma-lia/src/components/expandable-ai-prompt.tsx
+- plataforma-lia/src/components/lia-expanded-prompt.tsx
+- plataforma-lia/src/components/lia-float/LiaChatPanel.tsx
+- plataforma-lia/src/components/lia-float/LiaSplitPanel.tsx
+- plataforma-lia/src/components/lia-float/LiaChatButton.tsx
+- plataforma-lia/src/components/lia-float/HITLConfirmCard.tsx
+- plataforma-lia/src/components/job-wizard/WizardContainer.tsx
+- plataforma-lia/src/components/kanban/components/TransitionChatPanel.tsx
+- plataforma-lia/src/components/triagem/ChatContainer.tsx
+- plataforma-lia/src/components/settings/HiringPoliciesHub.tsx
+- plataforma-lia/src/components/pages/candidates-page.tsx
+- plataforma-lia/src/components/pages/jobs-page.tsx
+- plataforma-lia/src/components/pages/job-kanban-page.tsx
+- plataforma-lia/src/components/modals/job-insights-modal.tsx
+- plataforma-lia/src/components/chat/message-bubble.tsx
+- plataforma-lia/src/components/chat/chat-input-bar.tsx
+- plataforma-lia/src/components/search/smart-search-input.tsx
+
+### Frontend — Hooks e Context
+- plataforma-lia/src/contexts/lia-float-context.tsx
+- plataforma-lia/src/hooks/use-float-streaming.ts
+- plataforma-lia/src/hooks/use-navigation-intent.ts
+- plataforma-lia/src/hooks/use-action-intent.ts
+- plataforma-lia/src/hooks/use-float-conversation.ts
+- plataforma-lia/src/hooks/use-hiring-policies.ts
+- plataforma-lia/src/hooks/useCreditEstimator.ts
+- plataforma-lia/src/lib/api/kanban-assistant.ts
+```
+
+---
+
+## ANEXO B DO RELATÓRIO: REFERÊNCIA CRUZADA ACHADO → RUNBOOK
+
+**Procedimento fonte:** DP-20
+
+Para cada achado do relatório, o time deve localizar o runbook correspondente no playbook:
+
+| Tipo de Achado | Runbook(s) | Localização no Playbook |
+|---------------|-----------|------------------------|
+| PII não mascarada | RM-01 | PARTE VII |
+| FairnessGuard ausente (middleware) | RM-02 | PARTE VII |
+| HITL/Human review ausente | RM-03 | PARTE VII |
+| Consent check ausente | RM-04 | PARTE VII |
+| Audit trail incompleto | RM-05 | PARTE VII |
+| Multi-tenant isolation | RM-06 | PARTE VII |
+| Decisão automatizada sem opt-out | RM-07 | PARTE VII |
+| Anti-sycophancy ausente | RM-08 | PARTE VII |
+| Confiança artificial (fórmula fake) | RM-09 | PARTE VII |
+| Circuit breaker ausente | RM-10 | PARTE VII |
+| Token budget sem pre-call | RM-11 | PARTE VII |
+| Observabilidade insuficiente | RM-12 | PARTE VII |
+| Degradation path incompleto | RM-13 | PARTE VII |
+| Few-shot examples inadequados | RM-14 | PARTE VII |
+| FairnessGuard ausente na SAÍDA | RM-15 | PARTE VII |
+| PII scrubbing na resposta | RM-16 | PARTE VII |
+| Negation detection ausente | RM-17 | PARTE VII |
+| Padrão 4-arquivos não seguido | RM-18 | PARTE VII |
+| Stage context ausente | RM-19 | PARTE VII |
+| Memória sem decay/limite | RM-20 | PARTE VII |
+| Drift detection ausente | RM-21 | PARTE VII |
+| Guardrails não configurados | RM-22 | PARTE VII |
+| Testes de fairness fora do CI | RM-23 | PARTE VII |
+| ConfidencePolicy limitada | RM-24 | PARTE VII |
+| Wiring desconectado | RM-25 | PARTE VII |
+| EU AI Act gaps | RM-26 | PARTE VII |
+| WCAG 2.1 AA não atendido | RM-27 | PARTE VII |
+| Outreach automatizado | RM-28 | PARTE VII |
+| Profile enrichment | RM-29 | PARTE VII |
+| WhatsApp ↔ WSI | RM-30 | PARTE VII |
+| Blind review | RM-31 | PARTE VII |
+| Calibração contínua de busca | RM-32 | PARTE VII |
+| NPS / Sentiment | RM-33 | PARTE VII |
+| Cascata de confiança T3 | RM-34 | PARTE VII |
+| Discriminação em critérios | RM-35 | PARTE VII |
+| Pipeline/stages não validado | RM-36 | PARTE VII |
+| Video interview com IA | RM-37 | PARTE VII |
+| Data flow quebrado | RM-38 | PARTE VII |
+| Backend/API incorreto | RM-39 | PARTE VII |
+| Types/contracts inconsistentes | RM-40 | PARTE VII |
+| User flow quebrado | RM-41 | PARTE VII |
+| Inconsistência entre componentes | RM-42 | PARTE VII |
+| Documentação desatualizada | RM-43 | PARTE VII |
+| Performance insuficiente | RM-44 | PARTE VII |
+
+### Mapa Dimensão → Runbook(s) mais comuns
+
+| Dimensão de Auditoria | Runbooks Típicos |
+|----------------------|-----------------|
+| Anti-Sycophancy | RM-08 |
+| FairnessGuard | RM-02, RM-15, RM-35 |
+| Intent Detection | RM-17, RM-09 |
+| HITL | RM-03 |
+| Circuit Breaker | RM-10, RM-13 |
+| Token Budget | RM-11 |
+| PII | RM-01, RM-16 |
+| Consent | RM-04 |
+| Multi-Tenant | RM-06 |
+| Audit Trail | RM-05, RM-12 |
+| Observabilidade | RM-12 |
+| Tools/Wiring | RM-25, RM-39 |
+| Prompts/Qualidade LLM | RM-08, RM-14, RM-17, RM-19, CI-01 |
+| Arquitetura de Agentes | RM-18, CI-17 |
+
+---
+
+## CHECKLIST FINAL DO AUDITOR
+
+Antes de entregar o relatório, verificar:
+
+- [ ] **Seção 0 (Resumo Executivo)** escrita APÓS todas as outras seções
+- [ ] **Seção 1** tem: componentes compartilhados + inventário de N prompts + N tabelas de stack (14 camadas cada) + N tabelas de tools
+- [ ] **Seção 2** tem: 1 bloco completo por prompt (O que faz, O que NÃO faz, Problemas, Oportunidades) com evidências
+- [ ] **Seção 3** tem: 10 matrizes individuais (DP-09.1..09.10) + 1 matriz consolidada (DP-09.11)
+- [ ] **Seção 4** tem: mapa de capacidades (7 categorias) + 3 níveis de padronização + tools preditivos + assistente completo
+- [ ] **Seção 5** tem: estado do histórico de chats + estado de geração de relatórios
+- [ ] **Seção 6** tem: TODOS os achados classificados P0-P3 com template completo (ID, prioridade, runbook, arquivo, evidência, impacto, correção)
+- [ ] **Seção 7** tem: tabela consolidada + tabela detalhada + ordem de execução recomendada
+- [ ] **Anexo A** tem: índice completo de arquivos por categoria
+- [ ] **Anexo B** tem: referência cruzada achado → runbook
+- [ ] Cada achado tem: evidência real (arquivo + linha ou resultado de grep), não apenas afirmação
+- [ ] Cada achado P0/P1 tem: correção proposta concreta (O QUE FAZER, não apenas "melhorar")
+- [ ] Todos os prompts identificados em DP-01 foram cobertos em TODAS as seções
+- [ ] Nenhuma FALHA em Inegociável foi classificada abaixo de P0
+- [ ] O relatório é auto-contido: um engenheiro pode executar as correções sem perguntar ao auditor
 
 ---
 

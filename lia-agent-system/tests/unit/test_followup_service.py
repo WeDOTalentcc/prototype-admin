@@ -66,10 +66,9 @@ class TestFollowupService:
         mock_result.fetchall.return_value = [_make_row(extra_data={"followup_count": 0})]
         mock_db.execute.return_value = mock_result
 
-        with patch("app.jobs.followup_service.notification_service") as mock_ns:
+        with patch("app.services.notification_service.notification_service") as mock_ns:
             mock_ns.create_notification = AsyncMock()
-            with patch("app.services.notification_service.notification_service", mock_ns):
-                result = await process_email_followups(mock_db)
+            result = await process_email_followups(mock_db)
 
         assert result["sent"] == 1
         assert result["errors"] == 0
@@ -154,6 +153,7 @@ class TestFollowupService:
 class TestFollowupCeleryTask:
     def test_task_registrada_no_celery(self):
         """followup.process_pending deve estar registrado."""
+        import app.jobs.celery_tasks  # noqa: F401 — registra tasks no Celery
         from app.core.celery_app import celery_app
         assert "followup.process_pending" in celery_app.tasks
 
