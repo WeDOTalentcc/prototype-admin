@@ -446,9 +446,6 @@ export default function SettingsPageEnhanced() {
                   <h1 className={`${textStyles.sidebarTitle} leading-tight`}>
                     Configurações
                   </h1>
-                  <p className={`${textStyles.sidebarItem} leading-tight`}>
-                    Admin WedoTalent
-                  </p>
                 </div>
               )}
               {shouldShowContent && (
