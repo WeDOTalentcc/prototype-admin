@@ -244,6 +244,35 @@ class ReActLoop:
         if token_budget is None and settings.REACT_TOKEN_BUDGET_ENABLED:
             token_budget = settings.REACT_TOKEN_BUDGET_DEFAULT
 
+        # Pre-call budget check: verifica limites reais de token/custo antes de
+        # iniciar o loop LLM. Protege contra estouros não detectados em sessões longas.
+        # Fail-safe: se o serviço estiver indisponível, o loop prossegue normalmente.
+        if settings.REACT_TOKEN_BUDGET_ENABLED:
+            _user_id = str(context.get("user_id", "system"))
+            _company_id = str(context.get("company_id", ""))
+            if _company_id:
+                try:
+                    from app.services.token_tracking_service import token_tracking_service
+                    _within_limits, _limit_reason = await token_tracking_service.check_limits(
+                        user_id=_user_id,
+                        company_id=_company_id,
+                    )
+                    if not _within_limits:
+                        logger.warning(
+                            f"[{self.config.domain}] Budget limit exceeded "
+                            f"company={_company_id}: {_limit_reason}"
+                        )
+                        state.final_response = (
+                            f"Limite de uso atingido: {_limit_reason}. "
+                            "Entre em contato com o administrador para aumentar os limites."
+                        )
+                        state.should_respond = True
+                        return state
+                except Exception as _budget_exc:
+                    logger.debug(
+                        f"[{self.config.domain}] Budget pre-check skipped: {_budget_exc}"
+                    )
+
         try:
             while state.iteration < self.config.max_iterations:
                 # Token budget guard

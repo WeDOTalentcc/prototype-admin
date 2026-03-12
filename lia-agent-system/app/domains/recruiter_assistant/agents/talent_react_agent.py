@@ -145,6 +145,14 @@ class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
     async def process(self, input: AgentInput) -> AgentOutput:
         """Dual-path: LangGraph nativo (USE_LANGGRAPH_NATIVE=True) ou ReActLoop."""
+        # P0-A: FairnessGuard automático — bloqueia critérios discriminatórios antes do loop
+        _blocked_msg = await self._fairness_pre_check(input.message or "")
+        if _blocked_msg:
+            return AgentOutput(
+                message=_blocked_msg,
+                confidence=1.0,
+                metadata={"source": "fairness_guard", "domain": self.domain_name},
+            )
         from app.core.config import settings
         if settings.USE_LANGGRAPH_NATIVE:
             return await self._process_langgraph(input)

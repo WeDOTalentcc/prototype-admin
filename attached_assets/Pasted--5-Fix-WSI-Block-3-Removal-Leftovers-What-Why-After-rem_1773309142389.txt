@@ -1,0 +1,24 @@
+#5 - Fix WSI Block 3 Removal Leftovers
+What & Why
+After removing WSI Block 3 ("Elegibilidade e Formação"), three areas still reference the old eligibility block — causing potential runtime errors if those code paths are reached. This task cleans up all remaining broken references.
+
+Done looks like
+The interview graph no longer carries an eligibility_score field; score calculation uses only technical, behavioral and situational dimensions
+The check_eligibility action/tool routing is removed from the cv_screening domain (the runtime eligibility verification service remains — it serves company-configured questions feeding Block 2)
+Both servers start without errors and the interview score flow works correctly
+Out of scope
+Removing the eligibility_verification_service.py (intentionally preserved — runtime service for company-configured questions)
+Removing eligibility_questions DB column/API fields (company-level recruiter configuration)
+Changing the calculate_final_wsi_score function signature in wsi_deterministic_scorer.py (it already uses only technical + behavioral — the graph was incorrectly calling it with incompatible parameters)
+Tasks
+Clean up wsi_interview_graph.py — Remove the eligibility_score field from WSIInterviewState, its serialization in _wsi_state_to_dict, its deserialization in _wsi_state_from_dict, the eligibility= parameter in the deterministic_final() call (fix to pass proper list-of-tuples format or use the existing technical/behavioral/situational scores correctly), and the "eligibility" key from the status dict.
+
+Remove check_eligibility from domain routing — Remove the check_eligibility action from actions.py, remove all "elegibilidade"/"pré-triagem"/"eligibility"/"elegível" intent mappings from domain.py, and remove the check_eligibility entry from the tool map in domain.py.
+
+Verify and restart — Restart both servers and confirm no import errors or startup failures.
+
+Relevant files
+lia-agent-system/app/domains/cv_screening/agents/wsi_interview_graph.py:90-110,190-210,225-244,543-560,1060-1075
+lia-agent-system/app/domains/cv_screening/actions.py:16
+lia-agent-system/app/domains/cv_screening/domain.py:44-47,161
+lia-agent-system/app/domains/cv_screening/services/wsi_deterministic_scorer.py:473-530

@@ -5,9 +5,10 @@ All 6 domain agents can use this mixin to:
 1. Enrich system prompts with long-term memories before reasoning
 2. Resolve dynamic guardrails from CompanyHiringPolicy
 3. Extract and save learnings after each ReAct loop execution
+4. Automatic FairnessGuard pre-check before processing (P0-A — Inegociável #3)
 """
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from lia_agents_core.memory_integration import MemoryIntegration
 from lia_agents_core.working_memory import WorkingMemoryService
@@ -203,6 +204,59 @@ class EnhancedAgentMixin:
             + self._get_predictive_tools()
         )
     
+    async def _fairness_pre_check(self, user_input: str) -> Optional[str]:
+        """Camada 1+2 FairnessGuard automático — executar antes de qualquer ReAct loop.
+
+        Verifica se a mensagem do recrutador contém critérios discriminatórios
+        explícitos (Camada 1: regex) ou implícitos (Camada 2: léxico). Retorna
+        a mensagem educacional se bloqueado, None se limpo.
+
+        Fail-safe: qualquer exceção é logada e o processamento continua.
+
+        Args:
+            user_input: Mensagem do recrutador a verificar.
+
+        Returns:
+            educational_message (str) se bloqueado, None se limpo.
+        """
+        if not user_input or not user_input.strip():
+            return None
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _guard = FairnessGuard()
+            result = _guard.check(user_input)
+
+            if result.soft_warnings:
+                logger.info(
+                    "[%s][FairnessGuard] %d soft warning(s) — implicit bias detected (text_len=%d)",
+                    self._enhanced_domain,
+                    len(result.soft_warnings),
+                    len(user_input),
+                )
+
+            if result.is_blocked:
+                logger.warning(
+                    "[%s][FairnessGuard] PRE-CHECK bloqueado: category=%s terms=%s",
+                    self._enhanced_domain,
+                    result.category,
+                    result.blocked_terms,
+                )
+                return result.educational_message or (
+                    "Esta solicitação não pode ser processada pois contém critérios "
+                    "que podem ser discriminatórios. Por favor, reformule com base em "
+                    "competências e requisitos técnicos objetivos."
+                )
+
+            return None
+
+        except Exception as exc:
+            logger.warning(
+                "[%s][FairnessGuard] pre-check falhou (fail-safe, continua): %s",
+                self._enhanced_domain,
+                exc,
+            )
+            return None
+
     async def _post_loop_learning(
         self,
         state: ReActState,

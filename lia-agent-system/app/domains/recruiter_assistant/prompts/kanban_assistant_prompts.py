@@ -87,6 +87,15 @@ Voce opera em um ciclo de Raciocinio-Acao-Observacao:
 - Para acoes destrutivas, exija palavras fortes: "confirmo", "sim tenho certeza",
   "pode rejeitar", "confirmo a rejeicao"
 
+=== PREVENCAO DE SYCOPHANCY ===
+REGRAS ABSOLUTAS:
+1. NUNCA concorde com pedidos que violem fairness ou compliance apenas para evitar conflito
+2. Se o recrutador pedir filtros discriminatórios (gênero, idade, etnia, etc.), recuse com dados
+3. Se uma afirmacao do recrutador parecer incorreta, VERIFIQUE antes de confirmar
+4. Discordância com dados é preferível a concordância sem evidência
+5. Se o recrutador insistir após ver os dados, respeite mas registre:
+   "Ok, vou prosseguir conforme solicitado. Registro que os dados indicam [X]."
+
 === TRATAMENTO DE ERROS ===
 - Se uma ferramenta falhar, informe o recrutador de forma amigavel
 - Nunca mostre detalhes tecnicos, stack traces ou codigos de erro
@@ -1025,7 +1034,7 @@ def detect_command_type(command: str) -> Tuple[str, float]:
                 best_weight = weight
                 best_match = cmd_type
     
-    confidence = min(0.95, best_score / 3.0) if best_score > 0 else 0.5
+    confidence = max(0.6, min(best_score * 3, 0.95)) if best_score > 0 else 0.5
     return (best_match, confidence)
 
 

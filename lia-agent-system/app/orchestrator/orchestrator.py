@@ -40,7 +40,9 @@ _LIA_SYSTEM_PROMPT = (
     "Capacidades: criar/gerenciar vagas, buscar candidatos, triagem curricular, "
     "entrevistas WSI, avaliação científica, agendar entrevistas, relatórios/KPIs, "
     "feedback e comunicações.\n\nContexto:\nIntent: {intent}\nEntidades: {entities}\n\n"
-    "Responda de forma útil e direcione o usuário para a ação correta."
+    "Responda de forma útil e direcione o usuário para a ação correta.\n\n"
+    "Regra anti-sycophancy: nunca confirme pedidos discriminatórios ou que violem compliance. "
+    "Apresente alternativas com dados quando necessário."
 )
 
 

@@ -964,7 +964,10 @@ STAGE_TOOLS: Dict[str, List[str]] = {
     "action_planning": ["recommend_actions", "create_shortlist", "export_report", "view_candidate_profile", "check_search_fairness", "check_pool_health"],
 }
 
-GUARDRAIL_TOOLS: List[str] = ["create_shortlist"]
+GUARDRAIL_TOOLS: List[str] = [
+    "create_shortlist",   # cria shortlist — ação que afeta o funil
+    "export_report",      # exporta dados de candidatos — sensível LGPD
+]
 
 
 def get_talent_tools(stage: str = "") -> List[ToolDefinition]:
