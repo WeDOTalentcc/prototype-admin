@@ -959,7 +959,8 @@
       "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/ -q --co --ignore=tests/e2e --ignore=tests/test_agents --ignore=tests/load 2>&1 | tail -5)",
       "Bash(ls /home/runner/workspace/attached_assets/*.txt 2>/dev/null | grep -i \"pasted\\\\|task\\\\|fix\\\\|sprint\" | head -10)",
       "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/ -q --timeout=60 --cov=app --cov-report=term-missing --ignore=tests/e2e --ignore=tests/test_agents --ignore=tests/load 2>&1 | grep -E \"^app/.*0%\" | head -30)",
-      "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/ -q --timeout=60 --cov=app --cov-report=term-missing --ignore=tests/e2e --ignore=tests/test_agents --ignore=tests/load 2>&1 | grep -E \"^app/.*[1-9][0-9]?\\\\%\" | sort -t'%' -k1 -n | head -30)"
+      "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/ -q --timeout=60 --cov=app --cov-report=term-missing --ignore=tests/e2e --ignore=tests/test_agents --ignore=tests/load 2>&1 | grep -E \"^app/.*[1-9][0-9]?\\\\%\" | sort -t'%' -k1 -n | head -30)",
+      "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_followup_service.py tests/unit/test_wsi_abandoned_service.py -v --timeout=30 2>&1 | tail -40)"
     ]
   }
 }

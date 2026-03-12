@@ -593,3 +593,62 @@ def send_daily_briefing_task(self) -> dict:
     except Exception as exc:
         logger.error("briefing.send_daily falhou: %s", exc)
         raise self.retry(exc=exc, countdown=300)
+
+
+# ---------------------------------------------------------------------------
+# Gap A — Follow-up automático de convites WSI não abertos (Passo 6B Alpha 1)
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="followup.process_pending", bind=True, max_retries=2)
+def followup_process_pending_task(self) -> dict:
+    """
+    Reenvia convites WSI não abertos.
+
+    Agendado a cada hora via Celery Beat (beat_schedule: followup-check-hourly).
+    Após 7 reenvios sem resposta: marca candidato como 'sem_resposta' e notifica recruiter.
+
+    Returns:
+        Dict com { sent, skipped, errors, marked_no_response }
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from app.jobs.followup_service import process_email_followups
+
+        async with AsyncSessionLocal() as db:
+            return await process_email_followups(db)
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.error("followup.process_pending falhou: %s", exc)
+        raise self.retry(exc=exc, countdown=120)
+
+
+# ---------------------------------------------------------------------------
+# Gap B — Triagem WSI abandonada / timeout (Passo 7A Alpha 1)
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="wsi.check_abandoned", bind=True, max_retries=2)
+def wsi_check_abandoned_task(self) -> dict:
+    """
+    Detecta sessões WSI abandonadas e envia lembretes.
+
+    Agendado a cada 4h via Celery Beat (beat_schedule: wsi-abandoned-check).
+    1º lembrete (48h): email ao candidato.
+    2º lembrete (96h): email ao candidato + Bell+Teams ao recruiter.
+
+    Returns:
+        Dict com { first_reminders, second_reminders, errors }
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from app.jobs.wsi_abandoned_service import check_abandoned_sessions
+
+        async with AsyncSessionLocal() as db:
+            return await check_abandoned_sessions(db)
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.error("wsi.check_abandoned falhou: %s", exc)
+        raise self.retry(exc=exc, countdown=300)

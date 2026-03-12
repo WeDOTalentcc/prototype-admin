@@ -104,5 +104,17 @@ celery_app.conf.update(
             "schedule": crontab(hour=9, minute=0),  # 06h Brasília / UTC-3
             "options": {"expires": 3600},
         },
+        # Follow-up de convites WSI não abertos — a cada hora (Gap A)
+        "followup-check-hourly": {
+            "task": "followup.process_pending",
+            "schedule": crontab(minute=0),  # todo início de hora
+            "options": {"expires": 3500},
+        },
+        # Triagem WSI abandonada — a cada 4h (Gap B)
+        "wsi-abandoned-check": {
+            "task": "wsi.check_abandoned",
+            "schedule": crontab(minute=0, hour="*/4"),  # 00h, 04h, 08h, 12h, 16h, 20h UTC
+            "options": {"expires": 14000},
+        },
     },
 )
