@@ -80,7 +80,7 @@ class TestFairnessPreCheckMixin:
 
     @pytest.mark.asyncio
     async def test_criterio_etario_bloqueado(self, mixin):
-        msg = await mixin._fairness_pre_check("quero candidatos com idade entre 25 e 35 anos")
+        msg = await mixin._fairness_pre_check("excluir candidatos maiores de 50 anos")
         assert msg is not None
         assert len(msg) > 20
 

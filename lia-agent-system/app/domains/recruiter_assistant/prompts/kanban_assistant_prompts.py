@@ -1004,9 +1004,25 @@ def get_system_prompt() -> str:
     return LIA_SYSTEM_PROMPT
 
 
+NEGATION_PREFIXES = [
+    "não quero", "nao quero", "sem ", "não preciso", "nao preciso",
+    "não é", "nao e", "não faça", "nao faca", "não mostre", "nao mostre",
+    "não use", "nao use", "não inclua", "nao inclua", "tire o", "remova o",
+    "ignora ", "ignore ", "desconsidere ",
+]
+
+
+def _is_negated(msg_lower: str, keyword: str) -> bool:
+    kw_pos = msg_lower.find(keyword)
+    if kw_pos < 0:
+        return False
+    prefix_window = msg_lower[max(0, kw_pos - 25):kw_pos]
+    return any(neg in prefix_window for neg in NEGATION_PREFIXES)
+
+
 def detect_command_type(command: str) -> Tuple[str, float]:
     """
-    Detecta o tipo de comando baseado em palavras-chave.
+    Detecta o tipo de comando baseado em palavras-chave com detecção de negação.
     
     Args:
         command: Comando do usuário
@@ -1024,7 +1040,10 @@ def detect_command_type(command: str) -> Tuple[str, float]:
         if not keywords:
             continue
             
-        matched_keywords = [kw for kw in keywords if kw in command_lower]
+        matched_keywords = [
+            kw for kw in keywords
+            if kw in command_lower and not _is_negated(command_lower, kw)
+        ]
         matches = len(matched_keywords)
         if matches > 0:
             weight = sum(len(kw) for kw in matched_keywords)
@@ -1034,7 +1053,10 @@ def detect_command_type(command: str) -> Tuple[str, float]:
                 best_weight = weight
                 best_match = cmd_type
     
-    confidence = max(0.6, min(best_score * 3, 0.95)) if best_score > 0 else 0.5
+    if best_score > 0:
+        confidence = min(0.5 + best_score * 0.15, 0.95)
+    else:
+        confidence = 0.4
     return (best_match, confidence)
 
 
@@ -1077,11 +1099,25 @@ def resolve_ui_action(command_type: str, structured_data: dict, candidates: list
                 matched_ids.append(str(c["id"]))
                 break
         else:
+            single_token_matches = []
             for c in candidates:
                 candidate_name = (c.get("name") or c.get("nome") or "").lower().strip()
-                if target_name and (target_name in candidate_name or candidate_name in target_name):
+                if not target_name or not candidate_name or len(target_name) < 3:
+                    continue
+                target_parts = target_name.split()
+                candidate_parts = candidate_name.split()
+                if (
+                    target_name == candidate_name
+                    or (len(target_parts) >= 2 and all(tp in candidate_name for tp in target_parts))
+                    or (len(candidate_parts) >= 2 and all(cp in target_name for cp in candidate_parts))
+                ):
                     matched_ids.append(str(c.get("id", "")))
                     break
+                if len(target_parts) == 1 and target_name in candidate_parts:
+                    single_token_matches.append(str(c.get("id", "")))
+            else:
+                if len(single_token_matches) == 1:
+                    matched_ids.append(single_token_matches[0])
     
     params = {
         "candidate_ids": matched_ids,

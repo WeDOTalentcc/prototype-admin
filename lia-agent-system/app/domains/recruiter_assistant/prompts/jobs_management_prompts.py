@@ -50,6 +50,22 @@ COMMAND_KEYWORDS: Dict[str, List[str]] = {
 }
 
 
+NEGATION_PREFIXES = [
+    "não quero", "nao quero", "sem ", "não preciso", "nao preciso",
+    "não é", "nao e", "não faça", "nao faca", "não mostre", "nao mostre",
+    "não use", "nao use", "não inclua", "nao inclua", "tire o", "remova o",
+    "ignora ", "ignore ", "desconsidere ",
+]
+
+
+def _is_negated(msg_lower: str, keyword: str) -> bool:
+    kw_pos = msg_lower.find(keyword)
+    if kw_pos < 0:
+        return False
+    prefix_window = msg_lower[max(0, kw_pos - 25):kw_pos]
+    return any(neg in prefix_window for neg in NEGATION_PREFIXES)
+
+
 def detect_jobs_command_type(message: str) -> Tuple[str, float]:
     msg_lower = message.lower().strip()
 
@@ -58,13 +74,16 @@ def detect_jobs_command_type(message: str) -> Tuple[str, float]:
 
     for cmd_type, keywords in COMMAND_KEYWORDS.items():
         for kw in keywords:
-            if kw in msg_lower:
+            if kw in msg_lower and not _is_negated(msg_lower, kw):
                 score = len(kw) / max(len(msg_lower), 1)
                 if score > best_score:
                     best_score = score
                     best_match = cmd_type
 
-    confidence = max(0.6, min(best_score * 3, 0.95)) if best_score > 0 else 0.5
+    if best_score > 0:
+        confidence = min(0.5 + best_score * 2, 0.95)
+    else:
+        confidence = 0.4
     return best_match, confidence
 
 
