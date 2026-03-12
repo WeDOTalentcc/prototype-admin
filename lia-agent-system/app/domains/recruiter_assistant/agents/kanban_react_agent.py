@@ -280,21 +280,56 @@ class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                 logger.warning(f"[KanbanReActAgent] Failed to create observer: {obs_err}")
                 observer = None
 
-            state = await loop.run(
-                message=input.message,
-                context={
-                    "current_stage": current_stage,
-                    "collected_data": collected_fields,
-                    "company_id": input.company_id,
-                    "user_id": input.user_id,
-                    "conversation_history": [
-                        {"role": m.get("role", "user"), "content": m.get("content", "")}
-                        for m in input.conversation_history[-5:]
-                    ],
-                },
-                session_id=input.session_id,
-                observer=observer,
-            )
+            _run_context = {
+                "current_stage": current_stage,
+                "collected_data": collected_fields,
+                "company_id": input.company_id,
+                "user_id": input.user_id,
+                "conversation_history": [
+                    {"role": m.get("role", "user"), "content": m.get("content", "")}
+                    for m in input.conversation_history[-5:]
+                ],
+            }
+
+            # P3-A: fallback LLM — se Claude falhar por erro de API, tenta Gemini
+            try:
+                state = await loop.run(
+                    message=input.message,
+                    context=_run_context,
+                    session_id=input.session_id,
+                    observer=observer,
+                )
+            except Exception as _llm_exc:
+                _exc_lower = str(_llm_exc).lower()
+                _is_api_error = any(k in _exc_lower for k in (
+                    "overloaded", "rate_limit", "too many requests",
+                    "503", "529", "anthropic", "api error",
+                    "connection", "timeout", "circuit breaker",
+                ))
+                if not _is_api_error:
+                    raise
+                logger.warning(
+                    "[KanbanReActAgent] Primary LLM (claude) failed — fallback to gemini. error=%s",
+                    type(_llm_exc).__name__,
+                    extra={
+                        "event": "llm_fallback",
+                        "primary": "claude",
+                        "fallback": "gemini",
+                        "domain": "kanban",
+                        "error": str(_llm_exc)[:200],
+                    },
+                )
+                fallback_config = config.model_copy(update={"model_provider": "gemini"})
+                fallback_loop = ReActLoop(
+                    config=fallback_config,
+                    working_memory_service=self._memory_service,
+                )
+                state = await fallback_loop.run(
+                    message=input.message,
+                    context=_run_context,
+                    session_id=input.session_id,
+                    observer=observer,
+                )
 
             output = await self._build_output(state, current_stage, collected_fields, input)
 

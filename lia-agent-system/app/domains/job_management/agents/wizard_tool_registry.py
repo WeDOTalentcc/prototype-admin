@@ -5,9 +5,12 @@ Wraps existing job_wizard_tools functions into ToolDefinition format
 so the ReActLoop can autonomously decide which tools to call.
 """
 import logging
+import uuid
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import text as sql_text
+
+from app.core.database import AsyncSessionLocal
 
 from app.shared.agents.react_loop import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
@@ -438,6 +441,63 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
     ),
 ]
 
+
+async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
+    report_type = kwargs.get("report_type", "summary")
+    period = kwargs.get("period", "month")
+    company_id = kwargs.get("company_id", "")
+    period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
+    logger.info(f"[wizard_tools] generate_report called: type={report_type} period={period}")
+    report_id = f"rpt_{uuid.uuid4().hex[:12]}"
+    summary: Dict[str, Any] = {}
+    try:
+        async with AsyncSessionLocal() as session:
+            row = await session.execute(sql_text("""
+                SELECT COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE status = 'draft') AS drafts,
+                    COUNT(*) FILTER (WHERE status = 'published') AS published
+                FROM job_vacancies
+                WHERE (:cid = '' OR company_id = :cid)
+                  AND created_at > NOW() - MAKE_INTERVAL(days => :days)
+            """), {"cid": company_id, "days": period_days})
+            data = row.mappings().first() or {}
+            summary = {
+                "total_jobs": int(data.get("total") or 0),
+                "drafts": int(data.get("drafts") or 0),
+                "published": int(data.get("published") or 0),
+            }
+    except Exception as e:
+        logger.warning(f"[wizard_tools] generate_report DB error: {e}")
+    return {
+        "success": True,
+        "data": {
+            "report_type": report_type,
+            "period": period,
+            "report_id": report_id,
+            "generated": True,
+            "summary": summary,
+        },
+        "message": f"Relatorio '{report_type}' de vagas gerado (id: {report_id}). {summary.get('total_jobs', 0)} vagas no periodo.",
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="generate_report",
+        description="Gera relatorio de vagas criadas e publicadas no periodo selecionado.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "report_type": {"type": "string", "description": "Tipo de relatorio: summary, detailed"},
+                "period": {"type": "string", "description": "Periodo: week, month, quarter"},
+                "company_id": {"type": "string", "description": "ID da empresa (opcional)"},
+            },
+            "required": [],
+        },
+        function=_wrap_generate_report,
+    )
+)
+
 _TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: Dict[str, List[str]] = {
@@ -446,7 +506,7 @@ STAGE_TOOLS: Dict[str, List[str]] = {
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
     "competencies": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft"],
     "wsi-questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft"],
-    "review-publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health"],
+    "review-publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report"],
 }
 
 

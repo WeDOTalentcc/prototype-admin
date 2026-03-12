@@ -956,12 +956,80 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
     ),
 ]
 
+async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
+    """P3-B: Gera relatório de talentos com métricas do período."""
+    report_type = kwargs.get("report_type", "summary")
+    period = kwargs.get("period", "month")
+    company_id = kwargs.get("company_id", "")
+    period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
+    logger.info(f"[talent_tools] generate_report called: type={report_type} period={period}")
+    report_id = f"rpt_{uuid.uuid4().hex[:12]}"
+    summary: Dict[str, Any] = {}
+    try:
+        async with AsyncSessionLocal() as session:
+            row = await session.execute(
+                text("""
+                    SELECT
+                        COUNT(*) AS total,
+                        COUNT(*) FILTER (WHERE status = 'approved') AS approved,
+                        COUNT(*) FILTER (WHERE status = 'rejected') AS rejected
+                    FROM applications
+                    WHERE (:cid = '' OR company_id = :cid)
+                      AND created_at > NOW() - MAKE_INTERVAL(days => :days)
+                """),
+                {"cid": company_id, "days": period_days},
+            )
+            data = row.mappings().first() or {}
+            summary = {
+                "total_applications": int(data.get("total") or 0),
+                "approved": int(data.get("approved") or 0),
+                "rejected": int(data.get("rejected") or 0),
+            }
+    except Exception as e:
+        logger.warning(f"[talent_tools] generate_report DB error: {e}")
+    return {
+        "success": True,
+        "data": {
+            "report_type": report_type,
+            "period": period,
+            "report_id": report_id,
+            "generated": True,
+            "summary": summary,
+        },
+        "message": (
+            f"Relatorio '{report_type}' de talentos gerado (id: {report_id}). "
+            f"{summary.get('total_applications', 0)} candidaturas no periodo."
+        ),
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="generate_report",
+        description=(
+            "Gera um relatorio de talentos com metricas de candidaturas, aprovacoes e rejeicoes "
+            "para o periodo selecionado. Use para responder: 'gerar relatorio', 'relatorio de talentos', "
+            "'quantas candidaturas tivemos?', 'como esta o funil de talentos?'."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "report_type": {"type": "string", "description": "Tipo: summary, detailed, sla"},
+                "period": {"type": "string", "description": "Periodo: week, month, quarter"},
+                "company_id": {"type": "string", "description": "ID da empresa (multi-tenant)"},
+            },
+            "required": ["report_type"],
+        },
+        function=_wrap_generate_report,
+    )
+)
+
 _TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: Dict[str, List[str]] = {
     "discovery": ["search_candidates", "list_candidates", "view_candidate_profile", "check_search_fairness", "get_talent_pool_benchmarks", "check_pool_health"],
     "analysis": ["compare_candidates", "rank_candidates", "analyze_skills", "view_candidate_profile", "check_search_fairness", "get_talent_pool_benchmarks", "check_pool_health"],
-    "action_planning": ["recommend_actions", "create_shortlist", "export_report", "view_candidate_profile", "check_search_fairness", "check_pool_health"],
+    "action_planning": ["recommend_actions", "create_shortlist", "export_report", "generate_report", "view_candidate_profile", "check_search_fairness", "check_pool_health"],
 }
 
 GUARDRAIL_TOOLS: List[str] = [

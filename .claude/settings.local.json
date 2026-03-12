@@ -922,7 +922,11 @@
       "Bash(cd /home/runner/workspace/plataforma-lia && npx vitest run src/components/lia-float/__tests__/LiaChatPanel-p2c.test.tsx 2>&1 | tail -60)",
       "Bash(npx vitest:*)",
       "Bash(find /home/runner/workspace -name \"*.md\" -path \"*/skills/*\" 2>/dev/null | head -10; find /home/runner/workspace -name \"feature-impact*\" 2>/dev/null | head -5)",
-      "Bash(ls /home/runner/workspace/plataforma-lia/src/hooks/use-search* /home/runner/workspace/plataforma-lia/src/hooks/use-archetypes.ts /home/runner/workspace/plataforma-lia/src/hooks/use-similar-profiles.ts 2>&1)"
+      "Bash(ls /home/runner/workspace/plataforma-lia/src/hooks/use-search* /home/runner/workspace/plataforma-lia/src/hooks/use-archetypes.ts /home/runner/workspace/plataforma-lia/src/hooks/use-similar-profiles.ts 2>&1)",
+      "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_generate_report_tool.py tests/unit/test_kanban_llm_fallback.py -v --no-header 2>&1 | tail -40)",
+      "Bash(cd /home/runner/workspace/lia-agent-system && python -m pytest tests/unit/test_generate_report_tool.py tests/unit/test_kanban_llm_fallback.py -v --no-header 2>&1)",
+      "Bash(cd /home/runner/workspace/lia-agent-system && timeout 90 python -m pytest tests/unit/test_generate_report_tool.py -v --no-header -x 2>&1)",
+      "Bash(cd /home/runner/workspace/lia-agent-system && timeout 90 python -m pytest tests/unit/test_kanban_llm_fallback.py -v --no-header --no-cov 2>&1)"
     ]
   }
 }

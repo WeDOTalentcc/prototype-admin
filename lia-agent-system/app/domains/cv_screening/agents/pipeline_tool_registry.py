@@ -893,6 +893,67 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
     ),
 ]
 
+
+async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
+    report_type = kwargs.get("report_type", "summary")
+    period = kwargs.get("period", "month")
+    company_id = kwargs.get("company_id", "")
+    period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
+    logger.info(f"[pipeline_tools] generate_report called: type={report_type} period={period}")
+    report_id = f"rpt_{uuid.uuid4().hex[:12]}"
+    summary: Dict[str, Any] = {}
+    try:
+        async with AsyncSessionLocal() as session:
+            row = await session.execute(text("""
+                SELECT COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE status = 'screening') AS screening,
+                    COUNT(*) FILTER (WHERE status = 'interview') AS interview,
+                    COUNT(*) FILTER (WHERE status = 'offer') AS offer,
+                    COUNT(*) FILTER (WHERE status = 'hired') AS hired
+                FROM applications
+                WHERE (:cid = '' OR company_id = :cid)
+                  AND created_at > NOW() - MAKE_INTERVAL(days => :days)
+            """), {"cid": company_id, "days": period_days})
+            data = row.mappings().first() or {}
+            summary = {
+                "total_applications": int(data.get("total") or 0),
+                "screening": int(data.get("screening") or 0),
+                "interview": int(data.get("interview") or 0),
+                "offer": int(data.get("offer") or 0),
+                "hired": int(data.get("hired") or 0),
+            }
+    except Exception as e:
+        logger.warning(f"[pipeline_tools] generate_report DB error: {e}")
+    return {
+        "success": True,
+        "data": {
+            "report_type": report_type,
+            "period": period,
+            "report_id": report_id,
+            "generated": True,
+            "summary": summary,
+        },
+        "message": f"Relatorio '{report_type}' de pipeline gerado (id: {report_id}). {summary.get('total_applications', 0)} candidaturas no periodo.",
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="generate_report",
+        description="Gera relatorio de metricas do pipeline de selecao para o periodo selecionado.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "report_type": {"type": "string", "description": "Tipo de relatorio: summary, funnel, detailed"},
+                "period": {"type": "string", "description": "Periodo: week, month, quarter"},
+                "company_id": {"type": "string", "description": "ID da empresa (opcional)"},
+            },
+            "required": [],
+        },
+        function=_wrap_generate_report,
+    )
+)
+
 _TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: Dict[str, List[str]] = {
@@ -900,8 +961,8 @@ STAGE_TOOLS: Dict[str, List[str]] = {
     "screening": ["run_wsi_screening", "view_screening_results", "add_notes", "move_candidate"],
     "shortlist": ["move_candidate", "add_to_shortlist", "view_candidate_profile", "add_notes", "batch_move"],
     "interview": ["schedule_interview", "view_interview_notes", "send_communication", "add_notes", "move_candidate"],
-    "offer": ["generate_offer", "send_communication", "add_notes", "move_candidate"],
-    "hired": ["finalize_hiring", "update_status", "send_communication", "add_notes"],
+    "offer": ["generate_offer", "send_communication", "add_notes", "move_candidate", "generate_report"],
+    "hired": ["finalize_hiring", "update_status", "send_communication", "add_notes", "generate_report"],
 }
 
 
