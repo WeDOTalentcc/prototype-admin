@@ -2371,6 +2371,7 @@ Incluir no relatório final:
 | RM-05 | Audit trail incompleto ou mutável | P0 | 8h | Backend | — |
 | RM-06 | Multi-tenant isolation falha (query sem company_id) | P0 | 4h | Backend | — |
 | RM-07 | Decisão automatizada sem opt-out para candidato | P0 | 6h | Backend+FE | — |
+| RM-35 | Discriminação em critérios de vaga / triagem | P0 | 6h | Backend | — |
 | RM-08 | Anti-sycophancy ausente no system prompt | P1 | 4h | Backend | — |
 | RM-09 | Confiança artificial (fórmula fake) | P1 | 6h | Backend | — |
 | RM-10 | Circuit breaker ausente em integração externa | P1 | 4h | Backend | — |
@@ -2391,6 +2392,7 @@ Incluir no relatório final:
 | RM-25 | Wiring desconectado (componente existe mas não é chamado) | P2 | Variável | Backend/FE | — |
 | RM-26 | EU AI Act compliance gaps nos prompts | P2 | 3h | Backend | — |
 | RM-27 | WCAG 2.1 AA não atendido | P2 | 8h | Frontend | — |
+| RM-36 | Pipeline não validado / stages sem verificação | P2 | 6h | Backend+FE | — |
 | RM-28 | Outreach automatizado (gap competitivo CG-1) | P3 | 40h | Backend+FE | — |
 | RM-29 | Profile enrichment multi-fonte (CG-2) | P3 | 40h | Backend | — |
 | RM-30 | WhatsApp ↔ WSI direto (CG-3) | P3 | 24h | Backend | — |
@@ -2398,6 +2400,7 @@ Incluir no relatório final:
 | RM-32 | Calibração contínua de busca (CG-6) | P3 | 32h | Backend | — |
 | RM-33 | NPS / Sentiment analysis (CG-7) | P3 | 16h | Backend | — |
 | RM-34 | Cascata de confiança T3 automática (CG-5) | P3 | 16h | Backend | RM-09 |
+| RM-37 | Video interview com análise por IA (CG-8) | P3 | 40h | Backend+FE | — |
 
 ---
 
@@ -2815,6 +2818,72 @@ AI_DISCLOSURE = "Esta comunicação foi gerada com auxílio de Inteligência Art
 - [ ] Candidato com opt-out → IA não processa, encaminha para humano
 - [ ] AI disclosure em todas as comunicações geradas por IA
 - [ ] Opt-out é registrado com timestamp na tabela
+
+---
+
+### RM-35: Discriminação em Critérios de Vaga / Triagem
+
+**O que está errado:** Critérios discriminatórios (gênero, idade, raça, estado civil, aparência) podem ser configurados em vagas ou usados pelo agente sem bloqueio automático.
+
+**Por que importa:** Violação da Constituição Federal Art. 7 (XXX/XXXI), CLT Art. 373-A, e Lei 9.029/95. Discriminação direta em critérios é a forma mais grave de viés — precisa ser bloqueada ANTES de chegar ao LLM. FairnessGuard Camada 1 (Lexical) deveria capturar isso.
+
+**Referência:** Crença 02, Inegociável #2, FairnessGuard Camada 1 (PARTE II), Dimensão 4
+
+**Passo-a-passo para resolver:**
+
+1. Expandir a lista de termos discriminatórios no FairnessGuard Camada 1:
+```python
+DISCRIMINATORY_CRITERIA = {
+    "gender": ["sexo masculino", "sexo feminino", "apenas homens", "apenas mulheres",
+               "preferência por homens", "preferência por mulheres"],
+    "age": ["idade máxima", "até 30 anos", "até 35 anos", "jovem",
+            "recém-formado obrigatório", "máximo 40 anos"],
+    "appearance": ["boa aparência", "boa apresentação", "bonita", "atraente"],
+    "marital": ["solteiro", "solteira", "sem filhos", "casado", "casada"],
+    "race": ["branco", "negro", "pardo", "cor da pele"],
+    "origin": ["nascido em", "natural de", "morador de"],
+    "religion": ["cristão", "evangélico", "católico"],
+}
+
+def check_discriminatory_criteria(job_description: str) -> FairnessResult:
+    for category, terms in DISCRIMINATORY_CRITERIA.items():
+        for term in terms:
+            if term.lower() in job_description.lower():
+                return FairnessResult(
+                    action="BLOCK_AND_WARN",
+                    reason=f"Critério discriminatório detectado ({category}): '{term}'",
+                    category=category
+                )
+    return FairnessResult(action="PASS")
+```
+
+2. Integrar no fluxo de criação de vaga (Job Wizard) e no pipeline de triagem:
+```python
+async def _validate_job_criteria(self, job_data, company_id):
+    result = check_discriminatory_criteria(job_data.get("description", ""))
+    if result.action == "BLOCK_AND_WARN":
+        await audit_service.log(company_id, "DISCRIMINATION_BLOCKED", result.to_dict())
+        raise DiscriminatoryCriteriaError(result.reason)
+```
+
+3. Aplicar verificação também nos critérios de triagem automática e ranking.
+
+**Padrão de código a seguir:** Expandir `FairnessGuard.check()` Camada 1 (lexical) com dicionário de termos por categoria. BLOCK_AND_WARN é a ação para discriminação direta. Registrar na audit trail. Referência: Crença 02, Lei 9.029/95, PARTE II (FairnessGuard 3 camadas).
+
+**Arquivos a modificar:**
+- Modificar: `app/shared/compliance/fairness_guard.py` (expandir Camada 1)
+- Modificar: `app/domains/job_wizard/` (validar critérios na criação de vaga)
+- Modificar: `app/domains/cv_screening/` (validar antes de triagem)
+- Criar: `tests/unit/test_discriminatory_criteria.py`
+
+**Esforço estimado:** 6h | **Responsável:** Backend
+
+**Critério de aceitação:**
+- [ ] Vaga com "apenas homens" → BLOCK_AND_WARN, vaga não é criada
+- [ ] Vaga com "boa aparência" → BLOCK_AND_WARN
+- [ ] Vaga com "até 30 anos" → BLOCK_AND_WARN
+- [ ] Cada bloqueio registrado na audit trail com categoria e termo detectado
+- [ ] Teste unitário cobre todos os termos do dicionário
 
 ---
 
@@ -3772,6 +3841,73 @@ npx axe-cli http://localhost:3000 --rules wcag2aa
 
 ---
 
+### RM-36: Pipeline Não Validado / Stages Sem Verificação
+
+**O que está errado:** Pipeline de recrutamento pode ter stages mal configurados, sem validação de transições (candidato pula etapa, stage sem critérios de saída, stage "standby" filtrado incorretamente no frontend).
+
+**Por que importa:** Pipeline mal validado causa candidatos perdidos (stuck em stages), transições inválidas que corrompem dados, e UX quebrada no kanban. O bug de `mapInterviewStagesToKanban` filtrando `stageType === 'standby'` é um exemplo concreto.
+
+**Referência:** Dimensão 1 (Wiring), Dimensão 5 (Pipeline), AP-4.1 (Anexo B)
+
+**Passo-a-passo para resolver:**
+
+1. Criar validador de pipeline:
+```python
+class PipelineValidator:
+    REQUIRED_STAGES = ["sourcing", "screening", "interview", "offer"]
+    VALID_TRANSITIONS = {
+        "sourcing": ["screening", "rejected"],
+        "screening": ["interview", "rejected", "standby"],
+        "interview": ["offer", "rejected", "standby"],
+        "offer": ["hired", "rejected"],
+        "standby": ["screening", "interview", "rejected"],
+    }
+
+    def validate(self, pipeline_config: dict) -> list[str]:
+        errors = []
+        stages = [s["type"] for s in pipeline_config.get("stages", [])]
+        for required in self.REQUIRED_STAGES:
+            if required not in stages:
+                errors.append(f"Stage obrigatório ausente: {required}")
+        for stage in pipeline_config.get("stages", []):
+            if not stage.get("exit_criteria"):
+                errors.append(f"Stage '{stage['name']}' sem critérios de saída")
+        return errors
+```
+
+2. Corrigir filtro de stages no frontend:
+```typescript
+// ANTES (bug): filtrava standby
+const stages = allStages.filter(s => s.stageType !== 'standby');
+// DEPOIS: incluir standby como stage visível
+const stages = allStages; // ou lógica correta de visibilidade
+```
+
+3. Adicionar validação de transições no backend:
+```python
+async def move_candidate(self, candidate_id, from_stage, to_stage, company_id):
+    if to_stage not in self.VALID_TRANSITIONS.get(from_stage, []):
+        raise InvalidTransitionError(f"Transição inválida: {from_stage} → {to_stage}")
+```
+
+**Padrão de código a seguir:** Validação no backend com `PipelineValidator`. Transições explícitas em `VALID_TRANSITIONS`. Frontend não filtra stages — backend controla visibilidade. Referência: `stage-utils.ts` (frontend), pipeline config no backend.
+
+**Arquivos a modificar:**
+- Criar: `app/services/pipeline_validator.py`
+- Modificar: `plataforma-lia/src/lib/stage-utils.ts` (corrigir filtro standby)
+- Modificar: `plataforma-lia/src/app/(protected)/jobs/[id]/kanban/job-kanban-page.tsx`
+- Modificar: backend endpoint de movimentação de candidato
+
+**Esforço estimado:** 6h | **Responsável:** Backend + Frontend
+
+**Critério de aceitação:**
+- [ ] Pipeline sem stage obrigatório → erro de validação
+- [ ] Transição inválida → `InvalidTransitionError`
+- [ ] Stages standby visíveis no kanban (bug corrigido)
+- [ ] Todo stage tem critérios de saída documentados
+
+---
+
 ## P3 — BAIXO: GAPS COMPETITIVOS E ROADMAP
 
 > Itens P3 são oportunidades de diferenciação. Devem ser planejados no **backlog** com análise de ROI.
@@ -4237,6 +4373,77 @@ cache_key = hashlib.sha256(f"{company_id}:{message}".encode()).hexdigest()
 
 ---
 
+### RM-37: Video Interview com Análise por IA (Gap CG-8)
+
+**O que está errado:** LIA não oferece entrevista por vídeo com análise automatizada. Candidatos fazem entrevista WSI apenas por texto/áudio, sem opção de vídeo assíncrono.
+
+**Por que importa:** Paradox (Olivia), HireVue e MyInterview oferecem video interview com análise de conteúdo por IA. É uma expectativa crescente do mercado B2B de recrutamento, especialmente para posições executivas e customer-facing.
+
+**Referência:** Anexo L, MC-3.2 (gaps competitivos)
+
+**Passo-a-passo para resolver:**
+
+1. Criar modelo de video interview:
+```python
+class VideoInterview(Base):
+    __tablename__ = "video_interviews"
+    id = Column(UUID, primary_key=True)
+    company_id = Column(UUID, ForeignKey("companies.id"))
+    candidate_id = Column(UUID, ForeignKey("candidates.id"))
+    job_id = Column(UUID, ForeignKey("jobs.id"))
+    questions = Column(JSONB)  # Lista de perguntas com tempo limite
+    status = Column(Enum("pending", "in_progress", "completed", "expired"))
+    deadline = Column(DateTime)
+
+class VideoResponse(Base):
+    __tablename__ = "video_responses"
+    id = Column(UUID, primary_key=True)
+    interview_id = Column(UUID, ForeignKey("video_interviews.id"))
+    question_index = Column(Integer)
+    video_url = Column(String)  # S3/storage URL
+    transcript = Column(Text)
+    duration_seconds = Column(Integer)
+    ai_analysis = Column(JSONB)  # Análise de conteúdo (NÃO facial/emocional)
+```
+
+2. Criar domínio `video_interview` com padrão 4 arquivos:
+   - Transcrição do vídeo via speech-to-text
+   - Análise de CONTEÚDO apenas (NÃO análise facial/emocional — viés comprovado, ver HireVue settlement)
+   - Scoring baseado em conteúdo das respostas vs. critérios da vaga
+
+3. Frontend: portal do candidato para gravar vídeo assíncrono com countdown por pergunta.
+
+4. Compliance obrigatória:
+```python
+VIDEO_INTERVIEW_COMPLIANCE = {
+    "facial_analysis": False,  # PROIBIDO — viés comprovado
+    "emotion_detection": False,  # PROIBIDO — pseudociência em contexto de recrutamento
+    "content_only": True,  # Apenas transcrição + análise textual
+    "ai_disclosure": True,  # Candidato sabe que IA analisa
+    "opt_out_available": True,  # Candidato pode recusar e fazer entrevista ao vivo
+}
+```
+
+**Padrão de código a seguir:** Análise apenas de CONTEÚDO transcrito — NUNCA facial/emocional (viés comprovado, FTC settlement HireVue). Seguir padrão 4 arquivos (RM-18). FairnessGuard obrigatório no scoring. Opt-out para entrevista humana (RM-07). Referência: Crença 02, Crença 03 (transparência), Inegociável #2.
+
+**Arquivos a modificar:**
+- Criar: `app/domains/video_interview/` (domínio completo com 4 arquivos)
+- Criar: migrations para `video_interviews`, `video_responses`
+- Criar: `plataforma-lia/src/app/(protected)/video-interview/` (portal candidato)
+- Integrar: speech-to-text API (Google/Whisper)
+
+**Esforço estimado:** 40h | **Responsável:** Backend + Frontend
+
+**Critério de aceitação:**
+- [ ] Candidato recebe link, grava vídeo assíncrono por pergunta
+- [ ] Vídeo transcrito automaticamente
+- [ ] Scoring baseado APENAS em conteúdo (zero análise facial/emocional)
+- [ ] AI disclosure visível antes de gravar
+- [ ] Opt-out disponível → agenda entrevista ao vivo com humano
+- [ ] FairnessGuard aplicado no scoring das respostas
+
+---
+
 ## TABELA DE DEPENDÊNCIAS ENTRE RUNBOOKS
 
 ```
@@ -4260,11 +4467,11 @@ RM-18 (Padrão 4 arquivos) ──→ RM-19 (Stage context)
 
 | Prioridade | Qtd. | Esforço Total | Sprint Alvo | Responsável Principal |
 |:----------:|:----:|:-------------:|:-----------:|:---------------------:|
-| P0 | 7 | 52h (~7 dias) | Imediato (bloqueador) | Backend |
+| P0 | 8 | 58h (~8 dias) | Imediato (bloqueador) | Backend |
 | P1 | 10 | 46h (~6 dias) | Sprint N+1 | Backend |
-| P2 | 10 | 50h (~7 dias) | Sprint N+2 a N+4 | Backend + Frontend |
-| P3 | 7 | 184h (~23 dias) | Backlog (roadmap) | Backend + Frontend |
-| **Total** | **34** | **332h (~42 dias)** | — | — |
+| P2 | 11 | 56h (~7 dias) | Sprint N+2 a N+4 | Backend + Frontend |
+| P3 | 8 | 224h (~28 dias) | Backlog (roadmap) | Backend + Frontend |
+| **Total** | **37** | **384h (~48 dias)** | — | — |
 
 **Nota:** Nem todos os runbooks serão aplicáveis a cada auditoria. O auditor deve identificar quais se aplicam e gerar o resumo executivo com os itens relevantes.
 
