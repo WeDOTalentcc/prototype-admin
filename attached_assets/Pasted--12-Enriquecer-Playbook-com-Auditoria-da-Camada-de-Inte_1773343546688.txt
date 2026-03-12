@@ -1,0 +1,74 @@
+#12 - Enriquecer Playbook com Auditoria da Camada de Inteligência
+What & Why
+Os documentos de referência da WeDO Talent (mapa_inteligencia_lia_completo.md, MAPA_CAMADA_INTELIGENCIA.md e ai-architecture-audit.md) descrevem capacidades, arquiteturas e fluxos detalhados que o produto deveria ter. O playbook de auditoria profunda (PLAYBOOK_AUDITORIA_PROFUNDA.md) já cobre governança, compliance, agentes ReAct, anti-padrões e observabilidade — mas não verifica se as capacidades descritas nestes documentos existem de fato no código e se seguem o padrão esperado.
+
+A tarefa é: analisar profundamente os 3 documentos de referência, comparar com o código existente, e adicionar novas seções ao playbook que permitam auditar essas dimensões que hoje não são cobertas.
+
+Documentos fonte (analisar profundamente):
+
+docs/mapa_inteligencia_lia_completo.md — mapa de 602 linhas com todos os arquivos da camada de inteligência
+lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md — guia técnico de 4871 linhas com arquitetura, fluxos, padrões de código
+lia-agent-system/docs/ai-architecture-audit.md — auditoria de arquitetura v7.0 de 7550 linhas com fluxos de produto, telas, e capacidades detalhadas
+Documento destino (enriquecer):
+
+docs/PLAYBOOK_AUDITORIA_PROFUNDA.md — playbook de 4838 linhas
+Done looks like
+O playbook ganha novas seções (Partes e/ou Anexos) que cobrem todas as dimensões descritas nos documentos de referência que hoje não são auditadas
+Cada nova seção contém checklists verificáveis (com [ ] items), arquivos a inspecionar, e critérios de aprovação/falha
+As novas seções seguem o mesmo padrão e tom do playbook existente (instruções para o agente auditor, com paths concretos, thresholds claros, e classificação OK/PARCIAL/FALHA/AUSENTE)
+O playbook se torna capaz de verificar se TUDO o que os documentos descrevem realmente existe no código e funciona conforme o padrão
+Out of scope
+Executar a auditoria (apenas criar as seções no playbook)
+Alterar seções existentes do playbook (apenas adicionar novas)
+Criar documentos separados — tudo vai no playbook existente
+Modificar código do produto
+Tasks
+Analisar profundamente os 3 documentos de referência — extrair todas as capacidades, componentes, fluxos, arquiteturas e padrões descritos. Mapear cada um contra o que o playbook já cobre.
+
+Verificar no código se os componentes e capacidades listados nos documentos realmente existem (verificação de existência de arquivos, classes, funções). Documentar gaps entre documentos e código real.
+
+Criar seção: Orquestrador e Roteamento — checklist para auditar CascadedRouter (3 tiers: cache → regex → LLM), FastRouter, IntentRouter, semantic cache (pgvector), tenant budget, navigation_intent, e os 3 mecanismos de execução (ConversationGraph, JobWizardGraph, ReActLoop).
+
+Criar seção: Grafos LangGraph e State Machines — checklist para auditar ConversationGraph (47 nós, 4 subgrafos), JobWizardGraph (6 nós), WSIInterviewGraph, InterviewGraph — conditional edges, state schemas, proteção contra loops, interrupt_before patterns.
+
+Criar seção: Memória em 3 Níveis — checklist para auditar Working Memory (sessão), Conversation Memory (pgvector cross-sessão), Long-Term Memory (permanente com decay), MemoryIntegration.get_enriched_context(), isolamento multi-tenant em cada nível.
+
+Criar seção: Comunicação Multi-Canal — checklist para auditar 5 adapters (email, WhatsApp, SMS, Teams, in-app), providers (Twilio, Resend, SendGrid, Meta), CommunicationDispatcher, webhook handling, opt-out/quarantine, rate limiting, AI_GENERATED_FOOTER.
+
+Criar seção: Processamento Assíncrono — checklist para auditar RabbitMQ exchanges/queues, Celery workers/tasks, DomainTaskManager (max_concurrent, queue_size), Dead Letter Queue, ASYNC_ELIGIBLE_ACTIONS por domínio, Celery Beat scheduling.
+
+Criar seção: Cache em 3 Camadas — checklist para auditar Session Cache (in-memory), Redis Cache (8 namespaces com TTLs), Database Cache, CacheManagerService, graceful degradation, multi-tenant scoping.
+
+Criar seção: Sourcing e Busca Inteligente — checklist para auditar WRF (Weighted Ranking Function), dual search (Elasticsearch BM25 + PGVector semântico), pre_wrf_filter, integrações externas (Pearch AI, Apify), search_analytics.
+
+Criar seção: Machine Learning e Predição — checklist para auditar OutcomePredictor, FeatureEngineering, ModelRegistry, PredictiveAnalytics, JobPattern, LearningHub — verificar se são implementações reais ou stubs.
+
+Criar seção: Intelligence Layer Services — checklist para auditar SmartExtractor, RAG service (augment_with_context), embedding_service, semantic_search_service, MarketBenchmark, InferBehavior, InterpretContextLLM.
+
+Criar seção: Automação Inteligente — checklist para auditar StageAutomationEngine, AutomationScheduler, 16 tipos de triggers, 18 alertas proativos, AutonomyEngine (níveis de autonomia), ProactiveWorker, prediction_action_bridge.
+
+Criar seção: Integração ATS — checklist para auditar ats_sync_service, 4 clientes (Gupy, Pandapé, Merge, StackOne), criptografia de credenciais, idempotency, retry automático.
+
+Criar seção: HITL Persistence — checklist para auditar HITLService (Redis fast-path + PostgreSQL), HITLPendingAction/HITLAuditTrail models, interrupt_before nos grafos, HITLConfirmCard no frontend, aprovação WebSocket.
+
+Criar seção: Fluxos End-to-End do Produto — checklists para verificar que os 10 fluxos descritos no ai-architecture-audit existem no código (Wizard, Jornada Candidato, WhatsApp, Teams, Email, WSI, Perguntas Triagem, Inscrição WhatsApp, Ajuda Recrutador, Comportamento IA Triagem).
+
+Criar seção: Telas do Produto e Pontos de IA — checklist para verificar que as 7 telas com touchpoints de IA descritas no audit (Gestão de Vagas tabela, painel LIA expandido, Super Chat, Kanban Pipeline, Painel Candidato, Configurações, Dashboard Admin) existem no frontend.
+
+Criar seção: Token Tracking e Controle de Custos — checklist para auditar token_tracking_service, tenant_budget, pre-call budget check, cascata de modelo (barato→caro), LLM fallback chain, cost alerting.
+
+Criar seção: Explainability e User Preferences — checklist para auditar explainability_service, ExecutionLogStore, API de explicabilidade, UserAgentPreferenceService (auto-confirm), agent_quality_evaluator.
+
+Relevant files
+docs/mapa_inteligencia_lia_completo.md
+lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md
+lia-agent-system/docs/ai-architecture-audit.md
+docs/PLAYBOOK_AUDITORIA_PROFUNDA.md
+lia-agent-system/app/orchestrator/
+lia-agent-system/app/shared/agents/
+lia-agent-system/app/shared/compliance/
+lia-agent-system/app/shared/providers/
+lia-agent-system/app/shared/resilience/
+lia-agent-system/app/domains/
+lia-agent-system/app/services/
+lia-agent-system/app/tools/
