@@ -5800,7 +5800,1121 @@ Verificação dos componentes compartilhados de compliance, governança, e resil
 
 ---
 
-# PARTE XI: NOTAS FINAIS
+# PARTE XI: DIAGNÓSTICO POR PROMPT/ASSISTENTE — PROCEDIMENTO COMPLETO
+
+> **Objetivo:** Gerar diagnóstico detalhado e comparativo de cada prompt/assistente da plataforma LIA, no mesmo nível de profundidade de um relatório executivo de arquitetura. Este procedimento produz: mapeamento de stack completo por prompt, inventário de tools, análise de capacidades vs gaps, problemas identificados, oportunidades, matrizes transversais multi-dimensionais e mapa comparativo de capacidades.
+
+---
+
+## DP-01: INVENTÁRIO DE PROMPTS/ASSISTENTES
+
+**Objetivo:** Identificar todos os prompts/assistentes ativos na plataforma e seu escopo.
+
+**Procedimento:**
+
+1. Listar todos os scopes em `lia-agent-system/app/tools/scope_config.py`:
+   ```bash
+   grep -n "class PromptScope" lia-agent-system/app/tools/scope_config.py
+   grep -n "TALENT_FUNNEL\|JOB_TABLE\|IN_JOB\|GLOBAL\|HIRING_POLICY\|JOB_WIZARD" lia-agent-system/app/tools/scope_config.py
+   ```
+
+2. Para cada scope, identificar o arquivo de prompt principal:
+   ```bash
+   grep -rn "PromptScope\." lia-agent-system/app/domains/ --include="*.py" | grep -i "prompt\|system"
+   ```
+
+3. Registrar na tabela de inventário:
+
+| # | Nome do Prompt | Scope | Arquivo Principal | Linhas | Agente Vinculado |
+|---|---------------|-------|-------------------|--------|-----------------|
+| P1 | (preencher) | (scope) | (caminho) | (N) | (agente) |
+
+**Critério de completude:** Todos os scopes definidos em `scope_config.py` devem ter entrada correspondente.
+
+**Referência cruzada:** RM-36 (Inventário de Agentes), CI-01 (System Prompts)
+
+---
+
+## DP-02: MAPEAMENTO DE STACK COMPLETO POR PROMPT
+
+**Objetivo:** Para cada prompt identificado em DP-01, mapear TODAS as camadas do stack — do system prompt até o componente frontend, passando por agentes, serviços, tools, compliance, APIs e WebSocket.
+
+**Procedimento por prompt:**
+
+1. **Identificar o agente vinculado:**
+   ```bash
+   grep -rn "class.*Agent\|class.*Graph" lia-agent-system/app/domains/<dominio>/agents/ --include="*.py"
+   ```
+
+2. **Identificar o domínio:**
+   ```bash
+   grep -rn "class.*Domain" lia-agent-system/app/domains/<dominio>/ --include="*.py" | head -5
+   ```
+
+3. **Identificar system prompt e reasoning prompt:**
+   ```bash
+   grep -rn "SYSTEM_PROMPT\|REASONING_PROMPT" lia-agent-system/app/domains/<dominio>/ --include="*.py"
+   ```
+
+4. **Identificar tool registry e tools implementados:**
+   ```bash
+   grep -rn "ToolRegistry\|tool_registry\|register_tool" lia-agent-system/app/domains/<dominio>/ --include="*.py"
+   ls lia-agent-system/app/domains/<dominio>/tools/
+   ```
+
+5. **Identificar serviços vinculados:**
+   ```bash
+   grep -rn "Service\|service" lia-agent-system/app/domains/<dominio>/services/ --include="*.py" | grep "class "
+   ```
+
+6. **Identificar compliance integrado:**
+   ```bash
+   grep -rn "fairness_guard\|FairnessGuard\|guardrail\|validate.*compliance" lia-agent-system/app/domains/<dominio>/ --include="*.py"
+   ```
+
+7. **Identificar frontend — páginas:**
+   ```bash
+   grep -rn "<dominio>\|<scope>" plataforma-lia/src/components/pages/ --include="*.tsx" -l
+   ```
+
+8. **Identificar frontend — hooks e context:**
+   ```bash
+   grep -rn "use.*<dominio>\|use.*<scope>" plataforma-lia/src/hooks/ --include="*.ts" -l
+   grep -rn "<dominio>\|<scope>" plataforma-lia/src/contexts/ --include="*.tsx" -l
+   ```
+
+9. **Identificar frontend — componentes de chat/interação:**
+   ```bash
+   grep -rn "ChatPanel\|ChatContainer\|TransitionChat\|MessageBubble\|ChatInputBar" plataforma-lia/src/components/ --include="*.tsx" -l
+   ```
+
+10. **Identificar API proxies:**
+    ```bash
+    grep -rn "backend-proxy.*<dominio>\|backend-proxy.*<scope>" plataforma-lia/src/ --include="*.ts" --include="*.tsx"
+    ```
+
+11. **Identificar WebSocket:**
+    ```bash
+    grep -rn "ws://\|WebSocket\|ws.*chat\|ws.*session" lia-agent-system/app/ plataforma-lia/src/ --include="*.py" --include="*.ts" --include="*.tsx" | head -20
+    ```
+
+**Template de saída obrigatório por prompt:**
+
+```markdown
+### Stack Completo — [Nome do Prompt] (P[N])
+
+| Camada | Componente | Arquivo |
+|--------|-----------|---------|
+| Agente | (classe) | (caminho) |
+| Domínio | (classe) | (caminho) |
+| System Prompt | (constante) | (caminho) |
+| Reasoning Prompt | (constante ou N/A) | (caminho) |
+| Tool Registry | (classe) | (caminho) |
+| Tools | (N tools) | (caminho) |
+| Serviço(s) | (classes) | (caminho) |
+| Compliance | (tipo) | (caminho) |
+| Frontend — Página | (componente) | (caminho) |
+| Frontend — Chat | (componente) | (caminho) |
+| Frontend — Hooks | (hooks) | (caminho) |
+| Frontend — Context | (provider) | (caminho) |
+| API Proxy | (rota) | (endpoint backend) |
+| WebSocket | (URL pattern) | (descrição) |
+```
+
+**Critério de completude:** Cada prompt DEVE ter TODAS as 14 camadas preenchidas. Se uma camada não existe, registrar "AUSENTE" — isso é um achado.
+
+**Referência cruzada:** CI-03 (Tool Registry), CI-06 (Serviços de Domínio)
+
+---
+
+## DP-03: INVENTÁRIO DE TOOLS POR SCOPE
+
+**Objetivo:** Para cada prompt/scope, listar TODOS os tools disponíveis, classificados como Query ou Action, e verificar se estão realmente implementados.
+
+**Procedimento:**
+
+1. **Extrair tools do scope_config:**
+   ```bash
+   grep -A 100 "PromptScope\.<SCOPE>" lia-agent-system/app/tools/scope_config.py | head -120
+   ```
+
+2. **Classificar cada tool:**
+   - **Query:** Tools que apenas lêem dados (get_*, search_*, list_*, compare_*)
+   - **Action:** Tools que modificam estado (create_*, update_*, delete_*, send_*, move_*, reject_*, pause_*, publish_*, export_*)
+
+3. **Verificar implementação real:**
+   ```bash
+   # Para cada tool listado no scope:
+   grep -rn "def <nome_do_tool>" lia-agent-system/app/ --include="*.py"
+   # Se não encontrar: é um stub/declaração sem implementação → ACHADO CRÍTICO
+   ```
+
+4. **Registrar na tabela:**
+
+```markdown
+### Tools no scope [SCOPE] ([N] query + [M] action = [T] tools)
+
+**Query ([N]):** tool1, tool2, ...
+
+**Action ([M]):** tool1, tool2, ...
+
+| Tool | Tipo | Implementado? | Arquivo | Observações |
+|------|------|--------------|---------|-------------|
+| (nome) | Query/Action | SIM/NÃO/STUB | (caminho) | (notas) |
+```
+
+**Critérios de alerta:**
+- Tool declarado no scope mas sem implementação → **PROBLEMA CRÍTICO**
+- Tool com `pass` ou `return {}` no corpo → **STUB** (registrar)
+- Tool referenciado no reasoning prompt mas não no scope do prompt → **INCONSISTÊNCIA**
+
+**Referência cruzada:** RM-39 (Scope × Tool), CI-03 (Tool Registry)
+
+---
+
+## DP-04: ANÁLISE "O QUE FAZ" POR PROMPT
+
+**Objetivo:** Documentar todas as capacidades realmente implementadas de cada prompt/assistente.
+
+**Procedimento:**
+
+1. **Ler o system prompt completo** e extrair todas as capacidades declaradas:
+   ```bash
+   cat lia-agent-system/app/domains/<dominio>/prompts/<arquivo>.py | head -200
+   ```
+
+2. **Para cada capacidade declarada, verificar se está implementada:**
+   - Existe tool correspondente? (verificar no scope)
+   - O tool tem implementação real? (não é stub)
+   - O frontend suporta a saída do tool? (UI components existem)
+
+3. **Categorizar capacidades encontradas:**
+   - Tipos de análise suportados (ranking, comparação, gargalos, etc.)
+   - Método de detecção de intent (keywords, LLM, cascade)
+   - Construção de contexto (como monta o prompt dinâmico)
+   - Resolução de ações UI (como mapeia intents para ações no frontend)
+   - Tools ativos por tipo (query vs action)
+   - Mecanismos especiais (HITL, anti-sycophancy, memória, etc.)
+
+**Template de saída:**
+
+```markdown
+### O que faz — [Nome do Prompt] (P[N])
+
+[Descrição em 1-2 linhas do papel do assistente]
+
+**Capacidades implementadas:**
+- [N] tipos de [análise/comando]: (listar)
+- Detecção de intent: [método] (keywords + LLM fallback / ReAct LLM direto / CascadedRouter N-tier)
+- Construção de contexto: [como monta] (dados injetados, variáveis, etc.)
+- Resolução de ações UI: [método] (resolve_ui_action / resolve_jobs_ui_action / etc.)
+- [N] tools de query: (listar)
+- [N] tools de action: (listar)
+- [Mecanismos especiais]: HITL, anti-sycophancy, memória, confirmação dupla, etc.
+```
+
+**Referência cruzada:** CI-01 (System Prompts), CI-02 (Intent Detection)
+
+---
+
+## DP-05: ANÁLISE "O QUE NÃO FAZ" POR PROMPT
+
+**Objetivo:** Identificar gaps — capacidades que o recrutador esperaria mas que NÃO estão implementadas.
+
+**Procedimento:**
+
+1. **Comparar com expectativas do domínio:**
+   - Para prompt de Talent: espera-se ranking, comparação, diversidade, alertas, histórico
+   - Para prompt de Jobs: espera-se KPIs, SLAs, tendências, alertas proativos, drill-down
+   - Para prompt de Kanban: espera-se pipeline, movimentação, triagem, entrevistas, previsão
+   - Para prompt Float: espera-se routing, cross-domain, proatividade, briefing
+   - Para prompt Policy: espera-se configuração guiada, validação, versionamento, preview
+   - Para prompt Wizard: espera-se criação guiada, importação, clone, preview, compliance
+
+2. **Verificar capacidades ausentes comuns:**
+   - Sem dados reais de tempo / séries temporais
+   - Sem alertas proativos (push notifications)
+   - Sem drill-down entre contextos
+   - Sem previsão / forecasting
+   - Sem importação de documentos (upload)
+   - Sem clone / duplicação
+   - Sem colaboração multi-usuário
+   - Sem preview visual
+   - Sem versionamento / histórico de mudanças
+   - Sem exportação em formato compartilhável
+
+3. **Verificar tools declarados mas não usados:**
+   ```bash
+   # Comparar tools no reasoning prompt vs tools no scope
+   grep -n "tool\|function\|action" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py | grep -v "^#"
+   ```
+
+**Template de saída:**
+
+```markdown
+### O que NÃO faz — [Nome do Prompt] (P[N])
+
+- Sem [capacidade ausente]: [descrição do impacto]
+- ...
+```
+
+**Referência cruzada:** DP-04 (O que faz), DP-08 (Mapa Comparativo)
+
+---
+
+## DP-06: PROBLEMAS IDENTIFICADOS POR PROMPT
+
+**Objetivo:** Documentar bugs, inconsistências, riscos e problemas técnicos específicos de cada prompt.
+
+**Procedimento:**
+
+1. **Verificar detecção de intent:**
+   ```bash
+   grep -n "def.*detect\|def.*classify\|def.*match\|substring\|\.lower()\|\.find(" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py
+   ```
+   - Usa substring match sem negação? → PROBLEMA
+   - Confiança artificial (fórmula `max(0.6, min(...)`)? → PROBLEMA
+   - Sem fallback se nenhum intent é detectado? → PROBLEMA
+
+2. **Verificar name matching:**
+   ```bash
+   grep -n "target_name\|candidate_name\|name.*in\|fuzzy\|match" lia-agent-system/app/domains/<dominio>/ --include="*.py" -r
+   ```
+   - Match por substring simples (`name in other_name`)? → PROBLEMA (false positives)
+
+3. **Verificar duplicação de instruções:**
+   ```bash
+   grep -c "CONFIRMAÇÕES\|TRANSIÇÕES\|FILOSOFIA\|TRATAMENTO DE ERRO" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py
+   ```
+   - Seções duplicadas dentro do mesmo prompt? → PROBLEMA
+
+4. **Verificar tamanho do prompt:**
+   ```bash
+   wc -l lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py
+   # Se > 500 linhas: prompt potencialmente muito grande → registrar tamanho em tokens estimados (chars/4)
+   ```
+
+5. **Verificar tools referenciados mas não disponíveis:**
+   ```bash
+   # Extrair tools mencionados no prompt
+   grep -oP "(?:get_|search_|create_|update_|delete_|send_|validate_|check_|predict_|export_|generate_)\w+" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py | sort -u
+   # Comparar com tools realmente no scope
+   ```
+
+6. **Verificar validação de transições/stages:**
+   ```bash
+   grep -n "stage\|transition\|advance\|next_step" lia-agent-system/app/domains/<dominio>/ --include="*.py" -r | head -20
+   ```
+
+**Template de saída:**
+
+```markdown
+### Problemas identificados — [Nome do Prompt] (P[N])
+
+1. **[Título do problema]:** [Descrição] — arquivo: `path/file.py`
+2. ...
+```
+
+**Severidade de problemas:**
+- **CRÍTICO:** Viola Inegociáveis WeDO ou pode causar decisões discriminatórias
+- **ALTO:** Afeta qualidade da experiência ou produz resultados incorretos
+- **MÉDIO:** Degradação de performance ou manutenibilidade
+- **BAIXO:** Melhoria desejável mas não urgente
+
+**Referência cruzada:** RM-08 (Anti-sycophancy), RM-17 (Negation Detection), CI-02 (Intent Detection)
+
+---
+
+## DP-07: OPORTUNIDADES DE MELHORIA POR PROMPT
+
+**Objetivo:** Identificar melhorias concretas e viáveis para cada prompt/assistente.
+
+**Procedimento:**
+
+1. **Para cada gap identificado em DP-05**, avaliar viabilidade:
+   - Existe infraestrutura de suporte? (backend existe, falta frontend?)
+   - Existe tool implementado mas não conectado ao scope?
+   - Qual o esforço estimado? (Baixo / Médio / Alto)
+
+2. **Verificar tools existentes mas não utilizados pelo prompt:**
+   ```bash
+   # Tools que existem em outros scopes mas não neste:
+   grep -rn "def " lia-agent-system/app/tools/ --include="*.py" | grep -v "__" | grep -v "test"
+   # Comparar com o scope do prompt atual
+   ```
+
+3. **Verificar capacidades em outros prompts que poderiam ser replicadas:**
+   - Smart alerts existe no Kanban mas não no Talent/Jobs? → Oportunidade
+   - Anti-sycophancy existe no Policy/Wizard mas não nos outros? → Oportunidade
+   - Memória de sessão existe no Float mas não nos outros? → Oportunidade
+
+**Template de saída:**
+
+```markdown
+### Oportunidades — [Nome do Prompt] (P[N])
+
+- [Oportunidade]: [Descrição do benefício]
+- ...
+```
+
+**Referência cruzada:** DP-05 (O que NÃO faz), DP-08 (Mapa Comparativo)
+
+---
+
+## DP-08: MAPA COMPARATIVO DE CAPACIDADES
+
+**Objetivo:** Gerar tabela cruzada Capacidade × Prompt mostrando o que cada prompt pode fazer hoje, identificando assimetrias e padronizações necessárias.
+
+**Procedimento:**
+
+1. Consolidar resultados de DP-04 e DP-05 para todos os prompts.
+
+2. Preencher a matriz usando os valores:
+   - **SIM** — Capacidade implementada e funcional
+   - **PARCIAL** — Existe mas incompleta ou com limitações
+   - **DECLARADO** — Mencionado no prompt/reasoning mas não implementado de fato
+   - **via routing** — Disponível apenas via roteamento do Float/Orchestrator
+   - **N/A** — Não se aplica ao domínio do prompt
+   - **—** (traço) — Ausente
+
+3. **Categorias obrigatórias da matriz:**
+
+```markdown
+### Mapa de Capacidades Atual
+
+| Capacidade | P1 Talent | P2 Jobs | P3 Kanban | P4 Float | P5 Policy | P6 Wizard |
+|------------|----------|---------|-----------|----------|-----------|-----------|
+| **ANÁLISE** | | | | | | |
+| Ranking/scoring de candidatos | | | | | | |
+| Comparação lado-a-lado | | | | | | |
+| Análise de perfil/resumo | | | | | | |
+| KPIs e métricas | | | | | | |
+| Skills gap analysis | | | | | | |
+| Análise de diversidade | | | | | | |
+| Market insights (salário, mercado) | | | | | | |
+| Gargalos e bottlenecks | | | | | | |
+| SLA monitoring | | | | | | |
+| Performance por departamento | | | | | | |
+| **PREDITIVO** | | | | | | |
+| Predict dropout risk | | | | | | |
+| Pipeline forecast | | | | | | |
+| ML predictions | | | | | | |
+| Conversion patterns | | | | | | |
+| Smart alerts | | | | | | |
+| At-risk candidates (EWS) | | | | | | |
+| **AÇÕES** | | | | | | |
+| Mover candidato | | | | | | |
+| Batch move | | | | | | |
+| Rejeitar candidato | | | | | | |
+| Shortlist | | | | | | |
+| Enviar email | | | | | | |
+| Enviar WhatsApp | | | | | | |
+| Disparar triagem WSI | | | | | | |
+| Agendar entrevista | | | | | | |
+| Criar/editar vaga | | | | | | |
+| Pausar/fechar vaga | | | | | | |
+| Salvar política | | | | | | |
+| Salvar draft de vaga | | | | | | |
+| **PROATIVO** | | | | | | |
+| Daily briefing | | | | | | |
+| Pending actions/backlog | | | | | | |
+| Sugestões proativas | | | | | | |
+| Alertas de SLA | | | | | | |
+| **RELATÓRIOS** | | | | | | |
+| Gerar relatório | | | | | | |
+| Exportar dados | | | | | | |
+| **CHAT/CONVERSA** | | | | | | |
+| Histórico de conversas | | | | | | |
+| Novo chat | | | | | | |
+| Limpar chat | | | | | | |
+| Memória entre turnos | | | | | | |
+| Anti-sycophancy | | | | | | |
+| Negation detection | | | | | | |
+```
+
+4. **Análise da matriz — perguntas a responder:**
+   - Quais capacidades deveriam ser padrão em TODOS os prompts mas não são?
+   - Quais capacidades são DECLARADAS mas não IMPLEMENTADAS?
+   - Qual prompt tem mais gaps em relação aos outros?
+   - Há assimetria injustificada? (ex: smart alerts só no Kanban quando seria útil em todos)
+
+**Referência cruzada:** DP-04 (O que faz), DP-05 (O que NÃO faz), DP-10 (Padronização)
+
+---
+
+## DP-09: MATRIZES TRANSVERSAIS MULTI-DIMENSIONAIS
+
+**Objetivo:** Gerar tabelas cruzadas que avaliam cada prompt em dimensões de governança, compliance, resiliência e qualidade LLM — permitindo identificar problemas sistêmicos.
+
+### DP-09.1: Matriz Anti-Sycophancy × Prompt
+
+```bash
+# Para cada prompt, verificar:
+grep -n "sycophancy\|contra.argum\|pushback\|empurrar.*de volta\|não concorde" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py
+grep -n "benchmark\|dados.*reais\|evidência\|sustent" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py
+```
+
+| Prompt | Anti-Sycophancy | Contra-Argumentação | Benchmarks Setoriais |
+|--------|----------------|---------------------|---------------------|
+| P1 | PRESENTE/AUSENTE | PRESENTE/AUSENTE | PRESENTE/AUSENTE |
+| ... | | | |
+
+**Critério:** Crença #11 do Manifesto WeDO — anti-sycophancy deve ser PRESENTE em 100% dos prompts.
+
+### DP-09.2: Matriz Detecção de Intent × Prompt
+
+```bash
+# Para cada prompt, verificar método:
+grep -n "keyword\|detect_intent\|classify\|substring\|\.find(\|best_score\|confidence" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py
+# Verificar negation:
+grep -n "negat\|não.*quero\|don't\|negate" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py
+# Verificar confiança artificial:
+grep -n "max(0\.6\|min(.*0\.95\|artificial\|floor\|cap" lia-agent-system/app/domains/<dominio>/prompts/<prompt>.py
+```
+
+| Prompt | Método | Negation Detection | Confiança Real |
+|--------|--------|-------------------|----------------|
+| P1 | Keywords+LLM / ReAct / Cascade | PRESENTE/AUSENTE/N/A | OK/ARTIFICIAL |
+| ... | | | |
+
+**Critério:** Nenhum prompt deve usar fórmula de confiança artificial. Todos que usam keywords devem implementar negation detection.
+
+### DP-09.3: Matriz FairnessGuard × Prompt
+
+```bash
+# Para cada agente do prompt:
+grep -n "fairness_guard\|FairnessGuard\|check_bias\|validate.*fairness" lia-agent-system/app/domains/<dominio>/agents/<agente>.py
+grep -n "fairness\|guardrail\|bias" lia-agent-system/app/domains/<dominio>/tools/ --include="*.py" -r
+```
+
+| Prompt/Agente | FairnessGuard no Input | FairnessGuard nas Tools | Status |
+|---------------|----------------------|------------------------|--------|
+| (agente) | SIM/NÃO | SIM/NÃO/PARCIAL | OK/FALHA/PARCIAL |
+| ... | | | |
+
+**Critério:** Inegociável #3 — FairnessGuard deve estar ativo em 100% das decisões. Verificar se é middleware automático ou chamada manual.
+
+**Verificação adicional:**
+```bash
+# FairnessGuard como middleware (ideal):
+grep -n "fairness\|FairnessGuard" lia-agent-system/libs/agents-core/lia_agents_core/react_loop.py
+grep -n "fairness\|FairnessGuard" lia-agent-system/libs/agents-core/lia_agents_core/enhanced_agent_mixin.py
+# Se NÃO estiver nesses arquivos → cada agente precisa chamar manualmente → RISCO
+```
+
+### DP-09.4: Matriz HITL × Prompt
+
+```bash
+# Para cada agente:
+grep -n "HITL\|human.in.the.loop\|approval\|confirm\|guardrail_tools\|GUARDRAIL_TOOLS" lia-agent-system/app/domains/<dominio>/agents/<agente>.py
+```
+
+| Prompt/Agente | HITL Enforced | Ações Cobertas | Status |
+|---------------|--------------|----------------|--------|
+| (agente) | SIM/NÃO/PARCIAL/N/A | (lista de ações) | OK/ATENÇÃO/N/A |
+| ... | | | |
+
+**Critério:** Inegociável #7 — Human override sempre disponível. Todas as ações destrutivas devem exigir HITL.
+
+### DP-09.5: Matriz Circuit Breaker × Componente
+
+```bash
+grep -rn "circuit_breaker\|CircuitBreaker\|breaker" lia-agent-system/app/ --include="*.py" | grep -v test | grep -v __pycache__
+```
+
+| Componente | Circuit Breaker | Fallback | Status |
+|-----------|----------------|----------|--------|
+| LLM Calls (agentes) | SIM/NÃO | (tipo) | OK/ATENÇÃO |
+| LLM Factory | SIM/NÃO | Claude→Gemini→OpenAI | OK |
+| Pearch AI | SIM/NÃO | (tipo) | OK |
+| WorkOS | SIM/NÃO | (tipo) | OK |
+| Tool Calls (LangGraph) | SIM/NÃO | (tipo) | OK |
+| ... | | | |
+
+### DP-09.6: Matriz Token Budget
+
+```bash
+grep -rn "token.*track\|TokenTracking\|check_limits\|record_usage\|budget\|AiCreditsBalance" lia-agent-system/app/ --include="*.py" | head -30
+```
+
+| Verificação | Status | Detalhes |
+|------------|--------|---------|
+| TokenTrackingService existe | OK/FALHA | |
+| Pre-call budget check | OK/FALHA | check_limits() chamado ANTES de cada LLM call? |
+| In-loop heuristic | OK/FALHA | chars/4 estimate com cap |
+| Post-call recording | OK/FALHA | record_usage() chamado ao final |
+| Budget por empresa | OK/FALHA | AiCreditsBalance wallet |
+
+### DP-09.7: Matriz PII Masking
+
+```bash
+grep -rn "pii_masking\|PIIMasking\|install_global_pii\|strip_pii\|masked_logger" lia-agent-system/app/ --include="*.py" | head -20
+```
+
+| Verificação | Status | Detalhes |
+|------------|--------|---------|
+| install_global_pii_masking() ativo | OK/FALHA | Em main.py e apps |
+| PIIMaskingFilter no root logger | OK/FALHA | Mascara CPF, email, telefone |
+| get_masked_logger disponível | OK/FALHA | Camada extra |
+| strip_pii_for_llm_prompt | OK/FALHA | Sanitiza antes de enviar ao LLM |
+| Secrets fora do código | OK/FALHA | Via environment variables |
+
+### DP-09.8: Matriz Consent Management
+
+```bash
+grep -rn "consent\|ConsentChecker\|consent_checker" lia-agent-system/app/ --include="*.py" | head -20
+```
+
+| Verificação | Status | Detalhes |
+|------------|--------|---------|
+| ConsentCheckerService existe | OK/FALHA | |
+| Consent check no WSI screening | OK/FALHA | Gate em wsi_interview_graph |
+| Consent check em rubric evaluation | OK/FALHA | |
+| Consent check em candidates API | OK/FALHA | |
+| Soft vs Hard enforcement | ATENÇÃO/OK | Soft = loga warning mas continua |
+| Hard block se revogado | OK/FALHA | Bloqueia processamento |
+
+### DP-09.9: Matriz Multi-Tenant
+
+```bash
+grep -rn "company_id\|tenant\|cross_tenant\|ToolExecutionContext" lia-agent-system/app/ --include="*.py" | head -20
+```
+
+| Verificação | Status | Detalhes |
+|------------|--------|---------|
+| company_id em todas as queries | OK/FALHA | WHERE company_id = ? |
+| Cross-tenant prevention | OK/FALHA | cross_tenant_access_denied |
+| Scope-based tool access | OK/FALHA | PromptScope limita tools |
+| Tenant isolation em tool calls | OK/FALHA | ToolExecutionContext |
+
+### DP-09.10: Matriz Audit Trail
+
+```bash
+grep -rn "AuditCallback\|audit_service\|audit_writer\|ExecutionLogStore\|agent_execution_records" lia-agent-system/app/ lia-agent-system/libs/ --include="*.py" | head -20
+```
+
+| Verificação | Status | Detalhes |
+|------------|--------|---------|
+| AuditCallback (LangChain/LangGraph) | OK/FALHA | Captura LLM calls, tool calls |
+| Dual-Persistence (PostgreSQL + S3) | OK/FALHA | Metadata + payload |
+| ReActObserver | OK/FALHA | Structured logging |
+| ExecutionLogStore | OK/FALHA | agent_execution_records |
+| TokenTrackingService | OK/FALHA | ai_consumption table |
+| LangSmith tracing | OK/FALHA | @traceable |
+| Structured logging (sem print) | OK/FALHA | Logger com PIIMasking |
+
+### DP-09.11: Matriz Consolidada (Checklist Multi-Dimensional × Prompt)
+
+Após preencher DP-09.1 a DP-09.10, consolidar em uma única tabela:
+
+| Dimensão | P1 Talent | P2 Jobs | P3 Kanban | P4 Float | P5 Policy | P6 Wizard |
+|----------|----------|---------|-----------|----------|-----------|-----------|
+| Anti-Sycophancy | | | | | | |
+| FairnessGuard Input | | | | | | |
+| FairnessGuard Tools | | | | | | |
+| HITL Enforcement | | | | | | |
+| Negation Detection | | | | | | |
+| Confiança Real | | | | | | |
+| Circuit Breaker Direto | | | | | | |
+| Pre-call Budget Check | | | | | | |
+| PII Masking | | | | | | |
+| Consent Check | | | | | | |
+| Multi-Tenant Isolation | | | | | | |
+| Audit Trail | | | | | | |
+| Observabilidade | | | | | | |
+| Token Tracking | | | | | | |
+
+**Valores possíveis:** OK, FALHA, PARCIAL, ATENÇÃO, N/A
+
+**Critério de avaliação:**
+- Linha toda OK → Dimensão saudável
+- Qualquer FALHA em Inegociável → **P0 CRÍTICO**
+- Mais de 50% FALHA em uma dimensão → **Problema sistêmico**
+- Prompt com mais de 3 FALHA → **Prompt em risco**
+
+**Referência cruzada:** RM-02 (FairnessGuard), RM-03 (HITL), RM-08 (Anti-sycophancy), RM-09 (Score Normalization), RM-10 (Circuit Breaker), RM-17 (Negation Detection)
+
+---
+
+## DP-10: DIAGNÓSTICO DE PADRONIZAÇÃO — O QUE DEVERIA SER PADRÃO
+
+**Objetivo:** Com base nas matrizes DP-08 e DP-09, definir 3 níveis de padronização que todo prompt deveria atingir.
+
+**Procedimento:**
+
+1. **Analisar a matriz DP-09.11** — identificar dimensões que são OK em alguns prompts mas FALHA em outros.
+
+2. **Definir Nível 1 — Padrão para TODOS os prompts (sem exceção):**
+
+| Capacidade | Justificativa | Status Atual (quantos dos N prompts) |
+|------------|--------------|-------------------------------------|
+| Anti-sycophancy | Crença #11 do Manifesto | X/N |
+| FairnessGuard no input | Inegociável #3 | X/N como middleware |
+| Negation detection | Qualidade básica de intent | X/N que usam keywords |
+| Confiança real | Decisões baseadas em dados reais | X/N usam fórmula artificial |
+
+3. **Definir Nível 2 — Padrão para prompts operacionais (exceto Policy):**
+
+| Capacidade | Justificativa | Status Atual |
+|------------|--------------|-------------|
+| Gerar relatórios | Todos os contextos operacionais | Apenas N/M prompts |
+| Histórico de conversas | Retomar análises anteriores | Backend existe, UI incompleta |
+| Novo chat / Limpar chat | Separar contextos | API existe, UI não expõe |
+| Capacidade preditiva | Dropout, forecast, patterns | Apenas N prompts usam ativamente |
+| Smart alerts | Alertas de SLA, at-risk | Apenas N prompts |
+| Pendências ("O que preciso fazer?") | Produtividade do recrutador | Apenas Float parcial |
+| Sugestões proativas | Proatividade da LIA | Apenas Float e Wizard |
+
+4. **Definir Nível 3 — Específico por tipo de prompt:**
+   - Prompts configuracionais (Policy): O que faz sentido e o que não faz
+   - Prompts conversacionais (Float): Requisitos específicos de routing
+   - Prompts de workflow (Wizard): Requisitos específicos de stages
+
+**Template de saída:**
+
+```markdown
+### Diagnóstico de Padronização
+
+**NÍVEL 1 — Padrão para TODOS os N prompts:**
+| Capacidade | Justificativa | Hoje | Meta |
+|...
+
+**NÍVEL 2 — Padrão para prompts operacionais:**
+| Capacidade | Justificativa | Hoje | Meta |
+|...
+
+**NÍVEL 3 — Específico:**
+| Prompt | Requisito Específico | Justificativa |
+|...
+```
+
+**Referência cruzada:** DP-08 (Mapa Comparativo), DP-09.11 (Matriz Consolidada)
+
+---
+
+## DP-11: ANÁLISE DE TOOLS PREDITIVOS — SUBUTILIZAÇÃO
+
+**Objetivo:** Identificar tools preditivos que EXISTEM na codebase mas são SUBUTILIZADOS pelos prompts.
+
+**Procedimento:**
+
+1. **Inventariar tools preditivos existentes:**
+   ```bash
+   grep -rn "def predict_\|def get_.*forecast\|def get_ml_\|def get_conversion_\|def get_smart_alert\|def get_at_risk\|def get_pending_action" lia-agent-system/app/ --include="*.py"
+   ```
+
+2. **Para cada tool preditivo, verificar em quais scopes está ativo:**
+   ```bash
+   grep -n "<nome_do_tool>" lia-agent-system/app/tools/scope_config.py
+   ```
+
+3. **Preencher a tabela de subutilização:**
+
+| Tool | Existe em | Usado ativamente por | Deveria ser usado por |
+|------|-----------|---------------------|----------------------|
+| predict_dropout_risk | (arquivo) | (prompts) | (prompts ideais) |
+| get_pipeline_forecast | (arquivo) | (prompts) | (prompts ideais) |
+| get_ml_predictions | (arquivo) | (prompts) | (prompts ideais) |
+| get_conversion_patterns | (arquivo) | (prompts) | (prompts ideais) |
+| get_smart_alerts | (arquivo) | (prompts) | (prompts ideais) |
+| get_at_risk_candidates | (arquivo) | (prompts) | (prompts ideais) |
+| get_pending_actions | (arquivo) | (prompts) | (prompts ideais) |
+
+4. **Proposta de ativação por prompt:**
+
+| Prompt | Tools Preditivos a Ativar | Impacto Esperado |
+|--------|--------------------------|-----------------|
+| P1 Talent | (lista) | (benefício) |
+| P2 Jobs | (lista) | (benefício) |
+| ... | | |
+
+**Referência cruzada:** DP-03 (Inventário de Tools), DP-08 (Mapa Comparativo), CI-03 (Tool Registry)
+
+---
+
+## DP-12: CADA PROMPT COMO "ASSISTENTE COMPLETO" — CHECKLIST
+
+**Objetivo:** Verificar se cada prompt operacional (exceto Policy) funciona como assistente completo, com capacidades padronizadas que o recrutador espera.
+
+**Capacidades obrigatórias para assistente completo:**
+
+| Capacidade Padrão | Descrição | Implementação Esperada |
+|-------------------|-----------|----------------------|
+| "O que preciso fazer?" | Lista pendências e ações prioritárias | get_pending_actions + priorização |
+| "Me dê um resumo" | Briefing do estado atual | Template de resumo por prompt |
+| "Gera um relatório" | Relatório completo do domínio | Tool generate_report + formatação |
+| "O que está em risco?" | Alertas preditivos | get_smart_alerts + predict_dropout_risk |
+| "Sugira próximos passos" | Recomendações proativas | Proactive suggestions engine |
+| "Compare X com Y" | Comparação lado-a-lado | Templates de comparação |
+| Histórico de chats | Listar, retomar, criar novo, limpar | ConversationMemory + UI |
+| Anti-sycophancy | Contra-argumentar com dados | Seção padrão no prompt |
+| Negation detection | "NÃO quero ranking" = não executar | Implementar em todos |
+
+**Procedimento:**
+
+Para cada prompt operacional, verificar se CADA capacidade acima está implementada:
+
+```bash
+# Para cada capacidade:
+grep -rn "<capacidade_keyword>" lia-agent-system/app/domains/<dominio>/ --include="*.py"
+grep -rn "<capacidade_keyword>" plataforma-lia/src/components/ --include="*.tsx"
+```
+
+**Template de saída por prompt:**
+
+| Capacidade Padrão | P1 Talent | P2 Jobs | P3 Kanban | P4 Float | P6 Wizard |
+|-------------------|----------|---------|-----------|----------|-----------|
+| "O que preciso fazer?" | SIM/NÃO | | | | |
+| "Me dê um resumo" | SIM/NÃO | | | | |
+| "Gera um relatório" | SIM/NÃO | | | | |
+| ... | | | | | |
+
+**Referência cruzada:** DP-08 (Mapa Comparativo), DP-10 (Padronização)
+
+---
+
+## DP-13: HISTÓRICO DE CHATS — AUDITORIA DE IMPLEMENTAÇÃO
+
+**Objetivo:** Verificar o estado de implementação de histórico de conversas no backend e frontend, e mapear onde faz sentido ativar.
+
+**Procedimento:**
+
+1. **Verificar backend de conversas:**
+   ```bash
+   grep -rn "conversations\|ConversationMemory\|conversation_memory" lia-agent-system/app/ --include="*.py" | head -20
+   # Verificar endpoints:
+   grep -rn "GET.*conversations\|POST.*conversations\|DELETE.*conversations\|clear\|archive" lia-agent-system/app/api/ --include="*.py"
+   ```
+
+2. **Verificar frontend de histórico:**
+   ```bash
+   grep -rn "conversation\|historico\|history\|chat.*list\|sidebar" plataforma-lia/src/components/ --include="*.tsx" | head -20
+   grep -rn "novo.*chat\|new.*chat\|clear.*chat\|limpar" plataforma-lia/src/components/ --include="*.tsx" | head -20
+   ```
+
+3. **Preencher tabela de estado:**
+
+| Prompt | Histórico Backend | Histórico UI | Novo Chat | Limpar Chat | Status |
+|--------|------------------|-------------|-----------|-------------|--------|
+| P1 Talent | SIM/NÃO | SIM/NÃO | SIM/NÃO | SIM/NÃO | |
+| P2 Jobs | | | | | |
+| P3 Kanban | | | | | |
+| P4 Float | | | | | |
+| P5 Policy | | | | | |
+| P6 Wizard | | | | | |
+
+4. **Recomendação por prompt:**
+
+| Prompt | Histórico | Novo Chat | Limpar | Justificativa |
+|--------|-----------|-----------|--------|---------------|
+| P1 Talent | SIM | SIM | SIM | Análises em dias diferentes |
+| P2 Jobs | SIM | SIM | SIM | Análises macro recorrentes |
+| P3 Kanban | SIM (por vaga) | SIM | SIM | Interações por vaga |
+| P4 Float | SIM | SIM | SIM | Central — já tem backend |
+| P5 Policy | NÃO | NÃO | NÃO | Setup linear |
+| P6 Wizard | POR VAGA | NÃO | NÃO | Vinculado à vaga |
+
+**Referência cruzada:** DP-12 (Assistente Completo), CI-09 (Conversation Memory)
+
+---
+
+## DP-14: GERAÇÃO DE RELATÓRIOS — AUDITORIA DE PADRONIZAÇÃO
+
+**Objetivo:** Mapear capacidade de geração de relatórios por prompt e propor padronização.
+
+**Procedimento:**
+
+1. **Verificar tools de relatório existentes:**
+   ```bash
+   grep -rn "generate_report\|export.*analytics\|export.*candidates\|report" lia-agent-system/app/tools/ --include="*.py" | head -20
+   ```
+
+2. **Verificar quais prompts têm capacidade de relatório:**
+   ```bash
+   grep -rn "relatório\|report\|gerar.*relat\|generate.*report" lia-agent-system/app/domains/*/prompts/ --include="*.py"
+   ```
+
+3. **Preencher tabela de relatórios por prompt:**
+
+| Prompt | Tipo de Relatório Esperado | Formato | Status Atual |
+|--------|---------------------------|---------|-------------|
+| P1 Talent | Pool (distribuição, scores, gaps, diversidade) | Markdown + dados | SIM/NÃO |
+| P2 Jobs | Portfolio (KPIs, SLAs, performance, tendências) | Markdown + tabelas | SIM/NÃO |
+| P3 Kanban | Vaga (funil, velocidade, gargalos, previsão) | Markdown + métricas | SIM/NÃO |
+| P4 Float | Consolidado (briefing executivo, cross-domain) | Markdown + resumo | SIM/NÃO |
+| P5 Policy | Compliance (políticas, gaps, status) | Markdown + checklist | SIM/NÃO |
+| P6 Wizard | Pré-publicação (completude, riscos, market fit) | Markdown + score | SIM/NÃO |
+
+**Referência cruzada:** DP-12 (Assistente Completo)
+
+---
+
+## DP-15: PRIORIZAÇÃO DE CORREÇÕES (P0-P3)
+
+**Objetivo:** Consolidar todos os problemas identificados em DP-06, DP-09 e DP-10 e priorizá-los por impacto.
+
+**Procedimento:**
+
+1. **Coletar todos os problemas de DP-06 (por prompt) e DP-09 (transversais).**
+
+2. **Classificar por prioridade:**
+
+| Prioridade | Critério | Exemplos |
+|-----------|---------|---------|
+| **P0 — Crítico** | Viola Inegociáveis WeDO ou pode causar decisões discriminatórias | FairnessGuard ausente, anti-sycophancy ausente |
+| **P1 — Alto** | Afeta qualidade, resiliência ou pode produzir resultados incorretos | HITL incompleto, confiança artificial, consent soft |
+| **P2 — Médio** | Degradação de performance, manutenibilidade ou arquitetura | Circuit breaker, scope manual, duplicação |
+| **P3 — Baixo** | Melhoria desejável, feature futura | Upload JD, simulação, templates |
+
+3. **Template de saída:**
+
+```markdown
+### Prioridades de Correção
+
+**P0 — Crítico (Violação de Inegociáveis):**
+1. [Descrição] — Arquivo(s): `path/file.py`
+2. ...
+
+**P1 — Alto (Qualidade e Resiliência):**
+1. [Descrição] — Arquivo(s): `path/file.py`
+2. ...
+
+**P2 — Médio (Melhorias de Arquitetura):**
+1. [Descrição] — Arquivo(s): `path/file.py`
+2. ...
+
+**P3 — Baixo (Futuro):**
+1. [Descrição]
+2. ...
+```
+
+**Referência cruzada:** RM-01 a RM-44 (todos os runbooks de auditoria)
+
+---
+
+## DP-16: ARQUIVOS-CHAVE PARA CORREÇÕES
+
+**Objetivo:** Para cada problema priorizado em DP-15, mapear exatamente quais arquivos precisam ser modificados.
+
+**Template obrigatório:**
+
+```markdown
+### Arquivos-Chave para Correções
+
+| Correção | Arquivo Principal |
+|----------|------------------|
+| (descrição da correção) | (caminho completo do arquivo) |
+| ... | ... |
+
+### Índice de Arquivos Relevantes
+
+**Backend — Prompts:**
+- (listar todos os arquivos de prompt)
+
+**Backend — Agentes:**
+- (listar todos os arquivos de agente)
+
+**Backend — Orquestração:**
+- (listar todos os arquivos de orquestração)
+
+**Backend — Tools e Scope:**
+- (listar arquivos de tools e scope_config)
+
+**Backend — Serviços:**
+- (listar serviços relevantes)
+
+**Backend — Compliance:**
+- (listar arquivos de compliance)
+
+**Frontend — Componentes:**
+- (listar componentes relevantes)
+
+**Frontend — Hooks e Context:**
+- (listar hooks e contexts)
+
+**Backend — Resiliência e Governança:**
+- (listar arquivos de resiliência, audit, observability)
+```
+
+**Referência cruzada:** DP-15 (Priorização), PARTE VI (Arquitetura Técnica)
+
+---
+
+## DP-17: TEMPLATE COMPLETO DE DIAGNÓSTICO POR PROMPT
+
+**Objetivo:** Fornecer o template final que o auditor deve preencher para CADA prompt, consolidando DP-02 a DP-07.
+
+**Template — copiar e preencher para cada prompt:**
+
+```markdown
+## [N]. PROMPT [NOME] ([Scope])
+
+**Arquivo principal:** `lia-agent-system/app/domains/<dominio>/prompts/<arquivo>.py` ([N] linhas)
+**Scope:** PromptScope.[SCOPE]
+
+### Stack completo vinculado
+
+| Camada | Componente | Arquivo |
+|--------|-----------|---------|
+| Agente | | |
+| Domínio | | |
+| System Prompt | | |
+| Reasoning Prompt | | |
+| Tool Registry | | |
+| Tools | | |
+| Serviço(s) | | |
+| Compliance | | |
+| Frontend — Página | | |
+| Frontend — Chat | | |
+| Frontend — Hooks | | |
+| Frontend — Context | | |
+| API Proxy | | |
+| WebSocket | | |
+
+### Tools no scope [SCOPE] ([N] query + [M] action = [T] tools)
+
+**Query ([N]):** (listar)
+
+**Action ([M]):** (listar)
+
+### O que faz
+
+[Descrição em 1-2 linhas]
+
+**Capacidades implementadas:**
+- (listar com bullets)
+
+### O que NÃO faz
+
+- (listar gaps com impacto)
+
+### Problemas identificados
+
+1. **[Título]:** [Descrição] — `arquivo:linha`
+2. ...
+
+### Oportunidades
+
+- (listar com benefício esperado)
+```
+
+**Referência cruzada:** DP-02 a DP-07
+
+---
+
+## DP-18: TEMPLATE COMPLETO DE ANÁLISE TRANSVERSAL
+
+**Objetivo:** Fornecer o template final para a análise transversal, consolidando DP-08 a DP-16.
+
+**Template — preencher após todos os diagnósticos individuais:**
+
+```markdown
+## ANÁLISE TRANSVERSAL DA ARQUITETURA
+
+### Pontos Fortes da Arquitetura
+- (listar com evidências)
+
+### Problemas Sistêmicos
+- (listar problemas que afetam múltiplos prompts)
+
+### Checklist Multi-Dimensional (DP-09.11)
+(inserir tabela consolidada)
+
+### Mapa Comparativo de Capacidades (DP-08)
+(inserir tabela completa)
+
+### Diagnóstico de Padronização (DP-10)
+**NÍVEL 1:** (o que deve ser padrão em TODOS)
+**NÍVEL 2:** (o que deve ser padrão nos operacionais)
+**NÍVEL 3:** (específico por tipo)
+
+### Tools Preditivos — Subutilização (DP-11)
+(inserir tabela)
+
+### Cada Prompt como Assistente Completo (DP-12)
+(inserir tabela)
+
+### Prioridades de Correção (DP-15)
+**P0:** (listar)
+**P1:** (listar)
+**P2:** (listar)
+**P3:** (listar)
+
+### Arquivos-Chave (DP-16)
+(inserir tabela + índice)
+```
+
+---
+
+## DP-19: FLUXO DE EXECUÇÃO COMPLETO
+
+**Objetivo:** Definir a ordem de execução dos procedimentos DP-01 a DP-18 para gerar o diagnóstico completo.
+
+### Fase 1 — Inventário (DP-01 a DP-03)
+1. **DP-01:** Inventário de prompts/assistentes
+2. **DP-02:** Stack completo por prompt (para cada prompt de DP-01)
+3. **DP-03:** Inventário de tools por scope (para cada scope de DP-01)
+
+### Fase 2 — Análise Individual (DP-04 a DP-07)
+Para CADA prompt identificado em DP-01:
+4. **DP-04:** O que faz
+5. **DP-05:** O que NÃO faz
+6. **DP-06:** Problemas identificados
+7. **DP-07:** Oportunidades
+
+### Fase 3 — Análise Transversal (DP-08 a DP-11)
+8. **DP-08:** Mapa comparativo de capacidades
+9. **DP-09:** Matrizes transversais (09.1 a 09.11)
+10. **DP-10:** Diagnóstico de padronização
+11. **DP-11:** Tools preditivos — subutilização
+
+### Fase 4 — Propostas e Priorização (DP-12 a DP-16)
+12. **DP-12:** Cada prompt como assistente completo
+13. **DP-13:** Histórico de chats
+14. **DP-14:** Geração de relatórios
+15. **DP-15:** Priorização P0-P3
+16. **DP-16:** Arquivos-chave para correções
+
+### Fase 5 — Consolidação (DP-17 e DP-18)
+17. **DP-17:** Preencher template de diagnóstico individual para cada prompt
+18. **DP-18:** Preencher template de análise transversal
+
+### Estimativa de esforço:
+- **Fase 1:** ~2h por prompt (inventário + stack + tools)
+- **Fase 2:** ~1.5h por prompt (análise individual)
+- **Fase 3:** ~3h total (consolidação transversal)
+- **Fase 4:** ~2h total (propostas)
+- **Fase 5:** ~1h total (templates finais)
+- **Total estimado para 6 prompts:** ~20-25h de auditoria profunda
+
+---
+
+## DP-20: RUNBOOKS DE REFERÊNCIA CRUZADA
+
+Os procedimentos DP-01 a DP-19 se apoiam nos seguintes runbooks existentes:
+
+| Procedimento DP | Runbooks Relacionados | Relação |
+|-----------------|----------------------|---------|
+| DP-02 (Stack) | RM-36, RM-37, CI-01, CI-03, CI-06 | Mapeamento de agentes, prompts, tools, serviços |
+| DP-03 (Tools) | RM-39, CI-03, CI-04 | Scope × Tool, Tool Registry |
+| DP-04 (O que faz) | CI-01, CI-02 | System Prompts, Intent Detection |
+| DP-06 (Problemas) | RM-08, RM-17, RM-09, RM-10 | Anti-sycophancy, Negation, Score, Circuit Breaker |
+| DP-09.1 (Anti-Sycophancy) | RM-08 | Anti-sycophancy por prompt |
+| DP-09.2 (Intent) | RM-17, CI-02 | Negation Detection, Intent |
+| DP-09.3 (FairnessGuard) | RM-02 | FairnessGuard 3 camadas |
+| DP-09.4 (HITL) | RM-03 | Human-in-the-Loop |
+| DP-09.5 (Circuit Breaker) | RM-10 | Circuit Breaker |
+| DP-09.6 (Token Budget) | RM-11 | Token Tracking |
+| DP-09.7 (PII) | RM-06 | PII Masking |
+| DP-09.8 (Consent) | RM-04 | Consent Management |
+| DP-09.9 (Multi-Tenant) | RM-13 | Tenant Isolation |
+| DP-09.10 (Audit) | RM-14, RM-15 | Audit Trail, Observability |
+| DP-13 (Histórico) | CI-09 | Conversation Memory |
+| DP-14 (Relatórios) | CI-15 | Geração de Relatórios |
+
+---
+
+# PARTE XII: NOTAS FINAIS
 
 1. **Não assuma — investigue.** Sempre leia o código real antes de classificar um item. "Existe" e "funciona" são coisas diferentes.
 2. **Priorize por impacto.** Violações de Inegociáveis são P0 — não importa quão pequenas pareçam.
