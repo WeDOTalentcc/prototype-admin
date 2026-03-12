@@ -155,6 +155,7 @@ docs/
 | [compliance/TRUST_CENTER_WEBSITE.md](./compliance/TRUST_CENTER_WEBSITE.md) | Trust Center website |
 | [compliance/TRUST_CENTER_NOTION.md](./compliance/TRUST_CENTER_NOTION.md) | Trust Center Notion |
 | [compliance/TRUST_CENTER_BENCHMARK_ANALISE.md](./compliance/TRUST_CENTER_BENCHMARK_ANALISE.md) | Benchmark Trust Center |
+| [PLAYBOOK_AUDITORIA_PROFUNDA.md](./PLAYBOOK_AUDITORIA_PROFUNDA.md) | Playbook auto-contido de auditoria profunda (9 partes, 14 dimensões, 8 frameworks) |
 
 ---
 

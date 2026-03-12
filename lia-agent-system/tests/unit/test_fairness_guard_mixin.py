@@ -67,7 +67,6 @@ class TestFairnessPreCheckMixin:
             "app.shared.compliance.fairness_guard.FairnessGuard.check",
             side_effect=RuntimeError("FairnessGuard indisponível"),
         ):
-            # fail-safe: exceção interna → None, sem propagar
             msg = await mixin._fairness_pre_check("quero candidatos sem filhos")
             assert msg is None
 
@@ -81,7 +80,6 @@ class TestFairnessPreCheckMixin:
 
     @pytest.mark.asyncio
     async def test_criterio_etario_bloqueado(self, mixin):
-        # Padrão coberto: r"\bidade entre \d+ e \d+\b"
         msg = await mixin._fairness_pre_check("quero candidatos com idade entre 25 e 35 anos")
         assert msg is not None
         assert len(msg) > 20
