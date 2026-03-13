@@ -2048,12 +2048,20 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
           }
           handleLiaUiAction(response.ui_action, enrichedParams)
         }
+      } else if (response.error === 'auth_error') {
+        const authMsg = {
+          id: `auth-error-${timestamp}`,
+          type: 'response' as const,
+          content: response.content || 'Sessao expirada. Recarregue a pagina para continuar.',
+          timestamp: timestamp + 1,
+        }
+        setLiaMessages(prev => [...prev, authMsg])
       } else {
         throw new Error('API returned unsuccessful response')
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[LIA] Orchestrator indisponível, usando fallback:', (error as Error)?.message || error)
+        console.warn('[LIA] Orchestrator indisponivel, usando fallback:', (error as Error)?.message || error)
       }
       try {
         const jobContext = {
@@ -2362,6 +2370,13 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         company_id: user?.company || 'default',
       })
 
+      if (response.error === 'auth_error') {
+        return {
+          content: response.content || 'Sessao expirada. Recarregue a pagina para continuar.',
+          ui_action: null
+        }
+      }
+
       if (response.conversation_id) {
         setLiaConversationId(response.conversation_id)
       }
@@ -2372,7 +2387,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         ui_action_params: response.ui_action_params
       }
     } catch (error) {
-      console.error('Orchestrated message error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Orchestrated message error:', error)
+      }
       return {
         content: getFallbackResponse(message),
         ui_action: null
