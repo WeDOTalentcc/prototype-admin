@@ -109,9 +109,13 @@ export function useFloatStreaming(
     }
 
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+      if (token) headers['Authorization'] = `Bearer ${token}`
+
       const res = await fetch('/api/backend-proxy/chat/message', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ message: content, domain, session_id: sessionId, context }),
       })
       const data = await res.json()

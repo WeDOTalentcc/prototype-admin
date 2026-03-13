@@ -29,7 +29,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Header, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 from app.api.v1.ws_manager import ws_manager
@@ -550,7 +550,7 @@ class HTTPChatResponse(BaseModel):
 
 
 @router.post("/chat/message", response_model=HTTPChatResponse)
-async def http_chat_message(req: HTTPChatRequest):
+async def http_chat_message(req: HTTPChatRequest, request: Request):
     """
     HTTP fallback for agent chat when WebSocket is unavailable.
     Same logic as WS handler but synchronous request/response.
@@ -559,11 +559,17 @@ async def http_chat_message(req: HTTPChatRequest):
     if not content:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else None
+    auth = _extract_auth(token)
+    company_id = auth["company_id"]
+    user_id = auth["user_id"]
+
     session_id = req.session_id or str(uuid4())
     active_domain = req.domain or "recruiter_assistant"
     context = req.context or {}
-    company_id = context.get("company_id", "")
-    user_id = context.get("user_id", "anonymous")
+    context.setdefault("company_id", company_id)
+    context.setdefault("user_id", user_id)
 
     _inj_result = _injection_guard.check(content)
     if _inj_result.risk_level == "high":
@@ -571,6 +577,17 @@ async def http_chat_message(req: HTTPChatRequest):
             content="Mensagem bloqueada por segurança. Por favor, reformule sua solicitação.",
             error="prompt_injection_blocked",
         )
+
+    try:
+        _plan = await get_plan_for_company(company_id)
+        _budget_ok, _used, _limit = await check_budget(company_id, _plan)
+        if not _budget_ok:
+            return HTTPChatResponse(
+                content=f"Limite diário de uso de IA atingido ({_used:,} / {_limit:,} tokens). O budget será renovado à meia-noite UTC.",
+                error="budget_exhausted",
+            )
+    except Exception as _budget_exc:
+        logger.warning("[HTTPChat] Budget check falhou — continuando: %s", _budget_exc)
 
     if active_domain in ("auto", "recruiter_assistant", ""):
         try:
@@ -600,6 +617,18 @@ async def http_chat_message(req: HTTPChatRequest):
         output = await asyncio.wait_for(
             agent.process(agent_input), timeout=_AGENT_TIMEOUT,
         )
+
+        _tokens_used = output.metadata.get("tokens_used", 0) if output.metadata else 0
+        if _tokens_used <= 0:
+            _input_words = len(content.split())
+            _output_words = len((output.message or "").split())
+            _tokens_used = int((_input_words + _output_words) * 1.3)
+        if _tokens_used > 0 and company_id:
+            try:
+                await increment_usage(company_id, _tokens_used)
+            except Exception as _inc_exc:
+                logger.warning("[HTTPChat] increment_usage falhou: %s", _inc_exc)
+
         return HTTPChatResponse(
             content=output.message or "",
             confidence=output.confidence,
