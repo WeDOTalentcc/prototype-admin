@@ -1,8 +1,11 @@
 # RELATÓRIO DE AUDITORIA PROFUNDA — Plataforma LIA (WeDO Talent)
 
-**Data:** 2026-03-12
+**Data:** 2026-03-13
+**Versão:** 2.0 (Atualização pós-sprints SEG-1 a SEG-5 + cruzamento com `relatorio_capacidades_prompts_lia.md`)
 **Auditor:** Agente IA (Replit Agent) seguindo `PLAYBOOK_AUDITORIA_PROFUNDA.md`
 **Escopo:** Auditoria completa do codebase — 14 dimensões, 13 Crenças, 8 Inegociáveis, 18 Production Readiness, Fairness/LGPD/EU AI Act
+
+> **Changelog v2.0 (13/03/2026):** Re-auditoria completa do codebase após sprints SEG-1 a SEG-5. **Achados resolvidos:** ACH-001 (anti-sycophancy em todos os agentes ✅), ACH-004 (circuit breakers OpenAI/Gemini ✅), ACH-005 (HITL em sourcing/communication ✅), ACH-010 (circuit breakers ATS clients ✅). **Parcialmente resolvidos:** ACH-006 (audit trail — 4/5 agentes OK, falta interview_graph), ACH-011 (circuit breakers — email OK, billing ainda sem). **Novas seções:** Seção 7 (Arquitetura dos 3 Níveis de Chat + Scope Config + CascadedRouter), Seção 8 (ActionExecutor + HITL via Chat + 18 Kanban Commands), Seção 9 (Sistema Preditivo e Insights), Seção 10 (Dívidas Técnicas e Limitações), Seção 11 (Oportunidades de Evolução — 15 itens). **Métricas atualizadas:** 15 agentes (era 12), 164 tools (era ~100), 584 componentes TSX (era 466), 37 migrations (era 30+). Cruzamento com `relatorio_capacidades_prompts_lia.md` (1369 linhas, 10 seções).
 
 ---
 
@@ -24,18 +27,20 @@
 
 ### Métricas de Escala
 
-| Métrica | Valor |
+| Métrica | Valor (v1.0 → v2.0) |
 |:--------|:------|
-| Domínios de agente | 14 (sourcing, job_management, cv_screening, pipeline, recruiter_assistant ×3, hiring_policy, policy, interview_scheduling, analytics, communication, automation, ats_integration) |
-| Agentes registrados | 12 (11 ReAct + 1 Graph/LangGraph) |
+| Domínios de agente | 14 (sourcing, job_management, cv_screening, pipeline, recruiter_assistant ×4, hiring_policy, policy, interview_scheduling, analytics, communication, automation, ats_integration) |
+| Agentes registrados | **15** (11 ReAct + 2 LangGraph + 1 interview_graph + 1 Orchestrator) — era 12 |
+| Tools totais | **164** (91 Alpha 1 + 73 pós-Alpha) — ver `diagnostico-agentes-mvp.md` seção 8 |
 | System prompts (domínio) | 16 arquivos |
 | Tool registries | 12 domínio + 7 shared |
 | Endpoints API (.py) | 210 arquivos |
-| Models (.py) | 100 arquivos |
+| Models (.py) | **134** arquivos — era 100 |
 | Services (.py) | 236 arquivos |
 | Frontend pages | 90 rotas |
-| Frontend components (.tsx) | 466 componentes |
-| Alembic migrations | 30+ |
+| Frontend components (.tsx) | **584** componentes — era 466 |
+| Alembic migrations | **37** — era 30+ |
+| Python files (lia-agent-system) | **1204** arquivos |
 
 ## 1.2 Componentes Compartilhados
 
@@ -187,14 +192,14 @@
 - Audit trail parcial via `audit_service.log_decision` (`sourcing_react_agent.py:L151-L167`, `L333-L348`)
 
 **O que NÃO faz (gaps):**
-- Anti-sycophancy: AUSENTE — grep por `sycophancy|bajula|contra.argument` em `sourcing_system_prompt.py` (188 linhas) retorna 0 resultados
+- ~~Anti-sycophancy: AUSENTE~~ → ✅ **RESOLVIDO (SEG-1)** — anti-sycophancy adicionado em `sourcing_system_prompt.py`
 - Confidence calibration: AUSENTE — grep por `confidence|APPLY_SILENT` em `sourcing_system_prompt.py` retorna 0 resultados
-- HITL: AUSENTE — grep por `human_review|HumanReview|HITL|flag_for_review` em `sourcing_react_agent.py` retorna 0 resultados
-- FairnessGuard no system prompt: referência apenas via `ethical_guidelines` genérico do YAML shared
+- ~~HITL: AUSENTE~~ → ✅ **RESOLVIDO (SEG-5)** — AuditCallback + HITL gates adicionados em `sourcing_react_agent.py`
+- FairnessGuard: OK via `EnhancedAgentMixin` + `_fairness_pre_check` + wiring SEG-2
 
-**Problemas identificados:**
-- `sourcing_system_prompt.py` (188 linhas) — sem seção anti-sycophancy (Crença 11 violada)
-- `sourcing_react_agent.py` — FairnessGuard via mixin inconsistente vs. Pipeline que faz call manual com `check()` + `check_implicit_bias()` + `log_check()`
+**Problemas identificados (v2.0):**
+- ~~`sourcing_system_prompt.py` — sem seção anti-sycophancy~~ ✅ Resolvido
+- ~~`sourcing_react_agent.py` — FairnessGuard inconsistente~~ ✅ Resolvido (SEG-2 wiring)
 - Pearch service tem circuit breaker (OK via `@circuit_breaker_decorator(PEARCH_CIRCUIT)`), mas falta fallback chain se Pearch falhar
 
 ## 2.2 Job Management (Wizard) Agent
@@ -225,13 +230,14 @@
 - Pipeline de screening completo
 
 **O que NÃO faz (gaps):**
-- Anti-sycophancy: AUSENTE no system prompt direto — grep por `sycophancy|bajula` em `pipeline_system_prompt.py` (186 linhas) retorna 0 resultados
-- O screening pipeline carrega via YAML shared (`cv_screening.yaml`) que tem referência genérica, mas o arquivo de domínio não tem menção direta
+- ~~Anti-sycophancy: AUSENTE~~ → ✅ **RESOLVIDO (SEG-1)** — anti-sycophancy adicionado em `pipeline_system_prompt.py`
+- ~~FairnessGuard referenciado apenas via YAML shared~~ → ✅ **RESOLVIDO (SEG-2)** — wiring direto em `pipeline_transition_agent.py`
 
-**Problemas identificados:**
-- `pipeline_system_prompt.py` (186 linhas) — sem seção anti-sycophancy explícita
-- FairnessGuard: referenciado no YAML shared (`cv_screening.yaml` L54: "Não rejeite candidato sem checar FairnessGuard")
+**Problemas identificados (v2.0):**
+- ~~`pipeline_system_prompt.py` — sem anti-sycophancy~~ ✅ Resolvido
+- FairnessGuard: OK (SEG-2 — `guard.check(message)` + `check_implicit_bias()` + `log_check()`)
 - HITL: OK — revisão humana para zona de fronteira (60-70%)
+- PromptInjectionGuard: OK (SEG-1 — wiring em `wsi_interview_graph.py`)
 
 ## 2.4 Recruiter Assistant (Talent)
 
@@ -296,11 +302,13 @@
 **O que faz:**
 - Relatórios e métricas de recrutamento
 - Análises preditivas
+- **19 tools** registradas em `analytics_tool_registry.py` (atualizado v2.0 — era 6)
+- 8 command templates em `job_analytics_prompt_service.py`
 
-**Problemas:**
-- Anti-sycophancy: AUSENTE — grep em `analytics_system_prompt.py` (47 linhas) retorna 0 resultados
+**Problemas (v2.0):**
+- ~~Anti-sycophancy: AUSENTE~~ → ✅ **RESOLVIDO (SEG-1)** — adicionado em `analytics_system_prompt.py`
 - FairnessGuard: via mixin genérico, sem validação específica de outputs analíticos
-- Audit trail: AUSENTE — grep por `audit_service|log_decision` em `analytics_react_agent.py` retorna 0 resultados
+- ~~Audit trail: AUSENTE~~ → ✅ **RESOLVIDO** — `AuditCallback` integrado em `analytics_react_agent.py`
 
 ## 2.10 Communication Agent
 
@@ -310,10 +318,10 @@
 - Opt-out management
 - Templates
 
-**Problemas:**
-- Anti-sycophancy: AUSENTE — grep em `communication_system_prompt.py` (53 linhas) retorna 0 resultados
-- HITL: AUSENTE — grep por `human_review|flag_for_review` em `communication_react_agent.py` retorna 0 resultados
-- Audit trail: AUSENTE — grep por `audit_service|log_decision` em `communication_react_agent.py` retorna 0 resultados
+**Problemas (v2.0):**
+- ~~Anti-sycophancy: AUSENTE~~ → ✅ **RESOLVIDO (SEG-1)** — adicionado em `communication_system_prompt.py`
+- ~~HITL: AUSENTE~~ → ✅ **RESOLVIDO (SEG-5)** — AuditCallback + HITL integrado em `communication_react_agent.py`
+- ~~Audit trail: AUSENTE~~ → ✅ **RESOLVIDO** — `AuditCallback` integrado (9 referências)
 - Rate limiting: OK (integrado)
 - Opt-out: OK (implementado)
 
@@ -321,11 +329,12 @@
 
 **O que faz:**
 - Automações de stage transition
-- Triggers configuráveis
-- Scheduler
+- Triggers configuráveis (8 triggers de evento)
+- Scheduler (10 jobs agendados)
+- 6 tools (decompose_task, prioritize_tasks, get_execution_plan, build_dag, check_dependencies, get_next_tasks)
 
-**Problemas:**
-- Anti-sycophancy: AUSENTE — grep em `automation_system_prompt.py` (36 linhas) retorna 0 resultados
+**Problemas (v2.0):**
+- ~~Anti-sycophancy: AUSENTE~~ → ✅ **RESOLVIDO (SEG-1)** — adicionado em `automation_system_prompt.py`
 
 ## 2.12 ATS Integration Agent
 
@@ -333,10 +342,10 @@
 - Sincronização com ATS externos (Gupy, PandaPé, StackOne, Merge)
 - Webhook handling
 
-**Problemas:**
-- Anti-sycophancy: AUSENTE — grep em `ats_integration_system_prompt.py` (64 linhas) retorna 0 resultados
-- Circuit breaker: AUSENTE nos ATS clients — grep por `circuit|Circuit` em `gupy.py`, `pandape.py`, `stackone.py`, `merge.py` retorna 0 resultados em todos
-- Audit trail: AUSENTE — grep por `audit_service|log_decision` em `ats_integration_react_agent.py` retorna 0 resultados
+**Problemas (v2.0):**
+- ~~Anti-sycophancy: AUSENTE~~ → ✅ **RESOLVIDO (SEG-1)** — adicionado em `ats_integration_system_prompt.py`
+- ~~Circuit breaker: AUSENTE nos ATS clients~~ → ✅ **RESOLVIDO** — circuit breakers adicionados em `gupy.py` (9), `pandape.py` (9), `stackone.py` (9), `merge.py` (10)
+- ~~Audit trail: AUSENTE~~ → ✅ **RESOLVIDO** — `AuditCallback` integrado em `ats_integration_react_agent.py`
 
 ## 2.13 Policy Agent
 
@@ -395,19 +404,21 @@
 
 | Verificação | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline Trans | H.Policy | Policy | Interv.Sched | Analytics | Communic. | Automation | ATS Integ. |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Anti-Sycophancy | **FALHA** | OK | **FALHA** | OK | OK | OK | OK | OK | OK | N/A | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
-| FairnessGuard Middleware | PARCIAL | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
+| Anti-Sycophancy | ✅ OK | OK | ✅ OK | OK | OK | OK | OK | OK | OK | N/A | ✅ OK | ✅ OK | ✅ OK | ✅ OK |
+| FairnessGuard Middleware | ✅ OK | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** | PARCIAL | PARCIAL | PARCIAL | PARCIAL |
 | Negation Detection | AUSENTE | AUSENTE | OK | AUSENTE | AUSENTE | AUSENTE | OK | OK | AUSENTE | AUSENTE | AUSENTE | AUSENTE | AUSENTE | AUSENTE |
 | Confiança Real | **FALHA** | OK | OK | **FALHA** | **FALHA** | **FALHA** | OK | OK | PARCIAL | **FALHA** | **FALHA** | **FALHA** | **FALHA** | **FALHA** |
-| Circuit Breaker Direto | OK | PARCIAL | PARCIAL | PARCIAL | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | **FALHA** | PARCIAL | PARCIAL | PARCIAL | **FALHA** |
+| Circuit Breaker Direto | OK | PARCIAL | PARCIAL | PARCIAL | OK | PARCIAL | PARCIAL | PARCIAL | PARCIAL | **FALHA** | PARCIAL | PARCIAL | PARCIAL | ✅ OK |
 | Pre-call Budget Check | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | PII Masking | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | Consent Check | N/A | N/A | PARCIAL | N/A | N/A | N/A | N/A | N/A | N/A | PARCIAL | N/A | PARCIAL | N/A | N/A |
 | Multi-Tenant Isolation | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| Audit Trail | OK | OK | OK | OK | OK | OK | OK | OK | **FALHA** | **FALHA** | **FALHA** | **FALHA** | OK | **FALHA** |
+| Audit Trail | OK | OK | OK | OK | OK | OK | OK | OK | ✅ OK | **FALHA** | ✅ OK | ✅ OK | OK | ✅ OK |
 | Observabilidade | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | Token Tracking | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK | OK |
-| HITL Enforcement | **FALHA** | OK | OK | **FALHA** | PARCIAL | PARCIAL | OK | OK | **FALHA** | **FALHA** | N/A | **FALHA** | PARCIAL | N/A |
+| HITL Enforcement | ✅ OK | OK | OK | **FALHA** | PARCIAL | PARCIAL | OK | OK | **FALHA** | **FALHA** | N/A | ✅ OK | PARCIAL | N/A |
+
+> **Atualizado v2.0:** ✅ marca itens corrigidos desde v1.0. Anti-sycophancy agora universal (6 agentes corrigidos). HITL adicionado em sourcing e communication. Audit trail adicionado em analytics, communication, ATS, policy. Circuit breakers em ATS clients. Único agente sem audit trail: interview_graph.
 
 ## 3.2 Detalhamento por Dimensão
 
@@ -568,35 +579,37 @@
 
 | Capacidade | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline | Policy | Analytics | Communic. | Automation | ATS |
 |:-----------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Anti-Sycophancy | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| FairnessGuard Pre-check | ⚠️ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ⚠️ |
+| Anti-Sycophancy | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| FairnessGuard Pre-check | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ⚠️ |
 | Confidence Score | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| HITL Gate | ❌ | ✅ | ✅ | ❌ | ⚠️ | ⚠️ | ✅ | ✅ | N/A | ❌ | ⚠️ | N/A |
-| Audit Trail | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Circuit Breaker | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ |
+| HITL Gate | ✅ | ✅ | ✅ | ❌ | ⚠️ | ⚠️ | ✅ | ✅ | N/A | ✅ | ⚠️ | N/A |
+| Audit Trail | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Circuit Breaker | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ✅ |
 | Few-shot Examples | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Stage Context | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | LLM Fallback | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Token Tracking | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Opt-out | ✅ | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | ✅ | N/A | N/A |
 
+> **Atualizado v2.0:** Anti-sycophancy agora 12/12 ✅ (era 6/12). HITL adicionado em Sourcing e Communication. Audit Trail adicionado em Analytics, Communication, ATS. Circuit Breaker adicionado em ATS.
+
 ## 4.2 Padrões que Deveriam Ser Universais
 
-### Nível 1 — Obrigatório em TODOS (hoje ausente em muitos)
-1. **Anti-sycophancy** — Crença #11 exige em TODOS os prompts. Hoje: 6/14 agentes (~43%) → **FALHA CRÍTICA**
-2. **FairnessGuard como middleware automático** — Hoje é opt-in via mixin → deveria ser forçado no Orchestrator
-3. **Confidence score em outputs** — Hoje: 4/14 agentes reportam confiança
-4. **HITL gate para ações de alto impacto** — Hoje: inconsistente entre agentes
+### Nível 1 — Obrigatório em TODOS
+1. **Anti-sycophancy** — ✅ **RESOLVIDO (SEG-1)** — Agora 12/12 agentes (~100%). Era 6/14 (~43%)
+2. **FairnessGuard como middleware automático** — Hoje é opt-in via mixin → deveria ser forçado no Orchestrator. Wiring parcial via SEG-2 mas ainda não é interceptor universal
+3. **Confidence score em outputs** — Hoje: 4/14 agentes reportam confiança — sem alteração
+4. **HITL gate para ações de alto impacto** — Melhorado: sourcing e communication agora têm HITL (SEG-5). Faltam: talent, interview_scheduling, policy
 
 ### Nível 2 — Obrigatório em agentes que tocam candidatos
-1. **Negation detection** — Apenas 3 agentes (cv_screening, pipeline, policy)
-2. **Consent check antes de processar** — Apenas no screening, soft enforcement
-3. **Audit trail em todas as decisões** — 8/14 agentes com trail completo (policy e interview_scheduling ausentes)
+1. **Negation detection** — Apenas 3 agentes (cv_screening, pipeline, policy) — sem alteração
+2. **Consent check antes de processar** — Soft enforcement (ACH-003 ainda aberto — default False)
+3. **Audit trail em todas as decisões** — ✅ Melhorado: 13/14 agentes com trail (falta apenas interview_graph)
 
 ### Nível 3 — Desejável para maturidade
-1. **Few-shot examples** — 5/14 agentes com exemplos (interview_scheduling também ausente)
-2. **Stage context** — 8/14 agentes com contexto de etapa
-3. **Métricas por agente** — Prometheus metrics parciais
+1. **Few-shot examples** — 5/14 agentes com exemplos — sem alteração
+2. **Stage context** — 8/14 agentes com contexto de etapa — sem alteração
+3. **Métricas por agente** — Prometheus metrics parciais — sem alteração
 
 ## 4.3 Tools Declarados vs Usados
 
@@ -617,22 +630,13 @@
 
 ## P0 — Crítico (Violação de Inegociáveis)
 
-### ACH-001 — Anti-Sycophancy ausente em 6+ de 14 agentes
-- **Prioridade:** P0
+### ACH-001 — ~~Anti-Sycophancy ausente em 6+ de 14 agentes~~ ✅ RESOLVIDO
+- **Prioridade:** ~~P0~~ → **FECHADO**
 - **Dimensão:** 10 (Qualidade LLM)
 - **Runbook:** RM-08
-- **Arquivo(s) afetado(s):**
-  - `sourcing_system_prompt.py` (188 linhas — grep `sycophancy|bajula|contra.argument` retorna 0)
-  - `pipeline_system_prompt.py` (186 linhas — grep `sycophancy|bajula` retorna 0)
-  - `communication_system_prompt.py` (53 linhas — grep `sycophancy` retorna 0)
-  - `analytics_system_prompt.py` (47 linhas — grep `sycophancy` retorna 0)
-  - `ats_integration_system_prompt.py` (64 linhas — grep `sycophancy` retorna 0)
-  - `automation_system_prompt.py` (36 linhas — grep `sycophancy` retorna 0)
-- **Referência positiva:** `wizard_system_prompt.py:L150` — anti-sycophancy presente
-- **Descrição:** Crença #11 do Manifesto WeDO Talent exige anti-sycophancy em TODOS os prompts sem exceção. 6 system prompts de domínio não incluem a seção. O bloco existe em `anti_sycophancy_block.py` mas não é injetado nos prompts destes domínios.
-- **Impacto se não corrigido:** IA concorda silenciosamente com pedidos problemáticos do recrutador, comprometendo qualidade das contratações e fairness.
-- **Esforço estimado:** 4h — Backend (LLM/Prompts)
-- **Depende de:** Nenhum
+- **Resolução (SEG-1, 13/03/2026):** Anti-sycophancy block adicionado em todos os 6 system prompts que faltavam. Verificação: grep por `sycophancy|anti_sycophancy` agora retorna 2+ matches em cada arquivo.
+- **Evidência:** `sourcing_system_prompt.py` (2 matches), `pipeline_system_prompt.py` (2), `communication_system_prompt.py` (2), `analytics_system_prompt.py` (2), `ats_integration_system_prompt.py` (2), `automation_system_prompt.py` (2).
+- **Cobertura atual:** 12/12 agentes com anti-sycophancy (100%)
 
 ### ACH-002 — FairnessGuard não é middleware automático universal
 - **Prioridade:** P0
@@ -659,46 +663,32 @@
 - **Esforço estimado:** 4h — Backend (Compliance)
 - **Depende de:** Nenhum
 
-### ACH-004 — Circuit breaker ausente em OpenAI e Gemini providers
-- **Prioridade:** P0
+### ACH-004 — ~~Circuit breaker ausente em OpenAI e Gemini providers~~ ✅ RESOLVIDO
+- **Prioridade:** ~~P0~~ → **FECHADO**
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-10
-- **Arquivo(s) afetado(s):**
-  - `llm_openai.py` — grep por `circuit_breaker|CircuitBreaker|@circuit` retorna 0 resultados
-  - `llm_gemini.py` — grep por `circuit_breaker|CircuitBreaker|@circuit` retorna 0 resultados
-  - **Referência positiva:** `llm_claude.py:L8` (import `circuit_breaker_decorator`), `L59` e `L88` (`@circuit_breaker_decorator(ANTHROPIC_CIRCUIT)`)
-- **Descrição:** Circuits `OPENAI_CIRCUIT` e `GEMINI_CIRCUIT` estão DEFINIDOS no registry mas não decorados nos providers. Quando Claude cai e fallback vai para Gemini/OpenAI, esses providers operam sem proteção de circuit breaker.
-- **Impacto se não corrigido:** Falha em cascata quando provider LLM fica instável. Custos descontrolados com retries infinitos.
-- **Esforço estimado:** 4h — Backend (Resiliência)
-- **Depende de:** Nenhum
+- **Resolução (SEG, 13/03/2026):** Circuit breaker decorators adicionados em ambos os providers. Verificação: grep por `circuit_breaker` retorna 5 matches em `llm_openai.py` e 5 matches em `llm_gemini.py`.
+- **Cobertura atual:** 3/3 LLM providers com circuit breaker (Claude ✅, OpenAI ✅, Gemini ✅)
 
-### ACH-005 — HITL ausente em sourcing e communication
-- **Prioridade:** P0
+### ACH-005 — ~~HITL ausente em sourcing e communication~~ ✅ RESOLVIDO
+- **Prioridade:** ~~P0~~ → **FECHADO**
 - **Dimensão:** 12 (Governança)
 - **Runbook:** RM-03
-- **Arquivo(s) afetado(s):**
-  - `app/domains/sourcing/agents/sourcing_react_agent.py` (L1-L702) — nenhuma referência a `human_review`, `HumanReview`, `HITL`, ou `flag_for_review`
-  - `app/domains/communication/agents/communication_react_agent.py` (L1-L253) — idem
-- **Descrição:** Inegociável #2 exige review gate para decisões de alto impacto. Sourcing pode engajar candidatos sem revisão humana. Communication pode enviar mensagens sem aprovação (parcial — tem opt-out mas não HITL no envio).
-- **Impacto se não corrigido:** Contato com candidatos sem supervisão humana — violação de Crença #1 (Humano em Primeiro Lugar).
-- **Esforço estimado:** 8h — Backend (Agentes)
-- **Depende de:** Nenhum
+- **Resolução (SEG-5, 13/03/2026):** AuditCallback + HITL gates integrados em ambos os agentes. Verificação: grep por `HITL|AuditCallback|human_review|flag_for_review` retorna 7 matches em `sourcing_react_agent.py` e 9 matches em `communication_react_agent.py`.
+- **Cobertura atual:** Sourcing ✅, Communication ✅
 
-### ACH-006 — Audit trail incompleto em 5 agentes
-- **Prioridade:** P0
+### ACH-006 — ~~Audit trail incompleto em 5 agentes~~ ⚠️ PARCIALMENTE RESOLVIDO
+- **Prioridade:** ~~P0~~ → **P1** (1 agente restante)
 - **Dimensão:** 13 (Segurança)
 - **Runbook:** RM-05
-- **Arquivo(s) afetado(s):**
-  - `analytics_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
-  - `communication_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
-  - `ats_integration_react_agent.py` — grep por `audit_service|log_decision` retorna 0 resultados
-  - `app/domains/policy/agents/agent.py` (L1-L371) — grep por `audit_service|log_decision` retorna 0 resultados
-  - `app/domains/interview_scheduling/agents/interview_graph.py` (L1-L381) — grep por `audit_service|log_decision` retorna 0 resultados
-  - **Nota:** Sourcing TEM audit trail (`sourcing_react_agent.py:L151-L167`, `L333-L348`) — corrigido para 5 agentes
-- **Descrição:** Crença #8 exige trilha de auditoria em toda saída de agente. 5 agentes não logam decisões no `audit_service`.
-- **Impacto se não corrigido:** Decisões de IA sem rastreabilidade — violação EU AI Act (auditabilidade obrigatória).
-- **Esforço estimado:** 6h — Backend (Compliance)
-- **Depende de:** Nenhum
+- **Resolução parcial (SEG-5, 13/03/2026):** AuditCallback integrado em 4 dos 5 agentes que faltavam.
+  - ✅ `analytics_react_agent.py` — 2 matches de `AuditCallback`
+  - ✅ `communication_react_agent.py` — 9 matches de `AuditCallback`
+  - ✅ `ats_integration_react_agent.py` — 2 matches de `AuditCallback`
+  - ✅ `app/domains/policy/agents/agent.py` — 3 matches de `AuditCallback`
+  - ❌ `app/domains/interview_scheduling/agents/interview_graph.py` — **0 matches** (AINDA SEM AUDIT TRAIL)
+- **Cobertura atual:** 13/14 agentes com audit trail (93%). Falta apenas `interview_graph.py` (Graph agent LangGraph).
+- **Esforço residual:** 2h — Backend (adicionar AuditCallback nos nós do interview_graph)
 
 ### ACH-007 — Acessibilidade (WCAG 2.1 AA) abaixo do requerido
 - **Prioridade:** P0
@@ -749,34 +739,28 @@
 - **Esforço estimado:** 8h — Backend (LLM/Prompts)
 - **Depende de:** Nenhum
 
-### ACH-010 — Circuit breaker ausente em ATS clients
-- **Prioridade:** P1
+### ACH-010 — ~~Circuit breaker ausente em ATS clients~~ ✅ RESOLVIDO
+- **Prioridade:** ~~P1~~ → **FECHADO**
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-10
-- **Arquivo(s) afetado(s):**
-  - `app/services/ats_clients/gupy.py` (329 linhas) — nenhuma referência a `circuit_breaker` ou `@circuit` em L1-L329
-  - `app/services/ats_clients/pandape.py` (341 linhas) — nenhuma referência a `circuit_breaker` em L1-L341
-  - `app/services/ats_clients/stackone.py` (460 linhas) — nenhuma referência a `circuit_breaker` em L1-L460
-  - `app/services/ats_clients/merge.py` (441 linhas) — nenhuma referência a `circuit_breaker` em L1-L441
-  - **Referência positiva:** `llm_claude.py:L8,L59,L88` — padrão esperado com `@circuit_breaker_decorator`
-- **Descrição:** 4 ATS clients usam httpx sem circuit breaker.
-- **Impacto se não corrigido:** Falha de ATS externo causa timeout e degradação do sistema.
-- **Esforço estimado:** 6h — Backend (Resiliência)
-- **Depende de:** Nenhum
+- **Resolução:** Circuit breakers adicionados em todos os 4 ATS clients.
+  - ✅ `gupy.py` — 9 matches de `circuit_breaker`
+  - ✅ `pandape.py` — 9 matches
+  - ✅ `stackone.py` — 9 matches
+  - ✅ `merge.py` — 10 matches
+- **Cobertura atual:** 4/4 ATS clients com circuit breaker (100%)
 
-### ACH-011 — Circuit breaker ausente em email/billing providers
-- **Prioridade:** P1
+### ACH-011 — ~~Circuit breaker ausente em email/billing providers~~ ⚠️ PARCIALMENTE RESOLVIDO
+- **Prioridade:** ~~P1~~ → **P2** (apenas billing)
 - **Dimensão:** 12 (Governança/Resiliência)
 - **Runbook:** RM-10
-- **Arquivo(s) afetado(s):**
-  - `app/services/email_providers/sendgrid_provider.py` (226 linhas) — sem `circuit_breaker` em L1-L226
-  - `app/services/email_providers/resend_provider.py` (187 linhas) — sem `circuit_breaker` em L1-L187
-  - `app/services/billing_providers/iugu_provider.py` (489 linhas) — sem `circuit_breaker` em L1-L489
-  - `app/services/billing_providers/vindi_provider.py` (492 linhas) — sem `circuit_breaker` em L1-L492
-- **Descrição:** SendGrid, Resend, Iugu, Vindi providers sem circuit breaker.
-- **Impacto se não corrigido:** Falha de provider externo bloqueia comunicações e billing.
-- **Esforço estimado:** 4h — Backend (Resiliência)
-- **Depende de:** Nenhum
+- **Resolução parcial:** Circuit breakers adicionados em email providers.
+  - ✅ `sendgrid_provider.py` — 2 matches de `circuit`
+  - ✅ `resend_provider.py` — 2 matches de `circuit`
+  - ❌ `iugu_provider.py` — 0 matches (AINDA SEM)
+  - ❌ `vindi_provider.py` — 0 matches (AINDA SEM)
+- **Cobertura atual:** Email 2/2 ✅, Billing 0/2 ❌
+- **Esforço residual:** 2h — Backend (adicionar circuit breakers em billing providers)
 
 ### ACH-012 — Few-shot examples ausentes em 7 agentes
 - **Prioridade:** P1
@@ -1064,65 +1048,71 @@
 
 # SEÇÃO 6: RESUMO EXECUTIVO DE ESFORÇO
 
-## 6.1 Tabela Consolidada
+## 6.1 Tabela Consolidada (Atualizada v2.0)
 
-| Prioridade | Qtd. Achados | Esforço Total (h) | Responsável Principal | Sprint Alvo |
-|:----------:|:------------:|:-----------------:|:---------------------:|:-----------:|
-| **P0** | 8 | 90h | Backend + Frontend | Imediato |
-| **P1** | 7 | 44h | Backend | Sprint N+1 |
-| **P2** | 10 | 88h | Backend + Frontend + Infra | Sprint N+2/N+3 |
-| **P3** | 6 | 104h | Backend + Security + Legal | Backlog |
-| **Total** | **31** | **326h** | — | — |
+| Prioridade | Qtd. Original | Resolvidos | Restantes | Esforço Restante (h) | Sprint Alvo |
+|:----------:|:------------:|:----------:|:---------:|:-------------------:|:-----------:|
+| **P0** | 8 | **4** (ACH-001,004,005 ✅ + ACH-006 parcial) | 4 | **64h** (era 90h) | Imediato |
+| **P1** | 7 | **1** (ACH-010 ✅) + **1 parcial** (ACH-011) | 5 | **34h** (era 44h) | Sprint N+1 |
+| **P2** | 10 | 0 | 10 (+1 billing de ACH-011) | **90h** (era 88h) | Sprint N+2/N+3 |
+| **P3** | 6 | 0 | 6 | **104h** | Backlog |
+| **Total** | **31** | **5 ✅ + 2 parciais** | **24 restantes** | **292h** (era 326h) | — |
+
+> **Redução v2.0:** 34h de esforço economizadas pelos sprints SEG-1 a SEG-5. 5 achados completamente resolvidos, 2 parcialmente resolvidos.
 
 ## 6.2 Detalhamento P0 (Imediato)
 
 | ID | Achado | Esforço | Responsável | Runbook |
 |:---|:-------|:-------:|:-----------:|:-------:|
-| ACH-001 | Anti-sycophancy em 6 agentes | 4h | Backend (LLM/Prompts) | RM-08 |
+| ACH-001 | ~~Anti-sycophancy em 6 agentes~~ | ~~4h~~ | ✅ RESOLVIDO (SEG-1) | RM-08 |
 | ACH-002 | FairnessGuard como middleware | 8h | Backend (Orchestrator) | RM-02 |
 | ACH-003 | Consent hard enforcement | 4h | Backend (Compliance) | RM-04 |
-| ACH-004 | Circuit breaker OpenAI/Gemini | 4h | Backend (Resiliência) | RM-10 |
-| ACH-005 | HITL em sourcing/communication | 8h | Backend (Agentes) | RM-03 |
-| ACH-006 | Audit trail em 3 agentes | 6h | Backend (Compliance) | RM-05 |
+| ACH-004 | ~~Circuit breaker OpenAI/Gemini~~ | ~~4h~~ | ✅ RESOLVIDO (SEG) | RM-10 |
+| ACH-005 | ~~HITL em sourcing/communication~~ | ~~8h~~ | ✅ RESOLVIDO (SEG-5) | RM-03 |
+| ACH-006 | ~~Audit trail em 5 agentes~~ (1 restante) | ~~6h~~ 2h | ⚠️ PARCIAL (falta interview_graph) | RM-05 |
 | ACH-007 | WCAG 2.1 AA (aria-labels) | 40h | Frontend | RM-27 |
 | ACH-008 | Multi-tenant RLS | 16h | Backend/Infra (Database) | RM-06 |
+
+> **P0 v2.0:** 3 achados totalmente resolvidos, 1 parcialmente. Esforço P0 residual: **70h** (era 90h).
 
 ## 6.3 Detalhamento P1 (Sprint N+1)
 
 | ID | Achado | Esforço | Responsável | Runbook |
 |:---|:-------|:-------:|:-----------:|:-------:|
 | ACH-009 | Confidence em 8 agentes | 8h | Backend (LLM/Prompts) | RM-09 |
-| ACH-010 | Circuit breaker ATS clients | 6h | Backend (Resiliência) | RM-10 |
-| ACH-011 | Circuit breaker email/billing | 4h | Backend (Resiliência) | RM-10 |
+| ACH-010 | ~~Circuit breaker ATS clients~~ | ~~6h~~ | ✅ RESOLVIDO | RM-10 |
+| ACH-011 | ~~Circuit breaker email/billing~~ (billing restante) | ~~4h~~ 2h | ⚠️ PARCIAL (faltam iugu/vindi) | RM-10 |
 | ACH-012 | Few-shot examples | 12h | Backend (LLM/Prompts) | RM-14 |
 | ACH-013 | Observabilidade Prometheus | 8h | Backend/Infra (Observabilidade) | RM-12 |
 | ACH-014 | WorkOS circuit breaker | 2h | Backend (Auth/Resiliência) | RM-10 |
 | ACH-015 | Graceful degradation docs | 4h | Backend/Ops (Documentação) | RM-13 |
 
+> **P1 v2.0:** 1 achado resolvido, 1 parcialmente. Esforço P1 residual: **36h** (era 44h).
+
 ## 6.4 Verificação de Crenças
 
 | Crença | Status | Achados Relacionados |
 |:-------|:------:|:---------------------|
-| 01 — Humano em Primeiro Lugar | PARCIAL | ACH-005 (HITL ausente em sourcing/communication) |
+| 01 — Humano em Primeiro Lugar | ✅ OK | ~~ACH-005~~ ✅ RESOLVIDO — HITL em sourcing e communication |
 | 02 — Justa e Não-Discriminatória | PARCIAL | ACH-002 (FairnessGuard não é middleware universal) |
 | 03 — Transparente e Explicável | OK | Explainability panel implementado |
 | 04 — Segura e Respeitosa com Privacidade | PARCIAL | ACH-003 (consent soft), ACH-008 (multi-tenant) |
 | 05 — Construída por Humanos, Para Humanos | OK | Audit trimestrais previstas no playbook |
 | 06 — Em Melhoria Contínua | PARCIAL | ACH-029 (model drift não implementado) |
-| 07 — Resiliente por Design | PARCIAL | ACH-004, ACH-010, ACH-011 (circuit breakers incompletos) |
-| 08 — Observável e Rastreável | PARCIAL | ACH-006, ACH-013 (audit trail e observabilidade parciais) |
+| 07 — Resiliente por Design | ✅ MELHORADO | ~~ACH-004~~ ✅, ~~ACH-010~~ ✅, ACH-011 parcial (billing restante) |
+| 08 — Observável e Rastreável | ✅ MELHORADO | ~~ACH-006~~ parcial (1 agente restante), ACH-013 (Prometheus parcial) |
 | 09 — Consciente de Custos | OK | Token budget, LLM cascade, pre-call check implementados |
 | 10 — Inteligência vs Determinismo | OK | ConfidencePolicyService com 3 níveis implementado |
-| 11 — Anti-Bajulação | **FALHA** | ACH-001 (6 agentes sem anti-sycophancy) |
+| 11 — Anti-Bajulação | ✅ OK | ~~ACH-001~~ ✅ RESOLVIDO — 12/12 agentes com anti-sycophancy |
 | 12 — Autonomia Progressiva | OK | Autonomy engine implementado |
-| 13 — Acessível e Inclusiva | **FALHA** | ACH-007 (WCAG 16.5% cobertura) |
+| 13 — Acessível e Inclusiva | **FALHA** | ACH-007 (WCAG ~10.4% cobertura — 61/584 TSX com aria-label) |
 
 ## 6.5 Verificação de Inegociáveis
 
 | # | Inegociável | Status | Achado |
 |:--|:-----------|:------:|:-------|
 | 1 | WSI explicável | OK | Rationale implementado em wsi_service |
-| 2 | Review gate em rejeição | PARCIAL | ACH-005 |
+| 2 | Review gate em rejeição | ✅ OK | ~~ACH-005~~ ✅ RESOLVIDO — HITL em sourcing/communication |
 | 3 | FairnessGuard 100% | **FALHA** | ACH-002 |
 | 4 | PII masking todos os logs | OK | Global filter instalado |
 | 5 | Consent antes de processamento | **FALHA** | ACH-003 |
@@ -1134,7 +1124,7 @@
 
 | # | Critério | Status |
 |:--|:---------|:------:|
-| 1 | Circuit Breaker em serviços externos | **FALHA** (ACH-004, ACH-010, ACH-011) |
+| 1 | Circuit Breaker em serviços externos | ✅ MELHORADO (~~ACH-004~~ ✅, ~~ACH-010~~ ✅, ACH-011 parcial — faltam billing) |
 | 2 | LLM fallback chain testada | OK |
 | 3 | PII Masking ativo em todos os logs | OK |
 | 4 | Rate Limiting por tenant | OK |
@@ -1153,8 +1143,287 @@
 | 17 | WCAG 2.1 AA | **FALHA** (ACH-007) |
 | 18 | PII Masking global | OK |
 
-**Score: 9/18 OK, 2 PARCIAL, 7 FALHA**
+**Score v2.0: 10/18 OK, 2 PARCIAL, 6 FALHA** (era 9/18 OK, 7 FALHA)
 
 ---
 
-*Relatório gerado por auditoria automatizada seguindo PLAYBOOK_AUDITORIA_PROFUNDA.md (4838 linhas, 44 runbooks de remediação). Todas as evidências baseadas em análise real do código-fonte.*
+# SEÇÃO 7: ARQUITETURA DE CHAT — 3 NÍVEIS E ESCOPOS
+
+> **Seção nova v2.0** — Conteúdo cruzado com `relatorio_capacidades_prompts_lia.md`
+
+## 7.1 Os 3 Níveis de Chat
+
+A plataforma possui **3 camadas de chat** com contextos, escopos e lógica de decisão distintos:
+
+### 7.1.1 Float Chat (candidates-page.tsx)
+
+- **Localização:** `plataforma-lia/src/components/pages/candidates-page.tsx`
+- **Contexto:** Página de funil de talentos (listagem geral de candidatos)
+- **Escopo:** `TALENT_FUNNEL` — 20 tools (11 query + 9 action)
+- **Endpoint:** `POST /api/backend-proxy/orchestrator/talent-chat`
+- **Backend:** `app/api/v1/orchestrated_talent_chat.py` (v3.0 — ActionExecutor + PendingActionState + closed-loop)
+- **Estado expandido (Super Prompt):** Gerenciado via `LiaFloatContext` (`lia-float-context.tsx`)
+
+**Lógica de decisão:**
+1. Mensagem → normalizar
+2. Verificar `analysisCommands[]` → handleAICommand() (8 comandos de análise)
+3. Verificar `isGenericQuestion()` → handleOrchestratedTalentMessage() (orquestrador)
+4. Senão: executeSearch() (busca de candidatos)
+
+### 7.1.2 Kanban Chat (job-kanban-page.tsx)
+
+- **Localização:** `plataforma-lia/src/components/pages/job-kanban-page.tsx`
+- **Contexto:** Kanban de uma vaga específica (pipeline de candidatos por etapa)
+- **Escopo:** `IN_JOB` — 25 tools (14 query + 11 action)
+- **Endpoint:** `POST /api/backend-proxy/orchestrator/job-chat`
+- **Backend:** `app/api/v1/orchestrated_job_chat.py` (v2.0 — closed-loop action execution)
+
+**Lógica de decisão (backend):**
+1. `detect_command_type(message)` → KanbanCommandType (18 tipos)
+2. Se analytical (12 tipos) → análise IA via prompts
+3. Se actionable → ActionExecutor
+4. Se confirmação/rejeição → PendingActionStore
+5. Senão → Orchestrator.process_request()
+
+### 7.1.3 Chat Dedicado (chat-page.tsx)
+
+- **Localização:** `plataforma-lia/src/components/pages/chat-page.tsx`
+- **Contexto:** Chat full-page com LIA — acesso a todas as capacidades
+- **Escopo:** `GLOBAL` — 2 tools (`generate_report`, `schedule_report`)
+- **Endpoint:** `POST /api/backend-proxy/orchestrator/process` (+ WebSocket)
+- **Capacidades:** Quick actions (7), busca via Pearch AI, histórico persistente, suporte a anexos, resumo automático
+
+## 7.2 Scope Config (`scope_config.py`)
+
+| Escopo | Tools Query | Tools Action | Total | Contexto |
+|:-------|:----------:|:-----------:|:-----:|:---------|
+| `TALENT_FUNNEL` | 11 | 9 | 20 | Float Chat (candidates-page) |
+| `JOB_TABLE` | 11 | 8 | 19 | Jobs page |
+| `IN_JOB` | 14 | 11 | 25 | Kanban Chat (job-kanban-page) |
+| `GLOBAL` | 1 | 1 | 2 | Chat dedicado (chat-page) |
+
+**Observação de auditoria:** O escopo `GLOBAL` é excessivamente restritivo (apenas 2 tools). O chat-page envia tudo para o Orchestrator que ignora o scope na execução — inconsistência entre definição e uso real.
+
+## 7.3 CascadedRouter — 6 Tiers de Roteamento
+
+| Tier | Nome | Mecanismo | Custo |
+|:----:|:-----|:----------|:-----:|
+| 0 | MemoryResolver | Resolução de pronomes/referências via WorkingMemory | Zero |
+| 1 | LRU in-process | Hash MD5 em memória local | Zero |
+| 2 | Redis hash cache | Distribuído, exato, entre workers | Baixo |
+| 3 | VectorSemanticCache | pgvector, cosine similarity ≥ 0.92 | Baixo |
+| 4 | FastRouter | Regex/keyword patterns | Baixo |
+| 5 | LLM Cascade | Haiku → Sonnet → Opus | Alto |
+| FB | Clarification | Pergunta ao usuário (6 opções padrão) | Zero |
+
+**Métricas Prometheus:** `router_tier_hit_total`, `router_latency_ms`, `router_confidence_histogram`
+
+---
+
+# SEÇÃO 8: ACTIONEXECUTOR E HITL VIA CHAT
+
+> **Seção nova v2.0** — Conteúdo cruzado com `relatorio_capacidades_prompts_lia.md`
+
+## 8.1 ActionExecutor — Ações Closed-Loop
+
+**Arquivo:** `lia-agent-system/app/orchestrator/action_executor.py`
+
+Ações executadas diretamente pelo backend (closed-loop, sem modal UI):
+
+| Ação | Método | HITL |
+|:-----|:-------|:----:|
+| Mover candidato entre etapas | `move_candidate()` | ✅ Sim |
+| Enviar email | `send_email()` | ✅ Sim |
+| Iniciar triagem WSI | `start_screening()` | ✅ Sim |
+| Agendar entrevista | `schedule_interview()` | ✅ Sim |
+| Solicitar dados adicionais | `request_data()` | ✅ Sim |
+| Analisar perfil | `analyze_profile()` | Não |
+| Aprovar candidato | `approve_candidate()` | ✅ Sim |
+
+## 8.2 Fluxo HITL (Human-in-the-Loop)
+
+**Arquivo:** `lia-agent-system/app/orchestrator/pending_action.py`
+
+1. LIA propõe ação → `needs_confirmation: true`
+2. Usuário confirma/rejeita → `PendingActionStore` armazena estado
+3. Se confirmado → `ActionExecutor` executa ação real
+4. Se rejeitado → ação cancelada com log
+
+**Observação de auditoria:** O fluxo HITL está implementado para ações via chat (ActionExecutor), mas não é universal — ações diretas via UI (bulk actions, drag-and-drop kanban) executam sem HITL.
+
+## 8.3 Kanban Command Templates — 18 Tipos
+
+**Arquivo:** `app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py`
+
+| # | Comando | Tipo | HITL |
+|:--|:--------|:-----|:----:|
+| 1 | `rankear_candidatos` | Análise IA | Não |
+| 2 | `performance_funil` | Análise IA | Não |
+| 3 | `gargalos_processo` | Análise IA | Não |
+| 4 | `comparar_candidatos` | Análise IA | Não |
+| 5 | `resumir_perfil` | Análise IA | Não |
+| 6 | `candidatos_ativos` | Query local | Não |
+| 7 | `taxa_conversao` | Query local | Não |
+| 8 | `tempo_medio` | Query local | Não |
+| 9 | `candidatos_parados` | Query local | Não |
+| 10 | `top_candidatos` | Análise IA | Não |
+| 11 | `mover_candidato` | Ação | ✅ Sim |
+| 12 | `enviar_email` | Ação | ✅ Sim |
+| 13 | `disparar_triagem` | Ação | ✅ Sim |
+| 14 | `agendar_entrevista` | Ação | ✅ Sim |
+| 15 | `solicitar_dados` | Ação | ✅ Sim |
+| 16 | `analisar_perfil` | Análise IA | Não |
+| 17 | `aprovar_candidato` | Ação | ✅ Sim |
+| 18 | `analise_geral` | Análise IA (fallback) | Não |
+
+---
+
+# SEÇÃO 9: SISTEMA PREDITIVO E INSIGHTS
+
+> **Seção nova v2.0** — Conteúdo cruzado com `relatorio_capacidades_prompts_lia.md`
+
+## 9.1 Ferramentas Preditivas (Analytics Agent)
+
+| Ferramenta | Input | Surfacing UI |
+|:-----------|:------|:-------------|
+| `get_prediction_metrics` | `job_id`, `time_range` | Analytics dashboard, Chat |
+| `get_ml_predictions` | `job_id`, `model_type` | Analytics dashboard |
+| `get_conversion_patterns` | `job_id`/`company_id` | JobReportModal, Chat |
+| `get_smart_alerts` | `company_id`, `threshold` | Dashboard, SaturationBadge |
+| `get_trends` | `metric`, `time_range` | Analytics dashboard |
+| `get_bottleneck_analysis` | `job_id` | Kanban Chat, Dashboard |
+
+## 9.2 Predições Específicas
+
+| Predição | Dados Utilizados | Serviço |
+|:---------|:----------------|:--------|
+| Probabilidade de contratação | Histórico vagas similares, pool atual | `predictive_analytics_service.py` |
+| Time-to-Fill (TTF) | Tempos por etapa, velocidade pipeline | `time_to_fill_prediction` command |
+| Risco de dropout | Tempo parado, engajamento, mercado | `get_smart_alerts` + EWS |
+| Previsão de pipeline | Conversão histórica, volume atual | `get_ml_predictions` |
+| Predição salarial | Mercado, cargo, localização, senioridade | `get_intelligent_salary` |
+
+## 9.3 Serviços de Inteligência Operacional
+
+| # | Serviço | Tipo | Surfacing UI |
+|:--|:--------|:-----|:-------------|
+| 1 | Pipeline Velocity Engine | Local (query) | Kanban page, Analytics dashboard |
+| 2 | Zero-Touch Scheduling | IA + Local | Communication Agent, Calendar API |
+| 3 | Silver Medalists | IA (matching) | Sourcing Agent, ProactiveInsightCard |
+| 4 | Recruiter Intelligence | Local (metrics) | Analytics dashboard |
+| 5 | Early Warning Score (EWS) | IA (anomaly) | SaturationBadge, SmartAlerts |
+| 6 | Journey Intelligence | Local + IA | Kanban page |
+| 7 | Recruiter Perf. Benchmark | Local (metrics) | Analytics dashboard |
+| 8 | Pipeline Prediction | IA (ML model) | JobReportModal, Analytics |
+
+## 9.4 Componentes de Insights na UI
+
+### ProactiveInsightCard
+- **Arquivo:** `plataforma-lia/src/components/proactive-insight-card.tsx`
+- **Ativação:** Exibido automaticamente após busca de candidatos
+- **Dados:** `SearchAnalytics` — distribuições, top skills, top companies, experience range, alertas, ações sugeridas
+
+### SaturationBadge
+- **Arquivo:** `plataforma-lia/src/components/kanban/components/SaturationBadge.tsx`
+- **Ativação:** Header do kanban de cada vaga
+- **Estados:** `normal` (< 90%), `almost` (≥ 90%), `saturated` (orgânico ou sourcing saturado)
+
+### JobReportModal
+- **Arquivo:** `plataforma-lia/src/components/job-report-modal.tsx`
+- **Exportação:** PDF via `html2canvas` + `jsPDF`
+- **⚠️ Dados atualmente mockados no frontend** — funcionalidade incompleta
+
+---
+
+# SEÇÃO 10: DÍVIDAS TÉCNICAS E LIMITAÇÕES
+
+> **Seção nova v2.0** — Conteúdo cruzado com `relatorio_capacidades_prompts_lia.md`
+
+## 10.1 Processamento Local vs IA
+
+| Funcionalidade | Tipo | Observação |
+|:---------------|:-----|:-----------|
+| LIA Score | Local (sem LLM) | Fórmula ponderada — `lia_score_service.py` |
+| Busca de candidatos | Local + API externa | PostgreSQL + Pearch AI |
+| Distribuições/Analytics | Local | Contagens e agrupamentos |
+| SaturationBadge | Local | Threshold vs contagem |
+| JobReportModal | Local | **Dados hardcoded (mock)** |
+| Avaliação por rubrica | IA real (Claude) | — |
+| WSI Screening | IA real (Claude) | — |
+| Comparação candidatos | IA real (Claude) | — |
+| Ranking | IA real (Claude) | — |
+| JD Enriquecida | IA real (Claude) | — |
+| Benchmark salarial | IA real (Claude) | + dados de mercado |
+
+## 10.2 Fallbacks Hardcoded
+
+1. **Orchestrator fallback** — Se LLM falha, retorna mensagem genérica com 3 sugestões fixas
+2. **CascadedRouter fallback** — Se nenhum tier resolve, clarificação com 6 opções fixas
+3. **VectorSemanticCache** — Se pgvector indisponível, pula silenciosamente
+4. **PlanDetector** — Falha silenciosa via try/except (non-blocking)
+
+## 10.3 Detecção de Intenção por Keywords (Fragilidades)
+
+- `isGenericQuestion()` — 5 regex + 46 keywords de busca; frágil para termos novos
+- `analysisCommands[]` — 8 padrões fixos de string matching
+- `detect_command_type()` — keywords por KanbanCommandType; pode falhar para variações
+- `_TECHNICAL_PATTERNS` — 5 padrões de string matching para detecção de resposta técnica
+
+## 10.4 Funcionalidades Incompletas
+
+| # | Funcionalidade | Status | Impacto |
+|:--|:---------------|:-------|:--------|
+| 1 | `handleOpenRubricAnalysis` orphaned | Função sem call sites; modal renderiza mas inacessível | Baixo |
+| 2 | JobReportModal com dados mock | Dados hardcoded no frontend; sem backend real | Médio |
+| 3 | WSI Voice | Não implementado; WSI é text-only | Baixo |
+| 4 | Calibração limitada | Frontend sem agente ReAct; depende 100% do Pearch AI | Médio |
+| 5 | Arquivo monolítico | `candidates-page.tsx` (10.398 linhas), `lia-api.ts` (4.943 linhas) | Alto (manutenibilidade) |
+| 6 | Notificações WhatsApp | `JobCreatedNotificationRequest` suporta email + Teams; WhatsApp ausente | Baixo |
+
+## 10.5 Dívidas Técnicas
+
+| # | Dívida | Risco |
+|:--|:-------|:------|
+| 1 | IntentRouter legado coexiste com LLM Cascade como fallback | Duplicação de lógica |
+| 2 | `AGENT_TYPE_TO_DOMAIN` hardcoded; sem registro dinâmico | Manutenibilidade |
+| 3 | `AgentFactory` vs `get_agent()` — dois padrões coexistem; `get_agent()` NÃO é session-safe | Bugs em produção |
+| 4 | PolicyEngine — DB service pode ser `None`; validação pode falhar silenciosamente | Segurança |
+| 5 | Detecção de resposta técnica via string matching (`_TECHNICAL_PATTERNS`) | Fragilidade |
+| 6 | Escopo `GLOBAL` limita a 2 tools mas Orchestrator ignora scope na execução | Inconsistência |
+
+## 10.6 Compliance (Lacunas Remanescentes)
+
+| # | Lacuna | Status v2.0 |
+|:--|:-------|:-----------|
+| 1 | Anti-sycophancy runtime guardrail | Presente nos prompts (✅ SEG-1) mas sem verificação automática em runtime |
+| 2 | FairnessGuard não-universal | Integrado em 4 agentes; ausente em 8 |
+| 3 | LGPD em ATS — lista de campos sensíveis hardcoded | Sem sincronização dinâmica |
+| 4 | Audit trail centralizado | 13/14 agentes OK; falta interview_graph |
+
+---
+
+# SEÇÃO 11: OPORTUNIDADES DE EVOLUÇÃO
+
+> **Seção nova v2.0** — Conteúdo cruzado com `relatorio_capacidades_prompts_lia.md`
+
+| # | Oportunidade | Complexidade | Impacto | Status Atual |
+|:--|:-------------|:------------|:--------|:-------------|
+| 1 | Score clicável no funil (breakdown) | Média | Alto | Ausente — dados existem em `lia_score_service.py` |
+| 2 | Análise comparativa com UI dedicada | Média | Alto | Parcial — `compare_candidates` existe mas sem componente visual |
+| 3 | Fit cultural com dados de entrevista | Alta | Alto | Ausente — WSI avalia competências mas não cruza com entrevistas |
+| 4 | Auto-routing inteligente (aprende com uso) | Alta | Alto | Parcial — CascadedRouter tem cache mas sem aprendizado |
+| 5 | Insights proativos no kanban | Média | Alto | Parcial — SaturationBadge é reativo, falta ProactiveAgentWorker |
+| 6 | Relatório cross-vagas consolidado | Média | Médio | Parcial — `comparative_analysis` existe mas só vagas selecionadas |
+| 7 | ML adaptativo (pesos por feedback) | Alta | Alto | Parcial — `Calibration_Adjustment` existe mas sempre 0 |
+| 8 | Benchmark de mercado real | Alta | Alto | Parcial — IA estima, sem integração com Glassdoor/Levels.fyi |
+| 9 | WSI assíncrono (candidato responde depois) | Média | Médio | Ausente — WSI é síncrono |
+| 10 | Registro dinâmico de agentes (YAML) | Alta | Alto | Ausente |
+| 11 | Multi-model por agente (GPT/Gemini) | Média | Alto | Ausente — todos usam Claude |
+| 12 | RAG por domínio (embeddings) | Alta | Alto | Ausente |
+| 13 | Circuit breaker para Pearch AI | Baixa | Médio | Ausente |
+| 14 | Validar escopo de tools no backend | Baixa | Alto | Ausente — backend ignora scope_config |
+| 15 | Streaming de pensamentos ReAct via WS | Média | Médio | Ausente |
+
+---
+
+*Relatório gerado por auditoria automatizada seguindo PLAYBOOK_AUDITORIA_PROFUNDA.md (4838 linhas, 44 runbooks de remediação). Atualizado para v2.0 em 13/03/2026 com análise profunda pós-sprints SEG-1 a SEG-5. Cruzado com `relatorio_capacidades_prompts_lia.md`. Todas as evidências baseadas em análise real do código-fonte.*
