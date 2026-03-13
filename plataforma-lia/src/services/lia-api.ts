@@ -804,7 +804,7 @@ class LIAApiClient {
     return response.json()
   }
 
-  async listJobVacancies(status?: string, skip: number = 0, limit: number = 50): Promise<JobVacancyListResponse> {
+  async listJobVacancies(status?: string, skip: number = 0, limit: number = 500): Promise<JobVacancyListResponse> {
     const params = new URLSearchParams()
     if (status) params.set('status', status)
     params.set('skip', String(skip))

@@ -1887,7 +1887,7 @@ async def list_job_vacancies(
     status: Optional[str] = None,
     visibility: Optional[str] = None,
     skip: int = 0,
-    limit: int = 50,
+    limit: int = 500,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
