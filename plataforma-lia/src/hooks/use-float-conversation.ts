@@ -72,11 +72,17 @@ interface UseFloatConversationResult {
   setConversationId: (id: string | null) => void
 }
 
-export function useFloatConversation(initialConversationId: string | null): UseFloatConversationResult {
+export function useFloatConversation(
+  initialConversationId: string | null,
+  externalSetMessages?: React.Dispatch<React.SetStateAction<FloatMessage[]>>,
+): UseFloatConversationResult {
   const [conversationId, setConversationId] = useState<string | null>(initialConversationId)
-  const [messages, setMessages] = useState<FloatMessage[]>([])
+  const [internalMessages, setInternalMessages] = useState<FloatMessage[]>([])
   const [isCreating, setIsCreating] = useState(false)
   const [isFetchingHistory, setIsFetchingHistory] = useState(false)
+
+  const messages = internalMessages
+  const setMessages = externalSetMessages ?? setInternalMessages
 
   const initConversation = useCallback(async (firstMessage: string): Promise<string | null> => {
     setIsCreating(true)
@@ -124,11 +130,11 @@ export function useFloatConversation(initialConversationId: string | null): UseF
     } finally {
       setIsFetchingHistory(false)
     }
-  }, [])
+  }, [setMessages])
 
   const addMessage = useCallback((msg: FloatMessage) => {
     setMessages(prev => [...prev, msg])
-  }, [])
+  }, [setMessages])
 
   return {
     conversationId,

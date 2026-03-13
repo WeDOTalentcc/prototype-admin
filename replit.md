@@ -44,6 +44,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 -   **BiasAuditService + API**: Calculates adverse impact using the Four-Fifths Rule across demographic dimensions for specific jobs, with API endpoints for reporting.
 -   **Proactive Predictive Briefing**: When entering a job, LIA proactively presents a briefing with pipeline stats, candidate alerts, and ML predictions (time-to-fill, salary range) instead of a separate MLInsightsCard widget. All AI interaction flows through LIA chat.
 -   **Polling Optimization**: Frontend polling intervals reduced to prevent 429 cascading — ai-suggestions 60s, notifications 60s, setup-progress 120s.
+-   **Super Prompt Flutuante (LiaSuperPrompt)**: Expanding the mini chat opens a ~95% viewport overlay instead of redirecting to `/chat`. Features tabs (Conversa/Centro de Controle), dynamic contextual suggestions (reads from `localStorage` key `lia-recruiter-context` with fallback to static suggestions), inline vs redirect action logic, and minimize/close controls. State managed via `LiaFloatContext` with `isExpanded`/`expand()`/`collapse()`/`closeAll()`. Component: `LiaSuperPrompt.tsx`, hook: `useDynamicSuggestions.ts`.
 
 # External Dependencies
 -   Anthropic (Claude API)

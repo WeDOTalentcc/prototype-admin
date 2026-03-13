@@ -34,7 +34,11 @@ import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
 const MAX_INPUT_CHARS = 2000
 
 export function LiaChatPanel() {
-  const { isOpen, conversationId: ctxConvId, close, openSplitView } = useLiaFloat()
+  const {
+    isOpen, conversationId: ctxConvId, close, expand, openSplitView,
+    sharedMessages, addSharedMessage, setSharedMessages,
+    sharedConversationId, setSharedConversationId,
+  } = useLiaFloat()
   const { result: navIntent, detect: detectIntent, clear: clearIntent } = useNavigationIntent()
   const { detect: detectAction } = useActionIntent()
   const currentScope = resolveScopeFromPathname(typeof window !== 'undefined' ? window.location.pathname : '')
@@ -42,16 +46,20 @@ export function LiaChatPanel() {
   const [actionLabel, setActionLabel] = useState<string | null>(null)
 
   const {
-    conversationId,
-    messages,
+    conversationId: localConvId,
     isCreating,
     isFetchingHistory,
     initConversation,
     loadHistory,
-    addMessage,
-    setMessages,
-    setConversationId,
-  } = useFloatConversation(ctxConvId)
+  } = useFloatConversation(ctxConvId, setSharedMessages)
+
+  const conversationId = sharedConversationId ?? localConvId
+  const messages = sharedMessages
+  const addMessage = addSharedMessage
+  const setMessages = setSharedMessages
+  const setConversationId = useCallback((id: string | null) => {
+    setSharedConversationId(id)
+  }, [setSharedConversationId])
 
   const [inputText, setInputText] = useState("")
   const [showHistory, setShowHistory] = useState(false)
@@ -99,7 +107,7 @@ export function LiaChatPanel() {
   // ── Sincronização de estado ────────────────────────────────────────────────
 
   useEffect(() => {
-    if (ctxConvId !== conversationId) {
+    if (ctxConvId && ctxConvId !== conversationId) {
       setConversationId(ctxConvId)
       setMessages([])
       setActiveActionType(null)
@@ -162,6 +170,7 @@ export function LiaChatPanel() {
         })
         return
       }
+      setSharedConversationId(convId)
       // Reconecta WebSocket com o sessionId real
       wsConnect()
     }
@@ -174,7 +183,7 @@ export function LiaChatPanel() {
   }, [
     inputText, conversationId, isCreating, isStreaming,
     addMessage, initConversation, detectAction, detectIntent,
-    openSplitView, wsSend, wsConnect,
+    openSplitView, wsSend, wsConnect, setSharedConversationId, currentScope,
   ])
 
   const handleKeyDown = useCallback(
@@ -188,11 +197,8 @@ export function LiaChatPanel() {
   )
 
   const handleExpand = useCallback(() => {
-    close()
-    window.location.href = conversationId
-      ? `/chat?conversationId=${conversationId}`
-      : "/chat"
-  }, [conversationId, close])
+    expand()
+  }, [expand])
 
   const handleNewChat = useCallback(() => {
     wsDisconnect()

@@ -10,6 +10,7 @@ import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
 import { LiaChatButton } from "@/components/lia-float/LiaChatButton"
 import { LiaChatPanel } from "@/components/lia-float/LiaChatPanel"
+import { LiaSuperPrompt } from "@/components/lia-float/LiaSuperPrompt"
 
 
 const inter = Inter({
@@ -63,6 +64,7 @@ export default function RootLayout({
                 <SonnerToaster position="top-right" />
                 <LiaChatPanel />
                 <LiaChatButton />
+                <LiaSuperPrompt />
               </ErrorBoundary>
             </LiaFloatProvider>
           </JWTAuthProvider>
