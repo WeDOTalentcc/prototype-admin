@@ -1,7 +1,7 @@
 "use client"
 
 import { 
-  Users, Briefcase, List, Mail, Brain, X, Star, 
+  Users, Briefcase, List, Mail, X, Star, 
   ArrowRight, FileText, XCircle,
   Fingerprint, Share2
 } from "lucide-react"
@@ -17,7 +17,6 @@ export type BulkActionId =
   | 'send_message'
   | 'wsi_screening'
   | 'favorites'
-  | 'lia_analysis'
   | 'move_stage'
   | 'request_data'
   | 'reject'
@@ -81,12 +80,6 @@ const BULK_ACTIONS: BulkAction[] = [
     id: 'favorites',
     label: 'Favoritos',
     icon: <Star className="w-3.5 h-3.5 text-amber-500" />,
-    contexts: ['funnel', 'vacancy'],
-  },
-  {
-    id: 'lia_analysis',
-    label: 'Análise LIA',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
     contexts: ['funnel', 'vacancy'],
   },
   {

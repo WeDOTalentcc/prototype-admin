@@ -16,7 +16,6 @@ import { TriagemDetailsModal } from "@/components/triagem-details-modal"
 import { JobReportModal } from "@/components/job-report-modal"
 import { SendEmailModal } from "@/components/email-templates/send-email-modal"
 import { UnifiedCommunicationModal, type CommunicationType } from "@/components/modals/unified-communication-modal"
-import { ContextualActionsBanner } from "@/components/contextual-actions-banner"
 import { AddToListModal } from "@/components/modals/add-to-list-modal"
 import { WSITextScreeningModal } from "@/components/wsi/wsi-text-screening-modal"
 import { WSITriagemInviteModal } from "@/components/wsi/wsi-triagem-invite-modal"
@@ -832,12 +831,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         if (selectedForWSI.length > 0) {
           setWsiInviteCandidate(selectedForWSI[0])
           setShowWSIInviteModal(true)
-        }
-        break
-      case 'lia_analysis':
-        const selectedForAnalysis = allTableCandidates.filter(c => selectedCandidates.has(c.id))
-        if (selectedForAnalysis.length > 0) {
-          handleOpenAnalysis(selectedForAnalysis[0])
         }
         break
       case 'share_search':
