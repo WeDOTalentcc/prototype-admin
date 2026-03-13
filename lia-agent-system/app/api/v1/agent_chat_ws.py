@@ -29,7 +29,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
 
 from app.api.v1.ws_manager import ws_manager
 from app.core.config import settings
@@ -528,3 +529,91 @@ async def agent_chat_ws(
             await rabbitmq_consumer.unsubscribe_session(session_id)
         except Exception:
             pass
+
+
+class HTTPChatRequest(BaseModel):
+    message: str
+    domain: str = ""
+    session_id: str = ""
+    context: Dict[str, Any] = {}
+
+    class Config:
+        from_attributes = True
+
+
+class HTTPChatResponse(BaseModel):
+    content: str
+    confidence: float = 0.0
+    domain: str = ""
+    actions: list = []
+    error: Optional[str] = None
+
+
+@router.post("/chat/message", response_model=HTTPChatResponse)
+async def http_chat_message(req: HTTPChatRequest):
+    """
+    HTTP fallback for agent chat when WebSocket is unavailable.
+    Same logic as WS handler but synchronous request/response.
+    """
+    content = req.message.strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+
+    session_id = req.session_id or str(uuid4())
+    active_domain = req.domain or "recruiter_assistant"
+    context = req.context or {}
+    company_id = context.get("company_id", "")
+    user_id = context.get("user_id", "anonymous")
+
+    _inj_result = _injection_guard.check(content)
+    if _inj_result.risk_level == "high":
+        return HTTPChatResponse(
+            content="Mensagem bloqueada por segurança. Por favor, reformule sua solicitação.",
+            error="prompt_injection_blocked",
+        )
+
+    if active_domain in ("auto", "recruiter_assistant", ""):
+        try:
+            from app.orchestrator.cascaded_router import CascadedRouter
+            _router = CascadedRouter()
+            route = await _router.route(
+                message=content, context=context, session_id=session_id,
+            )
+            if not route.needs_clarification:
+                active_domain = route.domain_id
+        except Exception:
+            pass
+
+    agent = _get_agent(active_domain)
+    if agent is None:
+        return HTTPChatResponse(
+            content=f"Agente '{active_domain}' indisponível.",
+            error="agent_unavailable",
+        )
+
+    agent_input = _build_agent_input(
+        content=content, context=context, session_id=session_id,
+        company_id=company_id, user_id=user_id, conversation_history=[],
+    )
+
+    try:
+        output = await asyncio.wait_for(
+            agent.process(agent_input), timeout=_AGENT_TIMEOUT,
+        )
+        return HTTPChatResponse(
+            content=output.message or "",
+            confidence=output.confidence,
+            domain=active_domain,
+            actions=[a.dict() for a in (output.actions or [])],
+        )
+    except asyncio.TimeoutError:
+        return HTTPChatResponse(
+            content="Tempo limite de processamento excedido. Tente novamente.",
+            error="timeout",
+        )
+    except Exception as exc:
+        logger.error("[HTTPChat] Erro: %s", exc, exc_info=True)
+        return HTTPChatResponse(
+            content="Erro interno ao processar sua mensagem.",
+            error="internal_error",
+        )

@@ -337,24 +337,11 @@ export function LiaChatPanel() {
         </div>
       )}
 
-      {/* WebSocket status banner — reconectando ou erro permanente */}
-      {(isReconnecting || wsError) && (
-        <div className={cn(
-          "px-4 py-1.5 border-b flex-shrink-0",
-          isReconnecting
-            ? "bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900"
-            : "bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900"
-        )}>
-          <p className={cn(
-            "text-[11px]",
-            isReconnecting
-              ? "text-amber-700 dark:text-amber-400"
-              : "text-red-600 dark:text-red-400"
-          )} style={{ fontFamily: "Open Sans, sans-serif" }}>
-            {isReconnecting
-              ? `Reconectando… (tentativa ${reconnectAttempt}/3)`
-              : "Conexão perdida. Recarregue a página ou abra um novo chat."
-            }
+      {/* WebSocket status banner — only show during reconnection, not on permanent WS failure (HTTP fallback available) */}
+      {isReconnecting && (
+        <div className="px-4 py-1.5 border-b flex-shrink-0 bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900">
+          <p className="text-[11px] text-amber-700 dark:text-amber-400" style={{ fontFamily: "Open Sans, sans-serif" }}>
+            {`Reconectando… (tentativa ${reconnectAttempt}/3)`}
           </p>
         </div>
       )}

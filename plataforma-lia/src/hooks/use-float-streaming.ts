@@ -99,11 +99,29 @@ export function useFloatStreaming(
     clearTokens,
   } = useAgentStreaming(sessionId, {}, handleEvent)
 
-  const sendMessage = useCallback((content: string, domain = '', scope?: string) => {
+  const sendMessage = useCallback(async (content: string, domain = '', scope?: string) => {
     clearTokens()
     const context = scope ? { scope } : {}
-    wsSend(content, context, domain)
-  }, [wsSend, clearTokens])
+
+    if (isConnected) {
+      wsSend(content, context, domain)
+      return
+    }
+
+    try {
+      const res = await fetch('/api/backend-proxy/chat/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: content, domain, session_id: sessionId, context }),
+      })
+      const data = await res.json()
+      if (data.content) {
+        onCompleteRef.current(data.content)
+      }
+    } catch {
+      onCompleteRef.current('Erro ao conectar com a LIA. Tente novamente.')
+    }
+  }, [wsSend, clearTokens, isConnected, sessionId])
 
   const sendApproval = useCallback((approved: boolean) => {
     const pending = hitlRef.current
