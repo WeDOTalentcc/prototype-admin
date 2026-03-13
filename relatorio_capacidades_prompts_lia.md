@@ -99,7 +99,7 @@ A plataforma LIA possui **3 camadas de chat** distintas, cada uma com contexto, 
 | `TALENT_FUNNEL`  | `"talent_funnel"`, `"candidates"`         |
 | `JOB_TABLE`      | `"job_table"`, `"jobs"`, `"vacancies"`    |
 | `IN_JOB`         | `"in_job"`, `"pipeline"`                  |
-| `GLOBAL`         | `"global"` (default, sem restrição)       |
+| `GLOBAL`         | `"global"` (default; ferramentas: `generate_report`, `schedule_report`) |
 
 ---
 
@@ -498,11 +498,13 @@ Esses domínios possuem módulos `__init__.py` com funções `get_*_tools()` que
 
 ---
 
-## 7. Templates de Resposta e Análises
+## 7. Templates de Resposta, Análises e Componentes de UI
 
 ### 7.1 RubricEvaluationModal (Avaliação por Rubrica)
 
 **Arquivo:** `plataforma-lia/src/components/rubric-evaluation-modal.tsx`
+**Ativação:** Via botão na interface de candidatos (Float Chat ou Kanban)
+**Execução:** IA (Claude via agente Pipeline) gera avaliação; frontend renderiza
 
 Estrutura de dados da avaliação:
 
@@ -538,25 +540,180 @@ interface RubricEvaluationData {
 }
 ```
 
-### 7.2 Parecer do Candidato (7 Seções)
+### 7.2 ProactiveInsightCard (Análise Proativa de Busca)
 
-Conforme `MAPA_INTELIGENCIA_LIA_COMPLETO.md`:
-1. Resumo executivo
-2. Avaliação técnica
-3. Avaliação comportamental (WSI)
-4. Análise de experiência
-5. Pontos fortes e de atenção
-6. Recomendação
-7. Score consolidado
+**Arquivo:** `plataforma-lia/src/components/proactive-insight-card.tsx`
+**Ativação:** Exibido automaticamente após busca de candidatos em `candidates-page.tsx`
+**Execução:** Backend gera `SearchAnalytics` via endpoint `/analyze`; frontend renderiza card expansível
 
-### 7.3 Templates de Comunicação
+**Input → Processing → Output:**
+- **Input:** Query de busca + resultados de candidatos
+- **Processing:** Backend analisa distribuições, contatos, skills, empresas, senioridade (processamento local, sem LLM)
+- **Output:** Card com resumo, alertas, ações sugeridas
 
-- Email de feedback (positivo/negativo)
-- Email de agendamento de entrevista
-- WhatsApp de follow-up
-- Notificação de criação de vaga (email + Teams)
+```typescript
+interface SearchAnalytics {
+  summary: {
+    total_candidates: number
+    local_count: number        // Candidatos do banco local
+    global_count: number       // Candidatos do Pearch AI
+    average_lia_score: number  // Score médio de match
+  }
+  contact_quality: {
+    with_valid_phone: number
+    with_valid_email: number
+    with_linkedin: number
+    phone_percentage: number
+    email_percentage: number
+  }
+  distributions: {
+    seniority: Record<string, number>   // Ex: {"Senior": 45, "Pleno": 30}
+    location: Record<string, number>    // Ex: {"São Paulo": 60, "Remoto": 20}
+    work_model: Record<string, number>  // Ex: {"Híbrido": 50, "Remoto": 30}
+  }
+  top_skills: Array<{ skill: string; count: number; percentage: number }>
+  top_companies: Array<{ company: string; count: number }>
+  experience_range: { min: number; max: number; average: number; median: number }
+  alerts: Array<{ type: 'warning' | 'info' | 'success'; message: string }>
+  suggested_actions: Array<{
+    id: string; label: string; icon: string;
+    description: string; action_type: string
+  }>
+  narrative?: string   // Resumo em linguagem natural (gerado por IA quando disponível)
+}
+```
 
-### 7.4 Job Created Notification
+### 7.3 SaturationBadge (Indicador de Saturação de Pipeline)
+
+**Arquivo:** `plataforma-lia/src/components/kanban/components/SaturationBadge.tsx`
+**Ativação:** Exibido automaticamente no header do kanban de cada vaga
+**Execução:** Processamento local (backend calcula thresholds); sem LLM
+**Endpoint:** `GET /api/backend-proxy/job-vacancies/{jobId}/saturation-status/`
+
+**Input → Processing → Output:**
+- **Input:** `jobId`
+- **Processing:** Backend calcula `approved_count / saturation_threshold` por canal (orgânico vs sourcing)
+- **Output:** Badge colorido (verde/amarelo/vermelho) com popover de detalhes
+
+```typescript
+interface SaturationStatus {
+  job_id: string
+  approved_count: number
+  saturation_threshold: number
+  is_saturated: boolean
+  slots_remaining: number
+  recommendation: "continue_screening" | "pause_screening"
+  saturation_percentage: number
+  queued_count: number
+  last_screened_at: string | null
+  saturation_disabled_until: string | null
+  counts_by_channel: { web: number; whatsapp: number; sourcing: number; ats: number }
+  organic: { count: number; threshold: number; is_saturated: boolean; slots_remaining: number; percentage: number }
+  sourcing: { count: number; threshold: number; is_saturated: boolean; slots_remaining: number; percentage: number }
+  unlock_increment: number   // Incremento ao desbloquear threshold
+  unlock_hours: number       // Horas de desativação temporária
+}
+```
+
+**Ações do usuário:**
+- `increase_threshold` → `POST /job-vacancies/{jobId}/unlock-pipeline/` (aumenta threshold)
+- `disable_temporarily` → `POST /job-vacancies/{jobId}/unlock-pipeline/` (desativa por N horas)
+
+### 7.4 JobReportModal (Relatório Completo da Vaga)
+
+**Arquivo:** `plataforma-lia/src/components/job-report-modal.tsx`
+**Ativação:** Via botão em `jobs-page.tsx` e `job-kanban-page.tsx`
+**Execução:** Processamento local (dados mockados no frontend atualmente)
+**Exportação:** PDF via `html2canvas` + `jsPDF`
+
+**Seções selecionáveis (7):**
+1. **Overview** — Informações gerais da vaga
+2. **Funnel** — Métricas de funil (total candidatos, screening, interview, final, hired, taxa conversão, time-to-hire, custo)
+3. **Candidates** — Top candidatos com score, status e fit
+4. **Timeline** — Cronograma com eventos (vaga publicada → triagem → entrevistas → decisão → contratação)
+5. **Costs** — Orçamento (total, gasto, restante, breakdown por categoria)
+6. **Performance** — Channel performance (LinkedIn, Website, LIA Database, Referral) com qualidade e custo
+7. **Recommendations** — Métricas de qualidade (NPS, satisfação candidato/gestor, benchmarks mercado)
+
+### 7.5 Kanban Command Templates (18 Comandos)
+
+**Arquivo:** `lia-agent-system/app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py`
+**Execução:** IA (Claude via agente Kanban); cada comando tem prompt template com formato JSON obrigatório
+
+| # | Comando                 | Descrição                                          | Tipo        |
+|---|-------------------------|----------------------------------------------------|-------------|
+| 1 | `rankear_candidatos`    | Ranking de candidatos por fit com a vaga           | Análise IA  |
+| 2 | `performance_funil`     | Análise de métricas do pipeline                    | Análise IA  |
+| 3 | `gargalos_processo`     | Identificação de gargalos no processo              | Análise IA  |
+| 4 | `comparar_candidatos`   | Comparação detalhada entre candidatos              | Análise IA  |
+| 5 | `resumir_perfil`        | Resumo do perfil do candidato                      | Análise IA  |
+| 6 | `candidatos_ativos`     | Lista de candidatos ativos na vaga                 | Query local |
+| 7 | `taxa_conversao`        | Taxa de conversão por etapa                        | Query local |
+| 8 | `tempo_medio`           | Tempo médio por etapa do pipeline                  | Query local |
+| 9 | `candidatos_parados`    | Candidatos sem movimentação recente                | Query local |
+| 10| `top_candidatos`        | Top candidatos por score/fit                       | Análise IA  |
+| 11| `mover_candidato`       | Mover candidato entre etapas                       | Ação        |
+| 12| `enviar_email`          | Enviar email para candidato                        | Ação        |
+| 13| `disparar_triagem`      | Iniciar triagem WSI                                | Ação        |
+| 14| `agendar_entrevista`    | Agendar entrevista                                 | Ação        |
+| 15| `solicitar_dados`       | Solicitar dados adicionais do candidato            | Ação        |
+| 16| `analisar_perfil`       | Análise aprofundada do perfil                      | Análise IA  |
+| 17| `aprovar_candidato`     | Aprovar candidato para próxima etapa               | Ação        |
+| 18| `analise_geral`         | Análise geral do pipeline (fallback default)       | Análise IA  |
+
+**Exemplo de template (rankear_candidatos):**
+```json
+{
+  "ranking": [
+    {
+      "posicao": 1,
+      "candidato_id": "id",
+      "candidato_nome": "nome",
+      "score_fit": 95,
+      "principais_forcas": ["força 1", "força 2"],
+      "principais_gaps": ["gap 1"],
+      "justificativa": "Breve justificativa do ranking"
+    }
+  ],
+  "insights": "Observações gerais sobre o pool de candidatos",
+  "recomendacao": "Próximos passos recomendados"
+}
+```
+
+### 7.6 Job Analytics Command Templates (8 Comandos)
+
+**Arquivo:** `lia-agent-system/app/domains/analytics/services/job_analytics_prompt_service.py`
+**Execução:** IA (via agentes especializados por comando)
+
+| # | Comando                  | Agente Executor         | Contexto Requerido | Descrição                                |
+|---|--------------------------|-------------------------|--------------------|------------------------------------------|
+| 1 | `funnel_analysis`        | AnalistaFeedbackAgent   | `job_id`           | Análise de funil: candidatos por etapa, taxa de conversão, gargalos |
+| 2 | `comparative_analysis`   | AnalistaFeedbackAgent   | `job_ids`          | Comparação de métricas entre vagas       |
+| 3 | `bottleneck_detection`   | AnalistaFeedbackAgent   | `job_id`           | Detecção de gargalos: tempo de espera, candidatos parados |
+| 4 | `time_to_fill_prediction`| AnalistaFeedbackAgent   | `job_id`           | Previsão de fechamento baseada em dados históricos |
+| 5 | `candidate_quality_score`| AvaliadorWSIAgent       | `job_id`           | Score de qualidade: fit técnico, cultural, diversidade |
+| 6 | `sourcing_effectiveness` | SourcingAgent           | `job_id`           | Efetividade de sourcing: canais, conversão, custo |
+| 7 | `weekly_summary`         | AnalistaFeedbackAgent   | (nenhum)           | Resumo semanal: novos candidatos, movimentações, entrevistas |
+| 8 | `salary_benchmark`       | JobIntakeAgent          | `job_id`           | Benchmark salarial vs mercado            |
+
+### 7.7 Templates de Comunicação
+
+**Arquivo:** `lia-agent-system/app/domains/communication/tools/communication_tools.py`
+**Execução:** IA (Claude via Communication Agent) gera conteúdo; envio via serviço de email/WhatsApp
+
+| Template                    | Canais        | Input                                  | Output                           |
+|-----------------------------|---------------|----------------------------------------|----------------------------------|
+| Email de feedback positivo  | Email         | candidato_id, vaga, decisão           | Email personalizado com próximos passos |
+| Email de feedback negativo  | Email         | candidato_id, vaga, motivo            | Email gentil com encorajamento   |
+| Agendamento de entrevista   | Email, Teams  | candidato_id, data, hora, formato     | Convite com link/local           |
+| Bulk email                  | Email         | lista candidatos, template            | Emails em massa personalizados   |
+| Follow-up WhatsApp          | WhatsApp      | candidato_id, contexto                | Mensagem curta e profissional    |
+| Notificação de vaga criada  | Email, Teams  | vaga completa (ver 7.8)              | Notificação para recrutador/gestor |
+
+### 7.8 Job Created Notification
+
+**Arquivo:** `plataforma-lia/src/services/lia-api.ts`
+**Execução:** Backend local (sem LLM); disparo via serviço de notificação
 
 ```typescript
 interface JobCreatedNotificationRequest {
@@ -576,7 +733,16 @@ interface JobCreatedNotificationRequest {
 }
 ```
 
-### 7.5 Calibration Session (Calibração de Candidatos)
+### 7.9 Calibration Session (Calibração de Candidatos)
+
+**Arquivo:** `plataforma-lia/src/services/lia-api.ts`
+**Execução:** Backend (Pearch AI + scoring local); sem agente ReAct dedicado
+**Endpoints:** `POST /calibration/start`, `POST /calibration/feedback`, `GET /calibration/status`
+
+**Input → Processing → Output:**
+- **Input:** `job_vacancy_id`, `job_description`, `technical_skills[]`, `behavioral_competencies[]`
+- **Processing:** Pearch AI busca candidatos → scoring de match → montagem de perfis calibrados
+- **Output:** Lista de `CalibrationCandidate` com scores, experiências, skills mapeados
 
 ```typescript
 interface CalibrationCandidate {
@@ -593,48 +759,68 @@ interface CalibrationCandidate {
 }
 ```
 
+**Fluxo de feedback:**
+1. Recrutador avalia candidato (aprova/rejeita com `lia_score` e `feedback_reason`)
+2. Sistema atualiza `CalibrationStatusResponse` (`approved_count`, `rejected_count`, `is_complete`)
+3. Candidatos aprovados podem ser adicionados ao pipeline via `addCandidatesToPipeline()`
+
 ---
 
 ## 8. Sistema Preditivo e Analytics
 
 ### 8.1 Job Analytics Prompt Service
 
-**Referência:** `app/services/job_analytics_prompt_service.py`
+**Arquivo:** `lia-agent-system/app/domains/analytics/services/job_analytics_prompt_service.py`
+**Execução:** IA (Claude via agentes especializados) ou processamento local conforme o comando
 
-- Execução de comandos analíticos pré-definidos (`COMMAND_TEMPLATES`)
-- Análise de queries em linguagem natural
-- Retorno estruturado: `command`, `agent_used`, `response`, `data`, `charts`, `suggestions`, `metadata`
+**Fluxo de execução:**
+```
+1. Orchestrator.process_analytics_request(command, context)
+2. Se command ∈ COMMAND_TEMPLATES → execute_command(command, context)
+   Senão → analyze_natural_query(command, context) [NLU via LLM]
+3. Retorno estruturado: { command, agent_used, response, data, charts, suggestions, metadata }
+```
+
+**8 Command Templates** — ver seção 7.6 para lista completa com agentes executores.
 
 ### 8.2 Ferramentas Preditivas (Analytics Agent)
 
-| Ferramenta              | Capacidade                                  |
-|-------------------------|---------------------------------------------|
-| `get_prediction_metrics`| Previsões de hiring baseadas em dados       |
-| `get_ml_predictions`    | Previsões via modelos ML                    |
-| `get_conversion_patterns`| Padrões de conversão no funil              |
-| `get_smart_alerts`      | Alertas inteligentes proativos              |
-| `get_trends`            | Análise de tendências                       |
-| `get_bottleneck_analysis`| Identificação de gargalos no pipeline      |
+**Execução:** Todas via IA (Claude); dados alimentados por queries ao PostgreSQL
+
+| Ferramenta              | Input                      | Processing                              | Output                                    |
+|-------------------------|----------------------------|-----------------------------------------|-------------------------------------------|
+| `get_prediction_metrics`| `job_id`, `time_range`    | Query histórico + modelo de regressão   | Previsões de hiring (prazo, probabilidade)|
+| `get_ml_predictions`    | `job_id`, `model_type`    | Modelo ML treinado em dados da empresa  | Previsões com confidence intervals        |
+| `get_conversion_patterns`| `job_id` ou `company_id` | Análise de padrões no funil             | Taxas de conversão por etapa/fonte        |
+| `get_smart_alerts`      | `company_id`, `threshold` | Detecção de anomalias e tendências      | Lista de alertas com severidade           |
+| `get_trends`            | `metric`, `time_range`    | Séries temporais de métricas            | Tendências com visualização              |
+| `get_bottleneck_analysis`| `job_id`                 | Análise de tempos por etapa             | Gargalos identificados com recomendações |
 
 ### 8.3 Serviços de Inteligência Operacional
 
-Conforme `MAPA_INTELIGENCIA_LIA_COMPLETO.md`:
+**Arquivos:** `lia-agent-system/app/services/predictive_analytics_service.py`, `search_analytics_service.py`, `wizard_analytics_service.py`, `learning_analytics_service.py`
 
-1. **Pipeline Velocity Engine** — velocidade de movimentação no pipeline
-2. **Zero-Touch Scheduling** — agendamento automático de entrevistas
-3. **Silver Medalists** — reaproveitamento de candidatos quase aprovados
-4. **Recruiter Intelligence** — insights sobre performance do recrutador
-5. **Early Warning Score (EWS)** — detecção precoce de problemas
-6. **Journey Intelligence** — análise da jornada do candidato
-7. **Recruiter Performance Benchmark** — benchmark entre recrutadores
-8. **Pipeline Prediction** — previsão de resultados do pipeline
+| # | Serviço                       | Tipo de Execução | Endpoint/Surfacing UI              | Dados Utilizados                     |
+|---|-------------------------------|------------------|------------------------------------|--------------------------------------|
+| 1 | Pipeline Velocity Engine      | Local (query)    | Kanban page, Analytics dashboard   | Timestamps de movimentação por etapa |
+| 2 | Zero-Touch Scheduling         | IA + Local       | Communication Agent, Calendar API  | Disponibilidade, preferências, SLAs  |
+| 3 | Silver Medalists              | IA (matching)    | Sourcing Agent, ProactiveInsightCard| Histórico de candidatos rejeitados   |
+| 4 | Recruiter Intelligence        | Local (metrics)  | Analytics dashboard                | Volume, velocidade, qualidade por recruiter |
+| 5 | Early Warning Score (EWS)     | IA (anomaly det.)| SaturationBadge, SmartAlerts       | Pipeline metrics, tempos, saturação  |
+| 6 | Journey Intelligence          | Local + IA       | Kanban page                        | Touchpoints do candidato no pipeline |
+| 7 | Recruiter Perf. Benchmark     | Local (metrics)  | Analytics dashboard                | KPIs comparativos entre recrutadores |
+| 8 | Pipeline Prediction           | IA (ML model)    | JobReportModal, Analytics          | Dados históricos de vagas similares  |
 
 ### 8.4 Response Cache Service
 
+**Arquivo:** `lia-agent-system/app/services/response_cache_service.py`
+**Execução:** Local (sem LLM)
+
 - Cache de respostas para intents analíticas recorrentes
 - `generate_cache_key()` baseado em intent + contexto + mensagem + company_id
-- Invalidação por entidade: job, candidate, company
-- Invalidação por padrão regex
+- Invalidação por entidade: `invalidate_for_job()`, `invalidate_for_candidate()`, `invalidate_for_company()`
+- Invalidação por padrão regex: `invalidate_by_pattern()`
+- Intents cacheáveis: `pipeline_stats`, `job_status`, `candidate_count`, `stage_distribution`, `funnel_analysis`, `job_insights`, `market_data`, `salary_benchmark`, `analytics`, `recommendations`, `skills_analysis`, `candidate_search`
 
 ---
 
@@ -699,20 +885,27 @@ Conforme `MAPA_INTELIGENCIA_LIA_COMPLETO.md`:
 
 | Arquivo | Descrição |
 |---------|-----------|
-| `plataforma-lia/src/components/pages/candidates-page.tsx` | Float Chat + UnifiedBulkActionsBar |
-| `plataforma-lia/src/components/pages/job-kanban-page.tsx` | Kanban Chat + Pipeline |
+| `plataforma-lia/src/components/pages/candidates-page.tsx` | Float Chat + UnifiedBulkActionsBar + ProactiveInsightCard |
+| `plataforma-lia/src/components/pages/job-kanban-page.tsx` | Kanban Chat + Pipeline + SaturationBadge |
 | `plataforma-lia/src/components/pages/chat-page.tsx` | Chat Full dedicado |
 | `plataforma-lia/src/components/rubric-evaluation-modal.tsx` | Modal de avaliação por rubrica |
+| `plataforma-lia/src/components/proactive-insight-card.tsx` | Card de insights proativos de busca |
+| `plataforma-lia/src/components/kanban/components/SaturationBadge.tsx` | Badge de saturação do pipeline |
+| `plataforma-lia/src/components/job-report-modal.tsx` | Modal de relatório da vaga (PDF) |
 | `plataforma-lia/src/components/ui/unified-bulk-actions-bar.tsx` | Barra de ações bulk (9 ações) |
 | `plataforma-lia/src/services/lia-api.ts` | Client API (4943 linhas) |
+| `plataforma-lia/src/lib/api/kanban-assistant.ts` | API helpers para chats orquestrados |
 | `lia-agent-system/app/orchestrator/orchestrator.py` | Orchestrator principal |
 | `lia-agent-system/app/orchestrator/cascaded_router.py` | CascadedRouter 6 tiers |
 | `lia-agent-system/libs/agents-core/lia_agents_core/react_agent_registry.py` | Registry + AgentFactory |
 | `lia-agent-system/app/domains/*/agents/*react_agent.py` | 11 agentes ReAct |
 | `lia-agent-system/app/domains/*/agents/*system_prompt*.py` | System prompts por domínio |
-| `lia-agent-system/app/domains/recruiter_assistant/prompts/*.py` | Prompts de recruiter assistant |
+| `lia-agent-system/app/domains/recruiter_assistant/prompts/*.py` | Prompts + 18 Kanban Command Templates |
+| `lia-agent-system/app/domains/analytics/services/job_analytics_prompt_service.py` | 8 Analytics Command Templates |
 | `lia-agent-system/app/domains/*/tools/*.py` | Ferramentas por domínio |
 | `lia-agent-system/app/tools/scope_config.py` | Configuração de escopo de tools |
+| `lia-agent-system/app/services/predictive_analytics_service.py` | Serviço preditivo |
+| `lia-agent-system/app/services/search_analytics_service.py` | Analytics de busca |
 | `docs/analises/MAPA_INTELIGENCIA_LIA_COMPLETO.md` | Documento de referência existente |
 
 ---
