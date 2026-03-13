@@ -225,12 +225,33 @@ Apresente alternativas com dados quando necessário.
 - **Ferramentas:** `search_salary_benchmark`, `validate_job_fields`, `get_job_suggestions`, `save_job_draft`, `get_company_config`, `get_intelligent_salary`, `get_intelligent_skills`, `capture_wizard_feedback`, `generate_enriched_jd` (9 tools)
 - **Fluxo:** coleta dados → valida campos → FairnessGuard → gera JD enriquecida → salva rascunho
 
+**Exemplo de interação:**
+```
+Usuário: "Quero criar uma vaga de Engenheiro de Dados Senior"
+→ Roteamento: CascadedRouter → domain "job_management" → WizardReActAgent
+→ Thought: "Preciso coletar mais informações sobre a vaga"
+→ Action: get_company_config() → obtém configurações da empresa
+→ Action: get_intelligent_skills("Engenheiro de Dados Senior") → sugestões de skills
+→ Action: get_intelligent_salary("Engenheiro de Dados", "Senior", "São Paulo") → faixa salarial
+→ Resposta LIA: "Ótimo! Vou criar a vaga de Engenheiro de Dados Senior. Baseado nas vagas similares da sua empresa, sugiro: Skills: Python, Spark, Airflow, SQL, AWS. Faixa salarial: R$ 18.000-25.000. Posso gerar a descrição completa?"
+```
+
 ### 2.2 Pipeline Agent (Triagem de CVs)
 - **Domain:** `pipeline` | **Classe:** `PipelineReActAgent` | **Max iterations:** 5 | **Provider:** Claude
 - **Arquivo:** `app/domains/cv_screening/agents/pipeline_react_agent.py`
 - **Escopo IN (10 capacidades):** consultar dados do candidato, scores WSI, triagem, atualizar dados cadastrais, solicitar coleta de dados, extrair preferências de execução, combinar tarefas, sugerir ações/sub-status, personalizar comunicação, verificar fairness em rejeição
 - **Escopo OUT (7 restrições):** outros candidatos, busca de novos, comparar vagas, adicionar em outra vaga, configurar pipeline, analytics gerais, templates de comunicação
 - **Ferramentas:** `update_candidate_stage`, `add_candidate_to_vacancy`, `reject_candidate`, `shortlist_candidate`, `bulk_update_candidates_stage`, `add_to_list`, `wsi_screening`, `hide_candidate` (8 tools)
+
+**Exemplo de interação:**
+```
+Usuário: "Faça a triagem WSI do candidato João Silva"
+→ Roteamento: CascadedRouter → domain "cv_screening" → PipelineReActAgent
+→ Thought: "Preciso executar triagem WSI para o candidato"
+→ Action: wsi_screening(candidate_id="abc123", job_id="job456")
+→ Observation: {score: 78, competencies: [{name: "Comunicação", level: "Avançado"}, ...]}
+→ Resposta LIA: "Triagem WSI concluída para João Silva. Score geral: 78/100. Destaques: Comunicação (Avançado), Trabalho em equipe (Intermediário). Pontos de atenção: Gestão de conflitos (Básico). Deseja prosseguir com a próxima etapa?"
+```
 
 ### 2.3 Sourcing Agent (Busca de Candidatos)
 - **Domain:** `sourcing` | **Classe:** `SourcingReActAgent` | **Max iterations:** 5 | **Provider:** Claude
@@ -239,12 +260,31 @@ Apresente alternativas com dados quando necessário.
 - **Triggers:** "buscar candidatos", "encontrar perfis", "sourcing"
 - **Ferramentas:** `search_candidates`, `get_candidate_details`, `get_candidate_stats`, `get_candidate_history`, `get_talent_quality`, `get_talent_engagement`, `get_talent_availability`, `get_diversity_metrics`, `get_market_benchmarks` (9 tools)
 
+**Exemplo de interação:**
+```
+Usuário: "Busque desenvolvedores Python senior em São Paulo"
+→ Roteamento: CascadedRouter → domain "sourcing" → SourcingReActAgent
+→ Thought: "Busca por desenvolvedores Python senior em SP"
+→ Action: search_candidates(query="desenvolvedor Python senior", location="São Paulo", limit=20)
+→ Observation: {candidates: [{name: "Ana Costa", score: 92, ...}, ...], total: 47}
+→ Resposta LIA: "Encontrei 47 candidatos para Desenvolvedor Python Senior em São Paulo. Os top 5: 1) Ana Costa (92% fit) - 8 anos exp, 2) Carlos Mendes (89% fit) - 6 anos exp... Deseja ver detalhes de algum candidato?"
+```
+
 ### 2.4 Talent Agent (Assistente de Talentos)
 - **Domain:** `talent` | **Classe:** `TalentReActAgent` | **Max iterations:** 5 | **Provider:** Claude
 - **Arquivo:** `app/domains/recruiter_assistant/agents/talent_react_agent.py`
 - **Prompt:** `app/domains/recruiter_assistant/prompts/talent_assistant_prompts.py`
 - **Escopo:** Assistência no funil de talentos, operações sobre candidatos
 - **FairnessGuard:** Integrado
+
+**Exemplo de interação:**
+```
+Usuário: "Quais candidatos estão parados há mais de 7 dias no funil?"
+→ Roteamento: CascadedRouter → domain "recruiter_assistant" → TalentReActAgent
+→ Thought: "Preciso identificar candidatos inativos"
+→ Action: get_candidate_stats(filter="inactive_7_days")
+→ Resposta LIA: "Encontrei 12 candidatos sem movimentação há mais de 7 dias: 5 na etapa Triagem, 4 em Entrevista Técnica, 3 em Proposta. Recomendo priorizar os 4 em Entrevista Técnica. Deseja que eu envie um lembrete aos entrevistadores?"
+```
 
 ### 2.5 Jobs Management Agent (Portfólio de Vagas)
 - **Domain:** `jobs_management` | **Classe:** `JobsMgmtReActAgent` | **Max iterations:** 5 | **Provider:** Claude
@@ -253,6 +293,13 @@ Apresente alternativas com dados quando necessário.
 - **Escopo:** Gestão do portfólio de vagas (listar, filtrar, analisar status)
 - **FairnessGuard:** Integrado
 
+**Exemplo de interação:**
+```
+Usuário: "Quais vagas estão abertas há mais de 30 dias?"
+→ Roteamento: CascadedRouter → domain "recruiter_assistant" → JobsMgmtReActAgent
+→ Resposta LIA: "Você tem 8 vagas abertas há mais de 30 dias: 1) Dev Backend Senior (45 dias, 23 candidatos), 2) PM Pleno (38 dias, 15 candidatos)... As vagas #1 e #3 têm poucos candidatos qualificados. Sugiro ampliar as fontes de sourcing."
+```
+
 ### 2.6 Kanban Agent (Análise do Pipeline)
 - **Domain:** `kanban` | **Classe:** `KanbanReActAgent` | **Max iterations:** 5 | **Provider:** Claude
 - **Arquivo:** `app/domains/recruiter_assistant/agents/kanban_react_agent.py`
@@ -260,11 +307,33 @@ Apresente alternativas com dados quando necessário.
 - **Escopo:** Análise e operações no kanban; 18 tipos de comando (ver seção 4.2)
 - **FairnessGuard:** Integrado | **GUARDRAIL_TOOLS:** Integrados
 
+**Exemplo de interação:**
+```
+Usuário: "Rankeie os candidatos desta vaga por fit"
+→ Roteamento: detect_command_type() → RANKEAR_CANDIDATOS → KanbanReActAgent
+→ Resposta LIA (JSON formatado):
+{
+  "ranking": [
+    {"posicao": 1, "candidato_nome": "Maria Santos", "score_fit": 95, "principais_forcas": ["10 anos Python", "Liderança técnica"], "principais_gaps": ["Sem experiência com Kafka"], "justificativa": "Perfil altamente alinhado com requisitos técnicos e culturais"},
+    {"posicao": 2, "candidato_nome": "Pedro Lima", "score_fit": 88, ...}
+  ],
+  "insights": "Pool competitivo com 3 candidatos acima de 85% de fit",
+  "recomendacao": "Agendar entrevista técnica com os top 3"
+}
+```
+
 ### 2.7 Policy Agent (Políticas de Contratação)
 - **Domain:** `policy` | **Classe:** `PolicyReActAgent` | **Max iterations:** 5 | **Provider:** Claude
 - **Arquivo:** `app/domains/hiring_policy/agents/policy_react_agent.py`
 - **Prompt:** `app/domains/hiring_policy/agents/policy_system_prompt.py`
 - **Escopo:** CRUD de políticas de contratação, validação de compliance, regras de aprovação
+
+**Exemplo de interação:**
+```
+Usuário: "Qual é a política de aprovação para vagas acima de R$ 20.000?"
+→ Roteamento: CascadedRouter → domain "hiring_policy" → PolicyReActAgent
+→ Resposta LIA: "Para vagas com salário acima de R$ 20.000, a política vigente requer: 1) Aprovação do gestor direto, 2) Aprovação do diretor de área, 3) Validação do RH. Prazo máximo: 5 dias úteis. Deseja criar ou alterar esta política?"
+```
 
 ### 2.8 Automation Agent (Decomposição de Tarefas)
 - **Domain:** `automation` | **Classe:** `AutomationReActAgent` | **Max iterations:** 6 | **Provider:** Claude
@@ -277,11 +346,38 @@ Apresente alternativas com dados quando necessário.
   - Planos de execução com paralelismo
   - Agentes delegáveis: `job_planner`, `sourcing`, `cv_screening`, `interviewer`, `wsi_evaluator`, `scheduling`, `analyst_feedback`
 
+**Exemplo de interação:**
+```
+Usuário: "Preciso preencher a vaga de Tech Lead até sexta-feira"
+→ Roteamento: CascadedRouter → domain "automation" → AutomationReActAgent
+→ Thought: "Preciso decompor em subtarefas com prazo apertado"
+→ Resposta LIA: "Plano de execução para preencher Tech Lead até sexta:
+  1. [PARALELO] Sourcing IA (Pearch) + busca banco interno (hoje)
+  2. [SEQ] Triagem top 10 candidatos (hoje-amanhã)
+  3. [PARALELO] Agendar entrevistas técnicas + enviar teste (amanhã)
+  4. [SEQ] Painel final + proposta (quinta)
+  Agentes envolvidos: Sourcing, Pipeline, Communication, Scheduling
+  Deseja que eu execute este plano?"
+```
+
 ### 2.9 Analytics Agent (KPIs e Previsões)
 - **Domain:** `analytics` | **Classe:** `AnalyticsReActAgent` | **Max iterations:** 6 | **Provider:** Claude
 - **Arquivo:** `app/domains/analytics/agents/analytics_react_agent.py`
 - **Prompt:** `app/domains/analytics/agents/analytics_system_prompt.py`
 - **Ferramentas:** 19 tools (ver seção 6)
+
+**Exemplo de interação:**
+```
+Usuário: "Como está a performance do funil da vaga Dev Backend?"
+→ Roteamento: CascadedRouter → domain "analytics" → AnalyticsReActAgent
+→ Action: get_prediction_metrics(job_id="job789", time_range="30d")
+→ Action: get_conversion_patterns(job_id="job789")
+→ Resposta LIA: "Performance da vaga Dev Backend (últimos 30 dias):
+  - 156 candidatos totais, 89 triados, 34 entrevistados, 12 finalistas, 3 contratados
+  - Taxa de conversão geral: 1.9%
+  - Gargalo: Etapa Entrevista Técnica (tempo médio 8.3 dias vs benchmark 5 dias)
+  - Previsão TTF: mais 15 dias para preencher as 2 vagas restantes"
+```
 
 ### 2.10 Communication Agent (Multi-canal LGPD)
 - **Domain:** `communication` | **Classe:** `CommunicationReActAgent` | **Max iterations:** 6 | **Provider:** Claude
@@ -289,12 +385,37 @@ Apresente alternativas com dados quando necessário.
 - **Canais:** Email, WhatsApp, Teams
 - **Ferramentas:** `send_email`, `send_whatsapp`, `schedule_interview`, `send_bulk_email`, `send_feedback` (5 tools)
 
+**Exemplo de interação:**
+```
+Usuário: "Envie um email de feedback para os 3 candidatos rejeitados na vaga de UX Designer"
+→ Roteamento: CascadedRouter → domain "communication" → CommunicationReActAgent
+→ Thought: "Preciso enviar feedback personalizado para 3 candidatos rejeitados"
+→ Action: send_bulk_email(candidate_ids=["c1","c2","c3"], template="rejection_feedback", job_title="UX Designer")
+→ Resposta LIA: "Emails de feedback enviados para 3 candidatos:
+  - Ana Oliveira (ana@email.com) — Enviado
+  - Bruno Costa (bruno@email.com) — Enviado
+  - Carla Dias (carla@email.com) — Enviado
+  Cada email inclui feedback personalizado sobre pontos fortes e áreas de desenvolvimento."
+```
+
 ### 2.11 ATS Integration Agent (Integração Bidirecional)
 - **Domain:** `ats_integration` | **Classe:** `ATSIntegrationReActAgent` | **Max iterations:** 6 | **Provider:** Claude
 - **Arquivo:** `app/domains/ats_integration/agents/ats_integration_react_agent.py`
 - **Provedores:** Gupy, Pandapé, Merge (multi-ATS), StackOne (multi-ATS internacional)
 - **Fluxos:** Push (WeDOTalent → ATS), Pull (ATS → WeDOTalent)
 - **Princípios:** Multi-tenant obrigatório (`company_id`), LGPD (dados sensíveis NÃO sincronizados), idempotência, auditoria SOX/ISO 27001
+
+**Exemplo de interação:**
+```
+Usuário: "Sincronize os candidatos aprovados da vaga Tech Lead com o Gupy"
+→ Roteamento: CascadedRouter → domain "ats_integration" → ATSIntegrationReActAgent
+→ Thought: "Preciso fazer push dos candidatos aprovados para o Gupy"
+→ Resposta LIA: "Sincronização com Gupy concluída:
+  - 5 candidatos aprovados enviados
+  - 4 sincronizados com sucesso
+  - 1 falha (Carlos Mendes — email duplicado no Gupy, ID: gupy_err_4521)
+  Dados sensíveis (CPF, endereço) NÃO foram sincronizados conforme política LGPD."
+```
 
 ---
 
@@ -372,11 +493,13 @@ Ranking_Score = (
 ### 3.5 Comparação de Candidatos
 
 - **O que faz:** Compara 2+ candidatos lado a lado (fit técnico, cultural, experiência)
-- **Input:** `candidate_ids[]`, `job_context`
+- **Input:** `candidate_ids[]`, `job_context` (requisitos, skills, nível)
 - **Processing:** IA (Claude via Kanban/Analytics Agent) + dados locais (LIA Score, WSI)
-- **Output:** Ranking comparativo com justificativas, forças/gaps por candidato
+- **Output:** Tabela comparativa por dimensão, ranking com justificativas, forças/gaps por candidato, recomendação final
 - **Execução:** IA real (Claude)
-- **Ferramenta:** `compare_candidates` em analytics tools
+- **Ferramenta:** `compare_candidates` em `app/domains/analytics/tools/analytics_query_tools.py`
+- **Endpoint:** `POST /orchestrator/job-chat` com `detect_command_type() → COMPARAR_CANDIDATOS`
+- **Prompt template:** `kanban_assistant_prompts.py` → `COMPARAR_CANDIDATOS` (linha 280)
 
 ### 3.6 Calibração de Candidatos
 
@@ -444,6 +567,44 @@ interface CalibrationCandidate {
 
 **Fallback offline:** Se agente IA falha, `process_analytics_request()` retorna `{"success": false, "error": str(e)}` — sem template offline alternativo.
 
+#### Exemplo completo: `funnel_analysis`
+
+**Input do usuário:** "Analise o funil da vaga Dev Backend Senior"
+
+**Resposta LIA (exemplo real):**
+```markdown
+## Análise do Funil — Dev Backend Senior
+
+### Candidatos por Etapa
+| Etapa               | Candidatos | % do Total |
+|---------------------|-----------|------------|
+| Aplicação           | 156       | 100%       |
+| Triagem Curricular  | 89        | 57%        |
+| Entrevista Técnica  | 34        | 22%        |
+| Entrevista Final    | 12        | 7.7%       |
+| Proposta            | 5         | 3.2%       |
+| Contratado          | 3         | 1.9%       |
+
+### Taxa de Conversão por Etapa
+- Aplicação → Triagem: **57%** (benchmark: 60%)
+- Triagem → Entrevista: **38%** (benchmark: 35%) ✅
+- Entrevista → Final: **35%** (benchmark: 40%) ⚠️
+- Final → Proposta: **42%** (benchmark: 50%) ⚠️
+- Proposta → Contratação: **60%** (benchmark: 70%) ⚠️
+
+### Gargalos Identificados
+1. **Entrevista Técnica** — Tempo médio: 8.3 dias (benchmark: 5 dias)
+2. **Proposta** — Taxa de aceitação abaixo do benchmark
+
+### Recomendações
+- Adicionar mais entrevistadores técnicos para reduzir tempo
+- Revisar competitividade salarial na etapa de proposta
+
+💡 **Sugestões:** Compare com vagas similares | Veja candidatos parados | Analise sourcing
+```
+
+**Fallback offline:** `{"success": false, "error": "Serviço indisponível. Tente novamente em alguns minutos."}`
+
 ### 4.2 Kanban — 18 Command Templates
 
 **Arquivo:** `lia-agent-system/app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py`
@@ -477,6 +638,63 @@ interface CalibrationCandidate {
 
 **Fallback offline:** Templates de análise retornam dados do banco local quando LLM falha. Templates de ação retornam erro com mensagem: "Desculpe, ocorreu um erro ao processar sua requisição."
 
+#### Exemplo completo: `resumir_perfil`
+
+**Input do usuário:** "Me fale sobre a candidata Maria Santos"
+
+**Resposta LIA (JSON formatado como markdown):**
+```json
+{
+  "resumo_executivo": "Maria Santos é uma profissional senior com 8 anos de experiência em desenvolvimento backend, atualmente como Tech Lead na Nubank.",
+  "perfil_profissional": {
+    "cargo_atual": "Tech Lead",
+    "empresa_atual": "Nubank",
+    "experiencia_anos": 8,
+    "formacao": "Ciência da Computação - USP",
+    "principais_skills": ["Python", "Go", "Kubernetes", "AWS", "System Design"],
+    "certificacoes": ["AWS Solutions Architect", "CKA"]
+  },
+  "analise_fit": {
+    "score_fit": 92,
+    "pontos_fortes": ["Experiência sólida em arquitetura distribuída", "Liderança técnica comprovada", "Stack alinhada com requisitos"],
+    "pontos_atencao": ["Sem experiência com Kafka (requisito desejável)", "Pretensão salarial 15% acima da faixa"],
+    "fit_cultural": "Alto — histórico de mentoria e contribuições open source"
+  },
+  "perguntas_entrevista": [
+    "Como você lidou com uma migração de monolito para microsserviços?",
+    "Descreva uma situação de conflito técnico na equipe e como resolveu"
+  ],
+  "proximos_passos": "Recomendo agendar entrevista técnica com o time de arquitetura"
+}
+```
+
+**Fallback offline:** Retorna dados básicos do banco sem análise IA: nome, cargo, empresa, skills cadastradas.
+
+#### Exemplo completo: `mover_candidato` (ação com HITL)
+
+**Input do usuário:** "Mova o João Silva para Entrevista Técnica"
+
+**Resposta LIA (needs_confirmation: true):**
+```
+Entendi! Vou mover o candidato João Silva para a etapa **Entrevista Técnica**.
+
+📋 **Confirmação necessária:**
+- Candidato: João Silva
+- De: Triagem Curricular
+- Para: Entrevista Técnica
+- Vaga: Dev Backend Senior
+
+Confirma esta movimentação?
+```
+
+**Após confirmação do usuário:**
+```
+✅ João Silva movido para Entrevista Técnica com sucesso!
+Próximo passo sugerido: Agendar entrevista técnica com o gestor.
+```
+
+**Fallback offline:** `"Desculpe, não foi possível executar a movimentação. Tente novamente em alguns minutos."`
+
 ### 4.3 Float Chat — Comandos de Análise
 
 **Detecção via `analysisCommands[]` (candidates-page.tsx, linha 5664):**
@@ -492,7 +710,54 @@ interface CalibrationCandidate {
 | "vagas ideais"             | Tipos de vagas adequadas                   |
 | "definir tipo"             | Classificação de tipo de perfil            |
 
-**Fallback offline:** Se IA falha, o Orchestrator retorna: "Olá! Sou a LIA, sua assistente de recrutamento. Recebi sua mensagem sobre '{mensagem[:50]}...' Como posso ajudar você hoje?" com `suggested_prompts: ["Criar uma nova vaga", "Buscar candidatos", "Ver minhas tarefas pendentes"]`
+#### Exemplo completo: "top 5"
+
+**Input do usuário:** "Top 5 candidatos para essa busca"
+
+**Resposta LIA:**
+```markdown
+## Top 5 Candidatos — Busca: Desenvolvedor Python Senior
+
+| # | Candidato        | LIA Score | Experiência | Localização  | Destaque                          |
+|---|------------------|-----------|-------------|--------------|-----------------------------------|
+| 1 | Ana Costa        | 92        | 8 anos      | São Paulo    | Tech Lead na Nubank, AWS cert.    |
+| 2 | Carlos Mendes    | 89        | 6 anos      | Remoto       | Contribuidor Django, speaker      |
+| 3 | Beatriz Lima     | 87        | 7 anos      | São Paulo    | Data Platform no iFood            |
+| 4 | Diego Santos     | 85        | 5 anos      | Campinas     | MLOps + Python, startup exp.      |
+| 5 | Elena Ferreira   | 83        | 9 anos      | Rio de Janeiro| Backend Lead na Stone             |
+
+### Análise do Pool
+- **Score médio:** 87.2 (acima do benchmark de 75)
+- **Disponibilidade:** 3/5 disponíveis para contato imediato
+- **Faixa salarial:** R$ 16.000 - R$ 28.000
+
+💡 Sugestões: Comparar os top 3 | Analisar potencial do #1 | Resumir busca completa
+```
+
+**Fallback offline:** "Olá! Sou a LIA, sua assistente de recrutamento. Recebi sua mensagem sobre 'Top 5 candidatos para essa busca...' Como posso ajudar você hoje?" com `suggested_prompts: ["Criar uma nova vaga", "Buscar candidatos", "Ver minhas tarefas pendentes"]`
+
+#### Exemplo completo: "comparar" (Float)
+
+**Input do usuário:** "Compare Ana Costa e Carlos Mendes"
+
+**Resposta LIA:**
+```markdown
+## Comparação: Ana Costa vs Carlos Mendes
+
+| Dimensão              | Ana Costa (92)        | Carlos Mendes (89)     |
+|-----------------------|-----------------------|------------------------|
+| Experiência           | 8 anos ⭐             | 6 anos                 |
+| Stack técnica         | Python, Go, K8s, AWS  | Python, Django, Docker |
+| Liderança             | Tech Lead (3 anos) ⭐ | IC Senior              |
+| Certificações         | AWS SA, CKA ⭐        | Nenhuma                |
+| Disponibilidade       | 30 dias               | Imediata ⭐            |
+| Pretensão salarial    | R$ 25.000             | R$ 20.000 ⭐           |
+
+### Recomendação
+Ana Costa é mais adequada para a posição devido à experiência em liderança técnica e certificações. Carlos Mendes é uma opção sólida se o budget for mais restrito e houver disponibilidade imediata.
+
+💡 Sugestões: Analisar potencial da Ana | Ver perfil completo do Carlos | Top 5
+```
 
 ---
 
