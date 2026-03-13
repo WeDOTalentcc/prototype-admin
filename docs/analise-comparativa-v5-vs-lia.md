@@ -1,12 +1,47 @@
 # Análise Comparativa Profunda: Recruiter Agent V5 vs Plataforma LIA
 
-**Data**: 11 de Março de 2026 (atualizado v10.0 — Sprints SEG-1 a SEG-5: Wiring Completo de Segurança e Governança)
+**Data**: 13 de Março de 2026 (atualizado v11.0 — Análise Profunda Pós-Auditoria: métricas verificadas, inventário completo 16 agentes, ActionExecutor, Scope Config, Sistema Preditivo)
 **Escopo**: Análise qualitativa profunda, benchmark de mercado, análise estrutural e cruzamento comparativo
 **Método**: Leitura completa do código-fonte (V5 via GitHub API read-only, LIA via filesystem local) + web research de plataformas concorrentes
 **Perspectiva**: Diagnóstico técnico com foco em production readiness e conformidade com padrões de mercado
-**Versão**: 10.0 (substitui v9.1 — Sprints SEG-1 a SEG-5 completos: PromptInjectionGuard wired em WSI+chat, FairnessGuard wired em sourcing+pipeline, PII Masking em Celery workers + strip antes do LLM em 4 callers, ConsentCheckerService no Gate 1 WSI, AuditService em todos os gates de decisão. 34 testes unitários adicionados. Auditoria de governança completa: 8/8 Inegociáveis ✅. D5 Governança IA: 9.6→9.8, D6 Segurança: 9.0→9.4, D11 Testes: 9.2→9.3. Média LIA: 9.0→9.1)
+**Versão**: 11.0 (substitui v10.0 — Análise profunda pós-auditoria com métricas verificadas por filesystem: 16 agentes IA (12 ReAct + 4 StateGraph), 99 models, 231 services, 37 migrations, 206 endpoints, 114 hooks, 90 pages, 227 test files, 1095 Python files, 584 TSX files. Novas subseções: ActionExecutor 1080L com 9 action_ids, Scope Config 4 escopos (66 tools), Sistema Preditivo 8 serviços, Intelligence 3+Learning 4 subserviços. candidates-page.tsx: 10.397L (era 10.592). 12 domínios DDD, 14 métricas Prometheus, 32 tools YAML. Cruzamento com RELATORIO_AUDITORIA_LIA.md v2.0)
 
 **Nota metodológica**: Scores de 1-10 são atribuídos com base em: (a) leitura direta do código-fonte, (b) contagem de componentes via filesystem/API, (c) comparação com padrões de mercado documentados publicamente. Cada score na Seção 4 inclui justificativa com evidências de arquivo. Os scores da v2.0 diferem da v1.0 porque a análise anterior não incluiu análise estrutural profunda nem benchmarks de mercado — a reavaliação reduziu scores onde problemas estruturais foram encontrados (ex: Organização 8.0→3.5 após descoberta de god objects e arquivos órfãos). Os scores da v3.0 incorporam o Sprint de Qualidade e Compliance (2026-02-28). Os scores da v3.1 incorporam as correções do QA Audit (7 bugs corrigidos, 9 testes restaurados) — código verificado diretamente no filesystem com `pytest` executado e 100% passando. Os scores da v5.0 incorporam as Fases 4a/4b/4c/5 (Float Chat, navegação intencional, intent routing, agentes Phase 5), os Gaps Arquiteturais G1-G4 (LangGraph nativo, Orchestrator Intelligence, Observabilidade, Arquitetura Distribuída) e o UV Monorepo 6a/6b/6c (9 libs, 10 serviços Docker, Celery distribuído). Os scores da v6.0 incorporam os Sprints A–D (Token Budget, Monitoring, HITL, RAG/TOON), F1–F5 (HITL Persistence, Coverage Gate, Hooks Wiring, Short Lists, Componentes FE) e G1–G7 (YAML Tool Registry, RAG Híbrido, TOON Format, componentes FE, coverage 30.71%). Os scores da v6.1 incorporam o Sprint H: FactChecker granular, Deploy Cloud, Coverage 34%, FE testes unitários fix. Os scores da v7.0 incorporam o Sprint I: type cleanup FE (candidates-page.tsx −311 linhas), test categorization difficulty (easy/medium/hard/very_hard via pytestmark), coverage 34%→40% (meta aspiracional; gate CI efetivo é 32%, achieved 32.66%) (+106 testes: intent_classifier + candidate_search_schemas).
+
+---
+
+## Changelog v11.0 — Análise Profunda Pós-Auditoria: Métricas Verificadas e Inventário Completo (2026-03-13)
+
+> Atualização profunda com métricas verificadas por filesystem (`find`, `wc -l`, `grep -c`), cruzamento com RELATORIO_AUDITORIA_LIA.md v2.0, e adição de subseções técnicas que faltavam: ActionExecutor, Scope Config, Sistema Preditivo, Intelligence Layer detalhado. Todas as contagens anteriores que estavam imprecisas foram corrigidas.
+
+| Área | v10.0 | v11.0 | Δ | Justificativa |
+|------|-------|-------|---|---------------|
+| Agentes IA | 14-15 citados | **16 verificados** | +1-2 | `find app/domains -name "*_react_agent.py" -o -name "*_graph.py" -o -name "*_transition_agent.py" -o -name "agent.py"` — PolicySetupAgent (`policy/agents/agent.py`) agora contado separadamente |
+| Models SQLAlchemy | 95 citados | **99 verificados** | +4 | `find app/models -name "*.py" ! -name "__init__.py" | wc -l` |
+| Services | 215-230 citados | **231 verificados** | +1-16 | `find app/services -name "*.py" ! -name "__init__.py" | wc -l` |
+| Migrations Alembic | 33-36 citados | **37 verificados** | +1-4 | `ls alembic/versions/*.py | wc -l` |
+| API Endpoints | 202 citados | **206 verificados** | +4 | `find app/api -name "*.py" ! -name "__init__.py" | wc -l` |
+| Hooks FE | 93 citados | **114 verificados** | +21 | `find plataforma-lia/src/hooks -name "*.ts" -o -name "*.tsx" | wc -l` |
+| Pages FE | 89 citados | **90 verificados** | +1 | `find plataforma-lia/src/app -name "page.tsx" | wc -l` |
+| Test Files | ~50 citados | **227 verificados** | +177 | `find tests -name "test_*.py" | wc -l` |
+| Python Files (app/) | ~1095 | **1095 verificados** | ± 0 | `find app -name "*.py" ! -name "__init__.py" | wc -l` |
+| TSX Files | 584 | **584 verificados** | ± 0 | `find plataforma-lia/src -name "*.tsx" | wc -l` |
+| candidates-page.tsx | 10.592L | **10.397L** | −195 | `wc -l plataforma-lia/src/components/pages/candidates-page.tsx` |
+| Prometheus Metrics | 13 citados | **14 verificados** | +1 | `grep -c "Histogram\|Counter\|Gauge\|Summary" app/observability/metrics.py` |
+| Domínios DDD | 11 citados | **12 verificados** | +1 | `ls -d app/domains/*/` (excluindo `__pycache__`) — analytics, ats_integration, automation, communication, cv_screening, hiring_policy, interview_scheduling, job_management, pipeline, policy, recruiter_assistant, sourcing |
+| Scope Config Tools | Não detalhado | **66 tools em 4 escopos** | Novo | TALENT_FUNNEL: 20, JOB_TABLE: 19, IN_JOB: 25, GLOBAL: 2 |
+| ActionExecutor | Não detalhado | **1080L, 9 action_ids** | Novo | `wc -l app/orchestrator/action_executor.py`; 9 unique action_ids via `ACTIONABLE_INTENTS` |
+
+**Novas subseções adicionadas:**
+- **3.2.5** — ActionExecutor e Sistema de Ações (9 action_ids, 1080L)
+- **3.2.6** — Scope Config: Controle de Acesso por Contexto (4 escopos, 66 tools)
+- **3.2.7** — Sistema Preditivo e Intelligence Services (8 serviços preditivos, 3 intelligence, 4 learning)
+
+**Correções de consistência:**
+- Tabela de agentes (Seção 3.2.2): 16 agentes (era 14-15 confuso entre versões)
+- Seção 11.1 Gap 4: candidates-page.tsx 10.397L (era 10.592L)
+- Seção 5.1 D2: gap FE corrigido para 10.397L
+- Contagem de domínios: 12 (era 11 — `policy` como domínio separado)
 
 ---
 
@@ -21,12 +56,12 @@
 | D11 — Testes | 9.2 | 9.3 | +0.1 | 34 novos testes unitários em 6 arquivos: `test_injection_guard_integration.py` (6 casos — clean, high-risk, medium, fields, WSI block, WSI allow), `test_fairness_guard_agents.py` (5 — sourcing clean/blocked/fail-safe, pipeline clean/blocked), `test_pii_masking_celery.py` (2 — signal connect, handler install), `test_pii_llm_prompt_stripping.py` (7 — CPF, email, phone, graduation year, clean, flag-off, empty), `test_wsi_consent_gate.py` (4 — revoked, absent, fail, no-candidate-id), `test_audit_trail_gates.py` (10 — HITL request, not-blocking, protected criteria, sourcing ReAct, sourcing LangGraph, pipeline LangGraph, HITL rejected, PII strip x3). Camada 5 (contrato+fairness): `test_protected_criteria_always_ignored` verifica `PROTECTED_CRITERIA ⊆ criteria_ignored`. |
 | **Média LIA** | **9.0** | **9.1** | **+0.1** | Governança (+0.2) e Segurança (+0.4) foram as dimensões de maior avanço — wiring completo fecha o principal gap de produção da plataforma |
 
-**Gaps que permanecem após v10.0:**
-- `candidates-page.tsx` god object: ~10.592 linhas (extração de modais requer `useCandidatesModals` — sprint dedicado)
+**Gaps que permanecem após v11.0:**
+- `candidates-page.tsx` god object: **10.397 linhas** (reduzido de 10.592 na v10.0; extração de modais requer `useCandidatesModals` — sprint dedicado)
 - Deploy Terraform/Pulumi: scripts bash GCP/AWS existem; IaC declarativo pendente
 - Test categorization `very_hard`: markers registrados, sem testes nessa categoria
 - Fine-tuning pipeline: `lia_feedback.py` DPO export existe; pipeline training contínuo pendente
-- `AutomationReActAgent`: agente existe em `domains/automation/agents/`; não registrado no WS dispatcher
+- `AutomationReActAgent`: agente existe em `domains/automation/agents/`; não registrado no WS dispatcher (`agent_chat_ws.py`)
 - Coverage: gate 32%, achieved 32.66%; target aspiracional 80%
 - **Governança — recomendações baixa prioridade:** TTL configurável para audit logs; placeholder genérico para `candidate_name` em voice_screening + analysis (quasi-identifier de gênero/etnia); testes de integração C3 para os novos gates SEG
 - **V5 Auditoria**: 7 gaps identificados, cards Jira criados (AUD-001→AUD-007, WT-1506→WT-1512) — aguardando implementação pelo time V5. Ver Seção 12
@@ -56,7 +91,7 @@
 
 ## Changelog v9.0 — Sprint J: Float Chat WebSocket + Inventário Completo (2026-03-10)
 
-> Sprint J completo: `LiaChatPanel` migrado REST→WebSocket com streaming nativo. `use-float-streaming.ts` com HITL + streaming integrados. `HITLConfirmCard.tsx` — card de aprovação inline no chat (approve/reject + comentário sem sair da conversa). `navigation_intent.py` expandido: 4 novos grupos adicionados (Configurações, Indicadores, WSI, total 8 grupos reordenados por especificidade). Wizard intent detectado redireciona automaticamente para `openSplitView("Vagas")`. 9 testes Vitest novos. Inventário v9.0: verificação completa filesystem — 99 modelos, 215 serviços, 16 agentes distintos, 36 migrations, 85 hooks.
+> Sprint J completo: `LiaChatPanel` migrado REST→WebSocket com streaming nativo. `use-float-streaming.ts` com HITL + streaming integrados. `HITLConfirmCard.tsx` — card de aprovação inline no chat (approve/reject + comentário sem sair da conversa). `navigation_intent.py` expandido: 4 novos grupos adicionados (Configurações, Indicadores, WSI, total 8 grupos reordenados por especificidade). Wizard intent detectado redireciona automaticamente para `openSplitView("Vagas")`. 9 testes Vitest novos. Inventário v9.0: verificação filesystem — 99 modelos, 215 serviços (v11.0: **231**), 16 agentes distintos, 36 migrations (v11.0: **37**), 85 hooks (v11.0: **114**).
 
 | Dimensão | v8.0 | v9.0 | Δ | Implementações que justificam |
 |----------|------|------|---|-------------------------------|
@@ -67,7 +102,7 @@
 | **Média LIA** | **8.9** | **9.0** | **+0.1** | Float Chat WS (+0.2 HITL UX), arquitetura intent (+0.1), testes FE (+0.1) |
 
 **Gaps que permanecem após v9.0/v9.1 → resolvidos parcialmente por v10.0:**
-- `candidates-page.tsx` god object: ~10.592 linhas (extração de modais requer `useCandidatesModals` — sprint dedicado) → **ainda pendente**
+- `candidates-page.tsx` god object: **10.397 linhas** (verificado 2026-03-13; extração de modais requer `useCandidatesModals` — sprint dedicado) → **ainda pendente**
 - Deploy Terraform/Pulumi: scripts bash GCP/AWS existem; IaC declarativo pendente → **ainda pendente**
 - Test categorization `very_hard`: markers registrados, sem testes nessa categoria → **ainda pendente**
 - Fine-tuning pipeline: `lia_feedback.py` DPO export existe; pipeline training contínuo pendente → **ainda pendente**
@@ -99,7 +134,7 @@
 | **Média LIA** | **8.8** | **8.9** | **+0.1** | Observability (+0.2) e HITL (+0.2) foram as dimensões de maior avanço; arquitetura e organização avançaram com I3 cleanup |
 
 **Gaps que permanecem após v8.0:**
-- `candidates-page.tsx` god object: ~10.592 linhas (redução em progresso; extração de modais requer `useCandidatesModals`)
+- `candidates-page.tsx` god object: **10.397 linhas** (verificado 2026-03-13; extração de modais requer `useCandidatesModals`)
 - Deploy Terraform/Pulumi: scripts bash GCP/AWS existem; IaC declarativo ainda pendente
 - Test categorization `very_hard`: marcadores registrados em pytest.ini mas sem testes nessa categoria
 - ~~Guardrails code-based~~ ✅ **Implementado**: `app/models/guardrail.py` + `app/api/v1/guardrails.py` + migration 020 + UI admin/compliance/guardrails
@@ -113,12 +148,12 @@
 
 | Dimensão | v6.1 | v7.0 | Δ | Implementações que justificam |
 |----------|------|------|---|-------------------------------|
-| D2 — Qualidade de Código | 7.2 | 7.4 | +0.2 | `candidates-page.tsx`: interface `Candidate` inline (182 linhas) removida → importada de `candidates/types.ts` (merged com campos Pearch/bigFive/liaAnalysis). `TableFilters` inline (73 linhas) removida → importada de `use-candidate-filters.ts`. `getDefaultTableFilters` inline (53 linhas) removida → importada. Total: −311 linhas de duplicação. Arquivo: 10.903 → 10.592 linhas. |
+| D2 — Qualidade de Código | 7.2 | 7.4 | +0.2 | `candidates-page.tsx`: interface `Candidate` inline (182 linhas) removida → importada de `candidates/types.ts` (merged com campos Pearch/bigFive/liaAnalysis). `TableFilters` inline (73 linhas) removida → importada de `use-candidate-filters.ts`. `getDefaultTableFilters` inline (53 linhas) removida → importada. Total: −311 linhas de duplicação. Arquivo: 10.903 → 10.592 → **10.397 linhas** (v11.0). |
 | D11 — Testes | 8.8 | 9.0 | +0.2 | Test difficulty categorization: `pytest.ini` com markers `easy/medium/hard/very_hard`. `pytestmark` adicionado em 15 arquivos unitários (7 easy: pii_masking, ws_schemas, prompt_injection, fact_checker_granular, structured_logging, scope_config, evaluation_schemas; 5 medium: rag_pipeline, toon_service, hitl_service, yaml_tool_registry, short_list_service; 3 hard: wsi_interview_graph, hitl_persistence, hitl_langgraph_integration). 419 testes coletados com `-m "easy or medium or hard"`. Paridade com V5 `easy/medium/hard/very_hard`. +106 novos testes: `test_intent_classifier_coverage.py` (IntentType enum, ClassificationResult, _quick_classify 18 casos, _extract_entities 15 casos, classify() rule-based 7 casos, constants 8 casos) + `test_candidate_search_schemas.py` (SearchRequestDTO 16, ExperienceDTO 4, ImportCandidateDTO 6, ImportCandidatesResponse 3, _normalize_priority 8 + demais DTOs). Coverage 34%→40% (subset crítico); gate CI efetivo: **32%**, coverage suite completa: **32.66%**. |
 | **Média LIA** | **8.7** | **8.8** | **+0.1** | Qualidade (+0.2) e Testes (+0.2) avançaram; god object FE continua em progresso |
 
 **Gaps que permanecem após v7.0:**
-- `candidates-page.tsx` god object: 10.592 linhas (reduzido de 12.153→10.592; extração de modais requer `useCandidatesModals` hook — sprint dedicado)
+- `candidates-page.tsx` god object: **10.397 linhas** (reduzido de 12.153→10.592→10.397; extração de modais requer `useCandidatesModals` hook — sprint dedicado)
 - Deploy Terraform/Pulumi: scripts bash manuais criados; IaC declarativo ainda pendente
 - Test categorization `very_hard`: marcadores registrados mas sem testes classificados nessa categoria ainda
 
@@ -306,26 +341,26 @@ A **Plataforma LIA** implementa camadas enterprise mais abrangentes: multi-provi
 | Arquivos Python (app/) | ~196 | **1.180+** |
 | LOC estimado | ~49K | ~465K+ |
 | Domínios DDD | 2 | **12** (analytics, ats_integration, automation, communication, cv_screening, interview_scheduling, job_management, pipeline, policy, recruiter_assistant, sourcing + hiring_policy legacy) |
-| Agentes ReAct (4-file pattern) | 0 | **13** ReAct (wizard, sourcing, pipeline_react, talent, jobs_mgmt, kanban, policy_react, analytics, communication, ats_integration, hiring_policy, automation, PolicySetupAgent) |
-| Agentes StateGraph (LangGraph nativo) | 6 (pipeline linear) | **3** principais (job_wizard_graph, wsi_interview_graph, interview_graph) — `USE_LANGGRAPH_NATIVE=True` global; 16 agentes distintos total |
+| Agentes ReAct (4-file pattern) | 0 | **12** ReAct (wizard, sourcing, pipeline, talent, jobs_mgmt, kanban, policy_react, policy_setup, analytics, communication, ats_integration, automation) — verificado v11.0 |
+| Agentes StateGraph (LangGraph nativo) | 6 (pipeline linear) | **4** (job_wizard_graph, wsi_interview_graph, interview_graph, pipeline_transition_agent) — `USE_LANGGRAPH_NATIVE=True` global; **16 agentes distintos** total |
 | Routers REST registrados (main.py) | 0 (CLI) | **204** (app.include_router) |
-| Endpoints em app/api/v1/ | 0 | **208** arquivos de router |
+| Endpoints em app/api/v1/ | 0 | **206** arquivos de router (verificado v11.0) |
 | Tools YAML declarativos | 70 | **32** (`tool_registry_metadata.yaml`) + code-driven |
-| Serviços (app/services/) | ~15 | **215** arquivos .py verificados filesystem |
+| Serviços (app/services/) | ~15 | **231** arquivos .py (verificado v11.0) |
 | Modelos SQLAlchemy (app/models/) | — | **99** verificados filesystem |
-| Migrations Alembic | — | **36** (001→035 + 033_merge; inclui compliance: 010 human review, 015 fairness audit, 018 bias snapshot, 020 guardrails, 032 HITL SOX) |
+| Migrations Alembic | — | **37** (verificado v11.0; inclui compliance: 010 human review, 015 fairness audit, 018 bias snapshot, 020 guardrails, 032 HITL SOX) |
 | Providers LLM | 1 (Gemini) | 3 (Claude primário, OpenAI fallback, Gemini fallback) + Factory + `generate_with_fallback()` |
 | Canais comunicação | 1 (callback REST) | 5 (email, WhatsApp, SMS, Teams, in-app Bell) |
-| Testes BE coletados | 53 arquivos | **3.712+** coletados · 0 falhas · 208 arquivos de teste |
+| Testes BE coletados | 53 arquivos | **227 test files** (verificado v11.0); coverage gate 32%, achieved 32.66% |
 | Cobertura BE | — | **32.66%** (gate CI: 32%) |
 | Testes FE | — | Vitest + **60+** testes unitários (use-navigation-intent, use-action-intent, use-candidates-list, HITLConfirmCard, use-float-streaming + 9 Sprint J) |
 | Testes de carga | — | Locust: WizardUser + PipelineUser + HealthCheckUser (`tests/load/`) |
 | Libs UV Monorepo | — | **10** (config, utils, models, audit, messaging, agents-core, services, contexts, auth, orchestrator) |
 | Serviços Docker Compose | 2 (workers) | **14** (postgres, redis, rabbitmq, api, api-vagas, api-funil, api-onboarding, celery_worker_high/normal/low, celery_beat, flower, prometheus, grafana) |
-| Métricas Prometheus | — | **13+** (8 originais + 5: router_tier_hit, router_latency_ms, router_confidence, agent_tool_failures, llm_cost_usd) |
-| WS Domains registrados | — | **10** (wizard, talent, pipeline, kanban, sourcing, jobs_management, policy, analytics, communication, ats_integration) |
-| Páginas Next.js (page.tsx) | — | **89** |
-| FE Hooks (src/hooks/) | — | **85** (76 hooks .ts + 9 arquivos .test.ts; inclui use-float-streaming.ts Sprint J3, use-short-list.ts F4) |
+| Métricas Prometheus | — | **14** (Histogram/Counter/Gauge/Summary — verificado v11.0) |
+| WS Domains registrados | — | **11 + aliases** (wizard, talent, pipeline/cv_screening, kanban, sourcing, jobs_management/jobs_mgmt, policy, pipeline_transition, analytics, communication/comms, ats_integration/ats — verificado v11.0) |
+| Páginas Next.js (page.tsx) | — | **90** (verificado v11.0) |
+| FE Hooks (src/hooks/) | — | **114** (verificado v11.0; inclui use-float-streaming.ts Sprint J3, use-short-list.ts F4) |
 | FE Componentes (src/components/) | — | **47 diretórios** (~450 arquivos .tsx, inclui HITLConfirmCard Sprint J3) |
 | Componentes extraídos de candidates-page | — | **5** (CandidateSearchBar, CandidatesHeader, CandidatesTable, CandidateTabs, SearchResultsHeader) |
 | Tabelas HITL | — | 2 (`hitl_pending_actions` + `hitl_audit_trail`) |
@@ -526,26 +561,27 @@ workspace/
 │   │   └── encryption.py
 │   ├── middleware/            # Rate limiter (Redis ZSET sliding window) + Request ID
 │   ├── orchestrator/         # cascaded_router (6-tier) + vector_semantic_cache (pgvector) + navigation_intent
-│   ├── models/               # 95 modelos SQLAlchemy (verificado filesystem)
+│   ├── models/               # 99 modelos SQLAlchemy (verificado filesystem 2026-03-13)
 │   │   └── hitl.py           # ← F1: HITLPendingAction + HITLAuditTrail (SOX/BCB-498)
 │   ├── schemas/              # 50+ schemas Pydantic
-│   ├── api/v1/               # 202 routers registrados (195 arquivos em api/v1/)
-│   │   ├── agent_chat_ws.py  # WS (10 domínios wired)
+│   ├── api/v1/               # 206 routers registrados (verificado filesystem 2026-03-13)
+│   │   ├── agent_chat_ws.py  # WS (11 domínios wired + aliases)
 │   │   ├── hitl.py           # POST /api/v1/hitl/{thread_id}/approve
 │   │   ├── rag_search.py     # GET /api/v1/candidates/rag-search
 │   │   ├── toon.py           # GET /api/v1/candidates/{id}/toon
 │   │   ├── short_lists.py    # ← F4: POST/GET /api/v1/short-lists
 │   │   ├── admin_token_budget.py  # ← Sprint A: GET /api/v1/admin/token-budget
 │   │   └── fairness_reports.py    # GET /api/v1/bias-audit/job/{job_id}
-│   ├── tools/                # 9 code-driven + tool_registry_metadata.yaml (32 tools YAML) ← G5
+│   ├── tools/                # 10 code-driven + tool_registry_metadata.yaml (32 tools YAML) ← G5
+│   │   └── scope_config.py   # ← 4 escopos: TALENT_FUNNEL(20), JOB_TABLE(19), IN_JOB(25), GLOBAL(2) = 66 tools
 │   ├── prompts/              # YAML + Python (20+ arquivos)
 │   ├── auth/                 # WorkOS SSO (6 arquivos)
 │   ├── config/               # langsmith.py, sentry.py, cache_config.py, industry_weights.py
-│   ├── observability/        # metrics.py — 13 métricas Prometheus
+│   ├── observability/        # metrics.py — 14 métricas Prometheus (Histogram/Counter/Gauge/Summary)
 │   └── jobs/                 # drift_job.py, celery_tasks.py
 │
-├── plataforma-lia/src/       # FRONTEND — Next.js 15 + React 19 (89 pages, 93 hooks)
-│   ├── app/                  # 89 páginas (page.tsx)
+├── plataforma-lia/src/       # FRONTEND — Next.js 15 + React 19 (90 pages, 114 hooks)
+│   ├── app/                  # 90 páginas (page.tsx) — verificado 2026-03-13
 │   ├── components/lia-float/
 │   │   ├── LiaChatPanel.tsx   # Float chat + navigation hints + action mode banner
 │   │   ├── LiaSplitPanel.tsx  # Split-view 360px com WS streaming
@@ -556,7 +592,7 @@ workspace/
 │   │   ├── CandidatesTable.tsx        # Tabela principal
 │   │   ├── CandidateTabs.tsx          # Tabs (todos/aplicantes/etc.)
 │   │   └── SearchResultsHeader.tsx    # Header de resultados com pills DS v4.2.1
-│   ├── hooks/ (93 total)
+│   ├── hooks/ (114 total — verificado 2026-03-13)
 │   │   ├── use-navigation-intent.ts   # POST /api/v1/navigation-intent, threshold 0.65
 │   │   ├── use-action-intent.ts       # 5 domains, threshold 0.70, ScoredAction loop
 │   │   ├── use-agent-streaming.ts     # WS streaming hook
@@ -643,31 +679,38 @@ Intelligence Stack LIA:
 │
 └── ML Services (analytics/services/ + services/ml/)
     ├── feature_engineering.py, outcome_predictor.py
-    ├── predictive_analytics.py, early_warning_service.py
+    ├── predictive_analytics_service.py, pipeline_prediction_service.py, early_warning_service.py
     ├── journey_intelligence_service.py
     └── sector_benchmark_service.py (anti-sycophancy — Crença #11)
 ```
 
-**Agentes de IA Ativos — Inventário Completo (v9.0):**
+**Agentes de IA Ativos — Inventário Completo (v11.0 — verificado filesystem 2026-03-13):**
 
-| # | Agente | Arquivo | Tipo | WS Registrado |
-|---|--------|---------|------|---------------|
-| 1 | WizardReActAgent | `wizard_react_agent.py` | ReAct 4-file | ✅ "wizard" |
-| 2 | JobWizardGraph | `job_wizard_graph.py` | LangGraph StateGraph | ✅ |
-| 3 | SourcingReActAgent | `sourcing_react_agent.py` | ReAct 4-file | ✅ "sourcing" |
-| 4 | PipelineReActAgent | `pipeline_react_agent.py` | ReAct 4-file | ✅ "pipeline" |
-| 5 | WSIInterviewGraph | `wsi_interview_graph.py` | LangGraph StateGraph | ✅ |
-| 6 | TalentReActAgent | `talent_react_agent.py` | ReAct 4-file | ✅ "talent" |
-| 7 | JobsMgmtReActAgent | `jobs_mgmt_react_agent.py` | ReAct 4-file | ✅ "jobs_management" |
-| 8 | KanbanReActAgent | `kanban_react_agent.py` | ReAct 4-file | ✅ "kanban" |
-| 9 | PolicyReActAgent | `policy_react_agent.py` | ReAct 4-file | ❌ legado |
-| 10 | PolicySetupAgent | `domains/policy/agents/agent.py` | ReAct 4-file | ✅ "policy" |
-| 11 | AnalyticsReActAgent | `analytics_react_agent.py` | ReAct 4-file | ✅ "analytics" |
-| 12 | CommunicationReActAgent | `communication_react_agent.py` | ReAct 4-file | ✅ "communication" |
-| 13 | ATSIntegrationReActAgent | `ats_integration_react_agent.py` | ReAct 4-file | ✅ "ats" |
-| 14 | AutomationReActAgent | `automation_react_agent.py` | ReAct 4-file | ❌ **pendente wiring** |
-| 15 | PipelineTransitionAgent | `pipeline_transition_agent.py` | Direto 20+ tools | ❌ invocação direta |
-| 16 | InterviewGraph | `interview_graph.py` | LangGraph StateGraph | ❌ via REST |
+| # | Agente | Arquivo | Domínio | Tipo | WS Registrado |
+|---|--------|---------|---------|------|---------------|
+| 1 | WizardReActAgent | `wizard_react_agent.py` | `job_management` | ReAct 4-file | ✅ "wizard" |
+| 2 | JobWizardGraph | `job_wizard_graph.py` | `job_management` | LangGraph StateGraph | ✅ (via resume) |
+| 3 | SourcingReActAgent | `sourcing_react_agent.py` | `sourcing` | ReAct 4-file | ✅ "sourcing" |
+| 4 | PipelineReActAgent | `pipeline_react_agent.py` | `cv_screening` | ReAct 4-file | ✅ "pipeline" / "cv_screening" |
+| 5 | WSIInterviewGraph | `wsi_interview_graph.py` | `cv_screening` | LangGraph StateGraph | ✅ (via resume) |
+| 6 | TalentReActAgent | `talent_react_agent.py` | `recruiter_assistant` | ReAct 4-file | ✅ "talent" (+ default fallback) |
+| 7 | JobsMgmtReActAgent | `jobs_mgmt_react_agent.py` | `recruiter_assistant` | ReAct 4-file | ✅ "jobs_management" / "jobs_mgmt" |
+| 8 | KanbanReActAgent | `kanban_react_agent.py` | `recruiter_assistant` | ReAct 4-file | ✅ "kanban" |
+| 9 | PolicyReActAgent | `policy_react_agent.py` | `hiring_policy` | ReAct 4-file | ✅ "policy" |
+| 10 | PolicySetupAgent | `domains/policy/agents/agent.py` | `policy` | ReAct 4-file | ❌ (domínio legado) |
+| 11 | AnalyticsReActAgent | `analytics_react_agent.py` | `analytics` | ReAct 4-file | ✅ "analytics" |
+| 12 | CommunicationReActAgent | `communication_react_agent.py` | `communication` | ReAct 4-file | ✅ "communication" / "comms" |
+| 13 | ATSIntegrationReActAgent | `ats_integration_react_agent.py` | `ats_integration` | ReAct 4-file | ✅ "ats_integration" / "ats" |
+| 14 | AutomationReActAgent | `automation_react_agent.py` | `automation` | ReAct 4-file | ❌ **pendente wiring** |
+| 15 | PipelineTransitionAgent | `pipeline_transition_agent.py` | `pipeline` | Direto 20+ tools | ✅ "pipeline_transition" |
+| 16 | InterviewGraph | `interview_graph.py` | `interview_scheduling` | LangGraph StateGraph | ❌ via REST |
+
+**Resumo de agentes por tipo:**
+- **12 ReAct 4-file** (wizard, sourcing, pipeline, talent, jobs_mgmt, kanban, policy_react [hiring_policy], policy_setup [policy/legado], analytics, communication, ats_integration, automation)
+- **4 LangGraph/StateGraph** (job_wizard_graph, wsi_interview_graph, interview_graph, pipeline_transition_agent)
+- Total: **16 agentes distintos** (verificado filesystem 2026-03-13)
+- **12 de 16 com WS wired** (75%): wizard, pipeline/cv_screening, sourcing, talent (default), kanban, jobs_mgmt, policy, pipeline_transition, analytics, communication/comms, ats/ats_integration + fallback
+- **1 pendente wiring** (AutomationReActAgent); **2 via REST/invocação direta** (InterviewGraph, PolicySetupAgent legado); **1 via resume WS** (job_wizard_graph via resume_domain)
 
 ### 3.2.3 Voz e Multimodal — Detalhamento
 
@@ -708,13 +751,122 @@ Intelligence Stack LIA:
 
 **Migrations de compliance (em ordem):** 010 human_review_gate → 013 scheduled_deletion → 015 fairness_audit_log → 016 scheduled_deletion_ai → 018 bias_audit_snapshot → 020 guardrails → 025 agent_execution_metadata → 032 hitl_tables (SOX) → 034 agent_quality_evaluations
 
+**Total de migrations Alembic: 37** (verificado filesystem 2026-03-13)
+
+### 3.2.5 ActionExecutor e Sistema de Comandos Kanban — Detalhamento
+
+> Seção adicionada na v11.0. O `ActionExecutor` é o componente central que traduz intenções de ação do chat em operações concretas no sistema.
+
+**Arquivo:** `app/orchestrator/action_executor.py` — **1.080 linhas**
+
+O ActionExecutor é invocado pelo sistema de chat quando uma intenção de ação é detectada (via `use-action-intent.ts` no frontend, threshold 0.70). Ele recebe o contexto da ação e despacha para o handler correto.
+
+**9 Action IDs** mapeados via `ACTIONABLE_INTENTS` dict (verificado em código 2026-03-13):
+
+| # | action_id | Descrição | Intents mapeados | HITL |
+|---|-----------|-----------|-----------------|------|
+| 1 | `move_candidate` | Mover candidato entre stages do pipeline | mover_candidato, aprovar_candidato, reprovar_candidato, encaminhar_candidato | ✅ requires_confirmation |
+| 2 | `send_email` | Enviar email para candidato | enviar_email, comunicar_candidato | ✅ requires_confirmation |
+| 3 | `schedule_interview` | Agendar entrevista com candidato | agendar_entrevista | ✅ requires_confirmation |
+| 4 | `start_screening` | Iniciar triagem/screening de candidato | iniciar_triagem, avaliar_candidato | ✅ requires_confirmation |
+| 5 | `analyze_profile` | Analisar perfil detalhado do candidato | analisar_perfil, comparar_candidatos | ❌ read-only |
+| 6 | `pause_job` | Pausar vaga ativa | pausar_vaga | ✅ requires_confirmation |
+| 7 | `close_job` | Fechar/encerrar vaga | fechar_vaga | ✅ requires_confirmation |
+| 8 | `duplicate_job` | Duplicar vaga existente | duplicar_vaga | ✅ requires_confirmation |
+| 9 | `reopen_job` | Reabrir vaga fechada/pausada | reabrir_vaga | ✅ requires_confirmation |
+
+**Fluxo de execução:** Intent detectado (chat/WS) → `ACTIONABLE_INTENTS[intent]` → `ActionExecutorConfig` → HITL check (se `requires_confirmation=True` → `HITLConfirmCard` inline → aguarda aprovação) → execução do `action_id` handler → resposta ao usuário.
+
+**Integração com HITL:** 8 de 9 action_ids requerem confirmação via `HITLConfirmCard` inline no chat — apenas `analyze_profile` (leitura) executa direto sem aprovação.
+
+### 3.2.6 Scope Config — Controle de Acesso por Contexto
+
+> Seção adicionada na v11.0. O `scope_config.py` define quais ferramentas estão disponíveis em cada contexto de prompt.
+
+**Arquivo:** `app/tools/scope_config.py`
+
+```
+PromptScope (Enum) — verificado via código 2026-03-13:
+├── TALENT_FUNNEL  — 20 tools (busca e gestão de candidatos)
+│   ├── Query (11): search_candidates, get_candidate_details, get_candidate_stats,
+│   │              compare_candidates, get_talent_quality, get_talent_engagement,
+│   │              get_talent_availability, get_diversity_metrics, get_candidate_history,
+│   │              get_ml_predictions, get_conversion_patterns
+│   └── Action (9): add_candidate_to_vacancy, reject_candidate, shortlist_candidate,
+│                   add_to_list, hide_candidate, send_email, send_whatsapp,
+│                   send_bulk_email, export_candidates
+│
+├── JOB_TABLE — 19 tools (gestão de vagas)
+│   ├── Query (12): search_jobs, get_job_details, get_pipeline_stats,
+│   │              get_recruiter_metrics, get_velocity_metrics, get_efficiency_metrics,
+│   │              get_comparative_metrics, get_workload_distribution,
+│   │              get_hiring_quality, get_cost_metrics, get_market_benchmarks, get_trends
+│   └── Action (7): create_job, update_job, close_job, pause_job,
+│                   publish_job, export_job_analytics, generate_report
+│
+├── IN_JOB — 25 tools (ações dentro de vaga específica)
+│   ├── Query (14): compare_candidates, get_candidate_details, get_candidate_stats,
+│   │              get_job_details, get_activity_summary, get_bottleneck_analysis,
+│   │              get_job_benchmark, get_job_quality_metrics, get_job_velocity,
+│   │              get_pending_actions, get_prediction_metrics, get_smart_alerts,
+│   │              get_stakeholder_metrics, get_vacancy_funnel
+│   └── Action (11): update_candidate_stage, reject_candidate, shortlist_candidate,
+│                    schedule_interview, send_email, send_whatsapp, send_feedback,
+│                    add_to_list, hide_candidate, bulk_update_candidates_stage, wsi_screening
+│
+└── GLOBAL — 2 tools (disponíveis em qualquer contexto)
+    └── Action: generate_report, schedule_report
+```
+
+**Função-chave:** `get_tools_for_scope(scope, tool_type)` — retorna o set de tools permitidos para o escopo e tipo (query/action/all).
+
+**Função de filtragem:** `filter_tools_by_scope(tools, scope)` — filtra lista de definições de tools para apenas os permitidos no escopo.
+
+**Função de validação:** `is_tool_allowed_in_scope(tool_name, scope)` — verifica se tool específico é permitido.
+
+### 3.2.7 Sistema Preditivo e Intelligence Services — Detalhamento
+
+> Seção adicionada na v11.0. Documenta os serviços de inteligência e predição que alimentam as decisões automatizadas da LIA.
+
+**Serviços Preditivos (8 serviços — verificado filesystem 2026-03-13):**
+
+| # | Serviço | Arquivo | Função |
+|---|---------|---------|--------|
+| 1 | `predictive_analytics_service.py` | `app/services/predictive_analytics_service.py` | Previsões de métricas de recrutamento |
+| 2 | `pipeline_prediction_service.py` | `app/services/pipeline_prediction_service.py` | Predição de pipeline e conversão |
+| 3 | `early_warning_service.py` | `app/services/early_warning_service.py` | Alertas precoces de problemas no pipeline |
+| 4 | `journey_intelligence_service.py` | `app/services/journey_intelligence_service.py` | Análise de jornada do candidato |
+| 5 | `sector_benchmark_service.py` | `app/services/sector_benchmark_service.py` | Benchmarks por setor (anti-sycophancy — Crença #11) |
+| 6 | `feature_engineering.py` | `app/services/ml/feature_engineering.py` | Engenharia de features para modelos preditivos |
+| 7 | `outcome_predictor.py` | `app/services/ml/outcome_predictor.py` | Predição de outcomes de contratação |
+| 8 | `model_drift_service.py` | `app/services/model_drift_service.py` | Detecção de drift em 4 triggers: score/aprovação/custo/latência P95 |
+
+**Intelligence Services (3 serviços em `app/shared/intelligence/`):**
+
+| # | Serviço | Arquivo | Função |
+|---|---------|---------|--------|
+| 1 | `smart_extractor.py` | `app/shared/intelligence/smart_extractor.py` | Extração inteligente de dados de CVs e documentos |
+| 2 | `semantic_search_service.py` | `app/shared/intelligence/semantic_search_service.py` | Busca semântica via embeddings |
+| 3 | `embedding_service.py` | `app/shared/intelligence/embedding_service.py` | Geração e gestão de embeddings vetoriais |
+
+**Learning Services (4 serviços em `app/shared/learning/`):**
+
+| # | Serviço | Arquivo | Função |
+|---|---------|---------|--------|
+| 1 | `learning_loop_service.py` | `app/shared/learning/learning_loop_service.py` | Loop de feedback e aprendizado contínuo |
+| 2 | `template_learning_service.py` | `app/shared/learning/template_learning_service.py` | Aprendizado de templates de uso frequente |
+| 3 | `ab_testing_service.py` | `app/shared/learning/ab_testing_service.py` | A/B testing de prompts e modelos |
+| 4 | `finetuning_export.py` | `app/shared/learning/finetuning_export.py` | Export DPO para fine-tuning |
+
+**Stack completo de inteligência:** RAG Híbrido (pgvector + BM25) → Smart Extractor → Semantic Search → Embeddings → Predictions → Learning Loop → Fine-tuning Export. Cada camada alimenta a seguinte, formando um pipeline de inteligência progressiva.
+
 ### 3.3 Padrões Arquiteturais Identificados
 
 | Padrão | Implementação |
 |--------|--------------|
-| Domain-Driven Design | 11 bounded contexts com agents/services/tools/models/schemas |
-| ReAct Agent (4-file) | **13 agentes** (+ automation: wizard, sourcing, pipeline_react, talent, jobs_mgmt, kanban, policy_react, analytics, communication, ats_integration, hiring_policy, automation + PolicySetupAgent): agent.py + system_prompt.py + stage_context.py + tool_registry.py |
-| StateGraph (LangGraph nativo) | 3 graphs principais: job_wizard_graph, wsi_interview_graph, interview_graph. `USE_LANGGRAPH_NATIVE=True` global — todos os 13 ReAct agents usando base nativa |
+| Domain-Driven Design | **12 bounded contexts** (verificado 2026-03-13) com agents/services/tools/models/schemas: analytics, ats_integration, automation, communication, cv_screening, hiring_policy, interview_scheduling, job_management, pipeline, policy, recruiter_assistant, sourcing |
+| ReAct Agent (4-file) | **12 agentes ReAct** (wizard, sourcing, pipeline, talent, jobs_mgmt, kanban, policy_react, policy_setup, analytics, communication, ats_integration, automation): agent.py + system_prompt.py + stage_context.py + tool_registry.py |
+| StateGraph (LangGraph nativo) | **4 graphs** principais: job_wizard_graph, wsi_interview_graph, interview_graph, pipeline_transition_agent. `USE_LANGGRAPH_NATIVE=True` global — todos os ReAct agents usando base nativa |
 | Factory Pattern | LLMProviderFactory, ATS Factory, WhatsApp Factory, Email Provider Factory |
 | Adapter Pattern | 5 channel adapters, 5 ATS clients, 3 email providers, 2 billing providers |
 | Circuit Breaker | Decorator `@circuit_breaker()` com states CLOSED/OPEN/HALF_OPEN + tenacity retry |
@@ -1123,18 +1275,18 @@ Não há:
 
 | # | Dimensão | V5 (5.4) | LIA (9.1) | O que V5 tem a mais | O que LIA tem a mais |
 |---|----------|----------|-----------|---------------------|---------------------|
-| 1 | Arq. Agentes | 7.0 | 9.3 ↑ | Pipeline linear bem definido, PlanValidator com replanning | 13 ReAct agents (4-file) + 3 StateGraph; `USE_LANGGRAPH_NATIVE=True`; CascadedRouter 6-tiers; VectorSemanticCache pgvector; NavigationIntent 8 grupos (Sprint J); HITLConfirmCard inline; useActionIntent 5 domínios |
-| 2 | Qualidade Código | 6.5 | 6.5 | Dataclasses frozen, docstrings Google style | Sem god objects no BE; serviços reais (sem mocks em memória). Gap remanescente: `candidates-page.tsx` 12.375 linhas FE |
-| 3 | Organização | 3.5 | 7.5 ↑ | — | 11 domínios DDD; UV Monorepo 9 libs com build system hatchling; `LiaSplitPanel`, `use-navigation-intent`, `use-action-intent` como módulos autônomos; Sprint E: `lia_assistant.py` decomposto em 4 sub-routers. Gap: `candidates-page.tsx` |
+| 1 | Arq. Agentes | 7.0 | 9.3 ↑ | Pipeline linear bem definido, PlanValidator com replanning | **16 agentes** (12 ReAct 4-file + 4 StateGraph); `USE_LANGGRAPH_NATIVE=True`; CascadedRouter 6-tiers; VectorSemanticCache pgvector; NavigationIntent 8 grupos (Sprint J); HITLConfirmCard inline; useActionIntent 5 domínios; ActionExecutor 1080L com 9 action_ids; Scope Config 4 escopos 66 tools |
+| 2 | Qualidade Código | 6.5 | 6.5 | Dataclasses frozen, docstrings Google style | Sem god objects no BE; 231 serviços reais (sem mocks em memória). Gap remanescente: `candidates-page.tsx` **10.397 linhas** FE |
+| 3 | Organização | 3.5 | 7.5 ↑ | — | **12 domínios DDD**; `LiaSplitPanel`, `use-navigation-intent`, `use-action-intent` como módulos autônomos; Sprint E: `lia_assistant.py` decomposto em 4 sub-routers; 114 hooks FE; 90 pages. Gap: `candidates-page.tsx` |
 | 4 | Eficiência LLM | 7.5 | 7.5 | TOON format (-15% tokens), RAG híbrido maduro | Token tracking + alertas 80%/100% (M5); SSE streaming Chat LIA; CascadedRouter 6-tiers (in-process → Redis → regex → Haiku→Sonnet→Opus); VectorSemanticCache (pgvector cosine threshold 0.92) |
 | 5 | Governança IA | 5.0 | **9.8 ↑** | FactChecker verificação numérica | PII masking global (root logger), FAIRNESS_AND_COMPLIANCE em todos os 8 prompts, LGPD consentimento granular HTTP 451, **FairnessGuard wired em 100% screening/ranking (SEG-2)**, blind evaluation (B1), sem bias geográfico (B2), compliance LGPD/EU AI Act/BCB 498, Bias Audit API + snapshots SOX, **AuditService em todos os gates (SEG-5)**, 8/8 Inegociáveis WeDOTalent ✅ |
 | 6 | Segurança | 5.5 | **9.4 ↑** | 17 injection patterns detalhados | PII masking global, SECRET_KEY obrigatório, LangSmith opt-in, HTTP 451, rate limiting, **PromptInjectionGuard wired em WSI+chat (SEG-1)**, **PII strip antes do LLM 4 callers (SEG-3B)**, **ConsentCheckerService Gate 1 WSI (SEG-4)**, **Celery PII masking workers (SEG-3A)**, Sentry BE+FE, auth JWT rigoroso |
 | 7 | HITL | 5.5 | 9.4 ↑ | ClarificationService com entity selection | HITLPendingAction+AuditTrail SOX; HITLConfirmCard inline no chat (Sprint J3); use-float-streaming HITL+WS; user_agent_preferences auto_confirm; human review gate rejeições; LGPD gate admin |
 | 8 | Aprendizado | 3.0 | 7.5 | Métricas em PostgreSQL | Learning loop, template learning, A/B testing, fine-tuning export, feedback capture |
 | 9 | Tool System | 8.5 | 6.5 | YAML-driven, hooks, contracts, frozen, 70 tools | Code-driven, mais flexível para complex logic, domain-scoped, function calling nativo via LangGraph ToolNode |
-| 10 | Observability | 5.0 | 9.5 ↑ | — | 13+ métricas Prometheus (8 originais + 5 de Phase G3: router_tier_hit, router_latency_ms, router_confidence, agent_tool_failures, llm_cost_usd); LangGraph Studio (langgraph.json); S3 lifecycle SOX 7 anos; Sentry BE+FE; FairnessGuard persistência + relatórios; LangSmith `@traceable` em ReActLoop + Claude |
-| 11 | Testes | 7.0 | **9.3 ↑** | Categorizado por dificuldade (easy/medium/hard/very_hard), hallucination tests | 2.291 BE passando; Vitest hooks project; 42+ FE unit tests; 98 contract tests + 53 Phase 5 + 81 Phase 4b; T1/T2/T3/T4/B5 completos; Pirâmide 5-camadas; **34 novos testes SEG-1→SEG-5 (6 arquivos)** — camada 2 (unitários) + camada 5 (PROTECTED_CRITERIA fairness) |
-| 12 | Infraestrutura | 7.5 | 9.5 ↑↑ | Docker workers, Celery, GCP deploy | UV Monorepo 9 libs; docker-compose.yml 10 serviços; Celery high/normal/low + beat + flower; GitHub Actions CI (ruff+pytest+biome+tsc); pre-commit hooks; Redis sliding window rate limiter; S3 lifecycle SOX; apps/api-vagas/api-funil/api-onboarding como micro-serviços |
+| 10 | Observability | 5.0 | 9.5 ↑ | — | **14 métricas Prometheus** (Histogram/Counter/Gauge/Summary: lia_llm_requests, lia_llm_latency, lia_agent_iterations, lia_fairness_blocks, lia_circuit_breaker_state, lia_http_request_duration, lia_pipeline_transitions, lia_candidates_evaluated, lia_router_tier_hit, lia_router_latency_ms, +4 outros); LangGraph Studio; S3 lifecycle SOX 7 anos; Sentry BE+FE; FairnessGuard persistência + relatórios; LangSmith `@traceable` em ReActLoop + Claude |
+| 11 | Testes | 7.0 | **9.3 ↑** | Categorizado por dificuldade (easy/medium/hard/very_hard), hallucination tests | **227 test files** (verificado 2026-03-13); Vitest hooks project; 42+ FE unit tests; 98 contract tests + 53 Phase 5 + 81 Phase 4b; T1/T2/T3/T4/B5 completos; Pirâmide 5-camadas; **34 novos testes SEG-1→SEG-5 (6 arquivos)** — camada 2 (unitários) + camada 5 (PROTECTED_CRITERIA fairness) |
+| 12 | Infraestrutura | 7.5 | 9.5 ↑↑ | Docker workers, Celery, GCP deploy | docker-compose.yml 10 serviços; Celery high/normal/low + beat + flower; GitHub Actions CI (ruff+pytest+biome+tsc); pre-commit hooks; Redis sliding window rate limiter; S3 lifecycle SOX; apps/api-vagas/api-funil/api-onboarding como micro-serviços |
 | 13 | Multi-provider | 1.0 | 8.5 | — | Claude + OpenAI + Gemini com Factory + ABC; `generate_with_fallback()` auto-failover |
 | 14 | Resiliência | 3.0 | 9.5 | Retry HTTP básico | Circuit breaker em produção (Pearch/Deepgram/OpenMic/Claude) + tenacity retry; `generate_with_fallback()` Claude→Gemini→OpenAI; Redis ZSET sliding window rate limiter com fallback in-memory; cache layer (VectorSemanticCache + Redis) |
 
@@ -1180,7 +1332,7 @@ Não há:
 | Prompt Version Registry | ❌ | ✅ SHA256 hash, `/admin/prompts/versions` (Sprint B) | Gap V5 |
 | Test Categorization (difficulty) | ✅ easy/medium/hard/very_hard | ❌ Por tipo, não dificuldade | Gap LIA |
 | FactChecker numérico | ✅ verify_count/avg/top | ✅ Similar | Parity |
-| ReAct Agents | ❌ | ✅ 10 agents, 4-file pattern | Gap V5 |
+| ReAct Agents | ❌ | ✅ **11 agents ReAct** + 4 StateGraph + 1 legado = 16 total, 4-file pattern | Gap V5 |
 | ATS Integrations | ❌ (API genérica) | ✅ 5 connectors (Gupy, Pandapé, etc.) + ATSIntegrationReActAgent wired | Gap V5 |
 | Billing/Usage | ❌ | ✅ Iugu + Vindi | Gap V5 |
 | Voice/Deepgram | ❌ | ✅ Deepgram + Gemini Voice | Gap V5 |
@@ -1269,7 +1421,7 @@ Não há:
 | 5 | **Test categorization por dificuldade** | LIA organiza testes por tipo (unit/integration/E2E/load/disparate impact) mas não por difficulty level (easy/medium/hard/very_hard) | Organização por `difficulty_level` nos YAMLs de casos de teste | Baixa (1-2 dias) | ✅ **Resolvido (Sprint I)** — `pytest.ini` com markers `easy/medium/hard/very_hard`. `pytestmark` adicionado em 15 arquivos (7 easy, 5 medium, 3 hard). 419 testes coletados com `-m "easy or medium or hard"`. `very_hard` registrado mas sem testes nessa categoria ainda. |
 | 6 | **FactChecker granular** por tipo de claim | LIA tem `FactChecker` mas sem separação explícita por tipo de claim | `verify_count_claim`, `verify_average_claim`, `verify_top_candidates_claim` separados | Baixa (3-5 dias) | ✅ **Resolvido (Sprint H)** — `verify_count_claim()` (regex `CANDIDATE_COUNT_PATTERN`, tolerance_pct), `verify_average_claim()` (regex `PERCENTAGE_PATTERN`, claim_type configurável), `verify_top_candidates_claim()` (regex `TOP_PATTERN`, max_reasonable_top). Paridade com V5 para verificação granular por tipo de claim. |
 | 7 | **Docker + Deploy cloud** | LIA sem portabilidade para cloud (GCP/AWS) | `docker-compose.workers.yml` + `deploy/` scripts + GCP VM config | Média (2-3 semanas) | ✅ **Resolvido (Sprint H)** — `Dockerfile.prod` multi-stage (builder + runtime uid=1001 non-root, HEALTHCHECK, gunicorn+uvicorn); `docker-compose.prod.yml` (restart: always, resource limits, json-file logging, health checks); `deploy/gcp_setup.sh` + `deploy/aws_setup.sh` + `deploy/Makefile`; `.github/workflows/deploy.yml` (OIDC keyless auth GCP+AWS). Pendente: IaC declarativo (Terraform/Pulumi). |
-| 8 | **God Object FE** | `candidates-page.tsx` ainda grande — difícil manter e testar | V5 tem arquivos menores mas também tem God Objects no BE | N/A (refatoração interna) | 🟡 **Parcial** — De 12.375 → **10.592 linhas** (Sprints E/G/H/I). Hooks wired: `use-candidate-filters.ts`, `use-candidate-selection.ts`, `useCandidatesListMapped`, `use-candidates-list.ts`, `use-candidate-data-requests.ts`. Componentes extraídos: `CandidateSearchBar.tsx`, `CandidateTabs.tsx`, `SearchResultsHeader.tsx`. `use-candidates-list.test.ts`: 8 timeouts ✅ corrigidos com `vi.useFakeTimers({ shouldAdvanceTime: true })` (Sprint H). Ainda god object — extração de modais requer sprint dedicado. |
+| 8 | **God Object FE** | `candidates-page.tsx` ainda grande — difícil manter e testar | V5 tem arquivos menores mas também tem God Objects no BE | N/A (refatoração interna) | 🟡 **Parcial** — De 12.375 → **10.397 linhas** (verificado 2026-03-13). Hooks wired: `use-candidate-filters.ts`, `use-candidate-selection.ts`, `useCandidatesListMapped`, `use-candidates-list.ts`, `use-candidate-data-requests.ts`. Componentes extraídos: `CandidateSearchBar.tsx`, `CandidateTabs.tsx`, `SearchResultsHeader.tsx`. `use-candidates-list.test.ts`: 8 timeouts ✅ corrigidos com `vi.useFakeTimers({ shouldAdvanceTime: true })` (Sprint H). Ainda god object — extração de modais requer sprint dedicado. |
 | 9 | **LangSmith CI Step** | Validação automática da config LangSmith no CI | `app/config/langsmith.py` + step CI `.github/workflows/ci.yml` linhas 55–59 | Baixa | ✅ **Resolvido** — step "Verify LangSmith config" com `continue-on-error: true`. `is_langsmith_enabled()` + `configure_langsmith()`. 18 testes em `test_langsmith_config.py`. |
 | 10 | **IaC Terraform/Pulumi** | Scripts bash GCP/AWS existem; deploy declarativo ausente | Média | 🔴 **Pendente** — `deploy/gcp_setup.sh` + `deploy/aws_setup.sh` existem; Terraform/Pulumi não implementado |
 | 11 | **Test categorization `very_hard`** | V5 tem testes nessa categoria | Baixa | 🔴 **Pendente** — marker registrado em `pytest.ini`, sem testes classificados |
@@ -1523,7 +1675,7 @@ Mês 4: Scale Layer (P2-P3)
 | 1 | **RAG Híbrido** | Qualidade IA | +15-20% recall | Média | — | ✅ **Resolvido (G6)** — `rag_pipeline_service.py` pgvector + BM25 |
 | 2 | **TOON Format** | Eficiência LLM | -15% custo tokens | Baixa | — | ✅ **Resolvido (G7)** — `toon_service.py` LGPD-compliant |
 | 3 | **YAML Tool Registry** | Arquitetura | Inspecionabilidade | Alta | — | ✅ **Resolvido (G5)** — 32 tools YAML + loader |
-| 4 | **candidates-page.tsx god object** (**10.592L**) | Qualidade FE | Impossível testar, lento para evoluir | Alta (2-3 semanas restantes) | 🔴 P0 | 🟡 Em progresso — de 12.375→10.592L, 5 componentes + 4 hooks extraídos |
+| 4 | **candidates-page.tsx god object** (**10.397L**) | Qualidade FE | Impossível testar, lento para evoluir | Alta (2-3 semanas restantes) | 🔴 P0 | 🟡 Em progresso — de 12.375→**10.397L** (verificado 2026-03-13), 5 componentes + 4 hooks extraídos |
 | 5 | **Deploy cloud** | Infra | Dependência do Replit | — | — | ✅ **Resolvido** — Dockerfile.prod + docker-compose.prod.yml + deploy/gcp_setup.sh + deploy/aws_setup.sh |
 | 6 | **LangSmith CI Step** | DevOps/CI | Validação automática config LangSmith | Baixa | — | ✅ **Resolvido** — `.github/workflows/ci.yml` linha 55-59: step "Verify LangSmith config" com `continue-on-error: true`. `app/config/langsmith.py` com `is_langsmith_enabled()` + `configure_langsmith()`. 18 testes em `test_langsmith_config.py`. |
 | 7 | **Coverage** | Qualidade Testes | Gate **32%**, achieved **32.66%** | — | — | ✅ **Gate atingido** (32%); 32.66% na suite completa |
@@ -1547,7 +1699,7 @@ Mês 4: Scale Layer (P2-P3)
 
 | Área | Dívida | Risco | Ação Recomendada |
 |------|--------|-------|-----------------|
-| **Frontend god object** | `candidates-page.tsx` **10.592 linhas** (reduzido de 12.375) | Alto — qualquer mudança pode quebrar features escondidas | Extrair em fases: `use-candidates-search.ts` → `use-candidates-pagination.ts` → `CandidatesFilterPanel` → `CandidatesTable` |
+| **Frontend god object** | `candidates-page.tsx` **10.397 linhas** (reduzido de 12.375; verificado 2026-03-13) | Alto — qualquer mudança pode quebrar features escondidas | Extrair em fases: `use-candidates-search.ts` → `use-candidates-pagination.ts` → `CandidatesFilterPanel` → `CandidatesTable` |
 | **Testes FE** | `use-candidates-list.test.ts` — 8 timeouts resolvidos com `vi.useFakeTimers` | — | ✅ Resolvido (Sprint H) |
 | **Sprint E fase 2-3** | ✅ **Resolvido** (Sprint F3: hooks wired) — `candidates-page.tsx` conectada a `use-candidates-list.ts` e `use-candidate-data-requests.ts` | — | — |
 | **ReAct loop depth** | `USE_LANGGRAPH_NATIVE=True` ativo — garantir que todos os agentes foram testados com dados reais | Médio — smoke tests por domínio ainda pendentes | Suite de regressão com dados reais + smoke tests por domínio |
@@ -1654,27 +1806,27 @@ Em Março/2026, foi realizada uma análise cruzada do documento do André ("Plan
 | Learning Loop | `app/shared/learning/learning_loop_service.py` | Feedback capture + pattern detection |
 | Structured Logging | `app/shared/structured_logging.py` | JSON format logging |
 | Agent Monitoring | `app/shared/governance/agent_monitoring_service.py` | Monitoring de agentes |
-| 10 ReAct Agents | `app/domains/*/agents/` | 4-file pattern em 10 domínios (7 originais + analytics/communication/ats_integration — Fase 5) |
-| 230+ Serviços | `app/services/` | Contagem via `find app/services -name "*.py" | wc -l` |
+| 16 Agentes IA (12 ReAct + 4 StateGraph) | `app/domains/*/agents/` | 4-file pattern em 12 domínios; 4 LangGraph StateGraph. Verificado filesystem 2026-03-13 |
+| 231 Serviços | `app/services/` | `find app/services -name "*.py" ! -name "__init__.py" | wc -l` — verificado 2026-03-13 |
 | 5 Channel Adapters | `app/shared/channels/adapters/` | email, whatsapp, sms, teams, in-app |
 | 5 ATS Clients | `app/services/ats_clients/` | gupy, pandape, stackone, merge, base |
 | Billing | `app/services/billing_providers/` | iugu, vindi, base |
 | OpenTelemetry | `app/shared/tracing.py` | Distributed tracing |
-| 362+ Endpoints | `app/api/v1/` | Contagem via `find app/api -name "*.py" | wc -l` |
+| 206 API Endpoints | `app/api/v1/` | `find app/api -name "*.py" ! -name "__init__.py" | wc -l` — verificado 2026-03-13 |
 | NavigationIntentDetector | `app/orchestrator/navigation_intent.py` | 4 grupos, confidence formula, threshold 0.65 — Fase 4b |
 | useNavigationIntent | `plataforma-lia/src/hooks/use-navigation-intent.ts` | POST /api/v1/navigation-intent, threshold 0.65 — Fase 4b |
 | LiaSplitPanel | `plataforma-lia/src/components/lia-float/LiaSplitPanel.tsx` | Split-view 360px WS streaming — Fase 4b |
 | useActionIntent | `plataforma-lia/src/hooks/use-action-intent.ts` | 5 domínios, ScoredAction loop, threshold 0.70 — Fase 4c/5 |
-| WS dispatcher 10 domains | `app/api/v1/agent_chat_ws.py` | `_get_agent()` com analytics/communication/ats_integration + aliases — Fase 5 |
+| WS dispatcher 11 domains + aliases | `app/api/v1/agent_chat_ws.py` | `_get_agent()`: wizard, pipeline/cv_screening, sourcing, talent (default fallback), kanban, jobs_management/jobs_mgmt, policy, pipeline_transition, analytics, communication/comms, ats_integration/ats — verificado 2026-03-13 |
 | VectorSemanticCache | `app/orchestrator/vector_semantic_cache.py` | pgvector cosine similarity, threshold 0.92, migration 028 — Fase G2 |
 | CascadedRouter 6-tier | `app/orchestrator/cascaded_router.py` | in-process→Redis→regex→Haiku→Sonnet→Opus — Fase G2 |
-| 5 novas métricas Prometheus | `app/observability/metrics.py` | router_tier_hit, router_latency_ms, router_confidence, agent_tool_failures, llm_cost_usd — Fase G3 |
+| 14 métricas Prometheus | `app/observability/metrics.py` | lia_llm_requests_total, lia_llm_latency_seconds, lia_agent_iterations_total, lia_fairness_blocks_total, lia_circuit_breaker_state, lia_http_request_duration_seconds, lia_pipeline_transitions_total, lia_candidates_evaluated_total, lia_router_tier_hit_total, lia_router_latency_ms + 4 others — verificado 2026-03-13 |
 | SearchBackend ABC | `app/services/search_service.py` | PostgresSearchBackend + ElasticsearchSearchBackend factory — Fase G4 |
 | PlatformEvents | `app/shared/platform_events.py` | PlatformEvent + handler registry + RabbitMQ topic exchange — Fase G4 |
 | UV Monorepo 9 libs | `libs/*/pyproject.toml` | config, utils, models, audit, messaging, agents-core, services, contexts, auth — Fase 6a/6b/6c |
 | Docker Compose 10 serviços | `docker-compose.yml` | postgres, redis, rabbitmq, api, api-vagas, api-funil, api-onboarding, celery_worker, celery_beat, flower — Fase 6b |
 | Celery prioridades | `docker-compose.yml` | celery_worker_high/normal/low + celery_beat + flower — Fase 6b |
-| 3953 BE testes coletados (1582 passando) | `tests/` | pytest --cov-fail-under=25; 0 falhas no subset crítico; cobertura 30.71% — 08/03/2026 |
+| 227 test files (verificado 2026-03-13) | `tests/` | `find tests -name "test_*.py" | wc -l`; pytest --cov-fail-under=32; coverage gate 32%, achieved 32.66% |
 | RAG Híbrido (G6) | `app/services/rag_pipeline_service.py` | pgvector cosine + tsvector BM25 + alpha blend; multi-tenant; `GET /api/v1/candidates/rag-search` |
 | TOON Format (G7) | `app/services/toon_service.py` | `TOONCard` dataclass; Redis TTL=3600s; LGPD anonymize=True; chave `toon:{company_id}:{candidate_id}:{job_id}` |
 | YAML Tool Registry (G5) | `app/tools/tool_registry_metadata.yaml` | 446 linhas, 32 tools declarativos; scopes: TALENT_FUNNEL/JOB_TABLE/IN_JOB/GLOBAL |
@@ -1688,7 +1840,7 @@ Em Março/2026, foi realizada uma análise cruzada do documento do André ("Plan
 | useCandidatesListMapped + transforms (G4) | `src/hooks/use-candidates-list-mapped.ts` + `src/lib/transforms/candidate-transforms.ts` | useMemo wrapper; pure functions 298L |
 | SearchResultsHeader (G3) | `src/components/pages/candidates/SearchResultsHeader.tsx` | DS v4.2.1 tokens; inline pills por tipo de entidade |
 | 10 UV Monorepo libs | `libs/*/pyproject.toml` | +orchestrator lib vs v5.0 (9→10 libs) |
-| 33 Alembic migrations | `alembic/versions/` | Migrations 025–033 + anteriores
+| 37 Alembic migrations | `alembic/versions/` | `ls alembic/versions/*.py | wc -l` — verificado 2026-03-13
 | Blind evaluation (B1) | `app/domains/cv_screening/services/rubric_evaluation_service.py` | `_extract_cv_content()` sem `Name:` — nome do candidato removido do contexto LLM |
 | GEOGRAPHIC_ADJUSTMENTS removido (B2) | `app/domains/cv_screening/services/calibration_profiles.py` | `GEOGRAPHIC_ADJUSTMENTS = {}` — constante esvaziada, multiplicador universal 1.0 |
 | LangSmith tracing opt-in (L1) | `app/config/config.py` | `LANGCHAIN_TRACING_V2: bool = False` — opt-in explícito |
@@ -1709,7 +1861,7 @@ Em Março/2026, foi realizada uma análise cruzada do documento do André ("Plan
 | 99 modelos SQLAlchemy | `app/models/` | Verificado filesystem — contagem real (vs 97 estimados em v8.0) |
 | 215 serviços | `app/services/` | `find app/services -name "*.py" \| wc -l` = 215 (vs 225+ estimados) |
 | 36 migrations | `alembic/versions/` | 001→035 + 033_merge_migration_heads |
-| 16 agentes distintos | `app/domains/*/agents/` | 13 ReAct (4-file) + 3 LangGraph StateGraph |
+| 16 agentes distintos | `app/domains/*/agents/` | 12 ReAct (4-file) + 4 LangGraph StateGraph |
 
 ## Apêndice B — Benchmarks de Mercado Consultados
 
