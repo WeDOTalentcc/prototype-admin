@@ -3,6 +3,8 @@
 **Fonte:** Auditoria direta do código-fonte (`lia-agent-system/` + `plataforma-lia/`)
 **Propósito:** Mapeamento técnico exaustivo de toda a arquitetura de prompts, interação entre chats, agentes ReAct, capacidades, templates de resposta, análises, sistema preditivo, limitações, dívidas técnicas e oportunidades de evolução.
 
+**Metodologia:** Auditoria de 13/03/2026 via leitura direta de arquivos-fonte. Verificados: endpoints, escopos (`scope_config.py`), registros de agentes (`react_agent_registry.py`), ferramentas, templates de prompt e serviços. Exemplos de resposta marcados como "ilustrativo" são sintéticos baseados nos templates/schemas do código; os demais refletem schemas e formatos reais. Recomenda-se revisão mensal para atualizar contagens de tools e referências de linha.
+
 ---
 
 ## Sumário
@@ -231,7 +233,7 @@ Apresente alternativas com dados quando necessário.
 - **Ferramentas:** `search_salary_benchmark`, `validate_job_fields`, `get_job_suggestions`, `save_job_draft`, `get_company_config`, `get_intelligent_salary`, `get_intelligent_skills`, `capture_wizard_feedback`, `generate_enriched_jd` (9 tools)
 - **Fluxo:** coleta dados → valida campos → FairnessGuard → gera JD enriquecida → salva rascunho
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Quero criar uma vaga de Engenheiro de Dados Senior"
 → Roteamento: CascadedRouter → domain "job_management" → WizardReActAgent
@@ -249,7 +251,7 @@ Usuário: "Quero criar uma vaga de Engenheiro de Dados Senior"
 - **Escopo OUT (7 restrições):** outros candidatos, busca de novos, comparar vagas, adicionar em outra vaga, configurar pipeline, analytics gerais, templates de comunicação
 - **Ferramentas:** `update_candidate_stage`, `add_candidate_to_vacancy`, `reject_candidate`, `shortlist_candidate`, `bulk_update_candidates_stage`, `add_to_list`, `wsi_screening`, `hide_candidate` (8 tools)
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Faça a triagem WSI do candidato João Silva"
 → Roteamento: CascadedRouter → domain "cv_screening" → PipelineReActAgent
@@ -266,7 +268,7 @@ Usuário: "Faça a triagem WSI do candidato João Silva"
 - **Triggers:** "buscar candidatos", "encontrar perfis", "sourcing"
 - **Ferramentas:** `search_candidates`, `get_candidate_details`, `get_candidate_stats`, `get_candidate_history`, `get_talent_quality`, `get_talent_engagement`, `get_talent_availability`, `get_diversity_metrics`, `get_market_benchmarks` (9 tools)
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Busque desenvolvedores Python senior em São Paulo"
 → Roteamento: CascadedRouter → domain "sourcing" → SourcingReActAgent
@@ -283,7 +285,7 @@ Usuário: "Busque desenvolvedores Python senior em São Paulo"
 - **Escopo:** Assistência no funil de talentos, operações sobre candidatos
 - **FairnessGuard:** Integrado
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Quais candidatos estão parados há mais de 7 dias no funil?"
 → Roteamento: CascadedRouter → domain "recruiter_assistant" → TalentReActAgent
@@ -299,7 +301,7 @@ Usuário: "Quais candidatos estão parados há mais de 7 dias no funil?"
 - **Escopo:** Gestão do portfólio de vagas (listar, filtrar, analisar status)
 - **FairnessGuard:** Integrado
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Quais vagas estão abertas há mais de 30 dias?"
 → Roteamento: CascadedRouter → domain "recruiter_assistant" → JobsMgmtReActAgent
@@ -313,7 +315,7 @@ Usuário: "Quais vagas estão abertas há mais de 30 dias?"
 - **Escopo:** Análise e operações no kanban; 18 tipos de comando (ver seção 4.2)
 - **FairnessGuard:** Integrado | **GUARDRAIL_TOOLS:** Integrados
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Rankeie os candidatos desta vaga por fit"
 → Roteamento: detect_command_type() → RANKEAR_CANDIDATOS → KanbanReActAgent
@@ -334,7 +336,7 @@ Usuário: "Rankeie os candidatos desta vaga por fit"
 - **Prompt:** `app/domains/hiring_policy/agents/policy_system_prompt.py`
 - **Escopo:** CRUD de políticas de contratação, validação de compliance, regras de aprovação
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Qual é a política de aprovação para vagas acima de R$ 20.000?"
 → Roteamento: CascadedRouter → domain "hiring_policy" → PolicyReActAgent
@@ -352,7 +354,7 @@ Usuário: "Qual é a política de aprovação para vagas acima de R$ 20.000?"
   - Planos de execução com paralelismo
   - Agentes delegáveis: `job_planner`, `sourcing`, `cv_screening`, `interviewer`, `wsi_evaluator`, `scheduling`, `analyst_feedback`
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Preciso preencher a vaga de Tech Lead até sexta-feira"
 → Roteamento: CascadedRouter → domain "automation" → AutomationReActAgent
@@ -372,7 +374,7 @@ Usuário: "Preciso preencher a vaga de Tech Lead até sexta-feira"
 - **Prompt:** `app/domains/analytics/agents/analytics_system_prompt.py`
 - **Ferramentas:** 19 tools (ver seção 6)
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Como está a performance do funil da vaga Dev Backend?"
 → Roteamento: CascadedRouter → domain "analytics" → AnalyticsReActAgent
@@ -391,7 +393,7 @@ Usuário: "Como está a performance do funil da vaga Dev Backend?"
 - **Canais:** Email, WhatsApp, Teams
 - **Ferramentas:** `send_email`, `send_whatsapp`, `schedule_interview`, `send_bulk_email`, `send_feedback` (5 tools)
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Envie um email de feedback para os 3 candidatos rejeitados na vaga de UX Designer"
 → Roteamento: CascadedRouter → domain "communication" → CommunicationReActAgent
@@ -411,7 +413,7 @@ Usuário: "Envie um email de feedback para os 3 candidatos rejeitados na vaga de
 - **Fluxos:** Push (WeDOTalent → ATS), Pull (ATS → WeDOTalent)
 - **Princípios:** Multi-tenant obrigatório (`company_id`), LGPD (dados sensíveis NÃO sincronizados), idempotência, auditoria SOX/ISO 27001
 
-**Exemplo de interação:**
+**Exemplo de interação (ilustrativo):**
 ```
 Usuário: "Sincronize os candidatos aprovados da vaga Tech Lead com o Gupy"
 → Roteamento: CascadedRouter → domain "ats_integration" → ATSIntegrationReActAgent
@@ -573,11 +575,11 @@ interface CalibrationCandidate {
 
 **Fallback offline:** Se agente IA falha, `process_analytics_request()` retorna `{"success": false, "error": str(e)}` — sem template offline alternativo.
 
-#### Exemplo completo: `funnel_analysis`
+#### Exemplo completo: `funnel_analysis` (ilustrativo)
 
 **Input do usuário:** "Analise o funil da vaga Dev Backend Senior"
 
-**Resposta LIA (exemplo real):**
+**Resposta LIA (formato baseado no template de `job_analytics_prompt_service.py`):**
 ```markdown
 ## Análise do Funil — Dev Backend Senior
 
@@ -644,7 +646,7 @@ interface CalibrationCandidate {
 
 **Fallback offline:** Templates de análise retornam dados do banco local quando LLM falha. Templates de ação retornam erro com mensagem: "Desculpe, ocorreu um erro ao processar sua requisição."
 
-#### Exemplo completo: `resumir_perfil`
+#### Exemplo completo: `resumir_perfil` (ilustrativo)
 
 **Input do usuário:** "Me fale sobre a candidata Maria Santos"
 
@@ -676,7 +678,7 @@ interface CalibrationCandidate {
 
 **Fallback offline:** Retorna dados básicos do banco sem análise IA: nome, cargo, empresa, skills cadastradas.
 
-#### Exemplo completo: `mover_candidato` (ação com HITL)
+#### Exemplo completo: `mover_candidato` (ilustrativo — ação com HITL)
 
 **Input do usuário:** "Mova o João Silva para Entrevista Técnica"
 
@@ -716,7 +718,7 @@ Próximo passo sugerido: Agendar entrevista técnica com o gestor.
 | "vagas ideais"             | Tipos de vagas adequadas                   |
 | "definir tipo"             | Classificação de tipo de perfil            |
 
-#### Exemplo completo: "top 5"
+#### Exemplo completo: "top 5" (ilustrativo)
 
 **Input do usuário:** "Top 5 candidatos para essa busca"
 
@@ -742,7 +744,7 @@ Próximo passo sugerido: Agendar entrevista técnica com o gestor.
 
 **Fallback offline:** "Olá! Sou a LIA, sua assistente de recrutamento. Recebi sua mensagem sobre 'Top 5 candidatos para essa busca...' Como posso ajudar você hoje?" com `suggested_prompts: ["Criar uma nova vaga", "Buscar candidatos", "Ver minhas tarefas pendentes"]`
 
-#### Exemplo completo: "comparar" (Float)
+#### Exemplo completo: "comparar" (ilustrativo)
 
 **Input do usuário:** "Compare Ana Costa e Carlos Mendes"
 
