@@ -8,7 +8,7 @@ v2.0: Closed-loop action execution - LIA executes actions directly instead of
 opening modals for the user to act manually.
 """
 from fastapi import APIRouter, HTTPException, Depends
-from app.dependencies.token_budget import require_token_budget_lenient
+from app.dependencies.token_budget import require_token_budget
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import logging
@@ -318,7 +318,7 @@ Responda APENAS com o valor extraído, sem explicações. Se não encontrar, res
 async def orchestrated_job_chat(
     request: OrchestratedJobChatRequest,
     orch: Orchestrator = Depends(get_orchestrator),
-    _budget: None = Depends(require_token_budget_lenient),
+    _budget: None = Depends(require_token_budget),
 ) -> OrchestratedJobChatResponse:
     """
     Process a job-context query through the multi-agent orchestrator.

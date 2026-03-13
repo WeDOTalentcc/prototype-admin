@@ -2220,8 +2220,17 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
       const highScoreCount = computedSuggestions.filter(s => s.type === 'high_score').length
       const lowScoreCount = computedSuggestions.filter(s => s.type === 'low_score').length
 
+      const atRiskCandidates = allTableCandidates.filter(c => (c.daysInStage || 0) > 14)
+      const dropoutRiskCandidates = allTableCandidates.filter(c => {
+        const days = c.daysInStage || 0
+        const score = c.score || c.wsiScore || 0
+        return days > 10 && score >= 70
+      })
+
       let alertParts: string[] = []
       if (staleCount > 0) alertParts.push(`${staleCount} candidato${staleCount > 1 ? 's' : ''} parado${staleCount > 1 ? 's' : ''} ha mais de 7 dias`)
+      if (atRiskCandidates.length > 0) alertParts.push(`${atRiskCandidates.length} candidato${atRiskCandidates.length > 1 ? 's' : ''} em risco (parado${atRiskCandidates.length > 1 ? 's' : ''} ha mais de 14 dias)`)
+      if (dropoutRiskCandidates.length > 0) alertParts.push(`${dropoutRiskCandidates.length} candidato${dropoutRiskCandidates.length > 1 ? 's' : ''} com risco de desistencia (score alto + longo tempo de espera)`)
       if (highScoreCount > 0) alertParts.push(`${highScoreCount} candidato${highScoreCount > 1 ? 's' : ''} com score alto para priorizar`)
       if (lowScoreCount > 0) alertParts.push(`${lowScoreCount} candidato${lowScoreCount > 1 ? 's' : ''} com score baixo para revisar`)
 
@@ -2275,7 +2284,11 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
       if (mlSection) {
         sections.push(mlSection.trim())
       }
-      sections.push('Posso ajudar com analises, comparacoes ou acoes. O que precisa?')
+      if (dropoutRiskCandidates.length > 0) {
+        const names = dropoutRiskCandidates.slice(0, 3).map(c => c.name).join(', ')
+        sections.push(`**Acao sugerida:** Priorize contato com ${names}${dropoutRiskCandidates.length > 3 ? ` e mais ${dropoutRiskCandidates.length - 3}` : ''} para evitar perda de talentos qualificados.`)
+      }
+      sections.push('Posso ajudar com analises, comparacoes, previsoes de risco ou acoes. O que precisa?')
 
       const message = `Ola! Preparei o briefing desta vaga:\n\n${sections.join('\n\n')}`
 
