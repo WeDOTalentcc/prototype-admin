@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, Briefcase, List, Mail, Brain, X, Database, Loader2, ClipboardCheck, Star, EyeOff, Share2 } from "lucide-react"
+import { Users, Briefcase, List, Mail, X, Database, Loader2, ClipboardCheck, Star, EyeOff, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface ContextualActionsBannerProps {
@@ -11,7 +11,6 @@ interface ContextualActionsBannerProps {
   onAddToList: () => void
   onShareSearch?: () => void
   onSendMessage: () => void
-  onAnalyze: () => void
   onSaveToLocalBase?: () => void
   onWSIScreening?: () => void
   onToggleFavorite?: () => void
@@ -28,7 +27,6 @@ export function ContextualActionsBanner({
   onAddToList,
   onShareSearch,
   onSendMessage,
-  onAnalyze,
   onSaveToLocalBase,
   onWSIScreening,
   onToggleFavorite,
@@ -137,17 +135,6 @@ export function ContextualActionsBanner({
           >
             <EyeOff className="w-3.5 h-3.5 text-gray-500" />
             <span>Ocultar</span>
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onAnalyze}
-            className="h-8 px-3 text-xs gap-1.5 bg-white hover:bg-gray-50 border-gray-200 text-gray-800 dark:text-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
-            title="Análise LIA"
-          >
-            <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-            <span>Análise LIA</span>
           </Button>
 
           {pearchCount > 0 && onSaveToLocalBase && (
