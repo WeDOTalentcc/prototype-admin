@@ -438,21 +438,12 @@ Usuário: "Sincronize os candidatos aprovados da vaga Tech Lead com o Gupy"
 
 ### 3.1 Avaliação por Rubrica (RubricEvaluationModal)
 
-<<<<<<< HEAD
 - **O que faz:** Avalia candidato contra critérios estruturados da vaga, gerando score multi-dimensional
 - **Input:** `candidateId`, `jobId`, dados do CV, competências requeridas
 - **Processing:** IA (Claude via Pipeline Agent); analisa CV contra cada critério, pesa dimensões, gera evidências
 - **Output:** Score 0-100, grade (A+/A/B+/...), dimensões com critérios individuais, pontos fortes/atenção, recomendação, dados WSI (se disponível)
 - **Execução:** IA real (Claude)
 - **Arquivo:** `plataforma-lia/src/components/rubric-evaluation-modal.tsx`
-=======
-**Arquivo:** `app/domains/job_management/agents/wizard_react_agent.py`
-**Responsabilidade:** Criação guiada de vagas com sugestões inteligentes
-**Prompt principal:**
-- Persona LIA como consultora de RH
-- Capacidade de sugerir requisitos, skills, faixas salariais
-- FairnessGuard integrado (verifica bias em descrições de vaga)
-- Fluxo: coleta dados → valida campos → gera JD enriquecida → salva rascunho
 
 ### 5.2 Pipeline Agent (cv_screening)
 
@@ -601,11 +592,7 @@ A regra anti-sycophancy está presente em todos os agentes:
 | `wsi_screening`               | Triagem WSI comportamental                |
 | `hide_candidate`              | Ocultar candidato                         |
 
-<<<<<<< HEAD
 ### 6.4 Job Management / Wizard Tools (9 ferramentas)
-=======
-### 6.4 Job Management / Wizard Tools (8 ferramentas)
->>>>>>> 164b7b43 (Saved your changes before starting work)
 
 | Ferramenta                | Descrição                                    |
 |---------------------------|----------------------------------------------|
@@ -654,7 +641,6 @@ Esses domínios possuem módulos `__init__.py` com funções `get_*_tools()` que
 **Execução:** IA (Claude via agente Pipeline) gera avaliação; frontend renderiza
 
 Estrutura de dados da avaliação:
->>>>>>> 512a90fe (Saved your changes before starting work)
 
 ```typescript
 interface RubricEvaluationData {
@@ -1143,7 +1129,6 @@ Interface compartilhada com `ProactiveInsightCard` (ver 5.1). Utilizada em `cand
 | 8 | Esconder          | `onHide`            | Sim                 | Sim                  |
 | 9 | Triagem WSI       | `onWSIScreening`    | Sim                 | Sim                  |
 
-<<<<<<< HEAD
 ### 7.3 Ações Contextuais — ContextualActionsBanner
 
 **Arquivo:** `plataforma-lia/src/components/contextual-actions-banner.tsx`
@@ -1176,16 +1161,6 @@ Fluxo HITL (Human-in-the-loop):
 1. LIA propõe ação → `needs_confirmation: true`
 2. Usuário confirma/rejeita → `PendingActionStore`
 3. Se confirmado → `ActionExecutor` executa ação real
-=======
-<<<<<<< HEAD
-1. **Anti-sycophancy** — Regra presente em todos os agentes (via bloco compartilhado ou equivalente no prompt), porém sem guardrail automatizado que valide enforcement em runtime
-=======
-1. **Anti-sycophancy** — Regra presente no system prompt mas não validada por guardrail automatizado em todos os agentes
->>>>>>> 164b7b43 (Saved your changes before starting work)
-2. **FairnessGuard** — Integrado em Wizard, Talent, Jobs Management, Kanban; ausente em Analytics, Automation, ATS Integration
-3. **LGPD em ATS** — Dados sensíveis não sincronizados, mas a lista de campos sensíveis é hardcoded
-4. **Auditoria** — SOX/ISO 27001 mencionados no prompt do ATS Agent, mas sem implementação de audit trail centralizado
->>>>>>> 512a90fe (Saved your changes before starting work)
 
 ---
 

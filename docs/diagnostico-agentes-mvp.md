@@ -1,10 +1,12 @@
 # Diagnóstico Completo — Agentes IA para Alpha 1 MVP
 ## Cruzamento: Roadmap Alpha 1 × Codebase V5 (GitHub) × Referência LIA
 
-**Data:** 11 de Março de 2026
-**Versão:** 3.0 (Sprints SEG-1 a SEG-5 — wiring completo de governança e segurança nos fluxos de agentes)
-**Método:** Leitura direta do codebase V5 via GitHub API + filesystem LIA + roadmap Alpha 1 v2
+**Data:** 13 de Março de 2026
+**Versão:** 5.0 (Análise investigativa profunda — cruzamento codebase real × `relatorio_capacidades_prompts_lia.md`)
+**Método:** Leitura direta do codebase V5 via GitHub API + filesystem LIA + roadmap Alpha 1 v2 + auditoria de capacidades de prompts e chats
 
+> **Changelog v5.0 (13/03/2026):** Análise investigativa profunda do codebase com cruzamento do `relatorio_capacidades_prompts_lia.md` (1394 linhas, 10 seções). Principais adições: **Nova Seção 13G** — Arquitetura dos 3 Níveis de Chat (Float/Kanban/Full) com escopos `scope_config.py` (TALENT_FUNNEL 20 tools, IN_JOB 25 tools, JOB_TABLE 19 tools, GLOBAL 2 tools), fluxo de decisão frontend (`isGenericQuestion()`, `analysisCommands[]`, `detect_command_type()`), endpoints `orchestrated_talent_chat.py` e `orchestrated_job_chat.py`. **Nova Seção 13H** — ActionExecutor closed-loop + PendingActionStore (HITL via chat). **Nova Seção 13I** — Templates de Resposta (18 Kanban + 8 Analytics + Float commands). **Nova Seção 13J** — Sistema Preditivo e Insights (6 ferramentas preditivas, 8 serviços de inteligência operacional, Response Cache). **Nova Seção 13K** — Quick Actions e Ações Bulk (12 quick actions + 9 bulk actions + 8 contextuais). **Seção 14 atualizada** — Jobs Management Agent adicionado como 12º agente; contagens de tools corrigidas por scope_config.py real. **Seção 16 ampliada** — 17+ capacidades ausentes identificadas (LIA Score clicável, WSI assíncrono, ML adaptativo, fit cultural, auto-routing aprendiz, etc.). **Seção 22 ampliada** — Dívidas técnicas e limitações incorporadas do relatório (fallbacks hardcoded, detecção por keywords, cache não-distribuído, arquivos monolíticos). Conflitos de merge resolvidos no `relatorio_capacidades_prompts_lia.md`. Contagem total: 15 agentes (11 ReAct + 2 LangGraph + 1 interview_graph + 1 Orchestrator), ~497 arquivos Python na camada de IA, ~130 endpoints API. Jobs Management Agent reconhecido como 12º agente ReAct (já contido nos 11 ReAct originais; total da tabela seção 8 = 15 linhas incluindo Orchestrator).
+>
 > **Changelog v3.0 (11/03/2026):** Sprints de Segurança e Governança SEG-1 a SEG-5 implementados e testados. Wiring completo: PromptInjectionGuard (SEG-1) em `wsi_interview_graph.py` + `agent_chat_ws.py`; FairnessGuard (SEG-2) em `sourcing_react_agent.py` + `pipeline_transition_agent.py`; PII Masking Celery workers (SEG-3A) via `worker_process_init` signal; strip_pii_for_llm_prompt (SEG-3B) em 4 callers LLM (rubric, analysis, voice, comparison); ConsentCheckerService (SEG-4) no Gate 1 do WSI (`load_context`); AuditService (SEG-5) nos gates de decisão — pipeline HITL/transition/LangGraph, sourcing ReAct/LangGraph, HITL rejected. 34 testes unitários adicionados (6 arquivos). Auditoria de governança completa: 8/8 Inegociáveis ✅, 12/13 Crenças ✅. **Atenção:** SEG-1 a SEG-5 fecham os 5 gaps críticos de WIRING. Permanecem como pendentes os 6 gaps de CONFIGURAÇÃO/BASELINE (BiasAudit, PolicyEngine, FRIA, Circuit breakers, Data Retention, DSR e2e) — estes requerem configuração antes do go-live, não implementação de código.
 
 > **Changelog v2.0:** Documento consolidado — catálogo completo de capacidades (agentes, tools, graphs, automações, serviços, API endpoints, gaps V5) integrado diretamente neste diagnóstico como seções 13-21. Corrigido Tier 5 Router (Haiku→Sonnet→Opus), path PII Masking, adicionado PromptInjectionGuard como infra existente, adicionado job cleanup_stale_reminders (10 jobs), corrigido gap V5 Security Guard.
@@ -391,9 +393,12 @@ Passo 9B (Enviar Feedback Final)
 |------------|-------------------|--------|-------------------|:----------:|:--------:|
 | **Kanban Agent** (22 tools) | `recruiter_assistant/kanban_react_agent.py` | V5 tem. Gap: drag-drop pipeline, batch operations | Alpha 1 foca no fluxo, não no dashboard | P2 | 14.11 |
 | **Talent Agent** (12 tools) | `recruiter_assistant/talent_react_agent.py` | V5 tem. Gap: proactive recommendations, market insights | Recomendações consultivas — nice-to-have | P2 | 14.12 |
-| **Analytics Agent** (6 tools) | `analytics/analytics_react_agent.py` | V5 tem. Gap: real-time dashboards, funnel metrics | Dashboards de performance — pós-Alpha 1 | P2 | 14.13 |
+| **Analytics Agent** (19 tools) | `analytics/analytics_react_agent.py` | V5 tem. Gap: real-time dashboards, funnel metrics | Dashboards de performance — pós-Alpha 1 | P2 | 14.13 |
 | **Automation Agent** (6 tools + 10 jobs) | `automation/automation_react_agent.py` | V5 tem. Gap: visual rule builder, DLQ management | Agente conversacional não entra; infra roda | P1 | 14.14 |
+| **Jobs Management Agent** (—) | `jobs_mgmt/jobs_mgmt_react_agent.py` | V5 tem. Gap: portfólio de vagas inteligente | Gerencia listagem/filtros/status de vagas | P2 | 14.15 |
 
+> **Atualizado v5.0:** Analytics corrigido de 6→19 tools. Jobs Management Agent adicionado (ver seção 14.15).
+>
 > **Importante:**
 > - O **Hiring Policy** entra no Alpha 1 como **serviço de políticas** (4 tools), não como agente conversacional (ver seção 14.10). O agente conversacional completo (13 tools + WebSocket) é pós-Alpha.
 > - O **Automation Agent** como agente conversacional não entra no Alpha 1, mas seus **10 jobs agendados** e **8 triggers de evento** rodam como infraestrutura em todos os cenários (ver seção 14.14).
@@ -893,9 +898,12 @@ O Alpha 1 introduz funcionalidades que requerem integração operacional. Alguns
 | **Total Alpha 1** | **91** | | |
 | Kanban | 22 | ReAct | 14.11 |
 | Talent | 12 | ReAct | 14.12 |
-| Analytics | 6 | ReAct | 14.13 |
+| Analytics | 19 | ReAct | 14.13 |
 | Automation | 6 | ReAct | 14.14 |
-| **Total Geral (14 agentes)** | **146** (Alpha 1 usa 91) | | |
+| Jobs Management | 14 | ReAct | 14.15 |
+| **Total Geral (15 agentes)** | **164** (Alpha 1 usa 91) | | |
+
+> **Atualizado v5.0:** Analytics corrigido de 6→19 tools (conforme `analytics_tool_registry.py`). Jobs Management Agent (`jobs_mgmt_react_agent.py`) adicionado como 15º agente — gerencia portfólio de vagas (listagem, filtros, status, duplicação). Escopos por chat: TALENT_FUNNEL filtra 20 tools, IN_JOB filtra 25 tools, GLOBAL filtra 2 tools (ver seção 13G).
 
 ---
 
@@ -985,13 +993,14 @@ libs/config: settings, database, Redis
 | 🟢 BAIXO | **8** | Desejável | AB Testing, RecruiterPersonalization, FinetuningExport, Long-term Memory refinement |
 | **TOTAL** | **50** | | (revisado de 55→50 após resolução de 5 gaps críticos por SEG-1 a SEG-5) |
 
-### Conclusão da Varredura Expandida
+### Conclusão da Varredura Expandida (atualizado v5.0)
 **O gap real do Alpha 1 é de ORQUESTRAÇÃO e WIRING — não de construção de serviços. Os gaps críticos de governança/compliance foram resolvidos nos Sprints SEG-1 a SEG-5.**
 
-- A LIA tem 221 serviços implementados, incluindo todos os componentes críticos
+- A LIA tem ~497 arquivos Python na camada de IA e ~130 endpoints API
 - **Governança/Compliance (atualizado v3.0):** Os 5 gaps críticos de wiring foram resolvidos — FairnessGuard ativo em sourcing + pipeline, PromptInjectionGuard ativo em WSI + chat, PII Masking ativo globalmente + Celery + strip antes do LLM, ConsentCheckerService no Gate 1 WSI, AuditService em todas as decisões de Gate
 - Os gaps remanescentes são de **configuração do fluxo Alpha 1** (não de código ausente)
-- O trabalho principal é: **(1)** wiring dos agentes existentes, **(2)** configuração do fluxo Alpha 1, **(3)** baseline de fairness antes do go-live
+- **Atualizado v5.0:** Análise profunda identificou 20+ capacidades ausentes/parciais (ver seção 16.6), incluindo: LIA Score clicável, WSI assíncrono, ML adaptativo, fit cultural, auto-routing aprendiz, JobReportModal com dados reais, análise comparativa visual, e 8 dívidas técnicas
+- O trabalho principal é: **(1)** wiring dos agentes existentes, **(2)** configuração do fluxo Alpha 1, **(3)** baseline de fairness antes do go-live, **(4)** resolver capacidades parciais de alto impacto
 
 ### 10.1 Gaps de Funcionalidade (absent em ambos)
 1. **Email tracking pixel** (abertura) + link redirect (clique) — **Absent em ambos**
@@ -1115,7 +1124,7 @@ Usuário → MainOrchestrator → CascadedRouter (6 tiers) → Agente de Domíni
 
 > **Fonte:** `docs/GUIA_ARQUITETURA_IA_v1.0.md` — Seções 14, 15, 32, 33, Apêndice B
 >
-> **Este shell é o CONTRATO que todos os 14 agentes devem seguir.** Um agente está "pronto" quando implementa 100% deste shell. Qualquer desvio deve ser documentado como decisão arquitetural (ADR).
+> **Este shell é o CONTRATO que todos os 15 agentes devem seguir.** Um agente está "pronto" quando implementa 100% deste shell. Qualquer desvio deve ser documentado como decisão arquitetural (ADR).
 
 ### 13B.1 Padrão 4-File — Estrutura Obrigatória
 
@@ -2114,6 +2123,320 @@ Para uma nova feature, pergunte:
 | Sugestões de skills | ❌ NÃO | Sugestão editável pelo usuário | — |
 
 > **Princípio:** Toda ação que causa efeito externo (envia, publica, rejeita, agenda) requer confirmação humana. Ações informativas (score, busca, sugestão) são automáticas.
+
+---
+
+## 13G. ARQUITETURA DOS 3 NÍVEIS DE CHAT — ESCOPOS, DECISÃO E ENDPOINTS
+
+> **Fonte:** `relatorio_capacidades_prompts_lia.md` seção 1 + investigação direta de `scope_config.py`, `orchestrated_talent_chat.py`, `orchestrated_job_chat.py`
+>
+> **Por que esta seção existe:** O diagnóstico v3.0 não documentava como os 3 pontos de contato do chat (Float, Kanban, Full) se conectam ao backend, quais ferramentas cada um tem acesso, e como a decisão "processar localmente vs delegar ao orquestrador" é tomada no frontend. Esta informação é crítica para entender o escopo real de cada agente.
+
+### 13G.1 Os 3 Níveis de Chat
+
+| Chat | Localização Frontend | Escopo (`scope_config.py`) | Endpoint Backend | Backend File |
+|------|---------------------|---------------------------|-----------------|-------------|
+| **Float Chat** | `candidates-page.tsx` | `TALENT_FUNNEL` (20 tools) | `POST /orchestrator/talent-chat` | `orchestrated_talent_chat.py` |
+| **Kanban Chat** | `job-kanban-page.tsx` | `IN_JOB` (25 tools) | `POST /orchestrator/job-chat` | `orchestrated_job_chat.py` |
+| **Chat Full** | `chat-page.tsx` | `GLOBAL` (2 tools) | `POST /orchestrator/process` + WebSocket | `orchestrator.py` |
+
+### 13G.2 Escopos Detalhados (`app/tools/scope_config.py`)
+
+**TALENT_FUNNEL (20 tools):**
+- Query (11): `search_candidates`, `get_candidate_details`, `get_candidate_stats`, `compare_candidates`, `get_talent_quality`, `get_talent_engagement`, `get_talent_availability`, `get_diversity_metrics`, `get_candidate_history`, `get_ml_predictions`, `get_conversion_patterns`
+- Action (9): `add_candidate_to_vacancy`, `reject_candidate`, `shortlist_candidate`, `add_to_list`, `hide_candidate`, `send_email`, `send_whatsapp`, `send_bulk_email`, `export_candidates`
+
+**IN_JOB (25 tools):**
+- Query (14): `get_job_details`, `get_vacancy_funnel`, `get_candidate_details`, `get_activity_summary`, `get_pending_actions`, `compare_candidates`, `get_candidate_stats`, `get_bottleneck_analysis`, `get_job_velocity`, `get_job_quality_metrics`, `get_stakeholder_metrics`, `get_prediction_metrics`, `get_job_benchmark`, `get_smart_alerts`
+- Action (11): `update_candidate_stage`, `bulk_update_candidates_stage`, `reject_candidate`, `shortlist_candidate`, `add_to_list`, `hide_candidate`, `wsi_screening`, `send_email`, `send_whatsapp`, `schedule_interview`, `send_feedback`
+
+**GLOBAL (2 tools):**
+- `generate_report`, `schedule_report`
+- Todas as mensagens vão ao Orchestrator.process_request() com escopo completo (o scope GLOBAL no config limita tools, mas o orchestrator roteia para o agente correto que tem suas próprias tools)
+
+### 13G.3 Fluxo de Decisão Frontend — Float Chat
+
+```
+1. Mensagem recebida → normalizar
+2. Verificar se é COMANDO DE ANÁLISE (analysisCommands[]):
+   - "analisar potencial", "resumo executivo", "top 5", "comparar", etc.
+   → Se sim: handleAICommand(message) [processamento IA via backend]
+3. Verificar se é PERGUNTA GENÉRICA (isGenericQuestion()):
+   - Regex: /^(o que|como|por que|quando|onde|quem|quanto)/, /?$/
+   - EXCETO se contém searchKeywords (46 termos): "desenvolvedor", "python", "react", etc.
+   → Se é pergunta genérica SEM keywords: handleOrchestratedTalentMessage() → backend
+4. Senão: executar como BUSCA DE CANDIDATOS via executeSearch()
+```
+
+**`isGenericQuestion()` (candidates-page.tsx, ~linha 5617):**
+- Input: texto do usuário
+- Processing: regex de padrões interrogativos + ausência de 46 keywords de busca
+- Output: boolean — true se é pergunta genérica (vai para orquestrador), false se é busca
+- Keywords: cargos (desenvolvedor, gerente, analista...), tecnologias (python, react, node...), localidades (são paulo, remoto...), senioridades (junior, pleno, senior...)
+
+### 13G.4 Fluxo de Decisão Backend — Kanban Chat
+
+```
+1. Request recebida com job_context + candidates + message
+2. Backend detecta command_type via detect_command_type(message) → KanbanCommandType
+3. Se command_type ∈ _ANALYTICAL_COMMAND_TYPES (12 tipos): análise IA
+4. Se command_type ∈ ACTIONABLE_INTENTS: executa ação via ActionExecutor
+5. Se é confirmação/rejeição de ação pendente: resolve via PendingActionStore
+6. Senão: roteia para Orchestrator.process_request() com contexto enriquecido
+```
+
+### 13G.5 Diagrama de Interação Consolidado
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Float Chat (candidates-page)                           │
+│  Escopo: TALENT_FUNNEL (20 tools)                       │
+│  Decisão: isGenericQuestion() → orquestrador            │
+│           analysisCommands → handleAICommand             │
+│           default → executeSearch (busca candidatos)     │
+│  → callOrchestratedTalentChat() → /orchestrator/talent-chat │
+├─────────────────────────────────────────────────────────┤
+│  Kanban Chat (job-kanban-page)                          │
+│  Escopo: IN_JOB (25 tools)                              │
+│  Decisão: detect_command_type() → KanbanCommandType     │
+│           analytical → análise IA                        │
+│           actionable → ActionExecutor                    │
+│  → callOrchestratedJobChat() → /orchestrator/job-chat    │
+├─────────────────────────────────────────────────────────┤
+│  Chat Full (chat-page)                                  │
+│  Escopo: GLOBAL (2 tools, mas orchestrator completo)    │
+│  → liaApi.orchestratorProcess() → /orchestrator/process  │
+│  (+ WebSocket wsSendMessage)                            │
+└──────────────────────────┬──────────────────────────────┘
+                           │
+                    ┌──────▼──────┐
+                    │ Orchestrator │
+                    │ + CascadedR. │
+                    └──────┬──────┘
+                           │ domain dispatch
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+        [11 Agentes ReAct via LangGraph]
+```
+
+### 13G.6 Estado do Float / Super Prompt
+
+Gerenciado via `LiaFloatContext` (`src/contexts/lia-float-context.tsx`):
+- `isOpen` / `isExpanded` — Float mini vs. Super Prompt expandido
+- `expand()` / `collapse()` — Transição entre modos
+- `sharedMessages` — Mensagens compartilhadas entre mini e expandido
+
+---
+
+## 13H. ACTIONEXECUTOR CLOSED-LOOP + PENDINGACTIONSTORE (HITL VIA CHAT)
+
+> **Fonte:** `relatorio_capacidades_prompts_lia.md` seção 7.4 + investigação de `app/orchestrator/action_executor.py` e `app/orchestrator/pending_action.py`
+
+### 13H.1 Conceito
+
+O `ActionExecutor` implementa um loop fechado de execução de ações pelo chat, sem necessidade de modais ou interfaces separadas. Quando o usuário pede uma ação (mover candidato, enviar email, etc.), a LIA propõe a ação com `needs_confirmation: true` e aguarda confirmação.
+
+### 13H.2 Ações Suportadas
+
+| Ação | Método | Descrição |
+|------|--------|-----------|
+| `move_candidate` | `ActionExecutor.move_candidate()` | Move candidato entre etapas do pipeline |
+| `send_email` | `ActionExecutor.send_email()` | Envia email individual |
+| `start_screening` | `ActionExecutor.start_screening()` | Inicia triagem WSI comportamental |
+| `schedule_interview` | `ActionExecutor.schedule_interview()` | Agenda entrevista |
+| `request_data` | `ActionExecutor.request_data()` | Solicita dados adicionais ao candidato |
+| `analyze_profile` | `ActionExecutor.analyze_profile()` | Executa análise aprofundada do perfil |
+| `approve_candidate` | `ActionExecutor.approve_candidate()` | Aprova candidato para próxima etapa |
+
+### 13H.3 Fluxo HITL via Chat
+
+```
+1. Usuário pede ação: "Mova o João Silva para Entrevista Técnica"
+2. LIA detecta intent → ActionExecutor identifica ação
+3. LIA responde com needs_confirmation: true + detalhes da ação
+4. Resposta ao usuário: "📋 Confirmação necessária: Mover João Silva de Triagem para Entrevista Técnica. Confirma?"
+5. Usuário confirma → PendingActionStore resolve ação
+6. ActionExecutor executa ação real no backend
+7. LIA responde: "✅ João Silva movido para Entrevista Técnica! Próximo passo sugerido: Agendar entrevista."
+```
+
+### 13H.4 Arquivos
+
+| Arquivo | Papel |
+|---------|-------|
+| `app/orchestrator/action_executor.py` | Execução das 7 ações com validação e feedback |
+| `app/orchestrator/pending_action.py` | Store de ações pendentes (in-memory por sessão) |
+| `app/api/v1/orchestrated_job_chat.py` | Integração com ActionExecutor no endpoint Kanban |
+| `app/api/v1/orchestrated_talent_chat.py` | Integração com ActionExecutor no endpoint Float (v3.0) |
+
+---
+
+## 13I. TEMPLATES DE RESPOSTA — KANBAN (18) + ANALYTICS (8) + FLOAT
+
+> **Fonte:** `relatorio_capacidades_prompts_lia.md` seções 4.1, 4.2, 4.3
+
+### 13I.1 Kanban — 18 Command Templates
+
+**Arquivo:** `app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py`
+
+| # | Comando | Tipo | Descrição |
+|---|---------|------|-----------|
+| 1 | `rankear_candidatos` | Análise IA | Ranking com score_fit, forças, gaps, justificativa |
+| 2 | `performance_funil` | Análise IA | Métricas do pipeline: total, por etapa, conversão, benchmark |
+| 3 | `gargalos_processo` | Análise IA | Gargalos com tipo, impacto, recomendação, prioridades |
+| 4 | `comparar_candidatos` | Análise IA | Comparativo detalhado multi-dimensional |
+| 5 | `resumir_perfil` | Análise IA | Resumo executivo completo do candidato |
+| 6 | `candidatos_ativos` | Query local | Lista candidatos ativos na vaga |
+| 7 | `taxa_conversao` | Query local | Taxa de conversão por etapa |
+| 8 | `tempo_medio` | Query local | Tempo médio por etapa do pipeline |
+| 9 | `candidatos_parados` | Query local | Candidatos sem movimentação recente |
+| 10 | `top_candidatos` | Análise IA | Top candidatos por score/fit |
+| 11 | `mover_candidato` | Ação | Via ActionExecutor.move_candidate() |
+| 12 | `enviar_email` | Ação | Via ActionExecutor.send_email() |
+| 13 | `disparar_triagem` | Ação | Via ActionExecutor.start_screening() |
+| 14 | `agendar_entrevista` | Ação | Via ActionExecutor.schedule_interview() |
+| 15 | `solicitar_dados` | Ação | Via ActionExecutor.request_data() |
+| 16 | `analisar_perfil` | Análise IA | Análise aprofundada com recomendações |
+| 17 | `aprovar_candidato` | Ação | Via ActionExecutor.approve_candidate() |
+| 18 | `analise_geral` | Análise IA | Análise geral do pipeline (fallback default) |
+
+Cada template inclui: `keywords[]`, `prompt_template` (com placeholders `{job_context}`, `{candidates_context}`, `{pipeline_context}`), `response_sections[]`, `follow_up_prompts[]`.
+
+Fallback offline: Templates de análise retornam dados do banco local quando LLM falha. Templates de ação retornam: "Desculpe, ocorreu um erro ao processar sua requisição."
+
+### 13I.2 Job Analytics — 8 Command Templates
+
+**Arquivo:** `app/domains/analytics/services/job_analytics_prompt_service.py`
+
+| # | Comando | Agente Executor | Descrição |
+|---|---------|-----------------|-----------|
+| 1 | `funnel_analysis` | Analytics | Análise do funil: candidatos por etapa, conversão, gargalos, tempo médio |
+| 2 | `comparative_analysis` | Analytics | Comparação entre vagas: tempo, conversão, qualidade |
+| 3 | `bottleneck_detection` | Analytics | Gargalos: tempo de espera, candidatos parados, ações pendentes |
+| 4 | `time_to_fill_prediction` | Analytics | Previsão de tempo para preencher a vaga |
+| 5 | `candidate_quality_score` | Pipeline | Qualidade dos candidatos: fit técnico, cultural, diversidade |
+| 6 | `sourcing_effectiveness` | Sourcing | Efetividade do sourcing: melhores canais, custo por candidato |
+| 7 | `weekly_summary` | Analytics | Resumo semanal: novos candidatos, movimentações, entrevistas |
+| 8 | `salary_benchmark` | Wizard | Benchmark salarial: competitividade, ajustes |
+
+Fallback offline: Se agente IA falha, retorna `{"success": false, "error": str(e)}` — sem template offline alternativo.
+
+### 13I.3 Float Chat — Comandos de Análise
+
+**Detecção via `analysisCommands[]` (candidates-page.tsx):**
+
+| Comando | Ação |
+|---------|------|
+| "analisar potencial" | Análise de potencial de crescimento via IA |
+| "resumo executivo" | Resumo executivo dos resultados de busca |
+| "resumir busca" | Resumo consolidado da busca |
+| "top 5" / "top5" | Top 5 melhores candidatos |
+| "comparar" | Comparação entre candidatos selecionados |
+| "pontos a desenvolver" | Pontos de desenvolvimento |
+| "vagas ideais" | Tipos de vagas adequadas |
+| "definir tipo" | Classificação de tipo de perfil |
+
+---
+
+## 13J. SISTEMA PREDITIVO E INSIGHTS — INVENTÁRIO COMPLETO
+
+> **Fonte:** `relatorio_capacidades_prompts_lia.md` seção 6 + investigação de `app/services/predictive_analytics_service.py`
+
+### 13J.1 Ferramentas Preditivas (Analytics Agent)
+
+| Ferramenta | Input | Processing | Output | Surfacing UI |
+|------------|-------|------------|--------|-------------|
+| `get_prediction_metrics` | `job_id`, `time_range` | Query histórico + modelo de regressão | Previsões de hiring (prazo, prob.) | Analytics dashboard, Chat |
+| `get_ml_predictions` | `job_id`, `model_type` | Modelo ML treinado em dados da empresa | Previsões com confidence intervals | Analytics dashboard |
+| `get_conversion_patterns` | `job_id`/`company_id` | Análise de padrões no funil | Taxas de conversão por etapa/fonte | JobReportModal, Chat |
+| `get_smart_alerts` | `company_id`, `threshold` | Detecção de anomalias e tendências | Lista de alertas com severidade | Dashboard, SaturationBadge |
+| `get_trends` | `metric`, `time_range` | Séries temporais de métricas | Tendências com visualização | Analytics dashboard |
+| `get_bottleneck_analysis` | `job_id` | Análise de tempos por etapa | Gargalos + recomendações | Kanban Chat, Dashboard |
+
+### 13J.2 Predições Específicas
+
+| Predição | Dados Utilizados | Endpoint/Serviço | Surfacing UI |
+|----------|------------------|-------------------|-------------|
+| Probabilidade de contratação | Histórico vagas similares, pool atual | `predictive_analytics_service.py` | Chat, Analytics |
+| Time-to-Fill (TTF) | Tempos por etapa, velocidade pipeline | `time_to_fill_prediction` command | Chat, JobReportModal |
+| Risco de dropout | Tempo parado, engajamento, mercado | `get_smart_alerts` + `EWS` | SaturationBadge, Alertas |
+| Previsão de pipeline | Conversão histórica, volume atual | `get_ml_predictions` | Analytics dashboard |
+| Predição salarial | Mercado, cargo, localização, senioridade | `get_intelligent_salary` / `salary_benchmark` | Wizard, Chat |
+
+### 13J.3 Serviços de Inteligência Operacional (8 serviços)
+
+| # | Serviço | Tipo | Dados Utilizados | Surfacing UI |
+|---|---------|------|------------------|-------------|
+| 1 | Pipeline Velocity Engine | Local (query) | Timestamps de movimentação por etapa | Kanban page, Analytics dashboard |
+| 2 | Zero-Touch Scheduling | IA + Local | Disponibilidade, preferências, SLAs | Communication Agent, Calendar API |
+| 3 | Silver Medalists | IA (matching) | Histórico de candidatos rejeitados | Sourcing Agent, ProactiveInsightCard |
+| 4 | Recruiter Intelligence | Local (metrics) | Volume, velocidade, qualidade | Analytics dashboard |
+| 5 | Early Warning Score (EWS) | IA (anomaly) | Pipeline metrics, tempos, saturação | SaturationBadge, SmartAlerts |
+| 6 | Journey Intelligence | Local + IA | Touchpoints do candidato | Kanban page |
+| 7 | Recruiter Perf. Benchmark | Local (metrics) | KPIs comparativos entre recrutadores | Analytics dashboard |
+| 8 | Pipeline Prediction | IA (ML model) | Dados históricos vagas similares | JobReportModal, Analytics |
+
+### 13J.4 Response Cache Service
+
+- Cache de respostas para intents analíticas recorrentes
+- `generate_cache_key()`: intent + contexto + mensagem + company_id
+- Invalidação por entidade: `invalidate_for_job()`, `invalidate_for_candidate()`, `invalidate_for_company()`
+- Invalidação por padrão regex: `invalidate_by_pattern()`
+- **Arquivo:** `app/services/response_cache_service.py`
+
+---
+
+## 13K. QUICK ACTIONS E AÇÕES BULK — INVENTÁRIO COMPLETO
+
+> **Fonte:** `relatorio_capacidades_prompts_lia.md` seção 7
+
+### 13K.1 Quick Actions do Chat Full (chat-page.tsx)
+
+| Quick Action | Mensagem Enviada |
+|-------------|-----------------|
+| Criar nova vaga | `"Criar uma nova vaga"` |
+| Solicitar aprovação | `"Solicite aprovação de nova vaga"` |
+| Compartilhar com gestor | `"Compartilhe candidatos com gestor"` |
+| Solicitar feedback | `"Solicite feedback de entrevista"` |
+| Consultar candidato | `"Consulte informações sobre candidato"` |
+| Adicionar candidato | `"Adicione novo candidato"` |
+| Reagendar entrevista | `"Reagende uma entrevista"` |
+| Agendar entrevista (contextual) | `"agendar entrevista"` |
+| Avaliar fit técnico | `"avaliar fit técnico do candidato"` |
+| Gerar email follow-up | `"gerar email de follow-up"` |
+| Enviar WhatsApp | `"enviar mensagem whatsapp"` |
+| Comparar perfis | `"comparar perfis de candidatos"` |
+
+### 13K.2 Ações Bulk — Funil de Talentos (UnifiedBulkActionsBar)
+
+**Arquivo:** `plataforma-lia/src/components/ui/unified-bulk-actions-bar.tsx`
+
+| # | Ação | Prop | Disponível em Funil | Disponível em Kanban |
+|---|------|------|---------------------|----------------------|
+| 1 | Mover etapa | `onMoveStage` | Sim | Sim |
+| 2 | Rejeitar | `onReject` | Sim | Sim |
+| 3 | Enviar email | `onEmail` | Sim | Sim |
+| 4 | Agendar entrevista | `onSchedule` | Sim | Sim |
+| 5 | Adicionar a vaga | `onAddToVacancy` | Sim | Sim |
+| 6 | Mover para lista | `onMoveToList` | Sim | Sim |
+| 7 | Exportar | `onExport` | Sim | Sim |
+| 8 | Esconder | `onHide` | Sim | Sim |
+| 9 | Triagem WSI | `onWSIScreening` | Sim | Sim |
+
+### 13K.3 Ações Contextuais — ContextualActionsBanner
+
+**Arquivo:** `plataforma-lia/src/components/contextual-actions-banner.tsx`
+
+| # | Ação |
+|---|------|
+| 1 | Mover etapa |
+| 2 | Rejeitar |
+| 3 | Enviar email |
+| 4 | Agendar entrevista |
+| 5 | Adicionar a vaga |
+| 6 | Mover para lista |
+| 7 | Esconder |
+| 8 | Triagem WSI |
 
 ---
 
@@ -3293,6 +3616,59 @@ Checkpointer: PostgresSaver
 
 ---
 
+### 14.15 Jobs Management Agent [PÓS-ALPHA — P2]
+**Tipo:** ReAct Agent (4-file pattern)
+**Padrão Arquitetural:**
+- **ReAct puro (4-file pattern):** `jobs_mgmt_react_agent.py` + `jobs_mgmt_tool_registry.py` + `jobs_mgmt_system_prompt.py` + `jobs_mgmt_stage_context.py`
+- **Sem LangGraph** — ciclo ReAct iterativo com 14 tools (gerenciar portfólio de vagas)
+- **Localização:** `app/domains/recruiter_assistant/agents/` (mesmo domínio que Kanban e Talent)
+- **Escopo:** Visão macro do portfólio de vagas — métricas, SLA, bottlenecks, ações estratégicas
+- V5: Mesma arquitetura (`recruiter_assistant/jobs_mgmt_react_agent.py`)
+
+**Prioridade:** P2 (gerenciamento de portfólio de vagas — pós-Alpha 1)
+**Agente LIA:** `app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py` (635 linhas)
+**V5 Correspondente:** `src/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py`
+
+> **Adicionado v5.0:** Agente identificado na análise investigativa do codebase. Segue padrão 4-file idêntico ao Kanban/Talent. FairnessGuard integrado (`validate_job_action_fairness`).
+
+#### Arquivos
+| Arquivo | Função |
+|---------|--------|
+| `app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py` | Agente ReAct (635 linhas) |
+| `app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py` | 14 tools (911 linhas) |
+| `app/domains/recruiter_assistant/agents/jobs_mgmt_system_prompt.py` | System prompt PT-BR (186 linhas) |
+| `app/domains/recruiter_assistant/agents/jobs_mgmt_stage_context.py` | Contexto de estágio + predições |
+
+#### Tools (14)
+| Tool | O que faz |
+|------|----------|
+| `list_jobs` | Lista vagas com filtros (status, prioridade, recrutador) |
+| `view_job_details` | Detalhes completos de uma vaga |
+| `get_portfolio_metrics` | Métricas do portfólio (TTF, fill rate, ativas, etc.) |
+| `compare_jobs` | Compara vagas lado a lado |
+| `check_sla` | Verifica compliance SLA das vagas |
+| `analyze_bottlenecks` | Identifica gargalos no processo |
+| `get_recruitment_benchmarks` | Benchmarks de recrutamento por período |
+| `pause_job` | Pausa uma vaga |
+| `reopen_job` | Reabre uma vaga pausada/fechada |
+| `close_job` | Fecha uma vaga |
+| `update_priority` | Atualiza prioridade de uma vaga |
+| `generate_report` | Gera relatório do portfólio |
+| `get_pipeline_prediction` | Predição de pipeline por vaga |
+| `validate_job_action_fairness` | FairnessGuard — valida ações sem bias |
+
+#### Roteiro de Reprodução
+> Ver seção **13C.17 — Para reproduzir um agente ReAct** (domínio=`recruiter_assistant`, agente=`jobs_mgmt`)
+
+#### Camadas de Suporte Obrigatórias
+| Camada | Seção | Arquivos Relevantes |
+|--------|-------|---------------------|
+| FairnessGuard | 13D.1 | `validate_job_action_fairness` integrado |
+| Observabilidade | 13C.11 | Monitoring para ações de portfólio |
+| Config/Infra | 13C.14 | `config.py` (SLA thresholds, feature flags) |
+
+---
+
 ## 15. CAPACIDADES EXCLUSIVAS V5 — RESUMO CONSOLIDADO
 
 | # | Capacidade V5 | Arquivo V5 | Agente LIA Afetado | Status LIA | Impacto |
@@ -3340,7 +3716,7 @@ Checkpointer: PostgresSaver
 14. **DSR workflow não testado** — `app/api/v1/data_subject_requests.py` → testar 5 tipos: acesso, correção, exclusão, portabilidade, objeção (LGPD Art. 18)
 
 ### 16.4 Conclusão
-O trabalho do Alpha 1 NÃO é construir agentes — **todos os 14 agentes existem**. O trabalho é:
+O trabalho do Alpha 1 NÃO é construir agentes — **todos os 15 agentes existem**. O trabalho é:
 1. **Wiring de Agentes:** Conectar agentes existentes no fluxo Alpha 1
 2. ~~**Wiring de Governança:**~~ ✅ **Concluído (SEG-1 a SEG-5)** — FairnessGuard, PromptInjectionGuard, PII Masking, Consent e Audit estão todos wired
 3. **Configuração:** Parametrizar automações, policies e retention para regras Alpha 1
@@ -3361,6 +3737,75 @@ O trabalho do Alpha 1 NÃO é construir agentes — **todos os 14 agentes existe
 | **Compliance pre-go-live** (bias baseline, FRIA, DSR test, retention config) | **~10 SP** |
 | Testes end-to-end | ~15 SP |
 | **TOTAL REVISADO** | **~109 SP** |
+
+### 16.6 Capacidades Ausentes Identificadas (v5.0 — Análise Profunda)
+
+> **Fonte:** Cruzamento do `relatorio_capacidades_prompts_lia.md` seção 9 com investigação direta do codebase
+
+#### 16.6.1 Ausentes — Sem implementação
+
+| # | Capacidade | Status | Descrição | Complexidade | Impacto | Arquivos Relevantes |
+|---|-----------|--------|-----------|-------------|---------|---------------------|
+| 1 | **LIA Score clicável no funil** | Ausente | Recrutador clica no score e vê breakdown (rubricas, WSI, prereq, recency) com explicação | Média | Alto | `lia_score_service.py`, `candidates-page.tsx` |
+| 2 | **Fit cultural com dados de entrevista** | Ausente | Avaliar fit cultural cruzando dados de entrevistas reais (notas, sentimento, valores) | Alta | Alto | `lia_score_service.py`, `pipeline_react_agent.py` |
+| 3 | **WSI assíncrono** | Ausente | Enviar triagem WSI e processar respostas quando o candidato responder (fluxo offline) | Alta | Alto | `wsi_screening` tool, `pipeline_react_agent.py` |
+| 4 | **Relatório cross-vagas** | Ausente | Dashboard consolidado comparando métricas entre TODAS as vagas (TTF, qualidade, custo, fontes) | Média | Médio | `job_analytics_prompt_service.py`, `job-report-modal.tsx` |
+| 5 | **WSI Voice (voz)** | Ausente | Triagem WSI por voz (speech-to-text + text-to-speech) — atualmente text-only | Alta | Médio | `voice_provider.py`, `wsi_interview_graph.py` |
+| 6 | **Notificação WhatsApp em Job Created** | Ausente | `JobCreatedNotificationRequest` suporta email + Teams mas não WhatsApp | Baixa | Baixo | `communication_service.py` |
+
+#### 16.6.2 Parcialmente implementados — Requerem completar
+
+| # | Capacidade | Status | Gap | Complexidade | Impacto | Arquivos Relevantes |
+|---|-----------|--------|-----|-------------|---------|---------------------|
+| 7 | **Análise comparativa visual** | Parcial | `compare_candidates` tool existe mas resultado só aparece como texto no chat; falta componente UI lado-a-lado | Média | Alto | `analytics_query_tools.py`, `kanban_assistant_prompts.py` |
+| 8 | **Auto-routing aprendiz** | Parcial | CascadedRouter usa cache (velocidade) mas não faz aprendizado; peso dos tiers é estático | Alta | Alto | `cascaded_router.py`, `llm_cascade.py` |
+| 9 | **Insights proativos no Kanban** | Parcial | SaturationBadge existe mas é reativo (badge estático); falta ProactiveAgentWorker no kanban UI | Média | Médio | `SaturationBadge.tsx`, `proactive_agent_worker.py` |
+| 10 | **ML adaptativo** | Parcial | `Calibration_Adjustment` na fórmula do LIA Score é sempre = 0; falta loop de feedback de contratações reais | Alta | Alto | `lia_score_service.py`, `learning_analytics_service.py` |
+| 11 | **Benchmark salarial real** | Parcial | Benchmark usa IA para estimar; não há integração com fontes reais (Glassdoor, Levels.fyi) | Média | Médio | `job_wizard_tools.py` |
+| 12 | **JobReportModal** | Parcial | Dados hardcoded no frontend (funnelMetrics, channelPerformance, timeline, budget); sem integração backend | Média | Alto | `job-report-modal.tsx` |
+
+#### 16.6.3 Dívidas técnicas e fragilidades
+
+| # | Dívida | Descrição | Impacto |
+|---|--------|-----------|---------|
+| 13 | **Detecção por keywords frágil** | `isGenericQuestion()` (5 regex + 46 keywords), `analysisCommands[]` (8 strings fixas), `detect_command_type()` (keywords) — falham para variações de linguagem | Alto |
+| 14 | **Arquivos monolíticos** | `candidates-page.tsx` (10.398 linhas), `lia-api.ts` (4.943 linhas) — dificultam manutenção | Médio |
+| 15 | **IntentRouter legado** | Coexiste com LLM Cascade como fallback; duplicação de lógica de roteamento | Baixo |
+| 16 | **AgentFactory vs get_agent** | Dois padrões coexistem; `get_agent()` NÃO é session-safe mas é usado em código legado | Médio |
+| 17 | **Cache Tier 1 não-distribuído** | LRU in-process, não compartilhado entre workers; eviction FIFO | Baixo |
+| 18 | **Escopo GLOBAL incoerente** | `scope_config.py` limita a 2 tools, mas chat-page envia tudo ao Orchestrator que ignora scope na execução | Médio |
+| 19 | **handleOpenRubricAnalysis orphaned** | Função em `candidates-page.tsx` (~linha 6424) sem call sites; modal renderiza mas não é acessível via botão | Baixo |
+| 20 | **PolicyEngine nullable** | DB service pode ser `None`; validação pode falhar silenciosamente | Médio |
+
+#### 16.6.4 Fallbacks hardcoded
+
+| Componente | Comportamento de Fallback |
+|-----------|--------------------------|
+| Orchestrator | Se LLM falha, retorna: "Olá! Sou a LIA..." com 3 sugestões fixas |
+| CascadedRouter | Se nenhum tier resolve, retorna clarificação com 6 opções fixas |
+| VectorSemanticCache | Se pgvector indisponível, pula silenciosamente (graceful) |
+| PlanDetector | Falha silenciosa via try/except (non-blocking) |
+| Kanban análise | Templates retornam dados do banco local quando LLM falha |
+| Kanban ações | Retorna: "Desculpe, ocorreu um erro ao processar sua requisição." |
+| Analytics | Retorna `{"success": false, "error": str(e)}` — sem template offline alternativo |
+
+### 16.7 Processamento Local vs IA — Mapa de Referência
+
+> **Fonte:** `relatorio_capacidades_prompts_lia.md` seção 8.1
+
+| Funcionalidade | Execução | Tipo |
+|---------------|----------|------|
+| LIA Score | Local (sem LLM) — fórmula ponderada | Determinístico |
+| Busca de candidatos | Local (PostgreSQL) + API externa (Pearch AI) | Híbrido |
+| Distribuições/Analytics | Local — contagens e agrupamentos | Determinístico |
+| SaturationBadge | Local — threshold vs contagem | Determinístico |
+| JobReportModal | Local — dados hardcoded no frontend (mock) | Mock |
+| Avaliação por rubrica | IA real (Claude via Pipeline Agent) | IA |
+| WSI Screening | IA real (Claude via Pipeline Agent) | IA |
+| Comparação candidatos | IA real (Claude via Kanban/Analytics Agent) | IA |
+| Ranking candidatos | IA real (Claude via Kanban Agent) | IA |
+| JD Enriquecida | IA real (Claude via Wizard Agent) | IA |
+| Benchmark salarial | IA real (Claude) + dados de mercado | IA + dados |
 
 ## APÊNDICE A — ARQUIVOS DE REFERÊNCIA
 
@@ -5035,6 +5480,23 @@ Fonte: `docs/analise-comparativa-v5-vs-lia.md` §11.2
 | 5 | **LIA como copiloto contextual em páginas** | Ao navegar para qualquer página, LIA assume contexto automaticamente | Alta |
 | 6 | **Fine-tuning contínuo por empresa** | Exportar feedback DPO para fine-tuning — LIA aprende padrões da empresa | Muito alta |
 | 7 | **Multi-tenant split-view config** | Cada empresa com config independente de split-view (domínios habilitados, threshold de confiança) por tier de plano | Média |
+
+---
+
+### 22.6 Oportunidades Técnicas Adicionais (v5.0)
+
+> **Fonte:** `relatorio_capacidades_prompts_lia.md` seção 9.10 + investigação do codebase
+
+| # | Oportunidade | Complexidade | Impacto |
+|---|-------------|-------------|---------|
+| 1 | Registro dinâmico de agentes via YAML (sem restart) | Alta | Alto |
+| 2 | Multi-model por agente (GPT para tasks rápidas, Claude para análise, Gemini para embeddings) | Média | Alto |
+| 3 | RAG por domínio com embeddings dedicados | Alta | Alto |
+| 4 | Circuit breaker para Pearch AI (já existe infra, falta config) | Baixa | Médio |
+| 5 | Validar escopo de tools no backend (não apenas no config) | Baixa | Alto |
+| 6 | Ativar FairnessGuard em TODOS os agentes (atualmente só 4 de 11) | Baixa | Alto |
+| 7 | Remover IntentRouter legado (duplicação com LLM Cascade) | Baixa | Médio |
+| 8 | Streaming de pensamentos ReAct via WebSocket (transparência para o usuário) | Média | Médio |
 
 ---
 
