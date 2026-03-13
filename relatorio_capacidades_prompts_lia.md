@@ -1,7 +1,7 @@
 # Relatório Completo de Capacidades e Prompts — LIA (WeDOTalent)
-**Versão:** 1.0 — 13/03/2026
+**Versão:** 2.0 — 13/03/2026
 **Fonte:** Auditoria direta do código-fonte (`lia-agent-system/` + `plataforma-lia/`)
-**Propósito:** Mapeamento técnico exaustivo de toda a arquitetura de prompts, interação entre chats, agentes ReAct, capacidades, templates de resposta, análises, sistema preditivo, limitações, dívidas técnicas e oportunidades de evolução.
+**Propósito:** Mapeamento técnico exaustivo de toda a arquitetura de prompts, interação entre chats, agentes ReAct, capacidades, templates de resposta, análises, sistema preditivo, resiliência, compliance, governança, aprendizado, limitações, dívidas técnicas e oportunidades de evolução.
 
 **Metodologia:** Auditoria de 13/03/2026 via leitura direta de arquivos-fonte. Verificados: endpoints, escopos (`scope_config.py`), registros de agentes (`react_agent_registry.py`), ferramentas, templates de prompt e serviços. Exemplos de resposta marcados como "ilustrativo" são sintéticos baseados nos templates/schemas do código; os demais refletem schemas e formatos reais. Recomenda-se revisão mensal para atualizar contagens de tools e referências de linha.
 
@@ -16,9 +16,24 @@
 5. [Análises e Relatórios](#5-análises-e-relatórios)
 6. [Sistema Preditivo e Insights](#6-sistema-preditivo-e-insights)
 7. [Quick Actions e Ações Bulk](#7-quick-actions-e-ações-bulk)
-8. [Limitações, Dívidas Técnicas e Funcionalidades Incompletas](#8-limitações-dívidas-técnicas-e-funcionalidades-incompletas)
-9. [Oportunidades e Capacidades Ausentes](#9-oportunidades-e-capacidades-ausentes)
-10. [Referência de Arquivos](#10-referência-de-arquivos)
+8. [Resiliência e Circuit Breakers](#8-resiliência-e-circuit-breakers)
+9. [Gestão de Custos e Token Tracking](#9-gestão-de-custos-e-token-tracking)
+10. [ConfidencePolicyService — Autonomia de Ações](#10-confidencepolicyservice--autonomia-de-ações)
+11. [Governança de Agentes](#11-governança-de-agentes)
+12. [Aprendizado Contínuo e Memória](#12-aprendizado-contínuo-e-memória)
+13. [FairnessGuard — 3 Camadas de Proteção Anti-Viés](#13-fairnessguard--3-camadas-de-proteção-anti-viés)
+14. [Pre-Qualification Pipeline](#14-pre-qualification-pipeline)
+15. [Personalized Feedback Service](#15-personalized-feedback-service)
+16. [LGPD — Proteção de Dados Pessoais](#16-lgpd--proteção-de-dados-pessoais)
+17. [EU AI Act — Conformidade com IA de Alto Risco](#17-eu-ai-act--conformidade-com-ia-de-alto-risco)
+18. [Compliance Multi-Framework](#18-compliance-multi-framework)
+19. [Framework de Teste de Viés — Bias Audit Service](#19-framework-de-teste-de-viés--bias-audit-service)
+20. [Model Drift e Monitoramento Contínuo](#20-model-drift-e-monitoramento-contínuo)
+21. [Taxonomia de Incidentes](#21-taxonomia-de-incidentes)
+22. [Production Readiness](#22-production-readiness)
+23. [Limitações, Dívidas Técnicas e Funcionalidades Incompletas](#23-limitações-dívidas-técnicas-e-funcionalidades-incompletas)
+24. [Oportunidades e Capacidades Ausentes](#24-oportunidades-e-capacidades-ausentes)
+25. [Referência de Arquivos](#25-referência-de-arquivos)
 
 ---
 
@@ -419,6 +434,7 @@ Usuário: "Envie um email de feedback para os 3 candidatos rejeitados na vaga de
 - **Provedores:** Gupy, Pandapé, Merge (multi-ATS), StackOne (multi-ATS internacional)
 - **Fluxos:** Push (WeDOTalent → ATS), Pull (ATS → WeDOTalent)
 - **Princípios:** Multi-tenant obrigatório (`company_id`), LGPD (dados sensíveis NÃO sincronizados), idempotência, auditoria SOX/ISO 27001
+- **Prompt:** Inclui regras de SOX/ISO 27001 para trilha de auditoria
 
 **Exemplo de interação (ilustrativo):**
 ```
@@ -436,279 +452,63 @@ Usuário: "Sincronize os candidatos aprovados da vaga Tech Lead com o Gupy"
 
 ## 3. Capacidades Detalhadas
 
-### 3.1 Avaliação por Rubrica (RubricEvaluationModal)
+### 3.1 WSI Screening (Entrevista por Voz Estruturada)
 
-- **O que faz:** Avalia candidato contra critérios estruturados da vaga, gerando score multi-dimensional
-- **Input:** `candidateId`, `jobId`, dados do CV, competências requeridas
-- **Processing:** IA (Claude via Pipeline Agent); analisa CV contra cada critério, pesa dimensões, gera evidências
-- **Output:** Score 0-100, grade (A+/A/B+/...), dimensões com critérios individuais, pontos fortes/atenção, recomendação, dados WSI (se disponível)
-- **Execução:** IA real (Claude)
-- **Arquivo:** `plataforma-lia/src/components/rubric-evaluation-modal.tsx`
+- **O que faz:** Executa triagem de candidatos via entrevista estruturada em 7 blocos
+- **Input:** `candidate_id`, `job_vacancy_id`, `questions[]`
+- **Processing:** IA (Claude via WSI Evaluator Agent) — 7 dimensões avaliadas
+- **Output:** Score 0–100, classificação (Avançar/Revisar/Rejeitar), justificativa por bloco
+- **Execução:** IA real (Claude Sonnet)
+- **FairnessGuard:** Integrado — 3 camadas verificam output antes de finalizar score
+- **Arquivo:** `app/domains/cv_screening/agents/wsi_interview_graph.py`
 
-### 5.2 Pipeline Agent (cv_screening)
+**7 Dimensões Avaliadas:**
+1. Abertura e apresentação
+2. Motivação para a vaga
+3. Experiência técnica relevante
+4. Soft skills e comunicação
+5. Pretensão salarial e benefícios
+6. Disponibilidade e logística
+7. Fechamento e próximos passos
 
-**Arquivo:** `app/domains/cv_screening/agents/pipeline_react_agent.py`
-**Responsabilidade:** Triagem de CVs e movimentação no pipeline
-**Prompt principal:**
-- Escopo IN (10 capacidades): consultar dados do candidato, scores WSI, triagem, atualizar dados, preferências de execução, sugestões baseadas em padrões
-- Escopo OUT (7 restrições): não pode buscar outros candidatos, comparar vagas, configurar pipeline, acessar analytics gerais
-- Verificação de fairness em motivos de rejeição
-- Personalização de comunicação por tom/idioma
+### 3.2 LIA Score (Scoring Unificado)
 
-### 5.3 Sourcing Agent
-
-**Arquivo:** `app/domains/sourcing/agents/sourcing_react_agent.py`
-**Responsabilidade:** Busca e atração de candidatos
-**Capacidades:** Busca local (PostgreSQL) + busca externa (Pearch AI), scoring de match, análise de perfil
-
-### 5.4 Talent Agent (recruiter_assistant)
-
-**Arquivo:** `app/domains/recruiter_assistant/agents/talent_react_agent.py`
-**Prompt:** `app/domains/recruiter_assistant/prompts/talent_assistant_prompts.py`
-**Responsabilidade:** Assistência no funil de talentos
-**FairnessGuard:** Integrado para verificação de bias
-
-### 5.5 Jobs Management Agent (recruiter_assistant)
-
-**Arquivo:** `app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py`
-**Prompt:** `app/domains/recruiter_assistant/prompts/jobs_management_prompts.py`
-**Responsabilidade:** Gestão do portfólio de vagas
-**FairnessGuard:** Integrado
-
-### 5.6 Kanban Agent (recruiter_assistant)
-
-**Arquivo:** `app/domains/recruiter_assistant/agents/kanban_react_agent.py`
-**Prompt:** `app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py`
-**Responsabilidade:** Análise e operações no kanban de recrutamento
-**Extras:** GUARDRAIL_TOOLS integrados, FairnessGuard
-
-### 5.7 Policy Agent (hiring_policy)
-
-**Arquivo:** `app/domains/hiring_policy/agents/policy_react_agent.py`
-**Prompt:** `app/domains/hiring_policy/agents/policy_system_prompt.py`
-**Responsabilidade:** Configuração de políticas de contratação
-**Capacidades:** CRUD de políticas, validação de compliance, regras de aprovação
-
-### 5.8 Automation Agent
-
-**Arquivo:** `app/domains/automation/agents/automation_react_agent.py`
-**Prompt:** `app/domains/automation/agents/automation_system_prompt.py`
-**Responsabilidade:** Decomposição de tarefas complexas de recrutamento
-**Capacidades detalhadas:**
-- Decomposição de tarefas em subtarefas executáveis com IA
-- Priorização inteligente (urgência × impacto × criticidade)
-- DAG de dependências (grafos acíclicos direcionados)
-- Planos de execução com paralelismo
-- Identificação de próximas tarefas prontas
-- Agentes delegáveis: `job_planner`, `sourcing`, `cv_screening`, `interviewer`, `wsi_evaluator`, `scheduling`, `analyst_feedback`
-
-### 5.9 Analytics Agent
-
-**Arquivo:** `app/domains/analytics/agents/analytics_react_agent.py`
-**Prompt:** `app/domains/analytics/agents/analytics_system_prompt.py`
-**Responsabilidade:** Analytics, KPIs e previsões de contratação
-
-### 5.10 Communication Agent
-
-**Arquivo:** `app/domains/communication/agents/communication_react_agent.py`
-**Responsabilidade:** Comunicação multi-canal com conformidade LGPD
-**Canais:** Email, WhatsApp, Teams
-
-### 5.11 ATS Integration Agent
-
-**Arquivo:** `app/domains/ats_integration/agents/ats_integration_react_agent.py`
-**Responsabilidade:** Integração bidirecional com plataformas ATS
-**Provedores suportados:**
-- **Gupy:** Plataforma BR líder; mapeamento de fase, observações, dados básicos
-- **Pandapé:** Plataforma BR; score WSI, pretensão salarial, parecer RH
-- **Merge:** Conector multi-ATS via API unificada; campos customizáveis
-- **StackOne:** Conector multi-ATS internacional; custom_fields
-
-**Fluxos:**
-- Push (WeDOTalent → ATS): validar campos → sincronizar → confirmar
-- Pull (ATS → WeDOTalent): importar → manter SSOT no WeDOTalent
-
-**Princípios:**
-- Multi-tenant obrigatório (`company_id`)
-- LGPD: dados sensíveis NÃO sincronizados com ATS
-- Idempotência em operações de sync
-- Auditoria completa (SOX/ISO 27001)
-
-### 5.12 Prompt Anti-Sycophancy (transversal)
-
-A regra anti-sycophancy está presente em todos os agentes:
-- **Implementação:** Via bloco compartilhado `ANTI_SYCOPHANCY_OPERATIONAL` ou regra equivalente no prompt.
-- **Regras:** Nunca confirmar pedidos discriminatórios; apresentar alternativas com dados; conformidade transversal.
-- **Cobertura:** Todos os 11 agentes (Automation, Communication, Analytics, ATS Integration, Wizard, Pipeline, Jobs Management, Kanban, Policy, Talent, Sourcing).
-
----
-
-## 6. Ferramentas (Tools) por Domínio
-
-### 6.1 Analytics Tools (19 ferramentas)
-
-| Ferramenta                | Descrição                                    |
-|---------------------------|----------------------------------------------|
-| `get_pipeline_stats`      | Estatísticas do pipeline                     |
-| `get_vacancy_funnel`      | Funil da vaga                                |
-| `compare_candidates`      | Comparação de candidatos                     |
-| `get_activity_summary`    | Resumo de atividades                         |
-| `get_pending_actions`     | Ações pendentes                              |
-| `get_recruiter_metrics`   | Métricas do recrutador                       |
-| `get_velocity_metrics`    | Métricas de velocidade                       |
-| `get_efficiency_metrics`  | Métricas de eficiência                       |
-| `get_comparative_metrics` | Métricas comparativas                        |
-| `get_workload_distribution` | Distribuição de carga de trabalho          |
-| `get_bottleneck_analysis` | Análise de gargalos                          |
-| `get_stakeholder_metrics` | Métricas de stakeholders                     |
-| `get_hiring_quality`      | Qualidade de contratação                     |
-| `get_prediction_metrics`  | Métricas preditivas                          |
-| `get_cost_metrics`        | Métricas de custo                            |
-| `get_trends`              | Tendências                                   |
-| `get_ml_predictions`      | Previsões ML                                 |
-| `get_conversion_patterns` | Padrões de conversão                         |
-| `get_smart_alerts`        | Alertas inteligentes                         |
-
-### 6.2 Communication Tools (5 ferramentas)
-
-| Ferramenta             | Descrição                                   |
-|------------------------|---------------------------------------------|
-| `send_email`           | Envio de email individual                   |
-| `send_whatsapp`        | Envio de WhatsApp                           |
-| `schedule_interview`   | Agendamento de entrevista                   |
-| `send_bulk_email`      | Envio de email em massa                     |
-| `send_feedback`        | Envio de feedback                           |
-
-### 6.3 CV Screening / Pipeline Tools (8 ferramentas)
-
-| Ferramenta                    | Descrição                                 |
-|-------------------------------|-------------------------------------------|
-| `update_candidate_stage`      | Mover candidato entre etapas              |
-| `add_candidate_to_vacancy`    | Adicionar candidato à vaga                |
-| `reject_candidate`            | Rejeitar candidato                        |
-| `shortlist_candidate`         | Shortlistar candidato                     |
-| `bulk_update_candidates_stage`| Movimentação em massa                     |
-| `add_to_list`                 | Adicionar à lista                         |
-| `wsi_screening`               | Triagem WSI comportamental                |
-| `hide_candidate`              | Ocultar candidato                         |
-
-### 6.4 Job Management / Wizard Tools (9 ferramentas)
-
-| Ferramenta                | Descrição                                    |
-|---------------------------|----------------------------------------------|
-| `search_salary_benchmark` | Benchmark salarial                           |
-| `validate_job_fields`     | Validação de campos da vaga                  |
-| `get_job_suggestions`     | Sugestões inteligentes para a vaga           |
-| `save_job_draft`          | Salvar rascunho de vaga                      |
-| `get_company_config`      | Configuração da empresa                      |
-| `get_intelligent_salary`  | Sugestão salarial inteligente                |
-| `get_intelligent_skills`  | Sugestão de skills inteligente               |
-| `capture_wizard_feedback` | Captura de feedback do wizard                |
-| `generate_enriched_jd`    | Geração de JD enriquecida                    |
-
-### 6.5 Sourcing Tools (9 ferramentas)
-
-| Ferramenta                | Descrição                                    |
-|---------------------------|----------------------------------------------|
-| `search_candidates`       | Busca de candidatos (local + Pearch)         |
-| `get_candidate_details`   | Detalhes do candidato                        |
-| `get_candidate_stats`     | Estatísticas do candidato                    |
-| `get_candidate_history`   | Histórico do candidato                       |
-| `get_talent_quality`      | Qualidade do talento                         |
-| `get_talent_engagement`   | Engajamento do talento                       |
-| `get_talent_availability` | Disponibilidade do talento                   |
-| `get_diversity_metrics`   | Métricas de diversidade                      |
-| `get_market_benchmarks`   | Benchmarks de mercado                        |
-
-### 6.6 Recruiter Assistant / Pipeline Tools
-
-| Ferramenta                | Descrição                                    |
-|---------------------------|----------------------------------------------|
-| `create_pipeline_stage`   | Criação de etapa no pipeline                 |
-
-### 6.7 Automation, ATS Integration, Policy Tools
-
-Esses domínios possuem módulos `__init__.py` com funções `get_*_tools()` que retornam ferramentas específicas (implementação via `StructuredTool.from_function`).
-
----
-
-## 7. Templates de Resposta, Análises e Componentes de UI
-
-### 7.1 RubricEvaluationModal (Avaliação por Rubrica)
-
-**Arquivo:** `plataforma-lia/src/components/rubric-evaluation-modal.tsx`
-**Ativação:** Via botão na interface de candidatos (Float Chat ou Kanban)
-**Execução:** IA (Claude via agente Pipeline) gera avaliação; frontend renderiza
-
-Estrutura de dados da avaliação:
-
-```typescript
-interface RubricEvaluationData {
-  overallScore: number       // 0-100
-  overallGrade: string       // "A+", "A", "B+", etc.
-  dimensions: { name: string; score: number; weight: number;
-    criteria: { name: string; score: number; maxScore: number; evidence: string }[]
-  }[]
-  strengths: string[]
-  concerns: string[]
-  recommendation: string
-  wsiData?: { overallScore: number; competencies: { name: string; score: number; level: string }[] }
-}
-```
-
-### 3.2 WSI (Work Style Indicator) Screening
-
-- **O que faz:** Triagem comportamental baseada em competências WSI
-- **Input:** `candidateId`, `jobId`, competências comportamentais da vaga
-- **Processing:** IA (Claude) avalia respostas do candidato contra framework WSI
-- **Output:** Score por competência, nível (Básico/Intermediário/Avançado/Expert), parecer geral
-- **Execução:** IA real (Claude via Pipeline Agent)
-- **Ferramenta:** `wsi_screening` em `app/domains/cv_screening/tools/candidate_tools.py` (linha 563)
-
-### 3.3 LIA Score (Scoring Unificado)
-
-- **O que faz:** Calcula score de compatibilidade (0-100) candidato × vaga
-- **Input:** Dados do CV, scores WSI (se disponível), prerequisitos, recência
-- **Processing:** Processamento local (sem LLM); fórmula ponderada com redistribuição de pesos
+- **O que faz:** Calcula pontuação unificada de fit do candidato para uma vaga
+- **Input:** rubric scores, WSI scores, prerequisites, recency, calibration_adjustment
+- **Processing:** Local (sem LLM) — fórmula ponderada com pesos por cenário
+- **Output:** Score 0–100 com breakdown por componente
 - **Arquivo:** `lia-agent-system/app/services/lia_score_service.py`
-- **Execução:** Local (sem IA)
 
-**Fórmula Unified LIA Ranking:**
-```
-Ranking_Score = (
-    Rubricas_Score × W_rubricas +
-    WSI_Score × W_wsi +
-    Prerequisites_Score × W_prereq +
-    Recency_Boost × W_recency +
-    Calibration_Adjustment
-) × Completeness_Factor
-```
+**Fórmula:** `LIA_Score = Σ(peso_componente × score_componente × DataAvailability)`
 
-**Pesos por cenário de disponibilidade de dados:**
-| Cenário           | Rubricas | WSI  | Big Five | Prereq | Recency |
-|-------------------|----------|------|----------|--------|---------|
-| CV + WSI + Prereq | 0.40     | 0.25 | 0.10     | 0.15   | 0.10    |
-| CV + Prereq       | 0.55     | 0.00 | 0.00     | 0.25   | 0.20    |
-| CV only           | Redistribuído para rubricas e recency                   |
+**Cenários de peso:**
+- **WSI + Rubrica:** WSI 40%, Rubrica 30%, Prerequisites 15%, Recency 15%
+- **Apenas WSI:** WSI 55%, Prerequisites 25%, Recency 20%
+- **Apenas Rubrica:** Rubrica 55%, Prerequisites 25%, Recency 20%
+- **Sem avaliação:** Prerequisites 50%, Recency 50%
 
-### 3.4 Busca Híbrida (Local + Pearch AI)
+### 3.3 Avaliação por Rubrica Multi-dimensional
 
-- **O que faz:** Busca candidatos no banco local PostgreSQL e/ou via Pearch AI (externo)
-- **Input:** `query` (texto livre ou estruturado), `search_type` ('fast'|'deep'), `limit`, `timeout`
-- **Processing:**
-  - Busca local: `searchCandidatesLocal()` → `POST /candidates/search/local/` (FREE, sem créditos)
-  - Busca externa: `searchCandidates()` → `GET /candidates/search?query=...` (consome créditos Pearch)
-- **Output:** `CandidateSearchResponse` com `candidates[]`, `total_results`, `search_time_seconds`, `credits_used`
-- **Execução:** Local (busca DB) + API externa (Pearch AI)
-- **Arquivo:** `plataforma-lia/src/services/lia-api.ts` (linhas 451-494)
+- **O que faz:** Avaliação estruturada com rubricas customizáveis
+- **Input:** candidato, vaga, rubricas selecionadas
+- **Processing:** IA real (Claude)
+- **Output:** Score por rubrica + score consolidado + justificativa
+- **Arquivo:** `lia-agent-system/app/services/rubric_evaluation_service.py`
+
+### 3.4 Busca Inteligente de Candidatos
+
+- **O que faz:** Busca local (PostgreSQL) + busca externa (Pearch AI)
+- **Input:** query texto livre, filtros estruturados
+- **Processing:** Local + API externa
+- **Output:** Lista de candidatos com scores de match
+- **Ferramentas:** `search_candidates` em `app/domains/sourcing/tools/query_tools.py`
 
 ### 3.5 Comparação de Candidatos
 
-- **O que faz:** Compara 2+ candidatos lado a lado (fit técnico, cultural, experiência)
-- **Input:** `candidate_ids[]`, `job_context` (requisitos, skills, nível)
-- **Processing:** IA (Claude via Kanban/Analytics Agent) + dados locais (LIA Score, WSI)
-- **Output:** Tabela comparativa por dimensão, ranking com justificativas, forças/gaps por candidato, recomendação final
-- **Execução:** IA real (Claude)
+- **O que faz:** Comparação multi-dimensional entre 2+ candidatos
+- **Input:** `candidate_ids[]`, `job_context`
+- **Processing:** IA real (Claude via Kanban Agent)
+- **Output:** Tabela comparativa com dimensões, scores, recomendação
 - **Ferramenta:** `compare_candidates` em `app/domains/analytics/tools/analytics_query_tools.py`
 - **Endpoint:** `POST /orchestrator/job-chat` com `detect_command_type() → COMPARAR_CANDIDATOS`
 - **Prompt template:** `kanban_assistant_prompts.py` → `COMPARAR_CANDIDATOS` (linha 280)
@@ -811,8 +611,6 @@ interface CalibrationCandidate {
 ### Recomendações
 - Adicionar mais entrevistadores técnicos para reduzir tempo
 - Revisar competitividade salarial na etapa de proposta
-
-💡 **Sugestões:** Compare com vagas similares | Veja candidatos parados | Analise sourcing
 ```
 
 **Fallback offline:** `{"success": false, "error": "Serviço indisponível. Tente novamente em alguns minutos."}`
@@ -890,7 +688,7 @@ interface CalibrationCandidate {
 ```
 Entendi! Vou mover o candidato João Silva para a etapa **Entrevista Técnica**.
 
-📋 **Confirmação necessária:**
+Confirmação necessária:
 - Candidato: João Silva
 - De: Triagem Curricular
 - Para: Entrevista Técnica
@@ -901,7 +699,7 @@ Confirma esta movimentação?
 
 **Após confirmação do usuário:**
 ```
-✅ João Silva movido para Entrevista Técnica com sucesso!
+João Silva movido para Entrevista Técnica com sucesso!
 Próximo passo sugerido: Agendar entrevista técnica com o gestor.
 ```
 
@@ -942,8 +740,6 @@ Próximo passo sugerido: Agendar entrevista técnica com o gestor.
 - **Score médio:** 87.2 (acima do benchmark de 75)
 - **Disponibilidade:** 3/5 disponíveis para contato imediato
 - **Faixa salarial:** R$ 16.000 - R$ 28.000
-
-💡 Sugestões: Comparar os top 3 | Analisar potencial do #1 | Resumir busca completa
 ```
 
 **Fallback offline:** "Olá! Sou a LIA, sua assistente de recrutamento. Recebi sua mensagem sobre 'Top 5 candidatos para essa busca...' Como posso ajudar você hoje?" com `suggested_prompts: ["Criar uma nova vaga", "Buscar candidatos", "Ver minhas tarefas pendentes"]`
@@ -958,17 +754,15 @@ Próximo passo sugerido: Agendar entrevista técnica com o gestor.
 
 | Dimensão              | Ana Costa (92)        | Carlos Mendes (89)     |
 |-----------------------|-----------------------|------------------------|
-| Experiência           | 8 anos ⭐             | 6 anos                 |
+| Experiência           | 8 anos                | 6 anos                 |
 | Stack técnica         | Python, Go, K8s, AWS  | Python, Django, Docker |
-| Liderança             | Tech Lead (3 anos) ⭐ | IC Senior              |
-| Certificações         | AWS SA, CKA ⭐        | Nenhuma                |
-| Disponibilidade       | 30 dias               | Imediata ⭐            |
-| Pretensão salarial    | R$ 25.000             | R$ 20.000 ⭐           |
+| Liderança             | Tech Lead (3 anos)    | IC Senior              |
+| Certificações         | AWS SA, CKA           | Nenhuma                |
+| Disponibilidade       | 30 dias               | Imediata               |
+| Pretensão salarial    | R$ 25.000             | R$ 20.000              |
 
 ### Recomendação
 Ana Costa é mais adequada para a posição devido à experiência em liderança técnica e certificações. Carlos Mendes é uma opção sólida se o budget for mais restrito e houver disponibilidade imediata.
-
-💡 Sugestões: Analisar potencial da Ana | Ver perfil completo do Carlos | Top 5
 ```
 
 ---
@@ -1164,9 +958,1344 @@ Fluxo HITL (Human-in-the-loop):
 
 ---
 
-## 8. Limitações, Dívidas Técnicas e Funcionalidades Incompletas
+## 8. Limitações e Dívidas Técnicas
 
-### 8.1 Processamento Local vs IA
+1. **Anti-sycophancy** — Regra presente no system prompt mas não validada por guardrail automatizado em todos os agentes.
+2. **FairnessGuard** — Integrado em Wizard, Talent, Jobs Management, Kanban; ausente em Analytics, Automation, ATS Integration.
+3. **LGPD em ATS** — Dados sensíveis não sincronizados, mas a lista de campos sensíveis é hardcoded.
+4. **Auditoria** — SOX/ISO 27001 mencionados no prompt do ATS Agent, mas sem implementação de audit trail centralizado.
+
+---
+
+## 9. Resiliência e Circuit Breakers
+
+### 9.1 Arquitetura de Circuit Breaker
+
+**Arquivo:** `lia-agent-system/app/shared/resilience/circuit_breaker.py` (682 linhas)
+
+O sistema implementa o padrão Circuit Breaker para proteger chamadas a APIs externas, prevenindo falhas em cascata quando serviços ficam indisponíveis.
+
+**3 Estados do Circuit Breaker:**
+
+```
+┌─────────┐    failure_count ≥ threshold    ┌──────┐
+│ CLOSED  │ ──────────────────────────────→ │ OPEN │
+│(Normal) │                                 │(Blk) │
+└─────────┘                                 └──┬───┘
+     ↑                                         │
+     │ half_open_calls ≥ max_calls              │ recovery_timeout expirado
+     │ (todos sucesso)                          ↓
+     │                                    ┌───────────┐
+     └────────────────────────────────── │ HALF_OPEN │
+           recuperação confirmada         │ (Teste)   │
+                                          └───────────┘
+```
+
+**Configuração padrão (`CircuitBreakerConfig`):**
+
+| Parâmetro             | Valor Padrão | Descrição                                    |
+|-----------------------|-------------|----------------------------------------------|
+| `failure_threshold`   | 5           | Falhas consecutivas para abrir o circuit     |
+| `recovery_timeout`    | 30.0s       | Tempo antes de tentar recovery (HALF_OPEN)   |
+| `success_threshold`   | 2           | Sucessos em HALF_OPEN para fechar circuit    |
+| `timeout`             | 10.0s       | Timeout de cada request individual           |
+| `exclude_exceptions`  | ()          | Exceções que não contam como falha           |
+
+### 9.2 Circuits Registrados
+
+Os circuit breakers são criados dinamicamente via decorator `@circuit_breaker()` ou instanciação direta de `CircuitBreaker`. O sistema utiliza um dicionário `_circuits: Dict[str, CircuitBreakerState]` como registry lazy — circuits são criados no primeiro uso via `_get_circuit()`.
+
+**Serviços protegidos identificados no codebase:**
+
+| Circuit Name     | Serviço Protegido                | Arquivo que consome                                      |
+|------------------|----------------------------------|----------------------------------------------------------|
+| `anthropic`      | API Claude (Anthropic)           | Chamadas LLM dos 11 agentes ReAct                       |
+| `openai`         | API OpenAI (GPT-4o, GPT-4-turbo)| Fallback LLM, embeddings                                |
+| `gemini`         | API Google Gemini                | Modelo alternativo para scoring                          |
+| `pearch`         | Pearch AI (busca candidatos)     | `app/domains/sourcing/tools/query_tools.py`              |
+| `workos`         | WorkOS (SSO/SCIM)                | `app/auth/` (autenticação enterprise)                    |
+| `merge`          | Merge API (ATS unificado)        | `app/domains/ats_integration/`                           |
+| `google_calendar`| Google Calendar API              | `app/domains/interview_scheduling/`                      |
+| `gupy`           | ATS Gupy (integração)            | `app/domains/ats_integration/services/ats_clients/gupy.py` |
+| `pandape`        | ATS Pandapé (integração)         | `app/domains/ats_integration/services/ats_clients/pandape.py` |
+| `stackone`       | StackOne (ATS unificado)         | `app/domains/ats_integration/services/ats_clients/stackone.py` |
+| `sendgrid`       | SendGrid (email transacional)    | `app/services/email_service.py`                          |
+| `resend`         | Resend (email fallback)          | `app/services/email_service.py`                          |
+
+### 9.3 Notificação de Abertura de Circuit
+
+Quando um circuit breaker transiciona para OPEN, o sistema envia notificação automática:
+
+**Arquivo:** `circuit_breaker.py` → `_notify_circuit_open()`
+
+**Mecanismo:**
+1. **Redis dedup:** chave `cb_alert:{service_name}` com TTL 1 hora — evita flood de alertas
+2. **Canais:** Bell (notificação in-app) + Teams (Microsoft Teams)
+3. **Mensagem:** "O circuit breaker para '{service_name}' foi aberto após múltiplas falhas. Chamadas estão sendo rejeitadas automaticamente. O circuit tentará recuperação em 30s."
+4. **Non-blocking:** execução via `loop.create_task()` — nunca bloqueia o request principal
+
+### 9.4 Implementação Dual
+
+O arquivo `circuit_breaker.py` contém **duas implementações**:
+
+1. **Classe `CircuitBreaker`** (linhas 117-340) — Implementação orientada a objetos com lock asyncio, estatísticas detalhadas (`CircuitBreakerStats`), e classe registry `ALL_CIRCUITS`. Usada para instanciação direta.
+
+2. **Decorator `circuit_breaker()`** (linhas 626-655) — Implementação funcional via `_circuits` dict com `CircuitBreakerState` dataclass. Usado como decorator em funções async.
+
+**APIs de diagnóstico:**
+- `get_circuit_status(service_name)` — status de um circuit específico
+- `get_all_circuits_status()` — status de todos os circuits registrados
+- `reset_circuit(service_name)` — reset manual para CLOSED
+- `reset_all_circuits()` — reset de todos os circuits
+
+**Métricas Prometheus:** `circuit_breaker_state` gauge (0=closed, 1=half_open, 2=open) exportada quando módulo de observabilidade está disponível.
+
+### 9.5 Fallback Strategy
+
+Quando o circuit está OPEN, o sistema suporta fallbacks configuráveis:
+
+```python
+@circuit_breaker("anthropic", failure_threshold=5, recovery_timeout=60, fallback=my_fallback_fn)
+async def call_anthropic(prompt: str) -> str:
+    ...
+```
+
+- Se `fallback` é definido e circuit está OPEN → executa fallback em vez de lançar exceção
+- Se `fallback` não é definido → lança `CircuitBreakerError(name, retry_after)`
+- O Orchestrator captura `CircuitBreakerError` e retorna mensagem amigável ao usuário
+
+---
+
+## 10. Gestão de Custos e Token Tracking
+
+### 10.1 TokenTrackingService
+
+**Arquivo:** `lia-agent-system/app/services/token_tracking_service.py` (722 linhas)
+
+Serviço de monitoramento em tempo real de uso de tokens LLM com estimativa de custos e enforcement de limites por usuário e empresa.
+
+### 10.2 Modelos e Preços Suportados
+
+**Dicionário `TOKEN_PRICES` — 10 modelos com preços por 1K tokens (USD):**
+
+| Modelo              | Input ($/1K) | Output ($/1K) | Uso na Plataforma                    |
+|---------------------|-------------|---------------|--------------------------------------|
+| `claude-3-sonnet`   | $0.003      | $0.015        | Modelo principal dos 11 agentes      |
+| `claude-3-haiku`    | $0.00025    | $0.00125      | Tier 5 LLM Cascade (roteamento)      |
+| `claude-3-opus`     | $0.015      | $0.075        | Tier 5 LLM Cascade (fallback final)  |
+| `claude-3.5-sonnet` | $0.003      | $0.015        | Avaliação WSI, JD enriquecida        |
+| `gpt-4o`            | $0.005      | $0.015        | Alternativa OpenAI (quando config.)  |
+| `gpt-4o-mini`       | $0.00015    | $0.0006       | Tarefas leves (classificação)        |
+| `gpt-4-turbo`       | $0.01       | $0.03         | Análises complexas (quando config.)  |
+| `gpt-3.5-turbo`     | $0.0005     | $0.0015       | Embeddings, classificação rápida     |
+| `gemini-1.5-pro`    | $0.00125    | $0.005        | Alternativa Google (quando config.)  |
+| `gemini-1.5-flash`  | $0.000075   | $0.0003       | Tarefas rápidas/baratas              |
+
+### 10.3 Limites Padrão (DEFAULT_LIMITS)
+
+| Limite                          | Valor Padrão    | Escopo           |
+|---------------------------------|-----------------|------------------|
+| `daily_tokens_per_user`         | 500.000         | Por usuário/dia  |
+| `daily_tokens_per_company`      | 5.000.000       | Por empresa/dia  |
+| `monthly_cost_per_company`      | $500.00         | Por empresa/mês  |
+| `hourly_tokens_per_user`        | 100.000         | Por usuário/hora |
+| `requests_per_minute_per_user`  | 60              | Por usuário/min  |
+
+**Limites customizáveis:** `set_custom_limits(company_id, limits)` permite override por empresa. O merge é aditivo — limites não especificados usam DEFAULT_LIMITS.
+
+### 10.4 Alertas de Consumo
+
+**Thresholds de alerta:** `ALERT_THRESHOLDS = [80, 100]`
+
+- Ao atingir 80% do limite → alerta de aviso (warning)
+- Ao atingir 100% do limite → alerta de bloqueio (block) + request rejeitado
+
+### 10.5 Funcionalidades
+
+| Método                    | Descrição                                              |
+|---------------------------|--------------------------------------------------------|
+| `record_usage()`          | Registra uso de tokens por operação na tabela `ai_consumption` |
+| `get_usage_summary()`     | Resumo de uso por período (dia/mês)                    |
+| `check_limits()`          | Verifica se usuário/empresa está dentro dos limites    |
+| `get_cost_estimate()`     | Calcula custo estimado baseado no modelo e tokens      |
+| `_calculate_cost_cents()` | Calcula custo em centavos usando `TOKEN_PRICES`        |
+
+### 10.6 Retenção de Logs
+
+**Constante:** `AI_LOG_RETENTION_DAYS` (definido em `app/models/ai_consumption.py`)
+
+Logs de consumo de IA são marcados com `scheduled_deletion_at` para limpeza automática pelo `lgpd_cleanup_service.py` após o período de retenção (365 dias por padrão para `ai_logs`).
+
+---
+
+## 11. ConfidencePolicyService — Autonomia de Ações
+
+### 11.1 Visão Geral
+
+**Arquivo:** `lia-agent-system/app/services/confidence_policy_service.py`
+
+O ConfidencePolicyService determina se a LIA pode executar uma ação autonomamente, notificar o recrutador, ou pedir confirmação. Funciona como gate entre a decisão do agente e a execução real da ação.
+
+### 11.2 Níveis de Confiança
+
+O serviço define 3 níveis de ação baseados na confiança calculada:
+
+| Nível             | Threshold         | Comportamento                                                 |
+|-------------------|--------------------|---------------------------------------------------------------|
+| `APPLY_SILENT`    | confidence ≥ 0.85 | LIA executa a ação automaticamente sem notificar o recrutador |
+| `APPLY_NOTIFY`    | confidence ≥ 0.70 | LIA executa a ação e notifica o recrutador sobre o que foi feito |
+| `ASK_USER`        | confidence < 0.70 | LIA apresenta a proposta e aguarda confirmação do recrutador  |
+
+### 11.3 Cálculo de Confiança por Fonte
+
+O serviço mantém um dicionário de confiança base por fonte de dados:
+
+```python
+SOURCE_BASE_CONFIDENCES = {
+    "cv_parsing": 0.75,
+    "wsi_evaluation": 0.80,
+    "rubric_evaluation": 0.85,
+    "manual_input": 0.95,
+    "pearch_api": 0.70,
+    "linkedin_scraping": 0.65,
+}
+```
+
+### 11.4 Modificadores de Confiança
+
+| Modificador                | Valor    | Condição                                            |
+|----------------------------|----------|------------------------------------------------------|
+| `MULTI_SOURCE_AGREE_BONUS` | +0.10    | Quando 2+ fontes concordam no mesmo resultado        |
+| `DISAGREE_PENALTY`         | -0.30    | Quando fontes divergem significativamente             |
+
+**Fórmula:** `confidence_final = base_confidence + bonuses - penalties`
+
+### 11.5 Integração com Fluxo HITL
+
+```
+Agente propõe ação
+     │
+     ▼
+ConfidencePolicyService.evaluate(action, sources, confidence)
+     │
+     ├── ≥ 0.85 → APPLY_SILENT → ActionExecutor.execute()
+     │
+     ├── ≥ 0.70 → APPLY_NOTIFY → ActionExecutor.execute() + Notification
+     │
+     └── < 0.70 → ASK_USER → PendingActionStore.store() → HITL flow
+```
+
+---
+
+## 12. Governança de Agentes
+
+### 12.1 EnhancedAgentMixin — Ciclo de Vida de 5 Etapas
+
+**Arquivo:** `lia-agent-system/libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` (301 linhas)
+
+Todos os 11 agentes ReAct herdam de `EnhancedAgentMixin`, que adiciona memória, autonomia e aprendizado ao ciclo ReAct padrão.
+
+**Ciclo de vida de 5 etapas:**
+
+```
+1. _setup_enhanced(domain)
+   ├── Inicializa WorkingMemoryService (memória de curto prazo)
+   ├── Inicializa LongTermMemoryService (memória de longo prazo)
+   ├── Inicializa MemoryIntegration (ponte entre WM e LTM)
+   ├── Inicializa AutonomyEngine (políticas de autonomia)
+   └── Inicializa LearningExtractor (extração de aprendizados)
+
+2. _get_memory_context(session_id, company_id)
+   └── MemoryIntegration.get_enriched_context()
+       → Injeta memórias relevantes no system prompt antes do ReAct loop
+
+3. _resolve_guardrails(company_id)
+   ├── 1. AutonomyEngine.resolve_guardrails() (política da empresa)
+   ├── 2. Fallback: GuardrailRepository.get_blocked_tools() (banco de dados)
+   └── 3. Último recurso: lista estática DEFAULT_GUARDRAIL_TOOLS
+
+4. ReAct Loop (Thought → Action → Observation → ...)
+   └── Tools = base_tools + insight_tools + proactive_tools + predictive_tools
+
+5. _post_loop_learning(state, company_id, session_id)
+   └── LearningExtractor.extract_and_save()
+       → Salva aprendizados na LongTermMemoryService
+```
+
+### 12.2 AutonomyEngine — 3 Níveis de Autonomia
+
+**Arquivo:** `lia-agent-system/libs/agents-core/lia_agents_core/autonomy_engine.py`
+
+O AutonomyEngine determina o nível de autonomia da LIA por empresa, controlando quais ações requerem confirmação humana.
+
+**3 Níveis:**
+
+| Nível           | Descrição                                                | Ações que requerem HITL                   |
+|-----------------|----------------------------------------------------------|-------------------------------------------|
+| `CONSERVATIVE`  | Todas as ações destrutivas requerem confirmação          | move, reject, delete, send, bulk_update   |
+| `BALANCED`      | Ações de leitura e comunicação são autônomas             | reject, delete, bulk_update, finalize     |
+| `AUTONOMOUS`    | Apenas ações irreversíveis requerem confirmação          | delete, finalize_hiring                   |
+
+**Guardrails por nível (`GUARDRAILS_BY_LEVEL`):**
+- `CONSERVATIVE`: `["move_candidate", "batch_move", "finalize_hiring", "delete_job", "reject_candidate", "send_bulk_email", "update_candidate_field"]`
+- `BALANCED`: `["finalize_hiring", "delete_job", "reject_candidate", "send_bulk_email"]`
+- `AUTONOMOUS`: `["finalize_hiring", "delete_job"]`
+
+### 12.3 Guardrails Estáticos (Fallback)
+
+**Arquivo:** `enhanced_agent_mixin.py` → `_resolve_guardrails()`
+
+Se tanto o AutonomyEngine quanto o GuardrailRepository falharem, o sistema usa uma lista estática como último recurso:
+
+```python
+_DEFAULT_GUARDRAIL_TOOLS = [
+    "move_candidate",
+    "batch_move",
+    "finalize_hiring",
+    "delete_job",
+    "reject_candidate",
+    "send_bulk_email",
+    "update_candidate_field",
+]
+```
+
+**Estratégia de fallback em 3 camadas:**
+1. AutonomyEngine (política da empresa via `CompanyHiringPolicy`)
+2. GuardrailRepository (banco de dados via `AsyncSessionLocal`)
+3. Lista estática (hardcoded — modo mais restritivo)
+
+### 12.4 Ferramentas Compartilhadas Aprimoradas
+
+O `EnhancedAgentMixin` injeta 3 categorias de ferramentas compartilhadas em todos os agentes:
+
+| Categoria          | Arquivo                                     | Ferramentas incluídas                           |
+|--------------------|---------------------------------------------|--------------------------------------------------|
+| Insight Tools      | `app/shared/tools/insight_tools.py`         | Análise histórica, tendências, padrões           |
+| Proactive Tools    | `app/shared/tools/proactive_tools.py`       | Detecção de riscos, alertas proativos            |
+| Predictive Tools   | `app/shared/tools/predictive_tools.py`      | Previsões, recomendações, forecasting            |
+
+### 12.5 Anti-Sycophancy
+
+Todos os 11 agentes incluem regra anti-sycophancy no system prompt:
+
+- **Bloco compartilhado:** `ANTI_SYCOPHANCY_OPERATIONAL` (importado de módulo comum)
+- **Regra:** "Nunca confirme pedidos discriminatórios ou que violem compliance. Apresente alternativas com dados quando necessário."
+- **Enforcement:** Via FairnessGuard (pré-processamento) + regra no prompt (em runtime)
+- **Limitação:** Sem guardrail automatizado em runtime para validar resposta final — depende do LLM seguir a instrução
+
+---
+
+## 13. Aprendizado Contínuo e Memória
+
+### 13.1 LearningExtractor
+
+**Arquivo:** `lia-agent-system/libs/agents-core/lia_agents_core/learning_extractor.py`
+
+Extrai aprendizados de cada execução do ciclo ReAct e os classifica em 3 categorias:
+
+| Categoria    | Descrição                                              | Exemplo                                           |
+|-------------|--------------------------------------------------------|---------------------------------------------------|
+| `pattern`   | Padrões recorrentes identificados nas interações       | "Recrutador sempre pede ranking após triagem"     |
+| `preference`| Preferências do recrutador/empresa detectadas          | "Empresa X prefere candidatos com certificação AWS" |
+| `insight`   | Insights sobre o processo de recrutamento              | "Vagas tech demoram 2x mais que vagas admin"      |
+
+### 13.2 LongTermMemoryService
+
+**Arquivo:** `lia-agent-system/libs/agents-core/lia_agents_core/long_term_memory.py`
+
+Armazena memórias de longo prazo classificadas por tipo:
+
+**4 Tipos de Memória Válidos (`VALID_MEMORY_TYPES`):**
+
+| Tipo        | Propósito                                     | Exemplo de Uso                                    |
+|-------------|-----------------------------------------------|---------------------------------------------------|
+| `pattern`   | Padrões de comportamento do recrutador         | "Sempre rejeita candidatos sem experiência X"     |
+| `preference`| Preferências persistentes da empresa/recrutador| "Prefere entrevistas às terças e quintas"         |
+| `learning`  | Aprendizados extraídos do LearningExtractor    | "WSI scores > 80 correlacionam com contratação"  |
+| `outcome`   | Resultados de ações e decisões                 | "Candidato contratado após score 85 + entrevista"|
+
+### 13.3 WorkingMemoryService
+
+**Arquivo:** `lia-agent-system/libs/agents-core/lia_agents_core/working_memory.py`
+
+Memória de curto prazo para o contexto da sessão atual:
+- Mantém estado entre turnos do chat
+- Limitada a 20 mensagens por contexto LLM
+- Resumo automático a cada N mensagens
+- Isolada por sessão (session-safe via `AgentFactory`)
+
+### 13.4 MemoryIntegration
+
+**Arquivo:** `lia-agent-system/libs/agents-core/lia_agents_core/memory_integration.py`
+
+Ponte entre WorkingMemory e LongTermMemory:
+- `get_enriched_context()` — recupera e formata memórias relevantes para injeção no system prompt
+- Combina memórias de curto prazo (sessão) com memórias de longo prazo (empresa/recrutador)
+- Filtra por domínio e relevância
+
+### 13.5 FeedbackLearningService
+
+**Arquivo:** `lia-agent-system/app/services/feedback_learning_service.py`
+
+Processa feedback dos recrutadores (thumbs up/down, rating, correções) para melhorar futuras respostas:
+
+- **Feedback positivo (thumbs up / rating ≥ 4):** Armazenado como dados de treinamento de qualidade
+- **Feedback negativo com correção:** Gera par DPO (Direct Preference Optimization) para fine-tuning
+- **Padrões de feedback:** Identificados e salvos como `learning` na LongTermMemory
+
+### 13.6 OutcomeTracker
+
+**Arquivo:** `lia-agent-system/app/domains/job_management/services/outcome_tracker.py`
+
+Rastreia resultados de contratações para correlacionar com decisões da LIA:
+- Candidatos contratados após recomendação → `outcome` positivo
+- Candidatos rejeitados que foram recontratados → `outcome` a revisar
+- Dados alimentam o loop de aprendizado do LIA Score
+
+### 13.7 TrainingDataService — Export para Fine-tuning
+
+**Arquivo:** `lia-agent-system/app/services/training_data_service.py` (506 linhas)
+
+Exporta dados de treinamento de alta qualidade para fine-tuning de modelos LLM:
+
+**3 Formatos de Exportação:**
+
+| Formato        | Método                      | Estrutura                                            |
+|----------------|------------------------------|------------------------------------------------------|
+| **OpenAI**     | `export_openai_format()`     | `{"messages": [{"role": "system", ...}, {"role": "user", ...}, {"role": "assistant", ...}]}` |
+| **Anthropic**  | `export_anthropic_format()`  | Formato nativo Anthropic com `\n\nHuman:` e `\n\nAssistant:` |
+| **DPO Pairs**  | `export_dpo_pairs()`         | `{"chosen": boa_resposta, "rejected": resposta_original, "prompt": user_message}` |
+
+**Critérios de Qualidade (`_is_quality_response`):**
+- Rating ≥ 4 OU thumbs == "up"
+- Response length > 50 caracteres (`MIN_RESPONSE_LENGTH`)
+- Sem padrões de erro (7 patterns: "erro", "error", "exception", "falha", etc.)
+- Confidence score ≥ 0.7 (`MIN_CONFIDENCE_SCORE`)
+
+**System Prompt para Treinamento:**
+```
+Você é LIA, uma assistente inteligente especializada em recrutamento e seleção.
+Você ajuda recrutadores a:
+- Criar vagas de emprego completas e atrativas
+- Definir competências e requisitos adequados
+- Analisar faixas salariais do mercado
+- Gerar descrições de cargo profissionais
+Responda sempre em português brasileiro, de forma clara e objetiva.
+```
+
+---
+
+## 14. FairnessGuard — 3 Camadas de Proteção Anti-Viés
+
+### 14.1 Visão Geral
+
+**Arquivo:** `lia-agent-system/app/shared/compliance/fairness_guard.py` (382 linhas)
+
+O FairnessGuard é um middleware que intercepta queries antes do processamento pelos agentes, verificando indicadores de viés discriminatório. Quando detectado, retorna uma mensagem educativa em vez de processar a query.
+
+### 14.2 Camada 1 — Filtro Regex (Viés Explícito)
+
+**9 categorias discriminatórias com patterns regex compilados:**
+
+| Categoria                | Patterns | Legislação Referenciada                    | Exemplo de Detecção                    |
+|--------------------------|----------|---------------------------------------------|----------------------------------------|
+| `genero`                 | 6        | Art. 5º CLT, LGPD                          | "apenas homens", "sexo masculino"      |
+| `raca_etnia`             | 4        | CF Art. 5º, Lei 7.716/89                   | "somente brancos", "excluir negros"    |
+| `idade`                  | 9        | Estatuto do Idoso, CLT                     | "máximo 35 anos", "excluir maiores de" |
+| `religiao`               | 3        | CF Art. 5º VI                              | "apenas cristãos", "excluir ateus"     |
+| `orientacao_sexual`      | 3        | STF ADO 26                                 | "apenas heterossexuais", "excluir gays"|
+| `estado_civil`           | 3        | CLT                                        | "somente solteiros", "excluir casados" |
+| `deficiencia`            | 4        | Lei 8.213/91, Lei 13.146/15               | "excluir deficientes", "sem PCD"       |
+| `maternidade_paternidade`| 7        | CLT Art. 373-A, Lei 9.029/95              | "plano de ter filhos", "engravidar"    |
+| `nacionalidade`          | 3        | CF Art. 5º                                 | "apenas brasileiros", "excluir estrangeiros"|
+
+**Total: 42 patterns regex** distribuídos em 9 categorias.
+
+**Cada categoria inclui:**
+- `terms[]` — lista de patterns regex (compilados e cacheados em `_COMPILED_PATTERNS`)
+- `message` — mensagem educativa personalizada com referência legal
+
+### 14.3 Camada 2 — Léxico Implícito (Viés Sutil)
+
+**Dicionário `IMPLICIT_BIAS_TERMS` — 11 termos com mensagens educativas:**
+
+| Termo Detectado                      | Tipo de Viés                    | Mensagem (resumida)                                     |
+|--------------------------------------|----------------------------------|---------------------------------------------------------|
+| `boa aparencia`                      | Discriminação estética           | "Use critérios objetivos de apresentação profissional"  |
+| `bairros nobres`                     | Discriminação socioeconômica     | "Considere critérios de disponibilidade ou mobilidade"  |
+| `regiao nobre`                       | Discriminação socioeconômica     | "Considere critérios de disponibilidade ou mobilidade"  |
+| `universidades de primeira linha`    | Elitismo acadêmico               | "Avalie competências e resultados"                      |
+| `faculdade de ponta`                 | Elitismo acadêmico               | "Avalie competências e resultados"                      |
+| `escola particular`                  | Discriminação socioeconômica     | "Avalie formação e competências"                        |
+| `clube social`                       | Discriminação de classe          | "Pode configurar discriminação socioeconômica"          |
+| `perfil adequado`                    | Viés inconsciente                | "Especifique competências objetivas"                    |
+| `apresentacao pessoal`               | Discriminação estética           | "Use critérios objetivos"                               |
+| `morar proximo`                      | Discriminação socioeconômica     | "Considere disponibilidade ou trabalho remoto"          |
+| `boa familia`                        | Discriminação de origem          | "Use critérios profissionais"                           |
+
+**Normalização:** `_normalize_text()` remove acentos via NFD para matching case-insensitive e accent-insensitive.
+
+### 14.4 Camada 3 — LLM Judge (Opt-in)
+
+**Ativação:** Variável de ambiente `FAIRNESS_LAYER3_ENABLED=true`
+**Modelo:** Claude Sonnet
+**Processo:** LLM revisa o output do agente antes de finalizar score
+**Uso recomendado:** Clientes em segmentos regulados (financeiro, saúde)
+
+### 14.5 FairnessCheckResult
+
+**Dataclass de retorno:**
+
+```python
+@dataclass
+class FairnessCheckResult:
+    is_blocked: bool           # True se Camada 1 detectou viés explícito
+    blocked_terms: List[str]   # Termos que causaram o bloqueio
+    category: Optional[str]    # Categoria discriminatória (genero, idade, etc.)
+    educational_message: str   # Mensagem educativa com base legal
+    original_query: str        # Query original do recrutador
+    confidence: float          # Confiança na detecção (0.0-1.0)
+    soft_warnings: List[str]   # Avisos da Camada 2 (não bloqueantes)
+```
+
+### 14.6 Integração com Agentes
+
+O FairnessGuard está integrado em **4 agentes** via `EnhancedAgentMixin`:
+- Wizard Agent (criação de vagas)
+- Talent Agent (funil de talentos)
+- Jobs Management Agent (portfólio de vagas)
+- Kanban Agent (pipeline)
+
+**Ausente em 7 agentes:** Analytics, Automation, ATS Integration, Communication, Sourcing, Pipeline, Policy
+
+### 14.7 Métricas
+
+**Prometheus counter:** `fairness_blocks_total` — incrementado a cada bloqueio por categoria.
+Exportada quando módulo de observabilidade está disponível (`_METRICS_AVAILABLE`).
+
+---
+
+## 15. Pre-Qualification Pipeline
+
+### 15.1 PreQualificationService
+
+**Arquivo:** `lia-agent-system/app/services/pre_qualification_service.py`
+
+Serviço que executa triagem automática de candidatos antes da avaliação WSI completa, filtrando candidatos que não atendem requisitos mínimos.
+
+**Critérios de pré-qualificação:**
+- Requisitos obrigatórios da vaga (skills, experiência mínima, localização)
+- Disponibilidade do candidato
+- Match mínimo com a descrição da vaga
+
+### 15.2 ScoreNormalizationService
+
+**Arquivo:** `lia-agent-system/app/services/score_normalization_service.py`
+
+Normaliza scores entre diferentes avaliadores e vagas para garantir comparabilidade:
+
+**Fator de normalização:** `0.7 ≤ factor ≤ 1.3`
+- Calculado como: `factor = max(0.7, min(1.3, raw_factor))`
+- Previne que normalização distorça scores excessivamente
+- Aplica-se a scores WSI e rubric para cada avaliador/vaga
+
+---
+
+## 16. Personalized Feedback Service
+
+### 16.1 Visão Geral
+
+**Arquivo:** `lia-agent-system/app/services/personalized_feedback_service.py`
+
+Gera feedback personalizado para candidatos rejeitados, adaptando tom e conteúdo ao contexto.
+
+### 16.2 3 Tons de Feedback
+
+| Tom              | Quando usado                                  | Estilo                                                    |
+|------------------|-----------------------------------------------|----------------------------------------------------------|
+| `encouraging`    | Candidato com potencial, vaga muito sênior    | Destaca pontos fortes, sugere áreas de desenvolvimento   |
+| `professional`   | Rejeição padrão por fit ou skills             | Objetivo, claro, com pontos positivos e gaps             |
+| `constructive`   | Candidato com gaps significativos             | Foco em ações concretas de melhoria com recursos sugeridos|
+
+### 16.3 Conteúdo do Feedback
+
+O feedback personalizado inclui:
+- Agradecimento pela participação no processo
+- Pontos fortes identificados na avaliação
+- Áreas de desenvolvimento (sem expor informações discriminatórias)
+- Sugestões de próximos passos (cursos, certificações, etc.)
+- Convite para futuras oportunidades
+
+### 16.4 Compliance
+
+- Feedback **nunca** inclui menção a categorias protegidas (FairnessGuard)
+- PII masking aplicado antes de enviar ao LLM para geração
+- Feedback registrado no audit trail para LGPD Art. 20
+
+---
+
+## 17. LGPD — Proteção de Dados Pessoais
+
+### 17.1 Arquitetura LGPD
+
+A plataforma implementa compliance LGPD em 6 pilares:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        LGPD COMPLIANCE                           │
+├──────────┬──────────┬──────────┬──────────┬──────────┬──────────┤
+│Consent   │ PII      │ DSR      │ Data     │ Breach   │ DPO      │
+│Mgmt      │ Masking  │ Export   │ Cleanup  │ Notify   │ Registry │
+├──────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
+│consent_  │pii_      │dsr_      │lgpd_     │lgpd_     │lgpd_     │
+│checker   │masking   │export    │cleanup   │compliance│compliance│
+│_service  │.py       │_service  │_service  │.py       │.py       │
+└──────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
+```
+
+### 17.2 ConsentCheckerService — Gate de Consentimento
+
+**Arquivo:** `lia-agent-system/app/services/consent_checker_service.py`
+
+Checagem obrigatória antes de qualquer operação que processe dados pessoais:
+
+**Modos de operação:**
+- `soft_warning` (default): Log de aviso quando consentimento ausente, mas permite prosseguir
+- `hard_block`: Bloqueia operação completamente quando consentimento ausente
+
+**Controle:** Variável de ambiente `LGPD_CONSENT_ABSENT_HARD_BLOCK`
+
+**Consentimentos verificados:**
+- Gravação de voz (WSI)
+- Processamento por IA
+- Retenção de dados por 180 dias
+- Compartilhamento com ferramentas de terceiros (Pearch, etc.)
+
+### 17.3 PII Masking
+
+**Arquivo:** `lia-agent-system/app/shared/pii_masking.py`
+
+**2 componentes:**
+
+1. **`strip_pii_for_llm_prompt(text)`** — Remove PII antes de enviar ao LLM:
+   - CPF, RG
+   - Email, telefone
+   - Endereço completo
+   - Nome completo (quando identificável)
+
+2. **`PIIMaskingFilter`** — Filtro de logging instalado em todos os workers:
+   - Intercepta logs antes de escrita
+   - Mascara PII automaticamente
+   - Previne vazamento acidental em logs de aplicação
+
+### 17.4 DSR Export Service — Portabilidade de Dados
+
+**Arquivo:** `lia-agent-system/app/services/dsr_export_service.py`
+
+Implementa LGPD Art. 18 V — Portabilidade de dados:
+
+**Dados exportados:**
+- Dados pessoais básicos (nome, email, telefone, localização, LinkedIn)
+- Histórico de vagas e etapas (até 100 registros)
+- Avaliações LIA (scores, recomendações, strengths, gaps — até 50 registros)
+- Logs de consentimento LGPD
+- Histórico de comunicações enviadas
+
+**Dados NÃO exportados:**
+- Dados de outros candidatos
+- Dados internos de recrutadores
+- Modelos proprietários LIA
+
+**Formato:** JSON estruturado, legível por máquina e humano (`LIA DSR Export v1.0`)
+
+**Endpoint:** `POST /api/v1/data-subject-requests` → tipo `portabilidade_dados`
+
+### 17.5 LGPD Cleanup Service — Retenção de Dados
+
+**Arquivo:** `lia-agent-system/app/services/lgpd_cleanup_service.py` (264 linhas)
+
+**Política de retenção (`RETENTION_DAYS`):**
+
+| Tipo de Dado           | Retenção | Ação após expiração                   |
+|------------------------|----------|----------------------------------------|
+| `rejected` candidates  | 90 dias  | Exclusão permanente (hard delete)      |
+| `withdrawn` candidates | 90 dias  | Exclusão permanente (hard delete)      |
+| `interview_notes`      | 180 dias | Exclusão permanente (hard delete)      |
+| `screening_logs`       | 365 dias | Exclusão permanente (hard delete)      |
+| `ai_logs`              | 365 dias | Exclusão de registros `AiConsumption`  |
+
+**Mecanismo:**
+1. `schedule_deletion_for_candidate()` — Seta `scheduled_deletion_at` no registro do candidato quando rejeitado/desistente
+2. `run_cleanup(dry_run=True|False)` — Job diário que deleta registros expirados
+3. **DRY-RUN obrigatório:** Sempre rodar com `dry_run=True` primeiro para validar escopo
+4. **Audit trail:** Toda exclusão é logada com `candidate_id`, `company_id`, `scheduled_deletion_at`
+5. **Multi-tenant:** Nunca cruza dados entre empresas (scoped por `company_id`)
+
+**Tabelas limpas:**
+- `candidates` — registros com `scheduled_deletion_at ≤ now`
+- `vacancy_candidates` — registros associados com `scheduled_deletion_at ≤ now`
+- `ai_consumption` — logs de IA com `scheduled_deletion_at ≤ now`
+
+### 17.6 LGPD Compliance API
+
+**Arquivo:** `lia-agent-system/app/api/v1/lgpd_compliance.py` (916 linhas)
+
+**3 módulos principais:**
+
+| Módulo                           | Endpoints | Artigos LGPD           |
+|----------------------------------|-----------|------------------------|
+| DPO Registry                     | CRUD      | Art. 41                |
+| Breach Notifications             | CRUD + notify | Art. 48 (48h)      |
+| Automated Decision Explanations  | CRUD + review | Art. 20            |
+
+**API Endpoints:**
+
+```
+GET    /api/v1/lgpd/stats                              # Estatísticas LGPD consolidadas
+GET    /api/v1/lgpd/dpo                                # Listar registros DPO
+POST   /api/v1/lgpd/dpo                                # Registrar DPO
+GET    /api/v1/lgpd/dpo/{company_id}                   # DPO por empresa
+GET    /api/v1/lgpd/breaches                            # Listar incidentes
+POST   /api/v1/lgpd/breaches                            # Registrar incidente
+POST   /api/v1/lgpd/breaches/{id}/notify-anpd           # Notificar ANPD (48h)
+POST   /api/v1/lgpd/breaches/{id}/notify-subjects       # Notificar titulares
+POST   /api/v1/lgpd/breaches/{id}/resolve               # Resolver incidente
+GET    /api/v1/lgpd/decisions                            # Decisões automatizadas
+POST   /api/v1/lgpd/decisions                            # Registrar decisão
+POST   /api/v1/lgpd/decisions/{id}/request-review        # Solicitar revisão humana
+POST   /api/v1/lgpd/decisions/{id}/complete-review       # Completar revisão
+```
+
+**Estatísticas LGPD (`LGPDComplianceStats`):**
+- `dpo_registered` / `dpo_active`
+- `total_breaches` / `open_breaches` / `breaches_pending_anpd`
+- `total_automated_decisions` / `pending_human_reviews` / `completed_human_reviews`
+
+### 17.7 Portal do Titular
+
+**Endpoint base:** `/api/v1/data-subject-requests/`
+
+**7 tipos de requisição suportados:**
+1. Acesso aos dados (Art. 18 I-II)
+2. Correção de dados (Art. 18 III)
+3. Anonimização (Art. 18 IV)
+4. Portabilidade (Art. 18 V) — via DSR Export Service
+5. Eliminação de dados (Art. 18 VI)
+6. Informação sobre compartilhamento (Art. 18 VII)
+7. Revisão de decisão automatizada (Art. 20)
+
+**Fluxo de atendimento:**
+```
+Candidato solicita → Sistema registra → Atribuição a responsável →
+Verificação de identidade → Processamento → Conclusão → Notificação ao candidato
+```
+
+**APIs do Portal do Titular:**
+```
+GET    /api/v1/data-subject-requests/                     # Lista requisições
+POST   /api/v1/data-subject-requests/                     # Criar requisição
+GET    /api/v1/data-subject-requests/{id}                 # Detalhes
+PUT    /api/v1/data-subject-requests/{id}/assign          # Atribuir responsável
+PUT    /api/v1/data-subject-requests/{id}/verify-identity # Verificar identidade
+PUT    /api/v1/data-subject-requests/{id}/process         # Processar
+PUT    /api/v1/data-subject-requests/{id}/complete        # Concluir
+PUT    /api/v1/data-subject-requests/{id}/reject          # Rejeitar
+GET    /api/v1/data-subject-requests/stats                # Estatísticas
+GET    /api/v1/data-subject-requests/export               # Exportar
+```
+
+### 17.8 Mapeamento de Dados (80+ tabelas)
+
+**Referência:** `docs/compliance/WEDOTALENT_COMPLIANCE_ARCHITECTURE.md` → Seção 3
+
+**Classificação de dados (5 níveis):**
+
+| Classificação       | Descrição                  | Exemplos                          |
+|---------------------|----------------------------|-----------------------------------|
+| Público             | Dados não sensíveis        | Nome da empresa, cargo            |
+| Interno             | Uso interno apenas         | Métricas, configurações           |
+| Confidencial        | Dados de negócio           | Candidatos, vagas                 |
+| Sensível (LGPD)     | Dados pessoais             | CPF, email, telefone              |
+| Altamente Sensível  | Dados especiais            | Saúde, biometria, raça            |
+
+**Tabelas de Candidatos (Sensíveis — LGPD):**
+
+| Tabela                   | Dados                                  | Retenção              |
+|--------------------------|----------------------------------------|-----------------------|
+| `candidates`             | Nome, email, telefone, CPF, endereço   | Conforme política     |
+| `candidate_experiences`  | Histórico profissional                 | Conforme política     |
+| `candidate_education`    | Formação acadêmica                     | Conforme política     |
+| `candidate_attachments`  | CVs, documentos                        | Conforme política     |
+| `vacancy_candidates`     | Associação vaga-candidato              | Vida da vaga + 2 anos |
+
+**Tabelas de IA e Decisões Automatizadas:**
+
+| Tabela                                | Dados                         | Retenção    |
+|---------------------------------------|-------------------------------|-------------|
+| `ai_inference_logs`                   | Logs de inferência IA         | 2 anos      |
+| `automated_decision_explanations`     | Explicações de decisão        | 5 anos      |
+| `lia_opinions`                        | Pareceres da LIA              | 5 anos      |
+| `lia_profile_analyses`                | Análises de perfil            | 5 anos      |
+| `bias_audit_reports`                  | Auditorias de viés            | 7 anos      |
+| `calibration_feedback`                | Feedback de calibração        | 2 anos      |
+| `model_evaluations`                   | Avaliações de modelo          | 2 anos      |
+
+**Tabelas de Compliance e Auditoria:**
+
+| Tabela                                | Dados                         | Retenção    |
+|---------------------------------------|-------------------------------|-------------|
+| `sox_audit_logs`                      | Logs SOX-compliant            | 7 anos      |
+| `compliance_control_library`          | 218 controles (7 frameworks)  | Permanente  |
+| `compliance_health_check_items`       | 242 itens de verificação      | Permanente  |
+| `data_subject_requests`               | Requisições de titulares      | 5 anos      |
+| `consent_records`                     | Registros de consentimento    | 5 anos      |
+| `breach_notifications`                | Notificações de incidente     | 10 anos     |
+
+---
+
+## 18. EU AI Act — Conformidade com IA de Alto Risco
+
+### 18.1 Classificação do Sistema
+
+**Documento:** `docs/compliance/FRIA_WSI.md` (355 linhas)
+
+**Classificação EU AI Act:** Sistema de IA de alto risco — Anexo III, ponto 4
+("Employment, workers management and access to self-employment")
+
+O WSI (Voice Screening Interview) é classificado como alto risco por ser um sistema de IA usado para recrutamento e seleção de candidatos.
+
+### 18.2 FRIA — Avaliação de Impacto em Direitos Fundamentais
+
+**6 Direitos Fundamentais Avaliados:**
+
+| Direito             | Risco Identificado                                      | Mitigação Implementada                                   | Risco Residual |
+|---------------------|--------------------------------------------------------|----------------------------------------------------------|----------------|
+| Dignidade humana    | Avaliação desumanizante por voz sem contexto pessoal    | Blocos estruturados com abertura humanizada               | Baixo          |
+| Não-discriminação   | Viés em ASR para sotaques regionais, gagueira           | FairnessGuard 3 camadas; Bias Audit Four-Fifths Rule     | Médio          |
+| Privacidade         | Coleta de dados biométricos (voz), processamento LLM    | PII masking; retenção 180 dias; anonimização             | Baixo          |
+| Devido processo     | Decisão adversa sem possibilidade de contestação        | HITL path; LGPD Art. 20 endpoint ativo; SLA 15 dias     | Baixo          |
+| Transparência       | Candidato não sabe que é avaliado por IA                | ConsentCheckerService Gate 1 obrigatório                  | Baixo          |
+| Equidade de acesso  | Candidatos sem microfone de qualidade penalizados       | Score de qualidade de áudio não penaliza resposta        | Médio          |
+
+### 18.3 Artigos EU AI Act Aplicáveis
+
+| Artigo    | Requisito                          | Implementação na Plataforma                              |
+|-----------|-------------------------------------|----------------------------------------------------------|
+| Art. 9    | Gestão de riscos contínua          | FRIA documentado; Bias Audit mensal; Model Drift diário |
+| Art. 10   | Dados de treino e auditoria        | BiasAuditService; TrainingDataService                    |
+| Art. 13   | Transparência para candidatos      | Aviso no início da chamada; ConsentCheckerService        |
+| Art. 14   | Supervisão humana                  | HITL path obrigatório para decisões adversas             |
+| Annex III | Classificação alto risco           | Sistema WSI classificado como Annex III ponto 4          |
+
+### 18.4 HITL (Human-in-the-Loop) — Triggers Automáticos
+
+**Arquivo:** `app/services/hitl_service.py`
+
+O HITL path é acionado automaticamente nas seguintes condições:
+
+| Trigger                                   | Condição                              | Ação                                        |
+|-------------------------------------------|---------------------------------------|----------------------------------------------|
+| Score na zona cinzenta                    | WSI score entre 40–60                 | Enviar para revisão de recrutador sênior     |
+| FairnessGuard Camada 2 ou 3 sinalizada   | Viés implícito ou LLM Judge flag     | Revisão obrigatória antes de finalizar       |
+| Candidato solicita revisão               | LGPD Art. 20 endpoint                 | SLA 15 dias úteis                            |
+| Qualidade de áudio abaixo do threshold   | Métricas de áudio do Deepgram         | Fallback para avaliação textual              |
+
+**Notificação:** Recrutador recebe Bell (in-app) + Teams com link direto para revisão.
+
+**Pontos de Intervenção Humana e SLAs:**
+
+| Gatilho                                | Ação Requerida            | SLA              |
+|----------------------------------------|---------------------------|------------------|
+| Confiança < 70%                        | Revisão obrigatória       | 24 horas         |
+| Decisão de rejeição final              | Aprovação gerencial       | 48 horas         |
+| Score de viés elevado (FairnessGuard)  | Análise de compliance     | 72 horas         |
+| Reclamação do candidato (Art. 20)      | Investigação DPO          | 5 dias úteis     |
+| Auditoria de viés periódica            | Revisão completa          | Mensal           |
+
+### 18.5 FRIA — Riscos Residuais
+
+**Documento:** `docs/compliance/FRIA_WSI.md` → Seção 9
+
+Riscos remanescentes **após** aplicação de todas as salvaguardas. Metodologia: Probabilidade (1–5) × Impacto (1–5) = Score. Aceitável ≤ 9.
+
+| # | Risco Residual                                                                      | P×I  | Classificação |
+|---|--------------------------------------------------------------------------------------|------|---------------|
+| R1| Viés de ASR para sotaques muito específicos (interior Norte/Nordeste)                | 8    | Aceitável     |
+| R2| Variância alta em avaliação de soft skills (Bloco 4 WSI)                             | 6    | Aceitável     |
+| R3| Candidato com gagueira leve não identificado pelo filtro de qualidade de áudio       | 8    | Aceitável     |
+| R4| Prompt injection via resposta do candidato não detectado por FairnessGuard           | 5    | Aceitável     |
+| R5| Deriva de modelo LLM entre versões sem atualização de rubrica                        | 6    | Aceitável     |
+| R6| Ausência de conteúdo em bloco WSI interpretada como nota baixa                       | 6    | Aceitável     |
+| R7| Candidatos inexperientes em entrevistas por voz com desempenho abaixo do potencial   | 9    | Aceitável     |
+
+**Nenhum risco residual classificado como Inaceitável (≥ 15).**
+
+**Plano de Tratamento:**
+
+| Risco | Ação de Mitigação                                                              | Prazo   |
+|-------|---------------------------------------------------------------------------------|---------|
+| R1    | Ampliar golden dataset de sotaques em `tests/fixtures/golden_dataset.py`       | Q2 2026 |
+| R7    | Guia de orientação pré-entrevista enviado 24h antes via WhatsApp/e-mail        | Q2 2026 |
+| R3    | Detecção de gagueira leve na camada de qualidade de áudio; HITL automático     | Q3 2026 |
+| R5    | Benchmark de modelo na suite de CI/CD para regressão cross-versão              | Q2 2026 |
+
+### 18.6 Declaração de Conformidade EU AI Act
+
+**Documento:** `docs/compliance/FRIA_WSI.md` → Seção 11
+
+O sistema WSI é aprovado para uso com as seguintes condições obrigatórias:
+
+1. **Consentimento explícito** do candidato antes de cada sessão (via `ConsentCheckerService`)
+2. **HITL ativo**: revisão humana obrigatória para scores em zona cinzenta (40–60)
+3. **Bias Audit mensal**: frequência mínima conforme Four-Fifths Rule
+4. **Não exclusividade**: score WSI não pode ser o único critério de eliminação
+5. **Transparência**: candidatos informados da utilização de IA no início da sessão
+
+**Documento de referência:** RIPD-LIA-WSI-2026-001 (validade 12 meses, próxima revisão 03/2027)
+
+**Gatilhos de revisão antecipada:**
+- Mudança de modelo LLM
+- Novo regulamento EU AI Act
+- Resultado adverso em Bias Audit
+- Incidente de discriminação reportado
+
+---
+
+## 19. Compliance Multi-Framework
+
+### 19.1 Compliance Health Check
+
+**Documento:** `docs/compliance/WEDOTALENT_COMPLIANCE_ARCHITECTURE.md` (1678 linhas)
+**Rota admin:** `/compliance/health-check`
+
+Dashboard interativo com **242 itens** de verificação distribuídos em **7 frameworks regulatórios:**
+
+| Framework         | Itens | Escopo                                                |
+|-------------------|-------|-------------------------------------------------------|
+| ISO 27001:2022    | 96    | Controles de segurança da informação (A.5–A.8)       |
+| SOC 2 Type II     | 61    | Trust Services Criteria (CC1–CC9, A1, C1, PI1, P1–P8)|
+| SOX 404           | 27    | Controles internos, ITGCs, SoD, evidências            |
+| LGPD              | 17    | Princípios, direitos do titular, obrigações           |
+| BCB 498/2025      | 13    | Seguro cibernético, coberturas obrigatórias           |
+| EU AI Act         | 13    | Governança de IA, alto risco, transparência           |
+| NYC LL144         | 11    | Auditoria de viés em AEDT, métricas de impacto       |
+| **TOTAL**         | **242** | **100% sincronizado com biblioteca de controles**   |
+
+### 19.2 Funcionalidades do Health Check
+
+- Verificação interativa de status por item (compliant / partial / non_compliant / not_applicable)
+- Links para documentação oficial de cada framework
+- Sincronização automática com biblioteca de controles (`/sync-from-library`)
+- Filtros por framework, status e prioridade
+- Estatísticas em tempo real por categoria
+- Mapeamento de prioridade (mandatory → critical, optional → medium)
+
+**APIs:**
+```
+GET    /api/v1/health-check/items                # Lista todos os itens
+GET    /api/v1/health-check/items/{id}           # Item específico
+PUT    /api/v1/health-check/items/{id}           # Atualiza status
+GET    /api/v1/health-check/summary              # Resumo por framework
+POST   /api/v1/health-check/sync-from-library    # Sincroniza da biblioteca
+```
+
+### 19.3 SOX — Trilha de Auditoria
+
+**Tabela:** `sox_audit_logs`
+**Retenção:** 7 anos (financeiro)
+
+Logs SOX-compliant para todas as operações sensíveis:
+- Movimentação de candidatos entre etapas
+- Alterações em políticas de contratação
+- Aprovações de vagas com salário acima de threshold
+- Exclusão de registros (LGPD cleanup)
+
+**8 Controles SOX implementados:**
+
+| ID     | Controle                    | Evidência                      |
+|--------|------------------------------|--------------------------------|
+| SOX-01 | Segregação de funções        | `sod_roles`, `sod_conflicts`   |
+| SOX-02 | Logs imutáveis               | `sox_audit_logs` (7 anos)      |
+| SOX-03 | Controle de acesso           | RBAC + MFA                     |
+| SOX-04 | Aprovação de transações      | Workflow de `approvals`        |
+| SOX-05 | Trilha de auditoria          | Todos os registros             |
+| SOX-06 | Backup e recuperação         | DR automático                  |
+| SOX-07 | Gestão de mudanças           | Git + deploy controlado        |
+| SOX-08 | Monitoramento de violações   | `sod_violations`               |
+
+### 19.3.1 Logs de Decisão Automatizada
+
+**Tabela:** `automated_decision_explanations`
+**Referência:** LGPD Art. 20, EU AI Act Art. 13
+
+| Campo                  | Descrição                            | Obrigatório |
+|------------------------|--------------------------------------|-------------|
+| `decision_id`          | ID único da decisão                  | Sim         |
+| `agent_name`           | Agente responsável                   | Sim         |
+| `decision_type`        | Tipo (screening, ranking, etc.)      | Sim         |
+| `input_data`           | Dados de entrada (hash, sem PII)     | Sim         |
+| `output`               | Resultado da decisão                 | Sim         |
+| `confidence`           | Score de confiança (0–1)             | Sim         |
+| `reasoning`            | Explicação em linguagem natural      | Sim         |
+| `criteria_used`        | Critérios utilizados                 | Sim         |
+| `criteria_ignored`     | Critérios desconsiderados            | Sim         |
+| `human_review_required`| Flag para revisão humana             | Sim         |
+| `model_version`        | Versão do modelo                     | Sim         |
+| `timestamp`            | Data/hora                            | Sim         |
+
+### 19.4 SoD — Segregação de Funções
+
+**Tabelas:** `sod_roles`, `sod_conflicts`, `sod_violations`
+**Rota admin:** `/compliance/auditoria` → submódulo SoD
+
+Detecção em tempo real de conflitos de segregação de funções:
+- Definição de papéis e funções incompatíveis
+- Monitoramento contínuo de violações
+- Aprovação de exceções com justificativa
+
+### 19.5 BCB 498 — Seguro Cibernético
+
+**Tabelas:** `insurance_policies`, `insurance_coverages`, `insurance_claims`
+
+Aplicável a clientes instituições financeiras reguladas pelo Banco Central:
+- Controles de qualidade e validação de modelos de IA
+- Documentação de governança de algoritmos
+- Trilha de auditoria completa de decisões automatizadas
+- Gestão de apólices de seguro cibernético
+
+**12 Controles BCB implementados:**
+
+| ID     | Controle                       | Evidência                      |
+|--------|--------------------------------|--------------------------------|
+| BCB-01 | Apólice de seguro              | `insurance_policies`           |
+| BCB-02 | Cobertura data breach          | `insurance_coverages`          |
+| BCB-03 | Cobertura ransomware           | `insurance_coverages`          |
+| BCB-04 | Cobertura business interruption| `insurance_coverages`          |
+| BCB-05 | Cobertura regulatory defense   | `insurance_coverages`          |
+| BCB-06 | Cobertura cyber liability      | `insurance_coverages`          |
+| BCB-07 | Cobertura forensics            | `insurance_coverages`          |
+| BCB-08 | Cobertura notification costs   | `insurance_coverages`          |
+| BCB-09 | Cobertura crisis management    | `insurance_coverages`          |
+| BCB-10 | Alertas de renovação           | Sistema automático             |
+| BCB-11 | Registro de sinistros          | `insurance_claims`             |
+| BCB-12 | Dashboard de compliance        | `/insurance/bcb-compliance`    |
+
+**APIs:** 19 endpoints em `/api/v1/insurance/`
+
+### 19.6 ISO 22301 — Continuidade de Negócios
+
+**Tabelas:** `business_processes`, `disaster_recovery_plans`, `continuity_tests`
+
+- BIA (Business Impact Analysis) por processo crítico
+- DRP (Disaster Recovery Plans)
+- Testes de continuidade com registro
+
+**APIs:** 12 endpoints em `/api/v1/continuity/`
+
+### 19.7 Trust Center
+
+**Rota admin:** `/compliance/trust-center`
+
+Portal público de confiança para clientes:
+
+| Submódulo          | Público   | Conteúdo                          |
+|--------------------|-----------|-----------------------------------|
+| Certificações      | Externo   | Selos, certificados               |
+| Subprocessadores   | Externo   | Lista de terceiros                |
+| Recursos           | Externo   | Políticas, whitepapers            |
+
+---
+
+## 20. Framework de Teste de Viés — Bias Audit Service
+
+### 20.1 Visão Geral
+
+**Arquivo:** `lia-agent-system/app/services/bias_audit_service.py` (290 linhas)
+
+Calcula adverse impact real usando dados de `RubricEvaluation` + `Candidate` por vaga, retornando apenas estatísticas agregadas sem PII (LGPD-safe).
+
+### 20.2 Four-Fifths Rule
+
+**Princípio:** Se a taxa de aprovação do grupo com menor taxa é inferior a 4/5 (80%) da taxa do grupo com maior taxa, existe adverse impact.
+
+**Constantes:**
+- `APPROVAL_THRESHOLD = 60.0` — Score mínimo para considerar candidato "aprovado"
+- `FOUR_FIFTHS_THRESHOLD = 0.80` — Limiar da Four-Fifths Rule
+
+**Fórmula:**
+```
+adverse_impact_ratio = taxa_menor_grupo / taxa_maior_grupo
+se ratio < 0.80 → alert_level = "warning"
+se ratio ≥ 0.80 → alert_level = "ok"
+```
+
+### 20.3 4 Dimensões Auditadas
+
+| Dimensão      | Grupos                                       | Função de Classificação                   |
+|---------------|----------------------------------------------|-------------------------------------------|
+| `gender`      | masculino, feminino, não informado            | `candidate.gender` (lowercase)            |
+| `age_group`   | <30, 30-44, 45+                              | `_age_group(candidate.date_of_birth)`     |
+| `disability`  | com PCD, sem PCD                              | `candidate.has_disability` (boolean)      |
+| `region`      | por `location_state`                          | `candidate.location_state`                |
+
+**Faixas etárias (screening-compliance §4):**
+- `AGE_GROUP_YOUNG` = "<30"
+- `AGE_GROUP_MID` = "30-44"
+- `AGE_GROUP_SENIOR` = "45+"
+
+### 20.4 DTOs de Resultado
+
+**`DemographicAuditResult`:**
+```python
+dimension: str                    # "gender" | "age_group" | "disability" | "region"
+groups: Dict[str, Dict]           # {label: {"count": N, "approved": N, "rate": float}}
+adverse_impact_ratio: float       # menor_taxa / maior_taxa
+below_threshold: bool             # ratio < 0.80
+alert_level: str                  # "ok" | "warning"
+```
+
+**`BiasAuditReport`:**
+```python
+job_id: str
+evaluated_at: datetime
+total_candidates: int
+dimensions: List[DemographicAuditResult]
+has_alerts: bool                  # True se qualquer dimensão below_threshold
+```
+
+### 20.5 Snapshot Histórico
+
+**Modelo:** `BiasAuditSnapshot`
+
+Snapshots de auditorias são salvos para compliance SOX/ISO 27001:
+- Frequência: auditoria mensal automática
+- Retenção: 7 anos (tabela `bias_audit_reports`)
+- Cada snapshot inclui todas as 4 dimensões com contagens e ratios
+
+### 20.6 Referências de Compliance
+
+| Referência           | Requisito                                            |
+|---------------------|------------------------------------------------------|
+| dei-fairness §4     | Four-Fifths Rule — adverse_impact_ratio ≥ 0.80      |
+| LGPD Art. 5         | Dados pessoais / dado sensível — agregação sem PII  |
+| EU AI Act Art. 10   | Dados de treino e auditoria                          |
+| SOX / ISO 27001     | Evidência de fairness com dados reais                |
+
+---
+
+## 21. Model Drift e Monitoramento Contínuo
+
+### 21.1 Monitoramento de Drift
+
+**Referência:** `docs/compliance/FRIA_WSI.md` → Seção 7.1
+
+**Triggers monitorados:**
+- Desvio de score médio (WSI / LIA Score)
+- Taxa de aprovação por grupo demográfico
+- Custo por avaliação
+- Latência P95 das chamadas LLM
+- Variância de scores entre avaliações do mesmo candidato
+
+### 21.2 Agendamento e Cadência de Auditoria
+
+| Auditoria                  | Frequência  | Referência FRIA              | Responsável          |
+|----------------------------|-------------|-------------------------------|----------------------|
+| Model Drift batch job      | Diário      | `drift.run_batch` Celery Beat | Automático           |
+| Bias Audit (Four-Fifths)   | Mensal      | FRIA §7.2                     | Automático + DPO     |
+| Red Team                   | Semestral   | FRIA §7.3                     | Equipe interna + ext.|
+| Revisão de Prompts         | Trimestral  | FRIA §7.4                     | Produto + IA         |
+| FRIA revisão completa      | Anual       | FRIA §8                       | DPO + CTO            |
+
+**Alerta automático:** Bell + Teams quando 2+ triggers ativos (`drift_alert_service`)
+
+### 21.3 Red Team — Teste de Adversário
+
+**Referência:** `docs/compliance/FRIA_WSI.md` → Seção 7.3
+
+- **Execução:** Equipe interna + auditoria externa independente
+- **Escopo:** Injeção de candidatos fictícios com características protegidas para verificar viés de output
+- **Artefatos de teste:** `tests/fairness/test_four_fifths_rule.py` + `tests/fixtures/golden_dataset.py`
+- **Resultado:** Documentado em `docs/compliance/red_team_YYYY_S[1|2].md (nomeação por ano/semestre)`
+
+### 21.4 Revisão de Prompts
+
+**Referência:** `docs/compliance/FRIA_WSI.md` → Seção 7.4
+
+- **Escopo:** Auditoria dos system prompts WSI em `app/domains/cv_screening/agents/system_prompt.py`
+- **Verificações:** Linguagem neutra, ausência de critérios implicitamente discriminatórios
+- **Resultado:** Documentado em `docs/compliance/AUDITORIA_SYSTEM_PROMPTS_YYYY_MM.md (nomeação por ano/mês)`
+
+### 21.5 Ações de Remediação
+
+Quando drift é detectado:
+1. Alerta automático para equipe de IA
+2. Snapshot de comparação (antes/depois)
+3. Revisão manual dos triggers ativos
+4. Se necessário: recalibração de thresholds ou rollback de modelo
+5. Registro em `docs/compliance/incidentes/` se classificado como incidente
+
+---
+
+## 22. Taxonomia de Incidentes
+
+### 22.1 Gestão de Incidentes
+
+**Rota admin:** `/compliance/monitoramento` → submódulo Incidentes
+
+| Campo            | Descrição                                 |
+|------------------|-------------------------------------------|
+| Ticket ID        | Identificador único do incidente          |
+| Severidade       | Critical / High / Medium / Low            |
+| Tipo             | Security / Compliance / Operational / AI  |
+| Status           | Open / Investigating / Resolved / Closed  |
+| RCA              | Root Cause Analysis (obrigatório ao fechar)|
+| Responsável      | Atribuído via workflow                    |
+| Tabela DB        | `compliance_incidents` (auditável SOX)    |
+
+### 22.2 Incidentes de IA
+
+Tipos específicos para a plataforma LIA:
+
+| Tipo de Incidente           | Exemplo                                         | Severidade Default |
+|-----------------------------|--------------------------------------------------|--------------------|
+| Viés detectado pós-produção | Four-Fifths Rule violada em auditoria mensal     | High               |
+| Model drift significativo   | Score médio WSI desviou >15% em 30 dias          | High               |
+| FairnessGuard bypass        | Query discriminatória não bloqueada              | Critical           |
+| PII leak em logs            | Dados pessoais identificados em log de produção  | Critical           |
+| Circuit breaker persistente | Serviço OPEN por >1 hora sem recovery            | Medium             |
+| LLM hallucination           | Resposta factualmente incorreta da LIA           | Medium             |
+| Consent violation           | Processamento sem consentimento registrado       | High               |
+| Prompt injection            | Score alterado por resposta maliciosa do candidato| Critical           |
+| Adverse impact < 0.65       | Abaixo do limiar NYC LL144 em qualquer dimensão  | Critical           |
+
+### 22.3 Definição de Incidente Grave (EU AI Act Art. 73)
+
+**Referência:** `docs/compliance/FRIA_WSI.md` → Seção 10.1
+
+Um incidente no sistema WSI é classificado como **grave** se:
+- Candidato eliminado por decisão automatizada com evidência de discriminação por critério protegido
+- Taxa de adverse impact ratio < 0.65 em qualquer dimensão
+- Falha de segurança com exposição de dados biométricos de voz
+- Score de candidato alterado indevidamente por prompt injection confirmado
+
+### 22.4 Fluxo de Resposta a Incidentes
+
+**Referência:** `docs/compliance/FRIA_WSI.md` → Seção 10.2
+
+```
+Detecção (Sistema / Reclamação)
+    ↓
+T+0h:  Registrar incidente em #compliance-incidents (Teams) + criar ticket
+    ↓
+T+4h:  DPO notificado — avaliação de gravidade (grave / não grave)
+    ↓
+T+24h: Se grave → Contenção imediata (suspender avaliações da empresa afetada)
+    ↓
+T+72h: Análise de causa raiz (engenharia + IA)
+    ↓
+T+15d: Notificação ao regulador competente (ANPD / autoridade EU AI Act)
+    ↓
+T+30d: Relatório de incidente final + plano de correção
+    ↓
+T+60d: Verificação de eficácia das correções aplicadas
+```
+
+### 22.5 Contatos e Responsabilidades
+
+| Papel          | Responsabilidade                                  | Canal                           |
+|----------------|---------------------------------------------------|----------------------------------|
+| DPO            | Notificação regulatória, comunicação ao titular   | `privacidade@wedotalent.com.br` |
+| CISO           | Contenção técnica, análise forense                | Slack `#security-incidents`     |
+| Engenharia IA  | Análise de causa raiz, correção de modelo         | Jira projeto `LIA-COMPLIANCE`  |
+| Jurídico       | Avaliação de responsabilidade civil/regulatória   | `juridico@wedotalent.com.br`   |
+
+### 22.6 Breach Notification (LGPD Art. 48)
+
+**Arquivo:** `lia-agent-system/app/api/v1/lgpd_compliance.py`
+
+Incidentes de segurança que envolvem dados pessoais seguem fluxo LGPD:
+
+| Etapa                     | Prazo           | Responsável         |
+|---------------------------|-----------------|---------------------|
+| Detecção e registro       | Imediato        | Sistema automático  |
+| Classificação de impacto  | 4 horas         | DPO / Segurança     |
+| Notificação ANPD          | 48 horas (legal)| DPO                 |
+| Notificação dos titulares | 5 dias úteis    | DPO + Comunicação   |
+| Resolução e RCA           | 30 dias         | Equipe responsável  |
+
+**Notificação ao titular (Art. 48):**
+- Canal: e-mail registrado + notificação no portal do candidato
+- Conteúdo obrigatório: natureza dos dados, medidas adotadas, DPO de contato, data do incidente
+
+### 22.7 Registro de Incidentes
+
+Todos os incidentes (graves e não graves) registrados em:
+- `docs/compliance/incidentes/INCIDENTE_<ANO>_<SEQ>.md`
+- Banco de dados: tabela `compliance_incidents` (auditável SOX/ISO 27001, retenção 7 anos)
+
+---
+
+## 23. Production Readiness
+
+### 23.1 Checklist de Prontidão
+
+Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talent Guide v3.3:
+
+**Infraestrutura:**
+
+| Item                        | Status      | Arquivo/Serviço                                |
+|-----------------------------|-------------|------------------------------------------------|
+| Circuit breakers (12)       | Implementado| `app/shared/resilience/circuit_breaker.py`     |
+| Token tracking / limites    | Implementado| `app/services/token_tracking_service.py`       |
+| Métricas Prometheus         | Implementado| `app/observability/metrics.py`                 |
+| Redis cache (TTL config.)   | Implementado| CascadedRouter Tier 2                          |
+| pgvector semantic cache     | Implementado| CascadedRouter Tier 3                          |
+| Rate limiting               | Configurado | `DEFAULT_LIMITS` no TokenTrackingService       |
+| Audit logging (SOX)         | Implementado| `sox_audit_logs` table                         |
+
+**Compliance:**
+
+| Item                                | Status         | Arquivo/Serviço                               |
+|--------------------------------------|----------------|------------------------------------------------|
+| FairnessGuard (3 camadas)           | Parcial (4/11) | `app/shared/compliance/fairness_guard.py`      |
+| Bias Audit (Four-Fifths Rule)       | Implementado   | `app/services/bias_audit_service.py`           |
+| PII Masking (2 componentes)         | Implementado   | `app/shared/pii_masking.py`                    |
+| Consent Checker (Gate 1)            | Implementado   | `app/services/consent_checker_service.py`      |
+| LGPD Cleanup (daily job)            | Implementado   | `app/services/lgpd_cleanup_service.py`         |
+| DSR Export (portabilidade)          | Implementado   | `app/services/dsr_export_service.py`           |
+| HITL path (4 triggers)             | Implementado   | `app/services/hitl_service.py`                 |
+| FRIA documentado                    | Implementado   | `docs/compliance/FRIA_WSI.md`                  |
+| Health Check (242 itens, 7 FW)     | Implementado   | `docs/compliance/WEDOTALENT_COMPLIANCE_ARCHITECTURE.md` |
+| Anti-sycophancy (11 agentes)       | Implementado   | System prompts de todos os agentes             |
+
+**Governança de Agentes:**
+
+| Item                               | Status       | Arquivo/Serviço                                  |
+|-------------------------------------|-------------|--------------------------------------------------|
+| EnhancedAgentMixin (5 etapas)      | Implementado| `libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` |
+| AutonomyEngine (3 níveis)          | Implementado| `libs/agents-core/lia_agents_core/autonomy_engine.py`      |
+| LongTermMemory (4 tipos)           | Implementado| `libs/agents-core/lia_agents_core/long_term_memory.py`     |
+| LearningExtractor (3 categorias)   | Implementado| `libs/agents-core/lia_agents_core/learning_extractor.py`   |
+| TrainingDataService (3 formatos)   | Implementado| `app/services/training_data_service.py`          |
+| ConfidencePolicyService            | Implementado| `app/services/confidence_policy_service.py`      |
+
+### 23.2 Itens Pendentes para Produção
+
+| Item                                    | Prioridade | Complexidade |
+|----------------------------------------|------------|-------------|
+| FairnessGuard em todos os 11 agentes   | P0         | Baixa       |
+| Guardrail automatizado anti-sycophancy | P1         | Média       |
+| JobReportModal com dados reais (backend)| P1         | Média       |
+| WSI Voice (real, não text-only)        | P2         | Alta        |
+| Audit trail centralizado (SOX/ISO)     | P1         | Média       |
+| Dashboard de Model Drift               | P2         | Média       |
+| Streaming de pensamentos ReAct via WS  | P3         | Média       |
+
+---
+
+## 24. Limitações, Dívidas Técnicas e Funcionalidades Incompletas
+
+### 24.1 Processamento Local vs IA
 
 | Funcionalidade          | Status Atual                                              |
 |-------------------------|------------------------------------------------------------|
@@ -1182,27 +2311,29 @@ Fluxo HITL (Human-in-the-loop):
 | JD Enriquecida          | IA real (Claude)                                          |
 | Benchmark salarial      | IA real (Claude) + dados de mercado                       |
 
-### 8.2 Fallbacks Hardcoded
+### 24.2 Fallbacks Hardcoded
 
 1. **Orchestrator fallback** — Se LLM falha, retorna: "Olá! Sou a LIA, sua assistente de recrutamento. Recebi sua mensagem sobre '{msg[:50]}..'" com 3 sugestões fixas
 2. **CascadedRouter fallback** — Se nenhum tier resolve, retorna clarificação com 6 opções fixas
 3. **VectorSemanticCache** — Inicialização graciosa; se pgvector indisponível, pula silenciosamente
 4. **PlanDetector** — Falha silenciosa via try/except (non-blocking)
+5. **CircuitBreaker** — Fallback configurável por circuit; se não definido, lança `CircuitBreakerError`
+6. **Guardrails** — 3 camadas de fallback (AutonomyEngine → DB → lista estática)
 
-### 8.3 Detecção de Intenção por Keywords
+### 24.3 Detecção de Intenção por Keywords
 
 - `isGenericQuestion()` — 5 regex + 46 keywords de busca; frágil para termos novos
 - `analysisCommands[]` — 8 padrões fixos de string matching
 - `detect_command_type()` — keywords por KanbanCommandType; pode falhar para variações
 - `_TECHNICAL_PATTERNS` — 5 padrões de string matching para detecção de resposta técnica
 
-### 8.4 Cache
+### 24.4 Cache
 
 - **Tier 1 (LRU):** In-process, não distribuído entre workers; eviction FIFO
 - **Tier 2 (Redis):** Implementado via `SemanticCache` com TTL configurável
 - **Response Cache:** Funcional, mas sem invalidação automática por eventos (ex: novo candidato adicionado)
 
-### 8.5 Funcionalidades Incompletas
+### 24.5 Funcionalidades Incompletas
 
 1. **handleOpenRubricAnalysis orphaned** — Função em `candidates-page.tsx` (linha 6424) sem call sites; modal ainda renderiza mas não é acessível via botão
 2. **JobReportModal com dados mock** — Dados hardcoded no frontend (funnelMetrics, channelPerformance, timeline, budget); sem integração com backend real
@@ -1211,7 +2342,7 @@ Fluxo HITL (Human-in-the-loop):
 5. **Arquivo monolítico** — `candidates-page.tsx` tem 10.398 linhas; `lia-api.ts` tem 4.943 linhas
 6. **Notificações** — `JobCreatedNotificationRequest` suporta email + Teams; WhatsApp ausente
 
-### 8.6 Dívidas Técnicas
+### 24.6 Dívidas Técnicas
 
 1. **IntentRouter legado** — Coexiste com LLM Cascade como fallback; duplicação de lógica
 2. **Mapeamento agent_type → domain** — Hardcoded em `AGENT_TYPE_TO_DOMAIN`; sem registro dinâmico
@@ -1219,151 +2350,219 @@ Fluxo HITL (Human-in-the-loop):
 4. **PolicyEngine** — DB service pode ser `None`; validação pode falhar silenciosamente
 5. **Detecção de resposta técnica** — String matching (`_TECHNICAL_PATTERNS`); frágil com novas mensagens
 6. **Escopo GLOBAL** — `scope_config.py` limita a apenas `generate_report` + `schedule_report`, mas o chat-page envia tudo para o Orchestrator que ignora scope na execução
+7. **Circuit breaker dual** — Duas implementações no mesmo arquivo (classe + decorator); deveria ser unificado
+8. **FairnessGuard parcial** — Apenas 4/11 agentes têm FairnessGuard integrado; gap de compliance
 
-### 8.7 Compliance
+### 24.7 Compliance
 
 1. **Anti-sycophancy** — Presente em todos os agentes (via bloco compartilhado ou equivalente no prompt), porém sem guardrail automatizado em runtime
 2. **FairnessGuard** — Integrado em 4 agentes (Wizard, Talent, Jobs Management, Kanban); ausente em Analytics, Automation, ATS Integration, Communication, Sourcing, Pipeline, Policy
 3. **LGPD em ATS** — Lista de campos sensíveis não sincronizados é hardcoded
 4. **Audit trail** — SOX/ISO 27001 mencionados no prompt do ATS Agent, mas sem implementação de audit trail centralizado
+5. **ConsentChecker mode** — Default é `soft_warning` (não bloqueia); deveria ser `hard_block` em produção
+6. **Bias Audit** — Dimensão `disability` depende de campo `has_disability` no registro do candidato, que pode não estar preenchido
 
 ---
 
-## 9. Oportunidades e Capacidades Ausentes
+## 25. Oportunidades e Capacidades Ausentes
 
-### 9.1 Score Clicável no Funil
+### 25.1 Score Clicável no Funil
 
 **Status:** Ausente
 **Descrição:** Permitir que recrutador clique no LIA Score de um candidato no funil e veja breakdown detalhado (rubricas, WSI, prerequisites, recency) com explicação de cada componente
 **Complexidade:** Média — dados já existem no `lia_score_service.py`; precisa de endpoint dedicado + componente UI
 **Arquivos relevantes:** `lia_score_service.py` (fórmula), `candidates-page.tsx` (UI)
 
-### 9.2 Análise Comparativa com IA Real
+### 25.2 Análise Comparativa com IA Real
 
 **Status:** Parcialmente implementado (via `compare_candidates` tool)
 **Descrição:** Análise comparativa multi-dimensional entre candidatos com visualização lado-a-lado no frontend
 **Gap:** Não há componente visual dedicado para comparação; resultado aparece apenas como texto no chat
 **Arquivos relevantes:** `analytics_query_tools.py`, `kanban_assistant_prompts.py`
 
-### 9.3 Fit Cultural com Dados de Entrevista
+### 25.3 Fit Cultural com Dados de Entrevista
 
 **Status:** Ausente
 **Descrição:** Avaliar fit cultural do candidato usando dados de entrevistas realizadas (notas do entrevistador, sentimento, alinhamento de valores)
 **Gap:** WSI avalia competências comportamentais, mas não há cruzamento com dados de entrevista reais
 **Arquivos relevantes:** `lia_score_service.py` (scoring), `pipeline_react_agent.py` (pipeline)
 
-### 9.4 Auto-routing Inteligente
+### 25.4 Auto-routing Inteligente
 
 **Status:** Parcialmente implementado (CascadedRouter)
 **Descrição:** Roteamento que aprende com o tempo quais agentes foram mais úteis para cada tipo de mensagem
 **Gap:** CascadedRouter usa cache (melhora velocidade) mas não faz aprendizado; peso dos tiers é estático
 **Arquivos relevantes:** `cascaded_router.py`, `llm_cascade.py`
 
-### 9.5 Insights Proativos no Kanban
+### 25.5 Insights Proativos no Kanban
 
 **Status:** Parcialmente implementado (SaturationBadge)
 **Descrição:** LIA sugere proativamente ações no kanban (ex: "3 candidatos parados há 7 dias na etapa Entrevista")
 **Gap:** SaturationBadge existe mas é reativo (badge estático); falta ProactiveAgentWorker integrado ao kanban UI
 **Arquivos relevantes:** `SaturationBadge.tsx`, `proactive_agent_worker.py`
 
-### 9.6 Relatório Cross-vagas
+### 25.6 Relatório Cross-vagas
 
 **Status:** Ausente
 **Descrição:** Relatório consolidado comparando métricas entre todas as vagas da empresa (TTF, qualidade, custo, fontes)
 **Gap:** `comparative_analysis` command existe mas compara apenas vagas selecionadas; falta dashboard consolidado
 **Arquivos relevantes:** `job_analytics_prompt_service.py`, `job-report-modal.tsx`
 
-### 9.7 ML Adaptativo
+### 25.7 ML Adaptativo
 
 **Status:** Parcialmente implementado (LIA Score com pesos fixos)
 **Descrição:** Modelo que ajusta pesos do scoring baseado em feedback de contratações reais
 **Gap:** `Calibration_Adjustment` existe na fórmula do LIA Score mas é sempre 0; falta loop de feedback
 **Arquivos relevantes:** `lia_score_service.py` (fórmula com `Calibration_Adjustment`), `learning_analytics_service.py`
 
-### 9.8 Benchmark de Mercado Real
+### 25.8 Benchmark de Mercado Real
 
 **Status:** Parcialmente implementado (via `salary_benchmark` command)
 **Descrição:** Benchmark de mercado com dados reais e atualizados (salário, tempo de contratação, volume)
 **Gap:** Benchmark salarial usa IA para estimar; não há integração com fontes de dados de mercado reais (ex: Glassdoor, Levels.fyi)
 **Arquivos relevantes:** `job_wizard_tools.py` (`search_salary_benchmark`, `get_intelligent_salary`)
 
-### 9.9 WSI Assíncrono
+### 25.9 WSI Assíncrono
 
 **Status:** Ausente
 **Descrição:** Enviar triagem WSI para candidato e processar respostas assincronamente quando o candidato responder
 **Gap:** WSI é síncrono (recrutador inicia, LIA processa em tempo real); não há fluxo de envio + coleta assíncrona
 **Arquivos relevantes:** `wsi_screening` tool, `pipeline_react_agent.py`
 
-### 9.10 Outras Oportunidades
+### 25.10 Outras Oportunidades
 
 | Oportunidade                           | Complexidade | Impacto |
 |----------------------------------------|-------------|---------|
 | Registro dinâmico de agentes (YAML)    | Alta        | Alto    |
 | Multi-model por agente (GPT/Gemini)    | Média       | Alto    |
 | RAG por domínio (embeddings)           | Alta        | Alto    |
-| Circuit breaker para Pearch AI         | Baixa       | Médio   |
 | Validar escopo de tools no backend     | Baixa       | Alto    |
 | Ativar FairnessGuard em todos agentes  | Baixa       | Alto    |
 | Remover IntentRouter legado            | Baixa       | Médio   |
 | Streaming de pensamentos ReAct via WS  | Média       | Médio   |
+| Unificar circuit breaker (classe+deco) | Baixa       | Médio   |
+| Dashboard real-time de Model Drift     | Média       | Alto    |
+| Bias Audit Dashboard no frontend       | Média       | Alto    |
 
 ---
 
-## 10. Referência de Arquivos
+## 26. Referência de Arquivos
 
-### 10.1 Frontend (plataforma-lia/)
+### 26.1 Orquestração
 
 | Arquivo | Responsabilidade |
 |---------|-----------------|
-| `src/components/pages/candidates-page.tsx` | Float Chat, busca, análise, UnifiedBulkActionsBar, ProactiveInsightCard, isGenericQuestion(), handleAICommand() |
-| `src/components/pages/job-kanban-page.tsx` | Kanban Chat, pipeline visual, SaturationBadge, drag-and-drop, JobReportModal |
+| `lia-agent-system/app/orchestrator/orchestrator.py` | Orchestrator principal: process_request(), memória, cache, planos |
+| `lia-agent-system/app/orchestrator/cascaded_router.py` | CascadedRouter 6 tiers com métricas Prometheus |
+| `lia-agent-system/app/orchestrator/fast_router.py` | FastRouter regex/keyword (Tier 4) |
+| `lia-agent-system/app/orchestrator/llm_cascade.py` | LLM Cascade Haiku→Sonnet→Opus (Tier 5) |
+| `lia-agent-system/app/orchestrator/action_executor.py` | Execução closed-loop de ações (move, email, triagem) |
+| `lia-agent-system/app/orchestrator/pending_action.py` | Store de ações pendentes para HITL |
+| `lia-agent-system/app/orchestrator/memory_resolver.py` | Resolução de pronomes/referências (Tier 0) |
+
+### 26.2 Agentes
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `lia-agent-system/libs/agents-core/lia_agents_core/react_agent_registry.py` | Registry Singleton + AgentFactory session-safe |
+| `lia-agent-system/libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` | Mixin: memória, autonomia, aprendizado (5 etapas) |
+| `lia-agent-system/libs/agents-core/lia_agents_core/autonomy_engine.py` | AutonomyEngine: 3 níveis de autonomia |
+| `lia-agent-system/libs/agents-core/lia_agents_core/learning_extractor.py` | LearningExtractor: 3 categorias |
+| `lia-agent-system/libs/agents-core/lia_agents_core/long_term_memory.py` | LongTermMemoryService: 4 tipos de memória |
+| `lia-agent-system/libs/agents-core/lia_agents_core/working_memory.py` | WorkingMemoryService: memória de sessão |
+| `lia-agent-system/libs/agents-core/lia_agents_core/memory_integration.py` | MemoryIntegration: ponte WM↔LTM |
+| `lia-agent-system/app/domains/job_management/agents/wizard_react_agent.py` | Wizard Agent (criação de vagas) |
+| `lia-agent-system/app/domains/cv_screening/agents/pipeline_react_agent.py` | Pipeline Agent (triagem CVs) |
+| `lia-agent-system/app/domains/sourcing/agents/sourcing_react_agent.py` | Sourcing Agent (busca candidatos) |
+| `lia-agent-system/app/domains/recruiter_assistant/agents/talent_react_agent.py` | Talent Agent (funil) |
+| `lia-agent-system/app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py` | Jobs Management Agent (portfólio vagas) |
+| `lia-agent-system/app/domains/recruiter_assistant/agents/kanban_react_agent.py` | Kanban Agent (pipeline) |
+| `lia-agent-system/app/domains/hiring_policy/agents/policy_react_agent.py` | Policy Agent (políticas) |
+| `lia-agent-system/app/domains/automation/agents/automation_react_agent.py` | Automation Agent (decomposição tarefas) |
+| `lia-agent-system/app/domains/analytics/agents/analytics_react_agent.py` | Analytics Agent (KPIs, previsões) |
+| `lia-agent-system/app/domains/communication/agents/communication_react_agent.py` | Communication Agent (multi-canal LGPD) |
+| `lia-agent-system/app/domains/ats_integration/agents/ats_integration_react_agent.py` | ATS Integration Agent (Gupy, Pandapé, Merge, StackOne) |
+
+### 26.3 Compliance e Governança
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `lia-agent-system/app/shared/compliance/fairness_guard.py` | FairnessGuard: 9 categorias, 42 patterns, 11 termos implícitos |
+| `lia-agent-system/app/shared/pii_masking.py` | PII Masking: strip_pii_for_llm_prompt + PIIMaskingFilter |
+| `lia-agent-system/app/services/bias_audit_service.py` | Bias Audit: Four-Fifths Rule, 4 dimensões |
+| `lia-agent-system/app/services/consent_checker_service.py` | ConsentCheckerService: Gate 1, soft_warning/hard_block |
+| `lia-agent-system/app/services/lgpd_cleanup_service.py` | LGPD Cleanup: retenção 90-365 dias, dry-run |
+| `lia-agent-system/app/services/dsr_export_service.py` | DSR Export: portabilidade LGPD Art. 18 V |
+| `lia-agent-system/app/services/confidence_policy_service.py` | ConfidencePolicy: 3 níveis de autonomia de ação |
+| `lia-agent-system/app/api/v1/lgpd_compliance.py` | API LGPD: DPO, Breaches, Decisions (916 linhas) |
+| `docs/compliance/FRIA_WSI.md` | FRIA: Avaliação de impacto EU AI Act (355 linhas) |
+| `docs/compliance/WEDOTALENT_COMPLIANCE_ARCHITECTURE.md` | Arquitetura de compliance: 242 itens, 7 frameworks (1678 linhas) |
+
+### 26.4 Resiliência e Custos
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `lia-agent-system/app/shared/resilience/circuit_breaker.py` | Circuit Breaker: 12 circuits, 3 estados, notificação |
+| `lia-agent-system/app/services/token_tracking_service.py` | Token Tracking: 10 modelos, limites, custos |
+| `lia-agent-system/app/services/training_data_service.py` | Training Data: 3 formatos export (OpenAI, Anthropic, DPO) |
+| `lia-agent-system/app/services/feedback_learning_service.py` | Feedback Learning: thumbs, rating, correções |
+| `lia-agent-system/app/domains/job_management/services/outcome_tracker.py` | Outcome Tracker: correlação decisão ↔ contratação |
+
+### 26.5 Aprendizado e Analytics
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `lia-agent-system/app/services/predictive_analytics_service.py` | Serviço preditivo de contratação |
+| `lia-agent-system/app/services/search_analytics_service.py` | Analytics de busca de candidatos |
+| `lia-agent-system/app/services/response_cache_service.py` | Cache de respostas por intent |
+| `lia-agent-system/app/services/pre_qualification_service.py` | Pre-qualification: triagem automática pré-WSI |
+| `lia-agent-system/app/services/personalized_feedback_service.py` | Feedback personalizado: 3 tons |
+| `lia-agent-system/app/services/score_normalization_service.py` | Score normalization: fator 0.7-1.3 |
+| `lia-agent-system/app/services/lia_score_service.py` | LIA Score: fórmula unificada, pesos por cenário |
+
+### 26.6 Prompts e Templates
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `lia-agent-system/app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py` | 18 Kanban Command Templates + detect_command_type() |
+| `lia-agent-system/app/domains/analytics/services/job_analytics_prompt_service.py` | 8 Analytics Command Templates + COMMAND_TEMPLATES |
+| `lia-agent-system/app/domains/recruiter_assistant/prompts/talent_assistant_prompts.py` | Talent Agent prompts |
+| `lia-agent-system/app/domains/recruiter_assistant/prompts/jobs_management_prompts.py` | Jobs Management prompts |
+| `lia-agent-system/app/tools/scope_config.py` | Configuração de escopo: TALENT_FUNNEL, JOB_TABLE, IN_JOB, GLOBAL |
+
+### 26.7 API Endpoints
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `lia-agent-system/app/api/v1/orchestrated_job_chat.py` | Endpoint /orchestrator/job-chat (Kanban) |
+| `lia-agent-system/app/api/v1/lia_assistant.py` | Endpoint /orchestrator/talent-chat (Float) |
+| `lia-agent-system/app/api/v1/lgpd_compliance.py` | 20 endpoints LGPD (DPO, Breaches, Decisions) |
+
+### 26.8 Frontend (plataforma-lia/)
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `src/components/pages/candidates-page.tsx` | Float Chat, busca, análise, UnifiedBulkActionsBar, ProactiveInsightCard |
+| `src/components/pages/job-kanban-page.tsx` | Kanban Chat, pipeline visual, SaturationBadge, drag-and-drop |
 | `src/components/pages/chat-page.tsx` | Chat Full dedicado, Quick Actions, histórico, WebSocket |
 | `src/components/rubric-evaluation-modal.tsx` | Modal de avaliação por rubrica multi-dimensional |
-| `src/components/proactive-insight-card.tsx` | Card de insights proativos após busca (SearchAnalytics) |
+| `src/components/proactive-insight-card.tsx` | Card de insights proativos após busca |
 | `src/components/kanban/components/SaturationBadge.tsx` | Badge de saturação do pipeline por canal |
-| `src/components/job-report-modal.tsx` | Modal de relatório da vaga com export PDF (dados mock) |
-| `src/components/ui/unified-bulk-actions-bar.tsx` | Barra de ações bulk (9 ações, contexto funnel/vacancy) |
+| `src/components/job-report-modal.tsx` | Modal de relatório da vaga com export PDF |
+| `src/components/ui/unified-bulk-actions-bar.tsx` | Barra de ações bulk (9 ações) |
 | `src/components/contextual-actions-banner.tsx` | Banner de ações contextuais (8 ações) |
-| `src/services/lia-api.ts` | Client API (4943 linhas): chat, search, calibration, notifications |
+| `src/services/lia-api.ts` | Client API (4943 linhas) |
 | `src/lib/api/kanban-assistant.ts` | API helpers: callOrchestratedTalentChat(), callOrchestratedJobChat() |
-| `src/contexts/lia-float-context.tsx` | Estado global do Float/Super Prompt (isOpen, isExpanded, sharedMessages) |
-| `src/components/wsi/` | Componentes WSI (diretório) |
+| `src/contexts/lia-float-context.tsx` | Estado global do Float/Super Prompt |
 
-### 10.2 Backend (lia-agent-system/)
+### 26.9 Documentação de Compliance
 
 | Arquivo | Responsabilidade |
 |---------|-----------------|
-| `app/orchestrator/orchestrator.py` | Orchestrator principal: process_request(), memória, cache, planos |
-| `app/orchestrator/cascaded_router.py` | CascadedRouter 6 tiers com métricas Prometheus |
-| `app/orchestrator/fast_router.py` | FastRouter regex/keyword (Tier 4) |
-| `app/orchestrator/llm_cascade.py` | LLM Cascade Haiku→Sonnet→Opus (Tier 5) |
-| `app/orchestrator/action_executor.py` | Execução closed-loop de ações (move, email, triagem) |
-| `app/orchestrator/pending_action.py` | Store de ações pendentes para HITL |
-| `app/orchestrator/memory_resolver.py` | Resolução de pronomes/referências (Tier 0) |
-| `app/api/v1/orchestrated_job_chat.py` | Endpoint /orchestrator/job-chat (Kanban) |
-| `app/api/v1/orchestrated_talent_chat.py` | Endpoint /orchestrator/talent-chat (Float) — v3.0 closed-loop |
-| `app/api/v1/lia_assistant.py` | LIA Assistant: suggestions, job-wizard, insights, expanded-prompt |
-| `libs/agents-core/lia_agents_core/react_agent_registry.py` | Registry Singleton + AgentFactory session-safe |
-| `app/domains/job_management/agents/wizard_react_agent.py` | Wizard Agent (criação de vagas) |
-| `app/domains/cv_screening/agents/pipeline_react_agent.py` | Pipeline Agent (triagem CVs) |
-| `app/domains/sourcing/agents/sourcing_react_agent.py` | Sourcing Agent (busca candidatos) |
-| `app/domains/recruiter_assistant/agents/talent_react_agent.py` | Talent Agent (funil) |
-| `app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py` | Jobs Management Agent (portfólio vagas) |
-| `app/domains/recruiter_assistant/agents/kanban_react_agent.py` | Kanban Agent (pipeline) |
-| `app/domains/hiring_policy/agents/policy_react_agent.py` | Policy Agent (políticas) |
-| `app/domains/automation/agents/automation_react_agent.py` | Automation Agent (decomposição tarefas) |
-| `app/domains/analytics/agents/analytics_react_agent.py` | Analytics Agent (KPIs, previsões) |
-| `app/domains/communication/agents/communication_react_agent.py` | Communication Agent (multi-canal LGPD) |
-| `app/domains/ats_integration/agents/ats_integration_react_agent.py` | ATS Integration Agent (Gupy, Pandapé, Merge, StackOne) |
-| `app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py` | 18 Kanban Command Templates + detect_command_type() |
-| `app/domains/analytics/services/job_analytics_prompt_service.py` | 8 Analytics Command Templates + COMMAND_TEMPLATES |
-| `app/services/lia_score_service.py` | LIA Score: fórmula unificada, pesos por cenário, DataAvailability |
-| `app/services/predictive_analytics_service.py` | Serviço preditivo de contratação |
-| `app/services/search_analytics_service.py` | Analytics de busca de candidatos |
-| `app/services/response_cache_service.py` | Cache de respostas por intent |
-| `app/tools/scope_config.py` | Configuração de escopo: TALENT_FUNNEL (20 tools), JOB_TABLE (19 tools), IN_JOB (25 tools), GLOBAL (2 tools) |
-| `docs/analises/MAPA_INTELIGENCIA_LIA_COMPLETO.md` | Documento de referência existente (v3.0) |
+| `docs/compliance/FRIA_WSI.md` | FRIA — Avaliação de Impacto em Direitos Fundamentais (355 linhas) |
+| `docs/compliance/WEDOTALENT_COMPLIANCE_ARCHITECTURE.md` | Arquitetura de Compliance (1678 linhas, 242 itens, 7 frameworks) |
+| `docs/analises/MAPA_INTELIGENCIA_LIA_COMPLETO.md` | Mapa de inteligência LIA (v3.0) |
 
 ---
 
-*Documento gerado por auditoria automatizada do código-fonte em 13/03/2026.*
+*Documento gerado por auditoria automatizada do código-fonte em 13/03/2026. Versão 2.0 — expandido com 15 novas seções e caminhos de arquivo exatos.*
