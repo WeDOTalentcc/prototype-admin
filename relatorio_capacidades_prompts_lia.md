@@ -86,9 +86,16 @@ A plataforma possui **3 camadas de chat** com contextos, escopos e lógica de de
 #### 1.1.3 Chat Dedicado (chat-page.tsx)
 
 - **Localização:** `plataforma-lia/src/components/pages/chat-page.tsx`
-- **Contexto:** Chat full-page com LIA — acesso completo
-- **Escopo de ferramentas:** `GLOBAL` — `scope_config.py` limita a: `generate_report`, `schedule_report`
-- **Endpoint API:** `liaApi.sendMessage()` → `POST /api/backend-proxy/chat` (com suporte a WebSocket via `wsSendMessage`)
+- **Contexto:** Chat full-page com LIA — acesso a todas as capacidades
+- **Escopo:** `GLOBAL` — ferramentas restritas a `generate_report` e `schedule_report` (ver `scope_config.py`)
+- **Endpoint API:** `liaApi.orchestratorProcess()` → `POST /api/backend-proxy/orchestrator/process` (com suporte a WebSocket via `wsSendMessage`)
+- **Capacidades completas:**
+  - Quick actions pré-definidas: "Criar uma nova vaga", "Solicitar aprovação", "Compartilhar candidatos com gestor", "Solicitar feedback de entrevista", "Consultar candidato", "Adicionar candidato", "Reagendar entrevista"
+  - Ações contextuais sobre candidatos selecionados: comparar perfis, adicionar a vaga
+  - Busca via Pearch AI (deep search externo) e busca local
+  - Histórico de conversas persistente
+  - Suporte a anexos (arquivos + áudio)
+  - Resumo automático a cada N mensagens (`ROUTER_SUMMARY_EVERY_N_MESSAGES`)
 
 **Lógica:** Todas as mensagens vão diretamente ao backend via `sendMessage()`. O backend processa via `Orchestrator.process_request()` com escopo GLOBAL.
 
@@ -112,8 +119,8 @@ A plataforma possui **3 camadas de chat** com contextos, escopos e lógica de de
 ├─────────────────────────────────────────────────────────┤
 │  Chat Full (chat-page)                                  │
 │  Escopo: GLOBAL                                         │
-│  Decisão: todas as mensagens → backend direto            │
-│  → liaApi.sendMessage() → /chat (+ WebSocket)            │
+│  → liaApi.orchestratorProcess() → /orchestrator/process  │
+│  (+ WebSocket wsSendMessage)                            │
 └──────────────────────────┬──────────────────────────────┘
                            │
                     ┌──────▼──────┐
@@ -431,12 +438,223 @@ Usuário: "Sincronize os candidatos aprovados da vaga Tech Lead com o Gupy"
 
 ### 3.1 Avaliação por Rubrica (RubricEvaluationModal)
 
+<<<<<<< HEAD
 - **O que faz:** Avalia candidato contra critérios estruturados da vaga, gerando score multi-dimensional
 - **Input:** `candidateId`, `jobId`, dados do CV, competências requeridas
 - **Processing:** IA (Claude via Pipeline Agent); analisa CV contra cada critério, pesa dimensões, gera evidências
 - **Output:** Score 0-100, grade (A+/A/B+/...), dimensões com critérios individuais, pontos fortes/atenção, recomendação, dados WSI (se disponível)
 - **Execução:** IA real (Claude)
 - **Arquivo:** `plataforma-lia/src/components/rubric-evaluation-modal.tsx`
+=======
+**Arquivo:** `app/domains/job_management/agents/wizard_react_agent.py`
+**Responsabilidade:** Criação guiada de vagas com sugestões inteligentes
+**Prompt principal:**
+- Persona LIA como consultora de RH
+- Capacidade de sugerir requisitos, skills, faixas salariais
+- FairnessGuard integrado (verifica bias em descrições de vaga)
+- Fluxo: coleta dados → valida campos → gera JD enriquecida → salva rascunho
+
+### 5.2 Pipeline Agent (cv_screening)
+
+**Arquivo:** `app/domains/cv_screening/agents/pipeline_react_agent.py`
+**Responsabilidade:** Triagem de CVs e movimentação no pipeline
+**Prompt principal:**
+- Escopo IN (10 capacidades): consultar dados do candidato, scores WSI, triagem, atualizar dados, preferências de execução, sugestões baseadas em padrões
+- Escopo OUT (7 restrições): não pode buscar outros candidatos, comparar vagas, configurar pipeline, acessar analytics gerais
+- Verificação de fairness em motivos de rejeição
+- Personalização de comunicação por tom/idioma
+
+### 5.3 Sourcing Agent
+
+**Arquivo:** `app/domains/sourcing/agents/sourcing_react_agent.py`
+**Responsabilidade:** Busca e atração de candidatos
+**Capacidades:** Busca local (PostgreSQL) + busca externa (Pearch AI), scoring de match, análise de perfil
+
+### 5.4 Talent Agent (recruiter_assistant)
+
+**Arquivo:** `app/domains/recruiter_assistant/agents/talent_react_agent.py`
+**Prompt:** `app/domains/recruiter_assistant/prompts/talent_assistant_prompts.py`
+**Responsabilidade:** Assistência no funil de talentos
+**FairnessGuard:** Integrado para verificação de bias
+
+### 5.5 Jobs Management Agent (recruiter_assistant)
+
+**Arquivo:** `app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py`
+**Prompt:** `app/domains/recruiter_assistant/prompts/jobs_management_prompts.py`
+**Responsabilidade:** Gestão do portfólio de vagas
+**FairnessGuard:** Integrado
+
+### 5.6 Kanban Agent (recruiter_assistant)
+
+**Arquivo:** `app/domains/recruiter_assistant/agents/kanban_react_agent.py`
+**Prompt:** `app/domains/recruiter_assistant/prompts/kanban_assistant_prompts.py`
+**Responsabilidade:** Análise e operações no kanban de recrutamento
+**Extras:** GUARDRAIL_TOOLS integrados, FairnessGuard
+
+### 5.7 Policy Agent (hiring_policy)
+
+**Arquivo:** `app/domains/hiring_policy/agents/policy_react_agent.py`
+**Prompt:** `app/domains/hiring_policy/agents/policy_system_prompt.py`
+**Responsabilidade:** Configuração de políticas de contratação
+**Capacidades:** CRUD de políticas, validação de compliance, regras de aprovação
+
+### 5.8 Automation Agent
+
+**Arquivo:** `app/domains/automation/agents/automation_react_agent.py`
+**Prompt:** `app/domains/automation/agents/automation_system_prompt.py`
+**Responsabilidade:** Decomposição de tarefas complexas de recrutamento
+**Capacidades detalhadas:**
+- Decomposição de tarefas em subtarefas executáveis com IA
+- Priorização inteligente (urgência × impacto × criticidade)
+- DAG de dependências (grafos acíclicos direcionados)
+- Planos de execução com paralelismo
+- Identificação de próximas tarefas prontas
+- Agentes delegáveis: `job_planner`, `sourcing`, `cv_screening`, `interviewer`, `wsi_evaluator`, `scheduling`, `analyst_feedback`
+
+### 5.9 Analytics Agent
+
+**Arquivo:** `app/domains/analytics/agents/analytics_react_agent.py`
+**Prompt:** `app/domains/analytics/agents/analytics_system_prompt.py`
+**Responsabilidade:** Analytics, KPIs e previsões de contratação
+
+### 5.10 Communication Agent
+
+**Arquivo:** `app/domains/communication/agents/communication_react_agent.py`
+**Responsabilidade:** Comunicação multi-canal com conformidade LGPD
+**Canais:** Email, WhatsApp, Teams
+
+### 5.11 ATS Integration Agent
+
+**Arquivo:** `app/domains/ats_integration/agents/ats_integration_react_agent.py`
+**Responsabilidade:** Integração bidirecional com plataformas ATS
+**Provedores suportados:**
+- **Gupy:** Plataforma BR líder; mapeamento de fase, observações, dados básicos
+- **Pandapé:** Plataforma BR; score WSI, pretensão salarial, parecer RH
+- **Merge:** Conector multi-ATS via API unificada; campos customizáveis
+- **StackOne:** Conector multi-ATS internacional; custom_fields
+
+**Fluxos:**
+- Push (WeDOTalent → ATS): validar campos → sincronizar → confirmar
+- Pull (ATS → WeDOTalent): importar → manter SSOT no WeDOTalent
+
+**Princípios:**
+- Multi-tenant obrigatório (`company_id`)
+- LGPD: dados sensíveis NÃO sincronizados com ATS
+- Idempotência em operações de sync
+- Auditoria completa (SOX/ISO 27001)
+
+### 5.12 Prompt Anti-Sycophancy (transversal)
+
+A regra anti-sycophancy está presente em todos os agentes:
+- **Implementação:** Via bloco compartilhado `ANTI_SYCOPHANCY_OPERATIONAL` ou regra equivalente no prompt.
+- **Regras:** Nunca confirmar pedidos discriminatórios; apresentar alternativas com dados; conformidade transversal.
+- **Cobertura:** Todos os 11 agentes (Automation, Communication, Analytics, ATS Integration, Wizard, Pipeline, Jobs Management, Kanban, Policy, Talent, Sourcing).
+
+---
+
+## 6. Ferramentas (Tools) por Domínio
+
+### 6.1 Analytics Tools (19 ferramentas)
+
+| Ferramenta                | Descrição                                    |
+|---------------------------|----------------------------------------------|
+| `get_pipeline_stats`      | Estatísticas do pipeline                     |
+| `get_vacancy_funnel`      | Funil da vaga                                |
+| `compare_candidates`      | Comparação de candidatos                     |
+| `get_activity_summary`    | Resumo de atividades                         |
+| `get_pending_actions`     | Ações pendentes                              |
+| `get_recruiter_metrics`   | Métricas do recrutador                       |
+| `get_velocity_metrics`    | Métricas de velocidade                       |
+| `get_efficiency_metrics`  | Métricas de eficiência                       |
+| `get_comparative_metrics` | Métricas comparativas                        |
+| `get_workload_distribution` | Distribuição de carga de trabalho          |
+| `get_bottleneck_analysis` | Análise de gargalos                          |
+| `get_stakeholder_metrics` | Métricas de stakeholders                     |
+| `get_hiring_quality`      | Qualidade de contratação                     |
+| `get_prediction_metrics`  | Métricas preditivas                          |
+| `get_cost_metrics`        | Métricas de custo                            |
+| `get_trends`              | Tendências                                   |
+| `get_ml_predictions`      | Previsões ML                                 |
+| `get_conversion_patterns` | Padrões de conversão                         |
+| `get_smart_alerts`        | Alertas inteligentes                         |
+
+### 6.2 Communication Tools (5 ferramentas)
+
+| Ferramenta             | Descrição                                   |
+|------------------------|---------------------------------------------|
+| `send_email`           | Envio de email individual                   |
+| `send_whatsapp`        | Envio de WhatsApp                           |
+| `schedule_interview`   | Agendamento de entrevista                   |
+| `send_bulk_email`      | Envio de email em massa                     |
+| `send_feedback`        | Envio de feedback                           |
+
+### 6.3 CV Screening / Pipeline Tools (8 ferramentas)
+
+| Ferramenta                    | Descrição                                 |
+|-------------------------------|-------------------------------------------|
+| `update_candidate_stage`      | Mover candidato entre etapas              |
+| `add_candidate_to_vacancy`    | Adicionar candidato à vaga                |
+| `reject_candidate`            | Rejeitar candidato                        |
+| `shortlist_candidate`         | Shortlistar candidato                     |
+| `bulk_update_candidates_stage`| Movimentação em massa                     |
+| `add_to_list`                 | Adicionar à lista                         |
+| `wsi_screening`               | Triagem WSI comportamental                |
+| `hide_candidate`              | Ocultar candidato                         |
+
+<<<<<<< HEAD
+### 6.4 Job Management / Wizard Tools (9 ferramentas)
+=======
+### 6.4 Job Management / Wizard Tools (8 ferramentas)
+>>>>>>> 164b7b43 (Saved your changes before starting work)
+
+| Ferramenta                | Descrição                                    |
+|---------------------------|----------------------------------------------|
+| `search_salary_benchmark` | Benchmark salarial                           |
+| `validate_job_fields`     | Validação de campos da vaga                  |
+| `get_job_suggestions`     | Sugestões inteligentes para a vaga           |
+| `save_job_draft`          | Salvar rascunho de vaga                      |
+| `get_company_config`      | Configuração da empresa                      |
+| `get_intelligent_salary`  | Sugestão salarial inteligente                |
+| `get_intelligent_skills`  | Sugestão de skills inteligente               |
+| `capture_wizard_feedback` | Captura de feedback do wizard                |
+| `generate_enriched_jd`    | Geração de JD enriquecida                    |
+
+### 6.5 Sourcing Tools (9 ferramentas)
+
+| Ferramenta                | Descrição                                    |
+|---------------------------|----------------------------------------------|
+| `search_candidates`       | Busca de candidatos (local + Pearch)         |
+| `get_candidate_details`   | Detalhes do candidato                        |
+| `get_candidate_stats`     | Estatísticas do candidato                    |
+| `get_candidate_history`   | Histórico do candidato                       |
+| `get_talent_quality`      | Qualidade do talento                         |
+| `get_talent_engagement`   | Engajamento do talento                       |
+| `get_talent_availability` | Disponibilidade do talento                   |
+| `get_diversity_metrics`   | Métricas de diversidade                      |
+| `get_market_benchmarks`   | Benchmarks de mercado                        |
+
+### 6.6 Recruiter Assistant / Pipeline Tools
+
+| Ferramenta                | Descrição                                    |
+|---------------------------|----------------------------------------------|
+| `create_pipeline_stage`   | Criação de etapa no pipeline                 |
+
+### 6.7 Automation, ATS Integration, Policy Tools
+
+Esses domínios possuem módulos `__init__.py` com funções `get_*_tools()` que retornam ferramentas específicas (implementação via `StructuredTool.from_function`).
+
+---
+
+## 7. Templates de Resposta, Análises e Componentes de UI
+
+### 7.1 RubricEvaluationModal (Avaliação por Rubrica)
+
+**Arquivo:** `plataforma-lia/src/components/rubric-evaluation-modal.tsx`
+**Ativação:** Via botão na interface de candidatos (Float Chat ou Kanban)
+**Execução:** IA (Claude via agente Pipeline) gera avaliação; frontend renderiza
+
+Estrutura de dados da avaliação:
+>>>>>>> 512a90fe (Saved your changes before starting work)
 
 ```typescript
 interface RubricEvaluationData {
@@ -925,6 +1143,7 @@ Interface compartilhada com `ProactiveInsightCard` (ver 5.1). Utilizada em `cand
 | 8 | Esconder          | `onHide`            | Sim                 | Sim                  |
 | 9 | Triagem WSI       | `onWSIScreening`    | Sim                 | Sim                  |
 
+<<<<<<< HEAD
 ### 7.3 Ações Contextuais — ContextualActionsBanner
 
 **Arquivo:** `plataforma-lia/src/components/contextual-actions-banner.tsx`
@@ -957,6 +1176,16 @@ Fluxo HITL (Human-in-the-loop):
 1. LIA propõe ação → `needs_confirmation: true`
 2. Usuário confirma/rejeita → `PendingActionStore`
 3. Se confirmado → `ActionExecutor` executa ação real
+=======
+<<<<<<< HEAD
+1. **Anti-sycophancy** — Regra presente em todos os agentes (via bloco compartilhado ou equivalente no prompt), porém sem guardrail automatizado que valide enforcement em runtime
+=======
+1. **Anti-sycophancy** — Regra presente no system prompt mas não validada por guardrail automatizado em todos os agentes
+>>>>>>> 164b7b43 (Saved your changes before starting work)
+2. **FairnessGuard** — Integrado em Wizard, Talent, Jobs Management, Kanban; ausente em Analytics, Automation, ATS Integration
+3. **LGPD em ATS** — Dados sensíveis não sincronizados, mas a lista de campos sensíveis é hardcoded
+4. **Auditoria** — SOX/ISO 27001 mencionados no prompt do ATS Agent, mas sem implementação de audit trail centralizado
+>>>>>>> 512a90fe (Saved your changes before starting work)
 
 ---
 
