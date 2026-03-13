@@ -30,8 +30,11 @@ A plataforma possui **3 camadas de chat** com contextos, escopos e lógica de de
 
 - **Localização:** `plataforma-lia/src/components/pages/candidates-page.tsx`
 - **Contexto:** Página de funil de talentos (listagem geral de candidatos)
-- **Escopo de ferramentas:** `TALENT_FUNNEL` — `scope_config.py` filtra ferramentas para: `search_candidates`, `get_candidate_details`, `get_candidate_stats`, `compare_candidates`, `get_diversity_metrics`, `update_candidate_stage`, `reject_candidate`, `shortlist_candidate`, `wsi_screening`, `send_email`, `send_whatsapp`, `schedule_interview`, `send_feedback`
+- **Escopo de ferramentas:** `TALENT_FUNNEL` — `scope_config.py` filtra ferramentas para:
+  - **Query (11):** `search_candidates`, `get_candidate_details`, `get_candidate_stats`, `compare_candidates`, `get_talent_quality`, `get_talent_engagement`, `get_talent_availability`, `get_diversity_metrics`, `get_candidate_history`, `get_ml_predictions`, `get_conversion_patterns`
+  - **Action (9):** `add_candidate_to_vacancy`, `reject_candidate`, `shortlist_candidate`, `add_to_list`, `hide_candidate`, `send_email`, `send_whatsapp`, `send_bulk_email`, `export_candidates`
 - **Endpoint API:** `callOrchestratedTalentChat()` → `POST /api/backend-proxy/orchestrator/talent-chat`
+- **Backend:** `app/api/v1/orchestrated_talent_chat.py` (v3.0 — ActionExecutor + PendingActionState + closed-loop)
 - **Estado expandido (Super Prompt):** Gerenciado via `LiaFloatContext` (`lia-float-context.tsx`):
   - `isOpen` / `isExpanded` — Float mini vs. Super Prompt expandido
   - `expand()` / `collapse()` — Transição entre modos
@@ -61,8 +64,11 @@ A plataforma possui **3 camadas de chat** com contextos, escopos e lógica de de
 
 - **Localização:** `plataforma-lia/src/components/pages/job-kanban-page.tsx`
 - **Contexto:** Kanban de uma vaga específica (pipeline de candidatos por etapa)
-- **Escopo de ferramentas:** `IN_JOB` — `scope_config.py` filtra para: `update_candidate_stage`, `reject_candidate`, `shortlist_candidate`, `bulk_update_candidates_stage`, `wsi_screening`, `get_pipeline_stats`, `get_vacancy_funnel`, `compare_candidates`, `send_email`, `schedule_interview`
+- **Escopo de ferramentas:** `IN_JOB` — `scope_config.py` filtra para:
+  - **Query (14):** `get_job_details`, `get_vacancy_funnel`, `get_candidate_details`, `get_activity_summary`, `get_pending_actions`, `compare_candidates`, `get_candidate_stats`, `get_bottleneck_analysis`, `get_job_velocity`, `get_job_quality_metrics`, `get_stakeholder_metrics`, `get_prediction_metrics`, `get_job_benchmark`, `get_smart_alerts`
+  - **Action (11):** `update_candidate_stage`, `bulk_update_candidates_stage`, `reject_candidate`, `shortlist_candidate`, `add_to_list`, `hide_candidate`, `wsi_screening`, `send_email`, `send_whatsapp`, `schedule_interview`, `send_feedback`
 - **Endpoint API:** `callOrchestratedJobChat()` → `POST /api/backend-proxy/orchestrator/job-chat`
+- **Backend:** `app/api/v1/orchestrated_job_chat.py` (v2.0 — closed-loop action execution)
 
 **Lógica de decisão (backend — `orchestrated_job_chat.py`):**
 
@@ -1129,7 +1135,8 @@ Fluxo HITL (Human-in-the-loop):
 | `app/orchestrator/pending_action.py` | Store de ações pendentes para HITL |
 | `app/orchestrator/memory_resolver.py` | Resolução de pronomes/referências (Tier 0) |
 | `app/api/v1/orchestrated_job_chat.py` | Endpoint /orchestrator/job-chat (Kanban) |
-| `app/api/v1/lia_assistant.py` | Endpoint /orchestrator/talent-chat (Float) |
+| `app/api/v1/orchestrated_talent_chat.py` | Endpoint /orchestrator/talent-chat (Float) — v3.0 closed-loop |
+| `app/api/v1/lia_assistant.py` | LIA Assistant: suggestions, job-wizard, insights, expanded-prompt |
 | `libs/agents-core/lia_agents_core/react_agent_registry.py` | Registry Singleton + AgentFactory session-safe |
 | `app/domains/job_management/agents/wizard_react_agent.py` | Wizard Agent (criação de vagas) |
 | `app/domains/cv_screening/agents/pipeline_react_agent.py` | Pipeline Agent (triagem CVs) |
@@ -1148,7 +1155,7 @@ Fluxo HITL (Human-in-the-loop):
 | `app/services/predictive_analytics_service.py` | Serviço preditivo de contratação |
 | `app/services/search_analytics_service.py` | Analytics de busca de candidatos |
 | `app/services/response_cache_service.py` | Cache de respostas por intent |
-| `app/tools/scope_config.py` | Configuração de escopo: TALENT_FUNNEL, JOB_TABLE, IN_JOB, GLOBAL |
+| `app/tools/scope_config.py` | Configuração de escopo: TALENT_FUNNEL (20 tools), JOB_TABLE (19 tools), IN_JOB (25 tools), GLOBAL (2 tools) |
 | `docs/analises/MAPA_INTELIGENCIA_LIA_COMPLETO.md` | Documento de referência existente (v3.0) |
 
 ---
