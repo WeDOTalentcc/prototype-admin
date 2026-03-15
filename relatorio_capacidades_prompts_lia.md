@@ -9,9 +9,9 @@
 
 ---
 
-## GUIA DE ENTRADA — Para Agentes IA (Claude Code / Cursor)
+## GUIA DE DIAGNÓSTICO PARA AGENTES IA — Como Implementar e Verificar Capacidades
 
-> **Se você é um agente IA lendo este documento para diagnosticar ou comparar um produto:** comece aqui. Esta seção contém os comandos e critérios de verificação rápida. Para detalhes de implementação, vá para a **Seção 35**.
+> **Se você é um agente IA (Claude Code / Cursor) usando este documento para diagnosticar ou comparar um produto:** comece aqui. Esta seção contém os 25 comandos de verificação executáveis com critérios pass/fail. Para detalhes de cada capacidade, vá para a **Seção 35**. Para auditar achados de compliance e segurança, use também `docs/RELATORIO_AUDITORIA_LIA.md` (seu próprio Guia de Diagnóstico).
 
 ### Como usar este documento
 

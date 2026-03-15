@@ -1,7 +1,7 @@
 # RELATÓRIO DE AUDITORIA PROFUNDA — Plataforma LIA (WeDO Talent)
 
 **Data:** 2026-03-15
-**Versão:** 6.1 (v6.0 base; correções de documentação: métricas de escala atualizadas, Crenças #8/#11 corrigidas, Production Readiness score renomeado, Seção 9 expandida com 9.5/9.6/9.7, Seção 10.4/10.5 atualizadas, notas v6.0 em Seções 3 e 4)
+**Versão:** 6.2 (v6.2: Guia de Diagnóstico para Agentes IA adicionado — 30 verificações com comandos grep, critérios pass/fail por bloco P0/P1/P2/Y1-Y5, fluxo completo de auditoria, documentos complementares; v6.1: correções de consistência pós-Y1–Y5)
 **Auditor:** Agente IA (Claude Code) seguindo `PLAYBOOK_AUDITORIA_PROFUNDA.md`
 **Escopo:** Auditoria completa do codebase — 14 dimensões, 13 Crenças, 8 Inegociáveis, 18 Production Readiness, Fairness/LGPD/EU AI Act
 
@@ -18,6 +18,119 @@
 > **Changelog v3.0 (15/03/2026):** Re-auditoria com leitura direta do código-fonte (não inferência). **16 achados adicionalmente resolvidos** — muitos marcados como abertos em v2.0 já estavam implementados. ACH-002: FairnessGuard ativo em `main_orchestrator.py:151` ✅. ACH-003: `LGPD_CONSENT_ABSENT_HARD_BLOCK=True` em `consent_checker_service.py:109` ✅. ACH-008: RLS via migration `040_add_rls_multi_tenant.py` (10 tabelas) ✅. ACH-009: Confidence calibration implementada em todos os 8 agentes (incluindo policy, ats_integration, automation) — `confidence_action` no metadata ✅. ACH-011: `IUGU_CIRCUIT` + `VINDI_CIRCUIT` confirmados em `circuit_breaker.py` ✅. ACH-012: Todos os system_prompts têm 8 cenários few-shot com `<thought>` tags ✅. ACH-014: `WORKOS_CIRCUIT` aplicado via `_fetch_workos_metrics()` em `workos.py` ✅. ACH-018: `mockUsers` + `MOCK_BILLING_DATA` removidos (AUD-5) ✅. ACH-019: stage_context integrado nos 4 agentes menores ✅. ACH-021: `NEGATION_DETECTION_BLOCK` importado em todos os prompts ✅. ACH-023: Job `load-tests` não-bloqueante adicionado ao CI (AUD-5) ✅. ACH-025: `bandit` scan no CI (AUD-5) ✅. **Novos itens implementados nesta sessão:** `interview_system_prompt.py` com 8 cenários CoT + negation detection criado; 17 novos testes adicionados (`test_confidence_calibration_agents.py` + `test_interview_system_prompt.py`). **Features pós-v2.0 não documentadas:** Sprint J (Float Chat WebSocket + streaming), Sprint P3-1–P3-4 (Daily Briefing, JD Upload, Policy Templates, ML Predictions), Confidence Policy em todos os domínios. **Pendências remanescentes: 14 itens** (ACH-006 parcial, ACH-007, ACH-013, ACH-015, ACH-016, ACH-017, ACH-020, ACH-022, ACH-024, ACH-026–ACH-031).
 
 > **Changelog v2.0 (13/03/2026):** Re-auditoria completa do codebase após sprints SEG-1 a SEG-5. **Achados resolvidos:** ACH-001 (anti-sycophancy em todos os agentes ✅), ACH-004 (circuit breakers OpenAI/Gemini ✅), ACH-005 (HITL em sourcing/communication ✅), ACH-010 (circuit breakers ATS clients ✅). **Parcialmente resolvidos:** ACH-006 (audit trail — 4/5 agentes OK, falta interview_graph), ACH-011 (circuit breakers — email OK, billing ainda sem). **Novas seções:** Seção 7 (Arquitetura dos 3 Níveis de Chat + Scope Config + CascadedRouter), Seção 8 (ActionExecutor + HITL via Chat + 18 Kanban Commands), Seção 9 (Sistema Preditivo e Insights), Seção 10 (Dívidas Técnicas e Limitações), Seção 11 (Oportunidades de Evolução — 15 itens). **Métricas atualizadas:** 15 agentes (era 12), 164 tools (era ~100), 584 componentes TSX (era 466), 37 migrations (era 30+). Cruzamento com `relatorio_capacidades_prompts_lia.md` (1369 linhas, 10 seções).
+
+---
+
+## GUIA DE DIAGNÓSTICO PARA AGENTES IA — Como Auditar um Codebase com Este Relatório
+
+> **Se você é um agente IA (Claude Code / Cursor) usando este relatório para auditar um produto:** comece aqui. Esta seção contém os 30 comandos de auditoria executáveis com critérios pass/fail binários. Para detalhes de cada achado, vá para a Seção referenciada. Para como **implementar** o que estiver faltando, use o documento `relatorio_capacidades_prompts_lia.md` (Seção 35).
+
+### Como usar este relatório
+
+1. **Execute os comandos abaixo** no codebase alvo — cada item tem um `grep` executável e critério PASS/FAIL
+2. **FAIL em qualquer item P0** = bloqueante para produção — não avançar sem corrigir
+3. **Para cada FAIL**, vá para a Seção indicada neste relatório (detalhes do achado) e depois para `relatorio_capacidades_prompts_lia.md` Seção 35 (como implementar)
+4. **Repositório de referência canônico:** `https://github.com/talensestg/wedotalent02202026`
+
+### Checklist de Auditoria — 30 Verificações por ACH Finding
+
+Execute no diretório raiz do backend (`lia-agent-system/` ou equivalente):
+
+#### BLOCO P0 — Crítico / Inegociáveis (FAIL = não vai a produção)
+
+| ACH | Verificação | Comando | Critério PASS |
+|-----|------------|---------|---------------|
+| ACH-001 | Anti-sycophancy em todos os agentes | `grep -r "ANTI_SYCOPHANCY\|anti_sycophancy_block" app/ --include="*.py" -l` | ≥ 12 system_prompt files |
+| ACH-002 | FairnessGuard universal | `grep -r "fairness_guard\|FairnessGuard" app/ --include="*.py" -l` | ≥ 8 arquivos — orchestrator + agentes + mixin |
+| ACH-003 | Consentimento LGPD hard-block | `grep -r "LGPD_CONSENT_ABSENT_HARD_BLOCK\|hard_block" app/ --include="*.py"` | Deve existir com valor `True` |
+| ACH-005 | HITL em decisões críticas | `grep -r "request_approval\|interrupt_before" app/ --include="*.py" -l` | ≥ 3 agentes (wizard, wsi, pipeline) |
+| ACH-007 | WCAG 2.1 AA (acessibilidade) | `grep -r "aria-label\|aria-" src/ --include="*.tsx" -l \| wc -l` | ≥ 50 arquivos com aria-label (decisão de produto se < 50) |
+| ACH-008 | RLS multi-tenant no banco | `grep -r "row_level_security\|ENABLE ROW LEVEL" alembic/ --include="*.py"` | Deve existir migration com RLS em ≥ 8 tabelas |
+
+#### BLOCO P1 — Alto / Qualidade e Resiliência
+
+| ACH | Verificação | Comando | Critério PASS |
+|-----|------------|---------|---------------|
+| ACH-004 | Circuit breaker OpenAI/Gemini | `grep -r "OPENAI_CIRCUIT\|GEMINI_CIRCUIT" app/ --include="*.py"` | Ambos devem existir e estar decorados em seus clientes LLM |
+| ACH-006 | Audit trail em todos os agentes | `grep -r "log_decision\|audit_service.log" app/ --include="*.py" -l` | ≥ 8 arquivos de agentes |
+| ACH-009 | Confidence calibration universal | `grep -r "confidence_action\|record_confidence" app/ --include="*.py" -l` | ≥ 8 arquivos — todos os agentes principais |
+| ACH-010 | Circuit breakers ATS clients | `grep -r "GUPY_CIRCUIT\|PANDAPE_CIRCUIT\|STACKONE_CIRCUIT" app/ --include="*.py"` | Todos os 3 devem existir |
+| ACH-011 | Circuit breakers billing/email | `grep -r "SENDGRID_CIRCUIT\|RESEND_CIRCUIT\|IUGU_CIRCUIT\|VINDI_CIRCUIT" app/ --include="*.py"` | ≥ 3 devem existir |
+| ACH-012 | Few-shot com CoT nos prompts | `grep -r "<thought>\|few.shot\|EXEMPLOS" app/ --include="*.py" -l` | ≥ 8 system_prompt files |
+| ACH-013 | Métricas Prometheus per-agent | `grep -r "agent_llm_calls_total\|agent_latency_seconds\|agent_confidence" app/ --include="*.py"` | 3 métricas devem existir em metrics.py |
+| ACH-014 | Circuit breaker WorkOS | `grep -r "WORKOS_CIRCUIT\|workos.*circuit" app/ --include="*.py"` | Deve existir em workos.py ou equivalente |
+| ACH-020 | OpenAPI/Swagger documentado | `grep -r "openapi_tags\|title.*WeDO\|docs_url" app/main.py` | Deve ter título, tags e docs_url |
+| ACH-021 | Negation detection nos prompts | `grep -r "NEGATION_DETECTION\|negation_block" app/ --include="*.py" -l` | ≥ 6 system_prompt files |
+| ACH-022 | Bias audit baseline com dados reais | `find . -name "golden_dataset.py" -o -name "test_four_fifths*"` | Ambos devem existir |
+
+#### BLOCO P2 — Médio / Arquitetura e Compliance
+
+| ACH | Verificação | Comando | Critério PASS |
+|-----|------------|---------|---------------|
+| ACH-015 | Runbook de degradação documentado | `find . -name "RUNBOOK_DEGRADATION*" -o -name "RUNBOOK_BACKUP*"` | ≥ 2 runbooks devem existir |
+| ACH-016 | Imports circulares removidos | `grep -r "from.*policy_setup_agent import\|import policy_setup_agent" app/api/ --include="*.py"` | Deve retornar vazio (0 matches) |
+| ACH-017 | Stubs de tools removidos | `find app/tools/ -name "*.py" | xargs grep -l "raise NotImplementedError\|pass  # TODO" 2>/dev/null` | Deve retornar vazio |
+| ACH-018 | Dados mock removidos do frontend | `grep -r "mockUsers\|MOCK_BILLING\|mockData" src/ --include="*.tsx" --include="*.ts"` | Deve retornar vazio |
+| ACH-019 | Stage context nos agentes menores | `grep -r "stage_context\|StageContext" app/domains/ --include="*.py" -l` | ≥ 8 agentes com stage_context |
+| ACH-025 | Bandit scan no CI | `grep -r "bandit\|security.*scan" .github/ --include="*.yml"` | Deve existir step de bandit no CI |
+| ACH-026 | FairnessGuard Layer 3 em callers críticos | `grep -r "check_with_layer3\|layer3\|FAIRNESS_LAYER3" app/ --include="*.py"` | Deve existir em rubric_eval, send_feedback, sourcing output |
+| ACH-027 | RAGAS evaluation automatizada | `grep -r "ragas\|RagasEvaluation\|ragas.evaluate" app/ --include="*.py"` | Service + Celery task + beat schedule |
+| ACH-028 | Red team sem xfails | `grep -r "xfail\|pytest.mark.xfail" tests/security/ --include="*.py"` | Deve retornar vazio (0 xfails) |
+| ACH-029 | Model drift com scheduler | `grep -r "drift.run_batch\|drift-run-batch" . --include="*.py"` | Beat schedule + task + drift_alert_service |
+| ACH-031 | FRIA documentado (EU AI Act) | `find . -name "FRIA*" -name "*.md"` | ≥ 1 documento FRIA deve existir |
+
+#### BLOCO Sprints Y1–Y5 — Capacidades Avançadas
+
+| Sprint | Verificação | Comando | Critério PASS |
+|--------|------------|---------|---------------|
+| Y4/E4  | YAML hot-reload de agentes | `find . -name "agents_registry.yaml" && grep -r "AgentRegistryWatcher\|check_and_reload" app/ --include="*.py"` | Arquivo YAML + watcher + beat minutal |
+| Y5/E6  | RAG por domínio | `grep -r "rebuild_domain_index\|BM25\|alpha.*blend" app/ --include="*.py"` | Task de rebuild + blend BM25+pgvector |
+| Y3/D6  | ML feedback loop | `grep -r "recruiter_decision_feedback\|process_ml_feedback" app/ --include="*.py"` | Model + task + beat semanal |
+| Y5/E10 | Agent Bus (comunicação entre agentes) | `grep -r "AgentBus\|lia:agent_bus" app/ --include="*.py"` | Redis pub/sub com canal por company_id |
+
+### Interpretação dos Resultados
+
+```
+FAIL em qualquer P0 (ACH-001 a ACH-008)
+  → BLOQUEANTE — risco legal, regulatório ou de negócio
+  → Não fazer deploy. Corrigir antes de qualquer release.
+
+FAIL em P1 (ACH-004 a ACH-022)
+  → ALTO RISCO — resiliência, qualidade LLM ou observabilidade comprometida
+  → Corrigir no próximo sprint. Não acumular.
+
+FAIL em P2 (ACH-015 a ACH-031)
+  → RISCO MÉDIO — arquitetura, docs ou CI incompletos
+  → Planejar para corrigir dentro de 2 sprints.
+
+FAIL em Y1–Y5
+  → GAP FUNCIONAL — capacidade avançada ausente
+  → Priorizar por impacto no produto. Ver Seção 11 deste relatório.
+```
+
+### Fluxo Completo de Auditoria para Agentes IA
+
+```
+1. Execute todos os 30 comandos acima
+2. Liste os FAILs por bloco (P0 primeiro)
+3. Para cada FAIL:
+   a. Leia a Seção correspondente NESTE relatório (detalhes e contexto)
+   b. Leia a Seção 35 de relatorio_capacidades_prompts_lia.md (como implementar)
+   c. Compare com o arquivo canônico em github.com/talensestg/wedotalent02202026
+4. Implemente seguindo o padrão do repositório de referência
+5. Re-execute o comando de verificação para confirmar PASS
+6. Documente no changelog do produto auditado
+```
+
+### Documentos Complementares (ler em ordem)
+
+| # | Documento | Quando ler |
+|---|-----------|-----------|
+| 1 | Este relatório (RELATORIO_AUDITORIA_LIA.md) | Para entender o contexto de cada ACH finding |
+| 2 | `relatorio_capacidades_prompts_lia.md` Seção 35 | Para saber como implementar cada capacidade |
+| 3 | `relatorio_capacidades_prompts_lia.md` Guia de Entrada | Para verificar implementação com 25 greps adicionais |
+| 4 | `docs/DIAGNOSTICO_POS_Y5_v6.md` | Para entender os 4 gaps do diagnóstico v6 |
+| 5 | `lia-agent-system/docs/RUNBOOK_DEGRADATION.md` | Para procedimentos operacionais |
 
 ---
 
