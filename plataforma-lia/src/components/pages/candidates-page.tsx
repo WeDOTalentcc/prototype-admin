@@ -6378,48 +6378,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setShowAddCandidateModal(false)
   }
 
-  const handleOpenRubricAnalysis = async (candidate: Candidate) => {
-    setRubricCandidate(candidate)
-    setShowRubricModal(true)
-    
-    try {
-      const response = await fetch(`/api/backend-proxy/candidates/${candidate.id}/rubric-evaluation`)
-      if (response.ok) {
-        const data = await response.json()
-        setRubricEvaluationData(data)
-      } else {
-        const mockEvaluation = {
-          overall_score: candidate.score || 75,
-          recommendation: (candidate.score || 75) >= 70 ? 'approve' : (candidate.score || 75) >= 50 ? 'review' : 'reject',
-          summary: `Análise do candidato ${candidate.name}. Avaliação baseada no currículo e requisitos da posição.`,
-          criteria: [
-            { name: 'Experiência Técnica', score: Math.round(70 + Math.random() * 20), weight: 30, details: 'Avaliação da experiência técnica do candidato' },
-            { name: 'Formação Acadêmica', score: Math.round(60 + Math.random() * 30), weight: 20, details: 'Compatibilidade da formação com a vaga' },
-            { name: 'Habilidades Interpessoais', score: Math.round(65 + Math.random() * 25), weight: 20, details: 'Competências comportamentais identificadas' },
-            { name: 'Fit Cultural', score: Math.round(70 + Math.random() * 20), weight: 15, details: 'Alinhamento com os valores da empresa' },
-            { name: 'Disponibilidade', score: Math.round(75 + Math.random() * 20), weight: 15, details: 'Adequação ao modelo de trabalho e início' }
-          ]
-        }
-        setRubricEvaluationData(mockEvaluation)
-      }
-    } catch (error) {
-      console.error('Error fetching rubric evaluation:', error)
-      const mockEvaluation = {
-        overall_score: candidate.score || 75,
-        recommendation: 'review',
-        summary: `Análise do candidato ${candidate.name}.`,
-        criteria: [
-          { name: 'Experiência Técnica', score: 75, weight: 30, details: 'Avaliação da experiência técnica' },
-          { name: 'Formação Acadêmica', score: 70, weight: 20, details: 'Compatibilidade da formação' },
-          { name: 'Habilidades Interpessoais', score: 72, weight: 20, details: 'Competências comportamentais' },
-          { name: 'Fit Cultural', score: 78, weight: 15, details: 'Alinhamento cultural' },
-          { name: 'Disponibilidade', score: 85, weight: 15, details: 'Disponibilidade para início' }
-        ]
-      }
-      setRubricEvaluationData(mockEvaluation)
-    }
-  }
-
   const getComparisonCandidates = () => {
     return sortedCandidates.filter(candidate => selectedCandidatesForBatch.has(candidate.id))
   }
