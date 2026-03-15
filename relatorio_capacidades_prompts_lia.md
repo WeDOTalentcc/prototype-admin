@@ -1,5 +1,5 @@
 # Relatório Completo de Capacidades e Prompts — LIA (WeDOTalent)
-**Versão:** 4.2 — 15/03/2026 *(atualizado: Y5 completo — E9 Adaptive Routing, E10 Agent Bus, E12 Event Sourcing, E4/E6 melhorias, v6 gaps fechados, Parte VII Guia de Implementação para Agentes IA; v4.1: Seções 31–33 atualizadas para refletir Sprints Y1–Y5; v4.2: Seções 5, 9, 13, 15, 17, 18, 25, 34 atualizadas com subseções novas: E7 Streaming ReAct, D7 Salary Benchmark, D9 Compare, E10 Agent Bus, E12 Event Sourcing, E9 Adaptive Routing, D6 ML Feedback, D5 Consentimento Granular, métricas Prometheus reais (17), D10 Pearch circuit, Seção 34.23 com todos os arquivos Y1–Y5)*
+**Versão:** 4.3 — 15/03/2026 *(v4.3: Guia de Entrada para Agentes IA adicionado no topo — 25 verificações com comandos grep executáveis, critérios pass/fail, arquivos canônicos por bloco; v4.2: Seções 5, 9, 13, 15, 17, 18, 25, 34 atualizadas; v4.1: Seções 31–33 atualizadas; v4.0: Parte VII adicionada)*
 **Fonte:** Auditoria direta do código-fonte (`lia-agent-system/` + `plataforma-lia/`)
 **Propósito:** Guia técnico-estratégico exaustivo e autocontido para replicação da camada de inteligência da plataforma LIA. Cobre toda a arquitetura de prompts, 16 agentes (12 ReAct + 4 StateGraph), orquestração, ferramentas, WebSocket, automação, inteligência preditiva, aprendizado contínuo, observabilidade, resiliência, compliance, governança, templates, infraestrutura LLM e referências de arquivo.
 
@@ -9,7 +9,124 @@
 
 ---
 
+## GUIA DE ENTRADA — Para Agentes IA (Claude Code / Cursor)
+
+> **Se você é um agente IA lendo este documento para diagnosticar ou comparar um produto:** comece aqui. Esta seção contém os comandos e critérios de verificação rápida. Para detalhes de implementação, vá para a **Seção 35**.
+
+### Como usar este documento
+
+1. **Execute o checklist abaixo** no codebase alvo — cada item tem um `grep` executável e critério pass/fail
+2. **Para cada FAIL**, vá para a Seção 35 correspondente — ela explica o que é, onde fica, como implementar e como testar
+3. **O repositório de referência** é `https://github.com/talensestg/wedotalent02202026` — use-o como ground truth para comparar implementações
+
+### Checklist de Diagnóstico Rápido — 25 Verificações Críticas
+
+Execute cada comando no diretório raiz do projeto backend (`lia-agent-system/` ou equivalente):
+
+#### BLOCO A — Compliance e Proteção (P0 — inegociáveis)
+
+| # | Capacidade | Comando de Verificação | Critério PASS |
+|---|-----------|----------------------|---------------|
+| A1 | FairnessGuard ativo | `grep -r "FairnessGuard\|fairness_guard" app/ --include="*.py" -l` | ≥ 5 arquivos — deve estar em orchestrator + agentes + mixin |
+| A2 | FairnessGuard 3 camadas | `grep -r "check_with_layer3\|IMPLICIT_BIAS\|_PATTERNS_VERSION" app/ --include="*.py"` | Deve encontrar Layer 3 + termos implícitos + versão ≥ 2 |
+| A3 | PII Masking em logs | `grep -r "PIIMaskingFilter\|install_global_pii_masking" app/ --include="*.py"` | Deve estar em `logging_config.py` E em `celery_app.py` (workers) |
+| A4 | PII strip em prompts LLM | `grep -r "strip_pii_for_llm_prompt" app/ --include="*.py" -l` | ≥ 4 callers: rubric_eval, analysis, voice_screening, candidate_compare |
+| A5 | Consentimento LGPD Gate 1 | `grep -r "LGPD_CONSENT\|consent_checker\|ai_screening" app/ --include="*.py"` | Deve bloquear em `wsi_interview_graph.py` com `LGPD_CONSENT_REVOKED` |
+| A6 | HITL em decisões críticas | `grep -r "request_approval\|hitl_service" app/ --include="*.py" -l` | ≥ 3 arquivos: wizard_graph, wsi_graph, pipeline_agent |
+| A7 | Audit trail append-only | `grep -r "log_decision\|audit_service" app/ --include="*.py" -l` | ≥ 8 arquivos (todos os agentes principais) |
+| A8 | Anti-sycophancy em prompts | `grep -r "ANTI_SYCOPHANCY\|anti_sycophancy" app/ --include="*.py" -l` | ≥ 10 arquivos — todos os system_prompts dos agentes |
+
+#### BLOCO B — Resiliência e Infraestrutura (P1 — produção)
+
+| # | Capacidade | Comando de Verificação | Critério PASS |
+|---|-----------|----------------------|---------------|
+| B1 | Circuit breakers em providers | `grep -r "circuit_breaker_decorator\|@circuit" app/ --include="*.py" -l` | ≥ 8 arquivos: openai, gemini, gupy, pandape, sendgrid, resend, pearch, workos |
+| B2 | Fallback LLM chain | `grep -r "FALLBACK_ORDER\|llm_cascade\|LLMCascade" app/ --include="*.py"` | Deve ter lista `["claude", "gemini", "openai"]` ou equivalente |
+| B3 | Token budget por tenant | `grep -r "TokenBudget\|token_budget\|MONTHLY_LIMIT" app/ --include="*.py"` | Deve existir serviço + Redis tracking por `company_id` |
+| B4 | Celery beat schedules | `grep -r "beat_schedule" . --include="*.py"` | ≥ 8 entradas: drift, lgpd, briefing, followup, wsi-abandoned, ragas, routing, agent-registry, rag-rebuild, ml-feedback |
+| B5 | Rate limiting | `grep -r "RateLimiter\|rate_limit\|rate_limiter" app/ --include="*.py"` | Deve existir middleware por tenant |
+| B6 | Multi-tenant em models | `grep -r "company_id" app/models/ --include="*.py" -l` | ≥ 20 models com `company_id` column |
+
+#### BLOCO C — Inteligência e Agentes (P1 — diferencial)
+
+| # | Capacidade | Comando de Verificação | Critério PASS |
+|---|-----------|----------------------|---------------|
+| C1 | Agents Registry YAML | `find . -name "agents_registry.yaml" -o -name "agent_registry_watcher.py"` | Ambos devem existir |
+| C2 | Multi-model por agente | `grep -r "model_override\|multi_model\|agent_model_config" app/ --include="*.py"` | Deve existir config por agente com fallback |
+| C3 | RAG híbrido por domínio | `grep -r "BM25\|alpha.*blend\|rebuild_domain" app/ --include="*.py"` | BM25 + pgvector com alpha param + rebuild task |
+| C4 | Adaptive routing com aprendizado | `grep -r "RoutingFeedback\|record_correction\|compute_domain_confidence" app/ --include="*.py"` | Todos os 3 devem existir |
+| C5 | ML feedback loop | `grep -r "recruiter_decision_feedback\|process_ml_feedback\|recompute_active_ml" app/ --include="*.py"` | Modelo + task + beat schedule |
+| C6 | Streaming ReAct via WS | `grep -r "astream_events\|on_chat_model_stream\|StreamingReAct" app/ --include="*.py"` | Deve existir em agent e em websocket handler |
+| C7 | Agent Bus (comunicação entre agentes) | `grep -r "AgentBus\|agent_bus\|lia:agent_bus" app/ --include="*.py"` | Redis pub/sub com canal `lia:agent_bus:` |
+| C8 | Event Sourcing imutável | `grep -r "DomainEvent\|event_store\|sequence_number" app/ --include="*.py"` | Model + service + UniqueConstraint em sequence_number |
+
+#### BLOCO D — Observabilidade e Qualidade (P2)
+
+| # | Capacidade | Comando de Verificação | Critério PASS |
+|---|-----------|----------------------|---------------|
+| D1 | Métricas Prometheus per-agent | `grep -r "agent_llm_calls_total\|agent_latency_seconds\|agent_confidence" app/ --include="*.py"` | 3 métricas — calls, latency, confidence |
+| D2 | Confidence calibration | `grep -r "record_confidence\|confidence_action" app/ --include="*.py" -l` | ≥ 8 arquivos — todos os agentes principais |
+| D3 | Model drift detection | `grep -r "drift_service\|run_drift_check\|ModelDrift" app/ --include="*.py"` | Service + Celery task + beat schedule diário |
+| D4 | WSI assíncrono | `grep -r "WsiSession\|wsi_async\|wsi_invite_token" app/ --include="*.py"` | Model com status enum + service + endpoint |
+
+### Interpretação dos Resultados
+
+```
+PASS em todos A1–A8  → Compliance OK (produção segura)
+FAIL em qualquer A   → BLOQUEANTE — não deploy sem corrigir
+PASS em B1–B6        → Resiliência OK
+FAIL em B1 (circuits) → ALTO RISCO — providers externos sem proteção
+PASS em C1–C8        → Inteligência completa (diferencial competitivo)
+FAIL em C            → GAP funcional — priorizar por impacto no produto
+PASS em D1–D4        → Observabilidade OK
+FAIL em D            → Risco operacional — sem visibilidade em produção
+```
+
+### Como Corrigir um FAIL
+
+1. Anote o código do item que falhou (ex: `C4`)
+2. Vá para **Seção 35** deste documento — subseção correspondente à capacidade
+3. A subseção tem: O que é → Onde está (arquivo canônico no repo de referência) → Como implementar → Como testar
+4. Compare com o arquivo canônico em `https://github.com/talensestg/wedotalent02202026`
+5. Implemente seguindo o padrão exato do repositório de referência
+
+### Arquivos Canônicos por Bloco (referência rápida)
+
+```
+Bloco A — Compliance:
+  app/shared/compliance/fairness_guard.py     ← FairnessGuard
+  app/shared/pii_masking.py                   ← PII Masking
+  app/services/consent_checker_service.py     ← Consentimento
+  app/services/hitl_service.py               ← HITL
+  app/shared/compliance/audit_service.py     ← Audit Trail
+  app/shared/prompts/anti_sycophancy_block.py ← Anti-sycophancy
+
+Bloco B — Resiliência:
+  app/shared/resilience/circuit_breaker.py   ← Circuit Breakers
+  app/orchestrator/llm_cascade.py            ← LLM Fallback
+  app/services/token_budget_service.py       ← Token Budget
+  libs/config/lia_config/celery_app.py       ← Beat Schedules
+
+Bloco C — Inteligência:
+  app/agents_registry.yaml                   ← Registry YAML
+  app/core/agent_registry_watcher.py         ← Hot-reload
+  app/services/rag_pipeline_service.py       ← RAG híbrido
+  app/services/routing_learning_service.py   ← Adaptive Routing
+  app/services/ml_feedback_service.py        ← ML Feedback
+  app/shared/agents/agent_bus.py             ← Agent Bus
+  app/services/event_store_service.py        ← Event Sourcing
+
+Bloco D — Observabilidade:
+  app/observability/metrics.py               ← Prometheus
+  app/shared/observability/agent_metrics.py  ← Per-agent metrics
+  app/services/model_drift_service.py        ← Model Drift
+```
+
+---
+
 ## Sumário
+
+> **Agentes IA:** leia o [Guia de Entrada](#guia-de-entrada--para-agentes-ia-claude-code--cursor) antes do sumário — contém os 25 comandos de diagnóstico rápido.
 
 **Parte I — Arquitetura e Agentes**
 1. [Arquitetura de Prompts e Interação entre Chats](#1-arquitetura-de-prompts-e-interação-entre-chats)
