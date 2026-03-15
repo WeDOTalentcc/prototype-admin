@@ -1,9 +1,9 @@
 # Relatório Completo de Capacidades e Prompts — LIA (WeDOTalent)
-**Versão:** 4.1 — 15/03/2026 *(atualizado: Y5 completo — E9 Adaptive Routing, E10 Agent Bus, E12 Event Sourcing, E4/E6 melhorias, v6 gaps fechados, Parte VII Guia de Implementação para Agentes IA; v4.1: Seções 31–33 atualizadas para refletir Sprints Y1–Y5)*
+**Versão:** 4.2 — 15/03/2026 *(atualizado: Y5 completo — E9 Adaptive Routing, E10 Agent Bus, E12 Event Sourcing, E4/E6 melhorias, v6 gaps fechados, Parte VII Guia de Implementação para Agentes IA; v4.1: Seções 31–33 atualizadas para refletir Sprints Y1–Y5; v4.2: Seções 5, 9, 13, 15, 17, 18, 25, 34 atualizadas com subseções novas: E7 Streaming ReAct, D7 Salary Benchmark, D9 Compare, E10 Agent Bus, E12 Event Sourcing, E9 Adaptive Routing, D6 ML Feedback, D5 Consentimento Granular, métricas Prometheus reais (17), D10 Pearch circuit, Seção 34.23 com todos os arquivos Y1–Y5)*
 **Fonte:** Auditoria direta do código-fonte (`lia-agent-system/` + `plataforma-lia/`)
 **Propósito:** Guia técnico-estratégico exaustivo e autocontido para replicação da camada de inteligência da plataforma LIA. Cobre toda a arquitetura de prompts, 16 agentes (12 ReAct + 4 StateGraph), orquestração, ferramentas, WebSocket, automação, inteligência preditiva, aprendizado contínuo, observabilidade, resiliência, compliance, governança, templates, infraestrutura LLM e referências de arquivo.
 
-**Metodologia:** Auditoria de 13/03/2026 via leitura direta de arquivos-fonte. Verificados: 206 endpoints, 231 serviços, 99 models, 37 migrações, 114 hooks, 90 páginas, 227 arquivos de teste, 14 métricas Prometheus, 12 domínios DDD. Escopos (`scope_config.py`), registros de agentes (`react_agent_registry.py`), ferramentas, templates de prompt e serviços auditados individualmente. Exemplos marcados como "ilustrativo" são sintéticos baseados nos templates/schemas do código; os demais refletem schemas e formatos reais. Recomenda-se revisão mensal.
+**Metodologia:** Auditoria de 13/03/2026 via leitura direta de arquivos-fonte. Verificados: 206 endpoints, 231 serviços, 99 models, 37 migrações (47 após Y1–Y5), 114 hooks, 90 páginas, 227 arquivos de teste, 17 métricas Prometheus (14 originais + 3 adicionadas em Y1), 12 domínios DDD. Escopos (`scope_config.py`), registros de agentes (`react_agent_registry.py`), ferramentas, templates de prompt e serviços auditados individualmente. Exemplos marcados como "ilustrativo" são sintéticos baseados nos templates/schemas do código; os demais refletem schemas e formatos reais. Recomenda-se revisão mensal.
 
 **Público-alvo:** Equipe de desenvolvimento, agentes de IA codificadores (Claude Code, Cursor), arquitetos de software e stakeholders técnicos que precisem replicar a inteligência da plataforma LIA em produto paralelo.
 
@@ -1107,6 +1107,23 @@ Cada mensagem WS verifica o orçamento de tokens do tenant via `TokenBudgetServi
 - **Histórico:** Últimas 20 mensagens carregadas ao reconectar via REST endpoint
 - **Multi-tab:** Cada tab cria uma conexão WS separada; estado compartilhado via `session_id`
 
+### 5.9 Streaming ReAct — E7
+
+**Implementado em:** Sprint Y5/E7
+**Arquivo BE:** `app/shared/agents/streaming_react_agent.py`
+**Arquivo FE:** `plataforma-lia/src/components/react-thinking-stream.tsx`
+
+O Streaming ReAct transmite os "pensamentos" do agente em tempo real via WebSocket, permitindo ao recrutador acompanhar cada etapa do raciocínio durante o processamento:
+
+- **Backend:** `StreamingReActAgent` estende `LangGraphReActBase` — override de `_process_langgraph()` com `astream_events()` emitindo `on_chat_model_stream` e `on_tool_start/end`
+- **Eventos WS (servidor → cliente):** `{"type": "thinking", "content": "..."}` para thoughts, `{"type": "tool_call", "tool": "...", "input": {...}}` para tool calls
+- **Frontend:** `ReactThinkingStream` component consome os eventos e renderiza progressivamente com estado colapsável
+  - Props: `steps: string[]`, `isThinking: boolean`
+  - Exibe indicador de spinner enquanto ativo; ponto verde + contagem de etapas ao concluir
+  - Só é renderizado quando `isThinking=true` ou quando `steps.length > 0`
+- **Integração:** `agent_chat_ws.py` detecta agentes com capacidade de streaming e usa o path de streaming automaticamente
+- **Design System:** Usa `bg-gray-50`, `border-gray-200`, `rounded-md` — conforme DS v4.2.1
+
 ---
 
 ## 6. Capacidades Detalhadas
@@ -1784,6 +1801,38 @@ Interface compartilhada com `ProactiveInsightCard` (ver 5.1). Utilizada em `cand
 - Invalidação por padrão regex: `invalidate_by_pattern()`
 - TTL configurável por tipo de query (padrão: 5 min para analytics, 1 min para pipeline data)
 
+### 9.6 Salary Benchmark Real — D7
+
+**Implementado em:** Sprint Y1/D7
+**Arquivo:** `app/services/salary_benchmark_service.py`
+**Endpoint:** `GET /api/v1/salary-benchmark?title=&location=&seniority=&company_id=`
+
+Benchmark salarial com dados de mercado reais via Apify (Glassdoor/LinkedIn), com fallback para dados estáticos setoriais:
+
+- **Fluxo:** Cache Redis (TTL=7 dias) → Apify scraping → fallback estático por senioridade
+- **Dados retornados:** `{p25, p50, p75, currency, source, fetched_at}` — `source` indica "external" (Apify) ou "fallback" (estático)
+- **Seniorities cobertas:** junior, pleno, senior, especialista, gerente
+- **Integração anti-sycophancy:** Injetado como contexto no prompt de `evaluate_candidate()` via `sector_benchmark_service.py` (Crença #11)
+- **Fail-open:** Sempre retorna resultado válido mesmo sem Apify disponível
+- **Cache key:** `salary_benchmark:{job_title}:{seniority}:{location}` (slug normalizado)
+
+### 9.7 Comparação de Candidatos — D9
+
+**Implementado em:** Sprint Y1/D9
+**Arquivo BE:** `app/services/candidate_comparison_service.py`
+**Endpoint:** `POST /api/v1/candidates/compare` (2–4 candidatos, `X-Company-ID` obrigatório)
+**Frontend:** `src/components/modals/candidate-compare-modal.tsx` + `src/hooks/use-candidate-compare.ts`
+**Proxy FE:** `src/app/api/backend-proxy/candidates/compare/route.ts`
+
+Análise comparativa multi-dimensional entre 2 a 4 candidatos com modal visual dedicado:
+
+- **Input:** `{candidate_ids: string[], job_id?: string, scenario?: "A"|"B"|"C"}`
+- **Scenarios:** A (scores existentes), B (re-avaliação para vaga), C (comparação genérica sem vaga)
+- **Scores por dimensão:** technical, experience, education, soft_skills, cultural_fit
+- **Output:** scores comparativos, candidato vencedor, análise textual por dimensão
+- **PII:** `strip_pii_for_llm_prompt()` aplicado ao `candidates_summary` antes do prompt LLM (SEG-3B)
+- **Multi-tenant:** `X-Company-ID` validado como UUID na camada da API
+
 ---
 
 ## 10. Quick Actions e Ações Bulk
@@ -2341,6 +2390,96 @@ O sistema classifica cada mensagem do usuário em duas dimensões:
 
 Combinação: `NavigationIntent × ActionIntent` determina se a resposta precisa de confirmação HITL, se deve disparar navegação no frontend, e qual agent deve processar.
 
+### 13.5 Agent Bus — E10
+
+**Implementado em:** Sprint Y5/E10
+**Arquivo:** `app/shared/agents/agent_bus.py`
+**Padrão:** Redis Pub/Sub
+**Canal:** `lia:agent_bus:{company_id}:{to_agent}`
+
+Barramento de comunicação direta entre agentes sem passar pelo Orchestrator. Permite coordenação assíncrona de domínios:
+
+| Método | Descrição |
+|--------|-----------|
+| `publish(from_agent, to_agent, event_type, payload, company_id)` | Publica `AgentEvent` no canal Redis do agente destino. Fail-open: retorna False em erro. |
+| `subscribe(agent_name, handler)` | Registra handler in-memory para agente (usado em testes) |
+| `dispatch_local(event)` | Despacha evento para subscribers locais (modo teste sem Redis) |
+| `list_subscribers()` | Lista agentes com handlers registrados |
+
+**Casos de uso:**
+- Sourcing → Pipeline: `candidate_imported` quando candidato é captado
+- Pipeline → Communication: `stage_changed` para disparar notificações
+- WSI → Kanban: `score_available` quando entrevista conclui
+
+**Audit trail:** Toda publicação gera registro via `audit_service.log_decision(decision_type="agent_communication")`.
+**Fail-open:** Exceções em `publish()` são capturadas e logadas como WARNING — nunca propagam para o chamador.
+
+**Dataclass `AgentEvent`:** `from_agent`, `to_agent`, `event_type`, `payload` (dict), `company_id`, `event_id` (UUID hex), `published_at` (ISO string)
+
+### 13.6 Event Sourcing Imutável — E12
+
+**Implementado em:** Sprint Y5/E12
+**Arquivo:** `app/services/event_store_service.py`
+**Model:** `app/models/event_store.py`
+**Migration:** `alembic/versions/047_add_event_store.py`
+**Endpoint:** `GET /api/v1/event-history?aggregate_type=&aggregate_id=&company_id=`
+
+Registro append-only de todos os eventos de domínio para auditoria SOX/ISO 27001 e replay de estado:
+
+**Modelo `DomainEvent` (tabela `domain_events`):**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `aggregate_type` | String(100) | "candidate" \| "job" \| "pipeline" |
+| `aggregate_id` | String(255) | UUID da entidade |
+| `event_type` | String(100) | "CandidateMoved" \| "JobCreated" \| etc. |
+| `event_data` | JSONB | Payload arbitrário por event_type |
+| `company_id` | String(255) | Multi-tenant obrigatório |
+| `created_by` | String(255) | user_id ou agent_name |
+| `sequence_number` | BigInteger | Auto-incrementado por aggregate (UniqueConstraint) |
+
+**Invariante:** NENHUMA operação de UPDATE ou DELETE é permitida — somente `append()`.
+
+**Métodos do `EventStoreService`:**
+
+| Método | Descrição |
+|--------|-----------|
+| `append(aggregate_type, aggregate_id, event_type, data, company_id, db)` | Grava evento com próximo sequence_number. Fail-open: retorna False em erro. |
+| `get_history(aggregate_type, aggregate_id, db, from_sequence, limit)` | Retorna lista ordenada de eventos para replay. Fail-open: retorna `[]`. |
+| `reconstruct_state(aggregate_type, aggregate_id, db, folder)` | Reconstrói estado atual aplicando fold sobre eventos. Default folder: merge de `event_data`. |
+
+**Índices:** `ix_domain_events_aggregate` (aggregate_type + aggregate_id + created_at), `ix_domain_events_company`, `ix_domain_events_event_type`
+
+### 13.7 Adaptive Routing Learning — E9
+
+**Implementado em:** Sprint Y5/E9
+**Arquivo:** `app/services/routing_learning_service.py`
+**Model:** `app/models/routing_feedback.py`
+**Migration:** `alembic/versions/046_add_routing_feedback.py`
+
+O sistema aprende com correções de roteamento para melhorar a accuracy futura do `CascadedRouter`:
+
+**Modelo `RoutingFeedback` (tabela `routing_feedback`):**
+- `company_id`, `session_id`, `message_hash` (MD5), `routed_domain` (escolha do router), `actual_domain` (escolha correta), `corrected` ("true"/"false"), `corrected_at`
+
+**Métodos do `RoutingLearningService`:**
+
+| Método | Descrição |
+|--------|-----------|
+| `record_correction(session_id, routed_domain, actual_domain, company_id, db)` | Persiste sinal de correção. Fail-open. |
+| `compute_domain_confidence_adjustments(company_id, db)` | Calcula fator 0.8–1.2 por domínio baseado em taxa de acerto dos últimos 30 dias. |
+| `get_cached_adjustments(company_id)` | Lê ajustes pré-calculados do Redis (TTL=24h). Fail-open → `{}`. |
+| `cache_adjustments(company_id, adjustments)` | Armazena ajustes no Redis com TTL=24h. |
+
+**Lógica de ajuste:**
+- Janela: últimos 30 dias (`_LOOKBACK_DAYS=30`), mínimo 10 amostras (`_MIN_SAMPLES=10`)
+- `error_rate > 0.3` → fator `max(0.8, 1.0 - error_rate × 0.5)` (reduz confiança)
+- `error_rate < 0.05` → fator `min(1.2, 1.0 + (0.05 - error_rate) × 2)` (eleva confiança)
+- Ajuste aplicado ao score do `CascadedRouter` no Tier 4 (LLM intent)
+
+**Beat schedule:** `routing-recompute-daily` às 07h UTC em `celery_app.py`
+**Flag:** `USE_ADAPTIVE_ROUTING=true` (padrão); desabilitar em testes para isolar comportamento
+
 ---
 
 ## 14. Motor de Automação
@@ -2630,6 +2769,45 @@ Exporta dados de treinamento de alta qualidade para fine-tuning de modelos LLM:
 - Response length > 50 caracteres (`MIN_RESPONSE_LENGTH`)
 - Sem padrões de erro (7 patterns: "erro", "error", "exception", "falha", etc.)
 - Confidence score ≥ 0.7 (`MIN_CONFIDENCE_SCORE`)
+
+### 15.12 ML Feedback Loop Adaptativo — D6
+
+**Implementado em:** Sprint Y1/D6
+**Arquivo:** `app/services/ml_feedback_service.py`
+**Model:** `app/models/recruiter_decision_feedback.py` (tabela `recruiter_decision_feedback`)
+**Migration:** `alembic/versions/044_add_recruiter_decision_feedback.py`
+**Celery task:** `ml.feedback.process_job_weights` (beat: `ml.feedback.recompute_active_jobs` domingo 02h UTC)
+
+Loop de feedback real que ajusta pesos do scoring baseado em decisões do recrutador, corrigindo o `Calibration_Adjustment` que anteriormente retornava sempre 0:
+
+**Tabela `recruiter_decision_feedback`:** `company_id`, `job_id`, `candidate_id`, `lia_score`, `decision` (hire/reject/override_approve/override_reject), `decision_by`, `decision_at`, `created_at`
+
+**Dataclass `FeedbackSignal`:** sinal de feedback com `ai_score`, `recruiter_decision`, `recruiter_score` (opcional), `dimension_overrides` (dict)
+
+**Dataclass `JobScoringWeights`:** pesos adaptativos por dimensão para uma vaga específica:
+```python
+weights = {
+    "technical": 1.0,    # range: 0.7–1.3
+    "experience": 1.0,
+    "education": 1.0,
+    "soft_skills": 1.0,
+    "cultural_fit": 1.0,
+}
+```
+
+**Métodos do `MLFeedbackService`:**
+
+| Método | Descrição |
+|--------|-----------|
+| `record_signal(db, signal)` | Persiste sinal via `CalibrationService.record_explicit_feedback()`. Fail-open. |
+| `compute_job_weights(db, job_id, company_id, lookback_days=30)` | Calcula pesos adaptativos por dimensão. Mínimo 5 amostras (`MIN_FEEDBACK_SAMPLES`). Ajuste limitado a ±30%. |
+| `get_weights_for_job(db, job_id, company_id)` | Retorna pesos adaptativos para vaga; computa on-demand. |
+| `record_decision(db, company_id, job_id, candidate_id, lia_score, decision)` | Helper simplificado para wiring. |
+| `compute_calibration_adjustment(db, company_id, job_id)` | Calcula ajuste de calibração (-5.0 a +5.0) com cache Redis TTL=1h. **Agora retorna valores reais** baseados em peso médio das dimensões. |
+
+**Threshold de divergência:** `OVERRIDE_DIVERGENCE_THRESHOLD=15.0` pontos — divergências menores não geram ajuste.
+
+**Integração:** `lia_score_service.py` lê `compute_calibration_adjustment()` — o `Calibration_Adjustment` agora reflete feedback histórico real.
 
 ---
 
@@ -2931,6 +3109,45 @@ health_score = (success_rate × 0.4) + (sla_compliance × 0.3) + (response_time_
 | 9 | WS Connection Drop | > 10 drops em 5 min | Warning | Teams |
 | 10 | Model Drift Detected | 2+ métricas fora threshold | Warning | Teams + Email |
 
+### 17.6 Métricas Prometheus Completas — D1
+
+**Arquivo:** `app/observability/metrics.py`
+
+O arquivo atual registra **17 métricas Prometheus** (não 14 como listado em 17.1). Métricas adicionais adicionadas em Y1–Y5:
+
+**Counters adicionais (Y1–Y5):**
+
+| Métrica | Labels | Descrição |
+|---------|--------|-----------|
+| `lia_router_tier_hit_total` | `tier` | Hits por tier do CascadedRouter (memory/redis_hash/vector/fast_router/llm_cascade/clarification) |
+| `lia_agent_llm_tokens_total` | `domain`, `provider` | Total de tokens LLM consumidos por agente |
+| `lia_agent_errors_total` | `domain`, `error_type` | Total de erros por agente e tipo |
+| `lia_llm_cost_usd_total` | `model`, `domain` | Custo estimado em USD de chamadas LLM |
+
+**Histograms adicionais (Y1–Y5):**
+
+| Métrica | Labels | Descrição |
+|---------|--------|-----------|
+| `lia_router_latency_ms` | `tier` | Latência do roteamento por tier em ms |
+| `lia_router_confidence` | `model` | Distribuição de confiança do roteador por modelo |
+| `lia_agent_request_duration_seconds` | `domain`, `agent_class` | Duração das requests por agente (P50/P95/P99) |
+
+**Funções de exportação:** `generate_latest_metrics()` retorna bytes no formato Prometheus text. Constante `PROMETHEUS_CONTENT_TYPE` para o header HTTP correto.
+
+### 17.7 PII Masking em Logs — D4
+
+**Arquivo:** `app/shared/pii_masking.py` — classe `PIIMaskingFilter`
+**Wiring:** `app/core/logging_config.py` — instalado como filter no root logger
+
+Filter de logging que mascara automaticamente PII antes de gravar em qualquer destino de log:
+- Intercepta todos os records antes de escrita (logging.Filter)
+- Mascara: CPF, RG, email, telefone, endereço, nome completo quando identificável
+- Previne vazamento acidental em logs de aplicação, APM, CloudWatch, ELK
+
+**Workers Celery:** Instalado via `@signals.worker_process_init.connect` em `libs/config/lia_config/celery_app.py` — cada processo filho (prefork) instala o masking automaticamente ao inicializar (SEG-3A).
+
+**Função auxiliar:** `strip_pii_for_llm_prompt(text)` — Layer 1 (CPF/email/telefone/RG/CNPJ) + Layer 3 basic (quasi-identifiers: ano de formatura, idade explícita, endereço). Flag `LLM_PROMPT_PII_STRIPPING_ENABLED` (padrão: true). Aplicado em 6+ callers LLM críticos (SEG-3B, SEG-GAPS).
+
 ---
 
 ## 18. Resiliência e Circuit Breakers
@@ -3029,6 +3246,24 @@ async def call_anthropic(prompt: str) -> str:
 - Se `fallback` é definido e circuit está OPEN → executa fallback em vez de lançar exceção
 - Se `fallback` não é definido → lança `CircuitBreakerError(name, retry_after)`
 - O Orchestrator captura `CircuitBreakerError` e retorna mensagem amigável ao usuário
+
+### 18.6 Circuits Adicionados em Sprints AUD-2 e Y1 — D10
+
+A tabela em 18.2 já reflete os circuits de AUD-2. O circuit `PEARCH_CIRCUIT` foi adicionado especificamente em Y1/D10:
+
+| Circuit | Serviço | Arquivo Principal | Sprint |
+|---------|---------|-------------------|--------|
+| `PEARCH_CIRCUIT` | Pearch AI (busca de candidatos) | `app/services/pearch_service.py` (re-exports de `app/domains/sourcing/services/pearch_service.py`) | Y1/D10 |
+| `OPENAI_CIRCUIT` | API OpenAI | `app/shared/providers/llm_openai.py` (4 métodos) | AUD-2 |
+| `GEMINI_CIRCUIT` | API Google Gemini | `app/shared/providers/llm_gemini.py` (4 métodos) | AUD-2 |
+| `GUPY_CIRCUIT` | Gupy ATS | `app/services/ats_clients/gupy.py` | AUD-2 |
+| `PANDAPE_CIRCUIT` | PandaPé ATS | `app/services/ats_clients/pandape.py` | AUD-2 |
+| `STACKONE_CIRCUIT` | StackOne ATS | `app/services/ats_clients/stackone.py` | AUD-2 |
+| `SENDGRID_CIRCUIT` | SendGrid email | `app/services/email_providers/sendgrid.py` | AUD-2 |
+| `RESEND_CIRCUIT` | Resend email | `app/services/email_providers/resend.py` | AUD-2 |
+| `WORKOS_CIRCUIT` | WorkOS SSO | `app/api/v1/workos.py` via `_fetch_workos_metrics()` helper | AUD-2 |
+
+**Nota sobre Pearch (D10):** O serviço Pearch tem estratégia de fallback para busca interna quando o circuit está OPEN, garantindo que o Sourcing Agent continue operacional mesmo sem acesso à base externa de 190M+ perfis.
 
 ---
 
@@ -3657,7 +3892,42 @@ GET    /api/v1/data-subject-requests/stats                # Estatísticas
 GET    /api/v1/data-subject-requests/export               # Exportar
 ```
 
-### 25.8 Mapeamento de Dados (80+ tabelas)
+### 25.8 Consentimento Granular por Finalidade — D5
+
+**Implementado em:** Sprint Y1/D5
+**Arquivo:** `app/services/granular_consent_service.py`
+**Migration:** `alembic/versions/043_add_candidate_consent_grants.py`
+**Endpoint:** `POST/GET /api/v1/granular-consent`
+
+Expande o `ConsentCheckerService` legado para consentimentos granulares por finalidade de IA. Diferença principal: cada finalidade tem seu próprio `consent_type` distinto (antes todas mapeavam para `SCREENING`).
+
+**Mapeamento de finalidades (`GRANULAR_PURPOSE_MAP`):**
+
+| Finalidade | consent_type | Bloqueante? |
+|-----------|--------------|-------------|
+| `ai_screening` | `SCREENING` | Sim |
+| `ai_scoring` | `AI_SCORING` | Sim |
+| `ai_video_analysis` | `AI_VIDEO_ANALYSIS` | Sim |
+| `ai_comparison` | `AI_COMPARISON` | Sim |
+| `data_retention` | `DATA_RETENTION` | Não |
+| `marketing` | `MARKETING` | Não |
+| `analytics` | `ANALYTICS` | Não |
+
+**Finalidades bloqueantes (`BLOCKING_PURPOSES`):** `ai_screening`, `ai_scoring`, `ai_video_analysis`, `ai_comparison` — quando revogadas, bloqueiam o processamento.
+
+**Métodos do `GranularConsentService` (instanciado com `db`):**
+
+| Método | Descrição |
+|--------|-----------|
+| `get_summary(candidate_id, company_id)` | Retorna `GranularConsentSummary` com status de todas as 7 finalidades. `all_blocking_given=True` se todas as BLOCKING_PURPOSES estão ok. |
+| `bulk_update(candidate_id, company_id, updates, source, ip_address)` | Atualiza múltiplos consentimentos em lote. `updates={purpose: True/False}`. Rastreável via `ip_address`. |
+| `check_purpose(candidate_id, company_id, purpose)` | Verificação rápida booleana. Fail-open: retorna `True` em erro para não bloquear candidato por falha técnica. |
+
+**Integração WSI Gate 1 (SEG-4):** `wsi_interview_graph.load_context()` usa `check_purpose("ai_screening")` — se revogado → `state.error="LGPD_CONSENT_REVOKED"` + `stage=ERROR`.
+
+**Referências LGPD/EU AI Act:** LGPD Art. 7 (base legal: consentimento), LGPD Art. 8 (consentimento inequívoco), EU AI Act Art. 13 (transparência e granularidade).
+
+### 25.9 Mapeamento de Dados (80+ tabelas)
 
 **Referência:** `docs/compliance/WEDOTALENT_COMPLIANCE_ARCHITECTURE.md` → Seção 3
 
@@ -4563,7 +4833,7 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 |-----------|--------|-----|
 | FairnessGuard | **Implementado (11/11 + Orchestrator)** | 73 padrões; Layer 3 em 3 callers; 0 xfails red team (v5.0) |
 | Bias Audit | Implementado | Apenas Four-Fifths, falta Disparate Impact |
-| PII Masking | Implementado | Apenas para LLM prompts, falta para logs |
+| PII Masking | **Implementado completo** | ✅ SEG-3A/D4: `PIIMaskingFilter` instalado em root logger + workers Celery; `strip_pii_for_llm_prompt()` em 6+ callers LLM |
 | Consent Management | ✅ Sprint Y2/D5 — consentimento granular por tipo de dado implementado | — |
 | FRIA | Documentado | Não automatizado (manual) |
 | Explainability | Parcial | Score breakdown existe, falta natural language |
@@ -4900,6 +5170,103 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 | Integrações ATS | 4 | 13/03/2026 |
 | Canais de comunicação | 4 | 13/03/2026 |
 
+> **Nota v4.2 (15/03/2026):** Os valores acima refletem a auditoria de 13/03/2026. Após Sprints Y1–Y5, os totais reais são maiores: migrações chegaram a 47, métricas Prometheus a 17, novos serviços e modelos adicionados. Ver Seção 34.23 para arquivos incrementais.
+
+### 34.23 Arquivos Adicionados em Sprints Y1–Y5
+
+**Migrations (Alembic) — Y1–Y5:**
+
+| Migration | Descrição |
+|-----------|-----------|
+| `alembic/versions/041_add_agent_ragas_evaluations.py` | Tabela de avaliações RAGAS por agente |
+| `alembic/versions/042_add_disparate_impact_to_snapshot.py` | Disparate Impact ratio no BiasAuditSnapshot |
+| `alembic/versions/043_add_candidate_consent_grants.py` | Consentimentos granulares por finalidade (D5) |
+| `alembic/versions/044_add_recruiter_decision_feedback.py` | Tabela `recruiter_decision_feedback` (D6) |
+| `alembic/versions/045_add_domain_to_embeddings.py` | Campo `domain` em embeddings para RAG por domínio (E6) |
+| `alembic/versions/046_add_routing_feedback.py` | Tabela `routing_feedback` para adaptive routing (E9) |
+| `alembic/versions/047_add_event_store.py` | Tabela `domain_events` imutável para event sourcing (E12) |
+
+**Models SQLAlchemy — Y1–Y5:**
+
+| Arquivo | Model | Descrição |
+|---------|-------|-----------|
+| `app/models/event_store.py` | `DomainEvent` | aggregate_id, event_type, event_data (JSONB), sequence_number — append-only |
+| `app/models/recruiter_decision_feedback.py` | `RecruiterDecisionFeedback` | Decisões de recrutadores para ML feedback loop |
+| `app/models/routing_feedback.py` | `RoutingFeedback` | Correções de roteamento para adaptive learning |
+
+**Services Backend — Y1–Y5:**
+
+| Arquivo | Sprint | Descrição |
+|---------|--------|-----------|
+| `app/services/ml_feedback_service.py` | D6 | ML feedback loop + pesos adaptativos por vaga |
+| `app/services/routing_learning_service.py` | E9 | Adaptive routing com aprendizado de correções |
+| `app/services/event_store_service.py` | E12 | Event sourcing append-only com reconstruct_state |
+| `app/services/granular_consent_service.py` | D5 | Consentimento granular por finalidade de IA (7 tipos) |
+| `app/services/salary_benchmark_service.py` | D7 | Benchmark salarial via Apify + fallback setorial estático |
+| `app/services/ragas_evaluation_service.py` | ACH-027 | Avaliação RAGAS de qualidade de respostas do agente |
+
+**Shared / Core — Y1–Y5:**
+
+| Arquivo | Sprint | Descrição |
+|---------|--------|-----------|
+| `app/shared/agents/agent_bus.py` | E10 | Agent Bus Redis Pub/Sub para comunicação inter-agentes |
+| `app/core/agent_registry_watcher.py` | E4 | Watcher polling de agents_registry.yaml + tool_registry_metadata.yaml com hot-reload |
+| `app/core/agent_model_config.py` | E5 | Config multi-model por agente (AGENT_MODEL_{NAME} envvars) |
+| `app/core/redis_client.py` | Y1 | Cliente Redis centralizado com get_redis() |
+| `app/agents_registry.yaml` | E4 | Registro YAML de 7 agentes com model_id, class_path, enabled |
+
+**API Endpoints — Y1–Y5:**
+
+| Arquivo | Sprint | Endpoint | Descrição |
+|---------|--------|----------|-----------|
+| `app/api/v1/candidate_compare.py` | D9 | `POST /api/v1/candidates/compare` | Comparação 2–4 candidatos |
+| `app/api/v1/event_history.py` | E12 | `GET /api/v1/event-history` | Histórico imutável de eventos |
+| `app/api/v1/granular_consent.py` | D5 | `POST/GET /api/v1/granular-consent` | Consentimento granular |
+| `app/api/v1/metrics.py` | D1 | `GET /api/v1/metrics` | Endpoint Prometheus metrics |
+| `app/api/v1/ml_feedback.py` | D6 | `POST /api/v1/ml-feedback` | Registro de feedback ML |
+| `app/api/v1/salary_benchmark.py` | D7 | `GET /api/v1/salary-benchmark` | Benchmark salarial |
+| `app/api/v1/admin_agents.py` | E4 | `GET/POST /api/v1/admin/agents` | Admin do registro de agentes + hot-reload |
+
+**Frontend Hooks — Y1–Y5:**
+
+| Arquivo | Sprint | Descrição |
+|---------|--------|-----------|
+| `src/hooks/use-score-breakdown.ts` | E1 | Score breakdown por dimensão |
+| `src/hooks/use-candidate-compare.ts` | D9 | Comparação de candidatos |
+| `src/hooks/use-proactive-insights.ts` | D8 | Insights proativos no kanban |
+| `src/hooks/use-wsi-async.ts` | E3 | WSI assíncrono via token |
+| `src/hooks/use-job-report.ts` | D1 | Job report com dados reais |
+
+**Frontend Components — Y1–Y5:**
+
+| Arquivo | Sprint | Descrição |
+|---------|--------|-----------|
+| `src/components/modals/candidate-compare-modal.tsx` | D9 | Modal de comparação visual multi-dimensional |
+| `src/components/react-thinking-stream.tsx` | E7 | Streaming de raciocínio ReAct (colapsável) |
+
+**Frontend Proxies — Y1–Y5:**
+
+| Arquivo | Sprint | Endpoint proxied |
+|---------|--------|-----------------|
+| `src/app/api/backend-proxy/candidates/compare/route.ts` | D9 | `POST /candidates/compare` |
+| `src/app/api/backend-proxy/wsi-async/[token]/route.ts` | E3 | WSI assíncrono por token |
+| `src/app/api/backend-proxy/proactive-insights/route.ts` | D8 | Insights proativos |
+| `src/app/api/backend-proxy/rubrics/[jobId]/candidates/[candidateId]/breakdown/route.ts` | E1 | Score breakdown |
+
+**Testes — Y1–Y5:**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `tests/unit/test_d1_job_report_endpoint.py` | D1: Job report endpoint |
+| `tests/unit/test_d10_pearch_fallback.py` | D10: Pearch circuit breaker + fallback |
+| `tests/unit/test_e1_score_breakdown.py` | E1: Score breakdown por dimensão |
+| `tests/unit/test_e12_event_sourcing.py` | E12: Event sourcing append/replay/reconstruct |
+| `tests/unit/test_diagnostico_v6_gaps.py` | 16 testes dos 4 gaps do diagnóstico v6 |
+| `tests/integration/test_guardrails_flow.py` | Fluxo completo de guardrails |
+| `tests/integration/test_hitl_flow.py` | Fluxo HITL end-to-end |
+| `tests/integration/test_rag_search_flow.py` | RAG híbrido BM25+pgvector |
+| `tests/security/` | 6 arquivos: fairness, LGPD, PII, multi-tenant, circuit breakers, prompt injection |
+
 ---
 
 ---
@@ -5004,6 +5371,24 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 ---
 
 ## Apêndice C — Changelog
+
+### v4.2 (15/03/2026) — Atualização de Seções 5, 9, 13, 15, 17, 18, 25, 34
+
+**Seções atualizadas (auditoria direta do código-fonte):**
+- **Seção 5.9:** E7 Streaming ReAct — `ReactThinkingStream` component, protocolo WS `thinking`/`tool_call`
+- **Seção 9.6:** D7 Salary Benchmark real — `SalaryBenchmarkService` (Apify + fallback setorial, Redis TTL=7d)
+- **Seção 9.7:** D9 Comparação de Candidatos — `CandidateComparisonService`, cenários A/B/C, modal FE
+- **Seção 13.5:** E10 Agent Bus — `AgentBus` Redis Pub/Sub, `AgentEvent`, audit trail, fail-open
+- **Seção 13.6:** E12 Event Sourcing — `DomainEvent`, `EventStoreService`, append-only, `reconstruct_state()`
+- **Seção 13.7:** E9 Adaptive Routing — `RoutingLearningService`, fator 0.8–1.2, beat `routing-recompute-daily`
+- **Seção 15.12:** D6 ML Feedback Loop — `MLFeedbackService`, `JobScoringWeights`, `compute_calibration_adjustment()` agora retorna valores reais
+- **Seção 17.6:** Métricas Prometheus completas — 17 métricas (não 14): `router_tier_hit_total`, `agent_llm_tokens_total`, `agent_errors_total`, `llm_cost_usd_total`, `router_latency_ms`, `router_confidence`, `agent_request_duration_seconds`
+- **Seção 17.7:** D4 PII Masking em logs — `PIIMaskingFilter` no root logger + Celery workers (SEG-3A)
+- **Seção 18.6:** D10 Pearch circuit + tabela de circuits AUD-2/Y1 com arquivos reais
+- **Seção 25.8 (renumerada 25.9):** D5 Consentimento Granular — `GranularConsentService`, 7 finalidades, 4 blocking, `check_purpose()` fail-open
+- **Seção 33 (compliance):** PII Masking status atualizado de gap para "implementado completo"
+- **Seção 34.22:** Nota adicionada sobre migrações (47) e métricas (17) após Y1–Y5
+- **Seção 34.23:** Nova seção com 7 migrations, 3 models, 6 services, 5 shared/core files, 7 API endpoints, 5 hooks FE, 2 components FE, 4 proxies FE, 9 test files
 
 ### v4.0 (15/03/2026) — Y5 + Guia de Implementação para Agentes IA
 
