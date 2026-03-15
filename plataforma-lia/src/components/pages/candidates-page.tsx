@@ -6995,8 +6995,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                         className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
                         onClick={() => setShowExpandedLIA(true)}
                         title="Expandir"
+                        aria-label="Expandir chat da LIA"
                       >
-                        <Maximize2 className="w-4 h-4 text-gray-700" />
+                        <Maximize2 className="w-4 h-4 text-gray-700" aria-hidden="true" />
                       </button>
                       <button
                         className={`p-1.5 rounded-full transition-colors ${
@@ -7010,11 +7011,12 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                         }}
                         disabled={isLIAThinking}
                         title="Enviar"
+                        aria-label="Enviar mensagem para a LIA"
                       >
                         {isLIAThinking ? (
-                          <div className="w-4 h-4 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" aria-hidden="true" />
                         ) : (
-                          <Send className="w-4 h-4 text-gray-700" />
+                          <Send className="w-4 h-4 text-gray-700" aria-hidden="true" />
                         )}
                       </button>
                     </div>
@@ -7535,8 +7537,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                     setArchetypeCreationStep('initial')
                                   }}
                                   className="p-1 hover:bg-gray-100 dark:bg-gray-800 rounded"
+                                  aria-label="Cancelar criação de arquétipo"
                                 >
-                                  <X className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                                  <X className="w-3 h-3 text-gray-600 dark:text-gray-400" aria-hidden="true" />
                                 </button>
                               </div>
                             )}
@@ -7549,10 +7552,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                               </div>
                               <input
                                 type="text"
-                                placeholder={isCreatingArchetype 
-                                  ? "Cole a descrição da vaga ou descreva o perfil ideal..." 
+                                placeholder={isCreatingArchetype
+                                  ? "Cole a descrição da vaga ou descreva o perfil ideal..."
                                   : "Envie mensagem para a LIA..."
                                 }
+                                aria-label={isCreatingArchetype ? "Descrição do perfil ideal para arquétipo" : "Mensagem para a LIA"}
                                 value={liaPromptValue}
                                 onChange={(e) => setLiaPromptValue(e.target.value)}
                                 onKeyDown={(e) => {

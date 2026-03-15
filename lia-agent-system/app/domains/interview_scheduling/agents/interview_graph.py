@@ -282,8 +282,65 @@ class InterviewGraph:
         next_node = self._route_after_validator(state)
 
         if next_node == _EXECUTOR:
+            # HITL — aprovação humana obrigatória antes de confirmar agendamento
+            try:
+                from app.services.hitl_service import hitl_service
+                workflow_data = state.get("workflow_data", {})
+                interview_sched_state = workflow_data.get("interview_scheduling_state", {})
+                pending_id = await hitl_service.request_approval(
+                    thread_id=state.get("session_id", "scheduling"),
+                    action="confirm_interview",
+                    description=(
+                        f"Confirmar agendamento de entrevista para "
+                        f"{interview_sched_state.get('candidate_name', 'candidato')} "
+                        f"em {interview_sched_state.get('preferred_date', 'data')} "
+                        f"às {interview_sched_state.get('preferred_time', 'horário')}?"
+                    ),
+                    data={
+                        "candidate_id": state.get("candidate_id"),
+                        "job_id": state.get("job_id"),
+                        "scheduled_date": interview_sched_state.get("preferred_date"),
+                        "scheduled_time": interview_sched_state.get("preferred_time"),
+                    },
+                    domain="interview_scheduling",
+                    company_id=state.get("company_id"),
+                )
+                if pending_id:
+                    state.setdefault("workflow_data", {})["hitl_pending_id"] = pending_id
+                    state["workflow_data"]["hitl_pending"] = True
+            except Exception as _hitl_exc:
+                logger.warning(
+                    "[InterviewGraph] HITL unavailable — prosseguindo sem revisão: %s", _hitl_exc
+                )
+
             # Nó 4: executa agendamento real
             state = await self._run_node(_EXECUTOR, state, audit_callback)
+
+            # Audit log após confirmação do agendamento
+            try:
+                from app.shared.compliance.audit_service import audit_service
+                from app.core.database import get_db as _get_db
+                workflow_data_post = state.get("workflow_data", {})
+                interview_sched_state_post = workflow_data_post.get("interview_scheduling_state", {})
+                async for db in _get_db():
+                    await audit_service.log_decision(
+                        db=db,
+                        company_id=state.get("company_id"),
+                        domain="interview_scheduling",
+                        agent_name="interview_graph",
+                        decision_type="schedule_interview",
+                        decision="confirmed",
+                        candidate_id=state.get("candidate_id"),
+                        job_id=state.get("job_id"),
+                        metadata={
+                            "scheduled_date": interview_sched_state_post.get("preferred_date"),
+                            "hitl_pending": workflow_data_post.get("hitl_pending", False),
+                        },
+                        criteria_ignored=[],
+                    )
+                    break
+            except Exception as _audit_exc:
+                pass
 
         # Nó 5: planeja resposta final
         state = await self._run_node(_RESPONSE, state, audit_callback)

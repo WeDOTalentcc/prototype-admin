@@ -515,6 +515,33 @@ class WSIInterviewNodes:
                 "dreyfus_achieved": record.dreyfus_achieved,
             })
 
+            # AUD: Audit trail para cada bloco avaliado (BCB 498 / SOX)
+            try:
+                from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                from app.core.database import AsyncSessionLocal
+                async with AsyncSessionLocal() as _audit_db:
+                    await audit_service.log_decision(
+                        db=_audit_db,
+                        company_id=state.company_id,
+                        domain="cv_screening",
+                        agent_name="wsi_interview_graph",
+                        decision_type="wsi_score",
+                        decision=f"block_{block.block_id}_scored",
+                        candidate_id=state.candidate_id,
+                        job_id=state.job_id,
+                        metadata={
+                            "block": block.block_id,
+                            "block_type": block.block_type,
+                            "score": record.score,
+                            "bloom_achieved": record.bloom_achieved,
+                            "dreyfus_achieved": record.dreyfus_achieved,
+                            "competency": block.competency,
+                        },
+                        criteria_ignored=list(PROTECTED_CRITERIA),
+                    )
+            except Exception as _audit_exc:
+                logger.debug("[WSIInterviewGraph] audit_service skipped in score_response: %s", _audit_exc)
+
         except Exception as exc:
             logger.warning(f"[WSIInterviewGraph] score_response error: {exc}")
             state.log_step("score_response", {"status": "error", "error": str(exc)})
@@ -568,6 +595,32 @@ class WSIInterviewNodes:
                 "total_responses": len(state.responses),
                 "duration_s": (state.completed_at - state.started_at).total_seconds(),
             })
+
+            # AUD: Audit trail para avaliação final WSI (BCB 498 / SOX)
+            try:
+                from app.shared.compliance.audit_service import audit_service
+                from app.core.database import AsyncSessionLocal
+                _passed = state.recommendation == "aprovado"
+                async with AsyncSessionLocal() as _audit_db:
+                    await audit_service.log_decision(
+                        db=_audit_db,
+                        company_id=state.company_id,
+                        domain="cv_screening",
+                        agent_name="wsi_interview_graph",
+                        decision_type="wsi_final_evaluation",
+                        decision="approved" if _passed else "rejected",
+                        candidate_id=state.candidate_id,
+                        job_id=state.job_id,
+                        metadata={
+                            "final_score": state.wsi_final_score,
+                            "passed": _passed,
+                            "recommendation": state.recommendation,
+                            "total_responses": len(state.responses),
+                        },
+                        criteria_ignored=[],
+                    )
+            except Exception as _audit_exc:
+                logger.debug("[WSIInterviewGraph] audit_service skipped in generate_feedback: %s", _audit_exc)
 
             # ── Gate 1 feedback ao candidato (fail-safe — Gap 16.1) ─────────
             # Envia email de resultado apenas quando há email no perfil do candidato.

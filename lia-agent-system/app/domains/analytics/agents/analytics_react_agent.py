@@ -98,10 +98,17 @@ class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                 )
                 actions.append(AgentAction(action_type="call_tool", params={"tool": name}))
 
+        # Calcular confidence baseado no resultado
+        _confidence = 0.75  # base para ações completadas com sucesso
+        if actions:
+            _confidence = 0.82  # tool foi chamada com sucesso
+        if state.get("error"):
+            _confidence = 0.40  # houve erro
+
         return AgentOutput(
             message=response,
             actions=actions,
-            confidence=0.88,
+            confidence=_confidence,
             metadata={"source": "langgraph_native", "domain": self.domain_name},
         )
 
@@ -148,6 +155,21 @@ class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             if company_id and "company_id" not in enriched_message:
                 enriched_message = f"[company_id: {company_id}] {enriched_message}"
 
+            # Injetar benchmark setorial para anti-sycophancy (II.7)
+            _benchmark_context = ""
+            try:
+                from app.services.sector_benchmark_service import SectorBenchmarkService
+                company_sector = input.context.get("company_sector", "")
+                if company_sector:
+                    _benchmark = await SectorBenchmarkService().get_benchmark(
+                        sector=company_sector,
+                        db=None,
+                    )
+                    if _benchmark:
+                        _benchmark_context = f"\n\n## Benchmark Setorial\nCompare SEMPRE com o benchmark setorial antes de avaliar performance ou validar métricas.\n{_benchmark}\n"
+            except Exception:
+                _benchmark_context = ""
+
             audit_callback = AuditCallback(
                 user_id=str(input.user_id or "system"),
                 company_id=str(company_id or ""),
@@ -188,6 +210,7 @@ class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                     "stage_description": stage_ctx.get("description", ""),
                     "company_id": company_id,
                     "user_id": input.user_id,
+                    "benchmark_context": _benchmark_context,
                 },
                 session_id=session_id,
                 observer=observer,

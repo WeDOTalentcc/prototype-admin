@@ -106,10 +106,17 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                 name = tc.get("name", "") if isinstance(tc, dict) else getattr(tc, "name", "")
                 actions.append(AgentAction(action_type="call_tool", params={"tool": name}))
 
+        # Calcular confidence baseado no resultado
+        _confidence = 0.75  # base para ações completadas com sucesso
+        if actions:
+            _confidence = 0.82  # tool foi chamada com sucesso
+        if state.get("error"):
+            _confidence = 0.40  # houve erro
+
         return AgentOutput(
             message=response,
             actions=actions,
-            confidence=0.85,
+            confidence=_confidence,
             metadata={"source": "langgraph_native", "domain": self.domain_name},
         )
 
@@ -238,6 +245,64 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             )
 
             output = await self._build_output(state, current_stage, policy_state, input)
+
+            # HITL — aprovação humana obrigatória antes de persistir alterações de política
+            if output.state_updates:
+                try:
+                    from app.services.hitl_service import hitl_service
+                    from app.shared.compliance.audit_service import audit_service
+                    thread_id = str(input.session_id)
+                    company_id = str(input.company_id or "")
+
+                    pending_id = await hitl_service.request_approval(
+                        thread_id=thread_id,
+                        action="save_policy",
+                        description=(
+                            f"Confirmar alterações de política para empresa {company_id}?"
+                        ),
+                        data={
+                            "policy_updates": output.state_updates,
+                            "stage": current_stage,
+                            "company_id": company_id,
+                        },
+                        ws_session_id=thread_id,
+                        domain="policy",
+                        company_id=company_id,
+                    )
+
+                    if pending_id:
+                        # HITL solicitado — registra auditoria e aguarda aprovação externa
+                        try:
+                            from app.core.database import AsyncSessionLocal
+                            async with AsyncSessionLocal() as _audit_db:
+                                await audit_service.log_decision(
+                                    db=_audit_db,
+                                    company_id=company_id,
+                                    domain="policy",
+                                    agent_name="policy_react_agent",
+                                    decision_type="policy_update_pending_hitl",
+                                    decision="pending_review",
+                                    candidate_id=None,
+                                    job_id=None,
+                                    metadata={
+                                        "policy_updates": output.state_updates,
+                                        "thread_id": thread_id,
+                                        "pending_id": pending_id,
+                                    },
+                                    criteria_ignored=[],
+                                )
+                        except Exception as _audit_exc:
+                            logger.debug("[PolicyReActAgent] audit_service skipped in HITL: %s", _audit_exc)
+
+                        output.metadata["hitl_pending"] = True
+                        output.metadata["hitl_pending_id"] = pending_id
+
+                except Exception as _hitl_exc:
+                    # Fail-safe: se HITL não disponível, prossegue com log de aviso
+                    logger.warning(
+                        "[PolicyReActAgent] HITL service unavailable — prosseguindo sem revisão: %s",
+                        _hitl_exc,
+                    )
 
             await self._post_loop_learning(
                 state=state,

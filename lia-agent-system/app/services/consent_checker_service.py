@@ -99,12 +99,18 @@ class ConsentCheckerService:
                 )
 
             # Caso 2: Consentimento ausente — comportamento depende da flag hard/soft
+            # LGPD Art. 7: o processamento de dados pessoais para IA requer consentimento
+            # explícito do titular. O default correto é bloquear (hard block = True) quando
+            # o consentimento não foi registrado, garantindo compliance com o princípio da
+            # finalidade e do livre acesso (LGPD Art. 6, incisos I e IV).
             if consent is None:
                 try:
                     from lia_config.config import settings
                     _hard_block = settings.LGPD_CONSENT_ABSENT_HARD_BLOCK
                 except Exception:
-                    _hard_block = False
+                    # Default True: em caso de falha na leitura da config, o comportamento
+                    # seguro é bloquear — LGPD Art. 7 exige consentimento para finalidades de IA.
+                    _hard_block = True
 
                 if _hard_block:
                     logger.warning(

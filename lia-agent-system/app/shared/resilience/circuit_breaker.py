@@ -445,6 +445,26 @@ RESEND_CIRCUIT = CircuitBreaker(
     )
 )
 
+IUGU_CIRCUIT = CircuitBreaker(
+    "iugu",
+    CircuitBreakerConfig(
+        failure_threshold=3,
+        recovery_timeout=60.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
+VINDI_CIRCUIT = CircuitBreaker(
+    "vindi",
+    CircuitBreakerConfig(
+        failure_threshold=3,
+        recovery_timeout=60.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
 ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "anthropic": ANTHROPIC_CIRCUIT,
     "openai": OPENAI_CIRCUIT,
@@ -458,6 +478,8 @@ ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "stackone": STACKONE_CIRCUIT,
     "sendgrid": SENDGRID_CIRCUIT,
     "resend": RESEND_CIRCUIT,
+    "iugu": IUGU_CIRCUIT,
+    "vindi": VINDI_CIRCUIT,
 }
 
 

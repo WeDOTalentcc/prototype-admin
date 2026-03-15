@@ -32,6 +32,56 @@ from app.models.policy import (
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# Regras setoriais Alpha 1 — Sprint III.8
+# ---------------------------------------------------------------------------
+
+ALPHA1_SECTOR_RULES: dict = {
+    "tech": {
+        "autonomy_level": "high",
+        "hitl_threshold": 0.65,
+        "auto_approve_threshold": 0.85,
+        "max_pipeline_days": 30,
+        "fairness_layer3_enabled": True,
+    },
+    "varejo": {
+        "autonomy_level": "medium",
+        "hitl_threshold": 0.70,
+        "auto_approve_threshold": 0.80,
+        "max_pipeline_days": 21,
+        "fairness_layer3_enabled": False,
+    },
+    "logistica": {
+        "autonomy_level": "medium",
+        "hitl_threshold": 0.70,
+        "auto_approve_threshold": 0.80,
+        "max_pipeline_days": 14,
+        "fairness_layer3_enabled": False,
+    },
+    "financeiro": {
+        "autonomy_level": "low",
+        "hitl_threshold": 0.80,
+        "auto_approve_threshold": 0.90,
+        "max_pipeline_days": 45,
+        "fairness_layer3_enabled": True,
+    },
+    "saude": {
+        "autonomy_level": "low",
+        "hitl_threshold": 0.80,
+        "auto_approve_threshold": 0.90,
+        "max_pipeline_days": 45,
+        "fairness_layer3_enabled": True,
+    },
+    "rpo": {
+        "autonomy_level": "high",
+        "hitl_threshold": 0.60,
+        "auto_approve_threshold": 0.82,
+        "max_pipeline_days": 25,
+        "fairness_layer3_enabled": True,
+    },
+}
+
+
 class EvaluationResult:
     """Result of policy evaluation."""
     

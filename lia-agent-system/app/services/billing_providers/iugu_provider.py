@@ -20,6 +20,7 @@ from app.services.billing_providers.base import (
     PaymentMethodData,
     BillingResult,
 )
+from app.shared.resilience.circuit_breaker import IUGU_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,7 @@ class IuguProvider(BillingProviderBase):
         self.base_url = "https://api.iugu.com/v1"
         self.is_test_mode = os.environ.get("IUGU_TEST_MODE", "true").lower() == "true"
     
+    @circuit_breaker_decorator(IUGU_CIRCUIT)
     async def create_customer(self, customer: CustomerData) -> BillingResult:
         """Create a customer in Iugu."""
         logger.info(f"[Iugu] Creating customer: {customer.email}")
@@ -126,6 +128,7 @@ class IuguProvider(BillingProviderBase):
             data={"external_id": external_id}
         )
     
+    @circuit_breaker_decorator(IUGU_CIRCUIT)
     async def create_subscription(
         self,
         customer_id: str,
@@ -314,6 +317,7 @@ class IuguProvider(BillingProviderBase):
             data={"external_id": invoice_id}
         )
     
+    @circuit_breaker_decorator(IUGU_CIRCUIT)
     async def create_invoice(
         self,
         customer_id: str,

@@ -25,6 +25,7 @@ from typing import Any, Callable, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 from app.orchestrator.context_adapter import UniversalContext
+from app.services.tenant_context_service import TenantContextService
 from app.orchestrator.action_executor import (
     ActionResult,
     ACTIONABLE_INTENTS,
@@ -35,6 +36,7 @@ from app.orchestrator.action_executor import (
 )
 from app.orchestrator.pending_action import PendingActionState, pending_action_store
 from app.shared.memory.candidate_list_store import candidate_list_store
+from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,10 @@ class ChatResponse(BaseModel):
     @classmethod
     def from_orchestrator_result(cls, result: Dict[str, Any], conv_id: str) -> "ChatResponse":
         """Converte o dict retornado por Orchestrator.process_request_with_memory()."""
+        # Se o resultado tem score_breakdown, incluir em structured_data
+        _structured = result.get("structured_data", result.get("data")) or {}
+        if result.get("score_breakdown"):
+            _structured["score_breakdown"] = result["score_breakdown"]
         return cls(
             success=result.get("success", True),
             content=result.get("response", result.get("content", "")),
@@ -73,7 +79,7 @@ class ChatResponse(BaseModel):
             agents_consulted=result.get("agents_consulted", []),
             intent_detected=result.get("intent_detected", result.get("intent", "general")),
             confidence=result.get("confidence", 1.0),
-            structured_data=result.get("structured_data", result.get("data")),
+            structured_data=_structured or None,
             suggested_prompts=result.get("suggested_prompts", result.get("suggestions", [])),
             actions=result.get("actions", []),
             conversation_id=conv_id,
@@ -121,6 +127,8 @@ class MainOrchestrator:
 
     def __init__(self, orchestrator: Any) -> None:
         self._orchestrator = orchestrator
+        self._fairness_guard = FairnessGuard()
+        self._tenant_context_service = TenantContextService()
 
     async def process(
         self,
@@ -138,6 +146,46 @@ class MainOrchestrator:
         conv_id = ctx.conversation_id or str(uuid.uuid4())
 
         try:
+            # ── Pré-check FairnessGuard — antes de qualquer fase de processamento ──
+            message_text = ctx.message or ""
+            _fairness_result = self._fairness_guard.check(message_text)
+            if _fairness_result.is_blocked:
+                logger.warning(
+                    "[MainOrchestrator] FairnessGuard blocked input: "
+                    "user=%s company=%s category=%s",
+                    ctx.user_id, ctx.company_id, getattr(_fairness_result, "category", "unknown"),
+                )
+                return ChatResponse(
+                    success=False,
+                    content=_fairness_result.educational_message or (
+                        "Não posso processar essa solicitação pois viola critérios de equidade e compliance."
+                    ),
+                    agent_used="fairness_guard",
+                    confidence=1.0,
+                    intent_detected="blocked_bias",
+                    conversation_id=conv_id,
+                )
+            # Camada 2 — soft warnings (log apenas, não bloqueia)
+            try:
+                _implicit_warnings = self._fairness_guard.check_implicit_bias(message_text)
+                if _implicit_warnings:
+                    logger.info(
+                        "[MainOrchestrator] FairnessGuard implicit bias soft warnings: "
+                        "user=%s warnings=%s",
+                        ctx.user_id, _implicit_warnings,
+                    )
+            except Exception as _fg_exc:
+                logger.debug("[MainOrchestrator] FairnessGuard implicit check skipped: %s", _fg_exc)
+
+            # Enriquecer contexto com informações do tenant
+            try:
+                _tenant_ctx = await self._tenant_context_service.get_context(
+                    company_id=str(ctx.company_id), db=db
+                )
+                ctx.tenant_context_snippet = _tenant_ctx.to_prompt_snippet()
+            except Exception as _tc_exc:
+                logger.debug("[MainOrchestrator] TenantContext skipped: %s", _tc_exc)
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:

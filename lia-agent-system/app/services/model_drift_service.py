@@ -386,5 +386,43 @@ class ModelDriftService:
         )
 
 
+    async def check_drift_trigger(
+        self,
+        company_id: str,
+        trigger_type: str = "learning_feedback",
+    ) -> None:
+        """
+        Trigger assíncrono de verificação de drift a partir do LearningLoop.
+
+        Fail-safe: cria sessão própria e não propaga exceções.
+        Usado quando feedbacks negativos acumulados sugerem possível drift.
+
+        Args:
+            company_id: Tenant ID para escopo da avaliação.
+            trigger_type: Tipo do gatilho (ex: "learning_feedback").
+        """
+        try:
+            from app.core.database import AsyncSessionLocal
+            import uuid as _uuid
+
+            async with AsyncSessionLocal() as db:
+                try:
+                    _company_uuid = _uuid.UUID(company_id)
+                except (ValueError, AttributeError):
+                    logger.warning(
+                        "[ModelDriftService] check_drift_trigger: invalid company_id=%s", company_id
+                    )
+                    return
+
+                status = await self.evaluate(db, _company_uuid)
+                logger.info(
+                    "[ModelDriftService] check_drift_trigger: company=%s trigger=%s "
+                    "drift_detected=%s alert_level=%s",
+                    company_id, trigger_type, status.drift_detected, status.alert_level,
+                )
+        except Exception as exc:
+            logger.debug("[ModelDriftService] check_drift_trigger failed (fail-safe): %s", exc)
+
+
 # Instância de módulo — singleton leve (stateless)
 model_drift_service = ModelDriftService()

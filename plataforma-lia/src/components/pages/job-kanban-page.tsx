@@ -4373,8 +4373,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         className="p-1 hover:bg-gray-100 rounded transition-opacity bg-white/80"
                         onClick={(e) => e.stopPropagation()}
                         title="Mais opções"
+                        aria-label="Mais opções do candidato"
                       >
-                        <MoreVertical className="w-3 h-3 text-gray-600" />
+                        <MoreVertical className="w-3 h-3 text-gray-600" aria-hidden="true" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
@@ -4446,8 +4447,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       handleOpenPreview(candidate)
                     }}
                     title="Ver detalhes do candidato"
+                    aria-label={`Ver detalhes de ${candidate.name}`}
                   >
-                    <Eye className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+                    <Eye className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" aria-hidden="true" />
                   </button>
                 </div>
 
@@ -4458,6 +4460,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     type="checkbox"
                     checked={selectedCandidates.has(candidate.id)}
                     className="w-3 h-3 rounded cursor-pointer flex-shrink-0 border border-gray-200"
+                    aria-label={`Selecionar candidato ${candidate.name}`}
                     onClick={(e) => {
                       e.stopPropagation()
                       const newSelected = new Set(selectedCandidates)
@@ -4907,7 +4910,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           openDecisionFlowModal(candidate, 'approve')
                         }}
                       >
-                        <ThumbsUp className="w-3 h-3" />
+                        <ThumbsUp className="w-3 h-3" aria-hidden="true" />
                         <span>Aprovar</span>
                       </button>
                       <button
@@ -4918,7 +4921,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           openDecisionFlowModal(candidate, 'reject')
                         }}
                       >
-                        <XCircle className="w-3 h-3" />
+                        <XCircle className="w-3 h-3" aria-hidden="true" />
                         <span>Reprovar</span>
                       </button>
                     </div>
@@ -4935,7 +4938,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           handleApproveFromScreening(candidate)
                         }}
                       >
-                        <ThumbsUp className="w-3 h-3" />
+                        <ThumbsUp className="w-3 h-3" aria-hidden="true" />
                         <span>Aprovar</span>
                       </button>
                       <button
@@ -4946,7 +4949,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           handleRejectFromScreening(candidate)
                         }}
                       >
-                        <XCircle className="w-3 h-3" />
+                        <XCircle className="w-3 h-3" aria-hidden="true" />
                         <span>Reprovar</span>
                       </button>
                     </div>
@@ -5577,8 +5580,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
                           onClick={() => setShowExpandedLIA(true)}
                           title="Expandir chat"
+                          aria-label="Expandir chat da LIA"
                         >
-                          <Maximize2 className="w-4 h-4 text-gray-700" />
+                          <Maximize2 className="w-4 h-4 text-gray-700" aria-hidden="true" />
                         </button>
                         <button
                           className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
@@ -5587,8 +5591,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                               handleAICommand(liaPromptValue)
                             }
                           }}
+                          aria-label="Enviar mensagem para a LIA"
                         >
-                          <Send className="w-4 h-4 text-gray-700" />
+                          <Send className="w-4 h-4 text-gray-700" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
@@ -5607,13 +5612,15 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 pr-3 py-1.5 text-sm w-48"
+                    aria-label="Buscar candidatos"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
+                      aria-label="Limpar busca"
                     >
-                      <X className="w-3 h-3 text-gray-800 dark:text-gray-200" />
+                      <X className="w-3 h-3 text-gray-800 dark:text-gray-200" aria-hidden="true" />
                     </button>
                   )}
                 </div>

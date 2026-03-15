@@ -132,11 +132,18 @@ class JobsManagementReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         except Exception:
             pass
 
+        # Calcular confidence baseado no resultado
+        _confidence = 0.75  # base para ações completadas com sucesso
+        if actions:
+            _confidence = 0.82  # tool foi chamada com sucesso
+        if state.get("error"):
+            _confidence = 0.40  # houve erro
+
         return AgentOutput(
             message=response,
             actions=actions,
             navigation=navigation,
-            confidence=0.85,
+            confidence=_confidence,
             metadata={"source": "langgraph_native", "domain": self.domain_name},
         )
 
@@ -215,6 +222,21 @@ class JobsManagementReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             except Exception as pe:
                 logger.debug(f"[JobsManagementReActAgent] pipeline prediction skipped: {pe}")
 
+            # Injetar benchmark setorial para anti-sycophancy (II.7)
+            _benchmark_context = ""
+            try:
+                from app.services.sector_benchmark_service import SectorBenchmarkService
+                company_sector = input.context.get("company_sector", "")
+                if company_sector:
+                    _benchmark = await SectorBenchmarkService().get_benchmark(
+                        sector=company_sector,
+                        db=None,
+                    )
+                    if _benchmark:
+                        _benchmark_context = f"\n\n## Benchmark Setorial\nCompare SEMPRE com o benchmark setorial antes de avaliar performance ou validar métricas.\n{_benchmark}\n"
+            except Exception:
+                _benchmark_context = ""
+
             tools = get_jobs_mgmt_tools(current_stage) + self._get_all_enhanced_tools()
 
             system_prompt = get_jobs_mgmt_system_prompt(
@@ -270,6 +292,7 @@ class JobsManagementReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                     "collected_data": collected_fields,
                     "company_id": input.company_id,
                     "user_id": input.user_id,
+                    "benchmark_context": _benchmark_context,
                     "conversation_history": [
                         {"role": m.get("role", "user"), "content": m.get("content", "")}
                         for m in input.conversation_history[-5:]

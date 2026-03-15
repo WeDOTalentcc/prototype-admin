@@ -5,7 +5,9 @@ Core session management (engine, Base, AsyncSessionLocal, get_db) moved to
 libs/config (lia_config.database). Migration helpers remain here.
 """
 import logging
+import sqlalchemy as sa
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Core session management — real implementation in libs/config
 from lia_config.database import (  # noqa: F401
@@ -17,6 +19,14 @@ from lia_config.database import (  # noqa: F401
 )
 
 logger = logging.getLogger(__name__)
+
+
+async def set_tenant_context(db: AsyncSession, company_id: str) -> None:
+    """Injeta company_id na sessão PostgreSQL para RLS."""
+    try:
+        await db.execute(sa.text(f"SET LOCAL app.company_id = '{company_id}'"))
+    except Exception as exc:
+        logger.warning("[RLS] Falha ao definir company_id na sessão: %s", exc)
 
 
 async def add_task_lifecycle_columns():

@@ -256,9 +256,23 @@ class LearningLoopService:
             self.logger.debug(
                 f"Captured feedback: {capture.field_name} -> {capture.outcome.value}"
             )
-            
+
+            # Conectar ao model drift quando há feedbacks negativos
+            try:
+                if capture.outcome in (FeedbackOutcome.REJECTED, FeedbackOutcome.IGNORED):
+                    from app.services.model_drift_service import ModelDriftService
+                    import asyncio
+                    asyncio.create_task(
+                        ModelDriftService().check_drift_trigger(
+                            company_id=capture.company_id,
+                            trigger_type="learning_feedback",
+                        )
+                    )
+            except Exception as _drift_exc:
+                logger.debug("[LearningLoop] drift trigger skipped: %s", _drift_exc)
+
             return str(event.id)
-            
+
         except Exception as e:
             self.logger.error(f"Error capturing feedback: {e}")
             await db.rollback()

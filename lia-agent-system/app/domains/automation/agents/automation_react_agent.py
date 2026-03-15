@@ -92,10 +92,17 @@ class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                 name = tc.get("name", "") if isinstance(tc, dict) else getattr(tc, "name", "")
                 actions.append(AgentAction(action_type="call_tool", params={"tool": name}))
 
+        # Calcular confidence baseado no resultado
+        _confidence = 0.75  # base para ações completadas com sucesso
+        if actions:
+            _confidence = 0.82  # tool foi chamada com sucesso
+        if state.get("error"):
+            _confidence = 0.40  # houve erro
+
         return AgentOutput(
             message=response,
             actions=actions,
-            confidence=0.85,
+            confidence=_confidence,
             metadata={"source": "langgraph_native", "domain": self.domain_name},
         )
 

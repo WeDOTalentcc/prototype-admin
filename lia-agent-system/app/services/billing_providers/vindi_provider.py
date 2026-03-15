@@ -21,6 +21,7 @@ from app.services.billing_providers.base import (
     PaymentMethodData,
     BillingResult,
 )
+from app.shared.resilience.circuit_breaker import VINDI_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class VindiProvider(BillingProviderBase):
         if self.is_test_mode:
             self.base_url = "https://sandbox-app.vindi.com.br/api/v1"
     
+    @circuit_breaker_decorator(VINDI_CIRCUIT)
     async def create_customer(self, customer: CustomerData) -> BillingResult:
         """Create a customer in Vindi."""
         logger.info(f"[Vindi] Creating customer: {customer.email}")
@@ -128,6 +130,7 @@ class VindiProvider(BillingProviderBase):
             data={"external_id": external_id}
         )
     
+    @circuit_breaker_decorator(VINDI_CIRCUIT)
     async def create_subscription(
         self,
         customer_id: str,
@@ -315,6 +318,7 @@ class VindiProvider(BillingProviderBase):
             data={"external_id": invoice_id}
         )
     
+    @circuit_breaker_decorator(VINDI_CIRCUIT)
     async def create_invoice(
         self,
         customer_id: str,

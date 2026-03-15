@@ -6,6 +6,7 @@ talent sourcing flow. It must be in Portuguese and follow the conversational
 philosophy of the platform.
 """
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
+from app.shared.prompts.interaction_patterns import NEGATION_DETECTION_BLOCK
 
 SOURCING_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a encontrar e abordar talentos para uma vaga.
@@ -131,6 +132,54 @@ LGPD NA ABORDAGEM:
 8. NUNCA invente dados de candidatos - use ferramentas para buscar informacoes reais
 """
 
+SOURCING_FEW_SHOT_EXAMPLES = """
+## Exemplos Adicionais
+
+**Cenário 1: Busca com WRF (Weighted Relevance Filter)**
+Recrutador: "Busca devs com React, mas prioriza quem tem experiência em TypeScript também"
+<thought>
+1. Busca com priorização — usar search_candidates com WRF (pesos diferenciados)
+2. React é requisito, TypeScript é diferencial — ponderar no score
+3. Sem risco de fairness — critérios puramente técnicos
+4. Apresentar candidatos com destaque para quem tem ambas as skills
+</thought>
+<tool_call>{"name": "search_candidates", "args": {"query": "React TypeScript developer", "filters": {"required_skills": ["React"], "preferred_skills": ["TypeScript"]}, "wrf_weights": {"React": 1.0, "TypeScript": 0.5}}}</tool_call>
+<observation>{"candidates_found": 18, "with_both_skills": 7, "react_only": 11}}</observation>
+LIA: "Encontrei **18 candidatos** com React. Desses, **7 também têm TypeScript** (score bônus aplicado). Os top 3 com ambas as skills: Rodrigo Carvalho (9.1), Isabela Freitas (8.7) e Miguel Torres (8.4). Quer ver o perfil dos que têm React+TypeScript primeiro?"
+
+**Cenário 2: Feedback like/dislike**
+Recrutador: "Esse candidato não, o perfil não se encaixa. Tenta outros"
+<thought>
+1. Feedback negativo de candidato — registrar para refinar busca
+2. Pedir critério específico para não reforçar viés implícito
+3. Se motivo for vago, contra-argumentar com dados antes de descartar
+4. Usar feedback para melhorar próxima busca
+</thought>
+LIA: "Entendido, vou descartar esse candidato. Para refinar melhor os próximos resultados, pode me dizer o que especificamente não se encaixou? (Ex: experiência insuficiente, stack diferente, senioridade errada) Isso me ajuda a trazer perfis mais alinhados."
+
+**Cenário 3: Outreach com HITL**
+Recrutador: "Envia mensagem de abordagem para os 3 primeiros da shortlist"
+<thought>
+1. Envio de mensagens de abordagem — LGPD + política de confirmação obrigatória
+2. HITL: mensagens de abordagem exigem confirmação explícita antes do envio
+3. Nunca enviar automaticamente sem confirmação do recrutador
+4. Apresentar preview das mensagens e aguardar aprovação
+</thought>
+LIA: "Para enviar as mensagens de abordagem, preciso da sua aprovação — por política e LGPD, nunca envio contato inicial sem confirmação. Aqui está o preview da mensagem personalizada para cada candidato. Após revisar, confirme o envio ou ajuste o texto."
+
+**Cenário 4: Busca com Pearch AI**
+Recrutador: "Busca candidatos para CTO fora do nosso banco, no mercado"
+<thought>
+1. Busca externa com Pearch AI — 190M+ perfis disponíveis
+2. Perfil executivo sênior — critérios específicos de liderança + técnicos
+3. Resultados externos precisam de consentimento para abordagem (LGPD)
+4. Apresentar perfis encontrados antes de qualquer contato
+</thought>
+<tool_call>{"name": "search_candidates", "args": {"query": "CTO Chief Technology Officer", "source": "pearch_ai", "filters": {"level": "C-level", "min_experience_years": 10}}}</tool_call>
+<observation>{"candidates_found": 34, "pearch_profiles": 34, "top_match": {"name": "Anonymized Profile", "match_score": 8.9}}}</observation>
+LIA: "Encontrei **34 perfis** de CTO no Pearch AI (base externa de 190M+ profissionais). Os dados pessoais são anonimizados até você confirmar o interesse em abordar um candidato específico (LGPD). Quer ver os top 5 por score de compatibilidade?"
+"""
+
 SOURCING_REASONING_PROMPT = """=== MEMORIA DE TRABALHO ===
 {memory_summary}
 
@@ -186,4 +235,4 @@ def get_sourcing_system_prompt(stage: str, context: dict) -> str:
         stage_context=stage_context,
         memory_summary=memory_summary or "Nenhuma memoria de trabalho disponivel (primeira interacao).",
     )
-    return f"{SOURCING_SYSTEM_PROMPT}\n\n{reasoning}\n\n{ANTI_SYCOPHANCY_OPERATIONAL}"
+    return f"{SOURCING_SYSTEM_PROMPT}\n\n{SOURCING_FEW_SHOT_EXAMPLES}\n\n{reasoning}\n\n{ANTI_SYCOPHANCY_OPERATIONAL}\n\n{NEGATION_DETECTION_BLOCK}"

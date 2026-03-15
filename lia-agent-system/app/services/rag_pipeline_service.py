@@ -230,6 +230,21 @@ class RAGPipelineService:
     ):
         self.semantic_threshold = semantic_threshold
 
+    def _detect_query_type(self, query: str) -> float:
+        """Detecta tipo de query e retorna alpha ideal (0=BM25, 1=semântico)."""
+        query_lower = query.lower()
+        # Cargo específico / tech stack → BM25 dominante
+        tech_keywords = {"python", "java", "react", "node", "sql", "aws", "devops", "frontend", "backend", "fullstack"}
+        cargo_keywords = {"gerente", "analista", "desenvolvedor", "engenheiro", "coordenador", "diretor", "supervisor"}
+        if any(k in query_lower for k in tech_keywords | cargo_keywords):
+            return 0.3
+        # Perfil comportamental / cultural → semântico dominante
+        behavioral_keywords = {"liderança", "comunicação", "trabalho em equipe", "proativo", "criativo", "inovador", "resiliente"}
+        if any(k in query_lower for k in behavioral_keywords):
+            return 0.7
+        # Padrão equilibrado
+        return 0.5
+
     async def search(
         self,
         query: str,
@@ -260,6 +275,11 @@ class RAGPipelineService:
         RAGSearchResult
         """
         t0 = time.perf_counter()
+
+        # Se alpha não foi explicitamente personalizado (valor default 0.5),
+        # detecta automaticamente o tipo de query para alpha ideal
+        if alpha == 0.5:
+            alpha = self._detect_query_type(query)
 
         bm25_results: List[Dict[str, Any]] = []
         semantic_results: List[Dict[str, Any]] = []
@@ -307,6 +327,21 @@ class RAGPipelineService:
             # Híbrido
             merged = _merge_candidate_results(bm25_results, semantic_results, alpha)[:limit]
             source = "hybrid"
+
+        # --- WRF re-ranking (Weighted Rank Fusion) ---
+        try:
+            from app.services.wrf_dynamic_k_service import WRFDynamicKService
+            wrf_svc = WRFDynamicKService()
+            # Injeta es_rank e pgv_rank para re-ranqueamento se não presentes
+            for idx, item in enumerate(merged):
+                if "es_rank" not in item:
+                    item["es_rank"] = idx + 1
+                if "pgv_rank" not in item:
+                    item["pgv_rank"] = idx + 1
+            merged = wrf_svc.rank_candidates(merged)
+            logger.debug("[RAGPipeline] WRF re-ranking applied: %d results", len(merged))
+        except Exception as _wrf_exc:
+            logger.debug("[RAGPipeline] WRF re-ranking skipped: %s", _wrf_exc)
 
         # --- FairnessGuard ---
         fairness_ok = _check_fairness(merged, top_n=10)

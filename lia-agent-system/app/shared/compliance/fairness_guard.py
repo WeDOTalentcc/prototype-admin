@@ -199,6 +199,8 @@ DISCRIMINATORY_CATEGORIES = {
 
 _COMPILED_PATTERNS: Dict[str, List[re.Pattern]] = {}
 
+HIGH_IMPACT_ACTIONS = {"rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection"}
+
 
 def _ensure_compiled() -> None:
     global _COMPILED_PATTERNS
@@ -291,7 +293,7 @@ class FairnessGuard:
 
         return warnings
 
-    async def check_semantic(self, text: str, context: str = "") -> FairnessCheckResult:
+    async def check_semantic(self, text: str, context: str = "", model: Optional[str] = None) -> FairnessCheckResult:
         result = self.check(text)
 
         try:
@@ -308,7 +310,11 @@ class FairnessGuard:
             if context:
                 semantic_prompt += f"Contexto: {context}\n"
 
-            response = await llm_service.generate(semantic_prompt)
+            generate_kwargs: Dict[str, Any] = {}
+            if model:
+                generate_kwargs["model"] = model
+
+            response = await llm_service.generate(semantic_prompt, **generate_kwargs)
 
             if response and "NENHUM_VIES_DETECTADO" not in response:
                 semantic_warnings = [
@@ -321,6 +327,94 @@ class FairnessGuard:
             logger.debug(f"Semantic analysis unavailable: {e}")
 
         return result
+
+    async def check_with_layer3(
+        self,
+        text: str,
+        action_type: str = "general",
+        context: Optional[str] = None,
+    ) -> FairnessCheckResult:
+        """
+        Verificação com Layer 3 (LLM semântico) ativada seletivamente.
+        Layer 3 só é executada para ações de alto impacto (controle de custo).
+        Usa Haiku em vez de Sonnet para reduzir custo em ~75%.
+        """
+        # Layers 1 e 2 sempre executadas
+        base_result = self.check(text)
+        if base_result.is_blocked:
+            return base_result
+
+        implicit_warnings = self.check_implicit_bias(text)
+
+        # Layer 3 apenas para ações de alto impacto
+        if action_type not in HIGH_IMPACT_ACTIONS:
+            return FairnessCheckResult(
+                is_blocked=base_result.is_blocked,
+                blocked_terms=base_result.blocked_terms,
+                category=base_result.category,
+                educational_message=base_result.educational_message,
+                original_query=text,
+                confidence=base_result.confidence,
+                soft_warnings=implicit_warnings,
+            )
+
+        # Cache check para evitar chamadas LLM repetidas
+        cache_key = f"fairness_l3:{hash(text[:200])}"
+        _redis = None
+        try:
+            import json
+            import redis
+            from lia_config.config import settings
+            _redis = redis.from_url(settings.REDIS_URL)
+            cached = _redis.get(cache_key)
+            if cached:
+                cached_data = json.loads(cached)
+                return FairnessCheckResult(**cached_data)
+        except Exception:
+            pass
+
+        # Layer 3 — LLM semântico com Haiku (custo baixo)
+        try:
+            semantic_result = await self.check_semantic(
+                text,
+                context=context or "",
+                model="claude-haiku-4-5-20251001",
+            )
+            # Cache resultado por 1h
+            try:
+                import json
+                if _redis is not None:
+                    _redis.setex(cache_key, 3600, json.dumps({
+                        "is_blocked": semantic_result.is_blocked,
+                        "blocked_terms": semantic_result.blocked_terms,
+                        "category": semantic_result.category,
+                        "educational_message": semantic_result.educational_message,
+                        "original_query": text,
+                        "confidence": semantic_result.confidence,
+                        "soft_warnings": implicit_warnings,
+                    }))
+            except Exception:
+                pass
+            return FairnessCheckResult(
+                is_blocked=semantic_result.is_blocked,
+                blocked_terms=semantic_result.blocked_terms,
+                category=semantic_result.category,
+                educational_message=semantic_result.educational_message,
+                original_query=text,
+                confidence=semantic_result.confidence,
+                soft_warnings=implicit_warnings,
+            )
+        except Exception as exc:
+            logger.debug("[FairnessGuard] Layer 3 skipped: %s", exc)
+            return FairnessCheckResult(
+                is_blocked=False,
+                blocked_terms=[],
+                category=None,
+                educational_message=None,
+                original_query=text,
+                confidence=0.5,
+                soft_warnings=implicit_warnings,
+            )
 
     def get_categories(self) -> List[str]:
         return list(DISCRIMINATORY_CATEGORIES.keys())

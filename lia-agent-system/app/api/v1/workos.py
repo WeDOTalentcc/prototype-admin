@@ -256,6 +256,7 @@ async def check_sso_domain(
 
 
 @auth_router.post("/sync-user", response_model=WorkOSSyncUserResponse)
+@circuit_breaker_decorator(WORKOS_CIRCUIT)
 async def sync_workos_user(
     user_data: WorkOSSyncUser,
     db: AsyncSession = Depends(get_db)
@@ -340,6 +341,7 @@ async def sync_workos_user(
 
 
 @scim_router.post("/users/created", response_model=SCIMActionResponse)
+@circuit_breaker_decorator(WORKOS_CIRCUIT)
 async def scim_user_created(
     user_data: SCIMUserCreated,
     db: AsyncSession = Depends(get_db)
