@@ -16,8 +16,30 @@
 ### Como usar este documento
 
 1. **Execute o checklist abaixo** no codebase alvo — cada item tem um `grep` executável e critério pass/fail
-2. **Para cada FAIL**, vá para a Seção 35 correspondente — ela explica o que é, onde fica, como implementar e como testar
+2. **Para cada FAIL**, consulte a tabela de mapeamento (abaixo) para ir direto à subseção 35.X correta
 3. **O repositório de referência** é `https://github.com/talensestg/wedotalent02202026` — use-o como ground truth para comparar implementações
+4. **CLAUDE.md do repo de referência:** o arquivo `CLAUDE.md` na raiz do repositório de referência contém o contexto completo da plataforma (stack, arquitetura, convenções). Claude Code lê este arquivo automaticamente ao abrir o projeto. Se estiver auditando outro projeto, passe explicitamente como contexto adicional.
+
+### Prompt de Invocação — Como usar com Claude Code / Cursor
+
+Copie e cole o seguinte prompt ao iniciar uma sessão de diagnóstico:
+
+```
+Você vai diagnosticar este codebase comparando com a plataforma LIA (WeDOTalent).
+
+Documentos de referência (leia nesta ordem):
+1. relatorio_capacidades_prompts_lia.md — seção "GUIA DE DIAGNÓSTICO PARA AGENTES IA" (topo do documento)
+2. docs/RELATORIO_AUDITORIA_LIA.md — seção "GUIA DE DIAGNÓSTICO PARA AGENTES IA" (após os changelogs)
+
+Tarefa:
+1. Execute TODOS os comandos grep dos dois guias neste codebase
+2. Liste os FAILs por bloco (P0 primeiro, depois P1, P2, Y1-Y5)
+3. Para cada FAIL: leia a subseção 35.X indicada na tabela de mapeamento
+4. Compare com o repositório de referência: https://github.com/talensestg/wedotalent02202026
+5. Proponha implementação seguindo o padrão do repositório de referência
+
+Comece pelos itens P0 (bloqueantes para produção).
+```
 
 ### Checklist de Diagnóstico Rápido — 25 Verificações Críticas
 
@@ -84,11 +106,39 @@ FAIL em D            → Risco operacional — sem visibilidade em produção
 
 ### Como Corrigir um FAIL
 
-1. Anote o código do item que falhou (ex: `C4`)
-2. Vá para **Seção 35** deste documento — subseção correspondente à capacidade
-3. A subseção tem: O que é → Onde está (arquivo canônico no repo de referência) → Como implementar → Como testar
-4. Compare com o arquivo canônico em `https://github.com/talensestg/wedotalent02202026`
-5. Implemente seguindo o padrão exato do repositório de referência
+1. Na tabela abaixo, encontre o código que falhou e vá para a **Seção 35.X indicada** (use `offset=<linha>` no Read tool para ir direto)
+2. A subseção tem: O que é → Onde está → Como implementar → Como testar
+3. Compare com o arquivo canônico em `https://github.com/talensestg/wedotalent02202026`
+4. Implemente seguindo o padrão exato do repositório de referência
+
+#### Mapeamento FAIL → Seção 35 (com linha para Read tool)
+
+| Código | Capacidade | Seção 35 | Linha aprox. |
+|--------|-----------|----------|-------------|
+| A1, A2 | FairnessGuard (3 camadas + Layer 3) | 35.1 | 5586 |
+| A3, A4 | PII Masking (logs + prompts LLM) | 35.13 | 6081 |
+| A5 | Consentimento LGPD Gate 1 | 35.12 | 6045 |
+| A6 | HITL — Human-in-the-Loop | 35.3 | 5670 |
+| A7 | Audit Trail append-only | 35.8 | 5859 |
+| A8 | Anti-Sycophancy em prompts | 35.4 | 5709 |
+| B1 | Circuit Breakers em providers | 35.2 | 5631 |
+| B2 | LLM Fallback chain (Claude→Gemini→OpenAI) | 35.5 | 5744 |
+| B3 | Token Budget por tenant | 35.22 | 6310 |
+| B4 | Celery Beat Schedules | 35.9, 35.10, 35.11 | 5899 |
+| B5 | Rate Limiting por tenant | 35.22 | 6310 |
+| B6 | Multi-tenant em models | 35.22 | 6310 |
+| C1 | YAML Hot-Reload de Agentes | 35.9 | 5899 |
+| C2 | Multi-Model por agente | 35.19 | 6239 |
+| C3 | RAG Híbrido por domínio | 35.10 | 5937 |
+| C4 | Adaptive Routing com aprendizado | 35.6 | 5784 |
+| C5 | ML Feedback Loop | 35.11 | 5974 |
+| C6 | Streaming ReAct via WS | 35.20 | 6267 |
+| C7 | Agent Bus (comunicação entre agentes) | 35.7 | 5822 |
+| C8 | Event Sourcing imutável | 35.8 | 5859 |
+| D1 | Métricas Prometheus per-agent | 35.15 | 6116 |
+| D2 | Confidence Calibration | 35.16 | 6153 |
+| D3 | Model Drift Detection | 35.15 | 6116 |
+| D4 | WSI Assíncrono | 35.17 | 6183 |
 
 ### Arquivos Canônicos por Bloco (referência rápida)
 
@@ -6284,6 +6334,49 @@ grep -r "type.*thinking\|thinkingSteps\|ReactThinkingStream" app/ src/ --include
 2. FE: tratar mensagens `type:thinking` separadamente, exibir em componente collapsible
 
 **Risco se ausente:** 🟢 Baixo — UX menos transparente, funcionalidade principal intacta.
+
+---
+
+### 35.22 Infraestrutura Base — Token Budget, Rate Limiting e Multi-Tenancy
+
+**O que é:** Controles de infraestrutura que garantem isolamento, custo e segurança por tenant.
+
+**Onde está no repo de referência:**
+- Token Budget: `app/services/token_budget_service.py` + `app/services/token_tracking_service.py`
+- Rate Limiting: `app/middleware/rate_limiter.py`
+- Multi-Tenancy: `company_id` obrigatório em todos os models SQLAlchemy
+
+**Como detectar se ausente:**
+```bash
+# Token Budget
+grep -r "TokenBudget\|token_budget_service\|MONTHLY_LIMIT" app/ --include="*.py"
+# Rate Limiter
+grep -r "RateLimiter\|rate_limiter\|rate_limit" app/middleware/ --include="*.py"
+# Multi-tenant
+grep -r "company_id" app/models/ --include="*.py" -l | wc -l  # esperado: ≥ 20
+```
+
+**Como implementar se ausente:**
+1. **Token Budget:** criar `token_budget_service.py` com Redis tracking por `company_id`. Estrutura mínima: `check_budget(company_id) -> bool`, `consume(company_id, tokens)`, `get_remaining(company_id)`. Limites por plano: `starter=100k`, `professional=500k`, `enterprise=2M` tokens/mês.
+2. **Rate Limiter:** middleware FastAPI que lê `X-Company-ID` do header e aplica `slowapi` ou Redis counter por `company_id + endpoint`.
+3. **Multi-tenant:** todo model SQLAlchemy deve ter `company_id: Mapped[str] = mapped_column(String, nullable=False, index=True)`. Toda query deve filtrar por `company_id`.
+
+**Como testar:**
+```python
+# Token Budget
+def test_token_budget_blocks_over_limit():
+    svc = TokenBudgetService()
+    svc.set_limit("co-1", 100)
+    svc.consume("co-1", 100)
+    assert svc.check_budget("co-1") is False  # bloqueado
+
+# Multi-tenant
+def test_query_filters_by_company():
+    # query sem company_id deve retornar vazio ou erro
+    ...
+```
+
+**Risco se ausente:** Tenant A vê dados do Tenant B (violação LGPD), custos de LLM não controlados, DoS por um único tenant consumindo todos os recursos.
 
 ---
 

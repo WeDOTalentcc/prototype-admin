@@ -122,15 +122,71 @@ FAIL em Y1–Y5
 6. Documente no changelog do produto auditado
 ```
 
+### Mapeamento ACH → Seção 35 de relatorio_capacidades_prompts_lia.md
+
+Para cada FAIL, use este mapeamento para ir direto à subseção de implementação:
+
+| ACH / Sprint | Seção 35 | Linha aprox. | Descrição |
+|--------------|----------|-------------|-----------|
+| ACH-001 (anti-sycophancy) | 35.4 | 5709 | Anti-Sycophancy em prompts |
+| ACH-002 (FairnessGuard) | 35.1 | 5586 | FairnessGuard 3 camadas |
+| ACH-003 (consentimento) | 35.12 | 6045 | Consentimento LGPD granular |
+| ACH-004/010/011/014 (circuits) | 35.2 | 5631 | Circuit Breakers providers |
+| ACH-005 (HITL) | 35.3 | 5670 | HITL decisões críticas |
+| ACH-006 (audit trail) | 35.8 | 5859 | Event Sourcing / Audit Trail |
+| ACH-008 (RLS multi-tenant) | 35.22 | 6310 | Multi-tenancy e isolamento |
+| ACH-009 (confidence) | 35.16 | 6153 | Confidence Calibration |
+| ACH-012 (few-shot CoT) | 35.4 | 5709 | Anti-Sycophancy + prompts |
+| ACH-013 (Prometheus) | 35.15 | 6116 | Model Drift + Observabilidade |
+| ACH-021 (negation detection) | 35.4 | 5709 | Anti-Sycophancy |
+| ACH-026 (FairnessGuard L3) | 35.1 | 5586 | FairnessGuard Layer 3 |
+| ACH-027 (RAGAS) | 35.15 | 6116 | Model Drift / avaliação |
+| ACH-028 (red team) | 35.1 | 5586 | FairnessGuard patterns |
+| ACH-029 (drift scheduler) | 35.15 | 6116 | Model Drift Detection |
+| Y4/E4 (YAML hot-reload) | 35.9 | 5899 | YAML Hot-Reload de Agentes |
+| Y5/E6 (RAG domínio) | 35.10 | 5937 | RAG Híbrido por Domínio |
+| Y3/D6 (ML feedback) | 35.11 | 5974 | ML Feedback Loop |
+| Y5/E10 (Agent Bus) | 35.7 | 5822 | Agent Bus Redis Pub/Sub |
+
+### CLAUDE.md — Contexto Automático para Claude Code
+
+O repositório de referência (`https://github.com/talensestg/wedotalent02202026`) contém um `CLAUDE.md` na raiz com:
+- Stack completa, convenções de código, estrutura de diretórios
+- Todas as features implementadas com arquivos e padrões
+- Regras de desenvolvimento (anti-vibe-coding, portabilidade Vue, etc.)
+
+**Claude Code lê o CLAUDE.md automaticamente** ao abrir qualquer projeto que o contenha. Para auditar outro codebase com Claude Code, passe este arquivo explicitamente como contexto se o projeto auditado não tiver o seu próprio.
+
+### Prompt de Invocação — Como usar com Claude Code / Cursor
+
+```
+Você vai auditar este codebase contra os padrões da plataforma LIA (WeDOTalent).
+
+Documentos de referência:
+1. docs/RELATORIO_AUDITORIA_LIA.md — Guia de Diagnóstico (após os changelogs)
+2. relatorio_capacidades_prompts_lia.md — Guia de Diagnóstico (topo) + Seção 35 (implementação)
+
+Tarefa:
+1. Execute os 30 comandos grep do Guia de Diagnóstico neste codebase
+2. Execute também os 25 comandos de relatorio_capacidades_prompts_lia.md
+3. Liste FAILs por bloco: P0 (bloqueante) → P1 → P2 → Y1-Y5
+4. Para cada FAIL: use a tabela "Mapeamento ACH → Seção 35" para encontrar a implementação de referência
+5. Compare com https://github.com/talensestg/wedotalent02202026
+6. Gere relatório estruturado: [FAIL] Descrição | ACH | Severidade | Arquivo ausente | Como corrigir
+
+Prioridade máxima: P0 (ACH-001 a ACH-008). Não avance para P1 sem resolver P0.
+```
+
 ### Documentos Complementares (ler em ordem)
 
 | # | Documento | Quando ler |
 |---|-----------|-----------|
-| 1 | Este relatório (RELATORIO_AUDITORIA_LIA.md) | Para entender o contexto de cada ACH finding |
-| 2 | `relatorio_capacidades_prompts_lia.md` Seção 35 | Para saber como implementar cada capacidade |
-| 3 | `relatorio_capacidades_prompts_lia.md` Guia de Entrada | Para verificar implementação com 25 greps adicionais |
-| 4 | `docs/DIAGNOSTICO_POS_Y5_v6.md` | Para entender os 4 gaps do diagnóstico v6 |
-| 5 | `lia-agent-system/docs/RUNBOOK_DEGRADATION.md` | Para procedimentos operacionais |
+| 1 | `CLAUDE.md` (raiz do repo de referência) | Primeiro — contexto completo da plataforma |
+| 2 | Este relatório — Guia de Diagnóstico | Para executar os 30 greps de auditoria |
+| 3 | `relatorio_capacidades_prompts_lia.md` — Guia de Diagnóstico | Para executar os 25 greps de implementação |
+| 4 | `relatorio_capacidades_prompts_lia.md` — Seção 35 | Para saber como implementar cada FAIL |
+| 5 | `docs/DIAGNOSTICO_POS_Y5_v6.md` | Para entender os 4 gaps do diagnóstico v6 |
+| 6 | `lia-agent-system/docs/RUNBOOK_DEGRADATION.md` | Para procedimentos operacionais |
 
 ---
 
