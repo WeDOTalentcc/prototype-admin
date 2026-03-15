@@ -1,9 +1,11 @@
 # RELATÓRIO DE AUDITORIA PROFUNDA — Plataforma LIA (WeDO Talent)
 
 **Data:** 2026-03-15
-**Versão:** 6.0 (Sprints Y1–Y5 completos; Diagnóstico v6 com 4 gaps corrigidos; todas as 15 Oportunidades de Evolução resolvidas)
+**Versão:** 6.1 (v6.0 base; correções de documentação: métricas de escala atualizadas, Crenças #8/#11 corrigidas, Production Readiness score renomeado, Seção 9 expandida com 9.5/9.6/9.7, Seção 10.4/10.5 atualizadas, notas v6.0 em Seções 3 e 4)
 **Auditor:** Agente IA (Claude Code) seguindo `PLAYBOOK_AUDITORIA_PROFUNDA.md`
 **Escopo:** Auditoria completa do codebase — 14 dimensões, 13 Crenças, 8 Inegociáveis, 18 Production Readiness, Fairness/LGPD/EU AI Act
+
+> **Changelog v6.1 (15/03/2026):** Correções de documentação pós-revisão Y1–Y5. **Seção 1:** cabeçalho "v1.0 → v2.0" → "v6.0"; endpoints 210→220+, models 134→137+, services 236→248+, components 584→587+, migrations 42+→47. **Seção 6.4:** Crença #8 atualizada (ACH-013 resolvido em v4.0 + 17 métricas D1/Y1); Crença #11 corrigida 12/12→16/16 agentes. **Seção 6.6:** score renomeado "v5.0"→"v6.0" com nota de contexto. **Seção 9:** subseções 9.5 (MLInsightsCard), 9.6 (Salary Benchmark), 9.7 (Comparação Multi-dimensional) adicionadas; JobReportModal ⚠️ removido (use-job-report.ts usa backend real). **Seção 10.4:** item Calibração atualizado com resolução Y3/D6. **Seção 10.5:** AGENT_TYPE_TO_DOMAIN marcado como resolvido (Y4/E4). **Seções 3/4:** notas v6.0 adicionadas explicando estado atual vs tabelas históricas. Nenhuma implementação nova.
 
 > **Changelog v6.0 (15/03/2026):** Sprints Y1–Y5 completos (18 itens implementados) + Diagnóstico v6 (4 gaps pós-Y5 corrigidos). **Sprints Y1 (D1–D10):** observabilidade Prometheus/Sentry, circuit breaker Pearch AI, LangSmith config, Event Sourcing, Agent Bus Redis. **Sprints Y2 (D5–D9+E1–E2):** consentimento granular, anomaly detection, comparação de candidatos (D9), score breakdown clicável (E1), fit cultural cruzado (E2). **Sprints Y3 (D6+D1–D4):** ML feedback loop + pesos adaptativos (D6), confidence calibration, score validation, regressão. **Sprints Y4 (E3–E9):** WSI assíncrono (E3), YAML hot-reload (E4), multi-model por agente (E5), Adaptive Routing com aprendizado (E9), scope validation de tools (E8). **Sprints Y5 (E6–E7+E10+E12):** RAG por domínio com rebuild diário (E6), Streaming ReAct via WS (E7), Agent Bus (E10), Event Sourcing append-only (E12). **Diagnóstico v6 — 4 gaps corrigidos:** Gap E4 (task `agents.registry.check_reload` + beat `agent-registry-hot-reload` minutal), Gap E6 (task `rag.rebuild_all_domains` + beat diário 04h UTC), Gap D6 (task `ml.feedback.recompute_active_jobs` + beat semanal dom 02h UTC), Gap D2 (`record_confidence` em `wsi_interview_graph.generate_feedback()`). **16 novos testes** em `tests/unit/test_diagnostico_v6_gaps.py`. **Suite total: 5.450+ testes passando**. **Seção 11 atualizada: 15/15 Oportunidades de Evolução resolvidas (100%)**. **Production Readiness: 18/18 (100%)** — ACH-007 WCAG resolvido por decisão de produto (escopo intencional). **Status geral: 31/31 ACHs resolvidos (100%).**
 
@@ -37,19 +39,19 @@
 
 ### Métricas de Escala
 
-| Métrica | Valor (v1.0 → v2.0) |
+| Métrica | Valor (v6.0) |
 |:--------|:------|
 | Domínios de agente | 14 (sourcing, job_management, cv_screening, pipeline, recruiter_assistant ×4, hiring_policy, policy, interview_scheduling, analytics, communication, automation, ats_integration) |
 | Agentes registrados | **15** (11 ReAct + 2 LangGraph + 1 interview_graph + 1 Orchestrator) — era 12 |
 | Tools totais | **164** (91 Alpha 1 + 73 pós-Alpha) — ver `diagnostico-agentes-mvp.md` seção 8 |
 | System prompts (domínio) | 16 arquivos |
 | Tool registries | 12 domínio + 7 shared |
-| Endpoints API (.py) | 210 arquivos |
-| Models (.py) | **134** arquivos — era 100 |
-| Services (.py) | 236 arquivos |
+| Endpoints API (.py) | **220+** arquivos (adicionados: candidate_compare, cultural_fit, event_history, granular_consent, metrics, ml_feedback, salary_benchmark, wsi_async, admin_agents) |
+| Models (.py) | **137+** arquivos (adicionados: event_store, recruiter_decision_feedback, routing_feedback) |
+| Services (.py) | **248+** arquivos (adicionados: ml_feedback, routing_learning, event_store, domain_embedding, granular_consent, cultural_fit, salary_benchmark, ragas_evaluation) |
 | Frontend pages | 90 rotas |
-| Frontend components (.tsx) | **584** componentes — era 466 |
-| Alembic migrations | **42+** — era 37 (Y1–Y5 adicionaram migrations) |
+| Frontend components (.tsx) | **587+** componentes (adicionados: candidate-compare-modal, react-thinking-stream, melhorias em score badge) |
+| Alembic migrations | **47** (exatas: 041 a 047 criadas em Y1–Y5) |
 | Python files (lia-agent-system) | **1250+** arquivos |
 | Testes automatizados | **5.450+** passando (gate 25% cobertura) |
 
@@ -394,6 +396,8 @@
 
 ## 3.1 Tabela Resumo — 14 Dimensões
 
+> **Nota v6.0 (15/03/2026):** Esta tabela reflete o estado em v2.0–v3.0. As principais FALHAs transversais foram resolvidas pelos Sprints SEG-1–SEG-5, AUD-1–AUD-5 e Y1–Y5: **Dimensão 10 (Qualidade LLM)** → FALHAs resolvidas por anti-sycophancy em 16 agentes + few-shot + CoT. **Dimensão 12 (Governança/Resiliência)** → resolvida por circuit breakers em 100% dos providers (AUD-2/Y1) + HITL em 4 agentes (AUD-4). **Confiança Real** → confidence_action em 16/16 agentes (D2). **Circuit Breaker Direto** → 9 circuits novos (AUD-2/D10). Para estado atual detalhado, ver Seção 6 (Production Readiness) e Seção 11 (Oportunidades de Evolução).
+
 | Dimensão | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline Trans | H.Policy | Policy | Interv.Sched | Analytics | Communic. | Automation | ATS Integ. |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | 1. Wiring/Integração | OK | OK | OK | OK | OK | OK | OK | OK | PARCIAL | OK | OK | OK | OK | OK |
@@ -587,6 +591,8 @@
 # SEÇÃO 4: ANÁLISE COMPARATIVA DE CAPACIDADES
 
 ## 4.1 Mapa de Capacidades (Agente × Capacidade)
+
+> **Nota v6.0:** FairnessGuard universal desde Sprint X1 (v5.0) — 11/11 agentes ReAct + Orchestrator + EnhancedAgentMixin. 73 padrões totais (62 explícitos + 11 implícitos). 0 xfails red team. Entradas ⚠️ desta tabela foram resolvidas.
 
 | Capacidade | Sourcing | Wizard | CV Screen | Talent | Kanban | Jobs Mgmt | Pipeline | Policy | Analytics | Communic. | Automation | ATS |
 |:-----------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -1047,11 +1053,11 @@
 | ACH-010 | ~~Circuit breaker ATS clients~~ | ~~6h~~ | ✅ RESOLVIDO | RM-10 |
 | ACH-011 | ~~Circuit breaker email/billing~~ | ~~4h~~ | ✅ RESOLVIDO (v3.0 — IUGU + VINDI) | RM-10 |
 | ACH-012 | ~~Few-shot examples em 7 agentes~~ | ~~12h~~ | ✅ RESOLVIDO (v3.0 — 8 cenários todos) | RM-14 |
-| ACH-013 | Observabilidade Prometheus per-agent | **8h** | Backend/Infra (Observabilidade) | RM-12 |
+| ACH-013 | ~~Observabilidade Prometheus per-agent~~ | ~~8h~~ | ✅ RESOLVIDO (v4.0 — 3 métricas per-agent em `metrics.py`; D1/Y1 adicionou 17 métricas adicionais) | RM-12 |
 | ACH-014 | ~~WorkOS circuit breaker~~ | ~~2h~~ | ✅ RESOLVIDO (v3.0 — helper workos.py) | RM-10 |
-| ACH-015 | Graceful degradation docs | **4h** | Backend/Ops (Documentação) | RM-13 |
+| ACH-015 | ~~Graceful degradation docs~~ | ~~4h~~ | ✅ RESOLVIDO (v4.0 — `docs/RUNBOOK_DEGRADATION.md` criado) | RM-13 |
 
-> **P1 v3.0:** 5 achados resolvidos. Esforço P1 residual: **12h** (ACH-013 + ACH-015).
+> **P1 v4.0:** Todos os achados P1 resolvidos (ACH-013 em v4.0, ACH-015 em v4.0). Esforço P1 residual: **0h**.
 
 ## 6.4 Verificação de Crenças
 
@@ -1064,10 +1070,10 @@
 | 05 — Construída por Humanos, Para Humanos | OK | Audit trimestrais previstas no playbook |
 | 06 — Em Melhoria Contínua | ✅ OK | ~~ACH-029~~ ✅ RESOLVIDO (v5.1) — Celery beat `drift-run-batch-daily` 06h Brasília + `drift_alert_service.evaluate_and_alert()` Bell+Teams |
 | 07 — Resiliente por Design | ✅ OK | ~~ACH-004,010,011,014~~ ✅ — 100% dos providers externos com circuit breaker |
-| 08 — Observável e Rastreável | ✅ MELHORADO | ACH-006 parcial (1 agente restante), ACH-013 (per-agent Prometheus pendente) |
+| 08 — Observável e Rastreável | ✅ MELHORADO | ~~ACH-006~~ ✅ (v4.0 — audit trail em 14/14 agentes); ~~ACH-013~~ ✅ (v4.0 — 3 métricas per-agent); D1 (Y1) — 17 métricas Prometheus per-agent adicionadas |
 | 09 — Consciente de Custos | OK | Token budget, LLM cascade, pre-call check implementados |
 | 10 — Inteligência vs Determinismo | ✅ OK | ~~ACH-009~~ ✅ — confidence_action em 100% dos agentes (8 adicionais nesta sessão) |
-| 11 — Anti-Bajulação | ✅ OK | ~~ACH-001~~ ✅ — 12/12 agentes com ANTI_SYCOPHANCY_OPERATIONAL |
+| 11 — Anti-Bajulação | ✅ OK | ~~ACH-001~~ ✅ — 16/16 agentes com ANTI_SYCOPHANCY_OPERATIONAL |
 | 12 — Autonomia Progressiva | OK | Autonomy engine implementado |
 | 13 — Acessível e Inclusiva | **FALHA** | ACH-007 (WCAG ~10.4% cobertura — 61/584 TSX com aria-label) |
 
@@ -1107,7 +1113,7 @@
 | 17 | WCAG 2.1 AA | **FALHA** (ACH-007 — decisão de produto; 10.4% cobertura aria-labels) |
 | 18 | PII Masking global | ✅ OK |
 
-**Score v5.0: 15/18 OK, 2 PARCIAL, 1 FALHA** (v4.0: 15/18 OK, era 14/18 OK v3.0, 10/18 OK v2.0)
+**Score v6.0: 15/18 OK, 2 PARCIAL, 1 FALHA** (WCAG decisão de produto; load test e bandit CI continue-on-error — sem regressão vs v5.0)
 
 ---
 
@@ -1312,7 +1318,33 @@ Ações executadas diretamente pelo backend (closed-loop, sem modal UI):
 ### JobReportModal
 - **Arquivo:** `plataforma-lia/src/components/job-report-modal.tsx`
 - **Exportação:** PDF via `html2canvas` + `jsPDF`
-- **⚠️ Dados atualmente mockados no frontend** — funcionalidade incompleta
+- **Dados:** Via `use-job-report.ts` hook — integração com backend (Sprint Y1/D1). PDF via `html2canvas` + `jsPDF`
+
+## 9.5 MLInsightsCard — Sprint P4
+
+**Arquivo:** `plataforma-lia/src/components/ml-insights-card.tsx`
+**Hook:** `src/hooks/use-ml-predictions.ts`
+**Proxies:** `api/backend-proxy/ml/insights/`, `ml/predict/time-to-fill/`, `ml/predict/salary/`
+
+Card expansível de previsões IA no kanban de vagas. Lazy-fetch: só chama API ao expandir. Cache local (`hasFetched`).
+Dados: time-to-fill estimado, faixa salarial de mercado, percentil vs benchmark setorial.
+
+## 9.6 Salary Benchmark Real — Sprint Y1/D7
+
+**Arquivo:** `app/services/salary_benchmark_service.py`
+**Endpoint:** `GET /api/v1/salary-benchmark`
+**Injeção anti-sycophancy:** `sector_benchmark_service.py` injeta dados setoriais no prompt de `evaluate_candidate()` (Crença #11)
+
+6 setores cobertos: tech, varejo, logística, financeiro, saúde, RPO. Retorna: `{p25, p50, p75, currency, source, sector}`.
+
+## 9.7 Comparação Multi-dimensional — Sprint Y1/D9
+
+**Arquivo:** `app/services/candidate_comparison_service.py`
+**Endpoint:** `POST /api/v1/candidates/compare`
+**Frontend:** `src/components/modals/candidate-compare-modal.tsx` + `src/hooks/use-candidate-compare.ts`
+**Proxy:** `api/backend-proxy/candidates/compare/route.ts`
+
+Análise comparativa lado-a-lado de múltiplos candidatos com modal visual dedicado. Resultado estruturado por dimensão (skills, experiência, fit cultural, WSI score).
 
 ---
 
@@ -1357,7 +1389,7 @@ Ações executadas diretamente pelo backend (closed-loop, sem modal UI):
 | 1 | `handleOpenRubricAnalysis` orphaned | Função sem call sites; modal renderiza mas inacessível | Baixo |
 | 2 | JobReportModal com dados mock | Dados hardcoded no frontend; sem backend real | Médio |
 | 3 | WSI Voice | Não implementado; WSI é text-only | Baixo |
-| 4 | Calibração limitada | Frontend sem agente ReAct; depende 100% do Pearch AI | Médio |
+| 4 | Calibração limitada | ~~Pesos adaptativos sempre 0~~ → ✅ Sprint Y3/D6: ml_feedback_service.py com loop real. Frontend sem agente ReAct dedicado; depende 100% do Pearch AI para sourcing | Médio |
 | 5 | Arquivo monolítico | `candidates-page.tsx` (10.398 linhas), `lia-api.ts` (4.943 linhas) | Alto (manutenibilidade) |
 | 6 | Notificações WhatsApp | `JobCreatedNotificationRequest` suporta email + Teams; WhatsApp ausente | Baixo |
 
@@ -1366,7 +1398,7 @@ Ações executadas diretamente pelo backend (closed-loop, sem modal UI):
 | # | Dívida | Risco |
 |:--|:-------|:------|
 | 1 | IntentRouter legado coexiste com LLM Cascade como fallback | Duplicação de lógica |
-| 2 | `AGENT_TYPE_TO_DOMAIN` hardcoded; sem registro dinâmico | Manutenibilidade |
+| 2 | ~~`AGENT_TYPE_TO_DOMAIN` hardcoded; sem registro dinâmico~~ → ✅ RESOLVIDO (Sprint Y4/E4 — agents_registry.yaml + AgentRegistryWatcher) | ~~Manutenibilidade~~ |
 | 3 | `AgentFactory` vs `get_agent()` — dois padrões coexistem; `get_agent()` NÃO é session-safe | Bugs em produção |
 | 4 | PolicyEngine — DB service pode ser `None`; validação pode falhar silenciosamente | Segurança |
 | 5 | Detecção de resposta técnica via string matching (`_TECHNICAL_PATTERNS`) | Fragilidade |
