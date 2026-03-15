@@ -150,6 +150,16 @@ class EnhancedAgentMixin:
             "using static defaults. Verify AutonomyEngine and GuardrailRepository configs.",
             self._enhanced_domain,
         )
+        # C4: Prometheus — registrar fallback para observabilidade
+        try:
+            from app.shared.observability.agent_metrics import record_agent_request
+            record_agent_request(
+                agent=self._enhanced_domain,
+                domain=self._enhanced_domain,
+                status="guardrail_fallback",
+            )
+        except Exception:
+            pass
         return _DEFAULT_GUARDRAIL_TOOLS
     
     def _get_shared_insight_tools(self) -> List[ToolDefinition]:
@@ -196,10 +206,10 @@ class EnhancedAgentMixin:
 
     def _get_all_enhanced_tools(self) -> List[ToolDefinition]:
         """Get all enhanced tools: insight + proactive + predictive.
-        
+
         Convenience method that returns the full set of shared tools
         available to any enhanced agent.
-        
+
         Returns:
             Combined list of all shared ToolDefinitions.
         """
@@ -208,7 +218,68 @@ class EnhancedAgentMixin:
             + self._get_proactive_tools()
             + self._get_predictive_tools()
         )
-    
+
+    async def emit(
+        self,
+        to_agent: str,
+        event_type: str,
+        payload: Dict[str, Any],
+        company_id: str,
+    ) -> bool:
+        """Emit event to another agent via AgentBus.
+
+        Usage in any domain agent:
+            await self.emit("pipeline", "candidate_imported", {...}, company_id)
+
+        Returns True if published, False on failure (fail-open).
+        """
+        try:
+            from app.shared.agents.agent_bus import agent_bus
+            return await agent_bus.publish(
+                from_agent=self._enhanced_domain,
+                to_agent=to_agent,
+                event_type=event_type,
+                payload=payload,
+                company_id=company_id,
+            )
+        except Exception as exc:
+            logger.warning(
+                "[%s][AgentBus] emit failed (fail-open): %s",
+                self._enhanced_domain, exc,
+            )
+            return False
+
+    def _validate_tool_scope(self, tool_name: str, active_scope: Optional[str]) -> bool:
+        """Valida se uma tool está dentro do escopo ativo (E8).
+
+        Fail-open: retorna True se scope não configurado ou em caso de exceção.
+        Loga warning `[SCOPE-VIOLATION]` para auditoria quando fora do escopo.
+
+        Args:
+            tool_name: Nome da tool a validar.
+            active_scope: PromptScope str (TALENT_FUNNEL, JOB_TABLE, IN_JOB, GLOBAL) ou None.
+
+        Returns:
+            True se permitida ou scope não configurado, False se violação detectada.
+        """
+        if not active_scope:
+            return True
+        try:
+            from app.tools.scope_config import PromptScope, is_tool_allowed_in_scope
+            allowed = is_tool_allowed_in_scope(tool_name, PromptScope(active_scope))
+            if not allowed:
+                logger.warning(
+                    "[%s][SCOPE-VIOLATION] tool=%s scope=%s — fora do escopo (fail-open)",
+                    getattr(self, "_enhanced_domain", "unknown"), tool_name, active_scope,
+                )
+            return allowed
+        except Exception as exc:
+            logger.debug(
+                "[%s] _validate_tool_scope erro (fail-open): %s",
+                getattr(self, "_enhanced_domain", "unknown"), exc,
+            )
+            return True
+
     async def _fairness_pre_check(self, user_input: str) -> Optional[str]:
         """Camada 1+2 FairnessGuard automático — executar antes de qualquer ReAct loop.
 
@@ -262,6 +333,34 @@ class EnhancedAgentMixin:
             )
             return None
 
+    def _record_confidence(self, state: ReActState) -> None:
+        """Record calibrated confidence score to Prometheus (D2 — fail-silent).
+
+        Uses state.confidence_score computed by ReActLoop (tool_success_ratio * 0.7
+        + completion_ratio * 0.3). Falls back to 0.5 if metric unavailable.
+        """
+        try:
+            from app.shared.observability.agent_metrics import record_confidence
+            domain = getattr(self, "_enhanced_domain", "unknown")
+            record_confidence(
+                agent=domain,
+                domain=domain,
+                confidence=getattr(state, "confidence_score", 0.5),
+            )
+        except Exception:
+            pass
+
+    @property
+    def model_id(self) -> str:
+        """Modelo LLM configurado para este agente (E5 — Multi-Model)."""
+        try:
+            from app.core.agent_model_config import get_model_for_agent
+            domain = getattr(self, "_enhanced_domain", None) or getattr(self, "agent_name", "unknown")
+            return get_model_for_agent(domain)
+        except Exception:
+            from app.core.agent_model_config import DEFAULT_MODEL
+            return DEFAULT_MODEL
+
     async def _post_loop_learning(
         self,
         state: ReActState,
@@ -270,13 +369,14 @@ class EnhancedAgentMixin:
         context: Dict[str, Any] = None,
     ) -> None:
         """Extract learnings from completed ReAct loop and save to long-term memory.
-        
+
         Args:
             state: Completed ReAct loop state.
             company_id: Company ID for storage.
             session_id: Session ID for tracking.
             context: Optional additional context for extraction.
         """
+        self._record_confidence(state)  # D2 — Prometheus confidence histogram
         try:
             learnings = self._learning_extractor.extract(
                 state=state,

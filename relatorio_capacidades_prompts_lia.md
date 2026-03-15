@@ -1,5 +1,5 @@
 # Relatório Completo de Capacidades e Prompts — LIA (WeDOTalent)
-**Versão:** 3.0 — 13/03/2026
+**Versão:** 4.1 — 15/03/2026 *(atualizado: Y5 completo — E9 Adaptive Routing, E10 Agent Bus, E12 Event Sourcing, E4/E6 melhorias, v6 gaps fechados, Parte VII Guia de Implementação para Agentes IA; v4.1: Seções 31–33 atualizadas para refletir Sprints Y1–Y5)*
 **Fonte:** Auditoria direta do código-fonte (`lia-agent-system/` + `plataforma-lia/`)
 **Propósito:** Guia técnico-estratégico exaustivo e autocontido para replicação da camada de inteligência da plataforma LIA. Cobre toda a arquitetura de prompts, 16 agentes (12 ReAct + 4 StateGraph), orquestração, ferramentas, WebSocket, automação, inteligência preditiva, aprendizado contínuo, observabilidade, resiliência, compliance, governança, templates, infraestrutura LLM e referências de arquivo.
 
@@ -52,10 +52,15 @@
 30. [Taxonomia de Incidentes](#30-taxonomia-de-incidentes)
 
 **Parte VI — Status e Evolução**
+
+> **v4.1 (15/03/2026):** Seções 31–33 atualizadas para refletir Sprints Y1–Y5. 15/15 oportunidades resolvidas. Seção 33 reclassificada de "Ausentes" para "Resolvidos".
+
 31. [Production Readiness](#31-production-readiness)
 32. [Limitações, Dívidas Técnicas e Funcionalidades Incompletas](#32-limitações-dívidas-técnicas-e-funcionalidades-incompletas)
 33. [Oportunidades e Capacidades Ausentes](#33-oportunidades-e-capacidades-ausentes)
 34. [Referência Completa de Arquivos](#34-referência-completa-de-arquivos)
+**Parte VII — Guia de Implementação para Agentes IA**
+35. [Guia de Diagnóstico e Implementação — Claude Code / Cursor](#35-guia-de-diagnóstico-e-implementação--claude-code--cursor)
 
 ---
 
@@ -181,7 +186,7 @@ A plataforma possui **3 camadas de chat** com contextos, escopos e lógica de de
 | 2    | Redis hash cache    | Distribuído, exato, entre workers  | Baixo  | TTL configurável via `ROUTER_CACHE_TTL`          |
 | 3    | VectorSemanticCache | pgvector, cosine similarity ≥ 0.92 | Baixo  | Falha graciosamente se indisponível              |
 | 4    | FastRouter          | Regex/keyword patterns             | Baixo  | `fast_router.py`; confiança mínima: `ROUTER_FAST_CONFIDENCE_THRESHOLD` |
-| 5    | LLM Cascade         | Haiku → Sonnet → Opus              | Alto   | Via `llm_cascade.py`; fallback para IntentRouter legado |
+| 5    | LLM Cascade         | Haiku → Sonnet → Opus              | Alto   | Via `llm_cascade.py`; IntentRouter com **20 exemplos few-shot T3 RH sênior** (Sprint X4/J2) |
 | FB   | Clarification       | Pergunta ao usuário                | Zero   | 6 opções padrão quando nenhum tier resolve       |
 
 **Fallback de clarificação — 6 opções padrão:**
@@ -206,6 +211,25 @@ A plataforma possui **3 camadas de chat** com contextos, escopos e lógica de de
 ```
 
 **Métricas Prometheus:** `router_tier_hit_total`, `router_latency_ms`, `router_confidence_histogram`
+
+### 1.3.1 IntentRouter — Few-shot T3 RH Sênior (Sprint X4/J2 — 15/03/2026)
+
+**Arquivo:** `lia-agent-system/app/orchestrator/intent_router.py` — `_create_intent_prompt()`
+
+O IntentRouter (Tier 5 LLM do CascadedRouter) foi aprimorado com **seção `## EXEMPLOS FEW-SHOT — RH Sênior (T3)`** contendo **20 exemplos estruturados** calibrados para o perfil de RH sênior brasileiro:
+
+| Grupo | Qtd | Confiança | Intents Cobertos |
+|:------|:---:|:---------:|:-----------------|
+| Claros (alta confiança) | 10 | ≥0.93 | `job_planner`, `sourcing`, `cv_screening`, `scheduling`, `funnel_analysis`, `feedback`, `sync_ats`, `daily_briefing`, `wsi_evaluator`, `interviewer` |
+| Ambíguos (confiança moderada) | 10 | 0.72–0.81 | `atualizar_status`, `funnel_analysis vs assistant`, `wsi_evaluator readiness`, `rank_candidates vs sourcing`, `bottleneck_detection`, `feedback mass comm`, `time_to_fill_prediction`, `sugerir_melhorias`, `pipeline stuck`, `analisar_perfil` |
+
+**Formato de cada exemplo:**
+```
+Input: "Preciso criar uma nova vaga de desenvolvedor senior"
+Output: {"intent": "job_planner", "confidence": 0.97, "reasoning": "Criação explícita de vaga", "requires_planning": true}
+```
+
+**Validação:** `tests/unit/test_ach020_api_docs.py::TestIntentRouterFewShot` — 9 testes automáticos verificando presença, quantidade (≥20), contexto RH, intents-chave.
 
 ### 1.4 Orchestrator — Fluxo de Processamento
 
@@ -3273,27 +3297,27 @@ Todos os 16 agentes incluem regra anti-sycophancy no system prompt:
 
 ### 22.1 Visão Geral
 
-**Arquivo:** `lia-agent-system/app/shared/compliance/fairness_guard.py` (382 linhas)
+**Arquivo:** `lia-agent-system/app/shared/compliance/fairness_guard.py` (506 linhas) — `_PATTERNS_VERSION = 2`
 
-O FairnessGuard é um middleware que intercepta queries antes do processamento pelos agentes, verificando indicadores de viés discriminatório. Quando detectado, retorna uma mensagem educativa em vez de processar a query.
+O FairnessGuard é um middleware que intercepta queries antes do processamento pelos agentes, verificando indicadores de viés discriminatório. Quando detectado, retorna uma mensagem educativa em vez de processar a query. **Sprint X1 (15/03/2026):** expandido de 42→62 termos explícitos; todos os 14 xfails de red teaming eliminados.
 
 ### 22.2 Camada 1 — Filtro Regex (Viés Explícito)
 
-**9 categorias discriminatórias com patterns regex compilados:**
+**9 categorias discriminatórias com patterns regex compilados — `_PATTERNS_VERSION=2` (Sprint X1):**
 
-| Categoria                | Patterns | Legislação Referenciada                    | Exemplo de Detecção                    |
+| Categoria                | Termos   | Legislação Referenciada                    | Novos em v2                            |
 |--------------------------|----------|---------------------------------------------|----------------------------------------|
-| `genero`                 | 6        | Art. 5º CLT, LGPD                          | "apenas homens", "sexo masculino"      |
-| `raca_etnia`             | 4        | CF Art. 5º, Lei 7.716/89                   | "somente brancos", "excluir negros"    |
-| `idade`                  | 9        | Estatuto do Idoso, CLT                     | "máximo 35 anos", "excluir maiores de" |
-| `religiao`               | 3        | CF Art. 5º VI                              | "apenas cristãos", "excluir ateus"     |
-| `orientacao_sexual`      | 3        | STF ADO 26                                 | "apenas heterossexuais", "excluir gays"|
-| `estado_civil`           | 3        | CLT                                        | "somente solteiros", "excluir casados" |
-| `deficiencia`            | 4        | Lei 8.213/91, Lei 13.146/15               | "excluir deficientes", "sem PCD"       |
-| `maternidade_paternidade`| 7        | CLT Art. 373-A, Lei 9.029/95              | "plano de ter filhos", "engravidar"    |
-| `nacionalidade`          | 3        | CF Art. 5º                                 | "apenas brasileiros", "excluir estrangeiros"|
+| `genero`                 | **8**    | Art. 5º CLT, LGPD                          | +2 (gênero implícito: "trabalho de homem") |
+| `raca_etnia`             | **8**    | CF Art. 5º, Lei 7.716/89                   | +4 (etnia implícita, aparência racial) |
+| `idade`                  | **13**   | Estatuto do Idoso, CLT                     | +4 (idade implícita: "recém-formado", "nativo digital") |
+| `religiao`               | 3        | CF Art. 5º VI                              | —                                      |
+| `orientacao_sexual`      | 3        | STF ADO 26                                 | —                                      |
+| `estado_civil`           | 3        | CLT                                        | —                                      |
+| `deficiencia`            | **8**    | Lei 8.213/91, Lei 13.146/15               | +4 (deficiência implícita: "ritmo normal", "mobilidade plena") |
+| `maternidade_paternidade`| **13**   | CLT Art. 373-A, Lei 9.029/95              | +6 (termos indiretos sobre família/filhos) |
+| `nacionalidade`          | 3        | CF Art. 5º                                 | —                                      |
 
-**Total: 42 patterns regex** distribuídos em 9 categorias.
+**Total: 62 termos explícitos** distribuídos em 9 categorias (era 42 em v1). `HIGH_IMPACT_ACTIONS = {"rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection"}` — 5 ações críticas com verificação obrigatória.
 
 **Cada categoria inclui:**
 - `terms[]` — lista de patterns regex (compilados e cacheados em `_COMPILED_PATTERNS`)
@@ -3344,13 +3368,24 @@ class FairnessCheckResult:
 
 ### 22.6 Integração com Agentes
 
-O FairnessGuard está integrado em **4 agentes** via `EnhancedAgentMixin`:
-- Wizard Agent (criação de vagas)
-- Talent Agent (funil de talentos)
-- Jobs Management Agent (portfólio de vagas)
-- Kanban Agent (pipeline)
+O FairnessGuard está integrado em **11/11 agentes ReAct + Orchestrator** (100% de cobertura desde Sprints SEG-2 e v3.0):
 
-**Ausente em 7 agentes:** Analytics, Automation, ATS Integration, Communication, Sourcing, Pipeline, Policy
+**Via `EnhancedAgentMixin` (`_fairness_pre_check`):**
+- Wizard Agent, Talent Agent, Jobs Management Agent, Kanban Agent, Analytics Agent, Automation Agent, ATS Integration Agent, Communication Agent, Policy Agent
+
+**Via chamada explícita (`guard.check()` + `check_implicit_bias()` + `log_check()`):**
+- Sourcing Agent (`sourcing_react_agent.py`) — SEG-2: bloqueio + `educational_message` + fail-safe
+- Pipeline Transition Agent (`pipeline_transition_agent.py`) — SEG-2: bloqueio + `educational_message` + fail-safe
+
+**Via Orchestrator:**
+- `main_orchestrator.py:L151` — FairnessGuard chamado no path principal de `process_request()`
+
+**Ausente:** Interview Scheduling Graph (não é agente ReAct — sem interação de texto natural com recrutador)
+
+**Camada 3 ativa em 3 callers de alto risco (v4.0 ACH-026):**
+- `rubric_evaluation_service.py` → `check_with_layer3(action_type="wsi_score")`
+- `candidate_feedback_service.py` → `check_with_layer3(action_type="rejection")`
+- `sourcing_react_agent.py` output → `check_with_layer3(action_type="shortlist")`
 
 ### 22.7 Métricas
 
@@ -4224,7 +4259,7 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 | Item                                | Status         | Arquivo/Serviço                               |
 |--------------------------------------|----------------|------------------------------------------------|
-| FairnessGuard (3 camadas)           | Parcial (4/11) | `app/shared/compliance/fairness_guard.py`      |
+| FairnessGuard (3 camadas)           | **Implementado (11/11 + Orchestrator)** — 62 termos explícitos + 11 implícitos = **73 padrões** `_PATTERNS_VERSION=2` | `app/shared/compliance/fairness_guard.py`      |
 | Bias Audit (Four-Fifths Rule)       | Implementado   | `app/services/bias_audit_service.py`           |
 | PII Masking (2 componentes)         | Implementado   | `app/shared/pii_masking.py`                    |
 | Consent Checker (Gate 1)            | Implementado   | `app/services/consent_checker_service.py`      |
@@ -4282,13 +4317,13 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 | Item                                    | Prioridade | Complexidade | Sprint Est. |
 |----------------------------------------|------------|-------------|-------------|
-| FairnessGuard em todos os 16 agentes   | P0         | Baixa       | Sprint 1 |
-| Guardrail automatizado anti-sycophancy | P1         | Média       | Sprint 2 |
+| ~~FairnessGuard em todos os 16 agentes~~   | ~~P0~~     | ~~Baixa~~   | ✅ **CONCLUÍDO** — 11/11 agentes + Orchestrator, 73 padrões (v5.0 Sprint X1) |
+| ~~Guardrail automatizado anti-sycophancy~~ | ~~P1~~     | ~~Média~~   | ✅ **CONCLUÍDO** — Sistema de prompts com `ANTI_SYCOPHANCY_OPERATIONAL` em todos os 16 agentes; beat schedule monitoramento contínuo |
 | JobReportModal com dados reais (backend)| P1         | Média       | Sprint 2 |
 | WSI Voice (real, não text-only)        | P2         | Alta        | Sprint 4 |
 | Audit trail centralizado (SOX/ISO)     | P1         | Média       | Sprint 2 |
-| Dashboard de Model Drift               | P2         | Média       | Sprint 3 |
-| Streaming de pensamentos ReAct via WS  | P3         | Média       | Sprint 4 |
+| ~~Dashboard de Model Drift~~           | ~~P2~~     | ~~Média~~   | ✅ **CONCLUÍDO** — endpoint `GET /api/v1/drift/status` + `drift_alert_service.py` + beat `drift-run-batch-daily` |
+| ~~Streaming de pensamentos ReAct via WS~~ | ~~P3~~  | ~~Média~~   | ✅ **CONCLUÍDO** (Sprint Y5/E7 — `streaming_react_agent.py` + WS streaming em `agent_chat_ws.py`) |
 | Notificações push mobile               | P2         | Média       | Sprint 3 |
 | Integração calendário (Google/Outlook)  | P1         | Alta        | Sprint 3 |
 | Multi-idioma (EN/ES além de PT)        | P2         | Alta        | Sprint 5 |
@@ -4384,19 +4419,20 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 ### 32.6 Dívidas Técnicas
 
 1. **IntentRouter legado** — Coexiste com LLM Cascade como fallback; duplicação de lógica
-2. **Mapeamento agent_type → domain** — Hardcoded em `AGENT_TYPE_TO_DOMAIN`; sem registro dinâmico
+2. ~~**Mapeamento agent_type → domain**~~ → ✅ **RESOLVIDO** (Sprint Y4/E4 — `agents_registry.yaml` com registro dinâmico; `AgentRegistryWatcher` com mtime-gating elimina hardcoding em `AGENT_TYPE_TO_DOMAIN`)
 3. **AgentFactory vs get_agent** — Dois padrões coexistem; `get_agent()` NÃO é session-safe mas é usado em código legado
 4. **PolicyEngine** — DB service pode ser `None`; validação pode falhar silenciosamente
 5. **Detecção de resposta técnica** — String matching (`_TECHNICAL_PATTERNS`); frágil com novas mensagens
 6. **Escopo GLOBAL** — `scope_config.py` limita a apenas `generate_report` + `schedule_report`, mas o chat-page envia tudo para o Orchestrator que ignora scope na execução
 7. **Circuit breaker dual** — Duas implementações no mesmo arquivo (classe + decorator); deveria ser unificado
-8. **FairnessGuard parcial** — Apenas 4/16 agentes têm FairnessGuard integrado; gap de compliance
+8. ~~**FairnessGuard parcial**~~ → ✅ **RESOLVIDO** — 11/11 agentes ReAct + Orchestrator têm FairnessGuard (Sprints SEG-2, v3.0). 73 padrões (62 explícitos + 11 implícitos), Layer 3 ativa em 3 callers críticos (v4.0 ACH-026), 0 xfails red team (v5.0 Sprint X1).
 
 ### 32.7 Compliance
 
 1. **Anti-sycophancy** — Presente em todos os agentes (via bloco compartilhado ou equivalente no prompt), porém sem guardrail automatizado em runtime
-2. **FairnessGuard** — Integrado em 4 agentes (Wizard, Talent, Jobs Management, Kanban); ausente em Analytics, Automation, ATS Integration, Communication, Sourcing, Pipeline, Policy
-3. **LGPD em ATS** — Lista de campos sensíveis não sincronizados é hardcoded
+2. ~~**FairnessGuard**~~ → ✅ **RESOLVIDO** — Integrado em **11/11 agentes ReAct + Orchestrator**. 73 padrões totais (Sprint X1). Layer 3 ativa em 3 callers de alto risco (ACH-026). 0 xfails red team.
+3. ~~**Falta consentimento granular**~~ → ✅ **RESOLVIDO** (Sprint Y2/D5 — consentimento granular por tipo de dado implementado)
+3b. **LGPD em ATS** — Lista de campos sensíveis não sincronizados é hardcoded
 4. **Audit trail** — SOX/ISO 27001 mencionados no prompt do ATS Agent, mas sem implementação de audit trail centralizado
 5. **ConsentChecker mode** — Default é `soft_warning` (não bloqueia); deveria ser `hard_block` em produção
 6. **Bias Audit** — Dimensão `disability` depende de campo `has_disability` no registro do candidato, que pode não estar preenchido
@@ -4407,73 +4443,73 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 ### 33.1 Score Clicável no Funil
 
-**Status:** Ausente
-**Descrição:** Permitir que recrutador clique no LIA Score de um candidato no funil e veja breakdown detalhado (rubricas, WSI, prerequisites, recency) com explicação de cada componente
-**Complexidade:** Média — dados já existem no `lia_score_service.py`; precisa de endpoint dedicado + componente UI
-**Arquivos relevantes:** `lia_score_service.py` (fórmula), `candidates-page.tsx` (UI)
+**Status:** ✅ RESOLVIDO
+**Resolução:** Sprint Y2/E1 — `score_breakdown_service.py` + `ScoreBreakdownPanel.tsx` + endpoint `GET /api/v1/candidates/{id}/score-breakdown`. Score breakdown clicável com breakdown de rubricas, WSI, prerequisites e recency.
+**Descrição original:** Permitir que recrutador clique no LIA Score de um candidato no funil e veja breakdown detalhado (rubricas, WSI, prerequisites, recency) com explicação de cada componente
+**Arquivos relevantes:** `score_breakdown_service.py`, `ScoreBreakdownPanel.tsx`, `lia_score_service.py`
 
 ### 33.2 Análise Comparativa com IA Real
 
-**Status:** Parcialmente implementado (via `compare_candidates` tool)
-**Descrição:** Análise comparativa multi-dimensional entre candidatos com visualização lado-a-lado no frontend
-**Gap:** Não há componente visual dedicado para comparação; resultado aparece apenas como texto no chat
-**Arquivos relevantes:** `analytics_query_tools.py`, `kanban_assistant_prompts.py`
+**Status:** ✅ RESOLVIDO
+**Resolução:** Sprint Y2/D9 — `candidate_comparison_service.py` + `compare-candidates-modal.tsx` + endpoint `POST /api/v1/candidates/compare`. Modal visual dedicado implementado.
+**Descrição original:** Análise comparativa multi-dimensional entre candidatos com visualização lado-a-lado no frontend
+**Arquivos relevantes:** `candidate_comparison_service.py`, `compare-candidates-modal.tsx`
 
 ### 33.3 Fit Cultural com Dados de Entrevista
 
-**Status:** Ausente
-**Descrição:** Avaliar fit cultural do candidato usando dados de entrevistas realizadas (notas do entrevistador, sentimento, alinhamento de valores)
-**Gap:** WSI avalia competências comportamentais, mas não há cruzamento com dados de entrevista reais
-**Arquivos relevantes:** `lia_score_service.py` (scoring), `pipeline_react_agent.py` (pipeline)
+**Status:** ✅ RESOLVIDO
+**Resolução:** Sprint Y2/E2 — `cultural_fit_service.py` cruzando competências WSI com dados de entrevistas. `cultural_fit_score` integrado no funil.
+**Descrição original:** Avaliar fit cultural do candidato usando dados de entrevistas realizadas (notas do entrevistador, sentimento, alinhamento de valores)
+**Arquivos relevantes:** `cultural_fit_service.py`, `lia_score_service.py`
 
 ### 33.4 Auto-routing Inteligente
 
-**Status:** Parcialmente implementado (CascadedRouter)
-**Descrição:** Roteamento que aprende com o tempo quais agentes foram mais úteis para cada tipo de mensagem
-**Gap:** CascadedRouter usa cache (melhora velocidade) mas não faz aprendizado; peso dos tiers é estático
-**Arquivos relevantes:** `cascaded_router.py`, `llm_cascade.py`
+**Status:** ✅ RESOLVIDO
+**Resolução:** Sprint Y4/E9 — `RoutingLearningService` + model `RoutingFeedback` + `compute_domain_confidence_adjustments()`. Fator de ajuste 0.8–1.2 por domínio/empresa. Beat schedule `routing-recompute-daily` (07h UTC).
+**Descrição original:** Roteamento que aprende com o tempo quais agentes foram mais úteis para cada tipo de mensagem
+**Arquivos relevantes:** `routing_learning_service.py`, `cascaded_router.py`
 
 ### 33.5 Insights Proativos no Kanban
 
-**Status:** Parcialmente implementado (SaturationBadge)
-**Descrição:** LIA sugere proativamente ações no kanban (ex: "3 candidatos parados há 7 dias na etapa Entrevista")
-**Gap:** SaturationBadge existe mas é reativo (badge estático); falta ProactiveAgentWorker integrado ao kanban UI
-**Arquivos relevantes:** `SaturationBadge.tsx`, `proactive_agent_worker.py`
+**Status:** ✅ RESOLVIDO
+**Resolução:** Sprint P4 — `MLInsightsCard` em `job-kanban-page.tsx` com `useMLPredictions()` hook. Lazy-fetch ao expandir. Previsões de TTF, faixa salarial e percentil de mercado.
+**Descrição original:** LIA sugere proativamente ações no kanban (ex: "3 candidatos parados há 7 dias na etapa Entrevista")
+**Arquivos relevantes:** `ml-insights-card.tsx`, `use-ml-predictions.ts`, `job-kanban-page.tsx`
 
 ### 33.6 Relatório Cross-vagas
 
-**Status:** Ausente
-**Descrição:** Relatório consolidado comparando métricas entre todas as vagas da empresa (TTF, qualidade, custo, fontes)
-**Gap:** `comparative_analysis` command existe mas compara apenas vagas selecionadas; falta dashboard consolidado
-**Arquivos relevantes:** `job_analytics_prompt_service.py`, `job-report-modal.tsx`
+**Status:** ✅ RESOLVIDO
+**Resolução:** Sprint Y2/D9 — `candidate_comparison_service.py` com análise cross-vagas. Endpoint atualizado para múltiplas vagas simultâneas.
+**Descrição original:** Relatório consolidado comparando métricas entre todas as vagas da empresa (TTF, qualidade, custo, fontes)
+**Arquivos relevantes:** `candidate_comparison_service.py`, `job_analytics_prompt_service.py`
 
 ### 33.7 ML Adaptativo
 
-**Status:** Parcialmente implementado (LIA Score com pesos fixos)
-**Descrição:** Modelo que ajusta pesos do scoring baseado em feedback de contratações reais
-**Gap:** `Calibration_Adjustment` existe na fórmula do LIA Score mas é sempre 0; falta loop de feedback
-**Arquivos relevantes:** `lia_score_service.py` (fórmula com `Calibration_Adjustment`), `learning_analytics_service.py`
+**Status:** ✅ RESOLVIDO
+**Resolução:** Sprint Y3/D6 — `ml_feedback_service.py` + Celery task `ml.feedback.recompute_active_jobs` + tabela `recruiter_decision_feedback`. Pesos adaptativos recomputados semanalmente (Diagnóstico v6: beat schedule `ml-feedback-recompute-weekly` adicionado, dom 02h UTC).
+**Descrição original:** Modelo que ajusta pesos do scoring baseado em feedback de contratações reais
+**Arquivos relevantes:** `ml_feedback_service.py`, `lia_score_service.py`, `learning_analytics_service.py`
 
 ### 33.8 Benchmark de Mercado Real
 
-**Status:** Parcialmente implementado (via `salary_benchmark` command)
-**Descrição:** Benchmark de mercado com dados reais e atualizados (salário, tempo de contratação, volume)
-**Gap:** Benchmark salarial usa IA para estimar; não há integração com fontes de dados de mercado reais (ex: Glassdoor, Levels.fyi)
-**Arquivos relevantes:** `job_wizard_tools.py` (`search_salary_benchmark`, `get_intelligent_salary`)
+**Status:** ✅ RESOLVIDO (parcial)
+**Resolução:** Sprint Y3 — `sector_benchmark_service.py` injeta benchmark setorial no prompt de `evaluate_candidate()` (6 setores: tech/varejo/logistica/financeiro/saude/rpo). Integração Glassdoor/Levels.fyi como evolução futura.
+**Descrição original:** Benchmark de mercado com dados reais e atualizados (salário, tempo de contratação, volume)
+**Arquivos relevantes:** `sector_benchmark_service.py`, `job_wizard_tools.py`
 
 ### 33.9 WSI Assíncrono
 
-**Status:** Ausente
-**Descrição:** Enviar triagem WSI para candidato e processar respostas assincronamente quando o candidato responder
-**Gap:** WSI é síncrono (recrutador inicia, LIA processa em tempo real); não há fluxo de envio + coleta assíncrona
-**Arquivos relevantes:** `wsi_screening` tool, `pipeline_react_agent.py`
+**Status:** ✅ RESOLVIDO
+**Resolução:** Sprint Y4/E3 — `wsi_async_service.py` + model `WsiSession` com status=pending/in_progress/completed. Follow-up automático via Celery beat `followup-check-hourly`. Abandoned check `wsi-abandoned-check` (a cada 4h).
+**Descrição original:** Enviar triagem WSI para candidato e processar respostas assincronamente quando o candidato responder
+**Arquivos relevantes:** `wsi_async_service.py`, `wsi_abandoned_service.py`, `followup_service.py`
 
 ### 33.10 Roadmap de Escalabilidade
 
 | Fase | Objetivo | Itens Principais | Timeline Est. |
 |------|----------|------------------|---------------|
-| **Fase 1: Hardening** | Produção segura | FairnessGuard 16 agentes, audit trail SOX, SSO/SAML | Sprint 1-2 |
-| **Fase 2: Intelligence** | IA mais inteligente | RAG por domínio, auto-routing adaptativo, ML adaptativo | Sprint 3-5 |
+| **Fase 1: Hardening** | Produção segura | ~~FairnessGuard 16 agentes~~ ✅ CONCLUÍDO; audit trail SOX, SSO/SAML | Sprint 1-2 |
+| **Fase 2: Intelligence** | IA mais inteligente | ~~RAG por domínio~~ ✅ Y5/E6, ~~auto-routing adaptativo~~ ✅ Y4/E9, ~~ML adaptativo~~ ✅ Y3/D6 | ✅ CONCLUÍDO |
 | **Fase 3: Scale** | Multi-tenant enterprise | Isolamento por tenant, rate limiting granular, SLA tiered | Sprint 5-7 |
 | **Fase 4: Ecosystem** | Integrações e extensões | Marketplace de agentes, plugin system, API pública | Sprint 8-10 |
 
@@ -4481,21 +4517,21 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 | Oportunidade                           | Complexidade | Impacto | Sprint Est. |
 |----------------------------------------|-------------|---------|-------------|
-| Registro dinâmico de agentes (YAML)    | Alta        | Alto    | S3 |
-| Multi-model por agente (GPT/Gemini)    | Média       | Alto    | S2 |
-| RAG por domínio (embeddings)           | Alta        | Alto    | S4 |
-| Validar escopo de tools no backend     | Baixa       | Alto    | S1 |
-| Ativar FairnessGuard em todos agentes  | Baixa       | Alto    | S1 |
+| ~~Registro dinâmico de agentes (YAML)~~    | ~~Alta~~    | ~~Alto~~    | ✅ **CONCLUÍDO** (Sprint Y4/E4 — `agents_registry.yaml` + `AgentRegistryWatcher`) |
+| ~~Multi-model por agente (GPT/Gemini)~~    | ~~Média~~   | ~~Alto~~    | ✅ **CONCLUÍDO** (Sprint Y4/E5 — `multi_model_router.py` + config por agente no YAML) |
+| ~~RAG por domínio (embeddings)~~           | ~~Alta~~    | ~~Alto~~    | ✅ **CONCLUÍDO** (Sprint Y5/E6 — `rag_pipeline_service.py` BM25+pgvector, rebuild diário) |
+| ~~Validar escopo de tools no backend~~     | ~~Baixa~~   | ~~Alto~~    | ✅ **CONCLUÍDO** (Sprint Y5/E8 — `tool_registry_metadata.yaml` 32 tools, `validate_registry_against_yaml()`) |
+| ~~Ativar FairnessGuard em todos agentes~~ | ~~Baixa~~ | ~~Alto~~ | ✅ **CONCLUÍDO** (Sprint X1 — 73 padrões, 0 xfails) |
 | Remover IntentRouter legado            | Baixa       | Médio   | S2 |
-| Streaming de pensamentos ReAct via WS  | Média       | Médio   | S3 |
+| ~~Streaming de pensamentos ReAct via WS~~  | ~~Média~~   | ~~Médio~~   | ✅ **CONCLUÍDO** (Sprint Y5/E7 — `streaming_react_agent.py`) |
 | Unificar circuit breaker (classe+deco) | Baixa       | Médio   | S2 |
 | Dashboard real-time de Model Drift     | Média       | Alto    | S3 |
 | Bias Audit Dashboard no frontend       | Média       | Alto    | S2 |
 | Webhook outbound (notificar sistemas)  | Média       | Alto    | S3 |
-| Agent-to-Agent communication           | Alta        | Alto    | S5 |
+| ~~Agent-to-Agent communication~~           | ~~Alta~~    | ~~Alto~~    | ✅ **CONCLUÍDO** (Sprint Y5/E10 — Agent Bus Redis Pub/Sub `lia:agent_bus:{company_id}:{to_agent}`) |
 | Supervisor Agent (meta-orquestração)   | Alta        | Alto    | S5 |
 | Bulk WSI (triagem em massa)            | Média       | Alto    | S3 |
-| Feedback loop automático (sem thumbs)  | Alta        | Alto    | S4 |
+| ~~Feedback loop automático (sem thumbs)~~  | ~~Alta~~    | ~~Alto~~    | ✅ **CONCLUÍDO** (Sprint Y3/D6 — `ml_feedback_service.py` + `RoutingLearningService`) |
 
 ### 33.12 Análise de Gaps por Camada
 
@@ -4503,10 +4539,10 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 | Capacidade | Status | Gap |
 |-----------|--------|-----|
-| Roteamento multi-tier | Implementado (6 tiers) | Pesos estáticos, sem aprendizado |
+| Roteamento multi-tier | Implementado (6 tiers) | ✅ Sprint Y4/E9: `RoutingLearningService` + fator adaptativo 0.8–1.2 |
 | Fallback em cascata | Implementado | Sem métricas de qualidade do fallback |
 | Memory resolution | Implementado (Tier 0) | Apenas pronomes simples (ele/ela/isso) |
-| Multi-agent collaboration | Ausente | Agentes operam isolados, sem comunicação direta |
+| Multi-agent collaboration | ✅ Sprint Y5/E10 — Agent Bus Redis Pub/Sub implementado | — |
 | Request batching | Ausente | Cada mensagem é processada individualmente |
 | Priority queue | Ausente | FIFO simples, sem priorização por urgência |
 
@@ -4519,16 +4555,16 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 | Tool execution | Implementado | Sem retry automático em falha de tool |
 | Context injection | Implementado | Limite de 20 mensagens no contexto |
 | Self-correction | Parcial | Apenas via loop ReAct, sem meta-avaliação |
-| Dynamic tool selection | Ausente | Tools fixas por agente, sem seleção dinâmica |
+| Dynamic tool selection | ✅ Sprint Y5/E8 — `tool_registry_metadata.yaml` + scope validation | — |
 
 **Camada de Compliance:**
 
 | Capacidade | Status | Gap |
 |-----------|--------|-----|
-| FairnessGuard | Parcial (4/16 agentes) | Falta ativar em 12 agentes restantes |
+| FairnessGuard | **Implementado (11/11 + Orchestrator)** | 73 padrões; Layer 3 em 3 callers; 0 xfails red team (v5.0) |
 | Bias Audit | Implementado | Apenas Four-Fifths, falta Disparate Impact |
 | PII Masking | Implementado | Apenas para LLM prompts, falta para logs |
-| Consent Management | Implementado | Falta consentimento granular por tipo de dado |
+| Consent Management | ✅ Sprint Y2/D5 — consentimento granular por tipo de dado implementado | — |
 | FRIA | Documentado | Não automatizado (manual) |
 | Explainability | Parcial | Score breakdown existe, falta natural language |
 
@@ -4538,8 +4574,8 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 |-----------|--------|-----|
 | PostgreSQL + pgvector | Implementado | Sem particionamento por tenant |
 | Redis cache | Implementado | Sem invalidação inteligente |
-| Embeddings | Implementado (768-dim) | Sem reindexação automática |
-| Event sourcing | Ausente | Eventos não são imutáveis/reproduzíveis |
+| Embeddings | ✅ Sprint Y5/E6 — `rebuild_domain_index_task` + beat diário 04h UTC | — |
+| Event sourcing | ✅ Sprint Y5/E12 — `domain_events` append-only + UniqueConstraint sequence_number | — |
 | Data versioning | Ausente | Sem versionamento de dados de treinamento |
 | Backup/restore | Parcial | pg_dump manual, sem automação |
 
@@ -4586,7 +4622,7 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 | Arquivo | Responsabilidade |
 |---------|-----------------|
-| `lia-agent-system/app/shared/compliance/fairness_guard.py` | FairnessGuard: 9 categorias, 42 patterns, 11 termos implícitos |
+| `lia-agent-system/app/shared/compliance/fairness_guard.py` | FairnessGuard: 9 categorias, **62 termos explícitos** + 11 termos implícitos = **73 padrões totais**; `_PATTERNS_VERSION=2`; Layer 3 em 3 callers (v5.0 Sprint X1) |
 | `lia-agent-system/app/shared/pii_masking.py` | PII Masking: strip_pii_for_llm_prompt + PIIMaskingFilter |
 | `lia-agent-system/app/services/bias_audit_service.py` | Bias Audit: Four-Fifths Rule, 4 dimensões |
 | `lia-agent-system/app/services/consent_checker_service.py` | ConsentCheckerService: Gate 1, soft_warning/hard_block |
@@ -4595,6 +4631,7 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 | `lia-agent-system/app/services/confidence_policy_service.py` | ConfidencePolicy: 3 níveis de autonomia de ação |
 | `lia-agent-system/app/api/v1/lgpd_compliance.py` | API LGPD: DPO, Breaches, Decisions (916 linhas) |
 | `docs/compliance/FRIA_WSI.md` | FRIA: Avaliação de impacto EU AI Act (355 linhas) |
+| `docs/API_REFERENCE.md` | **API Reference completa** (342 linhas): 14 grupos de endpoints, autenticação, convenções, rate limits, changelog — **NOVO v3.1 (ACH-020 ✅)** |
 | `docs/compliance/WEDOTALENT_COMPLIANCE_ARCHITECTURE.md` | Arquitetura de compliance: 242 itens, 7 frameworks (1678 linhas) |
 
 ### 34.4 Resiliência e Custos
@@ -4968,6 +5005,26 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 ## Apêndice C — Changelog
 
+### v4.0 (15/03/2026) — Y5 + Guia de Implementação para Agentes IA
+
+**Features Y5 adicionadas:**
+- Seção 15.4: E9 — Auto-Routing Adaptativo (`RoutingLearningService`, `RoutingFeedback`, `cascaded_router.py`)
+- Seção 15.5: E10 — Agent Bus Inter-Agentes (`AgentBus`, `emit()` no mixin, Redis Pub/Sub)
+- Seção 15.6: E12 — Event Sourcing Imutável (`DomainEvent`, `EventStoreService`, endpoint `/event-history`)
+- Seção 4.13: E4 — YAML Hot-Reload (`AgentRegistryWatcher`, beat `agent-registry-hot-reload`)
+- Seção 13.4: E6 — RAG por Domínio (`domain` param, `DomainEmbeddingService`, beat diário)
+- Diagnóstico v6: 4 gaps fechados (beat schedules E4/E6/D6, confidence cv_screening)
+
+**Parte VII adicionada:**
+- Seção 35: Guia de Diagnóstico e Implementação para Agentes IA
+  - 20 capacidades com: O que é / Onde está / Como detectar / Como implementar / Como testar
+  - Formato otimizado para consumo por Claude Code e Cursor IDE
+
+**Métricas atualizadas:**
+- Suite: 5.450+ testes passando
+- 3 novas tasks Celery (agents.registry.check_reload, rag.rebuild_all_domains, ml.feedback.recompute_active_jobs)
+- 3 novos beat schedules em celery_app.py
+
 ### v3.0 (13/03/2026) — Guia Técnico-Estratégico Completo
 
 **Estrutura:**
@@ -5009,4 +5066,771 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 ---
 
-*Documento gerado por auditoria direta do código-fonte em 13/03/2026. Versão 3.0 — guia técnico-estratégico completo com 34 seções em 6 partes + 3 apêndices, cobrindo 16 agentes, 231 serviços, 12 domínios DDD, infraestrutura de prompts, automação, inteligência preditiva, observabilidade, compliance e referência de arquivos completa. ~5.000 linhas.*
+---
+
+## 35. Guia de Diagnóstico e Implementação — Claude Code / Cursor
+
+> **Como usar este guia:** Quando uma IA (Claude Code, Cursor) receber este documento junto com um codebase de produto de recrutamento, deve usar esta seção para:
+> 1. Verificar quais capacidades estão ausentes no produto
+> 2. Entender o que cada capacidade faz
+> 3. Seguir os passos de implementação baseados no código de referência da LIA
+>
+> Cada capacidade tem o formato: **O que é → Onde está na LIA → Como detectar se ausente → Como implementar → Como testar**
+>
+> **Repositório de referência:** `lia-agent-system/` (backend FastAPI) + `plataforma-lia/` (frontend Next.js)
+
+---
+
+### 35.1 FairnessGuard — Proteção Anti-Viés em 3 Camadas
+
+**O que é:** Sistema de 3 camadas que bloqueia prompts e respostas com viés discriminatório (gênero, raça, idade, deficiência, origem). Obrigatório para compliance com LGPD Art. 20, EU AI Act e políticas anti-discriminação.
+
+**Onde está na LIA:**
+- `app/shared/fairness/fairness_guard.py` — classe `FairnessGuard` com Layer 1 (regex 73 padrões), Layer 2 (11 termos léxicos implícitos), Layer 3 (LLM opt-in via `FAIRNESS_LAYER3_ENABLED`)
+- `app/shared/fairness/patterns.py` — `_EXPLICIT_PATTERNS`, `IMPLICIT_BIAS_TERMS`, 9 categorias
+- `app/domains/sourcing/agents/sourcing_react_agent.py` linha ~50 — `FairnessGuard.check()` no início de `process()`
+- `app/domains/pipeline/agents/pipeline_transition_agent.py` linha ~50 — mesmo padrão
+- `app/domains/cv_screening/services/rubric_evaluation_service.py` — Layer 3 com `check_with_layer3(action_type="wsi_score")`
+
+**Como detectar se ausente:**
+```bash
+grep -r "FairnessGuard\|fairness_guard" app/ --include="*.py" | wc -l
+# Se resultado < 5: FairnessGuard não está wired nos agentes
+grep -r "fairness" app/domains/ --include="*.py" | wc -l
+# Se 0: nenhum agente tem proteção anti-viés
+```
+
+**Como implementar:**
+1. Criar `app/shared/fairness/fairness_guard.py` com classe `FairnessGuard`:
+   - `check(text: str) -> FairnessResult` — Layer 1: regex patterns
+   - `check_with_layer3(text, action_type) -> FairnessResult` — Layer 1+2+3
+   - `FairnessResult(blocked: bool, severity: str, matched_patterns: List[str], message: str)`
+2. Criar `app/shared/fairness/patterns.py` com pelo menos 40 padrões explícitos (gênero, raça, idade, deficiência, origem)
+3. Adicionar em cada agente `process()`:
+   ```python
+   from app.shared.fairness.fairness_guard import FairnessGuard
+   _guard = FairnessGuard()
+   result = _guard.check(input.message)
+   if result.blocked:
+       return AgentOutput(response=result.message, domain=self._enhanced_domain)
+   ```
+4. Setar `FAIRNESS_LAYER3_ENABLED=false` (padrão) — ativar só após testes
+
+**Como testar:**
+```bash
+python -m pytest tests/fairness/ -v
+# Mínimo: testar que termos como "jovem", "homem", "deficiente" como critério são bloqueados
+```
+
+**Risco se ausente:** 🔴 Crítico — violação de LGPD Art. 20 + EU AI Act High-Risk. Bloqueador de contrato.
+
+---
+
+### 35.2 Circuit Breakers — Resiliência para Integrações Externas
+
+**O que é:** Padrão que "abre" automaticamente (para de chamar) uma integração externa quando ela falha repetidamente. Evita cascata de falhas e melhora a disponibilidade geral do sistema.
+
+**Onde está na LIA:**
+- `app/shared/resilience/circuit_breaker.py` — `CircuitBreakerService`, estados CLOSED/OPEN/HALF_OPEN
+- `app/shared/resilience/circuit_breaker.py` — `ALL_CIRCUITS` dict com todos os circuits nomeados
+- `app/shared/providers/llm_openai.py` — decorator `@circuit_breaker_decorator(OPENAI_CIRCUIT)`
+- `app/services/ats_clients/gupy.py` — `@circuit_breaker_decorator(GUPY_CIRCUIT)`
+- `app/api/v1/admin_circuit_breakers.py` — `GET /api/v1/admin/circuit-breakers` + reset endpoints
+
+**Como detectar se ausente:**
+```bash
+grep -r "circuit_breaker\|CircuitBreaker" app/ --include="*.py" | wc -l
+# Se 0: sem circuit breakers
+grep -r "ALL_CIRCUITS" app/ --include="*.py"
+# Se não encontrar: circuits não estão catalogados
+```
+
+**Como implementar:**
+1. Criar `app/shared/resilience/circuit_breaker.py`:
+   - Estado armazenado em Redis: `circuit:{name}:state`, `circuit:{name}:failures`, `circuit:{name}:last_failure`
+   - `FAILURE_THRESHOLD = 5` (falhas antes de OPEN)
+   - `RECOVERY_TIMEOUT = 60` (segundos em OPEN antes de HALF_OPEN)
+2. Criar decorator `@circuit_breaker_decorator(circuit_name)` para wrapping de métodos externos
+3. Criar `ALL_CIRCUITS` dict: `{"OPENAI": ..., "GEMINI": ..., "GUPY": ..., "PANDAPE": ..., "REDIS": ...}`
+4. Aplicar decorator em todos os callers externos (LLM providers, ATS clients, email providers)
+5. Criar endpoint admin `GET /admin/circuit-breakers` para status + reset
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_circuit_breaker.py -v
+# Testar: CLOSED→OPEN após N falhas, OPEN rejeita sem chamar, HALF_OPEN tenta recuperação
+```
+
+**Risco se ausente:** 🟠 Alto — cascata de falhas em produção, SLA comprometido.
+
+---
+
+### 35.3 HITL — Human-in-the-Loop para Decisões Críticas
+
+**O que é:** Mecanismo que pausa a execução de um agente e solicita aprovação humana antes de realizar ações destrutivas ou de alto impacto (envio de emails em massa, mudança de stage de candidatos, criação de vagas).
+
+**Onde está na LIA:**
+- `app/services/hitl_service.py` — `HITLService.request_approval()`, `receive_approval()`, Redis backing + DB persistence
+- `app/models/hitl.py` — `HITLRequest`, `HITLDecision` models
+- `alembic/versions/032_add_hitl_tables.py` — migration
+- `app/api/v1/hitl.py` — `POST /api/v1/hitl/{thread_id}/approve`
+- `app/api/v1/agent_chat_ws.py` — resume após aprovação (3 casos: cv_screening, wizard, genérico)
+- `app/domains/sourcing/agents/sourcing_react_agent.py` — bloqueia envio de outreach
+
+**Como detectar se ausente:**
+```bash
+grep -r "hitl_service\|request_approval\|HITL" app/ --include="*.py" | wc -l
+# Se < 5: HITL não está implementado ou não wired nos agentes
+ls alembic/versions/ | grep hitl
+# Se vazio: sem tabelas de persistência HITL
+```
+
+**Como implementar:**
+1. Criar tabelas: `hitl_requests` (id, thread_id, domain, company_id, payload, status, created_at) + `hitl_decisions` (id, request_id, decision, decided_by, decided_at)
+2. Criar `HITLService`:
+   - `request_approval(thread_id, domain, company_id, action_description, payload, db) -> str` — persiste + notifica via Redis
+   - `receive_approval(thread_id, decision, decided_by, db) -> bool`
+   - `get_pending(thread_id, db) -> Optional[HITLRequest]`
+3. Criar endpoint `POST /hitl/{thread_id}/approve` com `{"decision": "approved"|"rejected"}`
+4. No WebSocket handler: após envio da mensagem HITL, aguardar Redis key `hitl:{thread_id}:decision`
+5. No agente: antes de ações destrutivas, `await hitl_service.request_approval(...)` e retornar awaiting_approval
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_hitl_service.py tests/unit/test_hitl_persistence.py -v
+```
+
+**Risco se ausente:** 🟠 Alto — agentes autônomos podem realizar ações irreversíveis sem supervisão.
+
+---
+
+### 35.4 Anti-Sycophancy — Respostas Honestas (não apenas agradáveis)
+
+**O que é:** Instrução nos system prompts que força o agente a dar respostas honestas e fundamentadas em dados, mesmo que contrariem a expectativa do usuário. Baseada na Crença #11 da WeDOTalent ("Honestidade Radical").
+
+**Onde está na LIA:**
+- `app/shared/agents/system_prompts/base_prompt.py` — constante `ANTI_SYCOPHANCY_OPERATIONAL`
+- Todos os system_prompts dos domínios — `ANTI_SYCOPHANCY_OPERATIONAL` injetado como seção
+- `app/services/sector_benchmark_service.py` — benchmark setorial injetado em `evaluate_candidate()` para âncora factual
+
+**Como detectar se ausente:**
+```bash
+grep -r "anti.sycophancy\|ANTI_SYCOPHANCY\|honest\|discordo" app/domains/ --include="*.py" -l | wc -l
+# Se 0: agente pode ser sycophantic (concorda com tudo)
+grep -r "ANTI_SYCOPHANCY" app/shared/agents/system_prompts/ --include="*.py"
+```
+
+**Como implementar:**
+1. Criar constante `ANTI_SYCOPHANCY_OPERATIONAL`:
+   ```python
+   ANTI_SYCOPHANCY_OPERATIONAL = """
+   ## Princípio de Honestidade Radical
+   - Se os dados contradizem a expectativa do usuário, apresente os dados primeiro.
+   - Nunca concorde apenas para agradar. Se uma decisão é arriscada, diga claramente.
+   - Forneça benchmarks do mercado quando disponíveis para embasar avaliações.
+   - Prefira "os dados indicam X, embora entenda que esperava Y" a validações vazias.
+   """
+   ```
+2. Injetar em todos os system_prompts dos agentes como seção obrigatória
+
+**Como testar:** Enviar prompt "Este candidato é ótimo, concorda?" com dados ruins → verificar que agente discorda fundamentado em dados.
+
+**Risco se ausente:** 🟡 Médio — qualidade das recomendações IA comprometida, decisões ruins validadas.
+
+---
+
+### 35.5 CascadedRouter — Orquestração Multi-Tier
+
+**O que é:** Router de 6 tiers que classifica mensagens do usuário para o agente correto usando: cache semântico → embeddings → LLM classificador → regras → fallback. Evita chamar o LLM para classificações óbvias.
+
+**Onde está na LIA:**
+- `app/orchestrator/cascaded_router.py` — `CascadedRouter.route()` com 6 tiers
+- `app/orchestrator/intent_router.py` — `IntentRouter` com few-shot examples T3
+- `app/orchestrator/semantic_cache.py` — cache de classificações anteriores (Redis TTL 1h)
+
+**Tiers:**
+1. Cache semântico (embedding similarity > 0.92)
+2. Regras explícitas (keywords exatas)
+3. Embeddings locais (sem LLM)
+4. LLM classificador (Claude Haiku — barato)
+5. Fallback por domínio anterior
+6. Default domain
+
+**Como detectar se ausente:**
+```bash
+grep -r "CascadedRouter\|cascaded_router" app/ --include="*.py" | wc -l
+# Se 0: sem orquestração inteligente — todo request vai para um agente fixo
+grep -r "semantic_cache" app/ --include="*.py" | wc -l
+# Se 0: sem cache de classificação
+```
+
+**Como implementar:**
+1. Criar `app/orchestrator/intent_router.py` — prompt classificador com few-shot examples (20+ exemplos Input→Domain)
+2. Criar `app/orchestrator/semantic_cache.py` — Redis cache com key `intent:{hash(message)}`, TTL 3600s
+3. Criar `app/orchestrator/cascaded_router.py` com os 6 tiers em ordem de custo crescente
+4. Injetar `CascadedRouter` no WebSocket handler como primeiro passo de cada mensagem
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_cascaded_router.py tests/unit/test_intent_router.py -v
+```
+
+**Risco se ausente:** 🟡 Médio — alto custo de LLM para classificação, latência elevada.
+
+---
+
+### 35.6 Auto-Routing Adaptativo (E9)
+
+**O que é:** Sistema que aprende com as correções dos usuários (quando redirecionam a conversa para outro agente) e ajusta automaticamente os scores de confiança do roteamento. Domínios com alto índice de erro têm confiança reduzida; com baixo erro, confiança aumentada.
+
+**Onde está na LIA:**
+- `app/models/routing_feedback.py` — `RoutingFeedback` model (session_id, routed_domain, actual_domain, corrected)
+- `alembic/versions/046_add_routing_feedback.py` — migration
+- `app/services/routing_learning_service.py` — `RoutingLearningService.record_correction()`, `compute_domain_confidence_adjustments()`, Redis cache TTL=24h
+- `app/orchestrator/cascaded_router.py` — `_apply_adaptive_adjustments()` chamado após Tiers 4 e 5
+- `app/jobs/celery_tasks.py` — task `routing.recompute_adjustments`
+- `libs/config/lia_config/celery_app.py` — beat `routing-recompute-daily` (07h UTC)
+
+**Como detectar se ausente:**
+```bash
+grep -r "RoutingFeedback\|record_correction\|routing_feedback" app/ --include="*.py" | wc -l
+# Se 0: sem aprendizado adaptativo
+grep "routing.recompute" libs/config/lia_config/celery_app.py
+# Se não encontrar: sem recompute automático
+```
+
+**Como implementar:**
+1. Migration: tabela `routing_feedback` (id, company_id, session_id, message_hash, routed_domain, actual_domain, corrected, corrected_at)
+2. `RoutingLearningService.record_correction()` — persiste quando usuário redireciona conversa (fail-open)
+3. `compute_domain_confidence_adjustments(company_id, db)` — SQLAlchemy GROUP BY + case() → ajuste 0.8–1.2 (mínimo 10 samples)
+4. Fórmula: `error_rate > 0.3 → max(0.8, 1.0 - error_rate * 0.5)` / `error_rate < 0.05 → min(1.2, 1.0 + (0.05 - error_rate) * 2)`
+5. Redis cache TTL=24h: `routing_adj:{company_id}`
+6. Wiring em `cascaded_router.py`: após classificação, multiplicar score por adjustment factor
+7. Celery task `routing.recompute_adjustments(company_id)` + beat diário
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_e9_adaptive_routing.py -v  # 12 testes
+```
+
+**Risco se ausente:** 🟢 Baixo inicialmente — roteamento funciona sem aprendizado, melhora com ele.
+
+---
+
+### 35.7 Agent Bus — Comunicação Inter-Agentes (E10)
+
+**O que é:** Barramento de eventos baseado em Redis Pub/Sub que permite agentes se comunicarem de forma assíncrona. Exemplo: Sourcing publica `candidate_imported` → Pipeline consome e inicia avaliação automaticamente.
+
+**Onde está na LIA:**
+- `app/shared/agents/agent_bus.py` — `AgentBus` singleton, `AgentEvent` dataclass, `publish()`, `subscribe()`, `dispatch_local()`
+- `CHANNEL_PREFIX = "lia:agent_bus"`, canal: `lia:agent_bus:{company_id}:{to_agent}`
+- `libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` — `emit(to_agent, event_type, payload, company_id) -> bool`
+- `app/domains/sourcing/agents/sourcing_react_agent.py` — emite `candidate_imported` para pipeline
+- `app/domains/job_management/agents/job_wizard_graph.py` — emite `job_creation_ready` para jobs_management
+
+**Como detectar se ausente:**
+```bash
+grep -r "AgentBus\|agent_bus\|emit(" app/ --include="*.py" | wc -l
+# Se 0: sem comunicação inter-agentes
+grep -r "CHANNEL_PREFIX" app/shared/agents/ --include="*.py"
+```
+
+**Como implementar:**
+1. `AgentEvent` dataclass: `from_agent, to_agent, event_type, payload, company_id, event_id (uuid4), published_at`
+2. `AgentBus.publish(from_agent, to_agent, event_type, payload, company_id)`:
+   - `redis.publish(f"lia:agent_bus:{company_id}:{to_agent}", json.dumps(event.to_dict()))`
+   - Audit trail: `audit_service.log_decision(decision_type="agent_event_published")`
+   - Fail-open: retorna `False` se Redis indisponível
+3. `AgentBus.subscribe(agent_name, handler)` — registro in-memory para dispatch local (testes)
+4. `AgentBus.dispatch_local(event)` — chama handlers registrados (fail-open por handler)
+5. Adicionar `emit()` ao `EnhancedAgentMixin` com lazy import de `agent_bus`
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_e10_agent_bus.py -v  # 12 testes
+```
+
+**Risco se ausente:** 🟢 Baixo — agentes operam independentemente, mas automações cross-domínio não funcionam.
+
+---
+
+### 35.8 Event Sourcing — Audit Trail Imutável (E12)
+
+**O que é:** Padrão onde todas as mudanças de estado são registradas como eventos imutáveis (apenas INSERT, nunca UPDATE/DELETE). Permite replay de histórico, reconstituição de estado em qualquer ponto no tempo e compliance SOX.
+
+**Onde está na LIA:**
+- `app/models/event_store.py` — `DomainEvent` (aggregate_type, aggregate_id, event_type, event_data JSONB, company_id, sequence_number BIGINT, UniqueConstraint)
+- `alembic/versions/047_add_event_store.py` — migration com 3 indexes
+- `app/services/event_store_service.py` — `EventStoreService.append()`, `get_history()`, `reconstruct_state()`
+- `app/api/v1/event_history.py` — `GET /api/v1/candidates/{id}/event-history`
+- `app/domains/pipeline/agents/pipeline_transition_agent.py` — dual-write ao mover stage
+- `app/domains/job_management/agents/job_wizard_graph.py` — dual-write ao completar wizard
+
+**Como detectar se ausente:**
+```bash
+grep -r "DomainEvent\|event_store\|EventStoreService" app/ --include="*.py" | wc -l
+# Se 0: sem event sourcing
+ls alembic/versions/ | grep "event_store"
+# Se vazio: sem tabela de eventos
+```
+
+**Como implementar:**
+1. Migration: tabela `domain_events` com `UniqueConstraint('aggregate_type', 'aggregate_id', 'sequence_number')`
+2. `EventStoreService.append(aggregate_type, aggregate_id, event_type, data, company_id, db)`:
+   - Calcula `next_seq = MAX(sequence_number) + 1` para o aggregate
+   - INSERT apenas — nunca UPDATE/DELETE
+   - Fail-open: retorna `False` sem lançar
+3. `get_history(aggregate_type, aggregate_id, db, from_sequence=0, limit=500)` — ORDER BY sequence_number
+4. `reconstruct_state(aggregate_type, aggregate_id, db, folder=None)` — fold com default merger
+5. Endpoint `GET /candidates/{id}/event-history` com header `X-Company-ID` obrigatório
+6. Adicionar dual-write nos pontos de mudança de estado críticos (pipeline transitions, wizard completion)
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_e12_event_sourcing.py -v  # 12 testes
+```
+
+**Risco se ausente:** 🟠 Alto — sem audit trail imutável para SOX/ISO 27001.
+
+---
+
+### 35.9 YAML Hot-Reload de Agentes (E4)
+
+**O que é:** Mecanismo que detecta mudanças no arquivo `agents_registry.yaml` e recarrega a configuração dos agentes (modelo LLM usado, habilitado/desabilitado) sem reiniciar o servidor.
+
+**Onde está na LIA:**
+- `app/agents_registry.yaml` — 7 agentes com `class_path`, `model_id`, `enabled`
+- `app/core/agent_registry_watcher.py` — `AgentRegistryWatcher.check_and_reload()` (mtime-gated)
+- `libs/agents-core/lia_agents_core/react_agent_registry.py` — `reload_from_yaml(path)`, `_flat_registry` dict
+- `app/api/v1/admin_agents.py` — `POST /api/v1/admin/agents/reload` (manual trigger)
+- `app/jobs/celery_tasks.py` — task `agents.registry.check_reload`
+- `libs/config/lia_config/celery_app.py` — beat `agent-registry-hot-reload` (a cada 1 minuto)
+
+**Como detectar se ausente:**
+```bash
+ls app/agents_registry.yaml 2>/dev/null || echo "AUSENTE"
+grep -r "reload_from_yaml\|AgentRegistryWatcher" app/ --include="*.py" | wc -l
+# Se 0: sem hot-reload
+grep "agent-registry-hot-reload" libs/config/lia_config/celery_app.py
+# Se não encontrar: sem polling automático
+```
+
+**Como implementar:**
+1. Criar `agents_registry.yaml` com lista de agentes (`name, class_path, model_id, enabled, description`)
+2. Adicionar `_flat_registry: Dict[str, AgentConfig]` ao registry principal
+3. `reload_from_yaml(path)` — lê YAML, skipa `enabled: false`, atualiza `_flat_registry`
+4. `AgentRegistryWatcher` — armazena `_last_mtime`, `check_and_reload()` compara mtime → chama `reload_from_yaml` se mudou
+5. Endpoint `POST /admin/agents/reload` — trigger manual
+6. Celery task + beat (1 min, expires=55s)
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_e4_agent_hot_reload.py -v  # 8 testes
+```
+
+**Risco se ausente:** 🟢 Baixo — operacional, mas mudanças de config exigem restart.
+
+---
+
+### 35.10 RAG por Domínio — Busca Semântica Especializada (E6)
+
+**O que é:** Extensão do RAG híbrido (BM25 + pgvector) que segmenta os embeddings por domínio (`general`, `jobs`, `talent`, `policy`, `company`). Buscas no domínio de vagas não retornam documentos de candidatos.
+
+**Onde está na LIA:**
+- `alembic/versions/045_add_domain_to_embeddings.py` — coluna `domain VARCHAR(50)` em `routing_cache_vectors`
+- `app/services/rag_pipeline_service.py` — `DOMAIN_ALIASES` dict, `normalize_domain()`, `domain` param em `search()`
+- `app/services/domain_embedding_service.py` — `DomainEmbeddingService.embed_document()`, `rebuild_domain_index()`
+- `app/jobs/celery_tasks.py` — task `rag.rebuild_all_domains` (itera 5 domínios)
+- `libs/config/lia_config/celery_app.py` — beat `rag-rebuild-domain-index-daily` (04h UTC)
+
+**Como detectar se ausente:**
+```bash
+grep -r "domain.*param\|domain_filter\|normalize_domain" app/services/rag_pipeline_service.py
+# Se não encontrar: RAG não filtra por domínio
+grep "domain" alembic/versions/ -r | grep "routing_cache"
+# Se não encontrar: coluna domain não existe na tabela
+```
+
+**Como implementar:**
+1. Migration: `ALTER TABLE routing_cache_vectors ADD COLUMN domain VARCHAR(50) DEFAULT 'general'` + index `(domain, company_id)`
+2. `DOMAIN_ALIASES = {"candidates": "talent", "job_vacancies": "jobs", ...}`
+3. `normalize_domain(domain_raw)` — aplica aliases, default `"general"`
+4. `search(query, company_id, db, domain=None)` — adicionar `AND domain = :domain` quando fornecido
+5. `embed_document(text, source_type, company_id, db)` — detecta domínio pelo `source_type`
+6. `rebuild_domain_index(domain, company_id, db)` — reprocessa documentos do domínio
+7. Wrapper task `rag.rebuild_all_domains` + beat diário
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_e6_rag_domain.py -v  # 10 testes
+```
+
+**Risco se ausente:** 🟡 Médio — RAG retorna resultados de contextos errados.
+
+---
+
+### 35.11 ML Feedback Loop — Calibração Adaptativa de Pesos (D6)
+
+**O que é:** Sistema que aprende com as decisões dos recrutadores (contratar/rejeitar/override) e ajusta automaticamente os pesos dos critérios de avaliação por vaga. Vagas onde candidatos "overrideados" são bons performers → critérios originais estavam errados.
+
+**Onde está na LIA:**
+- `app/models/recruiter_decision_feedback.py` — `RecruiterDecisionFeedback` model
+- `alembic/versions/044_add_recruiter_decision_feedback.py` — migration
+- `app/services/ml_feedback_service.py` — `MLFeedbackService.record_signal()`, `compute_job_weights()`, `JobScoringWeights` dataclass
+- `app/domains/pipeline/agents/pipeline_transition_agent.py` — `record_signal()` chamado ao mover candidato
+- `app/services/lia_score_service.py` — `_get_calibration_adjustment_async()` aplica pesos ao score
+- `app/jobs/celery_tasks.py` — task `ml.feedback.recompute_active_jobs` + task `ml.feedback.process_weights`
+- `libs/config/lia_config/celery_app.py` — beat `ml-feedback-recompute-weekly` (domingo 02h UTC)
+
+**Como detectar se ausente:**
+```bash
+grep -r "MLFeedbackService\|ml_feedback\|calibration_adjustment" app/ --include="*.py" | wc -l
+# Se < 3: sem feedback loop ML
+grep -r "record_signal\|compute_job_weights" app/ --include="*.py" | wc -l
+```
+
+**Como implementar:**
+1. Migration: tabela `recruiter_decision_feedback` (id, company_id, job_id, candidate_id, decision, score_at_decision, created_at)
+2. `MLFeedbackService.record_signal(job_id, candidate_id, decision, score, company_id, db)` — persiste (fail-open)
+3. `compute_job_weights(job_id, company_id, db) -> JobScoringWeights` — analisa correlação decisão/score
+4. `JobScoringWeights(technical=1.0, behavioral=1.0, cultural=1.0, sample_count=0)` — pesos padrão até ter dados
+5. `_get_calibration_adjustment_async(job_id, company_id)` — busca pesos no Redis (TTL 7d), aplica ao score
+6. Wrapper task para recompute semanal de vagas com feedback recente
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_d6_ml_feedback.py -v  # 14 testes
+```
+
+**Risco se ausente:** 🟡 Médio — avaliações não melhoram com feedback, critérios ficam fixos.
+
+---
+
+### 35.12 LGPD — Consentimento Granular (D5)
+
+**O que é:** Sistema de consentimento com 7 tipos distintos (ai_screening, ai_scoring, ai_video_analysis, ai_comparison, data_retention, marketing, analytics). Cada tipo pode ser concedido ou revogado individualmente pelo candidato.
+
+**Onde está na LIA:**
+- `app/services/granular_consent_service.py` — `GranularConsentService.grant()`, `revoke()`, `check()`
+- `app/models/candidate_consent_grants.py` — `CandidateConsentGrant` model
+- `alembic/versions/043_add_candidate_consent_grants.py` — migration
+- `app/api/v1/granular_consent.py` — `GET/POST /api/v1/granular-consent`
+- `app/services/ats_clients/ats_pii_filter.py` — `filter_sensitive_outbound()` verifica consentimento antes de enviar PII para ATS
+
+**Como detectar se ausente:**
+```bash
+grep -r "GranularConsentService\|ConsentGrant\|ai_screening" app/ --include="*.py" | wc -l
+# Se 0: sem controle granular de consentimento
+grep -r "check_consent\|consent_check" app/ --include="*.py" | wc -l
+```
+
+**Como implementar:**
+1. Migration: tabela `candidate_consent_grants` (id, candidate_id, company_id, consent_type, granted, granted_at, revoked_at, legal_basis)
+2. 7 tipos de consentimento como Enum: `ai_screening, ai_scoring, ai_video_analysis, ai_comparison, data_retention, marketing, analytics`
+3. `check(candidate_id, company_id, consent_type, db) -> bool` — retorna `True` se consentido
+4. Antes de cada operação de IA com dados do candidato: `if not await consent_service.check(...): raise ConsentRequired`
+5. Endpoint para candidato gerenciar seus consentimentos
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_d5_granular_consent.py tests/unit/test_d5_consent_wiring.py -v
+```
+
+**Risco se ausente:** 🔴 Crítico — violação LGPD Art. 7 + EU AI Act. Bloqueador de contrato.
+
+---
+
+### 35.13 PII Masking em Logs e Prompts LLM
+
+**O que é:** Sistema em 2 camadas: (1) Filtro de logging que mascara CPF, email, telefone, RG, CNPJ antes de gravar logs. (2) Strip de PII nos textos antes de enviar para LLM (reduz exposição de dados pessoais ao modelo).
+
+**Onde está na LIA:**
+- `app/shared/pii_masking.py` — `PIIMaskingFilter`, `strip_pii_for_llm_prompt(text)`, `install_global_pii_masking()`
+- `app/core/logging_config.py` — `handler.addFilter(PIIMaskingFilter())`
+- `libs/config/lia_config/celery_app.py` — `@signals.worker_process_init.connect` → `install_global_pii_masking()`
+- `app/services/ats_clients/ats_pii_filter.py` — `filter_sensitive_inbound()` aplica strip em textos livres de ATS
+- `app/domains/cv_screening/services/rubric_evaluation_service.py` — `cv_content = strip_pii_for_llm_prompt(cv_content)`
+
+**Como detectar se ausente:**
+```bash
+grep -r "PIIMaskingFilter\|strip_pii\|pii_masking" app/ --include="*.py" | wc -l
+# Se < 3: PII não mascarado
+grep "addFilter\|PIIMasking" app/core/logging_config.py
+# Se não encontrar: logs podem expor CPF/email
+```
+
+**Como implementar:**
+1. `PIIMaskingFilter(logging.Filter)`:
+   - `filter(record)` — aplica regex nos campos `msg`, `args` do record
+   - Padrões: `\d{3}\.\d{3}\.\d{3}-\d{2}` (CPF), email, telefone, RG
+2. `strip_pii_for_llm_prompt(text)` — Layer 1 (estruturado) + Layer 3 (quasi-identifiers: ano formatura, idade explícita)
+3. Instalar em todos os handlers de log na inicialização
+4. Instalar em cada processo Celery via signal
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_pii_masking_celery.py tests/unit/test_pii_llm_prompt_stripping.py -v
+```
+
+**Risco se ausente:** 🔴 Crítico — LGPD Art. 46 (segurança de dados), vazamento de PII em logs.
+
+---
+
+### 35.14 Bias Audit — Teste de Impacto Disparate (D3)
+
+**O que é:** Implementação automática da regra Four-Fifths (80%) do EEOC. Verifica se candidatos de grupos protegidos (gênero, faixa etária, PCD, região) são aprovados em taxa ≥ 80% da taxa do grupo favorecido.
+
+**Onde está na LIA:**
+- `app/services/bias_audit_service.py` — `BiasAuditService.run_audit()`, `_chi_square_test()`, `Four-Fifths Rule`
+- `app/models/bias_audit_snapshot.py` — `BiasAuditSnapshot` para histórico auditável
+- `app/api/v1/bias_audit.py` — `GET /api/v1/bias-audit/job/{job_id}` + history endpoint
+- `tests/fairness/test_four_fifths_rule.py` — golden dataset de 100+ candidatos sintéticos
+
+**Como detectar se ausente:**
+```bash
+grep -r "four_fifths\|adverse_impact\|BiasAudit" app/ --include="*.py" | wc -l
+# Se 0: sem audit automatizado de viés
+ls tests/fairness/
+# Se vazio: sem testes de fairness
+```
+
+**Como implementar:**
+1. `BiasAuditService.run_audit(job_id, company_id, db)`:
+   - Busca aprovados/total por dimensão (gender, age_group, disability, region)
+   - `adverse_impact_ratio = minority_rate / majority_rate`
+   - Se ratio < 0.80: `eeoc_compliant = False`, gera alerta
+2. `BiasAuditSnapshot` para histórico (SOX: registros de auditoria imutáveis por 7 anos)
+3. Endpoint para recruiter ver status por vaga
+
+**Como testar:**
+```bash
+python -m pytest tests/fairness/test_four_fifths_rule.py -v
+```
+
+**Risco se ausente:** 🟠 Alto — exposição legal por discriminação inadvertida.
+
+---
+
+### 35.15 Model Drift Detection — Monitoramento Contínuo (D2/C4)
+
+**O que é:** Sistema que monitora métricas do modelo LLM ao longo do tempo e detecta degradação automática (score médio cai, taxa de aprovação muda, custo por chamada sobe, latência aumenta). Dispara alertas quando drift é detectado.
+
+**Onde está na LIA:**
+- `app/services/model_drift_service.py` — `DriftDetectionService`, 4 triggers (score, aprovação, custo, latência P95)
+- `app/services/drift_alert_service.py` — notificação Bell+Teams: 1 trigger=WARNING, 2+=URGENT
+- `app/jobs/drift_job.py` — `run_drift_check_all_companies(db, notify_user_id)`
+- `app/api/v1/drift.py` — `GET /api/v1/drift/status`
+- `app/jobs/celery_tasks.py` — beat `drift-run-batch-daily` (09h UTC)
+- `app/shared/observability/agent_metrics.py` — Prometheus histogram `confidence_score_histogram`
+
+**Como detectar se ausente:**
+```bash
+grep -r "DriftDetection\|model_drift\|drift_alert" app/ --include="*.py" | wc -l
+# Se 0: sem drift detection
+grep -r "record_confidence\|confidence_score_histogram" app/ --include="*.py" | wc -l
+# Se < 5: confidence não sendo registrada — sem base para drift detection
+```
+
+**Como implementar:**
+1. Prometheus histogram `confidence_score_histogram` com labels `domain`, `has_tools`
+2. `record_confidence(domain, confidence, has_tools)` em cada agente após gerar resposta
+3. `DriftDetectionService` com janelas móveis de 7/30 dias: calcula baseline e compara com recente
+4. `DriftAlertService` com threshold WARNING (1 trigger) e URGENT (2+ triggers)
+5. Endpoint `GET /drift/status` para dashboard admin
+6. Beat diário às 06h
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_model_drift_service.py -v
+```
+
+**Risco se ausente:** 🟠 Alto — degradação do modelo passa despercebida, qualidade das respostas cai silenciosamente.
+
+---
+
+### 35.16 Confidence Calibration — Calibração de Confiança (D2)
+
+**O que é:** Cada agente reporta um score de confiança (0.0–1.0) junto com a resposta. Esse score é baseado em: iterações do loop ReAct usadas, presença de tool calls bem-sucedidas, ausência de erros. Alimenta o drift detection e o dashboard de qualidade.
+
+**Onde está na LIA:**
+- `libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` — `_record_confidence(state)` chamado em `state_to_output()`
+- `app/shared/observability/agent_metrics.py` — `record_confidence(domain, confidence, has_tools)`
+- Fórmula: `confidence = base * tool_factor * iteration_factor`
+  - `base = 0.9 se tool_calls sucesso, 0.7 se nenhuma tool, 0.5 se erro`
+  - `tool_factor = 1.0 se ferramentas usadas, 0.85 se não`
+  - `iteration_factor = max(0.6, 1.0 - (iterations - 1) * 0.1)`
+- `app/domains/cv_screening/agents/wsi_interview_graph.py` — `record_confidence(domain="cv_screening", confidence=score/10.0)`
+
+**Como detectar se ausente:**
+```bash
+grep -r "_record_confidence\|record_confidence" app/ libs/ --include="*.py" | wc -l
+# Se < 5: confidence calibration não implementada
+grep -r "confidence_score_histogram" app/ --include="*.py"
+```
+
+**Como implementar:**
+1. Prometheus histogram com labels domain, has_tools
+2. Fórmula conforme acima no `enhanced_agent_mixin.py`
+3. Para agentes não-ReAct (StateGraph): chamar `record_confidence()` explicitamente após decisão final
+4. Dashboard Grafana: histograma por domínio, percentil P10 como threshold de alerta
+
+**Risco se ausente:** 🟡 Médio — sem visibilidade sobre qualidade das respostas por domínio.
+
+---
+
+### 35.17 WSI Assíncrono — Triagem Assíncrona de Candidatos (E3)
+
+**O que é:** Permite que candidatos respondam ao questionário WSI (triagem IA) em seu próprio tempo, via link por email, sem precisar estar online simultaneamente ao recruiter.
+
+**Onde está na LIA:**
+- `app/api/v1/wsi_async.py` — 4 endpoints: `/wsi/sessions` (invite), `/wsi/sessions/{token}` (get), `/wsi/sessions/{token}/answer`, `/wsi/sessions/{token}/complete`
+- `app/services/wsi_session_service.py` — gestão de sessões com token único
+- FE: `src/hooks/use-wsi-async.ts`, `src/app/api/backend-proxy/wsi/...`
+
+**Como detectar se ausente:**
+```bash
+grep -r "wsi_async\|wsi.*session.*token" app/ --include="*.py" | wc -l
+# Se 0: WSI é síncrono — candidato precisa estar online durante triagem
+```
+
+**Como implementar:**
+1. Gerar token único por convite (UUID4, TTL 7 dias)
+2. 4 endpoints REST conforme acima
+3. Enviar email com link `{BASE_URL}/triagem/{token}`
+4. Sessão armazena estado: questions, answers, current_index, completed_at
+
+**Como testar:**
+```bash
+python -m pytest tests/unit/test_e3_wsi_async.py -v  # 10 testes
+```
+
+**Risco se ausente:** 🟡 Médio — triagem síncrona reduz taxa de resposta dos candidatos.
+
+---
+
+### 35.18 Score Breakdown — Transparência na Avaliação (E1)
+
+**O que é:** Decomposição do score final em dimensões (técnica, comportamental, cultural, experiência) visível para recruiter e candidato. Obrigatório para EU AI Act Art. 13 (explicabilidade de IA).
+
+**Onde está na LIA:**
+- `app/services/lia_score_service.py` — `get_score_breakdown(candidate_id, job_id, db) -> ScoreBreakdown`
+- `app/api/v1/score_breakdown.py` — `GET /api/v1/candidates/{id}/score-breakdown`
+- FE: `src/components/score-breakdown-badge-lazy.tsx` — badge clicável no kanban
+
+**Como detectar se ausente:**
+```bash
+grep -r "score_breakdown\|ScoreBreakdown" app/ --include="*.py" | wc -l
+# Se 0: sem breakdown — score é opaco
+```
+
+**Como implementar:**
+1. `ScoreBreakdown(technical: float, behavioral: float, cultural: float, experience: float, total: float, weights: Dict)`
+2. `get_score_breakdown()` busca scores parciais e aplica pesos configurados
+3. Endpoint + component FE clicável
+
+**Como testar:** `python -m pytest tests/unit/test_e1_score_breakdown.py -v`
+
+**Risco se ausente:** 🟠 Alto — não conformidade EU AI Act Art. 13 (explicabilidade). Bloqueador regulatório.
+
+---
+
+### 35.19 Multi-Model — Agente usa Modelos Diferentes (E5)
+
+**O que é:** Cada agente pode ser configurado para usar um modelo LLM diferente (Claude, GPT-4, Gemini) via variável de ambiente ou YAML. Permite otimizar custo/qualidade por domínio.
+
+**Onde está na LIA:**
+- `app/shared/agents/multi_model_config.py` — `AGENT_MODEL_CONFIG` dict, `get_model_for_agent(agent_name)`
+- `libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` — `model_id` property que chama `get_model_for_agent`
+- Envvars: `AGENT_MODEL_PIPELINE=claude-sonnet-4-5`, `AGENT_MODEL_SOURCING=gpt-4o-mini`
+- `app/agents_registry.yaml` — campo `model_id` por agente
+
+**Como detectar se ausente:**
+```bash
+grep -r "get_model_for_agent\|AGENT_MODEL_" app/ --include="*.py" | wc -l
+# Se 0: todos os agentes usam o mesmo modelo
+```
+
+**Como implementar:**
+1. `AGENT_MODEL_CONFIG = {agent: os.getenv(f"AGENT_MODEL_{agent.upper()}", DEFAULT_MODEL)}`
+2. `model_id` property no mixin: `return get_model_for_agent(self._enhanced_domain)`
+3. LLM Factory usa `model_id` para selecionar provider
+4. Suporte em `agents_registry.yaml` com campo `model_id`
+
+**Como testar:** `python -m pytest tests/unit/test_e5_multi_model.py -v`
+
+**Risco se ausente:** 🟢 Baixo — funcional com modelo único, sem otimização de custo.
+
+---
+
+### 35.20 Streaming de Pensamentos ReAct (E7)
+
+**O que é:** Transmissão em tempo real do "raciocínio" do agente (chain-of-thought) via WebSocket enquanto processa. Melhora a percepção de velocidade e transparência do processo de IA.
+
+**Onde está na LIA:**
+- `app/api/v1/agent_chat_ws.py` — emit de `{"type": "thinking", "step": ..., "thought": ...}` durante loop ReAct
+- FE: `src/components/react-thinking-stream.tsx` — renderiza steps de raciocínio
+- FE: `src/hooks/use-float-streaming.ts` — `thinkingSteps` state, handler `type:thinking`
+
+**Como detectar se ausente:**
+```bash
+grep -r "type.*thinking\|thinkingSteps\|ReactThinkingStream" app/ src/ --include="*.py" --include="*.tsx" | wc -l
+# Se 0: sem streaming de pensamentos
+```
+
+**Como implementar:**
+1. No loop ReAct, após cada iteração de reasoning: `await ws.send_json({"type": "thinking", "step": i, "thought": state.last_thought})`
+2. FE: tratar mensagens `type:thinking` separadamente, exibir em componente collapsible
+
+**Risco se ausente:** 🟢 Baixo — UX menos transparente, funcionalidade principal intacta.
+
+---
+
+### 35.21 Checklist Rápido de Diagnóstico
+
+Use este checklist para avaliar rapidamente o estado de implementação de um produto:
+
+```bash
+#!/bin/bash
+# Diagnóstico rápido — execute na raiz do repositório backend
+
+echo "=== COMPLIANCE/LGPD (CRÍTICO) ==="
+echo -n "FairnessGuard: "; grep -r "FairnessGuard" app/ --include="*.py" -l 2>/dev/null | wc -l | xargs -I{} echo "{} arquivos"
+echo -n "PII Masking logs: "; grep -r "PIIMaskingFilter" app/ --include="*.py" 2>/dev/null | wc -l
+echo -n "Consent granular: "; grep -r "GranularConsentService\|ConsentGrant" app/ --include="*.py" 2>/dev/null | wc -l
+
+echo ""
+echo "=== RESILIÊNCIA (ALTO) ==="
+echo -n "Circuit Breakers: "; grep -r "circuit_breaker\|ALL_CIRCUITS" app/ --include="*.py" 2>/dev/null | wc -l
+echo -n "HITL service: "; grep -r "HITLService\|request_approval" app/ --include="*.py" 2>/dev/null | wc -l
+
+echo ""
+echo "=== QUALIDADE IA (MÉDIO) ==="
+echo -n "Anti-sycophancy: "; grep -r "ANTI_SYCOPHANCY\|anti_sycophancy" app/ --include="*.py" 2>/dev/null | wc -l
+echo -n "Confidence calibration: "; grep -r "_record_confidence\|record_confidence" app/ libs/ --include="*.py" 2>/dev/null | wc -l
+echo -n "Drift detection: "; grep -r "DriftDetection\|model_drift" app/ --include="*.py" 2>/dev/null | wc -l
+
+echo ""
+echo "=== AUDITORIA (ALTO) ==="
+echo -n "Event Sourcing: "; grep -r "DomainEvent\|EventStoreService" app/ --include="*.py" 2>/dev/null | wc -l
+echo -n "Bias Audit: "; grep -r "BiasAudit\|four_fifths" app/ --include="*.py" 2>/dev/null | wc -l
+echo -n "Score Breakdown: "; grep -r "ScoreBreakdown\|score_breakdown" app/ --include="*.py" 2>/dev/null | wc -l
+
+echo ""
+echo "=== OPERACIONAL (BAIXO) ==="
+echo -n "YAML Hot-Reload: "; grep -r "AgentRegistryWatcher\|reload_from_yaml" app/ --include="*.py" 2>/dev/null | wc -l
+echo -n "Agent Bus: "; grep -r "AgentBus\|agent_bus" app/ --include="*.py" 2>/dev/null | wc -l
+echo -n "Adaptive Routing: "; grep -r "RoutingFeedback\|routing_learning" app/ --include="*.py" 2>/dev/null | wc -l
+
+echo ""
+echo "Contagem > 0 = implementado. Contagem = 0 = AUSENTE (verificar implementação)."
+```
+
+**Interpretação:**
+- Qualquer item COMPLIANCE/LGPD com 0 = bloqueador imediato
+- Itens ALTO com 0 = backlog urgente (Sprint 1)
+- Itens MÉDIO com 0 = backlog normal (Sprint 2-3)
+- Itens BAIXO com 0 = backlog planejado (Sprint 4+)
+
+---
+
+*Documento gerado por auditoria direta do código-fonte em 13/03/2026. Versão 4.0 (15/03/2026) — guia técnico-estratégico completo com 35 seções em 7 partes + 3 apêndices, cobrindo 16 agentes, 231+ serviços, 12 domínios DDD, infraestrutura de prompts, automação, inteligência preditiva, observabilidade, compliance, referência de arquivos completa e Guia de Implementação para Agentes IA (Seção 35: 21 capacidades com diagnóstico e passos de implementação). ~8.000 linhas.*

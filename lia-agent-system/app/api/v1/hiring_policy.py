@@ -38,7 +38,6 @@ from app.schemas.company_hiring_policy import (
 )
 from app.shared.policy_helper import invalidate_policy_cache, get_company_policy
 from app.shared.policy_sync_service import sync_policy_to_models
-from app.agents.policy_setup_agent import policy_setup_agent
 from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
 
 logger = logging.getLogger(__name__)

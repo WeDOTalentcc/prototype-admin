@@ -60,6 +60,8 @@ class DemographicAuditResultResponse(BaseModel):
     adverse_impact_ratio: float
     below_threshold: bool
     alert_level: str
+    disparate_impact: Dict = {}   # D3: {"chi2", "p_value", "significant", "available"}
+    eeoc_compliant: bool = True   # D3: Four-Fifths ok AND p >= 0.05
 
 
 class BiasAuditReportResponse(BaseModel):
@@ -82,6 +84,8 @@ def _to_response(report: BiasAuditReport) -> BiasAuditReportResponse:
                 adverse_impact_ratio=d.adverse_impact_ratio,
                 below_threshold=d.below_threshold,
                 alert_level=d.alert_level,
+                disparate_impact=d.disparate_impact,
+                eeoc_compliant=d.eeoc_compliant,
             )
             for d in report.dimensions
         ],

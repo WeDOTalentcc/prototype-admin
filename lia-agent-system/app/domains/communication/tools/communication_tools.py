@@ -398,7 +398,30 @@ async def send_feedback(
         Result with success status and message
     """
     logger.info(f"💬 Sending {feedback_type} feedback to candidate {candidate_id}")
-    
+
+    # ACH-026 — FairnessGuard Camada 3: verificar viés em feedback de rejeição antes do envio
+    if feedback_type == "rejection" and feedback_message:
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _fg3 = FairnessGuard()
+            _fg3_result = await _fg3.check_with_layer3(feedback_message, action_type="rejection")
+            if _fg3_result.is_blocked:
+                logger.warning(
+                    "FairnessGuard Camada 3 bloqueou feedback de rejeição: candidate=%s category=%s",
+                    candidate_id, _fg3_result.category,
+                )
+                feedback_message = (
+                    "Agradecemos sua candidatura. Após análise cuidadosa, "
+                    "optamos por seguir com outros perfis neste momento."
+                )
+            elif _fg3_result.soft_warnings:
+                logger.info(
+                    "FairnessGuard Camada 3: %d avisos em feedback de rejeição candidate=%s",
+                    len(_fg3_result.soft_warnings), candidate_id,
+                )
+        except Exception as _fg3_exc:
+            logger.debug("FairnessGuard Camada 3 em send_feedback indisponível: %s", _fg3_exc)
+
     feedback_emojis = {
         "positive": "🎉",
         "rejection": "📝",

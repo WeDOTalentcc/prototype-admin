@@ -71,6 +71,9 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bpreferência\s+por\s+(\w+\s+)*(homens?|mulheres?)\b",
             r"\bpreferencia\s+por\s+(\w+\s+)*(homens?|mulheres?)\b",
             r"\b(gender|male|female)\s+only\b",
+            # Formas implícitas: "prefiro homens/mulheres"
+            r"\bprefiro\s+(\w+\s+)*(homens?|mulheres?)\b",
+            r"\bprefere?mos?\s+(\w+\s+)*(homens?|mulheres?)\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por gênero. "
@@ -85,6 +88,11 @@ DISCRIMINATORY_CATEGORIES = {
             r"\b(raça|raca|cor|etnia)\s*(\w+\s+)*(branca|negra|parda)\b",
             r"\bexcluir?\s+(\w+\s+)*(brancos?|negros?|pardos?)\b",
             r"\b(race|ethnicity|white|black)\s+only\b",
+            # Formas implícitas: "negros não se encaixam", "origem europeia"
+            r"\b(negros?|pardos?|brancos?|indígenas?|indigenas?)\s+n[ãa]o\s+(se\s+)?(encaixam?|adequam?|servem?|funcionam?|combina[m]?)\b",
+            r"\borigem\s+(europeia|africana|asi[aá]tica|latina|nordestina|nordestino)\b",
+            r"\bprefiro\s+.*\b(europeus?|brancos?)\b",
+            r"\bperfil\s+(europeu|branco|ocidental)\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por raça ou etnia. "
@@ -105,6 +113,10 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bde\s+\d+\s+(a|até|ate)\s+\d+\s+anos\b",
             r"\b(age|old|young)\s+only\b",
             r"\b(velho|velha|idoso|idosa)\s+(para|pra|demais)\b",
+            # Formas implícitas: "até 30 anos", "mais de 50 anos" (sem range explícito)
+            r"\baté\s+\d+\s+anos\b(?!\s+de\s+(experiên|experienc|atua|mercado|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
+            r"\bmais\s+de\s+\d+\s+anos\b(?!\s+de\s+(experiên|experienc|atua|mercado|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
+            r"\bn[ãa]o\s+(quero|queremos)\s+.*\b(mais\s+de|acima\s+de)\s+\d+\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por idade. "
@@ -157,6 +169,11 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bexcluir?\s+(\w+\s+)*(deficientes?|pcd|cadeirantes?)\b",
             r"\bsem\s+defici[eê]ncia\b",
             r"\bsem\s+deficiencia\b",
+            # Formas implícitas: "não quero candidatos com deficiência", "sem limitações físicas"
+            r"\bn[ãa]o\s+(quero|queremos|aceito|aceitar)\s+.*\bdefici[eê]ncia\b",
+            r"\bcandidatos?\s+com\s+defici[eê]ncia\s+n[ãa]o\b",
+            r"\bsem\s+limita[çc][õo]es?\s+(f[íi]sicas?|mentais?|cognitivas?)",
+            r"\bsem\s+(limita[çc][õo]es?\s+)?(f[íi]sicas?\s+(ou|e)\s+mentais?)\b",
         ],
         "message": (
             "A LIA não pode excluir candidatos com deficiência. "
@@ -169,11 +186,18 @@ DISCRIMINATORY_CATEGORIES = {
         "terms": [
             r"\bengravidar\b",
             r"\bgravidez\b",
+            r"\bgrávid[ao]s?\b",
             r"\b(tem|ter|possui|possuir|ter)\s+filhos?\b",
             r"\bsem\s+filhos?\b",
             r"\bplano\s+(de\s+)?ter\s+filhos?\b",
             r"\bplanej(a|and[oa])\s+(ter|engravidar)\b",
             r"\bfilhos?\s+(previsto|planejado|futuro)\b",
+            # Formas implícitas: "filhos pequenos", "sem obrigações familiares"
+            r"\bfilhos?\s+pequenos?\b",
+            r"\bfilhos?\s+(menores?|bebês?|bebes?)\b",
+            r"\bsem\s+(obriga[çc][õo]es?\s+)?(familiares?)\b",
+            r"\bsem\s+compromisso\s+familiar\b",
+            r"\bdedica[çc][ãa]o\s+(total|integral|exclusiva)\s*[—\-]?\s*(sem|nenhum[ao]?)\s+(obriga|familiar|filho|família|familia)\b",
         ],
         "message": (
             "A LIA não pode questionar candidatos sobre planos de maternidade/paternidade "
@@ -198,6 +222,8 @@ DISCRIMINATORY_CATEGORIES = {
 }
 
 _COMPILED_PATTERNS: Dict[str, List[re.Pattern]] = {}
+# Versão dos patterns — incrementar quando patterns forem adicionados para forçar recompilação
+_PATTERNS_VERSION = 2
 
 HIGH_IMPACT_ACTIONS = {"rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection"}
 
@@ -209,7 +235,12 @@ def _ensure_compiled() -> None:
             _COMPILED_PATTERNS[category] = [
                 re.compile(p, re.IGNORECASE | re.UNICODE) for p in config["terms"]
             ]
-        logger.info(f"FairnessGuard compiled patterns for {len(_COMPILED_PATTERNS)} categories")
+        logger.info(
+            "FairnessGuard compiled patterns v%d for %d categories (%d total patterns)",
+            _PATTERNS_VERSION,
+            len(_COMPILED_PATTERNS),
+            sum(len(v) for v in _COMPILED_PATTERNS.values()),
+        )
 
 
 class FairnessGuard:

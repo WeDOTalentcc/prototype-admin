@@ -113,6 +113,27 @@ agent_tool_failures_total = Counter(
     ["domain", "tool"],
 )
 
+# ACH-013 — Per-agent observability metrics
+
+agent_request_duration_seconds = Histogram(
+    "lia_agent_request_duration_seconds",
+    "Duração das requests por agente (segundos)",
+    ["domain", "agent_class"],
+    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 60.0],
+)
+
+agent_llm_tokens_total = Counter(
+    "lia_agent_llm_tokens_total",
+    "Total de tokens LLM consumidos por agente",
+    ["domain", "provider"],
+)
+
+agent_errors_total = Counter(
+    "lia_agent_errors_total",
+    "Total de erros por agente",
+    ["domain", "error_type"],
+)
+
 # --- Cost Metrics ---
 
 llm_cost_usd_total = Counter(

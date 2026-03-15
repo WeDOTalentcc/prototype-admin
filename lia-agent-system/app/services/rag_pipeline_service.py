@@ -30,6 +30,31 @@ logger = logging.getLogger(__name__)
 # Limiar mínimo de similaridade coseno para resultados semânticos
 _DEFAULT_SEMANTIC_THRESHOLD = 0.75
 
+# ---------------------------------------------------------------------------
+# Domínios RAG — aliases e normalização
+# ---------------------------------------------------------------------------
+
+DOMAIN_ALIASES: Dict[str, str] = {
+    "candidates": "talent",
+    "talent": "talent",
+    "job_vacancies": "jobs",
+    "jobs": "jobs",
+    "policy_blocks": "policy",
+    "policy": "policy",
+    "company_docs": "company",
+    "company": "company",
+    "general": "general",
+}
+
+
+def normalize_domain(domain: str) -> str:
+    """Normaliza um identificador de domínio para o nome canônico.
+
+    Aceita aliases (e.g. "candidates" → "talent", "job_vacancies" → "jobs").
+    Retorna "general" para domínios desconhecidos.
+    """
+    return DOMAIN_ALIASES.get(domain, "general")
+
 # Máximo de gênero único no top-10 (FairnessGuard)
 _FAIRNESS_MAX_SINGLE_GENDER_RATIO = 0.70
 
@@ -252,6 +277,7 @@ class RAGPipelineService:
         db: AsyncSession,
         limit: int = 20,
         alpha: float = 0.5,
+        domain: Optional[str] = None,
     ) -> RAGSearchResult:
         """
         Executa busca híbrida de candidatos.
@@ -269,12 +295,19 @@ class RAGPipelineService:
         alpha : float
             Peso do score semântico vs BM25.
             0.0 = apenas BM25, 1.0 = apenas semântico, 0.5 = híbrido.
+        domain : str, optional
+            Domínio RAG para filtragem isolada de embeddings
+            (e.g. "talent", "jobs", "policy", "company", "general").
+            Se fornecido, é normalizado via normalize_domain() antes de usar.
 
         Returns
         -------
         RAGSearchResult
         """
         t0 = time.perf_counter()
+
+        # Normalizar domínio se fornecido
+        normalized_domain: Optional[str] = normalize_domain(domain) if domain else None
 
         # Se alpha não foi explicitamente personalizado (valor default 0.5),
         # detecta automaticamente o tipo de query para alpha ideal
@@ -287,7 +320,7 @@ class RAGPipelineService:
 
         # --- Caminho BM25 (sempre executado a menos que alpha=1.0) ---
         if alpha < 1.0:
-            bm25_results = await self._bm25_search(query, company_id, db, limit)
+            bm25_results = await self._bm25_search(query, company_id, db, limit, domain=normalized_domain)
 
         # --- Caminho semântico (executado quando alpha > 0) ---
         embedding: Optional[List[float]] = None
@@ -295,7 +328,7 @@ class RAGPipelineService:
             embedding = await generate_embedding(query)
             if embedding is not None:
                 semantic_results = await self._semantic_search(
-                    embedding, company_id, db, limit
+                    embedding, company_id, db, limit, domain=normalized_domain
                 )
             else:
                 logger.info(
@@ -361,6 +394,7 @@ class RAGPipelineService:
                 "semantic_count": len(semantic_results),
                 "embedding_available": embedding is not None,
                 "semantic_threshold": self.semantic_threshold,
+                "domain": normalized_domain,
             },
         )
 
@@ -374,10 +408,12 @@ class RAGPipelineService:
         company_id: str,
         db: AsyncSession,
         limit: int,
+        domain: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Busca candidatos via PostgreSQL Full-Text Search (tsvector/tsquery)."""
         try:
-            sql = text("""
+            domain_filter = "AND domain = :domain" if domain else ""
+            sql = text(f"""
                 SELECT
                     id,
                     name,
@@ -391,6 +427,7 @@ class RAGPipelineService:
                     ) AS bm25_score
                 FROM candidates
                 WHERE company_id = :company_id
+                  {domain_filter}
                   AND to_tsvector('portuguese',
                           coalesce(name, '') || ' ' ||
                           coalesce(summary, '') || ' ' ||
@@ -399,10 +436,10 @@ class RAGPipelineService:
                 ORDER BY bm25_score DESC
                 LIMIT :limit
             """)
-            result = await db.execute(
-                sql,
-                {"query": query, "company_id": company_id, "limit": limit},
-            )
+            params: Dict[str, Any] = {"query": query, "company_id": company_id, "limit": limit}
+            if domain:
+                params["domain"] = domain
+            result = await db.execute(sql, params)
             rows = result.fetchall()
             return [
                 {"id": str(r[0]), "name": r[1], "bm25_score": float(r[2])}
@@ -422,6 +459,7 @@ class RAGPipelineService:
         company_id: str,
         db: AsyncSession,
         limit: int,
+        domain: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
         Busca semântica via pgvector na tabela candidates.
@@ -429,7 +467,8 @@ class RAGPipelineService:
         """
         try:
             embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
-            sql = text("""
+            domain_filter = "AND domain = :domain" if domain else ""
+            sql = text(f"""
                 SELECT
                     id,
                     name,
@@ -437,19 +476,20 @@ class RAGPipelineService:
                 FROM candidates
                 WHERE company_id = :company_id
                   AND embedding IS NOT NULL
+                  {domain_filter}
                   AND 1 - (embedding <=> :embedding::vector) >= :threshold
                 ORDER BY semantic_score DESC
                 LIMIT :limit
             """)
-            result = await db.execute(
-                sql,
-                {
-                    "embedding": embedding_str,
-                    "company_id": company_id,
-                    "threshold": self.semantic_threshold,
-                    "limit": limit,
-                },
-            )
+            params: Dict[str, Any] = {
+                "embedding": embedding_str,
+                "company_id": company_id,
+                "threshold": self.semantic_threshold,
+                "limit": limit,
+            }
+            if domain:
+                params["domain"] = domain
+            result = await db.execute(sql, params)
             rows = result.fetchall()
             return [
                 {"id": str(r[0]), "name": r[1], "semantic_score": float(r[2])}

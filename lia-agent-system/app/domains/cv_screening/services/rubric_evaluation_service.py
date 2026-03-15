@@ -995,24 +995,31 @@ class RubricEvaluationService:
                 _estimated_input_tokens, _estimated_output_tokens, _llm_latency_ms,
             )
 
-        # C.3 — FairnessGuard Camada 3: LLM semântico (opt-in via FAIRNESS_LAYER3_ENABLED)
-        # Acionado apenas quando Camadas 1+2 não detectaram viés e texto é longo o suficiente
-        if (
-            os.getenv("FAIRNESS_LAYER3_ENABLED", "").lower() in ("1", "true")
-            and not _guard_result.is_blocked
-            and not _fairness_warnings
-            and len(reasoning_final) > 200
-        ):
+        # C.3 — FairnessGuard Camada 3: check_with_layer3 seletivo (ACH-026)
+        # Executa quando Camadas 1+2 não bloquearam e texto é longo o suficiente.
+        # check_with_layer3 usa Haiku (custo baixo), cache Redis 1h e action_type gating.
+        if not _guard_result.is_blocked and len(reasoning_final) > 200:
             try:
-                _semantic_result = await _fairness_guard.check_semantic(reasoning_final)
-                if _semantic_result.soft_warnings:
-                    _fairness_warnings.extend(_semantic_result.soft_warnings)
+                _l3_result = await _fairness_guard.check_with_layer3(
+                    reasoning_final, action_type="wsi_score"
+                )
+                if _l3_result.soft_warnings:
+                    _fairness_warnings.extend(_l3_result.soft_warnings)
                     logger.info(
                         "FairnessGuard Camada 3: %d avisos semânticos para candidate=%s",
-                        len(_semantic_result.soft_warnings), _candidate_id_log,
+                        len(_l3_result.soft_warnings), _candidate_id_log,
                     )
-            except Exception as _sem_exc:
-                logger.debug("FairnessGuard Camada 3 indisponível: %s", _sem_exc)
+                if _l3_result.is_blocked:
+                    logger.warning(
+                        "FairnessGuard Camada 3 bloqueou reasoning: candidate=%s category=%s",
+                        _candidate_id_log, _l3_result.category,
+                    )
+                    reasoning_final = (
+                        "[Avaliação sob revisão — conteúdo sinalizado pela "
+                        "Camada 3 do FairnessGuard para análise de possível viés discriminatório.]"
+                    )
+            except Exception as _l3_exc:
+                logger.debug("FairnessGuard Camada 3 indisponível: %s", _l3_exc)
 
         result = RubricEvaluationResult(
             score=calibrated_score,
@@ -1136,13 +1143,14 @@ class RubricEvaluationService:
         requirements: List[JobRequirementCreate],
         company_id: str,
         created_by: Optional[str] = None,
+        db=None,
     ) -> Optional[RubricEvaluationResult]:
         """
         Evaluate a candidate against job requirements and create an activity feed entry.
-        
+
         This method combines evaluation and activity creation in a single workflow.
         If evaluation fails, logs the error but does not raise an exception.
-        
+
         Args:
             candidate_id: ID of the candidate being evaluated
             candidate_name: Name of the candidate
@@ -1153,12 +1161,35 @@ class RubricEvaluationService:
             requirements: List of job requirements with priorities
             company_id: Company ID for multi-tenant isolation
             created_by: Optional ID of who triggered the evaluation
-            
+            db: AsyncSession opcional para verificação de consentimento granular (D5).
+
         Returns:
             RubricEvaluationResult if successful, None if evaluation failed
         """
         from app.services.activity_service import activity_service
-        
+
+        # D5-G2 — Verificação de consentimento granular ai_screening (LGPD Art. 7)
+        # Fail-open: se serviço indisponível ou db=None, avaliação prossegue normalmente.
+        if db is not None:
+            try:
+                from app.services.granular_consent_service import GranularConsentService
+                _consent_svc = GranularConsentService(db)
+                _has_consent = await _consent_svc.check_purpose(
+                    candidate_id, company_id, "ai_screening"
+                )
+                if not _has_consent:
+                    logger.warning(
+                        "[RubricEval] Candidato %s não consentiu com ai_screening "
+                        "(company=%s) — avaliação bloqueada (D5)",
+                        candidate_id, company_id,
+                    )
+                    return None
+            except Exception as _exc:
+                logger.debug(
+                    "[RubricEval] consent check falhou (fail-open): %s", _exc
+                )
+                # fail-open: continua avaliação normalmente
+
         try:
             result = await self.evaluate_candidate(candidate_data, requirements)
             

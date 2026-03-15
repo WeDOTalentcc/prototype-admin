@@ -453,6 +453,49 @@ async def get_job_evaluations(
     return responses
 
 
+@router.get("/{job_id}/candidates/{candidate_id}/breakdown")
+async def get_score_breakdown(
+    job_id: UUID,
+    candidate_id: UUID,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """
+    Retorna detalhamento completo do score de um candidato em uma vaga (E1).
+
+    Endpoint para o ScoreBreakdownBadge no kanban — lazy-load ao abrir o Popover.
+    Inclui score geral, avaliações por critério, pontos fortes, pontos de atenção.
+
+    Returns 404 se não houver avaliação para o par candidato+vaga.
+    """
+    result = await db.execute(
+        select(RubricEvaluation).where(
+            RubricEvaluation.candidate_id == candidate_id,
+            RubricEvaluation.job_vacancy_id == job_id,
+        ).order_by(RubricEvaluation.evaluated_at.desc()).limit(1)
+    )
+    evaluation = result.scalar_one_or_none()
+
+    if evaluation is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Avaliação não encontrada para este candidato nesta vaga",
+        )
+
+    return {
+        "candidate_id": str(candidate_id),
+        "job_vacancy_id": str(job_id),
+        "score": evaluation.score,
+        "evaluated_at": evaluation.evaluated_at.isoformat() if evaluation.evaluated_at else None,
+        "model_version": evaluation.model_version,
+        "strengths": evaluation.strengths or [],
+        "concerns": evaluation.concerns or [],
+        "reasoning": evaluation.reasoning or "",
+        "recommendation": getattr(evaluation, "recommendation", ""),
+        "evaluations": evaluation.evaluations or [],
+        "auto_excluded": getattr(evaluation, "auto_excluded", False),
+    }
+
+
 @router.post("/evaluate/legacy")
 async def evaluate_candidate_legacy(
     request: EvaluateCandidateRequest,

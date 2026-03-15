@@ -1,9 +1,11 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ChevronDown, ChevronUp, Brain } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ChevronDown, ChevronUp, Brain, Loader2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useScoreBreakdown } from "@/hooks/use-score-breakdown"
 
 interface ScoreDimension {
   label: string
@@ -69,6 +71,135 @@ function ProgressBar({ value, label, maxValue = 100 }: ScoreDimension) {
     </div>
   )
 }
+
+// ---------------------------------------------------------------------------
+// E1 — ScoreBreakdownBadgeLazy: lazy-load via API (job + candidate)
+// ---------------------------------------------------------------------------
+
+interface ScoreBreakdownBadgeLazyProps {
+  score: number
+  jobId: string
+  candidateId: string
+  size?: "sm" | "md" | "lg"
+  className?: string
+}
+
+export function ScoreBreakdownBadgeLazy({
+  score,
+  jobId,
+  candidateId,
+  size = "md",
+  className,
+}: ScoreBreakdownBadgeLazyProps) {
+  const { data, loading, error, fetch, reset } = useScoreBreakdown()
+  const [open, setOpen] = useState(false)
+
+  const handleOpenChange = useCallback(
+    (isOpen: boolean) => {
+      setOpen(isOpen)
+      if (isOpen && !data && !loading) {
+        fetch(jobId, candidateId)
+      }
+      if (!isOpen) {
+        reset()
+      }
+    },
+    [data, loading, fetch, reset, jobId, candidateId]
+  )
+
+  const sizeClasses = { sm: "text-sm font-bold", md: "text-lg font-bold", lg: "text-2xl font-bold" }
+
+  return (
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "inline-flex items-center gap-1 cursor-pointer select-none rounded hover:opacity-80 transition-opacity",
+            sizeClasses[size],
+            getScoreColor(score),
+            className
+          )}
+          aria-label={`Score ${Math.round(score)} — clique para detalhamento`}
+        >
+          <span>{Math.round(score)}</span>
+          <ChevronDown className="h-3 w-3 opacity-60" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" side="left" align="start">
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 pb-2 border-b border-gray-200 dark:border-gray-700">
+            <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark" />
+            <span className="text-[11px] font-semibold text-gray-900 dark:text-gray-100">
+              Score LIA: {Math.round(score)}
+            </span>
+          </div>
+
+          {loading && (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+              <span className="ml-2 text-[11px] text-gray-500">Carregando...</span>
+            </div>
+          )}
+
+          {error && !loading && (
+            <div className="flex items-center gap-1.5 py-2 text-[11px] text-gray-500">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {data && !loading && (
+            <>
+              {data.strengths.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Pontos fortes
+                  </p>
+                  <ul className="space-y-0.5">
+                    {data.strengths.slice(0, 3).map((s, i) => (
+                      <li key={i} className="text-[10px] text-gray-600 dark:text-gray-400 flex gap-1">
+                        <span className="text-emerald-500 mt-0.5">•</span>
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {data.concerns.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Pontos de atenção
+                  </p>
+                  <ul className="space-y-0.5">
+                    {data.concerns.slice(0, 3).map((c, i) => (
+                      <li key={i} className="text-[10px] text-gray-600 dark:text-gray-400 flex gap-1">
+                        <span className="text-amber-500 mt-0.5">•</span>
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {data.reasoning && (
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">
+                    {data.reasoning}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Original ScoreBreakdownBadge (static, kept for backward compatibility)
+// ---------------------------------------------------------------------------
 
 export function ScoreBreakdownBadge({
   score,

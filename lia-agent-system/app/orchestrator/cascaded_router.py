@@ -247,6 +247,8 @@ class CascadedRouter:
                 source="fast_router",
                 matched_pattern=fast_result.matched_pattern,
             )
+            # E9 — apply adaptive confidence adjustments before caching
+            result = await self._apply_adaptive_adjustments(result, (context or {}).get("company_id"))
             self._cache_store(cache_key, result)
             await self._redis_cache.set(
                 message,
@@ -276,6 +278,10 @@ class CascadedRouter:
                 _elapsed_ms = (time.perf_counter() - _t0) * 1000
                 # Determinar modelo usado a partir da source ("llm_cascade:haiku", etc.)
                 _tier_name = cascade_result.source.split(":")[-1] if ":" in cascade_result.source else "llm_cascade"
+                # E9 — apply adaptive confidence adjustments before caching
+                cascade_result = await self._apply_adaptive_adjustments(
+                    cascade_result, (context or {}).get("company_id")
+                )
                 self._cache_store(cache_key, cascade_result)
                 await self._redis_cache.set(
                     message,
@@ -339,6 +345,36 @@ class CascadedRouter:
             clarification_question=_build_clarification_question(message),
             clarification_options=_DEFAULT_CLARIFICATION_OPTIONS,
         )
+
+    async def _apply_adaptive_adjustments(
+        self, route_result: "RouteResult", company_id: Optional[str]
+    ) -> "RouteResult":
+        """Apply adaptive routing confidence adjustments from learning history.
+
+        E9 — CascadedRouter Aprende: adjusts confidence based on correction signals
+        stored in RoutingFeedback. Uses Redis-cached adjustments (computed by
+        routing.recompute_adjustments Celery task daily at 07h UTC).
+
+        Fail-open: any error returns the original route_result unchanged.
+        """
+        import os
+        if os.getenv("USE_ADAPTIVE_ROUTING", "true").lower() != "true":
+            return route_result
+        try:
+            from app.services.routing_learning_service import routing_learning_service
+            cid = company_id or getattr(self, '_company_id', 'global') or 'global'
+            adjustments = await routing_learning_service.get_cached_adjustments(cid)
+            if route_result.domain_id in adjustments:
+                factor = adjustments[route_result.domain_id]
+                original_conf = route_result.confidence
+                route_result.confidence = round(original_conf * factor, 4)
+                logger.debug(
+                    "[CascadedRouter][E9] adaptive adjustment domain=%s factor=%.3f conf %.4f→%.4f",
+                    route_result.domain_id, factor, original_conf, route_result.confidence,
+                )
+        except Exception:
+            pass
+        return route_result
 
     async def _route_via_llm_cascade(
         self,

@@ -26,6 +26,7 @@ from app.shared.compliance.audit_callback import AuditCallback
 from app.shared.agents.working_memory import WorkingMemoryService
 from app.shared.agents.observability import ReActObserver
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.services.confidence_policy_service import confidence_policy_service
 
 from app.domains.hiring_policy.agents.policy_stage_context import (
     STAGE_DEFINITIONS,
@@ -106,18 +107,23 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                 name = tc.get("name", "") if isinstance(tc, dict) else getattr(tc, "name", "")
                 actions.append(AgentAction(action_type="call_tool", params={"tool": name}))
 
-        # Calcular confidence baseado no resultado
+        # Calcular confidence baseado no resultado e calibrar via ConfidencePolicyService
         _confidence = 0.75  # base para ações completadas com sucesso
         if actions:
             _confidence = 0.82  # tool foi chamada com sucesso
         if state.get("error"):
             _confidence = 0.40  # houve erro
+        _conf_action = confidence_policy_service.get_action_for_confidence(_confidence)
 
         return AgentOutput(
             message=response,
             actions=actions,
             confidence=_confidence,
-            metadata={"source": "langgraph_native", "domain": self.domain_name},
+            metadata={
+                "source": "langgraph_native",
+                "domain": self.domain_name,
+                "confidence_action": _conf_action.value,
+            },
         )
 
     # ------------------------------------------------------------------

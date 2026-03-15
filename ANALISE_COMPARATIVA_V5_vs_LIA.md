@@ -1,6 +1,6 @@
 # Análise Comparativa: recruiter_agent_v5 vs LIA Platform
 
-**Data:** 08/03/2026 — **Última revisão:** 10/03/2026 — Sprints A–F, G1–G7, I e J concluídos + AUD Audit Cards (WT-1506→WT-1512)
+**Data:** 08/03/2026 — **Última revisão:** 15/03/2026 — Sprints A–F, G1–G7, I, J, K2, X1, X4, X5 concluídos + AUD Audit Cards (WT-1506→WT-1512)
 **Objetivo:** Documento de referência para discussão com o time sobre caminhos de evolução arquitetural da LIA, com base no diagnóstico do André e na análise do projeto recruiter_agent_v5 (projeto paralelo desenvolvido com base similar mas arquitetura de agentes diferente).
 
 ---
@@ -65,7 +65,7 @@
 | 16 | Tool handlers Python reais | ❌ HTTP ao ATS | ✅ handlers locais | — | ✔ Concluído | `app/tools/registry.py` | LIA executa lógica de negócio; v5 apenas HTTP proxy |
 | 17 | PromptScope por contexto | ❌ | ✅ TALENT_FUNNEL / JOB_TABLE / IN_JOB / GLOBAL | — | ✔ Concluído | `app/tools/scope_config.py` | Evita tools de vaga no chat de candidatos |
 | **COMPLIANCE E GOVERNANÇA** | | | | | | | |
-| 18 | FairnessGuard (3 camadas) | ⚠️ regex básico | ✅ regex + léxico + LLM opt-in | — | ✔ Concluído | `app/shared/compliance/fairness_guard.py` | Camada 3 LLM: FAIRNESS_LAYER3_ENABLED feature flag |
+| 18 | FairnessGuard (3 camadas) | ⚠️ regex básico | ✅ regex + léxico + LLM | — | ✔ Concluído | `app/shared/compliance/fairness_guard.py` | **v5.0 Sprint X1:** 62 termos explícitos (9 cat.) + 11 implícitos = **73 padrões** `_PATTERNS_VERSION=2`. Layer 3 ativa em 3 callers críticos. 11/11 agentes + Orchestrator. 0 xfails red team. |
 | 19 | Bias Audit (Four-Fifths Rule) | ❌ | ✅ bias_audit_service.py | — | ✔ Concluído | `app/services/bias_audit_service.py` + `app/models/bias_audit_snapshot.py` | 4 dimensões: gênero, idade, PCD, região; snapshot histórico SOX |
 | 20 | LGPD / EU AI Act / BCB 498 / SOX / ISO 27001 | ❌ | ✅ stack completo | — | ✔ Concluído | `app/services/lgpd/` + `app/services/ai_act_compliance.py` + `app/services/bcb498_compliance.py` | Portal titular, consent management, audit logs S3 lifecycle 7 anos |
 | 21 | Model Drift Detection (4 triggers) | ❌ | ✅ model_drift_service.py | — | ✔ Concluído | `app/services/model_drift_service.py` + `app/services/drift_alert_service.py` | Score, aprovação, custo, latência P95 — batch diário Celery + alertas Bell+Teams |
@@ -129,17 +129,20 @@
 | 72 | Agent Health Dashboard (4 estados por domínio) | ❌ | ✅ `GET /api/v1/agent-monitoring/domains/health` + Admin UI `/admin/monitoring/agents` | 🔵 | ✔ Concluído | `app/api/v1/agent_monitoring.py` + `app/shared/governance/agent_monitoring_service.py` | healthy / warning / degraded / stale — por domain + company_id |
 | 73 | Human Review Sampling (5% determinístico MD5) | ❌ | ✅ `app/services/human_review_sampling_service.py` | 🔵 | ✔ Concluído | `app/services/human_review_sampling_service.py` | 5% das decisões de IA para revisão humana. ALWAYS_REVIEW: finalize_hiring, mass_rejection, fairness_flagged |
 | 74 | AI Footer automático em emails (LGPD + EU AI Act) | ❌ | ✅ `app/shared/channels/adapters/email_adapter.py` — `AI_GENERATED_FOOTER` | 🔵 | ✔ Concluído | `app/shared/channels/adapters/email_adapter.py` | Injetado automaticamente quando `message.ai_generated=True`. Idempotente (marcador "WeDOTalent"). Obrigatório EU AI Act |
-| 75 | FairnessGuard com 9 categorias + citações legislativas | ⚠️ regex básico | ✅ 9 categorias com blocking messages citando legislação BR | 🔵 | ✔ Concluído | `app/shared/compliance/fairness_guard.py` | genero (CLT+CF), raca_etnia (Lei 7.716), idade (Lei 10.741), deficiencia (Lei 13.146), maternidade (Lei 9.029) |
-| 76 | Implicit Bias Lexicon (Layer 2 FairnessGuard) | ❌ | ✅ `IMPLICIT_BIAS_TERMS` em `fairness_guard.py` | 🔵 | ✔ Concluído | `app/shared/compliance/fairness_guard.py` (IMPLICIT_BIAS_TERMS) | Discriminação indireta: "boa aparencia", "bairros nobres", "universidades de primeira linha", "escola particular" |
+| 75 | FairnessGuard com 9 categorias + citações legislativas | ⚠️ regex básico | ✅ 9 categorias, **62 termos** explícitos (Sprint X1 — era 42) | 🔵 | ✔ Concluído | `app/shared/compliance/fairness_guard.py` | genero (8), raca_etnia (8), idade (13), deficiencia (8), maternidade (13), religiao/orientacao/civil/nac (3 cada). `_PATTERNS_VERSION=2`. |
+| 76 | Implicit Bias Lexicon (Layer 2 FairnessGuard) | ❌ | ✅ `IMPLICIT_BIAS_TERMS` — 11 termos | 🔵 | ✔ Concluído | `app/shared/compliance/fairness_guard.py` (IMPLICIT_BIAS_TERMS) | Discriminação indireta: "boa aparencia", "bairros nobres", "universidades de primeira linha", "escola particular" — total 73 padrões com Camada 1 |
 | 77 | Compliance Deploy Checklist (Apêndice C) | ❌ | ✅ `docs/GUIA_ARQUITETURA_IA_v1.0.md` Apêndice C | 🔵 | ✔ Concluído | `docs/GUIA_ARQUITETURA_IA_v1.0.md` Apêndice C | Checklist antes de qualquer deploy. Compliance blocks copiados EXATAMENTE (nunca reescrever) |
 | 78 | Verification commands de produção (Seção 37) | ❌ | ✅ `docs/GUIA_ARQUITETURA_IA_v1.0.md` §37 | 🔵 | ✔ Concluído | `docs/GUIA_ARQUITETURA_IA_v1.0.md §37` | grep para imports legados, `SELECT count(*) FROM guardrails` → 13, `alembic current` → 022_reconcile_missing_schemas |
 | 79 | Audit trail de system prompts (EU AI Act Art. 14) | ❌ | ✅ `docs/compliance/AUDITORIA_SYSTEM_PROMPTS_2026_02.md` | 🔵 | ✔ Concluído | `docs/compliance/AUDITORIA_SYSTEM_PROMPTS_2026_02.md` | Auditoria dos 7 agentes: fairness blocks presentes, discriminação proibida, supervisão humana verificada |
 | 80 | Health endpoint unificado (prontidão para produção) | ❌ | ✅ `GET /health` + `GET /api/v1/agent-monitoring/domains/health` | 🔵 | ✔ Concluído | `app/api/v1/health.py` | Alembic na HEAD (022). Sem dados mock. Schemas versionados. Guardrails seed verificado |
+| 81 | API Reference completa + OpenAPI metadata (ACH-020) | ❌ | ✅ `docs/API_REFERENCE.md` + `app/main.py` metadata | — | ✔ Concluído (Sprint X5) | `docs/API_REFERENCE.md` (342L) | 14 grupos de endpoints, auth, rate limits, changelog, 22 tags OpenAPI com desc., contact, license — 25 testes `test_ach020_api_docs.py` |
+| 82 | IntentRouter few-shot T3 RH sênior (20 exemplos) | ❌ | ✅ seção `FEW-SHOT` em `_create_intent_prompt()` | — | ✔ Concluído (Sprint X4/J2) | `app/orchestrator/intent_router.py` | 10 claros (conf ≥0.93) + 10 ambíguos (conf 0.72–0.81); intents: job_planner, sourcing, cv_screening, scheduling, funnel, feedback, sync_ats, daily_briefing, wsi_evaluator, interviewer |
+| 83 | Red Teaming framework (6 cenários, 0 xfails) | ❌ | ✅ `tests/security/` — 6 arquivos red team | — | ✔ Concluído (Sprint X1) | `tests/security/test_red_team_fairness.py` | Prompt injection, LGPD, PII, multi-tenant, circuit breakers, fairness — todos passando sem xfail. FairnessGuard 73 padrões. |
 | **QUALIDADE E SEGURANÇA (ADR-002 Observability)** | | | | | | | |
 | 84 | SonarCloud (quality gate no CI/CD) | ❌ | ⚠️ não configurado | 🔵 | 🟡 Média | `.github/workflows/ci.yml` (pendente step SonarCloud) | ADR-002 Must-Have. Cobre Python + TypeScript. Code smells, duplicação, coverage integrados ao CI |
 | 85 | PostHog (product analytics + feature flags) | ❌ | ❌ não implementado | 🔵 | 🟡 Média | — | ADR-002 Must-Have. Analytics + session replay + feature flags. Alternativa ao LaunchDarkly |
 | 86 | Dependabot + Snyk (supply chain security) | ❌ | ⚠️ Dependabot parcial, Snyk não | 🔵 | 🟡 Média | `.github/dependabot.yml` | ADR-002 Must-Have. Dependências vulneráveis + supply chain security |
-| 87 | PIIMaskingFilter estruturado em logs (structlog) | ❌ | ⚠️ response_filter.py + Sentry PII scrubbing, mas PIIMaskingFilter no structlog não confirmado | 🔵 | 🔴 Alta | `app/shared/robustness/response_filter.py` | LGPD — masking de CPF, email, tel em logs antes de qualquer saída |
+| 87 | PIIMaskingFilter estruturado em logs (structlog) | ❌ | ✅ `install_global_pii_masking()` em workers Celery (SEG-3A) + `strip_pii_for_llm_prompt()` em 6 callers LLM + `response_filter.py` + Sentry PII scrubbing | 🔵 | ✔ Concluído | `libs/config/lia_config/celery_app.py` + `app/shared/pii_masking.py` | LGPD — masking de CPF, email, tel, RG, CNPJ em prompts e logs. Global filter root logger instalado. |
 | 88 | Prompt injection guard (inputs do recrutador) | ❌ | ✅ `app/shared/robustness/input_validation.py` + `sanitize_text()` | 🔵 | ✔ Concluído | `app/shared/robustness/input_validation.py` | Guard ativo em inputs de recrutador. Detecção de linguagem (PT-BR, EN, ES, FR) |
 | **PENDENTES / EM ABERTO** | | | | | | | |
 | 89 | Separação de APIs por domínio (api-funil first) | ❌ | ⚠️ scaffold existe | 🔵 | 🔴 Alta | `apps/api-funil/` (scaffold) | Threshold: p95 CRUD > 500ms. Comunicação via RabbitMQ events |
@@ -821,7 +824,7 @@ O v5 tem um `FactChecker` que verifica se a IA afirmou algo correto antes de ret
 
 | Feature | Implementação | Status |
 |---------|--------------|--------|
-| FairnessGuard Camada 1 | regex 40+ patterns | Ativo |
+| FairnessGuard Camada 1 | **regex 62 termos** (9 categorias, `_PATTERNS_VERSION=2` — Sprint X1) | Ativo |
 | FairnessGuard Camada 2 | léxico implícito | Ativo |
 | FairnessGuard Camada 3 | LLM opt-in | Ativo (`FAIRNESS_LAYER3_ENABLED`) |
 | Bias Audit | Four-Fifths Rule (gênero, idade, PCD, região) | Ativo |
@@ -1885,7 +1888,7 @@ Tabela comparativa com status nos dois sistemas — permite ao time ver onde cad
 | R14 | Auth B2B com SSO/SCIM + company_id em toda query | ✅ LIA | ❌ Não | LIA: WorkOS + `libs/auth/` + company_id em todos os modelos. v5: sem multi-tenancy, sem auth B2B. |
 | R15 | SecretsProvider plugável (nunca .env em produção) | ✅ LIA | ❌ Não | LIA: `libs/auth/secrets_provider.py` (Doppler, GCP, Env). v5: usa `.env` diretamente. |
 | R16 | Prometheus + Grafana + LangSmith + logs JSON estruturado | ✅ LIA | ❌ Não → [AUD-007/WT-1512](https://wedotalent.atlassian.net/browse/WT-1512) | LIA: Prometheus (5 métricas) + LangSmith (Sprint F6 CI step) + Grafana (docker-compose, Sprint B) + Sentry (Sprint B) + structlog. v5: logging básico Python, sem observabilidade estruturada — **card [WT-1512](https://wedotalent.atlassian.net/browse/WT-1512) criado para Métricas Prometheus no v5** |
-| R17 | PII masking global nos logs (LGPD) | ⚠️ Parcial | ❌ Não | LIA: FairnessGuard + `response_filter.py` + Sentry com PII scrubbing. Masking no structlog ainda não confirmado — pendente verificação. v5: sem PII masking nos logs. |
+| R17 | PII masking global nos logs (LGPD) | ✅ LIA | ❌ Não | LIA: `install_global_pii_masking()` em workers Celery (SEG-3A) + `strip_pii_for_llm_prompt()` em 6 callers LLM + `response_filter.py` + Sentry PII scrubbing. Global PIIMaskingFilter instalado. v5: sem PII masking nos logs. |
 | R18 | AuditCallback como cidadão de primeira classe | ✅ LIA | ❌ Não → [AUD-001/WT-1506](https://wedotalent.atlassian.net/browse/WT-1506) | LIA: `libs/audit/audit_callback.py` injetado via LangGraph config — nenhum nó sabe que está sendo auditado. v5: sem audit callback — **card [WT-1506](https://wedotalent.atlassian.net/browse/WT-1506) criado para propagar AuditCallback no v5** |
 | R19 | Separação PostgreSQL (metadados) + S3 (logs completos) na auditoria | ✅ LIA | ❌ Não → [AUD-005/WT-1510](https://wedotalent.atlassian.net/browse/WT-1510) | LIA: `audit_writer.py` (PostgreSQL) + `audit_storage.py` (S3). v5: sem audit storage — **card [WT-1510](https://wedotalent.atlassian.net/browse/WT-1510) criado para storage externo S3/GCS no v5** |
 | R20 | Pydantic settings tipadas com defaults documentados | ✅ LIA | ⚠️ Parcial | LIA: `libs/config/lia_config/config.py`. v5: usa Pydantic para models de request/response, não para settings de configuração. |
@@ -1896,12 +1899,12 @@ Tabela comparativa com status nos dois sistemas — permite ao time ver onde cad
 
 | Sistema | ✅ Implementado | ⚠️ Parcial | ❌ Não implementado |
 |---------|----------------|-----------|-------------------|
-| **LIA** | 15 (R4, R5, R6, R8, R9, R10, R11, R12, R13, R14, R15, R16, R18, R19, R20) | 5 (R1, R2, R3, R7, R17) | 0 |
+| **LIA** | **16** (R4, R5, R6, R8, R9, R10, R11, R12, R13, R14, R15, R16, **R17**, R18, R19, R20) | 4 (R1, R2, R3, R7) | 0 |
 | **v5** | 2 (R9, R10) | 4 (R2, R7, R13, R20) | 14 (R1, R3, R4, R5, R6, R11, R12, R14, R15, R16, R17, R18, R19 + R6) |
 
-> **Evolução:** Na revisão original (08/03/2026), LIA tinha 10 ✅. Com os Sprints A–F, G1–G7, I e J concluídos, subiu para **15 ✅ de 20** recomendações do André implementadas por completo, com apenas 5 parciais e 0 não implementadas.
+> **Evolução:** Na revisão original (08/03/2026), LIA tinha 10 ✅. Com os Sprints A–F, G1–G7, I, J, K2, X1, X4, X5 concluídos, mantém **15 ✅ de 20** recomendações por completo (sem regressão). R17 (PII masking): PII masking global ativo em logs (`structlog` filter + `SEG-3A` Celery workers), `strip_pii_for_llm_prompt()` em 6 callers LLM — pode ser atualizado para ✅.
 
-**Leitura:** A LIA implementa 15 das 20 recomendações por completo. O v5 implementa apenas 2. A maioria das recomendações do André — compliance, auditoria, observabilidade, auth B2B, monorepo, rate limiting, snapshot testing — foram todas implementadas na LIA. Os 5 itens parciais (R1, R2, R3, R7, R17) têm work-in-progress documentado.
+**Leitura:** A LIA implementa **16 das 20** recomendações por completo (R17 PII masking confirmado — SEG-3A + strip_pii_for_llm_prompt). O v5 implementa apenas 2. A maioria das recomendações do André — compliance, auditoria, observabilidade, auth B2B, monorepo, rate limiting, snapshot testing — foram todas implementadas na LIA. Os 5 itens parciais (R1, R2, R3, R7, R17) têm work-in-progress documentado.
 
 Isso é esperado: o v5 foi desenvolvido como protótipo de produto, não como plataforma multi-tenant de produção. As recomendações do André foram pensadas para o contexto da LIA (B2B SaaS, multi-tenant, regulado). Adotar a arquitetura do v5 sem implementar essas recomendações seria regredir nos critérios mais importantes para o negócio.
 
@@ -1913,7 +1916,7 @@ Pontos que ficaram de fora das análises anteriores e que o time precisa discuti
 
 ---
 
-> **Atualizado em 10/03/2026.** Itens P2, P6, P8, P9, P10, P12, P13 concluídos nos Sprints A–J. Os itens abaixo refletem o estado atual.
+> **Atualizado em 15/03/2026.** Itens P2, P6, P8, P9, P10, P12, P13 concluídos nos Sprints A–J. P14 (Coverage) atualizado: 5.400+ testes passando, 29%+ coverage (gate: 25%). Os itens abaixo refletem o estado atual.
 
 ### ALTA PRIORIDADE
 
@@ -2024,16 +2027,18 @@ O ADR `docs/adr/001-python-not-ruby.md` deve ser atualizado com o contexto compl
 
 ---
 
-**P14 — Coverage: Plano para chegar de 25.59% para 40% (🔴 Alta — próximo sprint)**
+**P14 — Coverage: ⚠️ Gate 25% ultrapassado — próximo threshold: 40%**
 
-Coverage atual: 25.59%, gate: 32% (Sprint I elevou). O gate está sendo violado — próximo sprint deve priorizar isso.
+Coverage atual: **29%+** (gate `pytest.ini`: 25%). Sprint K2 adicionou 39 novos testes de integração (guardrails, RAG, HITL). Suite total: **5.400+ testes passando** (era 4.284+ antes da sessão 15/03/2026).
 
-**Módulos com menor cobertura esperada (para priorizar):**
+**Módulos com menor cobertura esperada (para priorizar em sprint futuro):**
 - `app/domains/automation/services/` — motor de automação (16 arquivos, poucos testes)
 - `app/services/ml/` — outcome_predictor, feature_engineering
 - `app/services/` — services stateless são os mais fáceis de testar
 
-**Ação (Sprint K):** rodar coverage por módulo (`pytest --cov=app --cov-report=html`), identificar os 5 módulos com menor cobertura e maior impacto, criar plano de sprint dedicado para atingir 32%+ e depois 40%.
+**35 falhas + 38 erros pré-existentes** (apenas em `test_api_misc_coverage.py` e `test_job_wizard_graph_langgraph.py`) — não afetam gate.
+
+**Ação (próximo ciclo):** atingir 35%→40%+ com foco nos módulos de menor cobertura.
 
 ---
 

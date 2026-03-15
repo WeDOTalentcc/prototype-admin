@@ -11,6 +11,7 @@ import httpx
 
 from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
 from app.shared.resilience.circuit_breaker import GUPY_CIRCUIT, circuit_breaker_decorator
+from app.services.ats_clients.ats_pii_filter import filter_outbound, filter_inbound_text
 
 logger = logging.getLogger(__name__)
 
@@ -73,9 +74,11 @@ class GupyClient(ATSClient):
     
     def _parse_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
         """Parse Gupy candidate response to normalized format."""
+        # Sanitizar campos de texto livre antes de armazenar (LGPD Art. 46)
+        data = filter_inbound_text(data, "gupy")
         name = data.get("nome") or data.get("name") or ""
         email = data.get("email") or ""
-        
+
         return ATSCandidate(
             ats_id=str(data.get("id", "")),
             name=name,
@@ -150,8 +153,10 @@ class GupyClient(ATSClient):
             raise
     
     @circuit_breaker_decorator(GUPY_CIRCUIT)
-    async def create_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
+    async def create_candidate(self, data: Dict[str, Any], has_consent: bool = True) -> ATSCandidate:
         """Create candidate in Gupy."""
+        # Filtrar campos sensíveis se sem consentimento (LGPD Art. 6)
+        data = filter_outbound(data, "gupy", has_consent=has_consent)
         gupy_data = {
             "nome": data.get("name"),
             "email": data.get("email"),
@@ -182,11 +187,14 @@ class GupyClient(ATSClient):
     async def update_candidate(
         self,
         candidate_id: str,
-        data: Dict[str, Any]
+        data: Dict[str, Any],
+        has_consent: bool = True,
     ) -> ATSCandidate:
         """Update candidate in Gupy."""
+        # Filtrar campos sensíveis se sem consentimento (LGPD Art. 6)
+        data = filter_outbound(data, "gupy", has_consent=has_consent)
         gupy_data: Dict[str, Any] = {}
-        
+
         field_mapping = {
             "status": "fase",
             "stage": "etapa",

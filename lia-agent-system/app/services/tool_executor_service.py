@@ -30,6 +30,7 @@ class ToolExecutionRequest(BaseModel):
     company_id: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
     agent_type: str = "orchestrator"
+    active_scope: Optional[str] = None  # E8: PromptScope str para validação de escopo
 
 
 class ToolExecutionResponse(BaseModel):
@@ -147,7 +148,19 @@ class ToolExecutorService:
                 error="tool_not_found",
                 tool_name=request.tool_name
             )
-        
+
+        # E8: Scope validation — fail-open, loga violação para auditoria
+        if request.active_scope:
+            try:
+                from app.tools.scope_config import PromptScope, is_tool_allowed_in_scope
+                if not is_tool_allowed_in_scope(request.tool_name, PromptScope(request.active_scope)):
+                    self.logger.warning(
+                        "[SCOPE-VIOLATION] tool=%s scope=%s agent=%s — prosseguindo (fail-open)",
+                        request.tool_name, request.active_scope, request.agent_type,
+                    )
+            except Exception as _scope_exc:
+                self.logger.debug("scope validation skipped: %s", _scope_exc)
+
         user_permissions = ["admin"]
         
         context = ToolExecutionContext(

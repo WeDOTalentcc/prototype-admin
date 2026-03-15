@@ -273,4 +273,36 @@ class ApifyService:
         return extracted
 
 
+    async def scrape_salary_data(
+        self,
+        job_title: str,
+        location: str,
+    ) -> dict:
+        """
+        Scrapes salary data from Glassdoor/LinkedIn via Apify.
+        Returns dict with 'salaries' list (BRL values).
+        Fail-open: returns empty dict on error.
+        """
+        try:
+            actor_id = "bebity/glassdoor-salary-scraper"
+            run_input = {
+                "jobTitle": job_title,
+                "location": location,
+                "maxItems": 50,
+            }
+            result = await self.run_apify_actor(actor_id, run_input)
+            if not result or not isinstance(result, (list, dict)):
+                return {}
+            items = result if isinstance(result, list) else result.get("items", [])
+            salaries = []
+            for item in items:
+                salary = item.get("salary") or item.get("basePayAmount")
+                if salary and isinstance(salary, (int, float)) and salary > 0:
+                    salaries.append(float(salary))
+            return {"salaries": salaries} if salaries else {}
+        except Exception as exc:
+            logger.warning("[Apify] scrape_salary_data failed: %s", exc)
+            return {}
+
+
 apify_service = ApifyService()

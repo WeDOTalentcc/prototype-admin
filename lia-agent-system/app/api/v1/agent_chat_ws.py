@@ -414,6 +414,19 @@ async def agent_chat_ws(
                 })
                 continue
 
+            # E7: injeta streaming_callback no context antes de construir agent_input
+            async def _thinking_callback_pre(event: dict) -> None:
+                """Retransmite evento thinking do ReAct loop para o cliente WebSocket."""
+                try:
+                    await ws_manager.send_to_session(session_id, {
+                        "type": "thinking",
+                        "content": event.get("thought", ""),
+                        "step": event.get("step", 0),
+                    })
+                except Exception:
+                    pass  # fail-silent
+            context["streaming_callback"] = _thinking_callback_pre
+
             agent_input = _build_agent_input(
                 content=content,
                 context=context,

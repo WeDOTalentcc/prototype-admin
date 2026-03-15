@@ -38,12 +38,77 @@ logger = logging.getLogger(__name__)
 
 
 async def _pearch_search_fallback(self, request, timeout=120):
-    """Fallback retornado quando circuit breaker do Pearch está aberto."""
-    logger.warning("[CIRCUIT-BREAKER] Pearch circuit aberto — retornando resultado vazio")
+    """Fallback quando circuit breaker do Pearch está aberto.
+
+    D10: Em vez de retornar vazio, tenta busca interna via RAG Híbrido
+    (Sprint G6 — BM25 + pgvector). Loga [PEARCH-FALLBACK] com contagem de
+    resultados internos. Fail-safe: se o RAG também falhar, retorna vazio.
+    """
+    query = request.query if request else ""
+    company_id = getattr(request, "company_id", "") or ""
+
+    logger.warning(
+        "[PEARCH-FALLBACK] Circuit aberto — tentando busca interna RAG para query='%s' company_id='%s'",
+        query, company_id,
+    )
+
+    if query and company_id:
+        try:
+            from app.services.rag_pipeline_service import RAGPipelineService
+            from app.core.database import AsyncSessionLocal
+
+            rag_svc = RAGPipelineService()
+            async with AsyncSessionLocal() as db:
+                rag_result = await rag_svc.search(
+                    query=query,
+                    company_id=company_id,
+                    db=db,
+                    limit=getattr(request, "limit", 20) or 20,
+                    alpha=0.5,
+                )
+
+            count = rag_result.total if rag_result else 0
+            logger.info(
+                "[PEARCH-FALLBACK] Busca interna retornou %d candidato(s) para query='%s'",
+                count, query,
+            )
+
+            # Converter RAGSearchResult → PearchSearchResponse
+            rag_search_results: list = []
+            for item in (rag_result.results if rag_result else []):
+                profile = CandidateProfile(
+                    docid=str(item.get("id", "")),
+                    name=item.get("name", ""),
+                    current_title=item.get("current_role", ""),
+                    location=item.get("location", ""),
+                    summary=item.get("summary", ""),
+                )
+                rag_search_results.append(
+                    PearchSearchResult(
+                        docid=str(item.get("id", "")),
+                        score=int(item.get("score", 0) * 100),
+                        profile=profile,
+                    )
+                )
+
+            return PearchSearchResponse(
+                uuid="internal-fallback",
+                thread_id="",
+                query=query,
+                status="internal_fallback",
+                total_estimate=count,
+                search_results=rag_search_results,
+            )
+
+        except Exception as _rag_exc:
+            logger.warning(
+                "[PEARCH-FALLBACK] Busca interna RAG também falhou: %s — retornando vazio", _rag_exc
+            )
+
     return PearchSearchResponse(
         uuid="circuit-breaker-fallback",
         thread_id="",
-        query=request.query if request else "",
+        query=query,
         status="unavailable",
         total_estimate=0,
     )

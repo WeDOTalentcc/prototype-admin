@@ -141,6 +141,11 @@ class ReActConfig(BaseModel):
         default=None,
         description="AuditCallback instance for full execution tracing (LangGraph/manual).",
     )
+    active_scope: Optional[str] = Field(
+        default=None,
+        description="PromptScope ativo (TALENT_FUNNEL, JOB_TABLE, IN_JOB, GLOBAL). "
+                    "Se definido, tools fora do escopo são logadas como SCOPE-VIOLATION (fail-open).",
+    )
 
     class Config:
         arbitrary_types_allowed = True
@@ -205,6 +210,18 @@ class ReActState(BaseModel):
         default=None,
         description="Session identifier for multi-tenant context propagation",
     )
+    confidence_score: float = Field(
+        default=0.5,
+        description="D2: calibrated confidence [0,1] computed at end of loop",
+    )
+    # E7: streaming_callback — async callable para emissão de eventos thinking via WS
+    streaming_callback: Optional[Any] = Field(
+        default=None,
+        description="E7: async callback para enviar eventos thinking ao cliente WS durante o loop.",
+    )
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ReActLoop:
@@ -251,8 +268,11 @@ class ReActLoop:
             The final ReActState after the loop completes.
         """
         loop_start = time.time()
+        # E7: extrai streaming_callback do context se disponível
+        _streaming_cb = context.get("streaming_callback") if context else None
         state = ReActState(
             messages=[{"role": "user", "content": message}],
+            streaming_callback=_streaming_cb,
         )
 
         # Alias curto — usado em todo o método para guardar chamadas de auditoria
@@ -320,6 +340,18 @@ class ReActLoop:
                 logger.info(
                     f"[{self.config.domain}] Iteration {state.iteration}/{self.config.max_iterations}"
                 )
+
+                # E7: emite evento thinking via streaming_callback se disponível
+                if state.streaming_callback:
+                    try:
+                        _thinking_thought = f"Iteração {state.iteration}"
+                        await state.streaming_callback({
+                            "type": "thinking",
+                            "step": state.iteration,
+                            "thought": _thinking_thought,
+                        })
+                    except Exception:
+                        pass  # fail-silent — não bloqueia o loop
 
                 if observer:
                     observer.start_iteration(state.iteration)
@@ -459,6 +491,35 @@ class ReActLoop:
                     if context.get("vacancy_id") and "vacancy_id" not in tool_args:
                         tool_args["vacancy_id"] = context["vacancy_id"]
 
+                    # E8: Scope validation — fail-open, loga violação para auditoria
+                    if self.config.active_scope:
+                        try:
+                            from app.tools.scope_config import PromptScope, is_tool_allowed_in_scope
+                            _scope_allowed = is_tool_allowed_in_scope(
+                                tool_name, PromptScope(self.config.active_scope)
+                            )
+                            if not _scope_allowed:
+                                logger.warning(
+                                    "[SCOPE-VIOLATION] agent=%s tool=%s scope=%s — "
+                                    "tool fora do escopo ativo, prosseguindo (fail-open)",
+                                    self.config.domain, tool_name, self.config.active_scope,
+                                )
+                        except Exception as _scope_exc:
+                            logger.debug(
+                                "[%s] scope validation skipped: %s", self.config.domain, _scope_exc
+                            )
+
+                    # E7: emite evento thinking com nome da tool antes de executar
+                    if state.streaming_callback:
+                        try:
+                            await state.streaming_callback({
+                                "type": "thinking",
+                                "step": state.iteration,
+                                "thought": f"Chamando tool: {tool_name}",
+                            })
+                        except Exception:
+                            pass  # fail-silent
+
                     tool_start = time.time()
                     tool_result = await self._act(state, {"tool_name": tool_name, "tool_args": tool_args})
                     tool_duration = (time.time() - tool_start) * 1000
@@ -468,6 +529,20 @@ class ReActLoop:
                         agent_iterations_total.labels(domain=self.config.domain, action_type="call_tool").inc()
                     if not tool_success:
                         state.failed_tool_calls.append(call_key)
+
+                    # C4: record_tokens se disponíveis no resultado
+                    _tokens = tool_result.get("tokens") or tool_result.get("usage")
+                    if _tokens:
+                        try:
+                            from app.shared.observability.agent_metrics import record_tokens
+                            record_tokens(
+                                agent=self.config.domain,
+                                model=self.config.model_name,
+                                input_tokens=int(_tokens.get("input_tokens") or _tokens.get("prompt_tokens") or 0),
+                                output_tokens=int(_tokens.get("output_tokens") or _tokens.get("completion_tokens") or 0),
+                            )
+                        except Exception:
+                            pass
 
                     if _audit:
                         _audit.on_tool_call(
@@ -630,13 +705,25 @@ class ReActLoop:
             except Exception as track_exc:
                 logger.debug(f"[{self.config.domain}] Token tracking skipped: {track_exc}")
 
+        # D2 — Confidence calibration: tool_success_ratio * 0.7 + completion_ratio * 0.3
+        try:
+            tool_total = len(state.tool_calls_made)
+            tool_failed = len(state.failed_tool_calls)
+            tool_success_ratio = (
+                (tool_total - tool_failed) / tool_total if tool_total > 0 else 1.0
+            )
+            completion_ratio = 0.3 if state.error else 1.0
+            raw_conf = tool_success_ratio * 0.7 + completion_ratio * 0.3
+            state.confidence_score = round(min(1.0, max(0.0, raw_conf)), 4)
+        except Exception:
+            state.confidence_score = 0.5
+
         # --- Audit: persistir execução completa ---
         if _audit:
             try:
                 _audit_success = not bool(state.error)
-                _audit_confidence = 0.9 if _audit_success and state.final_response else 0.3
                 await _audit.on_chain_end_manual(
-                    confidence=_audit_confidence,
+                    confidence=state.confidence_score,
                     success=_audit_success,
                     error=state.error,
                 )

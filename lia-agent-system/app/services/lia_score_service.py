@@ -890,27 +890,65 @@ class LIAScoreService:
     ) -> float:
         """
         Get calibration adjustment from CalibrationService.
-        
+
         This is a synchronous wrapper that uses pre-fetched calibration data
         or returns 0.0 if no calibration data is available.
-        
+
         The calibration adjustment is a value between -5 and +5 that
         adjusts the final score based on recruiter feedback patterns.
-        
+
         Args:
             candidate_id: Candidate ID for candidate-specific adjustments
             job_id: Job ID for job-specific adjustments
             calibration_data: Pre-fetched calibration weights/adjustments
-        
+
         Returns:
             Calibration adjustment value (-5 to +5)
         """
         if calibration_data is None:
             return 0.0
-        
+
         adjustment = calibration_data.get("adjustment", 0.0)
-        
+
         return max(-5.0, min(5.0, adjustment))
+
+    async def _get_calibration_adjustment_async(
+        self,
+        candidate_id: Optional[str] = None,
+        job_id: Optional[str] = None,
+        company_id: Optional[str] = None,
+        db=None,
+    ) -> float:
+        """
+        Retorna ajuste de calibração baseado em feedback do loop adaptativo (D6).
+
+        Usa MLFeedbackService.compute_calibration_adjustment() quando db disponível.
+        Fail-open: retorna 0.0 em caso de erro ou dados insuficientes.
+
+        Args:
+            candidate_id: ID do candidato (reservado para ajustes futuros)
+            job_id: ID da vaga para buscar pesos específicos
+            company_id: ID da empresa (multi-tenant)
+            db: AsyncSession — obrigatório para consultar feedback histórico
+
+        Returns:
+            Ajuste de calibração entre -5.0 e +5.0
+        """
+        try:
+            if db is None:
+                return 0.0
+            from app.services.ml_feedback_service import ml_feedback_service
+            adjustment = await ml_feedback_service.compute_calibration_adjustment(
+                db=db,
+                company_id=company_id or "",
+                job_id=job_id,
+            )
+            return adjustment
+        except Exception as exc:
+            logger.warning(
+                "[LIAScore] _get_calibration_adjustment_async falhou (0.0): %s", exc
+            )
+            return 0.0
     
     def _calculate_prerequisites_score(
         self,

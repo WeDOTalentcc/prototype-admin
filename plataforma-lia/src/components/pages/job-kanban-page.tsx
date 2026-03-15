@@ -23,14 +23,17 @@ import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-
 import { RubricEvaluationModal } from "@/components/rubric-evaluation-modal"
 import { BigFiveModal } from "@/components/big-five-modal"
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
+import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 import { GeneralScoreModal } from "@/components/modals/general-score-modal"
 import { TechnicalTestModal } from "@/components/modals/technical-test-modal"
 import { EnglishTestModal } from "@/components/modals/english-test-modal"
 import { CandidateDecisionFlowModal } from "@/components/candidate-decision-flow-modal"
+import { CandidateCompareModal } from "@/components/modals/candidate-compare-modal"
 import { UniversalTransitionModal, useUniversalTransition, type UniversalTransitionConfirmData, type KanbanCandidate } from "@/components/kanban"
 import { useAuth } from "@/components/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { useShortList } from "@/hooks/use-short-list"
+import { useProactiveInsights } from "@/hooks/use-proactive-insights"
 import { useNavigationPersistence } from "@/hooks/use-navigation-persistence"
 import { useTalentFunnel } from "@/hooks/use-talent-funnel"
 import { useCandidateSuggestions, getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
@@ -389,6 +392,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   const _companyIdForSL = (user as any)?.company || 'demo'
   const _jobIdForSL = job?.id?.toString()
   const { shortLists, createShortList: _createSL, addCandidate: _addToSL, removeCandidate: _removeFromSL } = useShortList(_companyIdForSL, _jobIdForSL)
+  const { insights: proactiveInsights, dismiss: dismissInsight } = useProactiveInsights(_jobIdForSL, _companyIdForSL)
   
   const { 
     suggestions: aiSuggestions, 
@@ -1359,6 +1363,11 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   const [showTechnicalTestModal, setShowTechnicalTestModal] = useState(false)
   const [showEnglishTestModal, setShowEnglishTestModal] = useState(false)
   const [scoreModalCandidate, setScoreModalCandidate] = useState<any>(null)
+
+  // D9 — Estado para modal de comparação de candidatos
+  const [showCompareModal, setShowCompareModal] = useState(false)
+  const [compareCandidates, setCompareCandidates] = useState<{ id: string; name: string }[]>([])
+  const [selectedForCompare, setSelectedForCompare] = useState<Set<string>>(new Set())
 
   // Estados para modal de fluxo de decisão (aprovar/reprovar)
   const [showDecisionFlowModal, setShowDecisionFlowModal] = useState(false)
@@ -4474,6 +4483,27 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     onChange={() => {}}
                   />
 
+                  {/* D9 — Checkbox para comparação de candidatos */}
+                  <input
+                    type="checkbox"
+                    className="w-3 h-3 rounded cursor-pointer flex-shrink-0 border border-gray-300 accent-gray-900"
+                    checked={selectedForCompare.has(candidate.id)}
+                    onChange={(e) => {
+                      setSelectedForCompare(prev => {
+                        const next = new Set(prev)
+                        if (e.target.checked) {
+                          if (next.size < 4) next.add(candidate.id)
+                        } else {
+                          next.delete(candidate.id)
+                        }
+                        return next
+                      })
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={`Selecionar ${candidate.name} para comparação`}
+                    title={selectedForCompare.size >= 4 && !selectedForCompare.has(candidate.id) ? 'Máximo de 4 candidatos para comparação' : 'Comparar candidato'}
+                  />
+
                   {/* Avatar pequeno com foto */}
                   <div className="relative flex-shrink-0">
                     {(() => {
@@ -4564,6 +4594,15 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           onClick={() => handleOpenScoreModal(candidate, id as 'geral' | 'triagem' | 'cv' | 'tecnico' | 'ingles' | 'b5')}
                         />
                       ))}
+                      {/* E1 — Score clicável: badge lazy com detalhamento da rubrica */}
+                      {geralScore != null && _jobIdForSL && candidate.id && (
+                        <ScoreBreakdownBadgeLazy
+                          score={geralScore}
+                          jobId={_jobIdForSL}
+                          candidateId={String(candidate.id)}
+                          size="sm"
+                        />
+                      )}
                     </div>
                   )
                 })()}
@@ -5454,6 +5493,32 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
         </div>
       </div>
+
+      {/* D8 — Insights Proativos (dismiss por sessão via localStorage) */}
+      {proactiveInsights.length > 0 && activeTab === 'management' && (
+        <div className="px-4 py-2 space-y-1.5">
+          {proactiveInsights.slice(0, 3).map(insight => (
+            <div
+              key={insight.id}
+              className={`flex items-start gap-2 px-3 py-2 rounded-md border text-xs ${
+                insight.urgency === 'urgent' ? 'bg-red-50 border-red-200 text-red-800' :
+                insight.urgency === 'high' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+                'bg-gray-50 border-gray-200 text-gray-700'
+              }`}
+            >
+              <span className="font-medium flex-shrink-0">{insight.title}</span>
+              <span className="flex-1">{insight.message}</span>
+              <button
+                onClick={() => dismissInsight(insight.id)}
+                className="flex-shrink-0 opacity-50 hover:opacity-100"
+                aria-label="Dispensar"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {activeTab === 'edit' ? (
         <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
@@ -10054,6 +10119,42 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         onClose={() => setShowEnglishTestModal(false)}
         candidate={scoreModalCandidate}
       />
+
+      {/* D9 — Modal de Análise Comparativa */}
+      <CandidateCompareModal
+        open={showCompareModal}
+        onClose={() => setShowCompareModal(false)}
+        candidates={compareCandidates}
+        jobId={_jobIdForSL}
+        companyId={_companyIdForSL}
+      />
+
+      {/* D9-G1 — Botão flutuante de comparação (aparece quando 2+ candidatos selecionados) */}
+      {selectedForCompare.size >= 2 && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
+          <button
+            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition-colors shadow-lg"
+            onClick={() => {
+              const selectedIds = Array.from(selectedForCompare)
+              const resolvedCandidates = allTableCandidates
+                .filter(c => selectedIds.includes(c.id))
+                .map(c => ({ id: c.id, name: c.name }))
+              setCompareCandidates(resolvedCandidates)
+              setShowCompareModal(true)
+              setSelectedForCompare(new Set())
+            }}
+          >
+            <span>Comparar ({selectedForCompare.size})</span>
+          </button>
+          <button
+            className="bg-white border border-gray-200 text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-50 transition-colors shadow-lg"
+            onClick={() => setSelectedForCompare(new Set())}
+            aria-label="Limpar seleção de comparação"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* UniversalTransitionModal - Modal universal para transições de etapa */}
       <UniversalTransitionModal

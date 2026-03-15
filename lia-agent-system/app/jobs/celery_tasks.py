@@ -8,6 +8,7 @@ Tasks registradas:
   - agents.sourcing.search       — busca de candidatos via Pearch (async)
   - communication.email.send_bulk — envio de email em massa
   - briefing.send_daily          — envia briefing diário a todos os recrutadores ativos (P3-1)
+  - ragas.evaluate_batch         — avaliação RAGAS de qualidade LLM (ACH-027)
 """
 import asyncio
 
@@ -652,3 +653,269 @@ def wsi_check_abandoned_task(self) -> dict:
     except Exception as exc:
         logger.error("wsi.check_abandoned falhou: %s", exc)
         raise self.retry(exc=exc, countdown=300)
+
+
+
+@celery_app.task(name="ragas.evaluate_batch", bind=True, max_retries=1, queue="evaluation_normal")
+def run_ragas_evaluate_batch(self, domain: str = "all", days_back: int = 1) -> dict:
+    """
+    Avaliação RAGAS em lote das respostas dos agentes — ACH-027.
+
+    Carrega samples de audit_decisions das últimas `days_back` horas,
+    executa avaliação RAGAS/heurística e persiste em agent_ragas_evaluations.
+
+    Agendado diariamente às 03h UTC via Celery Beat (beat_schedule: ragas-evaluate-daily).
+
+    Returns:
+        Dict com { evaluated, skipped, errors, domain }
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from app.services.ragas_evaluation_service import ragas_evaluation_service, RAGASEvaluationInput
+        from sqlalchemy import text
+        from datetime import timedelta, datetime
+
+        since = datetime.utcnow() - timedelta(days=days_back)
+        evaluated = 0
+        skipped = 0
+        errors = 0
+
+        async with AsyncSessionLocal() as db:
+            # Busca decisions recentes para avaliação
+            domain_filter = "" if domain == "all" else "AND domain = :domain"
+            result = await db.execute(
+                text(
+                    f"""
+                    SELECT id, session_id, domain, agent_name,
+                           reasoning, decision, metadata
+                    FROM audit_decisions
+                    WHERE created_at >= :since
+                      {domain_filter}
+                    ORDER BY created_at DESC
+                    LIMIT 100
+                    """
+                ),
+                {"since": since, "domain": domain} if domain != "all" else {"since": since},
+            )
+            rows = result.fetchall()
+
+            for row in rows:
+                try:
+                    reasoning_list = row.reasoning or []
+                    answer = " ".join(reasoning_list) if isinstance(reasoning_list, list) else str(reasoning_list)
+                    if not answer or len(answer) < 20:
+                        skipped += 1
+                        continue
+
+                    inp = RAGASEvaluationInput(
+                        question=f"decision:{row.decision} domain:{row.domain}",
+                        answer=answer,
+                        contexts=[],
+                        session_id=str(row.session_id or ""),
+                        company_id="",
+                        domain=str(row.domain or ""),
+                        agent_name=str(row.agent_name or ""),
+                        metadata={"source": "audit_decisions", "decision_id": str(row.id)},
+                    )
+                    await ragas_evaluation_service.evaluate(inp, db)
+                    evaluated += 1
+                except Exception as exc:
+                    logger.warning("ragas.evaluate_batch: erro em row %s: %s", row.id, exc)
+                    errors += 1
+
+        logger.info(
+            "ragas.evaluate_batch: evaluated=%d skipped=%d errors=%d domain=%s",
+            evaluated, skipped, errors, domain,
+        )
+        return {"evaluated": evaluated, "skipped": skipped, "errors": errors, "domain": domain}
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.error("ragas.evaluate_batch falhou: %s", exc)
+        raise self.retry(exc=exc, countdown=300)
+
+
+# ---------------------------------------------------------------------------
+# E6 — RAG por Domínio: rebuild de índice de embeddings por domínio
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="rag.rebuild_domain_index")
+def rebuild_domain_index_task(domain: str, company_id: str):
+    """Celery task to rebuild RAG domain embeddings."""
+    import asyncio
+    from app.services.domain_embedding_service import domain_embedding_service
+
+    async def _run():
+        from lia_config.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            return await domain_embedding_service.rebuild_domain_index(domain, company_id, db)
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.warning("[Celery] rag.rebuild_domain_index failed: %s", exc)
+        return 0
+
+
+# ---------------------------------------------------------------------------
+# E9 — Adaptive Routing: recompute domain confidence adjustments per company
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="routing.recompute_adjustments")
+def recompute_routing_adjustments(company_id: str) -> dict:
+    """Recompute adaptive routing adjustments for a company.
+
+    Computes per-domain error rates from RoutingFeedback (last 30 days) and
+    caches the resulting confidence-adjustment factors to Redis (TTL=24h).
+
+    Args:
+        company_id: ID da empresa (ou "global" para ajuste global).
+
+    Returns:
+        Dict mapping domain → adjustment factor (0.8–1.2).
+    """
+    async def _run():
+        from lia_config.database import AsyncSessionLocal
+        from app.services.routing_learning_service import routing_learning_service
+
+        async with AsyncSessionLocal() as db:
+            adj = await routing_learning_service.compute_domain_confidence_adjustments(
+                company_id, db
+            )
+            await routing_learning_service.cache_adjustments(company_id, adj)
+            return adj
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.warning("[Celery] routing.recompute_adjustments failed: %s", exc)
+        return {}
+
+
+@celery_app.task(name="ml.feedback.process_weights", bind=True, max_retries=2)
+def process_ml_feedback_weights_task(self, company_id: str, job_id: str) -> dict:
+    """
+    Computa pesos adaptativos ML para uma vaga específica (D6 — Feedback Loop).
+
+    Disparado após acúmulo de feedback de recrutadores (hire/reject/override).
+    Roda on-demand ou via beat semanal.
+
+    Args:
+        company_id: UUID da empresa (multi-tenant)
+        job_id: UUID da vaga
+    """
+    import asyncio
+
+    async def _run() -> dict:
+        from lia_config.database import AsyncSessionLocal
+        from app.services.ml_feedback_service import MLFeedbackService
+
+        service = MLFeedbackService()
+        async with AsyncSessionLocal() as db:
+            weights = await service.compute_job_weights(
+                db=db, job_id=job_id, company_id=company_id
+            )
+            logger.info(
+                "ml.feedback.process_weights: job=%s company=%s samples=%d",
+                job_id, company_id, weights.sample_count,
+            )
+            return weights.to_dict()
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.error("ml.feedback.process_weights falhou: %s", exc)
+        raise self.retry(exc=exc, countdown=120)
+
+
+# ---------------------------------------------------------------------------
+# E4 — Hot-Reload de Agentes: verifica alterações no agents_registry.yaml
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="agents.registry.check_reload")
+def check_agent_registry_reload():
+    """Verifica se agents_registry.yaml foi modificado e recarrega o registry.
+
+    Executa a cada 1 minuto via beat schedule. Usa mtime-gating para evitar
+    reloads desnecessários (fail-open — nunca bloqueia o worker).
+    """
+    import asyncio
+    from app.core.agent_registry_watcher import agent_registry_watcher
+
+    try:
+        reloaded = asyncio.run(agent_registry_watcher.check_and_reload())
+        if reloaded:
+            logger.info("[Celery] agents_registry.yaml reloaded: %s", reloaded)
+        return {"reloaded": reloaded}
+    except Exception as exc:
+        logger.warning("[Celery] agents.registry.check_reload failed (fail-open): %s", exc)
+        return {"reloaded": []}
+
+
+# ---------------------------------------------------------------------------
+# E6 — RAG rebuild: reconstrução diária de todos os índices de domínio
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="rag.rebuild_all_domains")
+def rebuild_all_domains_task():
+    """Dispara rebuild de embeddings para todos os domínios RAG conhecidos.
+
+    Wrapper que itera os 5 domínios fixos e despacha rebuild_domain_index_task
+    para cada. Executado diariamente via beat schedule (04h UTC / 01h Brasília).
+    """
+    _DOMAINS = ["general", "jobs", "talent", "policy", "company"]
+    dispatched = 0
+    for domain in _DOMAINS:
+        try:
+            rebuild_domain_index_task.delay(domain, "global")
+            dispatched += 1
+        except Exception as exc:
+            logger.warning("[Celery] rag.rebuild_all_domains dispatch failed for %s: %s", domain, exc)
+    logger.info("[Celery] rag.rebuild_all_domains dispatched %d/%d domains", dispatched, len(_DOMAINS))
+    return {"dispatched": dispatched, "domains": _DOMAINS}
+
+
+# ---------------------------------------------------------------------------
+# D6 — ML Feedback: recomputa pesos adaptativos para vagas com feedback recente
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="ml.feedback.recompute_active_jobs")
+def recompute_active_ml_jobs_task():
+    """Recomputa pesos ML adaptativos para vagas com feedback nas últimas 48h.
+
+    Wrapper semanal que consulta vagas com feedback recente e despacha
+    process_ml_feedback_weights_task para cada. Fail-open.
+    """
+    import asyncio
+
+    async def _get_active_jobs():
+        from lia_config.database import AsyncSessionLocal
+        from datetime import datetime, timedelta
+        from sqlalchemy import text
+
+        cutoff = datetime.utcnow() - timedelta(hours=48)
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                text(
+                    "SELECT DISTINCT job_id, company_id FROM recruiter_decision_feedback "
+                    "WHERE created_at >= :cutoff LIMIT 200"
+                ),
+                {"cutoff": cutoff},
+            )
+            return result.fetchall()
+
+    try:
+        rows = asyncio.run(_get_active_jobs())
+        dispatched = 0
+        for row in rows:
+            try:
+                process_ml_feedback_weights_task.delay(str(row.company_id), str(row.job_id))
+                dispatched += 1
+            except Exception as exc:
+                logger.warning("[Celery] ml.feedback dispatch failed job=%s: %s", row.job_id, exc)
+        logger.info("[Celery] ml.feedback.recompute_active_jobs dispatched %d jobs", dispatched)
+        return {"dispatched": dispatched}
+    except Exception as exc:
+        logger.warning("[Celery] ml.feedback.recompute_active_jobs failed (fail-open): %s", exc)
+        return {"dispatched": 0}

@@ -51,13 +51,48 @@ class LLMCascadeRouter:
         message: str,
         context: Optional[Dict[str, Any]] = None,
         company_id: Optional[str] = None,
+        preferred_model: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Rota a mensagem usando a escada de custo.
 
+        Args:
+            message: Mensagem do usuário para roteamento.
+            context: Contexto adicional opcional.
+            company_id: ID da empresa para registro de tokens.
+            preferred_model: Modelo preferido (E5 — Multi-Model). Se fornecido e
+                             disponível, usado no tier primário em vez do FAST_MODEL.
+                             Fail-safe: se o modelo falhar, a cascata padrão é usada.
+
         Returns dict com: domain, confidence, model_used, latency_ms, tokens_est
         """
         total_start = time.time()
+
+        # E5 — Multi-Model: tentar preferred_model antes da cascata padrão
+        if preferred_model:
+            try:
+                result_pref, tokens_pref = await self._call_model(
+                    message=message,
+                    model_name=preferred_model,
+                )
+                if result_pref and result_pref.get("confidence", 0) >= self._mid_threshold:
+                    result_pref["model_used"] = preferred_model
+                    result_pref["tier"] = "preferred"
+                    result_pref["tokens_est"] = tokens_pref
+                    result_pref["latency_ms"] = (time.time() - total_start) * 1000
+                    await self._record_tokens(company_id, tokens_pref)
+                    return result_pref
+                logger.debug(
+                    "[LLMCascade] preferred_model=%s confidence=%.2f < %.2f, fallback para cascata padrão",
+                    preferred_model,
+                    result_pref.get("confidence", 0) if result_pref else 0,
+                    self._mid_threshold,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "[LLMCascade] preferred_model=%s falhou (fail-safe, usando cascata): %s",
+                    preferred_model, exc,
+                )
 
         # Tier 3a — Haiku (mais barato)
         result, tokens = await self._call_model(

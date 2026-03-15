@@ -13,7 +13,7 @@ import json
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, JSON
 from sqlalchemy.dialects.postgresql import UUID
 
 from lia_config.database import Base
@@ -36,6 +36,7 @@ class BiasAuditSnapshot(Base):
     total_candidates = Column(Integer, nullable=False, default=0)
     has_alerts = Column(Boolean, nullable=False, default=False)
     dimensions_json = Column(Text, nullable=False)  # JSON das 4 dimensões
+    disparate_impact_data = Column(JSON, nullable=True)  # D3: chi-square por dimensão
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     def to_dict(self):

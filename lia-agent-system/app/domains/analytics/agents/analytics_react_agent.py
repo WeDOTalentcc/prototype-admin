@@ -21,6 +21,7 @@ from app.shared.agents.react_loop import ReActConfig, ReActLoop, ReActState
 from app.shared.compliance.audit_callback import AuditCallback
 from app.shared.agents.working_memory import WorkingMemoryService
 from app.shared.agents.observability import ReActObserver
+from app.services.confidence_policy_service import confidence_policy_service
 
 from app.domains.analytics.agents.analytics_stage_context import (
     STAGE_DEFINITIONS,
@@ -98,18 +99,23 @@ class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                 )
                 actions.append(AgentAction(action_type="call_tool", params={"tool": name}))
 
-        # Calcular confidence baseado no resultado
+        # Calcular confidence baseado no resultado e calibrar via ConfidencePolicyService
         _confidence = 0.75  # base para ações completadas com sucesso
         if actions:
             _confidence = 0.82  # tool foi chamada com sucesso
         if state.get("error"):
             _confidence = 0.40  # houve erro
+        _conf_action = confidence_policy_service.get_action_for_confidence(_confidence)
 
         return AgentOutput(
             message=response,
             actions=actions,
             confidence=_confidence,
-            metadata={"source": "langgraph_native", "domain": self.domain_name},
+            metadata={
+                "source": "langgraph_native",
+                "domain": self.domain_name,
+                "confidence_action": _conf_action.value,
+            },
         )
 
     # ------------------------------------------------------------------
@@ -221,6 +227,8 @@ class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                 f"[AnalyticsReActAgent] Done session={session_id} "
                 f"iterations={final_state.iteration} elapsed={elapsed_ms}ms"
             )
+
+            self._record_confidence(final_state)  # D2 — calibrated confidence
 
             actions = [
                 AgentAction(

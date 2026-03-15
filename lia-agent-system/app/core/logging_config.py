@@ -40,14 +40,22 @@ def configure_logging():
     root_logger.handlers.clear()
     
     handler = logging.StreamHandler(sys.stdout)
-    
+
     if env == "production":
         handler.setFormatter(JSONFormatter())
     else:
         handler.setFormatter(logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         ))
-    
+
+    # PII masking no handler — garante cobertura de records propagados de child loggers,
+    # que bypassam filtros do root logger e chegam diretamente nos handlers.
+    try:
+        from app.shared.pii_masking import PIIMaskingFilter
+        handler.addFilter(PIIMaskingFilter())
+    except ImportError:
+        pass
+
     root_logger.addHandler(handler)
     
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)

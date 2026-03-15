@@ -167,6 +167,7 @@ import { CandidateSearchBar } from "@/components/pages/candidates/CandidateSearc
 import { SearchResultsHeader } from "@/components/pages/candidates/SearchResultsHeader"
 import { CandidatesFilterPanel } from "@/components/pages/candidates/CandidatesFilterPanel"
 import type { Candidate } from "@/components/pages/candidates/types"
+import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false })
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false })
@@ -3446,8 +3447,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       case 'lia_score':
         const score = candidate.lia_score || 0
         const hasBeenEvaluated = candidate.lia_score && candidate.lia_score > 0
-        const evaluatedJob = candidate.lia_insights?.evaluated_job_title || candidate.lia_insights?.job_context
-        
+
         if (!hasBeenEvaluated) {
           return (
             <div className="relative group cursor-help">
@@ -3472,55 +3472,12 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         }
         
         return (
-          <div className="relative group cursor-help">
-            <Badge className={`text-xs font-semibold ${score >= 80 ? 'bg-green-100 text-green-800' : score >= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
-              {formatScorePercent(score)}
-            </Badge>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-              <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2.5 rounded-md text-xs min-w-[220px]">
-                <div className="font-semibold mb-2 flex items-center gap-1.5">
-                  <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                  Score LIA
-                </div>
-                {evaluatedJob && (
-                  <div className="text-[11px] text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
-                    <Briefcase className="w-3 h-3" />
-                    Avaliado para: {evaluatedJob}
-                  </div>
-                )}
-                <div className="text-[11px] text-gray-500 mb-2">
-                  Avaliação baseada em:
-                </div>
-                <div className="space-y-1 text-[11px]">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Match com a vaga</span>
-                    <span className="text-gray-200 font-medium">35%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Triagem WSI</span>
-                    <span className="text-gray-200 font-medium">30%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Experiência</span>
-                    <span className="text-gray-200 font-medium">20%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Fit Cultural</span>
-                    <span className="text-gray-200 font-medium">15%</span>
-                  </div>
-                </div>
-                <div className="mt-2 pt-2 border-t border-gray-700">
-                  <div className="flex items-center gap-1.5 text-[11px]">
-                    <span className={`w-2 h-2 rounded-full ${score >= 80 ? 'bg-green-400' : score >= 60 ? 'bg-yellow-400' : 'bg-gray-400'}`}></span>
-                    <span className="text-gray-500">
-                      {score >= 80 ? 'Excelente fit para a posição' : score >= 60 ? 'Fit moderado, avaliar' : 'Fit baixo, revisar perfil'}
-                    </span>
-                  </div>
-                </div>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
-              </div>
-            </div>
-          </div>
+          <ScoreBreakdownBadgeLazy
+            score={score}
+            candidateId={candidate.id}
+            jobId={(candidate.additional_data?.job_id as string) ?? ""}
+            size="sm"
+          />
         )
       case 'lia_insights':
         const insights = candidate.lia_insights

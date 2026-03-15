@@ -401,6 +401,40 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
             output = await self._build_output(state, current_stage, collected_fields, input)
 
+            # ACH-026 — FairnessGuard Camada 3: verificar viés em shortlist/recomendações
+            if output.message and current_stage in ("shortlist", "evaluation", "ranking"):
+                try:
+                    from app.shared.compliance.fairness_guard import FairnessGuard
+                    _fg3_out = FairnessGuard()
+                    _fg3_result = await _fg3_out.check_with_layer3(
+                        output.message, action_type="shortlist"
+                    )
+                    if _fg3_result.is_blocked:
+                        logger.warning(
+                            "[SourcingReActAgent][ACH-026] FairnessGuard Camada 3 bloqueou "
+                            "output: session=%s category=%s",
+                            input.session_id, _fg3_result.category,
+                        )
+                        output = AgentOutput(
+                            message=(
+                                "A recomendação gerada foi sinalizada pelo FairnessGuard. "
+                                "Por favor, revise os critérios de seleção com foco em "
+                                "competências técnicas e experiências objetivas."
+                            ),
+                            confidence=1.0,
+                            metadata={**output.metadata, "fairness_l3_blocked": True},
+                        )
+                    elif _fg3_result.soft_warnings:
+                        logger.info(
+                            "[SourcingReActAgent][ACH-026] FairnessGuard Camada 3: "
+                            "%d avisos em output session=%s",
+                            len(_fg3_result.soft_warnings), input.session_id,
+                        )
+                except Exception as _fg3_out_exc:
+                    logger.debug(
+                        "[SourcingReActAgent] FairnessGuard Camada 3 output skipped: %s", _fg3_out_exc
+                    )
+
             # SEG-5: AuditService — registrar resultado da busca/triagem de candidatos
             try:
                 from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
@@ -443,6 +477,22 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
                     )
             except Exception as obs_err:
                 logger.warning(f"[SourcingReActAgent] Failed to finalize observer: {obs_err}")
+
+            # E10: emit candidate_imported to pipeline agent
+            try:
+                candidate_id = input.context.get("candidate_id") or state.tool_calls_made[-1].result.get("candidate_id", "") if state.tool_calls_made else ""
+                job_id = input.context.get("job_id", "")
+                company_id_val = str(input.company_id or "")
+                if candidate_id and company_id_val:
+                    import asyncio as _asyncio
+                    _asyncio.create_task(self.emit(
+                        to_agent="pipeline",
+                        event_type="candidate_imported",
+                        payload={"candidate_id": candidate_id, "job_id": job_id},
+                        company_id=company_id_val,
+                    ))
+            except Exception:
+                pass
 
             return output
 

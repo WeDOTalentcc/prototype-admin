@@ -10,6 +10,7 @@ import json
 from app.schemas.interview_scheduling_state import InterviewSchedulingState
 from app.services.calendar_service import calendar_service
 from app.core.database import get_db
+from app.domains.interview_scheduling.agents.interview_system_prompt import get_extraction_prompt
 from app.models.interview import Interview
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -76,6 +77,28 @@ class InterviewSchedulingService:
 
 
 interview_service = InterviewSchedulingService()
+
+
+def _compute_confidence_score(interview_state: "InterviewSchedulingState", workflow_data: dict) -> float:
+    """Calcula confidence baseado em completude de campos e estado do workflow.
+
+    Escala:
+      - Agendamento completo com sucesso → 1.0
+      - Erro de agendamento ou fairness block → 0.1
+      - Coleta parcial → 0.10 + (coletados/total) * 0.85  (máx 0.95 durante coleta)
+    """
+    if workflow_data.get("interview_scheduling_complete"):
+        return 1.0
+    if workflow_data.get("interview_scheduling_error") or workflow_data.get("fairness_blocked"):
+        return 0.1
+    try:
+        progress = interview_state.get_collection_progress()
+        collected = progress.get("collected", 0)
+        total = progress.get("total_required", 7)
+        base = (collected / total) if total > 0 else 0.0
+        return round(0.10 + base * 0.85, 2)
+    except Exception:
+        return 0.5
 
 
 # =============================================
@@ -146,41 +169,51 @@ async def interview_details_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     
     if not interview_state:
         return state
-    
+
     # Get last user message
     last_message = state["messages"][-1].content
     entities = state.get("entities", {})
-    
-    # Use LLM to extract interview details
+
+    # SEG-2: FairnessGuard — verificar critérios discriminatórios antes de processar
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        _fg_result = _fg.check(last_message)
+        if _fg_result.is_blocked:
+            logger.warning(
+                "[interview_details_collector][SEG-2] FairnessGuard bloqueou mensagem "
+                "category=%s terms=%s",
+                _fg_result.category, _fg_result.blocked_terms,
+            )
+            workflow_data["fairness_blocked"] = True
+            workflow_data["fairness_category"] = _fg_result.category
+            workflow_data["confidence_score"] = 0.1
+            workflow_data["response_data"] = {
+                "message": _fg_result.educational_message or (
+                    "Esta solicitação não pode ser processada pois contém critérios "
+                    "discriminatórios. Por favor, reformule o agendamento com base em "
+                    "requisitos objetivos do processo seletivo."
+                ),
+                "status": "fairness_blocked",
+            }
+            state["workflow_data"] = workflow_data
+            return state
+        _soft = _fg.check_implicit_bias(last_message)
+        if _soft:
+            logger.info(
+                "[interview_details_collector][SEG-2] FairnessGuard soft warnings: %s", _soft
+            )
+    except Exception as _fg_exc:
+        logger.debug("[interview_details_collector] FairnessGuard check skipped: %s", _fg_exc)
+
+    # Use LLM to extract interview details — prompt centralizado em interview_system_prompt.py
     anthropic = AsyncAnthropic()
-    
-    extraction_prompt = f"""Extraia informações de agendamento de entrevista da mensagem do usuário.
 
-MENSAGEM DO USUÁRIO:
-{last_message}
-
-CAMPOS ATUAIS:
-{json.dumps(interview_state.model_dump(), indent=2, default=str)}
-
-CAMPOS PENDENTES:
-{interview_state.get_next_pending_field()}
-
-Retorne JSON com os campos que conseguir extrair:
-{{
-    "candidate_name": "...",
-    "candidate_email": "...",
-    "job_title": "...",
-    "interview_type": "tecnica|comportamental|cultural|rh|gerencial",
-    "interviewer_email": "...",
-    "preferred_date": "YYYY-MM-DD",
-    "preferred_time": "HH:MM ou manhã|tarde|noite",
-    "duration_minutes": 60,
-    "interview_mode": "presencial|remoto|hibrido",
-    "notes": "..."
-}}
-
-RETORNE APENAS OS CAMPOS MENCIONADOS. Se nada foi mencionado, retorne {{}}.
-"""
+    extraction_prompt = get_extraction_prompt(
+        last_message=last_message,
+        current_state=json.dumps(interview_state.model_dump(), indent=2, default=str),
+        next_pending_field=interview_state.get_next_pending_field() or "",
+    )
     
     try:
         response = await anthropic.messages.create(
@@ -218,7 +251,15 @@ RETORNE APENAS OS CAMPOS MENCIONADOS. Se nada foi mencionado, retorne {{}}.
     
     # Save updated state
     state["workflow_data"] = interview_service.save_to_workflow_data(interview_state, workflow_data)
-    
+
+    # Atualizar confidence score após coleta
+    try:
+        state["workflow_data"]["confidence_score"] = _compute_confidence_score(
+            interview_state, state["workflow_data"]
+        )
+    except Exception:
+        pass
+
     return state
 
 
@@ -368,6 +409,7 @@ async def interview_scheduler_executor(state: Dict[str, Any]) -> Dict[str, Any]:
         workflow_data["interview_scheduling_complete"] = True
         workflow_data["created_interview_id"] = interview_state.created_interview_id
         workflow_data["meeting_url"] = interview_state.meeting_url
+        workflow_data["confidence_score"] = 1.0
         state["workflow_data"] = interview_service.save_to_workflow_data(interview_state, workflow_data)
         
     except Exception as e:

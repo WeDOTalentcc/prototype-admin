@@ -11,6 +11,7 @@ import httpx
 
 from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
 from app.shared.resilience.circuit_breaker import PANDAPE_CIRCUIT, circuit_breaker_decorator
+from app.services.ats_clients.ats_pii_filter import filter_outbound, filter_inbound_text
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,8 @@ class PandapeClient(ATSClient):
     
     def _parse_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
         """Parse Pandapé candidate response to normalized format."""
+        # Sanitizar campos de texto livre antes de armazenar (LGPD Art. 46)
+        data = filter_inbound_text(data, "pandape")
         name = data.get("nome_completo") or data.get("name") or data.get("fullName") or ""
         email = data.get("email_principal") or data.get("email") or ""
         
@@ -155,8 +158,10 @@ class PandapeClient(ATSClient):
             raise
     
     @circuit_breaker_decorator(PANDAPE_CIRCUIT)
-    async def create_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
+    async def create_candidate(self, data: Dict[str, Any], has_consent: bool = True) -> ATSCandidate:
         """Create candidate in Pandapé."""
+        # Filtrar campos sensíveis se sem consentimento (LGPD Art. 6)
+        data = filter_outbound(data, "pandape", has_consent=has_consent)
         pandape_data = {
             "nome_completo": data.get("name"),
             "email_principal": data.get("email"),
@@ -188,9 +193,12 @@ class PandapeClient(ATSClient):
     async def update_candidate(
         self,
         candidate_id: str,
-        data: Dict[str, Any]
+        data: Dict[str, Any],
+        has_consent: bool = True,
     ) -> ATSCandidate:
         """Update candidate in Pandapé."""
+        # Filtrar campos sensíveis se sem consentimento (LGPD Art. 6)
+        data = filter_outbound(data, "pandape", has_consent=has_consent)
         pandape_data: Dict[str, Any] = {}
         
         field_mapping = {

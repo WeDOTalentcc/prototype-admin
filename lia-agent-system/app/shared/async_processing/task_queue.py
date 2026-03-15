@@ -9,6 +9,20 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+# Lazy import to avoid circular deps — loaded on first use
+_priority_calculator = None
+
+
+def _get_priority_calculator():
+    global _priority_calculator
+    if _priority_calculator is None:
+        try:
+            from app.shared.async_processing.priority_calculator import priority_calculator
+            _priority_calculator = priority_calculator
+        except Exception as exc:
+            logger.warning("[TaskQueue] PriorityCalculator unavailable (fail-open): %s", exc)
+    return _priority_calculator
+
 
 class TaskPriority(int, Enum):
     LOW = 0
@@ -99,7 +113,46 @@ class DomainTaskQueue:
     def register_handler(self, action_id: str, handler: Callable[[AsyncTask], Awaitable[Any]]) -> None:
         self._task_handlers[action_id] = handler
 
-    async def enqueue(self, task: AsyncTask) -> str:
+    async def enqueue(
+        self,
+        task: AsyncTask,
+        priority: Optional[int] = None,
+    ) -> str:
+        """Enqueue a task for processing.
+
+        Args:
+            task: The AsyncTask to enqueue.
+            priority: Optional numeric priority override (1=URGENT … 5=LOW).
+                      If None and task.priority is still NORMAL, attempts to
+                      compute urgency via PriorityCalculator using task.action_id
+                      and task.metadata (E11 — Priority Queue).
+                      Lower number = higher priority.
+
+        Returns:
+            task_id of the enqueued task.
+        """
+        # E11: auto-compute priority if not explicitly set
+        if priority is not None:
+            # Map numeric priority (1–5) to TaskPriority enum value
+            # Invert: priority 1 (urgent) → TaskPriority.URGENT (3); 5 (low) → TaskPriority.LOW (0)
+            _numeric_to_enum = {1: TaskPriority.URGENT, 2: TaskPriority.HIGH,
+                                3: TaskPriority.NORMAL, 5: TaskPriority.LOW}
+            task.priority = _numeric_to_enum.get(priority, TaskPriority.NORMAL)
+        elif task.priority == TaskPriority.NORMAL:
+            calc = _get_priority_calculator()
+            if calc is not None:
+                try:
+                    computed = calc.compute(task.action_id, task.metadata)
+                    _numeric_to_enum = {1: TaskPriority.URGENT, 2: TaskPriority.HIGH,
+                                        3: TaskPriority.NORMAL, 5: TaskPriority.LOW}
+                    task.priority = _numeric_to_enum.get(computed, TaskPriority.NORMAL)
+                    logger.debug(
+                        "[TaskQueue] E11 auto-priority: task=%s action=%s → %s",
+                        task.task_id, task.action_id, task.priority.name,
+                    )
+                except Exception as exc:
+                    logger.warning("[TaskQueue] PriorityCalculator.compute failed (fail-open): %s", exc)
+
         priority_key = -task.priority.value
         await self._queue.put((priority_key, task.created_at, task))
         logger.debug(f"Task {task.task_id} enqueued in {self.domain_id} queue (priority={task.priority.name})")

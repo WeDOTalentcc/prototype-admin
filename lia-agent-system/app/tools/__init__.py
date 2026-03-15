@@ -90,12 +90,12 @@ __all__ = [
 
 def initialize_tools() -> None:
     """Initialize and register all tools."""
-    from app.tools.job_wizard_tools import register_job_wizard_tools
-    from app.tools.candidate_tools import register_candidate_tools
-    from app.tools.communication_tools import register_communication_tools
-    from app.tools.job_tools import register_job_tools
-    from app.tools.export_tools import register_export_tools
-    from app.tools.query_tools import register_query_tools
+    from app.domains.job_management.tools.job_wizard_tools import register_job_wizard_tools
+    from app.domains.cv_screening.tools.candidate_tools import register_candidate_tools
+    from app.domains.communication.tools.communication_tools import register_communication_tools
+    from app.domains.job_management.tools.job_tools import register_job_tools
+    from app.shared.tools.export_tools import register_export_tools
+    from app.domains.analytics.tools.query_tools import register_query_tools
     from app.domains.recruiter_assistant.tools.pipeline_tools import register_pipeline_tools
     
     register_job_wizard_tools()

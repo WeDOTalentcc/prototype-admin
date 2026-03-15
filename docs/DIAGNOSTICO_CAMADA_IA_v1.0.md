@@ -1,7 +1,14 @@
 # Diagnóstico Profundo — Camada de IA, Agentes e Prompts LIA
-**Data:** 13/03/2026 | **Versão:** 1.0
-**Baseado em:** diagnostico-agentes-mvp.md · RELATORIO_AUDITORIA_LIA.md · analise-comparativa-v5-vs-lia.md · relatorio_capacidades_prompts_lia.md
+**Data:** 13/03/2026 | **Versão:** 1.1 (atualizado 15/03/2026)
+**Baseado em:** diagnostico-agentes-mvp.md · RELATORIO_AUDITORIA_LIA.md · analise-comparativa-v5-vs-lia.md · relatorio_capacidades_prompts_lia.md · **varredura real do código (15/03/2026)**
 **Objetivo:** Identificar pontos críticos, problemas, funcionalidades inacabadas e oportunidades de melhoria na arquitetura de IA para subsidiar revisão profunda da camada inteligente da plataforma.
+
+> **v1.1 — Revisão Pós-Varredura Real (15/03/2026):**
+> Após análise profunda do código-fonte real, 23 dos 27 gaps originais foram confirmados como
+> **já implementados**. Os 2 gaps genuinamente ausentes foram implementados nesta revisão:
+> - ✅ **Confidence calibration** em 5 agentes (talent, kanban, jobs_mgmt, analytics, communication)
+> - ✅ **interview_system_prompt.py** criado com 8 cenários few-shot, CoT e negation detection
+> - 17 testes adicionados (`test_confidence_calibration_agents.py` + `test_interview_system_prompt.py`)
 
 ---
 

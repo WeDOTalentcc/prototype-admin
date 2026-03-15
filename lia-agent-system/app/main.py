@@ -36,6 +36,7 @@ from app.api.v1 import search_feedback
 from app.api.v1 import job_qualification
 from app.api.v1 import talent_funnel
 from app.api.v1 import wsi as wsi_v1
+from app.api.v1 import wsi_async as wsi_async_v1
 from app.api.v1 import stage_transition_automation
 from app.api.v1 import job_learning, wizard_analytics, job_embeddings, job_templates
 from app.api.v1 import wsi_questions
@@ -256,13 +257,81 @@ async def lifespan(app: FastAPI):
         logger.error(f"Error stopping Automation Scheduler: {e}")
 
 
+# ---------------------------------------------------------------------------
+# OpenAPI tags — categorias de endpoints para documentação automática
+# ---------------------------------------------------------------------------
+_OPENAPI_TAGS = [
+    {"name": "agents", "description": "Agentes ReAct de recrutamento (chat WebSocket, HITL, orquestrador)"},
+    {"name": "candidates", "description": "Gestão de candidatos, busca RAG híbrida, TOON cards"},
+    {"name": "jobs", "description": "Vagas, descrições de cargo, wizard, importação JD"},
+    {"name": "rag-search", "description": "Busca semântica híbrida BM25 + pgvector (Sprint G6)"},
+    {"name": "hitl", "description": "Human-in-the-Loop: aprovar/rejeitar ações de agentes"},
+    {"name": "guardrails", "description": "Guardrails de agentes: CRUD + seed-defaults + toggle"},
+    {"name": "pipeline", "description": "Pipeline de candidatos, stages, transições, kanban"},
+    {"name": "sourcing", "description": "Busca ativa, boolean strings, abordagem WhatsApp"},
+    {"name": "cv-screening", "description": "Triagem curricular, rubrica WSI, scores, red flags"},
+    {"name": "compliance", "description": "LGPD, bias audit, fairness guard, DSR, consentimento"},
+    {"name": "analytics", "description": "KPIs, funil, previsões ML, relatórios, model drift"},
+    {"name": "communication", "description": "Email, WhatsApp, Teams, notificações, templates"},
+    {"name": "scheduling", "description": "Agendamento de entrevistas, calendário, convites"},
+    {"name": "auth", "description": "Autenticação, WorkOS SSO, permissões"},
+    {"name": "admin", "description": "Administração, monitoramento, circuit breakers, tokens"},
+    {"name": "health", "description": "Health check, observabilidade, métricas"},
+    {"name": "toon", "description": "TOON cards — perfil visual de candidato por vaga (Sprint G7)"},
+    {"name": "drift", "description": "Model drift detection e alertas automáticos"},
+    {"name": "bias-audit", "description": "Auditoria de bias Four-Fifths Rule por vaga"},
+    {"name": "wsi", "description": "WSI — entrevista estruturada por WhatsApp/voz"},
+    {"name": "policy-engine", "description": "Motor de políticas de recrutamento por setor"},
+    {"name": "short-lists", "description": "Short lists de candidatos por vaga (Sprint F4)"},
+]
+
 # Create FastAPI app
 app = FastAPI(
-    title=settings.APP_NAME,
-    description="LIA (Learning Intelligence Assistant) - AI-powered recruitment agent",
-    version="0.1.0",
+    title="LIA Agent System — WeDOTalent",
+    summary="Plataforma B2B SaaS de recrutamento inteligente com IA (LangGraph + Claude Sonnet 4.5)",
+    description="""
+## LIA — Learning Intelligence Assistant
+
+API REST + WebSocket da plataforma de recrutamento inteligente **WeDOTalent**.
+
+### Arquitetura
+- **7 agentes ReAct** (LangGraph): Wizard, Pipeline, Sourcing, Talent, JobsManagement, Kanban, Policy
+- **362 endpoints REST** + WebSocket chat
+- **Multi-tenant**: `company_id` obrigatório em todos os recursos
+- **Compliance**: LGPD, BCB 498, SOX, ISO 27001, EU AI Act
+
+### Autenticação
+Bearer token via WorkOS SSO:
+```
+Authorization: Bearer <token>
+```
+
+### Convenções
+- Datas em ISO 8601 UTC (`2026-03-15T10:00:00Z`)
+- UUIDs para todos os IDs
+- Paginação: `?page=1&page_size=20`
+- Multi-tenant: `?company_id=<uuid>` ou header `X-Company-ID`
+
+### Links úteis
+- [Documentação de referência](/docs/redoc)
+- [OpenAPI JSON](/openapi.json)
+    """,
+    version="3.0.0",
     lifespan=lifespan,
-    debug=settings.DEBUG
+    debug=settings.DEBUG,
+    openapi_tags=_OPENAPI_TAGS,
+    contact={
+        "name": "WeDOTalent Engineering",
+        "url": "https://wedotalent.com",
+        "email": "tech@wedotalent.com",
+    },
+    license_info={
+        "name": "Proprietary — WeDOTalent",
+        "url": "https://wedotalent.com/terms",
+    },
+    openapi_url="/openapi.json",
+    docs_url="/docs",
+    redoc_url="/docs/redoc",
 )
 
 # CORS middleware
@@ -406,6 +475,7 @@ app.include_router(automations.router, prefix="/api/v1", tags=["automations"])
 app.include_router(orchestrator_routes.router)
 app.include_router(wsi_endpoints.router, tags=["wsi"])
 app.include_router(wsi_v1.router, tags=["wsi-v1"])
+app.include_router(wsi_async_v1.router, prefix="/api/v1", tags=["wsi-async"])
 app.include_router(webhooks.router, prefix="/api/v1", tags=["webhooks"])
 app.include_router(integrations.router, prefix="/api/v1", tags=["integrations"])
 app.include_router(communication.router, prefix="/api/v1", tags=["communication"])
@@ -507,6 +577,12 @@ app.include_router(agent_explainability.router, prefix="/api/v1", tags=["agent-e
 app.include_router(drift.router, prefix="/api/v1", tags=["model-drift"])
 app.include_router(bias_audit.router, prefix="/api/v1", tags=["bias-audit"])
 app.include_router(admin_bias_audit.router, prefix="/api/v1", tags=["bias-audit-admin"])
+from app.api.v1.granular_consent import router as granular_consent_router
+app.include_router(granular_consent_router, prefix="/api/v1", tags=["granular-consent"])
+from app.api.v1.candidate_compare import router as candidate_compare_router
+app.include_router(candidate_compare_router, prefix="/api/v1", tags=["candidate-compare"])
+from app.api.v1.ml_feedback import router as ml_feedback_router
+app.include_router(ml_feedback_router, prefix="/api/v1", tags=["ml-feedback"])
 app.include_router(guardrails.router, prefix="/api/v1", tags=["guardrails"])
 app.include_router(async_endpoints.router, prefix="/api/v1", tags=["async-jobs"])
 app.include_router(jobs_ws.router)
@@ -548,6 +624,21 @@ app.include_router(email_tracking_router, prefix="/api/v1", tags=["email-trackin
 
 from app.api.v1.admin_circuit_breakers import router as admin_cb_router
 app.include_router(admin_cb_router, prefix="/api/v1")
+
+from app.api.v1.admin_agents import router as admin_agents_router
+app.include_router(admin_agents_router, prefix="/api/v1")
+
+from app.api.v1.salary_benchmark import router as salary_benchmark_router
+app.include_router(salary_benchmark_router, prefix="/api/v1", tags=["salary-benchmark"])
+
+from app.api.v1.metrics import router as metrics_router
+app.include_router(metrics_router)
+
+from app.api.v1.cultural_fit import router as cultural_fit_router
+app.include_router(cultural_fit_router, prefix="/api/v1", tags=["cultural-fit"])
+
+from app.api.v1.event_history import router as event_history_router
+app.include_router(event_history_router, prefix="/api/v1", tags=["event-sourcing"])
 
 # Public API routes (no /api/v1 prefix, no JWT auth)
 app.include_router(candidate_portal.router, tags=["candidate-portal"])

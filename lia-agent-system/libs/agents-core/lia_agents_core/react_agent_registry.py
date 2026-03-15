@@ -4,8 +4,13 @@ ReAct Agent Registry - Registro centralizado dos agentes ReAct.
 Implementa o padrão Singleton para gerenciar todos os agentes de domínio
 da plataforma LIA. Fornece registro, descoberta, instanciação e
 monitoramento de status dos agentes.
+
+Também expõe funções de módulo (reload_from_yaml, is_registered, register,
+get, list_agents) para uso direto sem instanciar a classe Singleton —
+compatível com o AgentRegistryWatcher (hot-reload).
 """
 import logging
+import os
 from typing import Any, Dict, List, Optional, Type, TYPE_CHECKING
 
 from lia_agents_core.working_memory import WorkingMemoryService
@@ -374,3 +379,96 @@ class AgentFactory:
         )
 
         return agent
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Module-level flat registry — used by AgentRegistryWatcher (hot-reload).
+# Separate from the Singleton class above to avoid coupling with domain
+# imports and to allow loading from YAML without instantiating agents.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_flat_registry: Dict[str, Dict[str, Any]] = {}
+
+
+def register(name: str, agent_class: Any = None, **metadata: Any) -> None:
+    """Register an agent in the flat registry.
+
+    Args:
+        name: Unique agent name / domain key.
+        agent_class: Optional class reference (may be None when loaded from YAML).
+        **metadata: Additional metadata (model_id, class_path, domain, etc.).
+    """
+    _flat_registry[name] = {"class": agent_class, **metadata}
+    logger.debug("[AgentRegistry] Registered: %s", name)
+
+
+def get(name: str) -> Optional[Dict[str, Any]]:
+    """Return entry for the given agent name, or None."""
+    return _flat_registry.get(name)
+
+
+def list_agents() -> List[str]:
+    """Return names of all registered agents."""
+    return list(_flat_registry.keys())
+
+
+def is_registered(name: str) -> bool:
+    """Return True if the agent name is present in the flat registry."""
+    return name in _flat_registry
+
+
+def reload_from_yaml(path: str) -> List[str]:
+    """Load or reload agents from a YAML file into the flat registry.
+
+    Only agents with ``enabled: true`` (default) are loaded.
+    Entries are upserted — existing keys are overwritten.
+    Errors are logged as warnings and an empty list is returned so
+    callers can continue without crashing (fail-open).
+
+    Args:
+        path: Absolute or relative path to the agents YAML file.
+
+    Returns:
+        List of agent names that were successfully loaded.
+    """
+    try:
+        import yaml  # imported here to keep top-level imports light
+    except ImportError:
+        logger.warning("[AgentRegistry] PyYAML not available; reload_from_yaml skipped")
+        return []
+
+    loaded: List[str] = []
+    try:
+        if not os.path.exists(path):
+            logger.warning("[AgentRegistry] reload_from_yaml: file not found: %s", path)
+            return []
+
+        with open(path, encoding="utf-8") as fh:
+            data = yaml.safe_load(fh)
+
+        if not isinstance(data, dict):
+            logger.warning("[AgentRegistry] reload_from_yaml: YAML root is not a dict: %s", path)
+            return []
+
+        for agent_cfg in data.get("agents", []):
+            if not isinstance(agent_cfg, dict):
+                continue
+            if not agent_cfg.get("enabled", True):
+                logger.debug(
+                    "[AgentRegistry] Skipping disabled agent: %s",
+                    agent_cfg.get("name", "<unknown>"),
+                )
+                continue
+            name = agent_cfg.get("name")
+            if not name:
+                logger.warning("[AgentRegistry] Agent entry missing 'name', skipping: %s", agent_cfg)
+                continue
+            _flat_registry[name] = {k: v for k, v in agent_cfg.items()}
+            loaded.append(name)
+            logger.info("[AgentRegistry] Loaded agent from YAML: %s", name)
+
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("[AgentRegistry] reload_from_yaml failed (%s): %s", path, exc)
+        return []
+
+    return loaded

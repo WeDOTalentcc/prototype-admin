@@ -4508,3 +4508,159 @@ async def close_vacancy(
         logger.error(f"Error closing vacancy: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================
+# D1 — Job Report Data (JSON para modal)
+# =============================================
+
+class JobReportFunnelMetrics(BaseModel):
+    total_candidates: int
+    screening: int
+    interview: int
+    final: int
+    hired: int
+    conversion_rate: float
+    avg_time_to_hire: float
+    cost_per_hire: float
+
+
+class JobReportChannelItem(BaseModel):
+    channel: str
+    candidates: int
+    hired: int
+
+
+class JobReportTopCandidate(BaseModel):
+    name: str
+    score: float
+    status: str
+
+
+class JobReportResponse(BaseModel):
+    vacancy_id: str
+    vacancy_title: str
+    funnel_metrics: JobReportFunnelMetrics
+    channel_performance: List[JobReportChannelItem]
+    top_candidates: List[JobReportTopCandidate]
+
+
+@router.get("/jobs/{job_id}/report", response_model=JobReportResponse)
+async def get_job_report(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """
+    Retorna dados JSON para o JobReportModal:
+    - funnel_metrics: totais e taxas do funil
+    - channel_performance: candidatos por fonte/canal
+    - top_candidates: top 5 por lia_score
+    """
+    company_id = get_user_company_id(current_user)
+
+    job_result = await db.execute(
+        select(JobVacancy).where(
+            and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
+        )
+    )
+    job = job_result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Vaga não encontrada")
+
+    vc_result = await db.execute(
+        select(VacancyCandidate).where(VacancyCandidate.vacancy_id == job_id)
+    )
+    vacancy_candidates = vc_result.scalars().all()
+    total = len(vacancy_candidates)
+
+    stage_map: Dict[str, int] = {}
+    source_map: Dict[str, int] = {}
+    source_hired: Dict[str, int] = {}
+    hired_count = 0
+
+    for vc in vacancy_candidates:
+        stage = (vc.stage or "initial").lower()
+        source = vc.source or "unknown"
+        stage_map[stage] = stage_map.get(stage, 0) + 1
+        source_map[source] = source_map.get(source, 0) + 1
+        if stage in ("hired", "contratado"):
+            hired_count += 1
+            source_hired[source] = source_hired.get(source, 0) + 1
+
+    def _stage_count(*aliases: str) -> int:
+        return sum(stage_map.get(a, 0) for a in aliases)
+
+    screening_count = _stage_count("screening", "triagem", "pending_gate1")
+    interview_count = _stage_count("interview", "entrevista")
+    final_count = _stage_count("final", "offer", "proposta")
+    conversion_rate = round(hired_count / total * 100, 1) if total > 0 else 0.0
+
+    # Tempo médio até contratação (dias) via CandidateStageHistory
+    avg_time_to_hire = 0.0
+    try:
+        time_result = await db.execute(
+            select(func.avg(CandidateStageHistory.time_in_previous_stage_hours))
+            .where(
+                and_(
+                    CandidateStageHistory.vacancy_id == job_id,
+                    CandidateStageHistory.to_stage_name.in_(["hired", "contratado"]),
+                )
+            )
+        )
+        avg_hours = time_result.scalar()
+        if avg_hours:
+            avg_time_to_hire = round(avg_hours / 24, 1)
+    except Exception:
+        pass
+
+    # Top 5 candidatos por lia_score
+    top_vc_result = await db.execute(
+        select(VacancyCandidate, Candidate)
+        .join(Candidate, VacancyCandidate.candidate_id == Candidate.id)
+        .where(
+            and_(
+                VacancyCandidate.vacancy_id == job_id,
+                VacancyCandidate.lia_score.isnot(None),
+            )
+        )
+        .order_by(VacancyCandidate.lia_score.desc())
+        .limit(5)
+    )
+    top_candidates = []
+    for vc, cand in top_vc_result.all():
+        top_candidates.append(
+            JobReportTopCandidate(
+                name=cand.name or "Candidato",
+                score=float(vc.lia_score or 0),
+                status=vc.stage or "initial",
+            )
+        )
+
+    # Canal/fonte performance
+    channel_performance = []
+    for source, count in sorted(source_map.items(), key=lambda x: -x[1]):
+        channel_performance.append(
+            JobReportChannelItem(
+                channel=source,
+                candidates=count,
+                hired=source_hired.get(source, 0),
+            )
+        )
+
+    return JobReportResponse(
+        vacancy_id=str(job_id),
+        vacancy_title=job.title,
+        funnel_metrics=JobReportFunnelMetrics(
+            total_candidates=total,
+            screening=screening_count,
+            interview=interview_count,
+            final=final_count,
+            hired=hired_count,
+            conversion_rate=conversion_rate,
+            avg_time_to_hire=avg_time_to_hire,
+            cost_per_hire=0.0,
+        ),
+        channel_performance=channel_performance,
+        top_candidates=top_candidates,
+    )

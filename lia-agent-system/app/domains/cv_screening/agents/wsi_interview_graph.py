@@ -622,6 +622,17 @@ class WSIInterviewNodes:
             except Exception as _audit_exc:
                 logger.debug("[WSIInterviewGraph] audit_service skipped in generate_feedback: %s", _audit_exc)
 
+            # D2 — Confidence calibration: emite métrica Prometheus para cv_screening
+            try:
+                from app.shared.observability.agent_metrics import record_confidence
+                record_confidence(
+                    domain="cv_screening",
+                    confidence=(state.wsi_final_score or 0.0) / 10.0,
+                    has_tools=False,
+                )
+            except Exception:
+                pass  # fail-safe: nunca bloquear avaliação por métrica
+
             # ── Gate 1 feedback ao candidato (fail-safe — Gap 16.1) ─────────
             # Envia email de resultado apenas quando há email no perfil do candidato.
             if state.recommendation == "reprovado":

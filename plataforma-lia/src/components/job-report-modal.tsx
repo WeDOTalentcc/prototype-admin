@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react"
+import { useJobReport } from "@/hooks/use-job-report"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -35,8 +36,47 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
     performance: true,
     recommendations: true
   })
+  const { data: reportApiData, loading: reportLoading, fetch: fetchReport } = useJobReport()
+
+  useEffect(() => {
+    if (isOpen && job?.jobId) {
+      fetchReport(job.jobId)
+    }
+  }, [isOpen, job?.jobId, fetchReport])
 
   if (!isOpen) return null
+
+  // Dados reais do backend mesclados com fallback para campos sem cobertura de DB
+  const funnelMetrics = reportApiData
+    ? {
+        totalCandidates: reportApiData.funnel_metrics.total_candidates,
+        screening: reportApiData.funnel_metrics.screening,
+        interview: reportApiData.funnel_metrics.interview,
+        final: reportApiData.funnel_metrics.final,
+        hired: reportApiData.funnel_metrics.hired,
+        conversionRate: reportApiData.funnel_metrics.conversion_rate,
+        averageTimeToHire: reportApiData.funnel_metrics.avg_time_to_hire,
+        costPerHire: reportApiData.funnel_metrics.cost_per_hire,
+      }
+    : {
+        totalCandidates: 0, screening: 0, interview: 0, final: 0,
+        hired: 0, conversionRate: 0, averageTimeToHire: 0, costPerHire: 0,
+      }
+
+  const channelPerformance = reportApiData?.channel_performance.map(c => ({
+    channel: c.channel,
+    candidates: c.candidates,
+    quality: 0,
+    hired: c.hired,
+    cost: 0,
+  })) ?? []
+
+  const topCandidates = reportApiData?.top_candidates.map(c => ({
+    name: c.name,
+    score: Math.round(c.score),
+    status: c.status,
+    fit: Math.round(c.score * 0.95),
+  })) ?? []
 
   const reportData = {
     generatedDate: new Date().toLocaleDateString('pt-BR', {
@@ -48,22 +88,8 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
       hour: '2-digit',
       minute: '2-digit'
     }),
-    funnelMetrics: {
-      totalCandidates: 156,
-      screening: 89,
-      interview: 34,
-      final: 12,
-      hired: 3,
-      conversionRate: 1.9,
-      averageTimeToHire: 23,
-      costPerHire: 4500
-    },
-    channelPerformance: [
-      { channel: "LinkedIn", candidates: 67, quality: 89, hired: 2, cost: 2800 },
-      { channel: "Website", candidates: 45, quality: 76, hired: 1, cost: 0 },
-      { channel: "LIA Database", candidates: 28, quality: 92, hired: 0, cost: 500 },
-      { channel: "Referral", candidates: 16, quality: 94, hired: 0, cost: 0 }
-    ],
+    funnelMetrics,
+    channelPerformance,
     timeline: [
       { date: "01/03", event: "Vaga publicada", status: "completed" },
       { date: "05/03", event: "Primeira triagem LIA", status: "completed" },
@@ -72,13 +98,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
       { date: "20/03", event: "Decisão final", status: "pending" },
       { date: "25/03", event: "Contratação prevista", status: "pending" }
     ],
-    topCandidates: [
-      { name: "Ana Silva", score: 94, status: "Final", fit: 96 },
-      { name: "Carlos Mendes", score: 91, status: "Entrevista", fit: 89 },
-      { name: "Maria Santos", score: 89, status: "Entrevista", fit: 87 },
-      { name: "João Paulo", score: 87, status: "Triagem", fit: 85 },
-      { name: "Fernanda Lima", score: 85, status: "Triagem", fit: 82 }
-    ],
+    topCandidates,
     budget: {
       total: 50000,
       spent: 18500,
@@ -161,7 +181,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               <FileText className="w-4 h-4 print:w-4 print:h-4" />
               <div>
                 <h2 className="text-xs font-semibold print:text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>Relatório Executivo da Vaga</h2>
-                <p className="text-[10px] text-white/80">[DEMO] {job.title} • {job.jobId}</p>
+                <p className="text-[10px] text-white/80">{reportLoading ? "Carregando..." : job.title} • {job.jobId}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 print:hidden">

@@ -260,3 +260,54 @@ async def list_plan_templates():
     except Exception as e:
         logger.error(f"Error listing templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# D8 — Proactive Insights para Kanban
+class ProactiveInsight(BaseModel):
+    id: str
+    title: str
+    message: str
+    urgency: str  # "low" | "normal" | "high" | "urgent"
+    type: str
+    action_url: Optional[str] = None
+    created_at: str
+
+
+@router.get("/insights", response_model=List[ProactiveInsight])
+async def get_proactive_insights(
+    company_id: str = Query(...),
+    job_id: Optional[str] = Query(default=None),
+    limit: int = Query(default=5, le=20),
+):
+    """
+    Retorna insights proativos da LIA para o Kanban.
+    Filtra por job_id quando fornecido.
+    """
+    try:
+        from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService
+        service = AutonomousAgentService()
+        actions = await service.get_pending_actions(company_id, limit=limit * 2)
+
+        results = []
+        for a in actions:
+            sa = a.suggested_action or {}
+            if job_id and sa.get("job_id") and sa["job_id"] != job_id:
+                continue
+            results.append(
+                ProactiveInsight(
+                    id=str(a.id),
+                    title=a.title or "",
+                    message=a.description or "",
+                    urgency=a.priority or "normal",
+                    type=a.action_type or "general",
+                    action_url=sa.get("action_url"),
+                    created_at=a.created_at.isoformat() if a.created_at else "",
+                )
+            )
+            if len(results) >= limit:
+                break
+
+        return results
+    except Exception as exc:
+        logger.warning("Error getting proactive insights: %s", exc)
+        return []

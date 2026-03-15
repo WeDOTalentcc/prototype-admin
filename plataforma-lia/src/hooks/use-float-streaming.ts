@@ -32,6 +32,10 @@ export interface UseFloatStreamingResult {
   error: string | null
   /** Preenchido quando o agente solicita aprovação humana */
   hitlPending: HITLPending | null
+  /** E7: etapas de raciocínio ReAct acumuladas durante processamento */
+  thinkingSteps: string[]
+  /** E7: true enquanto o agente está no loop ReAct */
+  isThinking: boolean
   /** Envia mensagem ao agente especificando o domain e opcionalmente o scope */
   sendMessage: (content: string, domain?: string, scope?: string) => void
   /** Confirma ou rejeita a ação HITL pendente */
@@ -48,12 +52,24 @@ export function useFloatStreaming(
   const hitlRef = useRef<HITLPending | null>(null)
   const onCompleteRef = useRef(onComplete)
 
+  // E7: estado de pensamentos ReAct
+  const [thinkingSteps, setThinkingSteps] = useState<string[]>([])
+  const [isThinking, setIsThinking] = useState(false)
+
   useEffect(() => {
     onCompleteRef.current = onComplete
   }, [onComplete])
 
   const handleEvent = useCallback((event: StreamingEvent) => {
     switch (event.type) {
+      case 'thinking':
+        // E7: acumula etapas de raciocínio ReAct
+        setIsThinking(true)
+        if (event.content) {
+          setThinkingSteps(prev => [...prev, event.content as string])
+        }
+        break
+
       case 'approval_required': {
         const pending: HITLPending = {
           pendingId: event.pending_id ?? '',
@@ -72,7 +88,8 @@ export function useFloatStreaming(
         break
 
       case 'message':
-        // resposta final (direto ou pós-HITL)
+        // resposta final (direto ou pós-HITL) — encerra modo thinking
+        setIsThinking(false)
         hitlRef.current = null
         setHitlPending(null)
         if (event.content) {
@@ -100,6 +117,9 @@ export function useFloatStreaming(
   } = useAgentStreaming(sessionId, {}, handleEvent)
 
   const sendMessage = useCallback(async (content: string, domain = '', scope?: string) => {
+    // E7: limpa etapas de thinking ao enviar nova mensagem
+    setThinkingSteps([])
+    setIsThinking(false)
     clearTokens()
     const context = scope ? { scope } : {}
 
@@ -154,6 +174,8 @@ export function useFloatStreaming(
     streamingContent: tokens,
     error,
     hitlPending,
+    thinkingSteps,
+    isThinking,
     sendMessage,
     sendApproval,
     connect,

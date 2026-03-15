@@ -206,14 +206,72 @@ class InterviewGraph:
             )
             result = dict(state)
             result.setdefault("workflow_data", {})["interview_graph_error"] = str(exc)
+            # Audit de erro — BCB 498 / SOX compliance
+            try:
+                from app.shared.compliance.audit_service import audit_service
+                from app.core.database import get_db as _get_db
+                async for db in _get_db():
+                    await audit_service.log_decision(
+                        db=db,
+                        company_id=state.get("company_id"),
+                        domain="interview_scheduling",
+                        agent_name="interview_graph",
+                        decision_type="schedule_interview",
+                        decision="error",
+                        candidate_id=state.get("candidate_id"),
+                        job_id=state.get("job_id"),
+                        metadata={"error": str(exc), "path": "langgraph_native"},
+                        criteria_ignored=[],
+                    )
+                    break
+            except Exception:
+                pass
 
+        _wfd_lg = result.get("workflow_data", {})
+        _error_lg = _wfd_lg.get("interview_graph_error")
+        _conf_lg = _wfd_lg.get("confidence_score", 0.5 if not _error_lg else 0.3)
+        try:
+            from app.shared.observability.agent_metrics import record_confidence
+            record_confidence(agent="interview_graph", domain="interview_scheduling", confidence=_conf_lg)
+        except Exception:
+            pass
         if audit_callback:
-            error = result.get("workflow_data", {}).get("interview_graph_error")
             await audit_callback.on_chain_end_manual(
-                confidence=0.9 if not error else 0.3,
-                success=not bool(error),
-                error=error,
+                confidence=_conf_lg,
+                success=not bool(_error_lg),
+                error=_error_lg,
             )
+
+        # Audit log após agendamento confirmado — BCB 498 / SOX compliance
+        workflow_data_post = result.get("workflow_data", {})
+        if workflow_data_post.get("interview_scheduling_complete"):
+            try:
+                from app.shared.compliance.audit_service import audit_service
+                from app.core.database import get_db as _get_db
+                interview_sched_post = workflow_data_post.get("interview_scheduling_state", {})
+                async for db in _get_db():
+                    await audit_service.log_decision(
+                        db=db,
+                        company_id=state.get("company_id"),
+                        domain="interview_scheduling",
+                        agent_name="interview_graph",
+                        decision_type="schedule_interview",
+                        decision="confirmed",
+                        candidate_id=state.get("candidate_id"),
+                        job_id=state.get("job_id"),
+                        metadata={
+                            "scheduled_date": interview_sched_post.get("preferred_date"),
+                            "created_interview_id": workflow_data_post.get("created_interview_id"),
+                            "hitl_pending": workflow_data_post.get("hitl_pending", False),
+                            "path": "langgraph_native",
+                        },
+                        criteria_ignored=[],
+                    )
+                    break
+            except Exception as _audit_exc:
+                self.logger.debug(
+                    "[InterviewGraph] audit_service skipped (LangGraph path): %s", _audit_exc
+                )
 
         self.logger.info(
             "[InterviewGraph] execução concluída (LangGraph nativo)",
@@ -281,7 +339,58 @@ class InterviewGraph:
 
         next_node = self._route_after_validator(state)
 
+        if next_node != _EXECUTOR:
+            # Validator reprovou — logar rejeição antes de ir para RESPONSE
+            try:
+                from app.shared.compliance.audit_service import audit_service
+                from app.core.database import get_db as _get_db
+                async for db in _get_db():
+                    await audit_service.log_decision(
+                        db=db,
+                        company_id=state.get("company_id"),
+                        domain="interview_scheduling",
+                        agent_name="interview_graph",
+                        decision_type="schedule_interview",
+                        decision="validation_failed",
+                        candidate_id=state.get("candidate_id"),
+                        job_id=state.get("job_id"),
+                        metadata={
+                            "reason": state.get("workflow_data", {}).get("validation_errors"),
+                            "path": "legacy",
+                        },
+                        criteria_ignored=[],
+                    )
+                    break
+            except Exception:
+                pass
+
         if next_node == _EXECUTOR:
+            # Audit pré-HITL — registrar decisão pendente de revisão humana
+            try:
+                from app.shared.compliance.audit_service import audit_service
+                from app.core.database import get_db as _get_db
+                _wd = state.get("workflow_data", {})
+                _is = _wd.get("interview_scheduling_state", {})
+                async for db in _get_db():
+                    await audit_service.log_decision(
+                        db=db,
+                        company_id=state.get("company_id"),
+                        domain="interview_scheduling",
+                        agent_name="interview_graph",
+                        decision_type="schedule_interview",
+                        decision="pending_review",
+                        candidate_id=state.get("candidate_id"),
+                        job_id=state.get("job_id"),
+                        metadata={
+                            "scheduled_date": _is.get("preferred_date"),
+                            "path": "legacy",
+                        },
+                        criteria_ignored=[],
+                    )
+                    break
+            except Exception:
+                pass
+
             # HITL — aprovação humana obrigatória antes de confirmar agendamento
             try:
                 from app.services.hitl_service import hitl_service
@@ -345,12 +454,19 @@ class InterviewGraph:
         # Nó 5: planeja resposta final
         state = await self._run_node(_RESPONSE, state, audit_callback)
 
+        _wfd = state.get("workflow_data", {})
+        _error = _wfd.get("interview_graph_error")
+        _conf = _wfd.get("confidence_score", 0.5 if not _error else 0.3)
+        try:
+            from app.shared.observability.agent_metrics import record_confidence
+            record_confidence(agent="interview_graph", domain="interview_scheduling", confidence=_conf)
+        except Exception:
+            pass
         if audit_callback:
-            error = state.get("workflow_data", {}).get("interview_graph_error")
             await audit_callback.on_chain_end_manual(
-                confidence=0.9 if not error else 0.3,
-                success=not bool(error),
-                error=error,
+                confidence=_conf,
+                success=not bool(_error),
+                error=_error,
             )
 
         self.logger.info(

@@ -289,6 +289,74 @@ class IntentRouter:
 - "Como funciona a plataforma?"
 - "Quem é você?"
 
+## EXEMPLOS FEW-SHOT — RH Sênior (T3)
+
+A seguir, exemplos reais de profissionais de RH sênior com a classificação correta.
+
+### Exemplos Claros (alta confiança)
+
+Input: "Preciso criar uma vaga para analista de marketing pleno com salário entre 4 e 6 mil"
+Output: {"intent": "job_planner", "confidence": 0.95, "reasoning": "Criação de vaga com perfil e faixa salarial definidos.", "requires_planning": false}
+
+Input: "Busque candidatos com pelo menos 5 anos de experiência em vendas B2B para a vaga de executivo de contas"
+Output: {"intent": "sourcing", "confidence": 0.95, "reasoning": "Busca ativa de candidatos com critério de experiência específico.", "requires_planning": false}
+
+Input: "Faça a triagem dos 23 candidatos que se inscreveram na vaga de enfermeiro — preciso dos 5 melhores"
+Output: {"intent": "cv_screening", "confidence": 0.96, "reasoning": "Triagem e ranking de candidatos inscritos em vaga específica.", "requires_planning": false}
+
+Input: "Agende entrevista final com Carlos Mendes para sexta-feira às 14h com o gestor João"
+Output: {"intent": "scheduling", "confidence": 0.96, "reasoning": "Agendamento de entrevista com data, hora e participantes definidos.", "requires_planning": false}
+
+Input: "Gere relatório do funil de recrutamento do mês de fevereiro para as 8 vagas ativas"
+Output: {"intent": "funnel_analysis", "confidence": 0.95, "reasoning": "Análise de funil de recrutamento por período.", "requires_planning": false}
+
+Input: "Envie feedback de reprovação para os 15 candidatos que não passaram na triagem técnica da vaga de TI"
+Output: {"intent": "feedback", "confidence": 0.93, "reasoning": "Envio de feedback em massa para candidatos reprovados em etapa específica.", "requires_planning": false}
+
+Input: "Sincronize os 47 candidatos da vaga de desenvolvedor sênior com o Gupy agora"
+Output: {"intent": "sync_ats", "confidence": 0.94, "reasoning": "Sincronização explícita com ATS Gupy.", "requires_planning": false}
+
+Input: "Bom dia, qual é meu briefing do dia? Tenho 3 entrevistas agendadas hoje"
+Output: {"intent": "daily_briefing", "confidence": 0.95, "reasoning": "Solicitação de briefing diário pelo recrutador.", "requires_planning": false}
+
+Input: "Qual foi a nota WSI final do candidato Pedro Alves para a vaga de gerente comercial?"
+Output: {"intent": "wsi_evaluator", "confidence": 0.94, "reasoning": "Consulta de score WSI de candidato específico para vaga específica.", "requires_planning": false}
+
+Input: "Inicie a entrevista estruturada WSI com Ana Beatriz pelo WhatsApp — vaga de supervisora de loja"
+Output: {"intent": "interviewer", "confidence": 0.95, "reasoning": "Início de entrevista estruturada WSI por canal WhatsApp.", "requires_planning": false}
+
+### Exemplos Ambíguos (requer raciocínio contextual)
+
+Input: "Preciso aprovar o João para a próxima etapa do processo"
+Output: {"intent": "atualizar_status_candidato", "confidence": 0.78, "reasoning": "Aprovação de candidato para próxima etapa — ação de gestão de pipeline, não avaliação WSI.", "requires_planning": false}
+
+Input: "Como está o processo seletivo para o cargo de gerente regional? Preciso apresentar para a diretoria"
+Output: {"intent": "funnel_analysis", "confidence": 0.76, "reasoning": "Consulta de status do funil de recrutamento para apresentação — analista é o agente certo, não assistente.", "requires_planning": false}
+
+Input: "A Maria Santos está pronta para a próxima fase? O gestor quer saber"
+Output: {"intent": "wsi_evaluator", "confidence": 0.77, "reasoning": "Avaliação de prontidão do candidato — requer score/parecer WSI, não apenas consulta de status.", "requires_planning": false}
+
+Input: "Preciso de 5 CVs bem avaliados para apresentar ao gestor de operações amanhã"
+Output: {"intent": "rank_candidates", "confidence": 0.76, "reasoning": "Ranking de candidatos por avaliação — CV Screening, não sourcing (candidatos já inscritos).", "requires_planning": false}
+
+Input: "O que está travando no processo da vaga de TI? Já faz 3 semanas sem avanço"
+Output: {"intent": "bottleneck_detection", "confidence": 0.79, "reasoning": "Identificação de gargalo em processo específico — análise de funil, não consulta geral.", "requires_planning": false}
+
+Input: "Manda uma mensagem para todos os candidatos que estão na fase 2 da vaga de vendas"
+Output: {"intent": "feedback", "confidence": 0.74, "reasoning": "Comunicação em massa para grupo de candidatos em etapa específica — analista/comunicação, não envio individual.", "requires_planning": false}
+
+Input: "Quando a gente vai fechar a vaga de desenvolvedor sênior? Já está aberta há 45 dias"
+Output: {"intent": "time_to_fill_prediction", "confidence": 0.81, "reasoning": "Previsão de fechamento de vaga com contexto de prazo — analista preditivo, não assistente.", "requires_planning": false}
+
+Input: "Revisa a descrição da vaga de analista de dados — está muito genérica, não está atraindo os candidatos certos"
+Output: {"intent": "sugerir_melhorias", "confidence": 0.80, "reasoning": "Melhoria de JD com diagnóstico de atração — Job Planner, não assistente genérico.", "requires_planning": false}
+
+Input: "Preciso avançar com o processo do candidato Lucas — ele está parado há uma semana na entrevista técnica"
+Output: {"intent": "atualizar_status_candidato", "confidence": 0.73, "reasoning": "Ação de mover candidato travado no pipeline — gestão de status, not scheduling (não há nova entrevista a agendar).", "requires_planning": false}
+
+Input: "Faz uma análise completa do candidato Pedro Lima para o cargo de gerente de projetos — o CEO quer ver o perfil dele"
+Output: {"intent": "analisar_perfil", "confidence": 0.76, "reasoning": "Análise completa de perfil para decisão executiva — assistente com análise profunda, não WSI isolado.", "requires_planning": true}
+
 ## INSTRUÇÕES
 
 1. Analise cuidadosamente a mensagem do usuário

@@ -571,6 +571,28 @@ class JobWizardGraph:
             else:
                 await save_checkpoint(db, session_id, "job_wizard", dict(state), company_id)
 
+        # E12: Event store — JobCreated event (dual write, immutable audit trail)
+        try:
+            _job_id = state.get("job_id") or state.get("fields", {}).get("job_id")
+            _company_id_es = state.get("company_id", "")
+            _user_id_es = state.get("user_id")
+            _intent_es = state.get("intent", "")
+            _is_confirm = _intent_es in ("confirm", "CONFIRM")
+            if db is not None and _job_id and _company_id_es and _is_confirm:
+                import asyncio as _asyncio
+                from app.services.event_store_service import event_store_service as _es
+                _asyncio.create_task(_es.append(
+                    aggregate_type="job",
+                    aggregate_id=str(_job_id),
+                    event_type="JobCreated",
+                    data={"source": "wizard"},
+                    company_id=str(_company_id_es),
+                    db=db,
+                    created_by=str(_user_id_es) if _user_id_es else "wizard_agent",
+                ))
+        except Exception:
+            pass
+
         if audit_callback:
             error = state.get("error")
             try:
@@ -587,6 +609,23 @@ class JobWizardGraph:
             f"(nodes: {len(execution_log.nodes_visited)}, "
             f"duration: {execution_log.total_duration_ms:.1f}ms)"
         )
+
+        # E10: emit job_creation_ready to jobs_management agent when wizard completes
+        try:
+            _wizard_done = state.get("current_stage") in ("published", "completed")
+            _company_id_val = state.get("company_id", "")
+            if _wizard_done and _company_id_val:
+                from app.shared.agents.agent_bus import agent_bus
+                _job_id_val = state.get("job_id", "")
+                asyncio.create_task(agent_bus.publish(
+                    from_agent="wizard",
+                    to_agent="jobs_management",
+                    event_type="job_creation_ready",
+                    payload={"job_id": _job_id_val, "source": "wizard_briefing"},
+                    company_id=_company_id_val,
+                ))
+        except Exception:
+            pass
 
         return state
     

@@ -449,6 +449,55 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
             except Exception as _audit_exc:
                 logger.debug("[PipelineTransitionAgent][SEG-5] AuditService skipped: %s", _audit_exc)
 
+            # E12: Event store — dual write (immutable audit trail)
+            try:
+                _db = getattr(self, "_db", None) or context.get("db")
+                if _db:
+                    import asyncio as _asyncio
+                    from app.services.event_store_service import event_store_service as _es
+                    _asyncio.create_task(_es.append(
+                        aggregate_type="candidate",
+                        aggregate_id=str(candidate_id),
+                        event_type="CandidateMoved",
+                        data={
+                            "from_stage": from_stage,
+                            "to_stage": to_stage,
+                            "job_id": str(job_id) if job_id else None,
+                        },
+                        company_id=str(input.company_id or ""),
+                        db=_db,
+                        created_by=str(input.user_id) if input.user_id else "system",
+                    ))
+            except Exception:
+                pass
+
+            # D6-G3: ML Feedback Loop — registra sinal quando transição é hired/rejected
+            # Best-effort: não bloqueia o fluxo principal
+            try:
+                _HIRE_STAGES = {"hired", "offer_accepted"}
+                _REJECT_STAGES = {"rejected", "offer_rejected"}
+                if to_stage in _HIRE_STAGES or to_stage in _REJECT_STAGES:
+                    from app.services.ml_feedback_service import ml_feedback_service as _ml_fb
+                    _ml_decision = "hire" if to_stage in _HIRE_STAGES else "reject"
+                    _db = getattr(self, "_db", None) or getattr(state, "db", None) if hasattr(state, "db") else None
+                    if _db is None:
+                        _context_db = context.get("db")
+                        _db = _context_db
+                    if _db:
+                        import asyncio as _asyncio
+                        _asyncio.create_task(
+                            _ml_fb.record_decision(
+                                db=_db,
+                                company_id=str(input.company_id or ""),
+                                job_id=str(job_id or ""),
+                                candidate_id=str(candidate_id or ""),
+                                lia_score=float(context.get("score") or state.context.get("score", 0) if hasattr(state, "context") else 0),
+                                decision=_ml_decision,
+                            )
+                        )
+            except Exception as _ml_exc:
+                logger.debug("[D6-G3] ml_feedback record_decision skipped: %s", _ml_exc)
+
             try:
                 await self._post_loop_learning(
                     state=state,

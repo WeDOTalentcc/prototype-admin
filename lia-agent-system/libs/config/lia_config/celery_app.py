@@ -116,5 +116,36 @@ celery_app.conf.update(
             "schedule": crontab(minute=0, hour="*/4"),  # 00h, 04h, 08h, 12h, 16h, 20h UTC
             "options": {"expires": 14000},
         },
+        # ACH-027 — Avaliação RAGAS diária às 03h UTC (00h Brasília)
+        "ragas-evaluate-daily": {
+            "task": "ragas.evaluate_batch",
+            "schedule": crontab(hour=3, minute=0),  # 00h Brasília / UTC-3
+            "options": {"expires": 7200},
+        },
+        # E9 — Adaptive Routing: recompute ajustes de confiança diariamente às 07h UTC (04h Brasília)
+        "routing-recompute-daily": {
+            "task": "routing.recompute_adjustments",
+            "schedule": crontab(hour=7, minute=0),
+            "args": ["global"],
+            "options": {"expires": 3600},
+        },
+        # E4 — Hot-Reload de Agentes: verificar agents_registry.yaml a cada minuto
+        "agent-registry-hot-reload": {
+            "task": "agents.registry.check_reload",
+            "schedule": crontab(minute="*/1"),
+            "options": {"expires": 55},  # expira antes do próximo tick para evitar sobreposição
+        },
+        # E6 — RAG rebuild: reconstrução diária de índices de domínio às 04h UTC (01h Brasília)
+        "rag-rebuild-domain-index-daily": {
+            "task": "rag.rebuild_all_domains",
+            "schedule": crontab(hour=4, minute=0),
+            "options": {"expires": 7200},
+        },
+        # D6 — ML Feedback: recompute pesos adaptativos semanal (domingo 02h UTC / 23h Brasília)
+        "ml-feedback-recompute-weekly": {
+            "task": "ml.feedback.recompute_active_jobs",
+            "schedule": crontab(hour=2, minute=0, day_of_week=0),  # domingo 02h UTC
+            "options": {"expires": 3600},
+        },
     },
 )

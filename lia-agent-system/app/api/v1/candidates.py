@@ -852,6 +852,30 @@ async def update_candidate_stage(
                         f"Scoring calibration updated for job {vacancy_candidate.vacancy_id}: "
                         f"{recruiter_decision} (score {lia_score_at_transition:.1f} → {adjusted_score:.1f})"
                     )
+
+                # D6-G2: ML Feedback Loop — registra sinal de decisão do recrutador
+                # Best-effort: não bloqueia o fluxo principal
+                try:
+                    import asyncio as _asyncio
+                    from app.services.ml_feedback_service import ml_feedback_service as _ml_fb
+                    _decision_map = {"advance": "hire", "reject": "reject"}
+                    _ml_decision = _decision_map.get(feedback_action)
+                    if _ml_decision:
+                        _company_id = str(getattr(vacancy_candidate, "company_id", "") or "")
+                        _job_id = str(vacancy_candidate.vacancy_id)
+                        _asyncio.create_task(
+                            _ml_fb.record_decision(
+                                db=db,
+                                company_id=_company_id,
+                                job_id=_job_id,
+                                candidate_id=candidate_id,
+                                lia_score=float(lia_score_at_transition or 0),
+                                decision=_ml_decision,
+                            )
+                        )
+                except Exception as _ml_err:
+                    logger.debug("[D6-G2] ml_feedback record_decision skipped: %s", _ml_err)
+
             except Exception as calibration_error:
                 logger.warning(f"Failed to record implicit feedback: {calibration_error}")
         

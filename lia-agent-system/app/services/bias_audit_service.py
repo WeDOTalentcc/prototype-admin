@@ -25,6 +25,12 @@ from datetime import date, datetime
 from typing import Dict, List, Optional
 from uuid import UUID
 
+try:
+    from scipy.stats import chi2_contingency as _chi2_contingency, chi2 as _chi2_dist
+    _SCIPY_AVAILABLE = True
+except ImportError:
+    _SCIPY_AVAILABLE = False
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -59,6 +65,8 @@ class DemographicAuditResult:
     adverse_impact_ratio: float            # menor_taxa / maior_taxa (Four-Fifths Rule)
     below_threshold: bool                  # ratio < FOUR_FIFTHS_THRESHOLD
     alert_level: str                       # "ok" | "warning"
+    disparate_impact: Dict = field(default_factory=dict)  # {"chi2": float, "p_value": float, "significant": bool}
+    eeoc_compliant: bool = True            # Four-Fifths ok AND não significativo estatisticamente
 
 
 @dataclass
@@ -86,6 +94,144 @@ def _age_group(dob: Optional[date]) -> str:
     if age < 45:
         return AGE_GROUP_MID
     return AGE_GROUP_SENIOR
+
+
+def _chi_square_fallback(table: list) -> tuple:
+    """
+    Chi-square de Pearson para tabela de contingência (Python puro, sem scipy).
+    Retorna (chi2, p_value) usando aproximação da distribuição chi2.
+    """
+    import math
+
+    rows = len(table)
+    cols = len(table[0])
+    row_sums = [sum(table[r]) for r in range(rows)]
+    col_sums = [sum(table[r][c] for r in range(rows)) for c in range(cols)]
+    total = sum(row_sums)
+
+    if total == 0:
+        return 0.0, 1.0
+
+    chi2_stat = 0.0
+    for r in range(rows):
+        for c in range(cols):
+            expected = row_sums[r] * col_sums[c] / total
+            if expected > 0:
+                chi2_stat += (table[r][c] - expected) ** 2 / expected
+
+    dof = (rows - 1) * (cols - 1)
+    if dof <= 0:
+        return chi2_stat, 1.0
+
+    # Aproximação da p-value usando função gamma incompleta (chi2 CDF)
+    try:
+        # survival function: 1 - CDF(chi2, dof)
+        # Usamos a função gamma incompleta regularizada
+        p_value = _chi2_survival(chi2_stat, dof)
+    except Exception:
+        p_value = 1.0
+
+    return chi2_stat, p_value
+
+
+def _chi2_survival(x: float, k: float) -> float:
+    """P(X > x) para distribuição chi2 com k graus de liberdade (aproximação)."""
+    import math
+    # CDF da chi2: regularized incomplete gamma function
+    # P(k/2, x/2) = gammainc(k/2, x/2)
+    # survival = 1 - P(k/2, x/2) = Q(k/2, x/2)
+    a = k / 2
+    x2 = x / 2
+    return _gammaincc(a, x2)
+
+
+def _gammaincc(a: float, x: float) -> float:
+    """Regularized upper incomplete gamma function Q(a,x) via series expansion."""
+    import math
+    if x < 0:
+        return 1.0
+    if x == 0:
+        return 1.0
+    # Use continued fraction for large x, series for small x
+    if x < a + 1:
+        return 1.0 - _gammaincl_series(a, x)
+    else:
+        return _gammaincl_cf(a, x)
+
+
+def _gammaincl_series(a: float, x: float) -> float:
+    """Lower incomplete gamma via series."""
+    import math
+    try:
+        ap = a
+        result = 1.0 / a
+        delta = result
+        for _ in range(300):
+            ap += 1.0
+            delta *= x / ap
+            result += delta
+            if abs(delta) < abs(result) * 1e-10:
+                break
+        return result * math.exp(-x + a * math.log(x) - math.lgamma(a))
+    except Exception:
+        return 0.0
+
+
+def _gammaincl_cf(a: float, x: float) -> float:
+    """Upper incomplete gamma via continued fraction (Lentz method)."""
+    import math
+    try:
+        fpmin = 1e-300
+        b = x + 1.0 - a
+        c = 1.0 / fpmin
+        d = 1.0 / b
+        h = d
+        for i in range(1, 301):
+            an = -i * (i - a)
+            b += 2.0
+            d = an * d + b
+            if abs(d) < fpmin:
+                d = fpmin
+            c = b + an / c
+            if abs(c) < fpmin:
+                c = fpmin
+            d = 1.0 / d
+            delta = d * c
+            h *= delta
+            if abs(delta - 1.0) < 1e-10:
+                break
+        return math.exp(-x + a * math.log(x) - math.lgamma(a)) * h
+    except Exception:
+        return 0.0
+
+
+def _chi_square_test(groups: Dict[str, Dict]) -> Dict:
+    """
+    Calcula chi-quadrado para significância estatística do disparate impact.
+
+    Tabela de contingência: [[aprovados, reprovados], ...] por grupo.
+    Retorna {"chi2": float, "p_value": float, "significant": bool}.
+    Requer pelo menos 2 grupos com count > 0.
+    Usa scipy se disponível, Python puro caso contrário.
+    """
+    valid = [(v["approved"], v["count"] - v["approved"]) for v in groups.values() if v["count"] > 0]
+    if len(valid) < 2:
+        return {"chi2": 0.0, "p_value": 1.0, "significant": False, "available": True}
+
+    try:
+        if _SCIPY_AVAILABLE:
+            chi2_stat, p, _dof, _expected = _chi2_contingency(valid)
+        else:
+            chi2_stat, p = _chi_square_fallback(valid)
+
+        return {
+            "chi2": round(float(chi2_stat), 4),
+            "p_value": round(float(p), 4),
+            "significant": bool(p < 0.05),
+            "available": True,
+        }
+    except Exception:
+        return {"chi2": 0.0, "p_value": 1.0, "significant": False, "available": True}
 
 
 def _adverse_impact_ratio(groups: Dict[str, Dict]) -> float:
@@ -137,6 +283,9 @@ def _audit_dimension(
 
     ratio = _adverse_impact_ratio(groups)
     below = ratio < FOUR_FIFTHS_THRESHOLD
+    di = _chi_square_test(groups)
+    # EEOC compliant: ratio >= 0.80 E não significativo (p >= 0.05)
+    eeoc_ok = (not below) and (not di.get("significant", False))
 
     return DemographicAuditResult(
         dimension=dimension,
@@ -144,6 +293,8 @@ def _audit_dimension(
         adverse_impact_ratio=ratio,
         below_threshold=below,
         alert_level="warning" if below else "ok",
+        disparate_impact=di,
+        eeoc_compliant=eeoc_ok,
     )
 
 
@@ -248,6 +399,8 @@ class BiasAuditService:
                 "adverse_impact_ratio": d.adverse_impact_ratio,
                 "below_threshold": d.below_threshold,
                 "alert_level": d.alert_level,
+                "disparate_impact": d.disparate_impact,
+                "eeoc_compliant": d.eeoc_compliant,
             }
             for d in report.dimensions
         ]

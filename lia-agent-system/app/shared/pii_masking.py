@@ -46,6 +46,13 @@ class PIIMaskingFilter(logging.Filter):
                 record.args = {k: mask_pii(str(v)) if isinstance(v, str) else v for k, v in record.args.items()}
             elif isinstance(record.args, tuple):
                 record.args = tuple(mask_pii(str(a)) if isinstance(a, str) else a for a in record.args)
+        # Mask PII in exception messages (stack traces podem expor email/CPF)
+        if record.exc_info and record.exc_info[1] is not None:
+            exc = record.exc_info[1]
+            masked_msg = mask_pii(str(exc))
+            if masked_msg != str(exc):
+                # Substituir args da exceção para mascarar sem recriar o traceback
+                exc.args = (masked_msg,) + exc.args[1:]
         return True
 
 
@@ -57,10 +64,27 @@ def get_masked_logger(name: str) -> logging.Logger:
 
 
 def install_global_pii_masking() -> None:
+    """Instala PIIMaskingFilter no root logger e em todos os seus handlers.
+
+    Por que handlers também?
+    Child loggers (logging.getLogger(__name__)) propagam records para os
+    handlers do root logger diretamente, bypassando os *filtros* do root logger.
+    Adicionar o filtro nos handlers garante cobertura de todos os records
+    propagados — não apenas de logs feitos diretamente no root logger.
+    """
+    pii_filter = PIIMaskingFilter()
     root_logger = logging.getLogger()
+
+    # Filtro no root logger (cobre logging.debug/info direto no root)
     if not any(isinstance(f, PIIMaskingFilter) for f in root_logger.filters):
-        root_logger.addFilter(PIIMaskingFilter())
-        logging.getLogger(__name__).info("[PII-MASKING] Global PII masking filter installed")
+        root_logger.addFilter(pii_filter)
+
+    # Filtro em todos os handlers existentes (cobre propagação de child loggers)
+    for handler in root_logger.handlers:
+        if not any(isinstance(f, PIIMaskingFilter) for f in handler.filters):
+            handler.addFilter(pii_filter)
+
+    logging.getLogger(__name__).info("[PII-MASKING] Global PII masking installed (logger + %d handler(s))", len(root_logger.handlers))
 
 
 import os as _os
