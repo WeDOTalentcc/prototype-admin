@@ -982,7 +982,17 @@
       "Bash(python -m pytest tests/unit/test_aud4_hitl_and_domain_circuits.py -v --tb=short --no-header --no-cov 2>&1 | tail -50)",
       "Bash(python -m pytest tests/unit/test_aud4_hitl_and_domain_circuits.py tests/unit/test_aud_audit_fixes.py -q --tb=short --no-header --no-cov 2>&1 | tail -10)",
       "Bash(python -m pytest tests/unit/test_aud4_hitl_and_domain_circuits.py tests/unit/test_aud_audit_fixes.py -q --tb=short --no-header --no-cov 2>&1 | tail -30)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(cd:*)",
+      "Bash(python:*)",
+      "Bash(for f:*)",
+      "Read(//home/runner/workspace/lia-agent-system/app/tools/**)",
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(for domain:*)"
     ]
   }
 }

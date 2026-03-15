@@ -810,8 +810,7 @@ class LIAApiClient {
     params.set('skip', String(skip))
     params.set('limit', String(limit))
     
-    // Use trailing slash to avoid 308 redirect
-    const url = `${this.baseUrl}/job-vacancies/?${params}`
+    const url = `${this.baseUrl}/job-vacancies?${params}`
     
     const response = await fetch(url, {
       headers: this.getAuthHeaders(),
@@ -1250,7 +1249,7 @@ class LIAApiClient {
     params.set('skip', String(skip))
     params.set('limit', String(limit))
     
-    const response = await fetch(`${this.baseUrl}/email-templates/?${params}`, {
+    const response = await fetch(`${this.baseUrl}/email-templates?${params}`, {
       headers: this.getAuthHeaders(),
     })
     
