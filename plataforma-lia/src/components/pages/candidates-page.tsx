@@ -5571,19 +5571,30 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   }
 
   // Detecta se o texto é uma pergunta genérica (não uma busca de candidatos)
+  const isConversationalMessage = (text: string): boolean => {
+    const normalizedText = text.toLowerCase().trim()
+
+    const greetings = [
+      /^(oi|olá|ola|hey|hi|hello|e aí|eai|fala|bom dia|boa tarde|boa noite|tudo bem|tudo certo|beleza)[\s!.,?]*$/,
+      /^(oi|olá|ola|hey|hi|hello|e aí|eai|fala|bom dia|boa tarde|boa noite)\s+(lia|tudo|como)/,
+      /^(obrigad[oa]|valeu|thanks|vlw|brigad[oa])[\s!.,?]*$/,
+      /^(tchau|até mais|ate mais|bye|flw|falou)[\s!.,?]*$/,
+    ]
+
+    return greetings.some(pattern => pattern.test(normalizedText))
+  }
+
   const isGenericQuestion = (text: string): boolean => {
     const normalizedText = text.toLowerCase().trim()
     
-    // Padrões de perguntas genéricas
     const questionPatterns = [
       /^(o que|que tipo|qual|quais|como|por que|quando|onde|quem|quanto|quantos)\s/,
       /^(me explica|explique|pode explicar|poderia explicar)/,
       /^(me ajuda|ajuda|help|pode ajudar|poderia ajudar)/,
       /^(o que você|voce pode|você consegue|vc pode)/,
-      /\?$/  // Termina com interrogação
+      /\?$/,
     ]
     
-    // Palavras-chave que indicam busca de candidatos
     const searchKeywords = [
       'desenvolvedor', 'developer', 'programador', 'engenheiro', 'analista',
       'gerente', 'manager', 'coordenador', 'diretor', 'especialista',
@@ -5597,12 +5608,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       'b2b', 'saas', 'fintech', 'startup'
     ]
     
-    // Se contém palavras-chave de busca, provavelmente é uma busca
     const hasSearchKeywords = searchKeywords.some(keyword => 
       normalizedText.includes(keyword.toLowerCase())
     )
     
-    // Se é uma pergunta genérica e não tem palavras-chave de busca
     const isQuestion = questionPatterns.some(pattern => pattern.test(normalizedText))
     
     return isQuestion && !hasSearchKeywords
@@ -5647,8 +5656,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setChatMessages(prev => [...prev, userMessage])
     setLiaPromptValue('')
     
-    // Se é uma pergunta genérica sem termos de busca/ação, usar o orquestrador
-    if (isGenericQuestion(trimmedMessage)) {
+    // Se é saudação/conversacional ou pergunta genérica, usar o orquestrador (não buscar candidatos)
+    if (isConversationalMessage(trimmedMessage) || isGenericQuestion(trimmedMessage)) {
       setIsLIAThinking(true)
       
       try {
@@ -5693,10 +5702,14 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       } catch (error) {
         console.error('Orchestrator error, using fallback:', error)
         
+        const fallbackContent = isConversationalMessage(trimmedMessage)
+          ? `Olá! Sou a LIA, sua assistente de recrutamento. Aqui no Funil de Talentos posso ajudá-lo a:\n\n🔍 **Buscar candidatos** — descreva o perfil desejado\n📊 **Analisar candidatos** — selecione e peça análise\n⚖️ **Comparar perfis** — selecione candidatos e peça comparação\n\nComo posso ajudar?`
+          : `Entendi sua pergunta! Posso ajudá-lo a:\n\n🔍 **Buscar candidatos** - descreva o perfil desejado\n📊 **Analisar candidatos** - selecione e peça análise\n📋 **Criar vagas** - diga "criar nova vaga"\n⚖️ **Comparar perfis** - selecione candidatos e peça comparação\n\nComo posso ajudar?`
+
         const fallbackResponse: ChatMessage = {
           id: `lia-response-${Date.now()}`,
           type: 'lia',
-          content: `Entendi sua pergunta! Posso ajudá-lo a:\n\n🔍 **Buscar candidatos** - descreva o perfil desejado\n📊 **Analisar candidatos** - selecione e peça análise\n📋 **Criar vagas** - diga "criar nova vaga"\n⚖️ **Comparar perfis** - selecione candidatos e peça comparação\n\nComo posso ajudar?`,
+          content: fallbackContent,
           timestamp: new Date()
         }
         setChatMessages(prev => [...prev, fallbackResponse])
