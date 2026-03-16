@@ -64,7 +64,10 @@ def _strip_react_json(text: str) -> str:
         try:
             parsed = json.loads(raw)
             if isinstance(parsed, dict) and "response" in parsed:
-                return parsed["response"] or text
+                resp = parsed["response"]
+                if resp:
+                    return resp
+                return "Desculpe, não consegui gerar uma resposta. Tente novamente."
         except (json.JSONDecodeError, ValueError):
             pass
     return text
@@ -284,6 +287,7 @@ async def agent_chat_ws(
                                         _wiz_result.get("user_message", "Vaga criada com sucesso.")
                                         if isinstance(_wiz_result, dict) else "Vaga criada com sucesso."
                                     )
+                                    _wiz_msg = _strip_react_json(_wiz_msg)
                                     await ws_manager.send_to_session(session_id, {
                                         "type": "message",
                                         "content": _wiz_msg,
@@ -309,16 +313,17 @@ async def agent_chat_ws(
                                             resume_agent.process(resume_agent_input),
                                             timeout=_AGENT_TIMEOUT,
                                         )
+                                        _resume_clean = _strip_react_json(resume_output.message or "")
                                         await ws_manager.send_to_session(session_id, {
                                             "type": "message",
-                                            "content": resume_output.message,
+                                            "content": _resume_clean,
                                             "confidence": resume_output.confidence,
                                             "actions": [a.dict() for a in (resume_output.actions or [])],
                                             "domain": resume_domain,
                                             "source": "hitl_resume",
                                         })
                                         conversation_history.append({"role": "user", "content": "[HITL aprovado]"})
-                                        conversation_history.append({"role": "assistant", "content": resume_output.message or ""})
+                                        conversation_history.append({"role": "assistant", "content": _resume_clean})
                             except Exception as _resume_exc:
                                 logger.error("[AgentChatWS] HITL resume falhou: %s", _resume_exc)
                                 await ws_manager.send_to_session(session_id, {

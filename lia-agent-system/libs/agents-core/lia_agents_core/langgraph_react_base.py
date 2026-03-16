@@ -318,7 +318,10 @@ class LangGraphReActBase(LangGraphBase):
                     import json as _json
                     parsed_obj = _json.loads(raw)
                     if isinstance(parsed_obj, dict) and "response" in parsed_obj:
-                        return parsed_obj["response"] or content
+                        resp = parsed_obj["response"]
+                        if resp:
+                            return resp
+                        return "Desculpe, não consegui gerar uma resposta. Tente novamente."
                 except (ValueError, _json.JSONDecodeError):
                     pass
             return content
