@@ -95,7 +95,7 @@ class WizardReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         for m in reversed(messages):
             content = getattr(m, "content", None) or (m.get("content", "") if isinstance(m, dict) else "")
             if content and not getattr(m, "tool_call_id", None) and not (isinstance(m, dict) and m.get("tool_call_id")):
-                response = content if isinstance(content, str) else str(content)
+                response = self._extract_text_content(content)
                 break
         if not response:
             response = "Desculpe, não consegui processar sua solicitação."

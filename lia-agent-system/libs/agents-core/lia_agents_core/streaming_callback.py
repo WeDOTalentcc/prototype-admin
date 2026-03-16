@@ -84,6 +84,11 @@ class StreamingCallback(BaseCallbackHandler):
         if not token:
             return
 
+        if isinstance(token, list):
+            token = "".join(str(t) for t in token)
+        elif not isinstance(token, str):
+            token = str(token)
+
         self._token_buffer.append(token)
         self._tokens_sent += 1
 

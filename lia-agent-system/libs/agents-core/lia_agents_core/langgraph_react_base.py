@@ -274,18 +274,47 @@ class LangGraphReActBase(LangGraphBase):
         try:
             from langchain_anthropic import ChatAnthropic
             from lia_config.config import settings
-            return ChatAnthropic(
+            import os
+            kwargs = dict(
                 model=settings.LLM_PRIMARY_MODEL,
                 temperature=settings.LLM_AGENT_TEMPERATURE,
                 api_key=settings.AI_INTEGRATIONS_ANTHROPIC_API_KEY or settings.ANTHROPIC_API_KEY,
-                streaming=True,  # habilita on_llm_new_token → StreamingCallback → WS
+                streaming=True,
             )
+            base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL") or getattr(settings, "AI_INTEGRATIONS_ANTHROPIC_BASE_URL", None)
+            if base_url:
+                kwargs["base_url"] = base_url
+            return ChatAnthropic(**kwargs)
         except ImportError:
             raise RuntimeError("langchain-anthropic não instalado")
 
     def _get_system_prompt(self, input: AgentInput) -> str:
         """Retorna system prompt. Subclasses devem sobrescrever."""
         return f"Você é LIA, assistente de recrutamento do domínio {self.domain_name}."
+
+    def _extract_text_content(self, content: Any) -> str:
+        """Extrai texto de content que pode ser string, lista de blocos ou dict."""
+        if isinstance(content, str):
+            if content.startswith("[{") and "'text'" in content:
+                import ast
+                try:
+                    parsed = ast.literal_eval(content)
+                    if isinstance(parsed, list):
+                        return self._extract_text_content(parsed)
+                except (ValueError, SyntaxError):
+                    pass
+            return content
+        if isinstance(content, list):
+            parts = []
+            for block in content:
+                if isinstance(block, str):
+                    parts.append(block)
+                elif isinstance(block, dict) and "text" in block:
+                    parts.append(block["text"])
+                elif hasattr(block, "text"):
+                    parts.append(block.text)
+            return "".join(parts) if parts else str(content)
+        return str(content)
 
     def _state_to_output(self, state: Dict[str, Any], input: AgentInput) -> AgentOutput:
         """
@@ -298,9 +327,9 @@ class LangGraphReActBase(LangGraphBase):
         if last_message is None:
             response = "Desculpe, não consegui processar sua solicitação."
         elif hasattr(last_message, "content"):
-            response = last_message.content
+            response = self._extract_text_content(last_message.content)
         elif isinstance(last_message, dict):
-            response = last_message.get("content", "")
+            response = self._extract_text_content(last_message.get("content", ""))
         else:
             response = str(last_message)
 
