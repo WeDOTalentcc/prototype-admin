@@ -18,14 +18,14 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 
-from app.core.auth import get_current_user
+from app.auth.dependencies import get_current_user_or_demo
 from app.services.token_budget_service import check_budget, get_plan_for_company
 
 logger = logging.getLogger(__name__)
 
 
 async def require_token_budget(
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_user_or_demo),
 ) -> None:
     """
     FastAPI dependency que bloqueia a request se o budget diário de tokens

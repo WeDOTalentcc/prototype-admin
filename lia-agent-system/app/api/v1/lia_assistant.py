@@ -2747,11 +2747,10 @@ Total: {total} | Ativas/Publicadas: {active} | Pausadas: {paused} | Rascunhos: {
 - Destaque alertas de SLA quando relevante.
 - Sugira ações concretas quando identificar problemas."""
 
-        return await llm_service.generate(prompt, provider="anthropic")
+        return await llm_service.generate(prompt, provider="claude")
 
     except Exception as exc:
         logger.warning("[expanded-prompt/jobs] Erro ao buscar vagas: %s", exc)
-        # Fallback com contexto mínimo mas correto
         prompt = f"""Você é LIA, assistente de recrutamento inteligente da plataforma WeDOTalent.
 Você está auxiliando um RECRUTADOR no painel de gestão de vagas da empresa.
 O usuário é RECRUTADOR, não candidato.
@@ -2760,7 +2759,7 @@ Mensagem do recrutador: {message}
 
 Responda em Português Brasileiro de forma útil e profissional.
 Não solicite informações pessoais do usuário."""
-        return await llm_service.generate(prompt, provider="anthropic")
+        return await llm_service.generate(prompt, provider="claude")
 
 
 @router.post("/expanded-prompt", response_model=ExpandedPromptResponse)
@@ -2835,7 +2834,7 @@ Contexto: {request.context_type}
 
 Responda em Português Brasileiro de forma útil, clara e profissional.
 NUNCA peça informações pessoais do usuário como cargo, localização ou experiência — ele é o recrutador, não um candidato."""
-            response_text = await llm_service.generate(prompt, provider="anthropic")
+            response_text = await llm_service.generate(prompt, provider="claude")
             agent_used = "general_assistant"
         
         follow_ups = [
