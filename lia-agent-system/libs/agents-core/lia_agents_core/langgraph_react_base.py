@@ -303,6 +303,24 @@ class LangGraphReActBase(LangGraphBase):
                         return self._extract_text_content(parsed)
                 except (ValueError, SyntaxError):
                     pass
+            stripped = content.strip()
+            raw = stripped
+            if stripped.startswith("```json"):
+                raw = stripped[len("```json"):].strip()
+                if raw.endswith("```"):
+                    raw = raw[:-3].strip()
+            elif stripped.startswith("```"):
+                raw = stripped[3:].strip()
+                if raw.endswith("```"):
+                    raw = raw[:-3].strip()
+            if raw.startswith("{"):
+                try:
+                    import json as _json
+                    parsed_obj = _json.loads(raw)
+                    if isinstance(parsed_obj, dict) and "response" in parsed_obj:
+                        return parsed_obj["response"] or content
+                except (ValueError, _json.JSONDecodeError):
+                    pass
             return content
         if isinstance(content, list):
             parts = []

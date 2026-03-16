@@ -45,6 +45,30 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["websocket"])
 
+
+def _strip_react_json(text: str) -> str:
+    """Remove JSON bruto do ReAct loop, retornando apenas o campo 'response'."""
+    if not text:
+        return text
+    stripped = text.strip()
+    raw = stripped
+    if stripped.startswith("```json"):
+        raw = stripped.removeprefix("```json").strip()
+        if raw.endswith("```"):
+            raw = raw[:-3].strip()
+    elif stripped.startswith("```"):
+        raw = stripped.removeprefix("```").strip()
+        if raw.endswith("```"):
+            raw = raw[:-3].strip()
+    if raw.startswith("{"):
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict) and "response" in parsed:
+                return parsed["response"] or text
+        except (json.JSONDecodeError, ValueError):
+            pass
+    return text
+
 # Timeout por mensagem (segundos) — evita travamento em agentes lentos
 _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
 
@@ -504,12 +528,13 @@ async def agent_chat_ws(
                     except Exception as _inc_exc:
                         logger.warning("[AgentChatWS] increment_usage falhou: %s", _inc_exc)
 
+                clean_message = _strip_react_json(output.message or "")
                 conversation_history.append({"role": "user", "content": content})
-                conversation_history.append({"role": "assistant", "content": output.message or ""})
+                conversation_history.append({"role": "assistant", "content": clean_message})
 
                 await ws_manager.send_to_session(session_id, {
                     "type": "message",
-                    "content": output.message,
+                    "content": clean_message,
                     "confidence": output.confidence,
                     "actions": [a.dict() for a in (output.actions or [])],
                     "navigation": output.navigation.dict() if output.navigation else None,
@@ -643,7 +668,7 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
                 logger.warning("[HTTPChat] increment_usage falhou: %s", _inc_exc)
 
         return HTTPChatResponse(
-            content=output.message or "",
+            content=_strip_react_json(output.message or ""),
             confidence=output.confidence,
             domain=active_domain,
             actions=[a.dict() for a in (output.actions or [])],
