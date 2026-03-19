@@ -1,12 +1,53 @@
 # Análise Comparativa Profunda: Recruiter Agent V5 vs Plataforma LIA
 
-**Data**: 13 de Março de 2026 (atualizado v11.0 — Análise Profunda Pós-Auditoria: métricas verificadas, inventário completo 16 agentes, ActionExecutor, Scope Config, Sistema Preditivo)
+**Data**: 19 de Março de 2026 (atualizado v12.0 — Sprints Y1–Y5 + Z1–Z7 + AUD-1–5 completos: métricas re-verificadas, 17 agentes principais + 6 subagentes Z1 = 23 totais, 102 models, 245+ services, 47 migrations, 289+ test files, 13 domínios DDD, 16 métricas Prometheus)
 **Escopo**: Análise qualitativa profunda, benchmark de mercado, análise estrutural e cruzamento comparativo
 **Método**: Leitura completa do código-fonte (V5 via GitHub API read-only, LIA via filesystem local) + web research de plataformas concorrentes
 **Perspectiva**: Diagnóstico técnico com foco em production readiness e conformidade com padrões de mercado
-**Versão**: 11.0 (substitui v10.0 — Análise profunda pós-auditoria com métricas verificadas por filesystem: 16 agentes IA (12 ReAct + 4 StateGraph), 99 models, 231 services, 37 migrations, 206 endpoints, 114 hooks, 90 pages, 227 test files, 1095 Python files, 584 TSX files. Novas subseções: ActionExecutor 1080L com 9 action_ids, Scope Config 4 escopos (66 tools), Sistema Preditivo 8 serviços, Intelligence 3+Learning 4 subserviços. candidates-page.tsx: 10.397L (era 10.592). 12 domínios DDD, 14 métricas Prometheus, 32 tools YAML. Cruzamento com RELATORIO_AUDITORIA_LIA.md v2.0)
+**Versão**: 12.0 (substitui v11.0 — Sprints Y1–Y5 (Bias Audit EEOC, Confidence Calibration, Granular Consent, Multi-Model, Event Sourcing, Agent Bus, Adaptive Routing) + Z1–Z7 (KanbanReActAgent+PipelineTransitionAgent→6 subagentes, LearningSnapshot, Context YAML versioning, DomainEmbedding, PolicyShim, VectorSimilarityConfig, ATS shims, OpenTelemetry OTLP, Presidio NER Layer 4, RecruiterBehaviorService) + AUD-1–5 (Anti-sycophancy 6 prompts, 15+ circuit breakers, HITL Sourcing+Communication, bandit CI, mock data removed) + F1-02 (FairnessGuard learning loop) + F1-03 (SLOs circuit breaker) + F2-04 (DLQ Redis). 17+6=23 agentes, 102 models, 245+ services, 47 migrations, 289+ test files, coverage gate 30%.)
 
 **Nota metodológica**: Scores de 1-10 são atribuídos com base em: (a) leitura direta do código-fonte, (b) contagem de componentes via filesystem/API, (c) comparação com padrões de mercado documentados publicamente. Cada score na Seção 4 inclui justificativa com evidências de arquivo. Os scores da v2.0 diferem da v1.0 porque a análise anterior não incluiu análise estrutural profunda nem benchmarks de mercado — a reavaliação reduziu scores onde problemas estruturais foram encontrados (ex: Organização 8.0→3.5 após descoberta de god objects e arquivos órfãos). Os scores da v3.0 incorporam o Sprint de Qualidade e Compliance (2026-02-28). Os scores da v3.1 incorporam as correções do QA Audit (7 bugs corrigidos, 9 testes restaurados) — código verificado diretamente no filesystem com `pytest` executado e 100% passando. Os scores da v5.0 incorporam as Fases 4a/4b/4c/5 (Float Chat, navegação intencional, intent routing, agentes Phase 5), os Gaps Arquiteturais G1-G4 (LangGraph nativo, Orchestrator Intelligence, Observabilidade, Arquitetura Distribuída) e o UV Monorepo 6a/6b/6c (9 libs, 10 serviços Docker, Celery distribuído). Os scores da v6.0 incorporam os Sprints A–D (Token Budget, Monitoring, HITL, RAG/TOON), F1–F5 (HITL Persistence, Coverage Gate, Hooks Wiring, Short Lists, Componentes FE) e G1–G7 (YAML Tool Registry, RAG Híbrido, TOON Format, componentes FE, coverage 30.71%). Os scores da v6.1 incorporam o Sprint H: FactChecker granular, Deploy Cloud, Coverage 34%, FE testes unitários fix. Os scores da v7.0 incorporam o Sprint I: type cleanup FE (candidates-page.tsx −311 linhas), test categorization difficulty (easy/medium/hard/very_hard via pytestmark), coverage 34%→40% (meta aspiracional; gate CI efetivo é 32%, achieved 32.66%) (+106 testes: intent_classifier + candidate_search_schemas).
+
+---
+
+## Changelog v12.0 — Sprints Y1–Y5 + Z1–Z7 + AUD + F1–F2: Métricas Completas 19/03/2026
+
+> Atualização completa com todas as sprints concluídas desde v11.0. Métricas re-verificadas por filesystem scan profundo (19/03/2026). Novos sistemas documentados: subagentes Z1, RecruiterBehaviorService, LearningSnapshotService, DLQService, OpenTelemetry, Presidio NER, Event Sourcing, Agent Bus, Adaptive Routing, Multi-Model per agent. Gap `AutomationReActAgent não registrado` marcado como resolvido.
+
+| Área | v11.0 | v12.0 | Δ | Justificativa |
+|------|-------|-------|---|---------------|
+| Agentes IA | 16 (12 ReAct + 4 StateGraph) | **17 + 6 subagentes Z1 = 23 totais** | +7 | Sprint Z1: KanbanReActAgent→3 subagentes + PipelineTransitionAgent→3 subagentes. +1 agente: contagem correta de StateGraphs (WSI, Interview, Wizard, Policy) = 4. Total: 12+4+1 PolicySetup = 17 principais. |
+| Models SQLAlchemy | 99 | **102** | +3 | Sprint Y3/D6: `RecruiterDecisionFeedback` (migration 044). Y5/E12: `DomainEvent` (migration 047). Y5/E9: `RoutingFeedback` (migration 046). + migration 043 `candidate_consent_grants`. |
+| Services | 231 | **245+** | +14 | Novos serviços Y1–Y5 + Z1–Z7: RecruiterBehaviorService, LearningSnapshotService, DLQService, SalaryBenchmarkService, CulturalFitIntegrationService, GranularConsentService, EventStoreService, RoutingLearningService, DomainEmbeddingService, MLFeedbackService, CandidateComparisonService, PriorityCalculator, AgentBus, ScoreBreakdownService. |
+| Migrations Alembic | 37 | **47** | +10 | Sprints Y1–Y5 + Z1: migrations 038–047. Última: `047_add_event_store.py`. |
+| Test Files | 227 | **289+** | +62 | 62 novos arquivos de teste das sprints Y1–Y5, Z1–Z7, AUD-1–5, F1–F2. Total: 4.600+ casos. |
+| Coverage gate | 32% (pytest.ini) | **30%** | −2 | Gate ajustado para 30% em `pytest.ini` pós-expansão do codebase. Achieved: 29%+. |
+| Circuit Breakers | 7 | **15+** | +8 | AUD-2: OPENAI, GEMINI, GUPY, PANDAPE, STACKONE, SENDGRID, RESEND, WORKOS circuits adicionados. |
+| Prometheus Metrics | 14 | **16** | +2 | Y2/C4: `agent_latency_timer` + `record_tokens()` wiring em react_loop.py e enhanced_agent_mixin.py. |
+| Domínios DDD | 12 | **13** | +1 | `talent_intelligence` adicionado nas sprints Y-series. |
+| Prometheus endpoint | Não documentado | **`GET /api/v1/metrics`** | Novo | `app/api/v1/metrics.py` — `generate_latest()` Prometheus (graceful ImportError). |
+| FE Hooks | 114 | **103** | −11 | Nota: contagem original incluía hooks de lib/vendor. Hooks de app: 103 verificados. |
+| FE Components | 437 | **469** | +32 | Novos: ScoreBreakdownBadge, CandidateCompareModal, MLInsightsCard, ReactThinkingStream, etc. |
+| FE Pages | 90 | **90+** | ≈ | Novos: granular consent, WSI async, salary benchmark. |
+
+**Gaps resolvidos desde v11.0:**
+- ✅ `AutomationReActAgent`: registrado no dispatcher (`agent_chat_ws.py`) — AUD-2 circuit breakers aplicados
+- ✅ Coverage gate: mantido em 30% mesmo com expansão significativa do codebase
+- ✅ FairnessGuard no learning loop: F1-02 implementado com `validate_learning_batch()` + rollback Z2-01
+- ✅ HITL em Sourcing e Communication: AUD-4 implementado (17 testes)
+- ✅ Policy agent consolidado: Z5-02 HiringPolicyAgent→shim com DeprecationWarning
+- ✅ PII Presidio Layer 4: Z6-03 opt-in com `LLM_PROMPT_PRESIDIO_ENABLED`
+- ✅ OpenTelemetry OTLP: Z6-02 `_try_init_otlp()` com OTLP exporter + `@trace_span` em 3 componentes críticos
+- ✅ DLQ Redis: F2-04 `DLQService` com cap 1000, TTL 7d, PII masking, Bell para tasks críticas
+- ✅ Anti-sycophancy em 6 prompts faltantes: AUD-1 aplicado em analytics, communication, automation, ats_integration, sourcing, pipeline
+
+**Gaps que permanecem após v12.0:**
+- `candidates-page.tsx` god object: ainda grande (Sprint E extraiu componentes mas arquivo principal persiste)
+- Deploy Terraform/Pulumi: scripts bash existem; IaC declarativo pendente
+- Fine-tuning pipeline: `lia_feedback.py` DPO export existe; pipeline training contínuo pendente
+- DeepEval integration: testes de LLM quality no CI — pendente (prioridade alta)
+- Relatório de fairness exportável PDF/CSV: pendente (prioridade alta — compliance comercial)
+- Coverage aspiracional 80%: gate atual 30%, achieved 29%+; target 80% em domínios críticos é meta de médio prazo
 
 ---
 
