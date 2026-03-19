@@ -10,10 +10,69 @@ Filas com prioridade (escada de custo André):
   vagas_normal      (priority=5) — operações de vaga (criação, atualização)
   onboarding_low    (priority=3) — comunicações, reports, onboarding
 """
-from celery import Celery, signals
+import asyncio
+import traceback as _traceback
+
+from celery import Celery, Task, signals
 from celery.schedules import crontab
 from kombu import Queue, Exchange
 from lia_config.config import settings
+
+
+class LIATask(Task):
+    """
+    Base class para todas as tasks Celery da LIA.
+
+    Comportamento adicional vs Task padrão:
+    - on_failure(): persiste na DLQ Redis quando retries se esgotam
+    - Notificação Bell para tasks críticas (fail-safe)
+
+    Uso: @celery_app.task(base=LIATask, ...)
+    """
+
+    abstract = True
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        """Chamado pelo Celery quando a task falha definitivamente (retries esgotados)."""
+        queue = (self.request.delivery_info or {}).get("routing_key", "celery")
+
+        tb_str = ""
+        if einfo is not None:
+            try:
+                tb_str = str(einfo.traceback) if hasattr(einfo, "traceback") else ""
+            except Exception:
+                tb_str = _traceback.format_exc()
+
+        try:
+            from app.shared.resilience.dlq_service import dlq_service
+
+            async def _push():
+                await dlq_service.push_failure(
+                    task_name=self.name,
+                    queue=queue,
+                    args=list(args),
+                    kwargs=dict(kwargs),
+                    exc=exc,
+                    tb=tb_str,
+                    retries=self.request.retries,
+                    company_id=kwargs.get("company_id") if isinstance(kwargs, dict) else None,
+                )
+
+            # Roda em um novo event loop sem bloquear o worker
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(_push())
+                else:
+                    loop.run_until_complete(_push())
+            except RuntimeError:
+                asyncio.run(_push())
+
+        except Exception as dlq_exc:
+            import logging
+            logging.getLogger(__name__).debug(
+                "[LIATask.on_failure] DLQ push falhou (fail-safe): %s", dlq_exc
+            )
 
 
 @signals.worker_process_init.connect
@@ -37,6 +96,7 @@ celery_app = Celery(
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
     include=["app.jobs.celery_tasks"],
+    task_cls=LIATask,
 )
 
 celery_app.conf.update(
