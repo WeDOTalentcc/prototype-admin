@@ -69,6 +69,14 @@ AGENT_TYPE_TO_DOMAIN: Dict[str, str] = {
     "ats_integrator": "ats_integration",
     "recruiter_assistant": "recruiter_assistant",
     "task_planner": "automation",
+    # Z1-01: Kanban subagents
+    "kanban_search": "kanban_search",
+    "kanban_insight": "kanban_insight",
+    "kanban_action": "kanban_action",
+    # Z1-02: Pipeline subagents
+    "pipeline_context": "pipeline_context",
+    "pipeline_decision": "pipeline_decision",
+    "pipeline_action": "pipeline_action",
 }
 
 # Opções padrão de clarificação quando o router não sabe o domínio

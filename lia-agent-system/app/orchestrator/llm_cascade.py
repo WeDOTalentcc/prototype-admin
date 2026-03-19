@@ -25,9 +25,20 @@ logger = logging.getLogger(__name__)
 _ROUTING_PROMPT = """Você é um roteador de intenções para um sistema de RH.
 
 Analise a mensagem do usuário e retorne um JSON com:
-- domain: um de [job_management, sourcing, cv_screening, pipeline, talent, kanban, analytics, communication, automation, recruiter_assistant]
+- domain: um de [job_management, sourcing, cv_screening, pipeline, talent,
+  kanban_search, kanban_insight, kanban_action,
+  pipeline_context, pipeline_decision, pipeline_action,
+  analytics, communication, automation, recruiter_assistant]
 - confidence: float de 0.0 a 1.0
 - reason: explicação curta (max 50 chars)
+
+Guia de domínios kanban/pipeline:
+  kanban_search: listar/ver candidatos, resumo de pipeline, métricas de etapa
+  kanban_insight: gargalos, previsões, candidatos em risco, análise de funil
+  kanban_action: mover/aprovar/reprovar candidatos, triagem em lote, relatórios
+  pipeline_context: perfil do candidato, scores WSI, salário, disponibilidade
+  pipeline_decision: validar transição, sub-status, preferências do recrutador
+  pipeline_action: atualizar candidato, cancelar/reagendar entrevista, fairness
 
 Mensagem: {message}
 

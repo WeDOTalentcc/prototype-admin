@@ -468,11 +468,19 @@ async def orchestrated_job_chat(
                     else:
                         pending_action_store.remove(conv_id)
 
-        # === PHASE 2: KanbanReActAgent — ReAct loop com tool calling ao DB ===
-        # Caminho principal: agente autônomo com acesso real ao banco de dados.
+        # === PHASE 2: Kanban subagent — Z1-01 sub-routing por intenção ===
+        # Seleciona o subagente especializado com base no conteúdo da mensagem.
         try:
-            from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent
+            from app.api.v1.agent_chat_ws import _subagent_for_kanban, _get_agent
             from app.shared.agents.agent_interface import AgentInput as ReactAgentInput
+
+            _kanban_domain = _subagent_for_kanban(request.message)
+            agent = _get_agent(_kanban_domain)
+            if agent is None:
+                # Fallback seguro: agente original completo
+                from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent
+                agent = KanbanReActAgent()
+                _kanban_domain = "kanban"
 
             agent_input = ReactAgentInput(
                 message=request.message,
@@ -486,14 +494,13 @@ async def orchestrated_job_chat(
                 },
             )
 
-            agent = KanbanReActAgent()
             output = await agent.process(agent_input)
 
             return OrchestratedJobChatResponse(
                 success=True,
                 content=output.message,
-                agent_used="KanbanReActAgent",
-                agents_consulted=["KanbanReActAgent"],
+                agent_used=_kanban_domain,
+                agents_consulted=[_kanban_domain],
                 intent_detected="react_agent",
                 confidence=output.confidence,
                 structured_data=output.state_updates or None,

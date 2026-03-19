@@ -99,6 +99,62 @@ def _build_agent_input(
     )
 
 
+def _subagent_for_kanban(message: str) -> str:
+    """Z1-01: classifica mensagem kanban → subagente especializado.
+
+    Retorna um de: kanban_action | kanban_insight | kanban_search
+    Fail-safe: retorna "kanban" (agente original) se não conseguir classificar.
+    """
+    msg = message.lower()
+    # Action: mutations, batch ops, communications
+    _action_kw = (
+        "mover", "aprovar", "reprovar", "rejeitar", "lote", "batch",
+        "em massa", "triagem em lote", "relatório de pipeline", "prata da casa",
+        "silver medalist", "backlog", "benchmark do recrutador", "fairness",
+        "check_rejection", "comunicação em massa",
+    )
+    # Insight: analytics, predictions, bottlenecks
+    _insight_kw = (
+        "gargalo", "bottleneck", "previsão", "risco", "aging",
+        "tempo na etapa", "analisar etapa", "comparar etapa",
+        "sugerir movimentação", "journey metric", "predição",
+        "identify_bottleneck", "at_risk", "pipeline_prediction",
+    )
+    if any(kw in msg for kw in _action_kw):
+        return "kanban_action"
+    if any(kw in msg for kw in _insight_kw):
+        return "kanban_insight"
+    # Default for kanban: read-only search (safer)
+    return "kanban_search"
+
+
+def _subagent_for_pipeline(message: str) -> str:
+    """Z1-02: classifica mensagem pipeline → subagente especializado.
+
+    Retorna um de: pipeline_action | pipeline_decision | pipeline_context
+    Fail-safe: retorna "pipeline_transition" (agente original) se falhar.
+    """
+    msg = message.lower()
+    # Action: field updates, interview management, fairness
+    _action_kw = (
+        "atualizar candidato", "personalizar comunicação", "cancelar entrevista",
+        "reagendar entrevista", "update_candidate", "personalize_communication",
+        "fairness", "check_rejection",
+    )
+    # Decision: transitions, preferences, sub-status
+    _decision_kw = (
+        "validar transição", "sub-status", "preferências do recrutador",
+        "coletar dados", "agendar tarefa secundária", "validate_transition",
+        "suggest_sub_status", "recruiter_preference",
+    )
+    if any(kw in msg for kw in _action_kw):
+        return "pipeline_action"
+    if any(kw in msg for kw in _decision_kw):
+        return "pipeline_decision"
+    # Default for pipeline: read-only context (safer)
+    return "pipeline_context"
+
+
 def _get_agent(domain: str) -> Optional[Any]:
     """Retorna instância do agente para o domínio solicitado."""
     try:
@@ -117,6 +173,16 @@ def _get_agent(domain: str) -> Optional[Any]:
         elif domain == "kanban":
             from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent
             return KanbanReActAgent()
+        # Z1-01: Kanban subagents
+        elif domain == "kanban_search":
+            from app.domains.recruiter_assistant.agents.kanban_search_agent import KanbanSearchAgent
+            return KanbanSearchAgent()
+        elif domain == "kanban_insight":
+            from app.domains.recruiter_assistant.agents.kanban_insight_agent import KanbanInsightAgent
+            return KanbanInsightAgent()
+        elif domain == "kanban_action":
+            from app.domains.recruiter_assistant.agents.kanban_action_agent import KanbanActionAgent
+            return KanbanActionAgent()
         elif domain in ("jobs_management", "jobs_mgmt"):
             from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent
             return JobsManagementReActAgent()
@@ -126,6 +192,16 @@ def _get_agent(domain: str) -> Optional[Any]:
         elif domain == "pipeline_transition":
             from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
             return PipelineTransitionAgent()
+        # Z1-02: Pipeline subagents
+        elif domain == "pipeline_context":
+            from app.domains.pipeline.agents.pipeline_context_agent import PipelineContextAgent
+            return PipelineContextAgent()
+        elif domain == "pipeline_decision":
+            from app.domains.pipeline.agents.pipeline_decision_agent import PipelineDecisionAgent
+            return PipelineDecisionAgent()
+        elif domain == "pipeline_action":
+            from app.domains.pipeline.agents.pipeline_action_agent import PipelineActionAgent
+            return PipelineActionAgent()
         elif domain == "analytics":
             from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent
             return AnalyticsReActAgent()
@@ -435,6 +511,14 @@ async def agent_chat_ws(
                         "[AgentChatWS] CascadedRouter skipped, usando domain original: %s", _route_exc
                     )
 
+            # Z1: sub-rotear kanban/pipeline para subagentes especializados
+            if active_domain == "kanban":
+                active_domain = _subagent_for_kanban(content)
+                logger.debug("[AgentChatWS][Z1] kanban → %s", active_domain)
+            elif active_domain == "pipeline_transition":
+                active_domain = _subagent_for_pipeline(content)
+                logger.debug("[AgentChatWS][Z1] pipeline_transition → %s", active_domain)
+
             agent = _get_agent(active_domain)
             if agent is None:
                 await ws_manager.send_to_session(session_id, {
@@ -643,6 +727,14 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
                 active_domain = route.domain_id
         except Exception:
             pass
+
+    # Z1: sub-rotear kanban/pipeline para subagentes especializados
+    if active_domain == "kanban":
+        active_domain = _subagent_for_kanban(content)
+        logger.debug("[HTTPChat][Z1] kanban → %s", active_domain)
+    elif active_domain == "pipeline_transition":
+        active_domain = _subagent_for_pipeline(content)
+        logger.debug("[HTTPChat][Z1] pipeline_transition → %s", active_domain)
 
     agent = _get_agent(active_domain)
     if agent is None:

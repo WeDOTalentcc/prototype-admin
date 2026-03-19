@@ -27,6 +27,15 @@ _DEFAULT_AGENT_MODELS: dict[str, str] = {
     "automation": "claude-haiku-4-5",
     "talent": "claude-sonnet-4-6",
     "recruiter_assistant": "claude-sonnet-4-6",
+    # Z1: subagentes Kanban (herdam haiku do domínio pai)
+    "kanban_search": "claude-haiku-4-5",
+    "kanban_insight": "claude-haiku-4-5",
+    "kanban_action": "claude-haiku-4-5",
+    # Z1: subagentes Pipeline (herdam sonnet do domínio pai — ações críticas)
+    "pipeline_context": "claude-haiku-4-5",    # leitura — haiku suficiente
+    "pipeline_decision": "claude-sonnet-4-6",  # decisão — sonnet para precisão
+    "pipeline_action": "claude-sonnet-4-6",    # ação + fairness — sonnet
+    "pipeline_transition": "claude-sonnet-4-6",
 }
 
 
