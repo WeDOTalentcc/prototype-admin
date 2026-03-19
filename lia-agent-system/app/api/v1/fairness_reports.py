@@ -153,3 +153,80 @@ async def get_fairness_trend(
         company_id=company_id,
         trend=trend,
     )
+
+
+@router.get("/reports/export")
+async def export_fairness_report(
+    company_id: Optional[str] = Query(None),
+    days: int = Query(30, ge=1, le=365),
+    format: str = Query("csv", regex="^(csv|json)$"),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """
+    Export FairnessGuard report as CSV or JSON (EU AI Act compliance).
+
+    CSV format: category,total_blocks,total_warnings,last_occurrence
+    JSON format: FairnessSummaryResponse schema
+    """
+    from fastapi.responses import StreamingResponse, JSONResponse
+    import csv
+    import io
+
+    # Reuse summary logic
+    from app.models.fairness_audit import FairnessAuditLog
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+
+    stmt = select(
+        FairnessAuditLog.category,
+        func.count().filter(FairnessAuditLog.is_blocked.is_(True)).label("blocks"),
+        func.count().filter(FairnessAuditLog.is_blocked.is_(False)).label("warnings"),
+        func.max(FairnessAuditLog.created_at).label("last_occurrence"),
+    ).where(FairnessAuditLog.created_at >= since)
+
+    if company_id:
+        import uuid
+        stmt = stmt.where(FairnessAuditLog.company_id == uuid.UUID(company_id))
+
+    stmt = stmt.group_by(FairnessAuditLog.category)
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    if format == "json":
+        data = {
+            "period_days": days,
+            "company_id": company_id,
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "total_blocks": sum(r.blocks for r in rows),
+            "total_events": sum(r.blocks + r.warnings for r in rows),
+            "by_category": [
+                {
+                    "category": r.category or "unknown",
+                    "total_blocks": r.blocks,
+                    "total_warnings": r.warnings,
+                    "last_occurrence": r.last_occurrence.isoformat() if r.last_occurrence else None,
+                }
+                for r in rows
+            ],
+        }
+        return JSONResponse(content=data)
+
+    # CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["category", "total_blocks", "total_warnings", "last_occurrence"])
+    for r in rows:
+        writer.writerow([
+            r.category or "unknown",
+            r.blocks,
+            r.warnings,
+            r.last_occurrence.isoformat() if r.last_occurrence else "",
+        ])
+    output.seek(0)
+    filename = f"fairness_report_{datetime.now(timezone.utc).strftime('%Y%m%d')}.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )

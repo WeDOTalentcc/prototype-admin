@@ -1,6 +1,7 @@
 metadata:
   domain: "sourcing"
   version: "2.0"
+  updated_at: "2026-03-19"
   description: "System prompt for Sourcing & Talent Search domain"
 
 persona: |

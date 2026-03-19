@@ -36,6 +36,11 @@ _DEFAULT_AGENT_MODELS: dict[str, str] = {
     "pipeline_decision": "claude-sonnet-4-6",  # decisão — sonnet para precisão
     "pipeline_action": "claude-sonnet-4-6",    # ação + fairness — sonnet
     "pipeline_transition": "claude-sonnet-4-6",
+    # Z2-02: Sourcing subagents — modelo alinhado à complexidade de cada etapa
+    "sourcing_planner": "claude-haiku-4-5",     # critérios/parâmetros — rápido
+    "sourcing_search": "claude-haiku-4-5",      # busca estruturada — rápido
+    "sourcing_enrich": "claude-sonnet-4-6",     # análise/scoring — precisa qualidade
+    "sourcing_engagement": "claude-sonnet-4-6", # personalização outreach — qualidade
 }
 
 

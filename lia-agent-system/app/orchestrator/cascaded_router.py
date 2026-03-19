@@ -77,6 +77,11 @@ AGENT_TYPE_TO_DOMAIN: Dict[str, str] = {
     "pipeline_context": "pipeline_context",
     "pipeline_decision": "pipeline_decision",
     "pipeline_action": "pipeline_action",
+    # Z2-02: Sourcing subagents
+    "sourcing_planner": "sourcing_planner",
+    "sourcing_search": "sourcing_search",
+    "sourcing_enrich": "sourcing_enrich",
+    "sourcing_engagement": "sourcing_engagement",
 }
 
 # Opções padrão de clarificação quando o router não sabe o domínio

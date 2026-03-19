@@ -147,5 +147,12 @@ celery_app.conf.update(
             "schedule": crontab(hour=2, minute=0, day_of_week=0),  # domingo 02h UTC
             "options": {"expires": 3600},
         },
+        # Z4-02 — LTM Compression: comprime episódios antigos diariamente às 03h UTC (00h Brasília)
+        "memory-compress-daily": {
+            "task": "memory.compress_old_episodes",
+            "schedule": crontab(hour=3, minute=0),  # 00h Brasília / UTC-3
+            "args": ["global"],
+            "options": {"expires": 7200},
+        },
     },
 )

@@ -116,7 +116,26 @@ class TenantBudget:
             )
             logger.warning("[TenantBudget] company=%s alerta em %.0f%%", company_id, ratio * 100)
 
+        if warning:
+            await self._send_budget_alert(company_id, warning, ratio)
+
         return True, total, warning
+
+    async def _send_budget_alert(self, company_id: str, message: str, ratio: float) -> None:
+        """Envia notificação Bell+log quando orçamento de tokens atinge threshold (fail-safe)."""
+        try:
+            from app.services.notification_service import notification_service
+            await notification_service.send(
+                company_id=company_id,
+                event_type="token_budget_alert",
+                title="Alerta de Orçamento de Tokens",
+                body=message,
+                severity="warning" if ratio < 1.0 else "critical",
+                channels=["bell"],
+                metadata={"usage_ratio": round(ratio, 4), "monthly_limit": self.monthly_limit},
+            )
+        except Exception as exc:
+            logger.debug("[TenantBudget] _send_budget_alert falhou (fail-safe): %s", exc)
 
     async def get_status(self, company_id: str) -> dict:
         """Retorna status do orçamento do tenant para dashboards/API."""

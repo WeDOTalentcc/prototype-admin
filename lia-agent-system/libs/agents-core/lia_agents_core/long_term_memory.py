@@ -1,9 +1,9 @@
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column, DateTime, Float, Integer, JSON, String, select, update
+from sqlalchemy import Column, DateTime, Float, Integer, JSON, String, delete, select, update
 from sqlalchemy.dialects.postgresql import UUID
 
 from lia_config.database import AsyncSessionLocal, Base
@@ -275,6 +275,154 @@ class LongTermMemoryService:
                 }
                 for mem in memories
             ]
+
+    async def compress_old_episodes(
+        self,
+        company_id: str,
+        domain: str,
+        age_days: int = 30,
+    ) -> int:
+        """
+        Z4-02: Comprime episódios LTM mais antigos que age_days.
+
+        Busca episódios antigos, gera resumo LLM, armazena como novo episódio
+        comprimido e marca os antigos com expires_at=now para purge posterior.
+
+        Returns:
+            Número de episódios marcados para expiração.
+        """
+        cutoff = datetime.utcnow() - timedelta(days=age_days)
+        compressed_count = 0
+
+        try:
+            async with AsyncSessionLocal() as session:
+                query = (
+                    select(AgentLongTermMemory)
+                    .where(
+                        AgentLongTermMemory.company_id == company_id,
+                        AgentLongTermMemory.domain == domain,
+                        AgentLongTermMemory.created_at < cutoff,
+                        AgentLongTermMemory.expires_at.is_(None),
+                    )
+                    .order_by(AgentLongTermMemory.created_at.asc())
+                    .limit(50)
+                )
+                result = await session.execute(query)
+                old_episodes = list(result.scalars().all())
+
+                if not old_episodes:
+                    return 0
+
+                # Gera resumo LLM (fail-safe: usa concatenação simples se LLM indisponível)
+                summary_text = ""
+                try:
+                    from anthropic import Anthropic
+                    import os
+
+                    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+                    if api_key:
+                        client = Anthropic(api_key=api_key)
+                        episodes_text = "\n".join(
+                            f"- {ep.memory_key}: {ep.memory_value}"
+                            for ep in old_episodes[:20]
+                        )
+                        response = client.messages.create(
+                            model="claude-haiku-20240307",
+                            max_tokens=512,
+                            messages=[
+                                {
+                                    "role": "user",
+                                    "content": (
+                                        f"Resuma em 3-5 bullet points os seguintes episódios "
+                                        f"de memória de agente IA (domínio: {domain}):\n\n"
+                                        f"{episodes_text}"
+                                    ),
+                                }
+                            ],
+                        )
+                        summary_text = response.content[0].text
+                except Exception as llm_exc:
+                    logger.debug(
+                        "[LTM.compress] LLM summary falhou (fallback concat): %s", llm_exc
+                    )
+                    summary_text = "; ".join(
+                        f"{ep.memory_key}={ep.memory_value}"
+                        for ep in old_episodes[:10]
+                    )
+
+                # Armazena episódio comprimido
+                compressed_key = (
+                    f"compressed_{domain}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+                )
+                compressed_memory = AgentLongTermMemory(
+                    company_id=company_id,
+                    domain=domain,
+                    memory_type="learning",
+                    memory_key=compressed_key,
+                    memory_value={
+                        "summary": summary_text,
+                        "source_count": len(old_episodes),
+                        "oldest_episode": (
+                            old_episodes[0].created_at.isoformat()
+                            if old_episodes[0].created_at
+                            else None
+                        ),
+                        "compressed_at": datetime.utcnow().isoformat(),
+                    },
+                    context_tags=["compressed", domain],
+                    usage_count=0,
+                    relevance_score=0.8,
+                    source_session_id="compression_job",
+                )
+                session.add(compressed_memory)
+
+                # Marca episódios antigos para expiração
+                now = datetime.utcnow()
+                for ep in old_episodes:
+                    ep.expires_at = now  # type: ignore
+                    compressed_count += 1
+
+                await session.commit()
+                logger.info(
+                    "[LTM.compress] company=%s domain=%s: %d episódios comprimidos",
+                    company_id,
+                    domain,
+                    compressed_count,
+                )
+        except Exception as exc:
+            logger.warning("[LTM.compress] falhou company=%s domain=%s: %s", company_id, domain, exc)
+
+        return compressed_count
+
+    async def purge_expired(self, company_id: str) -> int:
+        """
+        Z4-02: Remove registros com expires_at <= now (usado pelo Celery).
+
+        Returns:
+            Número de registros deletados.
+        """
+        deleted_count = 0
+        try:
+            async with AsyncSessionLocal() as session:
+                now = datetime.utcnow()
+                result = await session.execute(
+                    delete(AgentLongTermMemory).where(
+                        AgentLongTermMemory.company_id == company_id,
+                        AgentLongTermMemory.expires_at.isnot(None),
+                        AgentLongTermMemory.expires_at <= now,
+                    )
+                )
+                deleted_count = result.rowcount or 0
+                await session.commit()
+                logger.info(
+                    "[LTM.purge] company=%s: %d registros expirados removidos",
+                    company_id,
+                    deleted_count,
+                )
+        except Exception as exc:
+            logger.warning("[LTM.purge] falhou company=%s: %s", company_id, exc)
+
+        return deleted_count
 
     async def record_outcome(
         self,

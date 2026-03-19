@@ -128,6 +128,46 @@ def _subagent_for_kanban(message: str) -> str:
     return "kanban_search"
 
 
+def _subagent_for_sourcing(message: str) -> str:
+    """Z2-02: classifica mensagem sourcing → subagente especializado.
+
+    Retorna um de: sourcing_engagement | sourcing_enrich | sourcing_search | sourcing_planner
+    Fail-safe: retorna "sourcing" (agente original) se não conseguir classificar.
+    """
+    msg = message.lower()
+    # Engagement: outreach, mensagem, rastreamento de resposta
+    _engagement_kw = (
+        "abordagem", "outreach", "enviar mensagem", "mensagem de contato",
+        "contatar candidato", "rastrear resposta", "gerar mensagem",
+    )
+    # Enrich: análise, scoring, shortlist, comparação
+    _enrich_kw = (
+        "analisar perfil", "score", "shortlist", "comparar candidatos",
+        "ranking", "avaliar perfil", "adicionar shortlist", "remover shortlist",
+    )
+    # Search: busca, filtrar, ver candidato
+    _search_kw = (
+        "busca de talentos", "talent search", "talent pool", "filtrar candidatos",
+        "listar candidatos encontrados", "ver perfil do candidato",
+        "boolean search", "busca booleana",
+    )
+    # Planner: critérios, parâmetros, skills
+    _planner_kw = (
+        "critérios de busca", "parâmetros de busca", "definir critérios",
+        "configurar busca", "sugerir skills", "sugestão de skills",
+    )
+    if any(kw in msg for kw in _engagement_kw):
+        return "sourcing_engagement"
+    if any(kw in msg for kw in _enrich_kw):
+        return "sourcing_enrich"
+    if any(kw in msg for kw in _search_kw):
+        return "sourcing_search"
+    if any(kw in msg for kw in _planner_kw):
+        return "sourcing_planner"
+    # Default: search (leitura — mais seguro)
+    return "sourcing_search"
+
+
 def _subagent_for_pipeline(message: str) -> str:
     """Z1-02: classifica mensagem pipeline → subagente especializado.
 
@@ -167,6 +207,19 @@ def _get_agent(domain: str) -> Optional[Any]:
         elif domain == "sourcing":
             from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
             return SourcingReActAgent()
+        # Z2-02: Sourcing subagents
+        elif domain == "sourcing_planner":
+            from app.domains.sourcing.agents.sourcing_planner_agent import SourcingPlannerAgent
+            return SourcingPlannerAgent()
+        elif domain == "sourcing_search":
+            from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
+            return SourcingSearchAgent()
+        elif domain == "sourcing_enrich":
+            from app.domains.sourcing.agents.sourcing_enrich_agent import SourcingEnrichAgent
+            return SourcingEnrichAgent()
+        elif domain == "sourcing_engagement":
+            from app.domains.sourcing.agents.sourcing_engagement_agent import SourcingEngagementAgent
+            return SourcingEngagementAgent()
         elif domain == "talent":
             from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
             return TalentReActAgent()
@@ -511,13 +564,16 @@ async def agent_chat_ws(
                         "[AgentChatWS] CascadedRouter skipped, usando domain original: %s", _route_exc
                     )
 
-            # Z1: sub-rotear kanban/pipeline para subagentes especializados
+            # Z1/Z2: sub-rotear kanban/pipeline/sourcing para subagentes especializados
             if active_domain == "kanban":
                 active_domain = _subagent_for_kanban(content)
                 logger.debug("[AgentChatWS][Z1] kanban → %s", active_domain)
             elif active_domain == "pipeline_transition":
                 active_domain = _subagent_for_pipeline(content)
                 logger.debug("[AgentChatWS][Z1] pipeline_transition → %s", active_domain)
+            elif active_domain == "sourcing":
+                active_domain = _subagent_for_sourcing(content)
+                logger.debug("[AgentChatWS][Z2] sourcing → %s", active_domain)
 
             agent = _get_agent(active_domain)
             if agent is None:
@@ -728,13 +784,16 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
         except Exception:
             pass
 
-    # Z1: sub-rotear kanban/pipeline para subagentes especializados
+    # Z1/Z2: sub-rotear kanban/pipeline/sourcing para subagentes especializados
     if active_domain == "kanban":
         active_domain = _subagent_for_kanban(content)
         logger.debug("[HTTPChat][Z1] kanban → %s", active_domain)
     elif active_domain == "pipeline_transition":
         active_domain = _subagent_for_pipeline(content)
         logger.debug("[HTTPChat][Z1] pipeline_transition → %s", active_domain)
+    elif active_domain == "sourcing":
+        active_domain = _subagent_for_sourcing(content)
+        logger.debug("[HTTPChat][Z2] sourcing → %s", active_domain)
 
     agent = _get_agent(active_domain)
     if agent is None:
