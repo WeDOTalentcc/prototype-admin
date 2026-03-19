@@ -42,12 +42,13 @@ async def get_tracer_status(
     _: None = Depends(require_admin),
 ):
     """Retorna o status atual do exporter de traces."""
-    from app.shared.tracing import _otlp_active, _TRACES_ENABLED
+    from app.shared.tracing import is_otlp_active, _TRACES_ENABLED
     import os
+    otlp = is_otlp_active()
     return {
         "traces_enabled": _TRACES_ENABLED,
-        "otlp_active": _otlp_active,
+        "otlp_active": otlp,
         "otlp_endpoint": os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT", ""),
         "service_name": os.environ.get("OTEL_SERVICE_NAME", "lia-agent-system"),
-        "exporter": "otlp" if _otlp_active else "lightweight_internal",
+        "exporter": "otlp" if otlp else "lightweight_internal",
     }

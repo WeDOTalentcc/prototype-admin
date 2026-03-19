@@ -97,7 +97,7 @@ async def list_dlq_entries(
             detail=f"Fila '{queue}' desconhecida. Filas válidas: {KNOWN_QUEUES}",
         )
     entries = await dlq_service.list_entries(queue, limit=limit)
-    return [DLQEntry(**e) for e in entries]
+    return [DLQEntry.model_validate(e) for e in entries]
 
 
 @router.post("/{queue}/requeue/{entry_id}", response_model=RequeueResponse)

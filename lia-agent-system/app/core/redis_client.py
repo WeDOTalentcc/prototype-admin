@@ -28,6 +28,28 @@ async def get_redis():
     return _redis_client
 
 
+async def get_redis_connection():
+    """Retorna conexão Redis com decode_responses=True (fail-safe → None).
+
+    Cada chamada retorna uma nova conexão própria para uso como async context manager.
+    Usado por serviços que precisam de `async with redis:` por operação.
+
+    Returns:
+        Redis client ou None se Redis indisponível.
+    """
+    try:
+        import redis.asyncio as aioredis
+        from app.core.config import settings
+        return await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+    except Exception:
+        try:
+            import aioredis as _aioredis  # type: ignore[import]
+            from app.core.config import settings
+            return await _aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+        except Exception:
+            return None
+
+
 async def close_redis() -> None:
     """Close the shared Redis connection (call on app shutdown)."""
     global _redis_client

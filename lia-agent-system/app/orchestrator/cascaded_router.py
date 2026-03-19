@@ -386,7 +386,7 @@ class CascadedRouter:
             return route_result
         try:
             from app.services.routing_learning_service import routing_learning_service
-            cid = company_id or getattr(self, '_company_id', 'global') or 'global'
+            cid = company_id or 'global'
             adjustments = await routing_learning_service.get_cached_adjustments(cid)
             if route_result.domain_id in adjustments:
                 factor = adjustments[route_result.domain_id]

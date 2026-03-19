@@ -330,17 +330,8 @@ class RecruiterBehaviorService:
             logger.debug("[RecruiterBehavior] _store_cache falhou: %s", exc)
 
     async def _get_redis(self):
-        try:
-            import redis.asyncio as aioredis
-            from app.core.config import settings
-            return await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
-        except Exception:
-            try:
-                import aioredis  # type: ignore
-                from app.core.config import settings
-                return await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
-            except Exception:
-                return None
+        from app.core.redis_client import get_redis_connection
+        return await get_redis_connection()
 
 
 # Singleton

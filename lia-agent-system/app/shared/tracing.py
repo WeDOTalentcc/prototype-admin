@@ -250,6 +250,11 @@ def trace_span(
     return decorator
 
 
+def is_otlp_active() -> bool:
+    """Retorna True se OTLP exporter está ativo (OpenTelemetry SDK disponível)."""
+    return _otlp_active
+
+
 def get_recent_traces(limit: int = 50) -> list:
     return _completed_spans[-limit:]
 
