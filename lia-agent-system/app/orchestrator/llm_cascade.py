@@ -28,9 +28,16 @@ Analise a mensagem do usuário e retorne um JSON com:
 - domain: um de [job_management, sourcing, cv_screening, pipeline, talent,
   kanban_search, kanban_insight, kanban_action,
   pipeline_context, pipeline_decision, pipeline_action,
+  sourcing_planner, sourcing_search, sourcing_enrich, sourcing_engagement,
   analytics, communication, automation, recruiter_assistant]
 - confidence: float de 0.0 a 1.0
 - reason: explicação curta (max 50 chars)
+
+Guia de domínios sourcing:
+  sourcing_planner: definir critérios de busca, sugerir skills, configurar parâmetros
+  sourcing_search: buscar/filtrar/ver candidatos, talent pool, boolean search
+  sourcing_enrich: analisar perfil, scoring WSI, comparar candidatos, shortlist, ranking
+  sourcing_engagement: abordagem (outreach), gerar mensagem personalizada, rastrear resposta
 
 Guia de domínios kanban/pipeline:
   kanban_search: listar/ver candidatos, resumo de pipeline, métricas de etapa
