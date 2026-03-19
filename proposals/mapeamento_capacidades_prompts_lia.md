@@ -18,7 +18,7 @@ Este documento mapeia os 4 contextos de prompt da plataforma LIA com base em **l
 
 **Sobre os dois registros de tools LIA:**
 - `tool_registry_metadata.yaml` — fonte declarativa com scope por tool (usado pelo `tool_registry_loader.py` para metadados e pelo task spec desta análise)
-- `scope_config.py` — fonte executável de runtime (`filter_tools_by_scope()` filtra tools por scope no `Orchestrator.get_tools_for_context()`)
+- `app/tools/scope_config.py` — fonte executável de runtime (`filter_tools_by_scope()` filtra tools por scope no `Orchestrator.get_tools_for_context()`)
 
 Os dois registros têm diferenças. Este documento usa o `tool_registry_metadata.yaml` como fonte primária de tools por contexto (alinhado ao task spec), mencionando divergências relevantes de `scope_config.py` onde aplicável.
 
@@ -67,7 +67,7 @@ A LIA usa **dois sistemas de roteamento independentes** que coexistem:
 
 - Determina quais API tools o LLM pode chamar
 - Baseado no `context_page` enviado pelo frontend → normalizado para `context_type` → mapeado para `PromptScope`
-- Implementado em `scope_config.py`: `filter_tools_by_scope()` filtra por scope no `Orchestrator.get_tools_for_context()`
+- Implementado em `app/tools/scope_config.py`: `filter_tools_by_scope()` filtra por scope no `Orchestrator.get_tools_for_context()` (`orchestrator.py`, linha 313)
 - Os scopes são mutuamente exclusivos (sem union de scopes em runtime)
 
 ### Sistema B — Domain routing (por conteúdo da mensagem)
@@ -139,7 +139,7 @@ O **Prompt Flutuante** aparece como ícone de chat em **todas as páginas** da p
 | `schedule_report` | Agenda relatório recorrente enviado automaticamente | `report_type`, `schedule` (cron), `recipients[]` |
 | `capture_wizard_feedback` | Registra feedback do recrutador sobre experiência com o wizard de criação de vagas | `feedback_type`, `rating`, `comment` |
 
-**Nota sobre divergência de fontes:** `scope_config.py` (runtime enforcement) lista GLOBAL com apenas 2 tools (`generate_report`, `schedule_report`). `tool_registry_metadata.yaml` lista 4. Esta divergência indica que `get_company_config` e `capture_wizard_feedback` podem estar no YAML mas não implementadas como tools filtráveis pelo scope config em runtime.
+**Nota sobre divergência de fontes:** `app/tools/scope_config.py` (runtime enforcement — `SCOPE_TOOL_MAPPING`, usado por `filter_tools_by_scope()` em `orchestrator.py` linha 313) lista GLOBAL com apenas 2 tools: `generate_report` e `schedule_report`. `tool_registry_metadata.yaml` lista 4. Verificando o código Python das tools: `get_company_config` e `capture_wizard_feedback` estão declaradas no YAML como scope GLOBAL, mas ausentes do `SCOPE_TOOL_MAPPING` em `scope_config.py` — o que significa que `filter_tools_by_scope(GLOBAL)` **não** as retorna em runtime. A fonte executável é `scope_config.py`; o YAML tem precedência apenas para metadados (description, version).
 
 #### [LIA-LLM] Capacidades conversacionais (dados já em contexto da conversa)
 
@@ -607,7 +607,7 @@ O **Prompt Expandido do Kanban** aparece dentro de uma vaga específica (`/user/
 | `hide_candidate` | Oculta candidato da visualização ativa (soft remove) `[ESCRITA]` | `candidate_id`, `vacancy_id`, `reason` |
 | `get_vacancy_funnel` | Retorna dados do funil: candidatos por etapa + taxas de conversão | `job_id`, `include_rejected` |
 
-**Nota sobre scope_config.py:** o `scope_config.py` lista IN_JOB com 25 tools, incluindo `send_email`, `send_whatsapp`, `schedule_interview`, `compare_candidates`, `get_bottleneck_analysis`, e outras não presentes no `tool_registry_metadata.yaml`. Estas podem estar implementadas em Python mas não documentadas no YAML, ou em desenvolvimento.
+**Nota sobre divergência de fontes — IN_JOB:** `app/tools/scope_config.py` (`SCOPE_TOOL_MAPPING`) lista IN_JOB com 25 tools: 14 query tools (`get_job_details`, `get_vacancy_funnel`, `get_candidate_details`, `get_activity_summary`, `get_pending_actions`, `compare_candidates`, `get_candidate_stats`, `get_bottleneck_analysis`, `get_job_velocity`, `get_job_quality_metrics`, `get_stakeholder_metrics`, `get_prediction_metrics`, `get_job_benchmark`, `get_smart_alerts`) + 11 action tools (`update_candidate_stage`, `bulk_update_candidates_stage`, `reject_candidate`, `shortlist_candidate`, `add_to_list`, `hide_candidate`, `wsi_screening`, `send_email`, `send_whatsapp`, `schedule_interview`, `send_feedback`). O `tool_registry_metadata.yaml` lista apenas 6 dessas tools. A discrepância é documentada — o `scope_config.py` é a fonte executável de runtime; as 25 tools listadas nele são o teto real de capacidade da API neste escopo.
 
 #### [LIA-LLM] Capacidades conversacionais
 
@@ -1050,7 +1050,7 @@ SourcingAPIClient → ATS Rails API
 | **context_type** | Tipo normalizado de contexto, mapeado pelo `ContextAdapter` a partir do `context_page` via `PAGE_TO_CONTEXT_TYPE`. |
 | **scope** | Conjunto de tools disponíveis para o LLM em um contexto. Definido em `tool_registry_metadata.yaml` (declarativo) e `scope_config.py` (enforcement de runtime). |
 | **tool_registry_metadata.yaml** | Fonte declarativa de metadados das tools LIA: nome, description, allowed_agents, scope, version, parameters. Usado pelo task spec desta análise. |
-| **scope_config.py** | Fonte executável de runtime: `SCOPE_TOOL_MAPPING` + `filter_tools_by_scope()`. Pode diferir do YAML — tem precedência em runtime. |
+| **scope_config.py** | `app/tools/scope_config.py` — Fonte executável de runtime: `SCOPE_TOOL_MAPPING` + `filter_tools_by_scope()`. Importado diretamente pelo `orchestrator.py`. Tem precedência sobre o YAML em runtime. |
 | **CascadedRouter** | Componente LIA de roteamento de domínio por intenção da mensagem. 6 tiers: memory (pronomes) → LRU in-process → Redis → VectorSemanticCache (pgvector ≥0.92) → FastRouter (regex/keyword) → LLM (Haiku→Sonnet→Opus) → clarification. |
 | **HubPlanner** | Componente v5 equivalente. Analisa query com PLANNER_SYSTEM_PROMPT, detecta FAST_NAV_PATTERNS (regex), MULTI_INTENT_RE, gera HubExecutionPlan com HubTask[] paralelas. |
 | **MainOrchestrator** | Entry point único da LIA: FairnessGuard → PendingAction → ActionExecutor → Orchestrator (CascadedRouter + DomainWorkflow). |
@@ -1077,8 +1077,8 @@ SourcingAPIClient → ATS Rails API
 
 ---
 
-*Fontes LIA lidas: `context_adapter.py` (PAGE_TO_CONTEXT_TYPE), `tool_registry_metadata.yaml` (scope por tool), `scope_config.py` (SCOPE_TOOL_MAPPING — enforcement de runtime), `orchestrator.py` (SCOPE_MAPPING, process_request), `main_orchestrator.py` (fluxo de fases), `cascaded_router.py` (6 tiers, RouteResult, AGENT_TYPE_TO_DOMAIN), `recruiter_assistant.yaml`, `job_management.yaml`, `cv_screening.yaml`, `pipeline_transition.yaml`, `interview_scheduling.yaml`, `communication.yaml`, `sourcing.yaml`, `analytics.yaml`, `interaction_patterns.py`*
+*Fontes LIA lidas: `lia-agent-system/app/orchestrator/context_adapter.py` (PAGE_TO_CONTEXT_TYPE), `lia-agent-system/app/tools/tool_registry_metadata.yaml` (scope por tool), `lia-agent-system/app/tools/scope_config.py` (SCOPE_TOOL_MAPPING — enforcement de runtime), `lia-agent-system/app/orchestrator/orchestrator.py` (SCOPE_MAPPING, process_request, get_tools_for_context), `lia-agent-system/app/orchestrator/main_orchestrator.py` (fluxo de fases, FairnessGuard, _process_via_orchestrator), `lia-agent-system/app/orchestrator/cascaded_router.py` (6 tiers, RouteResult, AGENT_TYPE_TO_DOMAIN), `lia-agent-system/app/tools/tool_registry_loader.py`, `lia-agent-system/app/prompts/domains/{recruiter_assistant,job_management,cv_screening,pipeline_transition,interview_scheduling,communication,sourcing,analytics}.yaml`, `lia-agent-system/app/shared/prompts/interaction_patterns.py`*
 
-*Fontes v5 lidas (GitHub WeDOTalent/recruiter_agent_v5): `hub/catalog.py`, `hub/planner.py`, `domains/base.py`, `domains/autonomous/prompts.py` (AUTONOMOUS_SYSTEM_PROMPT + budget rules), `domains/autonomous/tools/{jobs,candidates,applies,sourcing,scheduling,evaluations,organization,planning,file_system,generic,macros}.py`, `domains/jobs/domain.py` + `actions/*.py`, `domains/applies/domain.py` + `actions/*.py`, `domains/sourced_profile_sourcing/domain.py` + `actions/report.py` + `actions/score.py`*
+*Fontes v5 lidas (GitHub WeDOTalent/recruiter_agent_v5): `src/hub/catalog.py`, `src/hub/planner.py`, `src/domains/base.py`, `src/domains/autonomous/prompts.py` (AUTONOMOUS_SYSTEM_PROMPT + budget rules), `src/domains/autonomous/tools/{jobs,candidates,applies,sourcing,scheduling,evaluations,organization,planning,file_system,generic,macros}.py` (73+ tools), `src/domains/jobs/domain.py` + `src/domains/jobs/actions/*.py`, `src/domains/applies/domain.py` + `src/domains/applies/actions/*.py`, `src/domains/sourced_profile_sourcing/domain.py` + `src/domains/sourced_profile_sourcing/actions/*.py`*
 
-*Para atualizar: reler `tool_registry_metadata.yaml` (scope por tool), `scope_config.py` (SCOPE_TOOL_MAPPING), `context_adapter.py` (PAGE_TO_CONTEXT_TYPE), e os `domain.py` + `actions/*.py` do v5.*
+*Para atualizar: reler `lia-agent-system/app/tools/tool_registry_metadata.yaml` (scope por tool), `lia-agent-system/app/tools/scope_config.py` (SCOPE_TOOL_MAPPING), `lia-agent-system/app/orchestrator/context_adapter.py` (PAGE_TO_CONTEXT_TYPE), e os `domain.py` + `actions/*.py` do v5.*
