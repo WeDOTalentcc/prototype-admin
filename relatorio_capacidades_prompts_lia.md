@@ -2321,7 +2321,7 @@ prompts:
       Você é LIA, assistente de recrutamento da WeDOTalent...
 ```
 
-> **Sprint Z3-02:** Todos os arquivos YAML em `app/prompts/` foram atualizados para incluir o campo `updated_at` (ISO-8601 UTC) em cada entrada de prompt. Isso permite rastrear quando cada prompt foi modificado, complementando o `version` semântico. O campo é exibido na UI de gerenciamento de prompts e é auditável via `PromptRegistry.get_metadata(key)`.
+> **Sprint Z3-02:** Os **9 YAMLs em `app/prompts/domains/`** (`sourcing.yaml`, `cv_screening.yaml`, `job_management.yaml`, `recruiter_assistant.yaml`, `analytics.yaml`, `communication.yaml`, `ats_integration.yaml`, `hiring_policy.yaml`, `automation.yaml`) e os YAMLs compartilhados (`app/prompts/shared/`) foram atualizados para incluir o campo `updated_at` (ISO-8601 UTC) em cada entrada de prompt. Isso permite rastrear quando cada prompt foi modificado, complementando o `version` semântico. O campo é exibido na UI de gerenciamento de prompts e é auditável via `PromptRegistry.get_metadata(key)`.
 
 **Verificação:**
 ```bash
