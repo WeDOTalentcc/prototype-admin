@@ -1,376 +1,360 @@
 # Mapeamento de Capacidades dos Prompts da LIA × v5
 
-**Versão:** 2.0 | **Data:** Março/2026 | **Autoria:** Análise de código LIA local + recruiter_agent_v5 (GitHub WeDOTalent)
+**Versão:** 3.0 | **Data:** Março/2026 | **Autoria:** Análise de código LIA local + recruiter_agent_v5 (GitHub WeDOTalent)
 
-> **Como ler:** Este documento descreve **dois sistemas separados** que compartilham a mesma UI. Para cada contexto de prompt, as capacidades são divididas em três camadas:
-> - **[LIA-API]** — capacidades que fazem chamadas reais à API via tools (limitadas ao scope do contexto)
-> - **[LIA-LLM]** — capacidades conversacionais do LLM sem chamada de API (dependem de dados já carregados no contexto)
-> - **[v5]** — capacidades do recruiter_agent_v5 (domínio equivalente no GitHub)
->
-> As tabelas comparativas ao final de cada seção mostram onde cada sistema está à frente.
+---
+
+## Prefácio: como ler este documento
+
+Este documento compara dois sistemas de agentes de IA que compartilham a mesma interface:
+
+- **LIA** (`lia-agent-system/`) — FastAPI + Python. Código local.
+- **v5** (`recruiter_agent_v5`) — LangGraph + Python. GitHub WeDOTalent.
+
+Para cada contexto de prompt, as capacidades são divididas em três camadas:
+
+| Tag | Significado |
+|---|---|
+| **[LIA-API]** | Capacidade com chamada real à API via tool (limitada pelo scope do contexto) |
+| **[LIA-LLM]** | Capacidade conversacional do LLM sem chamada de API (depende de dados em contexto) |
+| **[v5]** | Capacidade do recruiter_agent_v5 (domínio equivalente no GitHub) |
 
 ---
 
 ## Índice
 
 1. [Visão geral: os 4 contextos](#visao-geral)
-2. [Prompt 1 — Flutuante / Global](#prompt-1)
-3. [Prompt 2 — Tabela de Vagas](#prompt-2)
-4. [Prompt 3 — Dentro da Vaga (Kanban)](#prompt-3)
-5. [Prompt 4 — Funil de Talentos](#prompt-4)
-6. [Tabela-resumo global](#tabela-resumo)
-7. [Glossário técnico](#glossario)
+2. [Arquitetura de roteamento da LIA](#roteamento)
+3. [Prompt 1 — Flutuante / Global](#prompt-1)
+4. [Prompt 2 — Tabela de Vagas](#prompt-2)
+5. [Prompt 3 — Dentro da Vaga (Kanban)](#prompt-3)
+6. [Prompt 4 — Funil de Talentos](#prompt-4)
+7. [Tabela-resumo global](#tabela-resumo)
+8. [Glossário técnico](#glossario)
 
 ---
 
 ## 1. Visão geral: os 4 contextos {#visao-geral}
 
-O frontend envia `context_page` junto com cada mensagem. O backend usa esse campo para determinar qual domínio carregar e quais tools disponibilizar ao LLM.
+### Mapeamento frontend → backend (LIA)
 
-### Mapeamento de contextos
+O frontend envia `context_page` junto com cada mensagem. O `ContextAdapter` (`app/orchestrator/context_adapter.py`) normaliza esse campo em `context_type`, que determina o **scope de tools** disponíveis:
 
-**LIA** (`lia-agent-system/app/orchestrator/context_adapter.py` → `PAGE_TO_CONTEXT_TYPE`):
-
-| Páginas do frontend | context_page enviado | context_type mapeado | Domínios YAML ativos | Scope de tools |
+| Páginas do frontend | context_page | context_type mapeado | Domínios YAML | Scope (scope_config.py) |
 |---|---|---|---|---|
-| Qualquer página (chat flutuante) | `general`, `global` | `general` | `recruiter_assistant` | GLOBAL |
-| `/user/jobs`, wizard de vaga | `job`, `jobs`, `vacancies`, `wizard` | `job_management` | `job_management` | JOB_TABLE |
-| `/user/jobs/{id}` (kanban) | `pipeline`, `kanban` | `pipeline` | `cv_screening` + `pipeline_transition` + `interview_scheduling` + `communication` | IN_JOB |
+| Chat flutuante (todas as páginas) | `general`, `global` | `general` → `global` | `recruiter_assistant` | GLOBAL |
+| `/user/jobs`, wizard de vaga | `job`, `jobs`, `vacancies`, `wizard` | `job_management` → `jobs` | `job_management` | JOB_TABLE |
+| `/user/jobs/{id}` (kanban) | `pipeline`, `kanban` | `pipeline` → `in_job` | `cv_screening` + `pipeline_transition` + `interview_scheduling` + `communication` | IN_JOB |
 | `/user/candidates`, `/user/sourcing/{id}` | `sourcing`, `talent` | `talent_funnel` | `sourcing` + `analytics` | TALENT_FUNNEL |
 
-**v5** (`src/api.py` → `ChatRequest.domain`, `src/hub/catalog.py` → `NAVIGATION_ROUTES`):
+### Mapeamento frontend → backend (v5)
 
 | Rota frontend | domain no payload | Domínio v5 | Modo |
 |---|---|---|---|
-| `/user/lia` (chat dedicado) | `null` + `hub_mode: true` | `autonomous` | HubPlanner (LLM-based) |
+| Chat dedicado (`/user/lia`) | `null` + `hub_mode: true` | `autonomous` | HubPlanner (LLM + regex) |
 | `/user/jobs` | `"jobs"` | `jobs` | Domain direto |
 | `/user/jobs/{id}` | `"applies"` | `applies` | Domain direto |
 | `/user/candidates`, `/user/sourcing/{id}/chat` | `"sourced_profile_sourcing"` | `sourced_profile_sourcing` | Domain direto |
 
-### Tools da LIA por scope (fonte: `tool_registry_metadata.yaml`)
+---
+
+## 2. Arquitetura de roteamento da LIA {#roteamento}
+
+A LIA usa **dois sistemas de roteamento independentes** que coexistem:
+
+### Sistema A — Scope de tools (por context_page)
+
+Fonte: `app/tools/scope_config.py` → `filter_tools_by_scope()`.
+
+Chamado pelo `Orchestrator.get_tools_for_context()` (linha 311-313, `orchestrator.py`):
+```python
+def get_tools_for_context(self, prompt_context: str) -> List[Dict[str, Any]]:
+    scope = SCOPE_MAPPING.get(prompt_context.lower(), PromptScope.GLOBAL)
+    return filter_tools_by_scope(get_all_tool_schemas(format="claude"), scope)
+```
+
+- Determina **quais API tools** o LLM pode chamar
+- Baseado em `context_page` enviado pelo frontend
+- Os scopes são **mutuamente exclusivos** — `filter_tools_by_scope` não faz union de scopes
+- O scope GLOBAL não é "base sempre incluída" — é um scope com apenas 2 tools, ativado quando context_page é `general`/`global`
+
+**Tools por scope (fonte executável: `scope_config.py`)**:
 
 ```
-GLOBAL (4 tools):
-  get_company_config | capture_wizard_feedback | generate_report | schedule_report
+GLOBAL (2 tools):
+  ACTION: generate_report | schedule_report
 
-JOB_TABLE (13 tools):
-  search_salary_benchmark | validate_job_fields | get_job_suggestions | save_job_draft
-  get_intelligent_salary | get_intelligent_skills | generate_enriched_jd
-  search_jobs | get_job_details | get_pipeline_stats | create_job | update_job | publish_job
+JOB_TABLE (19 tools):
+  QUERY:  search_jobs | get_job_details | get_pipeline_stats | get_recruiter_metrics
+          get_velocity_metrics | get_efficiency_metrics | get_comparative_metrics
+          get_workload_distribution | get_hiring_quality | get_cost_metrics
+          get_trends | get_market_benchmarks
+  ACTION: create_job | update_job | pause_job | close_job | publish_job
+          export_job_analytics | generate_report
 
-IN_JOB (6 tools):
-  update_candidate_stage | reject_candidate | bulk_update_candidates_stage
-  wsi_screening | hide_candidate | get_vacancy_funnel
+IN_JOB (25 tools):
+  QUERY:  get_job_details | get_vacancy_funnel | get_candidate_details
+          get_activity_summary | get_pending_actions | compare_candidates
+          get_candidate_stats | get_bottleneck_analysis | get_job_velocity
+          get_job_quality_metrics | get_stakeholder_metrics | get_prediction_metrics
+          get_job_benchmark | get_smart_alerts
+  ACTION: update_candidate_stage | bulk_update_candidates_stage | reject_candidate
+          shortlist_candidate | add_to_list | hide_candidate | wsi_screening
+          send_email | send_whatsapp | schedule_interview | send_feedback
 
-TALENT_FUNNEL (9 tools):
-  search_candidates | get_candidate_details | get_candidate_stats
-  add_candidate_to_vacancy | shortlist_candidate | add_to_list
-  export_candidates | send_email | send_whatsapp
+TALENT_FUNNEL (20 tools):
+  QUERY:  search_candidates | get_candidate_details | get_candidate_stats
+          compare_candidates | get_talent_quality | get_talent_engagement
+          get_talent_availability | get_diversity_metrics | get_candidate_history
+          get_ml_predictions | get_conversion_patterns
+  ACTION: add_candidate_to_vacancy | reject_candidate | shortlist_candidate
+          add_to_list | hide_candidate | send_email | send_whatsapp
+          send_bulk_email | export_candidates
 ```
+
+**Nota sobre duas fontes de metadados**: Existe também `tool_registry_metadata.yaml` (carregado por `tool_registry_loader.py`), que provê metadados declarativos (description, allowed_agents, version). Algumas tools nesse YAML (como `search_salary_benchmark`, `validate_job_fields`, `generate_enriched_jd`, `save_job_draft`, `get_company_config`, `capture_wizard_feedback`) não aparecem em `scope_config.py`. O `filter_tools_by_scope` filtra pelo nome da tool — tools não registradas no Python não são chamáveis mesmo que listadas no YAML.
+
+### Sistema B — Domain routing (por intenção da mensagem)
+
+Fonte: `app/orchestrator/cascaded_router.py` → `CascadedRouter.route()`.
+
+Chamado na linha 120 de `orchestrator.py`:
+```python
+route = await self._cascaded_router.route(sanitized, ctx, session_id=conversation_id)
+domain_id, confidence = route.domain_id, route.confidence
+```
+
+- Determina **qual domínio Python** processa a ação
+- Baseado no **conteúdo da mensagem** (não no context_page)
+- Independente do scope de tools
+- **6 tiers em custo crescente:**
+
+```
+Tier 0: MemoryResolver    — pronomes/referências de contexto (ex: "ele", "esse candidato")
+Tier 1: LRU in-process   — hash MD5, O(1), cache de sessão
+Tier 2: Redis cache      — distribuído, compartilhado entre workers
+Tier 3: VectorSemanticCache — pgvector, cosine similarity ≥ 0.92 (configurável via
+                              ROUTER_VECTOR_SIMILARITY_THRESHOLD)
+Tier 4: FastRouter       — regex/keyword, O(n) patterns
+Tier 5: LLM Cascade      — Haiku → Sonnet → Opus (custo crescente)
+Fallback: clarification  — pergunta ao usuário quando tudo falha
+```
+
+- Domínios mapeados: `job_management`, `cv_screening`, `interview_scheduling`, `analytics`, `communication`, `recruiter_assistant`, `sourcing`, `automation`, `kanban_search`, `kanban_insight`, `kanban_action`, `pipeline_context`, `pipeline_decision`, `pipeline_action`, `sourcing_planner`, `sourcing_search`, `sourcing_enrich`, `sourcing_engagement`
+
+### Fluxo completo do MainOrchestrator (`main_orchestrator.py`)
+
+```
+MENSAGEM RECEBIDA (UniversalContext via ContextAdapter)
+    │
+    ├── FairnessGuard.check() — bloqueia inputs discriminatórios ANTES de processar
+    │
+    ├── Phase 0: PendingActionState — se há ação aguardando confirmação/params
+    │
+    ├── Phase 1: ActionExecutor — ações detectadas por padrão fechado
+    │
+    └── Phase 2: Orchestrator.process_request_with_memory()
+            │
+            ├── CascadedRouter.route() → domain_id (por conteúdo da mensagem)
+            │
+            ├── PolicyEngine.validate_request() → allowed/blocked
+            │
+            ├── PlanDetector → se multi-step, PlanExecutor.execute()
+            │
+            └── DomainRegistry.get_instance(domain_id) → DomainWorkflow.process()
+                    │
+                    └── [se domain=None] → _handle_directly() com LLM direto
+```
+
+**Diferença crítica LIA vs v5:**
+
+| Aspecto | LIA | v5 |
+|---|---|---|
+| Domain routing | CascadedRouter (6 tiers, por conteúdo da mensagem) | HubPlanner (LLM + regex, por intenção da query) |
+| Scope de tools | filter_tools_by_scope (por context_page do frontend) | Todas as 73+ tools do autonomous domain |
+| Como esses dois se relacionam | Independentes: routing escolhe o domínio; scope limita as tools disponíveis | Não há separação — autonomous tem acesso a tudo |
+| Cross-context | CascadedRouter pode rotear para `cv_screening` mesmo em context "general" | HubPlanner navega programaticamente para o domínio certo |
 
 ---
 
-## 2. Prompt 1 — Flutuante / Global {#prompt-1}
+## 3. Prompt 1 — Flutuante / Global {#prompt-1}
 
 ### O que é e onde aparece
 
-O **Prompt Flutuante** aparece como ícone de chat em **todas as páginas** da plataforma. É o modo mais genérico da LIA — um copiloto de recrutamento que o usuário acessa sem navegar para uma página específica.
+Chat flutuante disponível em **todas as páginas** da plataforma. Ativado quando `context_page: "general"/"global"` → scope GLOBAL.
 
-**Ativação:** qualquer página → frontend envia `context_page: "general"` → `context_type: "general"` → domínio `recruiter_assistant.yaml` + scope GLOBAL.
-
-**Limitação importante:** no escopo GLOBAL da LIA, apenas 4 tools de API estão disponíveis. Capacidades que exigem busca de dados (vagas, candidatos, pipeline) são conversacionais — o LLM pode analisar dados já presentes no contexto da conversa, mas não pode buscá-los via API neste contexto.
-
----
-
-### 2.1 Capacidades IN
-
-#### [LIA-API] Capacidades via API (tools GLOBAL disponíveis)
-
-| Tool | O que faz | Parâmetros principais |
-|---|---|---|
-| `get_company_config` | Obtém configuração da empresa: workflow de contratação, aprovações, configurações de sistema | `config_type` |
-| `generate_report` | Gera relatório de analytics de recrutamento para período e escopo definidos | `report_type`, `date_from`, `date_to`, `format: pdf\|csv\|json` |
-| `schedule_report` | Agenda relatório recorrente enviado automaticamente por email/etc. | `report_type`, `schedule` (cron), `recipients[]` |
-| `capture_wizard_feedback` | Registra feedback do recrutador sobre a experiência com o wizard de criação de vagas | `feedback_type`, `rating`, `comment` |
-
-#### [LIA-LLM] Capacidades conversacionais (sem chamada de API)
-
-Estas capacidades dependem de dados **já carregados no contexto da conversa** (histórico de mensagens, dados passados pelo frontend no payload, preferências da sessão):
-
-- **Briefing diário** — organiza e prioriza informações já presentes na conversa (candidatos mencionados, vagas discutidas, alertas citados)
-- **Planejamento de agenda** — sugere ordem de prioridade para tarefas com base no contexto da conversa
-- **Comparação de finalistas** — compara candidatos se seus dados já foram mencionados na sessão
-- **Insights proativos** — antecipa próximas ações com base no histórico da sessão
-- **Resposta a perguntas gerais** — sobre processos seletivos, boas práticas de RH, interpretação de dados já em contexto
-- **Calibração de perfil** — ajusta critérios baseado em feedback do recrutador ao longo da conversa
-- **Memória de preferências** — lembra preferências e decisões da sessão atual
-
-**Restrição crítica:** O LLM não pode buscar candidatos, vagas, entrevistas ou dados do pipeline via API neste contexto. Para qualquer ação concreta que exija acesso ao banco de dados, o usuário precisa navegar à página correspondente (que ativa o prompt certo com as tools adequadas).
-
-#### [v5] Capacidades do autonomous (73+ tools em 13 módulos)
-
-O v5 não tem essa limitação — o `autonomous` domain acessa todas as áreas via seu conjunto de 73+ tools:
-
-| Módulo | Tools principais | O que faz |
-|---|---|---|
-| **Vagas** (`tools/jobs.py`) | `search_jobs`, `get_job`, `create_job`, `update_job`, `get_job_kanban`, `get_job_analytics`, `get_matching_candidates`, `update_job_status`, `get_all_jobs_stats`, `duplicate_job`, `get_job_selective_processes`, `get_pipeline_health`, `get_multi_job_analytics`, `get_job_context_rich`, `get_job_org_structure`, `get_job_ai_suggestion`, `get_job_questions`, `start_auto_sourcing`, `send_reject_feedback`, `bulk_add_list_to_job`, `get_job_alerts`, `bulk_archive_jobs`, `bulk_pause_jobs`, `bulk_activate_jobs` | CRUD completo de vagas + analytics + alertas + matching + ações em lote |
-| **Candidatos** (`tools/candidates.py`) | `search_candidates`, `search_candidates_hybrid`, `get_candidate`, `create_candidate`, `update_candidate`, `get_candidates_stats`, `full_candidate_search` | Busca (text + ES 70%/embeddings 30% + pipeline 3 buscas paralelas) + CRUD |
-| **Candidaturas** (`tools/applies.py`) | `search_applies`, `get_apply_details`, `create_apply`, `bulk_create_applies`, `update_apply`, `move_apply_stage`, `get_apply_history`, `get_selective_processes`, `get_apply_stats`, `get_stalled_applies`, `bulk_approve_applies`, `bulk_reject_applies`, `bulk_move_applies`, `send_apply_reject_feedback`, `diagnose_applies` | Pipeline completo de candidaturas + bulk + diagnóstico |
-| **Sourcing** (`tools/sourcing.py`) | `search_sourcings`, `start_sourcing`, `get_sourcing_details`, `get_sourcing_stats`, `find_similar_candidates`, `get_sourced_profiles`, `update_sourced_profile`, `import_sourced_profile`, `search_archetypes`, `get_multi_sourcing_stats` | Busca de talentos + gerenciamento de sessões de sourcing |
-| **Agendamento** (`tools/scheduling.py`) | `get_calendar_agenda`, `create_calendar_event`, `get_available_slots`, `generate_self_scheduling_link`, `search_meetings`, `create_internal_meeting`, `get_interview_sessions`, `get_events_without_feedback` | Calendário completo + entrevistas + self-scheduling |
-| **Avaliações** (`tools/evaluations.py`) | `search_evaluations`, `get_evaluation`, `create_evaluation`, `list_evaluation_questions`, `create_evaluation_question`, `get_candidates_in_evaluations`, `send_evaluation` | Testes e avaliações para candidatos |
-| **Organização** (`tools/organization.py`) | `search_departments`, `get_department_tree`, `search_teams`, `search_lists`, `create_list`, `add_to_list`, `bulk_add_to_list`, `get_pending_approvals`, `approve_request`, `reject_request`, `daily_briefing_complete`, `get_recruiter_productivity_metrics`, `get_notifications`, `get_unread_notifications_count`, `get_messages` | Estrutura org + listas + aprovações + briefing + notificações |
-| **Macros** (`tools/macros.py`) | `diagnose_job_complete`, `get_full_candidate_profile`, `get_daily_briefing` | Operações compostas: diagnóstico completo de vaga, perfil completo de candidato, briefing do dia |
-| **Planejamento** (`tools/planning.py`) | `write_plan`, `read_plan` | Plano de execução visível ao usuário (⬜→🔄→✅) |
-| **File system** (`tools/file_system.py`) | `save_file`, `read_file`, `list_files` | Armazena resultados >5K chars em arquivo virtual |
-| **Genérico** (`tools/generic.py`) | `think`, `discover_api`, `call_api`, `ask_user`, `get_instructions` | Raciocínio + fallback de API + clarificação |
-
----
-
-### 2.2 Restrições OUT
-
-| O que NÃO faz (LIA contexto GLOBAL) | Contexto correto |
-|---|---|
-| Buscar vagas via API | Prompt 2 (context_page: "job") |
-| Buscar candidatos via API | Prompt 4 (context_page: "sourcing") |
-| Mover candidatos no pipeline via API | Prompt 3 (context_page: "pipeline") |
-| Triagem de CVs com score WSI | Prompt 3 (context_page: "pipeline") |
-| Criar vagas via wizard | Prompt 2 (context_page: "wizard") |
-| Agendar entrevistas via API | Prompt 3 (context_page: "pipeline") |
-| Qualquer ação que exija dados não presentes na conversa | Navegar para a página correta |
-
----
-
-### 2.3 Arquitetura técnica — LIA
-
-```
-Frontend (context_page: "general" ou "global")
-    ↓
-ContextAdapter.from_rest() / from_ws() / from_rabbitmq()
-    → context_type = "general"
-    → entity_id = null (sem entidade em foco)
-    ↓
-MainOrchestrator
-    → domínio ativo: recruiter_assistant.yaml
-    → scope de tools carregado: GLOBAL (4 tools)
-    ↓
-LLM recebe:
-    system_prompt: recruiter_assistant.yaml → "Você é LIA, Assistente Pessoal do Recrutador..."
-    tools disponíveis: get_company_config, generate_report, schedule_report, capture_wizard_feedback
-    ↓
-Padrões de comportamento (interaction_patterns.py):
-    NEGATION_DETECTION_BLOCK → cancela ação se mensagem contém negação
-    CHAIN_OF_THOUGHT_BLOCK  → raciocina em <thought> antes de agir
-    ANTI_SYCOPHANCY_BLOCK   → não concorda apenas para evitar conflito
-    ↓
-Canais suportados: REST /api/v1/chat | WebSocket | RabbitMQ
-    (RabbitMQ: compatível com formato de payload do v5)
-    ↓
-Segurança: ContextAdapter.validate_entity_ownership()
-    → previne IDOR: valida entity_id contra company_id nas tabelas
-       sourcing_sessions | job_vacancies | candidates
-```
-
-**Formato de resposta (recruiter_assistant.yaml):**
-- Briefing: bullet list urgentes → importantes → informativos
-- Comparação: tabela markdown lado a lado
-- Insights: `[Insight]` contexto + ação recomendada
-- Encerramento: "Próximas ações sugeridas: [1] [2] [3]"
-
----
-
-### 2.4 Arquitetura técnica — v5
-
-```
-Frontend (domain: null, hub_mode: true)
-    ↓
-POST /chat ou /chat/stream (SSE)
-    ↓
-MessageRouter.route()
-    ↓
-HubPlanner (LLM-based — PLANNER_SYSTEM_PROMPT)
-    │
-    ├── FAST_NAV_PATTERNS (regex, sem LLM)
-    │     "vá para vagas ativas" → NavigationAction(NAVIGATE, /user/jobs?tab=active)
-    │
-    ├── _JOB_ID_PATTERN: "vaga 42" → get_job(42) ou navigate /user/jobs/42
-    │
-    ├── _CANDIDATE_ID_PATTERN: "candidato 91" → get_candidate(91) ou navigate
-    │
-    ├── MULTI_INTENT_RE: detecta 2+ intenções → HubTask[] em paralelo
-    │     Ex: "estatísticas de vagas E candidatos" → 2 tasks simultâneas
-    │
-    └── LLM classifica → HubExecutionPlan { tasks[], strategy, navigation_actions[] }
-    ↓
-AutonomousDomain
-    → AUTONOMOUS_SYSTEM_PROMPT (100+ linhas)
-    → Regras de execução:
-        • 1 tool: vai direto, sem write_plan
-        • 2+ tools: SEMPRE write_plan antes + atualiza após cada tool
-        • Budget: max 40 chamadas de API (planning/file_system não contam)
-        • Offloading: resultados >5 itens ou >5K chars → save_file automático
-        • Resolução de contexto: viewing_entities → sessão → URL atual → ask_user
-        • ask_user apenas para: nome duplicado, query vaga demais, escrita bloqueada
-```
-
----
-
-### 2.5 Diagrama de delegação e migração de contexto
-
-#### LIA — Migração é sempre controlada pelo frontend
-
-```
-                    USUÁRIO ENVIA MENSAGEM
-                            │
-                     Frontend define
-                      context_page
-                            │
-         ┌──────────────────┼──────────────────┐
-         ▼                  ▼                  ▼
-    "general"         "job"|"jobs"        "pipeline"|
-    "global"         "vacancies"          "kanban"
-         │            "wizard"                │
-         ▼                  │                 ▼
-    context_type:           ▼            context_type:
-     "general"        context_type:       "pipeline"
-     GLOBAL scope     "job_management"   IN_JOB scope
-     4 tools          JOB_TABLE scope    6 tools
-                      13 tools           (Prompt 3)
-    (Prompt 1)        (Prompt 2)
-                                    TAMBÉM:
-                               "sourcing"|"talent"
-                                     │
-                                     ▼
-                               context_type:
-                               "talent_funnel"
-                               TALENT_FUNNEL scope
-                               9 tools (Prompt 4)
-```
-
-**Regra crítica:** O backend LIA não faz roteamento inteligente. O `context_type` é 100% determinado pelo `context_page` que o frontend envia. Se o frontend enviar `context_page: "general"`, a LIA terá apenas 4 tools disponíveis, mesmo que o usuário esteja perguntando sobre vagas.
-
-#### v5 — Roteamento inteligente pelo HubPlanner
-
-```
-         USUÁRIO ENVIA MENSAGEM (hub_mode: true)
-                        │
-               HubPlanner analisa
-                        │
-     ┌──────────────────┼──────────────────────────┐
-     ▼                  ▼                          ▼
-FAST_NAV_PATTERNS   ID explícito         LLM classifica intenção
-(regex, sem LLM)    na mensagem
-     │                  │                          │
-     ▼                  ▼               ┌──────────┼──────────┐
-NavigationAction    Open direto         ▼          ▼          ▼
-(navega a page)    (job ou          "vagas"    "pipeline"  "candidatos"
-                   candidate)        query      query       query
-                                       │          │           │
-                              jobs   applies  sourced_
-                              domain  domain  profile_
-                                              sourcing
-                                              domain
-
-        MULTI_INTENT_RE detectado?
-        → HubExecutionPlan com HubTask[] em paralelo
-          Ex: "stats de vagas E candidatos" → 2 domains simultâneos
-```
-
-**Diferença crítica:** O v5 roteia para o domínio correto **automaticamente**, independente de qual página o usuário está. Na LIA, o frontend **precisa** enviar o `context_page` correto para que as tools adequadas sejam carregadas.
-
----
-
-### 2.6 Comparativo LIA × v5 — Prompt Flutuante
-
-| Dimensão | LIA (recruiter_assistant, GLOBAL scope) | v5 (autonomous, 73+ tools) |
-|---|---|---|
-| **Arquivo/código principal** | `recruiter_assistant.yaml` (4 tools GLOBAL) | `autonomous/prompts.py` (AUTONOMOUS_SYSTEM_PROMPT) |
-| **Tools disponíveis** | 4 (get_company_config, generate_report, schedule_report, capture_wizard_feedback) | 73+ em 13 módulos |
-| **Busca de vagas via API** | ❌ Fora do scope GLOBAL | ✅ `search_jobs`, `get_job`, `get_all_jobs_stats` |
-| **Busca de candidatos via API** | ❌ Fora do scope GLOBAL | ✅ `search_candidates`, `full_candidate_search` |
-| **Mover candidatos via API** | ❌ Fora do scope GLOBAL | ✅ `move_apply_stage`, `bulk_move_applies` |
-| **Briefing do dia** | [LLM-only] Conversa sem API | ✅ `daily_briefing_complete` (macro) |
-| **Diagnóstico de vaga** | ❌ Sem tool | ✅ `diagnose_job_complete` (coleta paralela) |
-| **Candidatos parados** | ❌ Sem tool | ✅ `get_stalled_applies` (por severidade) |
-| **Gerar relatório** | ✅ `generate_report` (pdf/csv/json) | ✅ Via `get_job_analytics` + `get_recruiter_productivity_metrics` |
-| **Agendar relatório recorrente** | ✅ `schedule_report` | ❌ Sem tool equivalente documentada |
-| **Configuração da empresa** | ✅ `get_company_config` | ✅ Via `discover_api` + `call_api` |
-| **Roteamento** | Determinístico (frontend define) | ✅ HubPlanner (LLM + regex) |
-| **Multi-intenção** | ❌ | ✅ MULTI_INTENT_RE + HubTask[] paralelo |
-| **Progresso visível** | ❌ | ✅ `write_plan` (⬜→🔄→✅) |
-| **Budget de tools** | ⚠️ Não controlado | ✅ Max 40 API calls por sessão |
-| **Offloading de resultados** | ❌ | ✅ `save_file` automático para >5K chars |
-| **Navegação programática** | ❌ | ✅ `NavigationAction(NAVIGATE, target)` |
-| **Streaming SSE** | ⚠️ Via WebSocket | ✅ `/chat/stream` com SSE nativo |
-| **Fallback genérico de API** | ❌ | ✅ `call_api` (qualquer endpoint Rails) |
-| **Anti-sycophancy** | ✅ `ANTI_SYCOPHANCY_BLOCK` explícito | ✅ Implícito no system prompt |
-| **IDOR prevention** | ✅ `validate_entity_ownership()` | ✅ Via `workspace_id` no DomainContext |
-
----
-
-## 3. Prompt 2 — Tabela de Vagas {#prompt-2}
-
-### O que é e onde aparece
-
-O **Prompt Expandido da Tabela de Vagas** aparece ao lado da listagem de vagas (`/user/jobs`). É o prompt especializado para criar, configurar, editar e gerir vagas. Ativado via `context_page: "job"/"jobs"/"vacancies"/"wizard"`.
-
-**Quando usar:** criar nova vaga, gerar job description, benchmark salarial, editar requisitos, publicar vaga, ver dados da tabela de vagas.
+**Limitação de scope**: No scope GLOBAL, `filter_tools_by_scope` disponibiliza apenas 2 tools de API: `generate_report` e `schedule_report`. O CascadedRouter pode rotear a mensagem para domínios especializados (job_management, cv_screening, etc.), mas as tools chamáveis são limitadas ao scope.
 
 ---
 
 ### 3.1 Capacidades IN
 
-#### [LIA-API] Capacidades via API (scope: JOB_TABLE — 13 tools)
+#### [LIA-API] Tools disponíveis (scope: GLOBAL — 2 tools)
 
-| Tool | O que faz | Parâmetros principais |
+| Tool | O que faz | Parâmetros |
 |---|---|---|
-| `search_jobs` | Busca vagas por título, status, departamento | `query`, `status`, `department`, `limit` |
-| `get_job_details` | Detalhes completos de uma vaga + candidatos | `job_id`, `include_candidates` |
-| `get_pipeline_stats` | Estatísticas do pipeline da vaga ou de todas | `job_id`, `date_range` |
-| `create_job` | Cria nova vaga no banco `[ESCRITA]` | `title`, `description`, `department`, `location`, `salary_range`, `requirements[]` |
-| `update_job` | Edita campos de vaga existente `[ESCRITA]` | `job_id`, `fields` |
-| `publish_job` | Publica vaga nos canais selecionados `[ESCRITA]` | `job_id`, `channels[]` |
-| `save_job_draft` | Salva rascunho da vaga em criação `[ESCRITA]` | `fields`, `draft_id` |
-| `validate_job_fields` | Valida campos e detecta informações faltando | `fields` |
-| `generate_enriched_jd` | Gera Job Description enriquecida por IA | `fields`, `tone` |
-| `search_salary_benchmark` | Busca benchmark salarial por cargo/senioridade/localidade/setor | `job_title`, `seniority`, `location`, `industry` |
-| `get_intelligent_salary` | Sugestão inteligente de faixa salarial (mercado + budget) | `job_title`, `seniority`, `location` |
-| `get_intelligent_skills` | Sugestão de competências por cargo e senioridade | `job_title`, `seniority`, `industry` |
-| `get_job_suggestions` | Sugestões de IA para melhorar a JD | `job_title`, `current_description`, `industry` |
+| `generate_report` | Gera relatório de analytics para período/escopo definidos | `report_type`, `date_from`, `date_to`, `format: pdf\|csv\|json` |
+| `schedule_report` | Agenda relatório recorrente enviado automaticamente | `report_type`, `schedule` (cron), `recipients[]` |
 
-#### [LIA-LLM] Capacidades conversacionais (sem chamada de API)
+#### [LIA-LLM] Capacidades conversacionais (dados em contexto de conversa)
 
-- **Wizard conversacional de criação** — conduz o recrutador passo a passo coletando: título, área, senioridade, tipo de contrato, faixa salarial, localidade, modelo de trabalho, competências WSI, etapas do processo; uma pergunta por vez com confirmação por seção
-- **Linguagem inclusiva e não-discriminatória** — garante que a JD gerada não contenha critérios discriminatórios (idade, estado civil, gênero, origem)
+Estas capacidades usam o LLM sem chamar API — dependem de dados passados no payload pelo frontend ou mencionados na conversa:
+
+- **Briefing e planejamento de agenda** — organiza e prioriza informações já presentes na conversa (candidatos mencionados, vagas discutidas)
+- **Análises e comparações** — compara candidatos se seus dados já foram fornecidos na sessão
+- **Resposta a perguntas gerais** — boas práticas de RH, interpretação de dados em contexto, orientações sobre processos
+- **Memória de preferências** — lembra decisões e preferências da sessão atual (`ConversationState` + `ConversationMemory`)
+- **Clarificação de ambiguidades** — quando CascadedRouter retorna `clarification_needed`, pergunta ao usuário
+
+#### [v5] Capacidades do autonomous domain (73+ tools em 13 módulos)
+
+O v5 autonomous tem acesso a todas as áreas sem restrição de scope:
+
+| Módulo | Tools | Resumo |
+|---|---|---|
+| **Vagas** (`tools/jobs.py`) | `search_jobs`, `get_job`, `create_job`, `update_job`, `get_job_kanban`, `get_job_analytics`, `get_matching_candidates`, `update_job_status`, `get_all_jobs_stats`, `duplicate_job`, `get_job_selective_processes`, `get_pipeline_health`, `get_multi_job_analytics`, `get_job_context_rich`, `get_job_org_structure`, `get_job_ai_suggestion`, `get_job_questions`, `start_auto_sourcing`, `send_reject_feedback`, `bulk_add_list_to_job`, `get_job_alerts`, `bulk_archive_jobs`, `bulk_pause_jobs`, `bulk_activate_jobs` | CRUD completo de vagas + analytics + alertas + matching + ações em lote |
+| **Candidatos** (`tools/candidates.py`) | `search_candidates`, `search_candidates_hybrid`, `get_candidate`, `create_candidate`, `update_candidate`, `get_candidates_stats`, `full_candidate_search` | Busca (text + ES 70%/embeddings 30% + pipeline 3 buscas paralelas) + CRUD |
+| **Candidaturas** (`tools/applies.py`) | `search_applies`, `get_apply_details`, `create_apply`, `bulk_create_applies`, `update_apply`, `move_apply_stage`, `get_apply_history`, `get_selective_processes`, `get_apply_stats`, `get_stalled_applies`, `bulk_approve_applies`, `bulk_reject_applies`, `bulk_move_applies`, `send_apply_reject_feedback`, `diagnose_applies` | Pipeline completo + bulk + diagnóstico |
+| **Sourcing** (`tools/sourcing.py`) | `search_sourcings`, `start_sourcing`, `get_sourcing_details`, `get_sourcing_stats`, `find_similar_candidates`, `get_sourced_profiles`, `update_sourced_profile`, `import_sourced_profile`, `search_archetypes`, `get_multi_sourcing_stats` | Gestão de sessões de sourcing + pool externo |
+| **Agendamento** (`tools/scheduling.py`) | `get_calendar_agenda`, `create_calendar_event`, `get_available_slots`, `generate_self_scheduling_link`, `search_meetings`, `create_internal_meeting`, `get_interview_sessions`, `get_events_without_feedback` | Calendário completo + self-scheduling |
+| **Avaliações** (`tools/evaluations.py`) | `search_evaluations`, `get_evaluation`, `create_evaluation`, `list_evaluation_questions`, `create_evaluation_question`, `get_candidates_in_evaluations`, `send_evaluation` | Testes e avaliações |
+| **Organização** (`tools/organization.py`) | `search_departments`, `get_department_tree`, `search_teams`, `search_lists`, `create_list`, `add_to_list`, `bulk_add_to_list`, `get_pending_approvals`, `approve_request`, `reject_request`, `daily_briefing_complete`, `get_recruiter_productivity_metrics`, `get_notifications`, `get_unread_notifications_count`, `get_messages` | Estrutura org + listas + aprovações + briefing |
+| **Macros** (`tools/macros.py`) | `diagnose_job_complete`, `get_full_candidate_profile`, `get_daily_briefing` | Operações compostas |
+| **Planejamento** (`tools/planning.py`) | `write_plan`, `read_plan` | Plano de execução visível (⬜→🔄→✅) |
+| **File system** (`tools/file_system.py`) | `save_file`, `read_file`, `list_files` | Armazena resultados >5K chars |
+| **Genérico** (`tools/generic.py`) | `think`, `discover_api`, `call_api`, `ask_user`, `get_instructions` | Raciocínio + fallback de API |
+
+**Regras de execução (AUTONOMOUS_SYSTEM_PROMPT):**
+- 1 tool: vai direto, sem write_plan
+- 2+ tools: SEMPRE write_plan antes + atualiza após cada tool
+- Budget: max 40 API calls por sessão (planning/file_system não contam)
+- Offloading: resultados >5 itens ou >5K chars → save_file automático
+- Resolução de contexto: `viewing_entities` → sessão → URL atual → `ask_user`
+
+---
+
+### 3.2 Restrições OUT (LIA — scope GLOBAL)
+
+| Não disponível como tool de API | Por quê | Scope que tem |
+|---|---|---|
+| Buscar vagas | Não está em GLOBAL (scope_config.py) | JOB_TABLE |
+| Criar vagas | Não está em GLOBAL | JOB_TABLE |
+| Buscar candidatos | Não está em GLOBAL | TALENT_FUNNEL |
+| Mover candidatos no pipeline | Não está em GLOBAL | IN_JOB |
+| Enviar email/WhatsApp | Não está em GLOBAL | IN_JOB / TALENT_FUNNEL |
+| Agendar entrevistas | Não está em GLOBAL | IN_JOB |
+| Triagem WSI | Não está em GLOBAL | IN_JOB |
+
+**Nota**: O CascadedRouter pode rotear mensagens do chat flutuante para domínios como `job_management` ou `cv_screening`. Nesses casos, o domínio processa a ação via seu próprio workflow, mas as tools de API chamáveis permanecem as do scope GLOBAL. As domains podem retornar informações ricas sem necessariamente precisar de tools de API extras.
+
+---
+
+### 3.3 Comparativo LIA × v5 — Prompt Flutuante
+
+| Dimensão | LIA (scope GLOBAL) | v5 (autonomous, 73+ tools) |
+|---|---|---|
+| **Tools de API no scope** | 2 (generate_report, schedule_report) | 73+ em 13 módulos |
+| **Domain routing** | CascadedRouter (6 tiers, por mensagem) | HubPlanner (LLM + regex) |
+| **Busca de vagas via API** | ❌ Fora do scope GLOBAL | ✅ search_jobs, get_job_kanban, etc. |
+| **Busca de candidatos via API** | ❌ Fora do scope GLOBAL | ✅ search_candidates, full_candidate_search |
+| **Mover candidatos via API** | ❌ Fora do scope GLOBAL | ✅ move_apply_stage, bulk_move_applies |
+| **Gerar relatório** | ✅ generate_report (pdf/csv/json) | ✅ Via analytics tools |
+| **Agendar relatório** | ✅ schedule_report | ❌ Sem tool equivalente |
+| **Briefing do dia via API** | ❌ Sem tool no scope | ✅ daily_briefing_complete |
+| **Diagnóstico de vaga** | ❌ Sem tool no scope | ✅ diagnose_job_complete |
+| **FairnessGuard** | ✅ Antes de qualquer processamento (MainOrchestrator) | ✅ Implícito no system prompt |
+| **Multi-intenção** | ✅ PlanDetector + PlanExecutor | ✅ MULTI_INTENT_RE + HubTask[] paralelo |
+| **Progresso visível** | ❌ Sem write_plan | ✅ write_plan (⬜→🔄→✅) |
+| **Budget de tools** | ❌ Não controlado | ✅ Max 40 API calls por sessão |
+| **Offloading de resultados** | ❌ | ✅ save_file para >5K chars |
+| **Streaming SSE** | ⚠️ Via WebSocket | ✅ /chat/stream com SSE nativo |
+| **Navegação programática** | ❌ | ✅ NavigationAction(NAVIGATE, target) |
+| **Fallback de API genérico** | ❌ | ✅ call_api (qualquer endpoint Rails) |
+
+---
+
+## 4. Prompt 2 — Tabela de Vagas {#prompt-2}
+
+### O que é e onde aparece
+
+Aparece ao lado da listagem de vagas (`/user/jobs`). Ativado quando `context_page: "job"/"jobs"/"vacancies"/"wizard"` → scope JOB_TABLE.
+
+**CascadedRouter**: mensagens sobre vagas → domain `job_management`. O scope JOB_TABLE tem 19 tools para criação, gestão, analytics e métricas de vagas.
+
+---
+
+### 4.1 Capacidades IN
+
+#### [LIA-API] Tools disponíveis (scope: JOB_TABLE — 19 tools, fonte: scope_config.py)
+
+**Query tools (12):**
+
+| Tool | O que faz |
+|---|---|
+| `search_jobs` | Busca vagas por título, status, departamento |
+| `get_job_details` | Detalhes completos de uma vaga |
+| `get_pipeline_stats` | Estatísticas do pipeline (candidatos por etapa, taxas) |
+| `get_recruiter_metrics` | Métricas de performance do recrutador |
+| `get_velocity_metrics` | Velocidade do processo seletivo (time-to-fill, time-to-hire) |
+| `get_efficiency_metrics` | Eficiência: triagens por hora, aprovação por etapa |
+| `get_comparative_metrics` | Comparação de vagas entre si |
+| `get_workload_distribution` | Distribuição de carga de trabalho entre recrutadores |
+| `get_hiring_quality` | Qualidade das contratações |
+| `get_cost_metrics` | Custo por contratação, ROI por canal |
+| `get_trends` | Tendências temporais do processo seletivo |
+| `get_market_benchmarks` | Benchmarks de mercado (tempo, custo, conversão) |
+
+**Action tools (7):**
+
+| Tool | O que faz |
+|---|---|
+| `create_job` | Cria nova vaga no banco `[ESCRITA]` |
+| `update_job` | Edita campos de vaga existente `[ESCRITA]` |
+| `pause_job` | Pausa uma vaga (deixa de receber candidatos) `[ESCRITA]` |
+| `close_job` | Encerra vaga `[ESCRITA]` |
+| `publish_job` | Publica vaga em canais `[ESCRITA]` |
+| `export_job_analytics` | Exporta analytics da vaga em CSV |
+| `generate_report` | Gera relatório de vagas (compartilhada com GLOBAL) |
+
+#### [LIA-LLM] Capacidades conversacionais
+
+- **Wizard conversacional de criação** — conduz o recrutador passo a passo: título, área, senioridade, tipo de contrato, faixa salarial, localidade, modelo de trabalho, competências WSI, etapas do processo seletivo; uma pergunta por vez com confirmação por seção
+- **Job Description gerada por IA** — produz JD profissional com seções padrão (Sobre a empresa | Responsabilidades | Requisitos | Benefícios), garantindo linguagem inclusiva e não discriminatória
 - **Alerta de requisitos restritivos** — avisa se requisitos coletados são excessivamente restritivos (risco de pipeline escasso)
-- **Sugestão de etapas do processo** — sugere etapas adequadas ao tipo de cargo (ex: Web Response → Triagem → Teste técnico → Entrevista → Proposta)
+- **Sugestão de etapas do processo** — sugere etapas adequadas ao tipo de cargo
+
+**Nota sobre tool_registry_metadata.yaml**: O YAML documenta tools adicionais como `search_salary_benchmark`, `validate_job_fields`, `generate_enriched_jd`, `save_job_draft`, `get_intelligent_salary`, `get_intelligent_skills` com scope JOB_TABLE. Se implementadas em Python e registradas no `tool_registry`, elas seriam filtradas corretamente pelo `filter_tools_by_scope` (pois o filtro é por nome). A confirmação de quais estão efetivamente implementadas requer checar `initialize_tools()`.
 
 #### [v5] Capacidades do domínio `jobs`
 
 | Action | Tipo | O que faz |
 |---|---|---|
-| `show_job_details` | QUERY | Detalhes completos: título, status, skills, salário, benefícios, requisitos, localidade, modelo |
-| `list_jobs` | QUERY | Listagem com filtros e abas: active / urgent / paused / archived / all |
-| `pipeline_status` | QUERY | Kanban visual da vaga: etapas com candidatos em cada uma |
-| `job_analytics` | ANALYZE | Funil de candidatos, taxas de conversão, gargalos, tempo médio |
+| `show_job_details` | QUERY | Detalhes completos da vaga |
+| `list_jobs` | QUERY | Listagem com abas: active/urgent/paused/archived/all |
+| `pipeline_status` | QUERY | Kanban visual com candidatos por etapa |
+| `job_analytics` | ANALYZE | Funil, taxas de conversão, gargalos, tempo médio |
 | `account_stats` | AGGREGATE | Estatísticas globais de todas as vagas |
 | `pipeline_health` | ANALYZE | Saúde de múltiplas vagas: score, gargalos, parados |
-| `alerts` | QUERY | Alertas: prazo vencido, urgentes sem finalistas, paradas, sem candidatos |
-| `summarize_job` | ANALYZE | Resumo executivo combinando dados + analytics |
-| `matching_candidates` | QUERY | Busca candidatos compatíveis via embedding similarity |
+| `alerts` | QUERY | Alertas: prazo vencido, urgentes sem finalistas |
+| `summarize_job` | ANALYZE | Resumo executivo: dados + analytics |
+| `matching_candidates` | QUERY | Candidatos compatíveis via embedding similarity |
 | `change_status` | ACTION | Publicar/pausar/fechar/reabrir/arquivar `[ESCRITA]` |
 | `copy_job` | ACTION | Duplicar vaga `[ESCRITA]` |
-| `bulk_apply_action` | ACTION | Ação em lote no pipeline (mover/rejeitar/aprovar etapa) `[LOTE][ESCRITA]` |
-| `export_job` | QUERY | Exportar dados da vaga em CSV |
+| `bulk_apply_action` | ACTION | Ação em lote no pipeline `[LOTE][ESCRITA]` |
+| `export_job` | QUERY | Exportar vaga em CSV |
 | `generate_suggestion` | ANALYZE | Sugestões de melhoria para a JD via IA |
 | `generate_interview_questions` | ANALYZE | Perguntas de entrevista por competência |
-| `auto_source` | ACTION | Inicia sourcing automático de candidatos para a vaga |
-| `send_reject_feedback` | ACTION | Envia feedback de rejeição em lote `[ESCRITA]` |
+| `auto_source` | ACTION | Inicia sourcing automático de candidatos |
+| `send_reject_feedback` | ACTION | Feedback de rejeição em lote `[ESCRITA]` |
+
+**Cache tiered v5** (`TieredContextManager`):
+- Tier 1: dados básicos (rápido) — para ações simples
+- Tier 2: dados completos + analytics — para análises e relatórios
 
 **Detecção de intenção v5 por regex** (`_CONTEXT_ACTION_PATTERNS`):
 ```
 "pipeline|kanban"          → pipeline_status
-"analytics|funil|gargalos" → job_analytics
+"analytics|funil|gargalo"  → job_analytics
 "report|relatório|resumo"  → summarize_job
 "alertas"                  → alerts
 "estatísticas|stats"       → account_stats
@@ -381,561 +365,397 @@ O **Prompt Expandido da Tabela de Vagas** aparece ao lado da listagem de vagas (
 
 ---
 
-### 3.2 Restrições OUT (LIA — contexto job_management)
+### 4.2 Restrições OUT (LIA — scope JOB_TABLE)
 
-| O que NÃO faz | Delegado para |
+| Não disponível como tool de API | Scope que tem |
 |---|---|
-| Buscar candidatos no pool | Prompt 4 (context_page: "sourcing") |
-| Triar CVs de candidatos em uma vaga | Prompt 3 (context_page: "pipeline") |
-| Agendar entrevistas | Prompt 3 (context_page: "pipeline") |
-| Mover candidatos no pipeline | Prompt 3 (context_page: "pipeline") |
-| Comunicação com candidatos | Prompt 3 (context_page: "pipeline") |
+| Buscar candidatos no pool | TALENT_FUNNEL |
+| Mover candidatos no pipeline | IN_JOB |
+| Enviar email/WhatsApp a candidatos | IN_JOB / TALENT_FUNNEL |
+| Agendar entrevistas | IN_JOB |
+| Triagem WSI de CVs | IN_JOB |
 
 ---
 
-### 3.3 Dados coletados e gerados
+### 4.3 Comparativo LIA × v5 — Tabela de Vagas
 
-**Inputs (LIA):**
-- `context_page: "job"/"jobs"/"vacancies"/"wizard"` — ativa o contexto JOB_TABLE
-- `entity_id` — job_id da vaga selecionada
-- `job_context` — dados ricos da vaga atual passados pelo frontend
-
-**Inputs (v5):**
-- `domain: "jobs"` ou HubPlanner detectando query sobre vagas
-- `context_data.job_id` — ID da vaga se disponível
-
-**Outputs:**
-- Job Description em Markdown (seções: Sobre a empresa | Responsabilidades | Requisitos | Benefícios)
-- Benchmark salarial (min/max por cargo, senioridade, localidade)
-- Lista de skills sugeridas com justificativa
-- Dados de pipeline por etapa para gráficos no frontend
-- Vaga criada/publicada no ATS
-
----
-
-### 3.4 Arquitetura técnica — LIA
-
-```
-Frontend (context_page: "job"|"jobs"|"vacancies"|"wizard")
-    ↓
-ContextAdapter.from_rest() OU from_job_chat()
-    → context_type = "job_management"
-    → entity_id = job_id
-    → job_context = dados ricos da vaga
-    ↓
-MainOrchestrator
-    → domínio: job_management.yaml
-    → scope: JOB_TABLE (13 tools) + GLOBAL (4 tools)
-    ↓
-Agentes: orchestrator, job_planner, job_intake, job_wizard
-```
-
-**Regras do domínio (job_management.yaml):**
-- Nunca incluir critérios discriminatórios na JD (idade, estado civil, gênero, origem étnica)
-- Confirmar título + senioridade + tipo de contrato antes de salvar definitivamente
-- Alertar se requisitos forem excessivamente restritivos (risco de pipeline escasso)
-- Sugerir benchmark salarial sempre que disponível para o cargo/região
-- Formato wizard: uma pergunta por vez, confirmação ao final de cada seção
-
----
-
-### 3.5 Arquitetura técnica — v5
-
-```
-Frontend (domain: "jobs") OU HubPlanner detecta query sobre vagas
-    ↓
-JobsDomain (domain_id: "jobs", domain_name: "Gestao de Vagas")
-    ↓
-JobsPrompts → JobDynamicPromptBuilder
-    → PromptConfig(max_actions_in_prompt=8, max_examples_per_action=2)
-    → Dois modos:
-        • has_job_context=True: prompt enriquecido com detalhes da vaga
-        • has_job_context=False: prompt genérico para listagem
-    ↓
-TieredContextManager (cache por tier):
-    • Tier 1: dados básicos (dados + pipeline) — para ações simples
-    • Tier 2: dados completos (+ analytics + atividade recente) — para análises
-    ↓
-JobsAPIClient → ATS Rails API
-```
-
----
-
-### 3.6 Comparativo LIA × v5 — Tabela de Vagas
-
-| Dimensão | LIA (job_management, JOB_TABLE) | v5 (jobs domain) |
+| Dimensão | LIA (scope JOB_TABLE, 19 tools) | v5 (jobs domain) |
 |---|---|---|
-| **Tools de consulta de vagas** | ✅ `search_jobs`, `get_job_details`, `get_pipeline_stats` | ✅ `list_jobs`, `show_job_details`, `job_analytics`, `account_stats` |
-| **Wizard conversacional** | ✅ Estruturado com `save_job_draft` + `validate_job_fields` | ❌ Sem wizard estruturado — cria diretamente via `create_job` |
-| **JD gerada por IA** | ✅ `generate_enriched_jd` (tom configurável) | ✅ `generate_suggestion` via API |
-| **Benchmark salarial** | ✅ `search_salary_benchmark` + `get_intelligent_salary` | ⚠️ Não tem tool separada para benchmark |
-| **Skills sugeridas** | ✅ `get_intelligent_skills` | ✅ `generate_interview_questions` (por competência) |
-| **Validação de campos** | ✅ `validate_job_fields` antes de criar | ⚠️ Sem validação pré-save explícita |
-| **Kanban/Pipeline visual** | ❌ Não acessível neste contexto (IN_JOB scope) | ✅ `pipeline_status` disponível no domínio jobs |
-| **Saúde de múltiplas vagas** | ❌ Sem tool | ✅ `pipeline_health` |
-| **Analytics por vaga** | ✅ `get_pipeline_stats` | ✅ `job_analytics` + `summarize_job` |
-| **Analytics múltiplas vagas** | ❌ Uma por vez | ✅ `get_multi_job_analytics` em 1 chamada |
-| **Alertas de prazo** | ❌ Sem tool no scope | ✅ `alerts` (prazo vencido, urgentes, paradas) |
-| **Matching de candidatos** | ❌ Sem tool no scope JOB_TABLE | ✅ `matching_candidates` (embedding similarity) |
-| **Sourcing automático** | ❌ Delegado ao domínio sourcing | ✅ `auto_source` direto |
-| **Ações em lote** | ❌ No scope JOB_TABLE (apenas individuais) | ✅ `bulk_archive/pause/activate_jobs` |
-| **Exportação** | ✅ `generate_report(format: csv/pdf/json)` | ✅ `export_job` (CSV) |
-| **Cache de contexto** | ❌ Sem cache | ✅ TieredContextManager (Tier1 vs Tier2) |
-| **Detecção de intenção** | Via LLM | ✅ Regex rápido + LLM fallback |
-| **Duplicar vaga** | ❌ Sem tool no scope | ✅ `copy_job` |
+| **Busca/detalhe de vagas** | ✅ search_jobs, get_job_details | ✅ list_jobs, show_job_details |
+| **CRUD de vagas** | ✅ create_job, update_job, pause_job, close_job, publish_job | ✅ change_status + create via autonomous |
+| **Pipeline stats** | ✅ get_pipeline_stats | ✅ job_analytics, account_stats |
+| **Métricas de recrutador** | ✅ get_recruiter_metrics, get_velocity_metrics, etc. | ✅ via autonomous productivity metrics |
+| **Benchmarks de mercado** | ✅ get_market_benchmarks | ✅ via autonomous |
+| **Kanban visual** | ❌ Não está em JOB_TABLE (está em IN_JOB) | ✅ pipeline_status disponível |
+| **Saúde de múltiplas vagas** | ❌ Sem tool no scope | ✅ pipeline_health |
+| **Alertas de prazo** | ❌ Sem tool no scope | ✅ alerts |
+| **Matching de candidatos** | ❌ Sem tool no scope JOB_TABLE | ✅ matching_candidates |
+| **Sourcing automático** | ❌ Sem tool no scope | ✅ auto_source |
+| **Duplicar vaga** | ❌ Sem tool no scope | ✅ copy_job |
+| **Wizard conversacional** | ✅ [LIA-LLM] Estruturado passo a passo | ❌ Sem wizard estruturado |
+| **JD gerada por IA** | ✅ [LIA-LLM] Com linguagem inclusiva | ✅ generate_suggestion |
+| **Cache tiered** | ❌ | ✅ TieredContextManager (Tier1 vs Tier2) |
+| **Detecção de intenção** | Via CascadedRouter | ✅ Regex rápido + LLM fallback |
+| **Exportação** | ✅ export_job_analytics | ✅ export_job |
 
 ---
 
-## 4. Prompt 3 — Dentro da Vaga (Kanban) {#prompt-3}
+## 5. Prompt 3 — Dentro da Vaga (Kanban) {#prompt-3}
 
 ### O que é e onde aparece
 
-O **Prompt Expandido do Kanban** aparece dentro de uma vaga específica (`/user/jobs/{id}`), ao lado do kanban de candidatos. É o contexto mais operacional — age diretamente sobre os candidatos **de uma vaga específica**.
+Aparece dentro de uma vaga específica (`/user/jobs/{id}`), ao lado do kanban. Ativado quando `context_page: "pipeline"/"kanban"` → scope IN_JOB.
 
-**Ativação:** `context_page: "pipeline"/"kanban"` → `context_type: "pipeline"` → 4 domínios ativos + 6 tools IN_JOB.
-
----
-
-### 4.1 Capacidades IN
-
-#### [LIA-API] Capacidades via API (scope: IN_JOB — 6 tools)
-
-| Tool | O que faz | Parâmetros principais |
-|---|---|---|
-| `update_candidate_stage` | Move candidato para etapa do pipeline `[ESCRITA]` | `candidate_id`, `target_stage`, `job_id`, `notes`, `notify_candidate` |
-| `reject_candidate` | Rejeita candidato com motivo `[ESCRITA]` | `candidate_id`, `vacancy_id`, `reason`, `notify` |
-| `bulk_update_candidates_stage` | Move múltiplos candidatos de etapa `[LOTE][ESCRITA]` | `candidate_ids[]`, `target_stage`, `job_id` |
-| `wsi_screening` | Inicia avaliação WSI para um candidato `[ESCRITA]` | `candidate_id`, `job_id`, `screening_type: voice\|text\|video` |
-| `hide_candidate` | Oculta candidato da visualização ativa (soft remove) `[ESCRITA]` | `candidate_id`, `vacancy_id`, `reason` |
-| `get_vacancy_funnel` | Retorna dados do funil da vaga (candidatos por etapa) | `job_id`, `include_rejected` |
-
-#### [LIA-LLM] Capacidades conversacionais (sem chamada de API)
-
-O LLM tem acesso aos dados de candidatos passados pelo frontend no payload (`candidates[]`, `selected_candidate_ids[]`, `job_context`) e pode:
-
-- **Triagem curricular de CVs** — análise do CV contra os requisitos da vaga via rubrica:
-  - Score WSI em 7 blocos: Hard Skills | Soft Skills | Experiência | Liderança | Comunicação | Alinhamento Cultural | Potencial
-  - Recomendação: Avançar (≥75%) | Revisão (60-74%) | Rejeitar (<60%)
-  - Detecção de red flags: gaps, job hopping, inconsistências de datas
-  - Verificação de questões eliminatórias antes da avaliação
-- **FairnessGuard** — verifica viés involuntário antes de qualquer rejeição; ignora: nome, foto, localização, estado civil, idade, etnia (via regras do `cv_screening.yaml`)
-- **Ranking de candidatos** — ordena candidatos do contexto por score de compatibilidade
-- **Comparação de finalistas** — tabela comparativa de candidatos já carregados
-- **Análise do pipeline** — identifica gargalos, candidatos parados, taxas de conversão (com dados do funil via `get_vacancy_funnel`)
-- **Condução de entrevista WSI (CBI)** — perguntas comportamentais estruturadas, uma por vez; detecta respostas evasivas (via `interview_scheduling.yaml`)
-- **Geração de mensagens de comunicação** — rascunha emails, WhatsApp, Teams (via `communication.yaml`)
-- **Sugestão de próximas ações** — após cada análise, sugere etapa seguinte para o candidato
-
-**Nota crítica sobre comunicação no contexto IN_JOB:** As tools `send_email` e `send_whatsapp` têm scope TALENT_FUNNEL, não IN_JOB. No contexto do kanban (IN_JOB), a LIA pode **rascunhar e planejar** comunicações via LLM, mas a **execução via API** (envio real) não está disponível neste scope. O envio real de email/WhatsApp requer o contexto TALENT_FUNNEL (Prompt 4) ou que o recrutador execute manualmente.
-
----
-
-### 4.2 Restrições OUT
-
-| O que NÃO faz (LIA — IN_JOB scope) | Contexto correto |
-|---|---|
-| Buscar candidatos no pool externo via API | Prompt 4 (TALENT_FUNNEL) |
-| Criar ou editar vagas | Prompt 2 (JOB_TABLE) |
-| Enviar email/WhatsApp via API | Prompt 4 (TALENT_FUNNEL) — tools `send_email`/`send_whatsapp` estão em TALENT_FUNNEL |
-| Buscar candidatos do banco de talentos | Prompt 4 (TALENT_FUNNEL) |
-| Overview cross-vagas / briefing geral | Prompt 1 (GLOBAL) |
-
----
-
-### 4.3 Dados coletados e gerados
-
-**Inputs (LIA):**
-- `context_page: "pipeline"/"kanban"` — ativa IN_JOB scope
-- `entity_id` = job_id — vaga aberta
-- `job_context` — dados da vaga (título, requisitos, etapas, competências WSI)
-- `candidates[]` — lista de candidatos carregados na tela (passada pelo frontend)
-- `selected_candidate_ids[]` — candidatos selecionados pelo recrutador para ação em lote
-
-**Outputs (LIA-API):**
-- Candidato movido de etapa
-- Candidato rejeitado (com motivo e notificação opcional)
-- Múltiplos candidatos movidos em lote
-- Sessão de WSI iniciada (voz, texto ou vídeo)
-- Candidato oculto da visualização
-- Dados do funil por etapa
-
-**Outputs (LIA-LLM):**
-- Score WSI 0-100 por candidato com justificativa para cada bloco
-- Recomendação de avanço, revisão ou rejeição
-- Ranking de candidatos por compatibilidade
-- Rascunho de mensagem de comunicação (para envio manual)
-- Análise pós-entrevista (competências + evidências + score parcial)
-- Log de auditoria de todas as avaliações (compliance LGPD/SOX — documentado no reasoning)
-
----
-
-### 4.4 Arquitetura técnica — LIA
-
-```
-Frontend (context_page: "pipeline" | "kanban")
-    ↓
-ContextAdapter
-    → context_type = "pipeline"
-    → entity_id = job_id
-    → candidates = lista de candidatos da tela
-    → selected_candidate_ids = selecionados pelo usuário
-    ↓
-MainOrchestrator
-    → domínios ativos (multi-domínio):
-        ├── cv_screening.yaml        ← triagem e score WSI (7 blocos + FairnessGuard)
-        ├── pipeline_transition.yaml ← movimentação no funil
-        ├── interview_scheduling.yaml ← agendamento e condução WSI (CBI)
-        └── communication.yaml       ← rascunho de comunicações multi-canal
-    → scope: IN_JOB (6 tools) + GLOBAL (4 tools)
-    ↓
-Agentes: orchestrator, recruiter_assistant, screening, analyst_feedback, communication
-```
-
-**Regras críticas por domínio:**
-- `cv_screening.yaml`: NUNCA avalia por nome, foto, localização, estado civil, idade, etnia; sempre consulta FairnessGuard antes de rejeitar
-- `interview_scheduling.yaml`: perguntas APENAS sobre competências profissionais (nunca família, filhos, estado civil, saúde); consentimento explícito para transcrição de áudio
-- `communication.yaml`: todo email gerado inclui rodapé "Mensagem gerada com assistência de IA pela LIA (WeDOTalent)"; confirmação para envios em massa (>10 destinatários)
-- `pipeline_transition.yaml`: confirma ações destrutivas ou irreversíveis antes de executar
-
----
-
-### 4.5 Arquitetura técnica — v5
-
-```
-Frontend (domain: "applies") OU HubPlanner detecta query sobre candidaturas
-    ↓
-AppliesDomain (domain_id: "applies", domain_name: "Gestao de Candidaturas")
-    → "Gestao completa de candidaturas: busca, detalhes, pipeline/kanban,
-       aprovacao/reprovacao, ranking, comparacao, analytics, acoes em lote.
-       Opera no contexto de uma vaga (job_id)."
-    ↓
-AppliesPrompts → AppliesDynamicPromptBuilder
-    → PromptConfig(max_actions_in_prompt=8)
-    → Dois modos: has_job_context=True/False
-    ↓
-AppliesActions (src/domains/applies/actions/):
-    analytics.py: apply_analytics | stage_distribution
-    bulk.py: bulk_approve_applies | bulk_reject_applies | bulk_move_applies (async) | send_apply_reject_feedback
-    comparison.py: compare_candidates
-    details.py: show_apply_details | apply_timeline
-    pipeline.py: get_kanban | move_stage | approve_apply | reject_apply
-    scoring.py: filter_by_score | top_candidates | full_ranking
-    search.py: search_applies | search_by_name | list_applies_by_stage | recent_applies | count_applies
-    sourcing.py: stalled_applies (por severidade) | diagnose_applies (diagnóstico completo IA)
-    ↓
-AppliesCacheManager
-AppliesAPIClient → ATS Rails API
-```
-
----
-
-### 4.6 Comparativo LIA × v5 — Kanban
-
-| Dimensão | LIA (pipeline context, IN_JOB scope) | v5 (applies domain) |
-|---|---|---|
-| **Tools de API disponíveis** | 6 tools (IN_JOB) | 10 action files (30+ ações) |
-| **Arquitetura** | Multi-domínio (4 YAMLs) | Domínio unificado |
-| **Mover candidato de etapa** | ✅ `update_candidate_stage` | ✅ `move_stage` (com confirmação) |
-| **Rejeitar candidato** | ✅ `reject_candidate` | ✅ `reject_apply` (com confirmação) |
-| **Ações em lote** | ✅ `bulk_update_candidates_stage` | ✅ `bulk_approve/reject/move_applies` (async) |
-| **WSI Screening** | ✅ `wsi_screening(voice\|text\|video)` | ⚠️ Via `autonomous` domain (sem domínio dedicado) |
-| **Score WSI 7 blocos** | ✅ [LLM] com FairnessGuard explícito | ⚠️ Score via API (sem 7 blocos documentados) |
-| **FairnessGuard** | ✅ Verificado antes de toda rejeição | ⚠️ Implícito nas regras gerais |
-| **Funil da vaga** | ✅ `get_vacancy_funnel` | ✅ `get_kanban` + `stage_distribution` |
-| **Analytics completo** | ❌ Sem tool IN_JOB para analytics | ✅ `apply_analytics` |
-| **Candidatos parados** | ❌ Sem tool IN_JOB específica | ✅ `stalled_applies` (attention/warning/critical) |
-| **Diagnóstico completo** | ❌ | ✅ `diagnose_applies` com recomendações IA |
-| **Top N candidatos** | ❌ Sem tool IN_JOB específica | ✅ `top_candidates`, `full_ranking` |
-| **Comparação de candidatos** | [LLM] Com dados em contexto | ✅ `compare_candidates` com análise IA |
-| **Timeline da candidatura** | ❌ Sem tool IN_JOB | ✅ `apply_timeline` |
-| **Envio de email/WhatsApp** | ❌ Fora do scope IN_JOB | ✅ Via `autonomous` tools |
-| **Entrevista WSI estruturada** | ✅ `interview_scheduling.yaml` dedicado | ⚠️ Via `autonomous` domain |
-| **Cache de ações** | ❌ | ✅ `AppliesCacheManager` (ACTIONS_NEEDING_CACHE) |
-
----
-
-## 5. Prompt 4 — Funil de Talentos {#prompt-4}
-
-### O que é e onde aparece
-
-O **Prompt Expandido do Funil de Talentos** aparece na página de candidatos (`/user/candidates`) ou na sessão de sourcing (`/user/sourcing/{id}/chat`). É o prompt especializado em **busca e análise de candidatos** no banco de talentos.
-
-**Ativação:** `context_page: "sourcing"/"talent"` → `context_type: "talent_funnel"` → domínios `sourcing` + `analytics` + scope TALENT_FUNNEL.
+**Importante**: O scope IN_JOB tem 25 tools, incluindo `send_email`, `send_whatsapp` e `schedule_interview` — capacidades de comunicação e agendamento são disponíveis via API neste contexto.
 
 ---
 
 ### 5.1 Capacidades IN
 
-#### [LIA-API] Capacidades via API (scope: TALENT_FUNNEL — 9 tools)
+#### [LIA-API] Tools disponíveis (scope: IN_JOB — 25 tools, fonte: scope_config.py)
 
-| Tool | O que faz | Parâmetros principais |
-|---|---|---|
-| `search_candidates` | Busca candidatos no banco por query, filtros, paginação | `query`, `filters`, `limit`, `offset` |
-| `get_candidate_details` | Perfil completo de candidato com histórico | `candidate_id`, `include_history` |
-| `get_candidate_stats` | Estatísticas agregadas do pool de candidatos | `filters`, `group_by` |
-| `add_candidate_to_vacancy` | Adiciona candidato ao processo seletivo de uma vaga `[ESCRITA]` | `candidate_id`, `vacancy_id`, `stage`, `notes` |
-| `shortlist_candidate` | Adiciona candidato à lista de pré-selecionados para uma vaga `[ESCRITA]` | `candidate_id`, `vacancy_id`, `notes` |
-| `add_to_list` | Inclui candidato em lista de talentos nomeada `[ESCRITA]` | `candidate_id`, `list_name`, `notes` |
-| `export_candidates` | Exporta dados de candidatos para CSV ou XLSX | `candidate_ids[]`, `format: csv\|xlsx`, `fields[]` |
-| `send_email` | Envia email para um ou mais candidatos `[ESCRITA]` | `to[]`, `subject`, `body`, `template_id` |
-| `send_whatsapp` | Envia mensagem WhatsApp para candidato `[ESCRITA]` | `phone`, `message`, `template_name` |
+**Query tools (14):**
 
-#### [LIA-LLM] Capacidades conversacionais (sem chamada de API)
+| Tool | O que faz |
+|---|---|
+| `get_job_details` | Dados completos da vaga |
+| `get_vacancy_funnel` | Funil com candidatos por etapa e taxas de conversão |
+| `get_candidate_details` | Perfil completo de candidato |
+| `get_activity_summary` | Resumo de atividades e ações recentes da vaga |
+| `get_pending_actions` | Pendências: feedbacks em atraso, candidatos sem resposta |
+| `compare_candidates` | Comparação lado a lado de múltiplos candidatos |
+| `get_candidate_stats` | Estatísticas do pool de candidatos da vaga |
+| `get_bottleneck_analysis` | Análise de gargalos: etapas com alta taxa de rejeição ou abandono |
+| `get_job_velocity` | Velocidade do processo: tempo médio por etapa |
+| `get_job_quality_metrics` | Qualidade: taxa de oferta-aceite, retenção pós-contratação |
+| `get_stakeholder_metrics` | Métricas de stakeholders: satisfação de gestores, tempo de resposta |
+| `get_prediction_metrics` | Previsões: probabilidade de fechamento, candidatos em risco |
+| `get_job_benchmark` | Benchmark da vaga vs. média da empresa/mercado |
+| `get_smart_alerts` | Alertas inteligentes: candidatos parados, SLA expirado |
 
-Com dados de candidatos carregados na tela (via `candidates[]`, `search_context`, `target_job`):
+**Action tools (11):**
 
-- **Análise de compatibilidade** — calcula score 0-100% de compatibilidade com a vaga alvo para candidatos em contexto
-- **Ranking por compatibilidade** — ordena candidatos por fit com a vaga
-- **Construção de queries booleanas** — sugere e refina queries `Java AND AWS AND (senior OR pleno) NOT júnior`
-- **Análise de disponibilidade de mercado** — interpreta dados de busca para estimar disponibilidade
-- **Bias audit / Four-Fifths Rule** — análise de equidade com dados de candidatos em contexto (via `analytics.yaml`)
-- **Refinamento de busca** — se < 5 resultados: propõe critérios menos restritivos; se > 50: sugere filtros adicionais
-- **Mapeamento de mercado** — tendências de talentos e benchmarking de disponibilidade com dados em contexto
+| Tool | O que faz |
+|---|---|
+| `update_candidate_stage` | Move candidato para etapa do pipeline `[ESCRITA]` |
+| `bulk_update_candidates_stage` | Move múltiplos candidatos de etapa `[LOTE][ESCRITA]` |
+| `reject_candidate` | Rejeita candidato com motivo `[ESCRITA]` |
+| `shortlist_candidate` | Adiciona candidato à lista de pré-selecionados `[ESCRITA]` |
+| `add_to_list` | Inclui candidato em lista de talentos `[ESCRITA]` |
+| `hide_candidate` | Oculta candidato da visualização ativa (soft remove) `[ESCRITA]` |
+| `wsi_screening` | Inicia avaliação WSI (voice\|text\|video) `[ESCRITA]` |
+| `send_email` | Envia email para candidato(s) `[ESCRITA]` |
+| `send_whatsapp` | Envia mensagem WhatsApp `[ESCRITA]` |
+| `schedule_interview` | Agenda entrevista no calendário `[ESCRITA]` |
+| `send_feedback` | Envia feedback estruturado para candidato `[ESCRITA]` |
 
-#### [v5] Capacidades do domínio `sourced_profile_sourcing`
+#### [LIA-LLM] Capacidades conversacionais
 
-| Action | Tipo | O que faz |
-|---|---|---|
-| `show_candidate_details` | QUERY | Detalhes + análise IA + experiências + skills |
-| `search_candidates` | QUERY | Busca por termo, skill ou critério na API |
-| `filter_by_skill` | QUERY | Filtra por skill específica |
-| `filter_by_score` | QUERY | Lista candidatos com score acima de mínimo |
-| `list_candidates` | QUERY | Todos os candidatos com paginação |
-| `recent_candidates` | QUERY | Mais recentes |
-| `count_candidates` | AGGREGATE | Total de candidatos no sourcing |
-| `count_by_filter` | AGGREGATE | Total por filtro específico |
-| `average_score` | AGGREGATE | Média + mediana + faixa + acima de 80/90 |
-| `score_distribution` | AGGREGATE | Histograma de scores |
-| `score_above` | AGGREGATE | Candidatos acima de threshold |
-| `top_candidates` | AGGREGATE | Top N por score |
-| `priority_ranking` | AGGREGATE | Ranking urgência + fit + disponibilidade |
-| `average_experience` | AGGREGATE | Anos de experiência médio |
-| `language_distribution` | AGGREGATE | Nível por idioma |
-| `education_distribution` | AGGREGATE | Universidades, cursos, nível |
-| `gender_distribution` | AGGREGATE | Percentuais por gênero |
-| `location_distribution` | AGGREGATE | Por cidade, estado, região |
-| `work_model_distribution` | AGGREGATE | Remoto/híbrido/presencial |
-| `compare_candidates` | ANALYZE | Comparação lado a lado com análise IA |
-| `summarize_search` | ANALYZE | Relatório completo: demográfico, scores, localização, skills, diversidade |
-| `generate_executive_report` | ANALYZE | Relatório executivo (pipeline 4 etapas: planning→collection→analysis→formatting) |
-| `generate_top_candidates_report` | ANALYZE | Relatório detalhado dos melhores perfis |
-| `diversity_analysis` | ANALYZE | Four-Fifths Rule por dimensão (gênero, PCD, idade, região) |
-| `analyze_skills` | ANALYZE | Distribuição e profundidade de competências |
-| `common_strengths` | ANALYZE | Pontos fortes comuns do pool |
-| `skill_gaps` | ANALYZE | Lacunas vs. requisitos da vaga |
-| `candidates_to_discard` | ANALYZE | Perfis claramente fora do critério |
-| `needs_screening` | ANALYZE | Perfis na zona de dúvida (precisam de triagem) |
-| `top_by_experience` | ANALYZE | Top por anos/qualidade de experiência |
-| `analyze_search_improvement` | ANALYZE | Por que pool está fraco + como melhorar |
-| `approve_candidate` | ACTION | Aprovar no sourcing `[ESCRITA]` |
-| `reject_candidate` | ACTION | Rejeitar do pool `[ESCRITA]` |
-| `add_rating` | ACTION | Rating + nota ao perfil sourced `[ESCRITA]` |
+Com dados de candidatos passados pelo frontend no payload (`candidates[]`, `selected_candidate_ids[]`, `job_context`):
 
-**StatsManager (cache de stats agregadas):**
-O v5 usa `ACTIONS_USING_AGGREGATED` — frozenset de 26 ações que pré-carregam estatísticas agregadas do pool (evita N+1 chamadas para análises demográficas e de scoring).
+- **Triagem curricular (Score WSI em 7 blocos)**:
+  1. Hard Skills Técnicas
+  2. Soft Skills / Comportamentais (evidências CBI)
+  3. Experiência Profissional (anos, empresas, setor, progressão)
+  4. Liderança (gestão de pessoas, projetos, equipes)
+  5. Comunicação (clareza, persuasão, escrita, oratória)
+  6. Alinhamento Cultural (fit com valores e cultura)
+  7. Potencial (capacidade de crescimento e aprendizado)
+  - Recomendação: Avançar (≥75%) | Revisão (60-74%) | Rejeitar (<60%)
+  - Detecção de red flags: gaps de emprego, job hopping, inconsistências de datas
+- **FairnessGuard pré-rejeição** — verifica viés antes de qualquer rejeição; ignora: nome, foto, localização, estado civil, idade, etnia (regras do `cv_screening.yaml`)
+- **Ranking de candidatos** — ordena por score os candidatos do contexto carregado
+- **Condução de entrevista WSI (CBI)** — perguntas comportamentais estruturadas, uma por vez; detecta respostas evasivas (`interview_scheduling.yaml`)
+- **Análise de candidatos** — sugestão de próximas ações para cada candidato
 
 ---
 
-### 5.2 Restrições OUT
+### 5.2 Restrições OUT (LIA — scope IN_JOB)
 
-| O que NÃO faz (LIA — TALENT_FUNNEL scope) | Contexto correto |
+| Não disponível | Escopo/contexto que tem |
 |---|---|
-| Triagem de CVs com score WSI completo | Prompt 3 (IN_JOB) |
-| Agendar entrevistas | Prompt 3 (IN_JOB) |
-| Mover candidatos no pipeline de uma vaga específica | Prompt 3 (IN_JOB) |
-| Criar vagas | Prompt 2 (JOB_TABLE) |
-| Briefing geral / agenda do dia | Prompt 1 (GLOBAL) |
+| Buscar candidatos no pool externo | TALENT_FUNNEL |
+| Criar ou editar vagas | JOB_TABLE |
+| Relatórios globais (não específicos à vaga) | GLOBAL |
+| send_bulk_email | TALENT_FUNNEL |
+| Exportação de candidatos | TALENT_FUNNEL |
 
 ---
 
 ### 5.3 Dados coletados e gerados
 
-**Inputs (LIA):**
-- `context_page: "sourcing"/"talent"` — ativa TALENT_FUNNEL scope
-- `entity_id` = `sourcing_id` — ID da sessão de sourcing ativa
-- `entity_type: "sourcing"`
-- `candidates[]` — candidatos do resultado de busca atual (carregados na tela)
+**Inputs:**
+- `context_page: "pipeline"/"kanban"` → scope IN_JOB
+- `entity_id` = job_id — vaga aberta
+- `job_context` — dados da vaga (título, requisitos, etapas, competências WSI)
+- `candidates[]` — lista de candidatos carregados na tela pelo frontend
 - `selected_candidate_ids[]` — candidatos selecionados pelo recrutador
-- `search_context` — configurações da busca (query, filtros aplicados)
-- `target_job` — vaga-alvo para cálculo de score de compatibilidade
 
-**Inputs (v5):**
-- `domain: "sourced_profile_sourcing"` + `context_data.sourcing_id`
-- `total_candidates` + `aggregated_stats` injetados no prompt (via StatsManager)
+**Outputs (LIA-API):** candidato movido de etapa, rejeitado, em lote movido, sessão WSI iniciada, email/WhatsApp enviados, entrevista agendada, feedback enviado
 
-**Outputs:**
-- Lista de candidatos com score de compatibilidade e justificativa
-- Relatório executivo de sourcing (Markdown estruturado)
-- Análise de diversidade com métricas Four-Fifths Rule
-- Candidatos exportados em CSV/XLSX
-- Candidatos adicionados a vaga / lista / shortlist
+**Outputs (LIA-LLM):** Score WSI 0-100 com justificativa por bloco, recomendação de avanço/revisão/rejeição, análise de entrevista pós-condução
 
 ---
 
 ### 5.4 Arquitetura técnica — LIA
 
 ```
-Frontend (context_page: "sourcing" | "talent")
+Frontend (context_page: "pipeline" | "kanban")
     ↓
-ContextAdapter.from_talent_chat() OU from_rest()
-    → context_type = "talent_funnel"
-    → entity_id = sourcing_id
-    → entity_type = "sourcing"
-    → candidates = candidatos da tela
-    → search_context = configuração da busca
-    → target_job = vaga alvo (se existir)
+ContextAdapter → context_type = "pipeline" → scope = IN_JOB
     ↓
-MainOrchestrator
-    → domínios ativos:
-        ├── sourcing.yaml   ← busca de talentos + Pearch AI
-        └── analytics.yaml  ← KPIs, relatórios, bias audit
-    → scope: TALENT_FUNNEL (9 tools) + GLOBAL (4 tools)
-    ↓
-Agentes: orchestrator, recruiter_assistant, sourcing, analytics
+MainOrchestrator:
+    FairnessGuard.check() → bloqueia mensagens discriminatórias
+    Phase 0: PendingActionState
+    Phase 1: ActionExecutor
+    Phase 2: Orchestrator.process_request_with_memory()
+        ↓
+        CascadedRouter.route() → domain_id (cv_screening, pipeline_transition,
+                                  interview_scheduling, communication, etc.)
+        ↓
+        DomainWorkflow.process() → multi-YAML (4 domínios ativos):
+            cv_screening.yaml        ← triagem e score WSI
+            pipeline_transition.yaml ← movimentação no funil
+            interview_scheduling.yaml ← condução WSI (CBI) e agendamento
+            communication.yaml       ← comunicações multi-canal
+        ↓
+        filter_tools_by_scope(scope=IN_JOB) → 25 tools disponíveis
 ```
 
-**Regras do domínio `sourcing.yaml`:**
-- Score de compatibilidade sempre apresentado com justificativa
-- Nunca inferir gênero, etnia, idade a partir de nome ou localização
-- Se < 5 resultados: propõe automaticamente critérios menos restritivos
-- Se > 50 resultados: pergunta se deseja filtro adicional
-- Sempre cita a fonte: banco interno vs. Pearch AI vs. externo
-
-**Regras do domínio `analytics.yaml`:**
-- Dados sempre agregados (LGPD-safe) — sem identificação individual em relatórios
-- Destaca anomalias com contexto + recomendação de ação
-- Quando amostra < 30 registros: indica baixa confiabilidade estatística
-- Compara com benchmark setorial quando disponível
+**Regras dos domínios:**
+- `cv_screening.yaml`: NUNCA avalia por nome, foto, localização, estado civil, idade, etnia; FairnessGuard antes de rejeitar
+- `interview_scheduling.yaml`: perguntas APENAS sobre competências profissionais; consentimento explícito para transcrição de áudio
+- `communication.yaml`: todo email inclui rodapé "Mensagem gerada com assistência de IA pela LIA"; confirmação para >10 destinatários
+- `pipeline_transition.yaml`: confirma ações destrutivas/irreversíveis antes de executar
 
 ---
 
 ### 5.5 Arquitetura técnica — v5
 
 ```
-Frontend (domain: "sourced_profile_sourcing") OU HubPlanner detecta query sobre candidatos
+Frontend (domain: "applies") OU HubPlanner detecta query sobre candidaturas/kanban
     ↓
-SourcedProfileSourcingDomain
-    → "Análise e ações sobre perfis de candidatos vinculados a um sourcing específico.
-       Sempre requer sourcing_id no contexto."
+AppliesDomain → DomainContext (com job_id)
     ↓
-SourcedProfileSourcingPrompts → DynamicPromptBuilder
-    → USE_DYNAMIC_BUILDER = env var (padrão: true)
-    → PromptConfig(max_actions_in_prompt=6, enable_cache=True)
-    → Injeta total_candidates + aggregated_stats no prompt dinamicamente
+AppliesDynamicPromptBuilder (max_actions_in_prompt=8)
     ↓
-StatsManager
-    → Pré-computa stats agregadas para ACTIONS_USING_AGGREGATED (26 ações)
-    → Evita N chamadas à API para análises demográficas
+AppliesActions:
+    analytics.py:    apply_analytics | stage_distribution
+    bulk.py:         bulk_approve_applies | bulk_reject_applies | bulk_move_applies (async)
+                     | send_apply_reject_feedback
+    comparison.py:   compare_candidates
+    details.py:      show_apply_details | apply_timeline
+    pipeline.py:     get_kanban | move_stage | approve_apply | reject_apply
+    scoring.py:      filter_by_score | top_candidates | full_ranking
+    search.py:       search_applies | search_by_name | list_applies_by_stage
+                     | recent_applies | count_applies
+    sourcing.py:     stalled_applies (por severidade) | diagnose_applies (diagnóstico IA)
     ↓
-SourcingAPIClient → ATS Rails API
-```
-
-**Pipeline de relatório executivo (report.py):**
-```
-generate_executive_report:
-  1. report_planning    → define estrutura e métricas a coletar
-  2. report_data_collection → coleta dados da API
-  3. report_analysis    → análise LLM (temperature=0.3)
-  4. report_formatting  → formata relatório + dados de gráficos
+AppliesCacheManager + AppliesAPIClient → ATS Rails API
 ```
 
 ---
 
-### 5.6 Comparativo LIA × v5 — Funil de Talentos
+### 5.6 Comparativo LIA × v5 — Kanban
 
-| Dimensão | LIA (talent_funnel, TALENT_FUNNEL scope) | v5 (sourced_profile_sourcing domain) |
+| Dimensão | LIA (scope IN_JOB, 25 tools) | v5 (applies domain) |
 |---|---|---|
-| **Tools de busca de candidatos** | ✅ `search_candidates`, `get_candidate_details`, `get_candidate_stats` | ✅ `search_candidates`, `filter_by_skill`, `filter_by_score`, `list_candidates` |
-| **Busca híbrida ES + embeddings** | ⚠️ Não documentada como separada | ✅ `search_candidates_hybrid` (70% ES + 30% embeddings) |
-| **Pearch AI (190M+ perfis)** | ✅ Documentado no `sourcing.yaml` | ⚠️ Não documentado como tool explícita no domínio |
-| **Candidatos similares** | ⚠️ Não como tool explícita no scope | ✅ Via scoring por embedding + `find_similar_candidates` no autonomous |
-| **Queries booleanas** | [LLM] Suportado conversacionalmente | ⚠️ Suportado via busca mas sem tool dedicada |
-| **Score de compatibilidade** | [LLM] 0-100% com justificativa | ✅ Score calculado via API + `average_score`, `score_distribution` |
-| **Análise demográfica** | ✅ Via `analytics.yaml` [LLM] | ✅ 5 distribution actions (language/education/gender/location/work_model) |
-| **Bias audit (Four-Fifths Rule)** | ✅ `analytics.yaml` [LLM] | ✅ `diversity_analysis` (action dedicada) |
-| **Cache de stats agregadas** | ❌ | ✅ `StatsManager` + `ACTIONS_USING_AGGREGATED` |
-| **Relatório executivo** | ✅ `generate_report` (GLOBAL) | ✅ `generate_executive_report` (4-step pipeline) |
-| **Análise de melhoria de busca** | ⚠️ Sugerida no system prompt [LLM] | ✅ `analyze_search_improvement` (action dedicada) |
-| **Skill gaps** | [LLM] Com dados em contexto | ✅ `skill_gaps` (action dedicada) |
-| **Candidatos para descartar** | [LLM] | ✅ `candidates_to_discard` (action dedicada) |
-| **Adicionar candidato a vaga** | ✅ `add_candidate_to_vacancy` | ✅ Via `autonomous` (`create_apply`) |
-| **Shortlist** | ✅ `shortlist_candidate` | ✅ Via `autonomous` (`add_to_list`) |
-| **Exportação** | ✅ `export_candidates(csv/xlsx)` | ✅ Via `autonomous` tools |
-| **Envio de email** | ✅ `send_email` | ✅ Via `autonomous` (`send_apply_reject_feedback`) |
-| **Envio de WhatsApp** | ✅ `send_whatsapp` | ✅ Via `autonomous` tools |
-| **Arquetipos de busca** | ❌ | ✅ `search_archetypes` (via autonomous) |
-| **Comparação de sourcings** | ❌ Um por vez | ✅ `get_multi_sourcing_stats` (bulk) |
-| **Aprovação de perfil sourced** | ⚠️ Sem tool explícita no scope | ✅ `approve_candidate`, `reject_candidate`, `add_rating` |
+| **Mover candidato** | ✅ update_candidate_stage | ✅ move_stage (com confirmação) |
+| **Rejeitar candidato** | ✅ reject_candidate | ✅ reject_apply |
+| **Aprovar candidato** | ✅ [via update_candidate_stage para próxima etapa] | ✅ approve_apply |
+| **Ações em lote** | ✅ bulk_update_candidates_stage | ✅ bulk_approve/reject/move_applies (async) |
+| **Funil da vaga** | ✅ get_vacancy_funnel | ✅ get_kanban + stage_distribution |
+| **Analytics completo** | ✅ get_bottleneck_analysis, get_job_velocity, get_job_quality_metrics | ✅ apply_analytics |
+| **Alertas inteligentes** | ✅ get_smart_alerts | ✅ stalled_applies (attention/warning/critical) |
+| **Score WSI 7 blocos** | ✅ [LIA-LLM] com FairnessGuard explícito | ⚠️ Score via API (sem 7 blocos documentados) |
+| **FairnessGuard** | ✅ Antes de toda rejeição (code + prompt) | ⚠️ Via FairnessGuard no MainOrchestrator (não no v5) |
+| **Condução de entrevista WSI** | ✅ interview_scheduling.yaml (domínio dedicado) | ⚠️ Via autonomous (sem domínio dedicado) |
+| **Agendamento de entrevista** | ✅ schedule_interview | ✅ Via autonomous (create_calendar_event) |
+| **send_email / send_whatsapp** | ✅ Disponível no scope IN_JOB | ✅ Via autonomous tools |
+| **Diagnóstico completo** | ❌ Sem action dedicada | ✅ diagnose_applies |
+| **Timeline da candidatura** | ❌ Sem tool no scope | ✅ apply_timeline |
+| **Top N candidatos** | ❌ Sem tool no scope | ✅ top_candidates, full_ranking |
+| **Previsões (ML)** | ✅ get_prediction_metrics | ❌ Sem tool v5 explícita |
+| **Benchmark da vaga** | ✅ get_job_benchmark | ❌ Sem tool v5 explícita |
+| **Métricas de stakeholder** | ✅ get_stakeholder_metrics | ❌ Sem tool v5 explícita |
+| **Cache** | ❌ | ✅ AppliesCacheManager |
 
 ---
 
-## 6. Tabela-resumo global {#tabela-resumo}
+## 6. Prompt 4 — Funil de Talentos {#prompt-4}
+
+### O que é e onde aparece
+
+Aparece em `/user/candidates` ou `/user/sourcing/{id}/chat`. Ativado quando `context_page: "sourcing"/"talent"` → scope TALENT_FUNNEL.
+
+---
+
+### 6.1 Capacidades IN
+
+#### [LIA-API] Tools disponíveis (scope: TALENT_FUNNEL — 20 tools, fonte: scope_config.py)
+
+**Query tools (11):**
+
+| Tool | O que faz |
+|---|---|
+| `search_candidates` | Busca candidatos no banco por query + filtros + paginação |
+| `get_candidate_details` | Perfil completo com histórico |
+| `get_candidate_stats` | Estatísticas agregadas do pool |
+| `compare_candidates` | Comparação lado a lado de candidatos |
+| `get_talent_quality` | Score de qualidade dos candidatos do pool |
+| `get_talent_engagement` | Nível de engajamento dos candidatos |
+| `get_talent_availability` | Disponibilidade de candidatos para novas oportunidades |
+| `get_diversity_metrics` | Métricas de diversidade do pool |
+| `get_candidate_history` | Histórico de candidaturas e processos anteriores |
+| `get_ml_predictions` | Previsões de ML: probabilidade de aceite de oferta |
+| `get_conversion_patterns` | Padrões de conversão do pool |
+
+**Action tools (9):**
+
+| Tool | O que faz |
+|---|---|
+| `add_candidate_to_vacancy` | Adiciona candidato ao processo seletivo de uma vaga `[ESCRITA]` |
+| `reject_candidate` | Rejeita candidato do pool `[ESCRITA]` |
+| `shortlist_candidate` | Adiciona candidato à lista de pré-selecionados `[ESCRITA]` |
+| `add_to_list` | Inclui candidato em lista de talentos `[ESCRITA]` |
+| `hide_candidate` | Oculta candidato da visualização `[ESCRITA]` |
+| `send_email` | Envia email para candidato(s) `[ESCRITA]` |
+| `send_whatsapp` | Envia mensagem WhatsApp `[ESCRITA]` |
+| `send_bulk_email` | Envia email em massa `[LOTE][ESCRITA]` |
+| `export_candidates` | Exporta candidatos em CSV ou XLSX |
+
+#### [LIA-LLM] Capacidades conversacionais
+
+- **Análise de compatibilidade** — score 0-100% para candidatos em contexto vs. vaga alvo
+- **Construção de queries booleanas** — sugere e refina queries `Java AND AWS AND (senior OR pleno) NOT júnior`
+- **Bias audit / Four-Fifths Rule** — análise de equidade com dados do pool em contexto (`analytics.yaml`)
+- **Refinamento de busca** — se <5 resultados: propõe critérios menos restritivos; se >50: sugere filtros adicionais
+- **Análise de mercado** — tendências de disponibilidade e benchmarking com dados em contexto
+
+#### [v5] Capacidades do domínio `sourced_profile_sourcing`
+
+| Action | Tipo | O que faz |
+|---|---|---|
+| `show_candidate_details` | QUERY | Detalhes + análise IA + experiências + skills |
+| `search_candidates`, `filter_by_skill`, `filter_by_score`, `list_candidates`, `recent_candidates` | QUERY | Busca e filtros no pool |
+| `count_candidates`, `count_by_filter` | AGGREGATE | Contagens |
+| `average_score`, `score_distribution`, `score_above`, `top_candidates`, `priority_ranking` | AGGREGATE | Scoring e ranking |
+| `average_experience`, `language_distribution`, `education_distribution`, `gender_distribution`, `location_distribution`, `work_model_distribution` | AGGREGATE | Distribuições demográficas |
+| `compare_candidates` | ANALYZE | Comparação com análise IA |
+| `summarize_search`, `generate_executive_report`, `generate_top_candidates_report` | ANALYZE | Relatórios |
+| `diversity_analysis` | ANALYZE | Four-Fifths Rule por dimensão |
+| `analyze_skills`, `common_strengths`, `skill_gaps`, `candidates_to_discard`, `needs_screening`, `top_by_experience`, `analyze_search_improvement` | ANALYZE | Análises de pool |
+| `approve_candidate`, `reject_candidate`, `add_rating` | ACTION | Avaliação de perfis sourced `[ESCRITA]` |
+
+**StatsManager**: pré-computa e cacheia stats agregadas para 26 ações em `ACTIONS_USING_AGGREGATED` (evita N+1 chamadas para análises demográficas e de scoring).
+
+---
+
+### 6.2 Restrições OUT (LIA — scope TALENT_FUNNEL)
+
+| Não disponível como tool | Scope que tem |
+|---|---|
+| Mover candidatos no pipeline de vaga | IN_JOB |
+| Agendar entrevistas | IN_JOB |
+| Criar ou editar vagas | JOB_TABLE |
+| Triagem WSI de CVs de candidatos em vaga | IN_JOB |
+| Gerar relatório genérico (não de candidatos) | GLOBAL |
+
+---
+
+### 6.3 Comparativo LIA × v5 — Funil de Talentos
+
+| Dimensão | LIA (scope TALENT_FUNNEL, 20 tools) | v5 (sourced_profile_sourcing domain) |
+|---|---|---|
+| **Busca de candidatos** | ✅ search_candidates, get_candidate_details | ✅ search_candidates, filter_by_skill, filter_by_score |
+| **Busca híbrida ES + embeddings** | ❌ Sem tool explícita no scope | ✅ search_candidates_hybrid (70% ES + 30% embeddings) |
+| **Previsões de ML** | ✅ get_ml_predictions | ❌ Sem tool explícita |
+| **Padrões de conversão** | ✅ get_conversion_patterns | ❌ Sem tool explícita |
+| **Engajamento de candidatos** | ✅ get_talent_engagement | ❌ Sem tool explícita |
+| **Score médio / distribuição** | ❌ Sem tool no scope | ✅ average_score, score_distribution, top_candidates |
+| **Análise demográfica** | ✅ get_diversity_metrics (via scope_config) | ✅ 6 distribution actions (language/education/gender/location/work_model) |
+| **Four-Fifths Rule** | ✅ get_diversity_metrics + analytics.yaml [LLM] | ✅ diversity_analysis |
+| **Cache de stats agregadas** | ❌ | ✅ StatsManager (ACTIONS_USING_AGGREGATED) |
+| **Relatório executivo** | ✅ generate_report (GLOBAL) | ✅ generate_executive_report (pipeline 4 etapas + LLM) |
+| **Análise de melhoria de busca** | ⚠️ [LIA-LLM] sem tool | ✅ analyze_search_improvement |
+| **Skill gaps** | ⚠️ [LIA-LLM] sem tool | ✅ skill_gaps |
+| **Adicionar candidato a vaga** | ✅ add_candidate_to_vacancy | ✅ Via autonomous (create_apply) |
+| **Shortlist** | ✅ shortlist_candidate | ✅ Via autonomous (add_to_list) |
+| **Envio de email em massa** | ✅ send_bulk_email | ✅ Via autonomous |
+| **Exportação** | ✅ export_candidates (csv/xlsx) | ✅ Via autonomous |
+| **Aprovação de perfil sourced** | ✅ [via reject_candidate no scope] | ✅ approve_candidate, reject_candidate, add_rating |
+| **Arquetipos de busca** | ❌ Sem tool no scope | ✅ search_archetypes (via autonomous) |
+| **Comparação de sourcings** | ❌ | ✅ get_multi_sourcing_stats |
+
+---
+
+## 7. Tabela-resumo global {#tabela-resumo}
 
 | Dimensão | Prompt 1 — Flutuante | Prompt 2 — Tabela Vagas | Prompt 3 — Kanban | Prompt 4 — Funil Talentos |
 |---|---|---|---|---|
-| **context_page (LIA)** | `general` | `job`, `jobs`, `vacancies`, `wizard` | `pipeline`, `kanban` | `sourcing`, `talent` |
-| **domain payload (v5)** | `null` + hub_mode | `"jobs"` | `"applies"` | `"sourced_profile_sourcing"` |
-| **N° tools LIA (scope)** | **4** GLOBAL | **13** JOB_TABLE | **6** IN_JOB | **9** TALENT_FUNNEL |
-| **N° actions v5** | 73+ (13 módulos) | 17 (7 action files) | 30+ (10 action files) | 32+ (14 action files) |
-| **Buscar vagas via API** | ❌ LIA | ✅ Ambos | ❌ LIA | ❌ LIA |
-| **Buscar candidatos via API** | ❌ LIA | ❌ LIA | ❌ LIA | ✅ Ambos |
-| **Mover candidatos via API** | ❌ LIA | ❌ LIA | ✅ Ambos | ❌ LIA |
-| **Enviar email/WhatsApp via API** | ❌ LIA | ❌ Ambos | ❌ LIA (está em TALENT_FUNNEL) | ✅ Ambos |
-| **Score WSI 7 blocos** | ❌ | ❌ | ✅ LIA [LLM] | ❌ |
-| **FairnessGuard** | ❌ | ❌ | ✅ LIA [LLM] | ❌ |
-| **Bias audit** | ❌ | ❌ | ❌ | ✅ Ambos |
+| **context_page (LIA)** | `general`, `global` | `job`, `jobs`, `vacancies`, `wizard` | `pipeline`, `kanban` | `sourcing`, `talent` |
+| **domain (v5)** | `null` + hub_mode | `"jobs"` | `"applies"` | `"sourced_profile_sourcing"` |
+| **Scope LIA (fonte: scope_config.py)** | GLOBAL | JOB_TABLE | IN_JOB | TALENT_FUNNEL |
+| **N° tools LIA** | 2 | 19 | 25 | 20 |
+| **N° actions v5** | 73+ (13 módulos) | 17 actions | 30+ actions | 32+ actions |
+| **Domain routing LIA** | CascadedRouter (6 tiers) | CascadedRouter | CascadedRouter | CascadedRouter |
+| **Domain routing v5** | HubPlanner (LLM + regex) | Domain direto | Domain direto | Domain direto |
+| **Buscar vagas (API)** | ❌ | ✅ Ambos | ❌ | ❌ |
+| **Criar vagas (API)** | ❌ | ✅ Ambos | ❌ | ❌ |
+| **Buscar candidatos (API)** | ❌ | ❌ | ❌ | ✅ Ambos |
+| **Mover candidatos (API)** | ❌ | ❌ | ✅ Ambos | ❌ |
+| **send_email / send_whatsapp (API)** | ❌ | ❌ | ✅ LIA (IN_JOB) + v5 | ✅ Ambos |
+| **schedule_interview (API)** | ❌ | ❌ | ✅ LIA (IN_JOB) + v5 | ❌ |
+| **Score WSI 7 blocos** | ❌ | ❌ | ✅ [LIA-LLM] | ❌ |
+| **FairnessGuard** | ✅ MainOrchestrator | ✅ MainOrchestrator | ✅ MainOrchestrator + cv_screening.yaml | ✅ MainOrchestrator |
 | **Gerar relatório** | ✅ Ambos | ✅ Ambos | ❌ LIA | ✅ Ambos |
-| **Agendar relatório recorrente** | ✅ LIA apenas | ❌ | ❌ | ❌ |
-| **Wizard de criação de vaga** | ❌ | ✅ LIA [LLM] | ❌ | ❌ |
-| **JD gerada por IA** | ❌ | ✅ Ambos | ❌ | ❌ |
-| **Analytics de vaga** | ❌ LIA | ✅ Ambos | ✅ v5 | ❌ |
-| **Diagnóstico completo** | ❌ LIA | ❌ LIA | ✅ v5 | ❌ |
-| **Progresso visível (write_plan)** | ✅ v5 | ✅ v5 | ✅ v5 | ✅ v5 |
-| **Streaming SSE** | ✅ v5 | ✅ v5 | ✅ v5 | ✅ v5 |
+| **Agendar relatório** | ✅ LIA | ❌ | ❌ | ❌ |
+| **Wizard de vaga** | ❌ | ✅ [LIA-LLM] | ❌ | ❌ |
 | **Cache otimizado** | ❌ LIA | ✅ v5 (Tier1/Tier2) | ✅ v5 (AppliesCacheManager) | ✅ v5 (StatsManager) |
+| **Progresso write_plan** | ❌ | ❌ | ❌ | ❌ (v5 sim) |
+| **Budget de tools** | ❌ LIA | ❌ LIA | ❌ LIA | ❌ LIA |
+| **Streaming SSE** | ⚠️ WebSocket | ⚠️ WebSocket | ⚠️ WebSocket | ⚠️ WebSocket |
 | **LGPD compliance** | ✅ Ambos | ✅ Ambos | ✅ Ambos | ✅ Ambos |
 
 ---
 
-## 7. Glossário técnico {#glossario}
+## 8. Glossário técnico {#glossario}
 
 | Termo | Definição |
 |---|---|
-| **context_page** | Campo enviado pelo frontend junto com cada mensagem. Determina qual domínio/scope LIA será ativado. |
+| **context_page** | Campo enviado pelo frontend junto com cada mensagem. Determina o scope de tools disponíveis. |
 | **context_type** | Tipo normalizado de contexto, mapeado pelo `ContextAdapter` a partir do `context_page`. |
-| **domain payload** | Campo `domain` no payload `POST /chat` do v5. Determina qual domínio Python processar a requisição. |
-| **scope** | Conjunto de tools disponíveis para o LLM em um determinado contexto de página. Definido no `tool_registry_metadata.yaml`. |
-| **hub_mode** | Flag do v5 que ativa o HubPlanner para roteamento inteligente via LLM + regex. |
-| **HubPlanner** | Componente v5 que analisa a query e decide qual(is) domínio(s) usar, em paralelo ou sequencial. |
-| **HubExecutionPlan** | Plano de execução v5: lista de `HubTask[]`, `TaskStrategy`, `NavigationAction[]`, `reasoning`. |
-| **DomainContext** | Objeto de contexto compartilhado no v5: `workspace_id`, `sourcing_id`, `selected_ids`, `conversation_memory`, `auth_token`, `api_calls_history`. |
-| **DomainAction** | Ação definida em cada domínio v5: `id`, `name`, `description`, `ActionType`, `examples[]`, `requires_confirmation`. |
-| **ActionType** | Enum v5: `QUERY` (consulta), `AGGREGATE` (agrega), `ANALYZE` (analisa com IA), `ACTION` (modifica dados). |
+| **scope** | Conjunto de tools disponíveis para o LLM em um contexto. Definido em `scope_config.py` (não no `tool_registry_metadata.yaml`). |
+| **scope_config.py** | Fonte executável de runtime para filtering de tools. `filter_tools_by_scope()` retorna apenas as tools do scope ativo. Os scopes são mutuamente exclusivos. |
+| **tool_registry_metadata.yaml** | Metadados declarativos das tools (description, allowed_agents, scope, version). Carregado por `tool_registry_loader.py` para documentação/audit. Não é a fonte de enforcement de runtime — essa é `scope_config.py`. |
+| **CascadedRouter** | Componente LIA de roteamento de domínio por intenção da mensagem. 6 tiers: memory (pronomes) → LRU in-process → Redis → vector (pgvector cosine ≥0.92) → FastRouter (regex/keyword) → LLM (Haiku→Sonnet→Opus) → clarification. Rota para um `domain_id`, independente do scope de tools. |
+| **HubPlanner** | Componente v5 equivalente ao CascadedRouter. Analisa query com PLANNER_SYSTEM_PROMPT, detecta FAST_NAV_PATTERNS (regex, sem LLM), MULTI_INTENT_RE (paralelo), e gera HubExecutionPlan. |
+| **FairnessGuard** | Camada de proteção anti-discriminação executada ANTES de qualquer processamento no MainOrchestrator LIA. Bloqueia: critérios por gênero, etnia, idade, estado civil, nome, localização. |
 | **[LIA-API]** | Capacidade da LIA que faz chamada real à API via tool do scope ativo. |
-| **[LIA-LLM]** | Capacidade da LIA executada conversacionalmente pelo LLM sem chamada de API (depende de dados em contexto). |
+| **[LIA-LLM]** | Capacidade da LIA executada pelo LLM sem chamada de API (dados em contexto da conversa). |
 | **[v5]** | Capacidade do recruiter_agent_v5 no GitHub WeDOTalent. |
+| **MainOrchestrator** | Entry point único da LIA. Executa: FairnessGuard → PendingActionState → ActionExecutor → Orchestrator.process_request_with_memory() com CascadedRouter + DomainWorkflow. |
+| **DomainWorkflow** | Executa o processamento do domínio: PRE_CHECK → domain action → POST_CHECK + FairnessGuard. Usa ReAct agent para ferramentas. |
 | **WSI** | Workforce Screening Interview — avaliação em 7 blocos: Hard Skills, Soft Skills, Experiência, Liderança, Comunicação, Alinhamento Cultural, Potencial. |
-| **FairnessGuard** | Camada de verificação de viés da LIA executada antes de rejeições. Ignora: nome, foto, localização, estado civil, idade, etnia. |
 | **Four-Fifths Rule** | Regra de equidade: se taxa de aprovação de um grupo for <80% da taxa do grupo mais aprovado, há evidência de disparidade sistemática. |
-| **Pearch AI** | Plataforma de sourcing externo integrada à LIA (190M+ perfis globais). |
+| **domain_id** | Identificador do domínio Python que processa a ação. Retornado pelo CascadedRouter (LIA) ou HubPlanner (v5). |
+| **DomainContext** | Objeto de contexto do domínio (v5): `workspace_id`, `sourcing_id`, `selected_ids`, `conversation_memory`, `auth_token`, `api_calls_history`. |
+| **ActionType** | Enum v5: `QUERY` (consulta), `AGGREGATE` (agrega), `ANALYZE` (analisa com IA), `ACTION` (modifica dados). |
 | **write_plan** | Tool v5 que cria plano de execução visível ao usuário em tempo real: ⬜ pendente → 🔄 em andamento → ✅ concluído. |
-| **StatsManager** | Componente v5 que pré-computa e cacheia estatísticas agregadas do sourcing para as 26 ações em `ACTIONS_USING_AGGREGATED`. |
+| **StatsManager** | Componente v5 que pré-computa e cacheia stats agregadas para 26 ações em `ACTIONS_USING_AGGREGATED`. |
 | **TieredContextManager** | Cache v5 do domínio `jobs`: Tier1 (dados básicos) e Tier2 (dados completos + analytics). |
-| **IDOR** | Insecure Direct Object Reference — vulnerabilidade prevenida pelo `ContextAdapter.validate_entity_ownership()` na LIA. |
-| **CBI** | Competency-Based Interview — metodologia de entrevista estruturada por competências e evidências comportamentais (usada nas entrevistas WSI). |
-| **MULTI_INTENT_RE** | Regex do v5 que detecta queries com múltiplas intenções, gerando HubTasks executadas em paralelo. |
-| **viewing_entities** | Campo v5 enviado pelo frontend com entidades visíveis na tela atual (job_id, candidate_id). Permite resolução de referências implícitas. |
+| **IDOR** | Insecure Direct Object Reference. Prevenido pelo `ContextAdapter.validate_entity_ownership()` na LIA. |
+| **CBI** | Competency-Based Interview — metodologia de entrevista estruturada por competências e evidências. Usada nas entrevistas WSI. |
+| **MULTI_INTENT_RE** | Regex do v5 que detecta queries com múltiplas intenções distintas, gerando HubTask[] paralelas. |
+| **viewing_entities** | Campo v5 enviado pelo frontend: entidades visíveis na tela atual (job_id, candidate_id). Permite resolução de referências implícitas. |
 | **NavigationAction** | Ação v5 que instrui o frontend a navegar para uma URL específica sem recarregar. |
-| **UniversalContext** | Objeto de contexto normalizado da LIA que o MainOrchestrator consome — abstrai REST, WebSocket e RabbitMQ. |
-| **SSE** | Server-Sent Events — streaming unidirecional servidor→cliente. O v5 expõe `/chat/stream` com SSE nativo. |
-| **SLA** | Prazo acordado para execução em uma etapa. Candidatos além do SLA: attention (7d) / warning (14d) / critical (30d+). |
+| **SSE** | Server-Sent Events — streaming servidor→cliente. O v5 expõe `/chat/stream` com SSE nativo. |
+| **PlanDetector** | Componente LIA que detecta queries multi-step e gera ExecutionPlan para o PlanExecutor (análogo ao MULTI_INTENT_RE do v5, mas orientado a passos sequenciais). |
 
 ---
 
-*Documento gerado a partir da leitura do código `lia-agent-system/` (local) e `WeDOTalent/recruiter_agent_v5` (GitHub) em Março/2026.*
+*Fontes LIA: `context_adapter.py` (PAGE_TO_CONTEXT_TYPE), `scope_config.py` (SCOPE_TOOL_MAPPING — fonte executável de runtime), `tool_registry_metadata.yaml` (metadados declarativos), `orchestrator.py` (SCOPE_MAPPING, filter_tools_by_scope, CascadedRouter), `main_orchestrator.py` (fluxo de fases), `cascaded_router.py` (6 tiers), `recruiter_assistant.yaml`, `job_management.yaml`, `cv_screening.yaml`, `pipeline_transition.yaml`, `interview_scheduling.yaml`, `communication.yaml`, `sourcing.yaml`, `analytics.yaml`, `interaction_patterns.py`*
 
-*Fontes LIA: `context_adapter.py`, `tool_registry_metadata.yaml`, `recruiter_assistant.yaml`, `job_management.yaml`, `cv_screening.yaml`, `pipeline_transition.yaml`, `interview_scheduling.yaml`, `communication.yaml`, `sourcing.yaml`, `analytics.yaml`, `automation.yaml`, `interaction_patterns.py`*
+*Fontes v5 (GitHub WeDOTalent/recruiter_agent_v5): `hub/catalog.py`, `hub/planner.py`, `domains/base.py`, `domains/autonomous/prompts.py` (AUTONOMOUS_SYSTEM_PROMPT), `domains/autonomous/tools/*.py` (13 módulos, 73+ tools), `domains/jobs/domain.py` + `actions/*.py`, `domains/applies/domain.py` + `actions/*.py`, `domains/sourced_profile_sourcing/domain.py` + `actions/*.py`*
 
-*Fontes v5 (GitHub): `hub/catalog.py`, `hub/planner.py`, `domains/base.py`, `domains/autonomous/prompts.py`, `domains/autonomous/tools/*.py`, `domains/jobs/domain.py`, `domains/applies/domain.py` + `actions/*.py`, `domains/sourced_profile_sourcing/domain.py` + `actions/*.py`*
-
-*Para atualizar: reler `context_adapter.py` (PAGE_TO_CONTEXT_TYPE), `tool_registry_metadata.yaml` (scope por tool), YAMLs de domínios LIA, e os `domain.py` + `actions/*.py` do v5.*
+*Para atualizar: reler `scope_config.py` (SCOPE_TOOL_MAPPING), `context_adapter.py` (PAGE_TO_CONTEXT_TYPE), `orchestrator.py` (SCOPE_MAPPING), e os `domain.py` + `actions/*.py` do v5.*
