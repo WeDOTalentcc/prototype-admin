@@ -1,5 +1,5 @@
 # Relatório Completo de Capacidades e Prompts — LIA (WeDOTalent)
-**Versão:** 4.3 — 15/03/2026 *(v4.3: Guia de Entrada para Agentes IA adicionado no topo — 25 verificações com comandos grep executáveis, critérios pass/fail, arquivos canônicos por bloco; v4.2: Seções 5, 9, 13, 15, 17, 18, 25, 34 atualizadas; v4.1: Seções 31–33 atualizadas; v4.0: Parte VII adicionada)*
+**Versão:** 4.4 — 19/03/2026 *(v4.4: Sprints Z2-01, Z3-02, F2-04, Z5-02, Z5-03, Z6-01, Z6-02, Z6-03, Z7-01 — LearningSnapshotService, DLQService, OpenTelemetry OTLP, Presidio NER Layer 4, ATS clients consolidados em shim, RecruiterBehaviorService, threshold semântico configurável, updated_at nos prompts YAML; v4.3: Guia de Entrada para Agentes IA adicionado no topo — 25 verificações com comandos grep executáveis, critérios pass/fail, arquivos canônicos por bloco; v4.2: Seções 5, 9, 13, 15, 17, 18, 25, 34 atualizadas; v4.1: Seções 31–33 atualizadas; v4.0: Parte VII adicionada)*
 **Fonte:** Auditoria direta do código-fonte (`lia-agent-system/` + `plataforma-lia/`)
 **Propósito:** Guia técnico-estratégico exaustivo e autocontido para replicação da camada de inteligência da plataforma LIA. Cobre toda a arquitetura de prompts, 16 agentes (12 ReAct + 4 StateGraph), orquestração, ferramentas, WebSocket, automação, inteligência preditiva, aprendizado contínuo, observabilidade, resiliência, compliance, governança, templates, infraestrutura LLM e referências de arquivo.
 
@@ -51,8 +51,8 @@ Execute cada comando no diretório raiz do projeto backend (`lia-agent-system/` 
 |---|-----------|----------------------|---------------|
 | A1 | FairnessGuard ativo | `grep -r "FairnessGuard\|fairness_guard" app/ --include="*.py" -l` | ≥ 5 arquivos — deve estar em orchestrator + agentes + mixin |
 | A2 | FairnessGuard 3 camadas | `grep -r "check_with_layer3\|IMPLICIT_BIAS\|_PATTERNS_VERSION" app/ --include="*.py"` | Deve encontrar Layer 3 + termos implícitos + versão ≥ 2 |
-| A3 | PII Masking em logs | `grep -r "PIIMaskingFilter\|install_global_pii_masking" app/ --include="*.py"` | Deve estar em `logging_config.py` E em `celery_app.py` (workers) |
-| A4 | PII strip em prompts LLM | `grep -r "strip_pii_for_llm_prompt" app/ --include="*.py" -l` | ≥ 4 callers: rubric_eval, analysis, voice_screening, candidate_compare |
+| A3 | PII Masking em logs | `grep -r "PIIMaskingFilter\|install_global_pii_masking" app/ --include="*.py"` | Deve estar em `logging_config.py` E em `celery_app.py` (workers); Layer 4 Presidio opt-in via `LLM_PROMPT_PRESIDIO_ENABLED` (Z6-03) |
+| A4 | PII strip em prompts LLM | `grep -r "strip_pii_for_llm_prompt" app/ --include="*.py" -l` | ≥ 4 callers: rubric_eval, analysis, voice_screening, candidate_compare; Layer 4: `grep -r "_presidio_layer4_strip\|PRESIDIO_ENABLED" app/` |
 | A5 | Consentimento LGPD Gate 1 | `grep -r "LGPD_CONSENT\|consent_checker\|ai_screening" app/ --include="*.py"` | Deve bloquear em `wsi_interview_graph.py` com `LGPD_CONSENT_REVOKED` |
 | A6 | HITL em decisões críticas | `grep -r "request_approval\|hitl_service" app/ --include="*.py" -l` | ≥ 3 arquivos: wizard_graph, wsi_graph, pipeline_agent |
 | A7 | Audit trail append-only | `grep -r "log_decision\|audit_service" app/ --include="*.py" -l` | ≥ 8 arquivos (todos os agentes principais) |
@@ -65,7 +65,7 @@ Execute cada comando no diretório raiz do projeto backend (`lia-agent-system/` 
 | B1 | Circuit breakers em providers | `grep -r "circuit_breaker_decorator\|@circuit" app/ --include="*.py" -l` | ≥ 8 arquivos: openai, gemini, gupy, pandape, sendgrid, resend, pearch, workos |
 | B2 | Fallback LLM chain | `grep -r "FALLBACK_ORDER\|llm_cascade\|LLMCascade" app/ --include="*.py"` | Deve ter lista `["claude", "gemini", "openai"]` ou equivalente |
 | B3 | Token budget por tenant | `grep -r "TokenBudget\|token_budget\|MONTHLY_LIMIT" app/ --include="*.py"` | Deve existir serviço + Redis tracking por `company_id` |
-| B4 | Celery beat schedules | `grep -r "beat_schedule" . --include="*.py"` | ≥ 8 entradas: drift, lgpd, briefing, followup, wsi-abandoned, ragas, routing, agent-registry, rag-rebuild, ml-feedback |
+| B4 | Celery beat schedules | `grep -r "beat_schedule" . --include="*.py"` | ≥ 8 entradas: drift, lgpd, briefing, followup, wsi-abandoned, ragas, routing, agent-registry, rag-rebuild, ml-feedback; **DLQ** via `process_dlq_task` (F2-04) |
 | B5 | Rate limiting | `grep -r "RateLimiter\|rate_limit\|rate_limiter" app/ --include="*.py"` | Deve existir middleware por tenant |
 | B6 | Multi-tenant em models | `grep -r "company_id" app/models/ --include="*.py" -l` | ≥ 20 models com `company_id` column |
 
@@ -351,7 +351,7 @@ A plataforma possui **3 camadas de chat** com contextos, escopos e lógica de de
 | 0    | MemoryResolver      | Resolução de pronomes/referências  | Zero   | Via `WorkingMemory`; resolve "ele", "essa vaga"  |
 | 1    | LRU in-process      | Hash MD5 em memória local          | Zero   | Cache O(1); não distribuído entre workers        |
 | 2    | Redis hash cache    | Distribuído, exato, entre workers  | Baixo  | TTL configurável via `ROUTER_CACHE_TTL`          |
-| 3    | VectorSemanticCache | pgvector, cosine similarity ≥ 0.92 | Baixo  | Falha graciosamente se indisponível              |
+| 3    | VectorSemanticCache | pgvector, cosine similarity configurável via `ROUTER_VECTOR_SIMILARITY_THRESHOLD` (default 0.92) | Baixo  | Habilitável via `ROUTER_VECTOR_CACHE_ENABLED`; near-miss logging via `ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN` (default 0.05); falha graciosamente se indisponível |
 | 4    | FastRouter          | Regex/keyword patterns             | Baixo  | `fast_router.py`; confiança mínima: `ROUTER_FAST_CONFIDENCE_THRESHOLD` |
 | 5    | LLM Cascade         | Haiku → Sonnet → Opus              | Alto   | Via `llm_cascade.py`; IntentRouter com **20 exemplos few-shot T3 RH sênior** (Sprint X4/J2) |
 | FB   | Clarification       | Pergunta ao usuário                | Zero   | 6 opções padrão quando nenhum tier resolve       |
@@ -898,6 +898,12 @@ LOADER → COLLECTOR → ROUTER
 - Proibição de regras discriminatórias nas políticas
 
 **Diferença do PolicyReActAgent (2.7):** O PolicyReActAgent gerencia políticas existentes (CRUD, consulta, validação), enquanto o PolicySetupAgent foca no onboarding inicial com wizard guiado.
+
+**Localização canônica (Z5-02):**
+- **Canônico:** `app/domains/recruiter_assistant/agents/policy_setup_agent.py`
+- **Shim (deprecado):** `app/agents/policy_setup_agent.py` — re-exporta do canônico com `DeprecationWarning`
+
+> A partir do Sprint Z5-02, o arquivo `app/agents/policy_setup_agent.py` é apenas um shim de compatibilidade retroativa. Todo código novo deve importar de `app/domains/recruiter_assistant/agents/policy_setup_agent.py`.
 
 ---
 
@@ -2301,6 +2307,27 @@ class PromptRegistry:
         """Lista todas as versões de um prompt"""
 ```
 
+**Estrutura canônica de cada entrada YAML de prompt (Z3-02):**
+
+```yaml
+# Estrutura obrigatória por entrada em qualquer *.yaml de prompts
+prompts:
+  - key: wizard_system_v1
+    version: "v1.3.0"
+    updated_at: "2026-03-19T00:00:00Z"   # OBRIGATÓRIO — Z3-02; ISO-8601 UTC
+    description: "System prompt do Wizard Agent — criação de vagas"
+    content: |
+      Você é LIA, assistente de recrutamento da WeDOTalent...
+```
+
+> **Sprint Z3-02:** Todos os arquivos YAML em `app/prompts/` foram atualizados para incluir o campo `updated_at` (ISO-8601 UTC) em cada entrada de prompt. Isso permite rastrear quando cada prompt foi modificado, complementando o `version` semântico. O campo é exibido na UI de gerenciamento de prompts e é auditável via `PromptRegistry.get_metadata(key)`.
+
+**Verificação:**
+```bash
+grep -r "updated_at" app/prompts/ --include="*.yaml" | wc -l
+# Deve retornar ≥ número de entradas de prompts (1 por entrada)
+```
+
 ### 12.5 Prompts Defensivos
 
 **Arquivo:** `app/shared/robustness/defensive_prompts.py`
@@ -2807,10 +2834,31 @@ O `LearningLoopService` implementa um mecanismo de captura silenciosa ("silent c
 | Método | Descrição |
 |--------|-----------|
 | `capture_feedback(event_type, context, action)` | Registra evento de interação |
-| `process_unprocessed_feedback()` | Agrega eventos pendentes em `LearningPattern` |
+| `process_unprocessed_feedback()` | Agrega eventos pendentes em `LearningPattern`; **antes de qualquer update de padrão, chama `LearningSnapshotService.save_snapshot()`** (Z2-01) |
 | `get_patterns_for_context(company_id, context)` | Retorna padrões aprendidos para contexto |
 
 **Exemplo:** Se 3+ recrutadores da empresa X editam sugestão de salário para React → sistema aprende faixa salarial preferida e aplica em futuras sugestões.
+
+### 15.1.1 LearningSnapshotService — Rollback de Padrões (Z2-01)
+
+**Arquivo:** `app/shared/learning/learning_snapshot_service.py`
+
+Serviço de snapshot imutável dos padrões de aprendizado, implementado para atender EU AI Act (direito à explicação) e LGPD (reversão de decisões automatizadas). Chamado automaticamente pelo `LearningLoopService` **antes** de qualquer alteração de padrão — garantindo ponto de rollback sempre disponível.
+
+**Métodos:**
+
+| Método | Descrição |
+|--------|-----------|
+| `save_snapshot(company_id, patterns)` | Persiste snapshot no Redis com chave versionada por timestamp; TTL 30 dias |
+| `get_latest_key(company_id)` | Retorna a chave Redis do snapshot mais recente da empresa |
+| `list_snapshots(company_id)` | Lista todos os snapshots disponíveis (até MAX_SNAPSHOTS=5 por empresa, LRU) |
+| `rollback_to_latest(company_id)` | Restaura padrões do snapshot mais recente via delete + insert no banco |
+
+**Implementação:**
+- Redis LIST+SET: chave `lia:learning_snapshot:{company_id}:{timestamp}`
+- `MAX_SNAPSHOTS = 5` por empresa (LRU implícito — mais antigo é descartado)
+- `_load_patterns()` e `_restore_patterns()` extraídos como métodos internos mockáveis
+- Fail-safe em todas as operações (falhas em Redis ou DB não interrompem o loop de aprendizado)
 
 ### 15.2 ABTestingService — Teste de Variantes de Prompt
 
@@ -3315,6 +3363,33 @@ Filter de logging que mascara automaticamente PII antes de gravar em qualquer de
 
 **Função auxiliar:** `strip_pii_for_llm_prompt(text)` — Layer 1 (CPF/email/telefone/RG/CNPJ) + Layer 3 basic (quasi-identifiers: ano de formatura, idade explícita, endereço). Flag `LLM_PROMPT_PII_STRIPPING_ENABLED` (padrão: true). Aplicado em 6+ callers LLM críticos (SEG-3B, SEG-GAPS).
 
+### 17.8 OpenTelemetry — Rastreamento Distribuído (Z6-02)
+
+**Arquivo:** `app/shared/tracing.py`
+
+Suporte a rastreamento distribuído via OpenTelemetry com exportação OTLP e fallback gracioso para `LightweightTracer` interno quando Jaeger/Tempo não está disponível.
+
+**Settings adicionadas:**
+
+| Variável de Ambiente | Default | Descrição |
+|---------------------|---------|-----------|
+| `OTEL_SERVICE_NAME` | `lia-agent-system` | Nome do serviço nos traces |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | (vazio) | Endpoint OTLP (ex: `http://jaeger:4317`) |
+| `OTEL_TRACES_ENABLED` | `false` | Liga/desliga exportação OTLP |
+
+**`@trace_span` aplicado em:**
+- `CascadedRouter.route()` — rastreia tempo de roteamento por tier
+- `DLQService.push_failure()` — rastreia falhas enviadas ao DLQ
+- `LearningLoopService.process_unprocessed_feedback()` — rastreia ciclos de aprendizado
+
+**Novos endpoints REST:**
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /api/v1/traces` | Lista traces recentes do LightweightTracer |
+| `GET /api/v1/traces/stats` | Estatísticas de rastreamento (total, por serviço, latências) |
+| `GET /api/v1/traces/status` | Status do exporter OTLP (enabled/disabled, endpoint configurado) |
+
 ---
 
 ## 18. Resiliência e Circuit Breakers
@@ -3366,9 +3441,9 @@ Os circuit breakers são criados dinamicamente via decorator `@circuit_breaker()
 | `workos`         | WorkOS (SSO/SCIM)                | `app/auth/` (autenticação enterprise)                    |
 | `merge`          | Merge API (ATS unificado)        | `app/domains/ats_integration/`                           |
 | `google_calendar`| Google Calendar API              | `app/domains/interview_scheduling/`                      |
-| `gupy`           | ATS Gupy (integração)            | `app/domains/ats_integration/services/ats_clients/gupy.py` |
-| `pandape`        | ATS Pandapé (integração)         | `app/domains/ats_integration/services/ats_clients/pandape.py` |
-| `stackone`       | StackOne (ATS unificado)         | `app/domains/ats_integration/services/ats_clients/stackone.py` |
+| `gupy`           | ATS Gupy (integração)            | `app/services/ats_clients/gupy.py` *(canônico — Z6-01)* |
+| `pandape`        | ATS Pandapé (integração)         | `app/services/ats_clients/pandape.py` *(canônico — Z6-01)* |
+| `stackone`       | StackOne (ATS unificado)         | `app/services/ats_clients/stackone.py` *(canônico — Z6-01)* |
 | `sendgrid`       | SendGrid (email transacional)    | `app/services/email_service.py`                          |
 | `resend`         | Resend (email fallback)          | `app/services/email_service.py`                          |
 
@@ -3414,7 +3489,44 @@ async def call_anthropic(prompt: str) -> str:
 - Se `fallback` não é definido → lança `CircuitBreakerError(name, retry_after)`
 - O Orchestrator captura `CircuitBreakerError` e retorna mensagem amigável ao usuário
 
-### 18.6 Circuits Adicionados em Sprints AUD-2 e Y1 — D10
+### 18.6 Dead Letter Queue — DLQService (F2-04)
+
+**Arquivo:** `app/shared/resilience/dlq_service.py`
+
+Serviço de Dead Letter Queue para tasks Celery que falharam definitivamente (esgotaram todas as retentativas). Garante que falhas críticas não sejam silenciadas e possam ser inspecionadas, reprocessadas ou descartadas manualmente.
+
+**Métodos:**
+
+| Método | Descrição |
+|--------|-----------|
+| `push_failure(queue, task_name, kwargs, error, traceback)` | Empurra falha para o DLQ; PII masking automático em kwargs antes de persistir |
+| `list_entries(queue)` | Lista entradas de uma fila DLQ específica |
+| `list_queues()` | Lista todas as filas DLQ ativas |
+| `queue_size(queue)` | Retorna tamanho de uma fila |
+| `requeue(queue, entry_id)` | Reenvia task para processamento normal |
+| `clear(queue)` | Limpa todos os itens de uma fila |
+| `summary()` | Retorna sumário de todas as filas (tamanhos, tasks mais antigas) |
+
+**Implementação:**
+- Armazenamento: Redis LIST+SET; cap de 1.000 entradas por fila; TTL 7 dias
+- PII masking: campos `password`, `token`, `cpf`, `email`, `key` são mascarados antes de gravar
+- `@trace_span` integrado — cada push é rastreado via OpenTelemetry
+- Notificação Bell automática para tasks críticas: `lgpd`, `audit`, `drift`, `followup`, `wsi`
+
+**LIATask — Base Class Celery:**
+
+`LIATask` é a base class de tasks Celery em `libs/config/lia_config/celery_app.py`. Override de `on_failure()` garante que toda task com falha definitiva seja automaticamente registrada no DLQ (fail-safe — erros no próprio push não propagam).
+
+**Endpoints Admin:**
+
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/admin/dlq` | GET | Sumário de todas as filas DLQ |
+| `/admin/dlq/{queue}` | GET | Lista entradas de uma fila específica |
+| `/admin/dlq/{queue}` | DELETE | Limpa fila (requer admin) |
+| `/admin/dlq/{queue}/requeue/{entry_id}` | POST | Reenvia task para reprocessamento |
+
+### 18.7 Circuits Adicionados em Sprints AUD-2 e Y1 — D10
 
 A tabela em 18.2 já reflete os circuits de AUD-2. O circuit `PEARCH_CIRCUIT` foi adicionado especificamente em Y1/D10:
 
@@ -3423,14 +3535,42 @@ A tabela em 18.2 já reflete os circuits de AUD-2. O circuit `PEARCH_CIRCUIT` fo
 | `PEARCH_CIRCUIT` | Pearch AI (busca de candidatos) | `app/services/pearch_service.py` (re-exports de `app/domains/sourcing/services/pearch_service.py`) | Y1/D10 |
 | `OPENAI_CIRCUIT` | API OpenAI | `app/shared/providers/llm_openai.py` (4 métodos) | AUD-2 |
 | `GEMINI_CIRCUIT` | API Google Gemini | `app/shared/providers/llm_gemini.py` (4 métodos) | AUD-2 |
-| `GUPY_CIRCUIT` | Gupy ATS | `app/services/ats_clients/gupy.py` | AUD-2 |
-| `PANDAPE_CIRCUIT` | PandaPé ATS | `app/services/ats_clients/pandape.py` | AUD-2 |
-| `STACKONE_CIRCUIT` | StackOne ATS | `app/services/ats_clients/stackone.py` | AUD-2 |
+| `GUPY_CIRCUIT` | Gupy ATS | `app/services/ats_clients/gupy.py` *(canônico — Z6-01; shim em `app/domains/ats_integration/services/ats_clients/gupy.py`)* | AUD-2 |
+| `PANDAPE_CIRCUIT` | PandaPé ATS | `app/services/ats_clients/pandape.py` *(canônico — Z6-01)* | AUD-2 |
+| `STACKONE_CIRCUIT` | StackOne ATS | `app/services/ats_clients/stackone.py` *(canônico — Z6-01)* | AUD-2 |
 | `SENDGRID_CIRCUIT` | SendGrid email | `app/services/email_providers/sendgrid.py` | AUD-2 |
 | `RESEND_CIRCUIT` | Resend email | `app/services/email_providers/resend.py` | AUD-2 |
 | `WORKOS_CIRCUIT` | WorkOS SSO | `app/api/v1/workos.py` via `_fetch_workos_metrics()` helper | AUD-2 |
 
 **Nota sobre Pearch (D10):** O serviço Pearch tem estratégia de fallback para busca interna quando o circuit está OPEN, garantindo que o Sourcing Agent continue operacional mesmo sem acesso à base externa de 190M+ perfis.
+
+### 18.8 RecruiterBehaviorService — Perfis de Comportamento (Z7-01)
+
+**Arquivo:** `app/services/recruiter_behavior_service.py`
+
+Serviço que computa e persiste perfis de comportamento individualizados por recrutador, alimentando personalização da LIA e insights gerenciais.
+
+**Métricas computadas:**
+
+| Métrica | Descrição |
+|---------|-----------|
+| `active_hours` | Horários de maior atividade (janelas de 1h) |
+| `sourcing_channels` | Canais preferidos de sourcing (Pearch, LinkedIn, indicação, etc.) |
+| `stage_conversion_rates` | Taxa de conversão por etapa do funil por recrutador |
+| `communication_style` | Estilo predominante de comunicação (formal, casual, objetivo) |
+
+**Implementação:**
+- Redis signals: TTL 24h, cap de 500 sinais por recrutador (comprimidos — JSON + gzip)
+- Chave Redis: `lia:recruiter_behavior:{recruiter_id}:signals`
+- Computed on-demand ou via invalidação manual
+
+**Endpoints:**
+
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/api/v1/recruiters/{id}/behavior-profile` | GET | Retorna perfil computado do recrutador |
+| `/api/v1/recruiters/{id}/behavior-signal` | POST | Registra novo sinal de comportamento |
+| `/api/v1/recruiters/{id}/behavior-invalidate` | DELETE | Invalida cache e força recomputação |
 
 ---
 
@@ -3930,18 +4070,24 @@ Checagem obrigatória antes de qualquer operação que processe dados pessoais:
 
 **Arquivo:** `lia-agent-system/app/shared/pii_masking.py`
 
-**2 componentes:**
+**3 componentes (Layer 1 + Layer 3 + Layer 4):**
 
 1. **`strip_pii_for_llm_prompt(text)`** — Remove PII antes de enviar ao LLM:
-   - CPF, RG
-   - Email, telefone
-   - Endereço completo
-   - Nome completo (quando identificável)
+   - **Layer 1:** CPF, RG, email, telefone, CNPJ (regex)
+   - **Layer 3:** Quasi-identifiers: ano de formatura, idade explícita, endereço
+   - **Layer 4 (opt-in via `LLM_PROMPT_PRESIDIO_ENABLED=true`):** NER via Microsoft Presidio — remove PERSON, EMAIL_ADDRESS, PHONE_NUMBER, LOCATION. Graceful fallback se `presidio-analyzer` não instalado.
+   - Flag principal: `LLM_PROMPT_PII_STRIPPING_ENABLED` (padrão: `true`)
 
 2. **`PIIMaskingFilter`** — Filtro de logging instalado em todos os workers:
    - Intercepta logs antes de escrita
    - Mascara PII automaticamente
    - Previne vazamento acidental em logs de aplicação
+
+3. **`_presidio_layer4_strip(text)`** (Z6-03) — Layer 4 NER via Presidio:
+   - Importação lazy de `presidio_analyzer` (não bloqueia se não instalado)
+   - Entidades reconhecidas: `PERSON`, `EMAIL_ADDRESS`, `PHONE_NUMBER`, `LOCATION`
+   - Substituição por `[REDACTED_<ENTITY_TYPE>]`
+   - Ativado por `LLM_PROMPT_PRESIDIO_ENABLED=true` em `settings.py`
 
 ### 25.4 DSR Export Service — Portabilidade de Dados
 
@@ -5060,7 +5206,7 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 | Arquivo | Responsabilidade |
 |---------|-----------------|
 | `lia-agent-system/app/shared/compliance/fairness_guard.py` | FairnessGuard: 9 categorias, **62 termos explícitos** + 11 termos implícitos = **73 padrões totais**; `_PATTERNS_VERSION=2`; Layer 3 em 3 callers (v5.0 Sprint X1) |
-| `lia-agent-system/app/shared/pii_masking.py` | PII Masking: strip_pii_for_llm_prompt + PIIMaskingFilter |
+| `lia-agent-system/app/shared/pii_masking.py` | PII Masking: Layer 1 (regex) + Layer 3 (quasi-id) + Layer 4 Presidio NER (opt-in Z6-03); strip_pii_for_llm_prompt + PIIMaskingFilter |
 | `lia-agent-system/app/services/bias_audit_service.py` | Bias Audit: Four-Fifths Rule, 4 dimensões |
 | `lia-agent-system/app/services/consent_checker_service.py` | ConsentCheckerService: Gate 1, soft_warning/hard_block |
 | `lia-agent-system/app/services/lgpd_cleanup_service.py` | LGPD Cleanup: retenção 90-365 dias, dry-run |
@@ -5076,15 +5222,23 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 | Arquivo | Responsabilidade |
 |---------|-----------------|
 | `lia-agent-system/app/shared/resilience/circuit_breaker.py` | Circuit Breaker: 12 circuits, 3 estados, notificação |
+| `lia-agent-system/app/shared/resilience/dlq_service.py` | **[NOVO — F2-04]** DLQService: Dead Letter Queue para Celery; Redis LIST+SET, cap 1000, TTL 7d; PII masking; notificação Bell; endpoints admin |
+| `lia-agent-system/app/api/v1/admin_dlq.py` | **[NOVO — F2-04]** Admin endpoints para DLQ: sumário, listar, limpar, requeue |
 | `lia-agent-system/app/services/token_tracking_service.py` | Token Tracking: 10 modelos, limites, custos |
 | `lia-agent-system/app/services/training_data_service.py` | Training Data: 3 formatos export (OpenAI, Anthropic, DPO) |
 | `lia-agent-system/app/services/feedback_learning_service.py` | Feedback Learning: thumbs, rating, correções |
 | `lia-agent-system/app/domains/job_management/services/outcome_tracker.py` | Outcome Tracker: correlação decisão ↔ contratação |
+| `lia-agent-system/app/shared/tracing.py` | **[ATUALIZADO — Z6-02]** OpenTelemetry OTLP + LightweightTracer fallback; @trace_span em Router, DLQ, LearningLoop |
+| `lia-agent-system/app/api/v1/traces.py` | **[NOVO — Z6-02]** Endpoints de rastreamento: /traces, /traces/stats, /traces/status |
 
 ### 34.5 Aprendizado e Analytics
 
 | Arquivo | Responsabilidade |
 |---------|-----------------|
+| `lia-agent-system/app/shared/learning/learning_loop_service.py` | Silent capture: accept/modify/reject → LearningPattern; **chama LearningSnapshotService antes de cada update (Z2-01)** |
+| `lia-agent-system/app/shared/learning/learning_snapshot_service.py` | **[NOVO — Z2-01]** Snapshots imutáveis de LearningPattern; rollback; Redis TTL 30d; MAX_SNAPSHOTS=5/empresa |
+| `lia-agent-system/app/services/recruiter_behavior_service.py` | **[NOVO — Z7-01]** Perfis de comportamento por recrutador: active_hours, sourcing_channels, stage_conversion_rates, communication_style |
+| `lia-agent-system/app/api/v1/recruiter_behavior.py` | **[NOVO — Z7-01]** Endpoints: behavior-profile, behavior-signal, behavior-invalidate |
 | `lia-agent-system/app/services/predictive_analytics_service.py` | Serviço preditivo de contratação |
 | `lia-agent-system/app/services/search_analytics_service.py` | Analytics de busca de candidatos |
 | `lia-agent-system/app/services/response_cache_service.py` | Cache de respostas por intent |
@@ -5092,6 +5246,18 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 | `lia-agent-system/app/services/personalized_feedback_service.py` | Feedback personalizado: 3 tons |
 | `lia-agent-system/app/services/score_normalization_service.py` | Score normalization: fator 0.7-1.3 |
 | `lia-agent-system/app/services/lia_score_service.py` | LIA Score: fórmula unificada, pesos por cenário |
+
+### 34.5.1 Shims (Deprecados — Z5-02, Z6-01)
+
+> Estes arquivos existem para compatibilidade retroativa mas **não devem ser usados em código novo**. Emitem `DeprecationWarning` e delegam ao canônico.
+
+| Arquivo (shim) | Canônico | Sprint |
+|----------------|----------|--------|
+| `lia-agent-system/app/agents/policy_setup_agent.py` | `app/domains/recruiter_assistant/agents/policy_setup_agent.py` | Z5-02 |
+| `lia-agent-system/app/domains/ats_integration/services/ats_clients/gupy.py` | `app/services/ats_clients/gupy.py` | Z6-01 |
+| `lia-agent-system/app/domains/ats_integration/services/ats_clients/pandape.py` | `app/services/ats_clients/pandape.py` | Z6-01 |
+| `lia-agent-system/app/domains/ats_integration/services/ats_clients/stackone.py` | `app/services/ats_clients/stackone.py` | Z6-01 |
+| `lia-agent-system/app/domains/ats_integration/services/ats_clients/merge.py` | `app/services/ats_clients/merge.py` | Z6-01 |
 
 ### 34.6 Prompts e Templates
 
@@ -5801,7 +5967,7 @@ grep -r "ANTI_SYCOPHANCY" app/shared/agents/system_prompts/ --include="*.py"
 - `app/orchestrator/semantic_cache.py` — cache de classificações anteriores (Redis TTL 1h)
 
 **Tiers:**
-1. Cache semântico (embedding similarity > 0.92)
+1. Cache semântico (embedding similarity > `ROUTER_VECTOR_SIMILARITY_THRESHOLD`, default `0.92` — configurável via env, Z5-03)
 2. Regras explícitas (keywords exatas)
 3. Embeddings locais (sem LLM)
 4. LLM classificador (Claude Haiku — barato)
