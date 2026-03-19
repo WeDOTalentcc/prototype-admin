@@ -1081,3 +1081,751 @@ Feedback → ml_feedback_service.py → learning_loop_service.py
 
 *Documento versão 2.0 — 19/03/2026 | LIA v1.1 | recruiter_agent_v5 branch: main*
 *Análise de mercado baseada em: Eightfold AI, Phenom, SeekOut, HireVue, Paradox, Greenhouse, Ashby, SmartRecruiters, Workday, Beamery, hireEZ, LangChain docs, Anthropic docs, OpenAI docs, Gartner 2025, NYC Local Law 144, EU AI Act, LGPD*
+
+---
+
+# Plano de Otimização da Plataforma LIA
+## Baseado no Diagnóstico Comparativo — Foco exclusivo na LIA
+
+> **Contexto:** O diagnóstico das 17 dimensões revelou que a LIA está acima do mercado em fairness, memória, resiliência e aprendizado, mas tem pontos concretos de melhoria em tool registries, prompts, testes e estrutura de código. Este plano organiza todas as recomendações em 4 fases executáveis, do mais urgente ao mais estratégico.
+>
+> **Princípio:** nenhuma otimização aqui quebra funcionalidade existente — todas são aditivas ou refatorações internas.
+
+---
+
+## Visão Geral do Plano
+
+| Fase | Horizonte | Foco | Itens |
+|---|---|---|---|
+| **Fase 1 — Correções Críticas** | Semanas 1–2 | Riscos ativos que afetam qualidade ou compliance hoje | 3 itens |
+| **Fase 2 — Ganhos Rápidos** | Semanas 3–6 | Melhorias de alto impacto com baixo esforço | 5 itens |
+| **Fase 3 — Melhorias Estruturais** | Meses 2–4 | Refatorações que aumentam qualidade e manutenibilidade | 5 itens |
+| **Fase 4 — Evolução Estratégica** | Meses 4–9 | Funcionalidades que abrem novos mercados ou capacidades | 4 itens |
+
+---
+
+## Fase 1 — Correções Críticas
+### Semanas 1–2 | Riscos ativos que afetam qualidade ou compliance hoje
+
+---
+
+### F1-01 · Decompor agentes com excesso de tools
+
+**Problema diagnosticado:** KanbanReactAgent (23 tools) e PipelineTransitionAgent (22 tools) estão acima do limite seguro recomendado pela Anthropic e OpenAI (10–12 tools por agente). Acima desse limite, o modelo confunde ferramentas similares, aumenta a taxa de erro de seleção de tool e consome mais tokens no raciocínio.
+
+**Impacto atual:** respostas do Kanban e Pipeline potencialmente imprecisas; custo por query desnecessariamente alto.
+
+**O que fazer:**
+
+Dividir cada agente em 3 subagentes especializados:
+
+```
+KanbanReactAgent (23 tools) → decompor em:
+  ├── KanbanSearchAgent      (7 tools): search_candidates, filter_stage, get_profile, list_candidates, ...
+  ├── KanbanActionAgent      (8 tools): move_candidate, bulk_move, add_note, update_status, ...
+  └── KanbanAnalyticsAgent   (6 tools): get_metrics, time_to_hire, funnel_report, ...
+
+PipelineTransitionAgent (22 tools) → decompor em:
+  ├── PipelineDecisionAgent  (8 tools): evaluate_candidate, score_fit, check_requirements, ...
+  ├── PipelineMoveAgent      (7 tools): move_stage, request_docs, schedule_interview, ...
+  └── PipelineCommsAgent     (6 tools): send_feedback, notify_candidate, log_action, ...
+```
+
+**Arquivos afetados:**
+- [`app/domains/recruiter_assistant/agents/kanban_react_agent.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/kanban_react_agent.py)
+- [`app/domains/recruiter_assistant/agents/kanban_tool_registry.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/kanban_tool_registry.py)
+- [`app/domains/pipeline/agents/pipeline_transition_agent.py`](../lia-agent-system/app/domains/pipeline/agents/pipeline_transition_agent.py)
+- [`app/domains/pipeline/agents/pipeline_tool_registry.py`](../lia-agent-system/app/domains/pipeline/agents/pipeline_tool_registry.py)
+- [`app/orchestrator/cascaded_router.py`](../lia-agent-system/app/orchestrator/cascaded_router.py) — atualizar roteamento para os novos subagentes
+
+**Esforço:** 2 sprints (1 por agente)
+**Impacto esperado:** precisão de resposta ↑ ~20%, custo por query ↓ ~15%
+**Métrica de sucesso:** taxa de tool_call_error < 3% nos dois domínios (medido via LangSmith)
+
+---
+
+### F1-02 · Adicionar validação de fairness no learning loop
+
+**Problema diagnosticado:** O learning loop (`learning_loop_service.py`) aplica aprendizado baseado no feedback dos recrutadores sem passar pelo `FairnessGuard`. Se recrutadores com viés sistemático fornecem feedback negativo consistente sobre determinados perfis, o sistema aprende e replica esse viés.
+
+**Impacto atual:** risco regulatório silencioso — o viés pode crescer progressivamente sem ser detectado.
+
+**O que fazer:**
+
+Adicionar um passo de validação de fairness antes de qualquer aplicação de aprendizado:
+
+```python
+# Em learning_loop_service.py — antes de aplicar mudança aprendida
+async def apply_learning(self, learning_batch: List[FeedbackItem]):
+    # NOVO: validar fairness do batch antes de aplicar
+    fairness_result = await self.fairness_guard.validate_learning_batch(learning_batch)
+    if fairness_result.disparate_impact_detected:
+        await self.audit_service.log_learning_blocked(fairness_result)
+        return  # não aplica — entra em fila de revisão humana
+    
+    # continua com aplicação normal
+    await self._apply_template_updates(learning_batch)
+```
+
+**Arquivos afetados:**
+- [`app/shared/learning/learning_loop_service.py`](../lia-agent-system/app/shared/learning/learning_loop_service.py)
+- [`app/shared/compliance/fairness_guard.py`](../lia-agent-system/app/shared/compliance/fairness_guard.py) — adicionar método `validate_learning_batch()`
+- [`app/shared/compliance/audit_service.py`](../lia-agent-system/app/shared/compliance/audit_service.py) — adicionar evento `learning_blocked`
+
+**Esforço:** 1 sprint
+**Impacto esperado:** eliminação do risco de viés por aprendizado
+**Métrica de sucesso:** 100% dos batches de aprendizado passam por validação de fairness (log auditável)
+
+---
+
+### F1-03 · Definir SLOs e modo degradado para o circuit breaker
+
+**Problema diagnosticado:** O `circuit_breaker.py` não tem SLOs (Service Level Objectives) documentados — não está definido quantas falhas em quanto tempo abrem o circuito, por quanto tempo fica aberto, e o que acontece quando todos os LLMs falham simultaneamente.
+
+**Impacto atual:** comportamento imprevisível em incidentes de provider; sem fallback de último recurso.
+
+**O que fazer:**
+
+Definir SLOs formais e criar um "modo degradado" com respostas pré-programadas:
+
+```python
+# Configuração de SLOs no circuit_breaker.py
+CIRCUIT_BREAKER_CONFIG = {
+    "failure_threshold": 5,        # abre após 5 falhas
+    "time_window_seconds": 60,     # dentro de 60 segundos
+    "recovery_timeout_seconds": 120,  # tenta reabrir após 2 min
+    "half_open_max_calls": 2,      # testa com 2 calls antes de reabrir totalmente
+}
+
+# Modo degradado: respostas para as 10 perguntas mais frequentes
+DEGRADED_MODE_RESPONSES = {
+    "status_candidato": "Não consigo verificar o status agora. Tente novamente em alguns minutos.",
+    "mover_candidato": "Sistema temporariamente indisponível. Ação registrada para execução assim que possível.",
+    # ... top 10 intents
+}
+```
+
+**Arquivos afetados:**
+- [`app/shared/resilience/circuit_breaker.py`](../lia-agent-system/app/shared/resilience/circuit_breaker.py)
+- [`app/shared/resilience/stats_manager.py`](../lia-agent-system/app/shared/resilience/stats_manager.py)
+- [`app/api/v1/admin_circuit_breakers.py`](../lia-agent-system/app/api/v1/admin_circuit_breakers.py) — expor SLOs no painel admin
+
+**Esforço:** 1 sprint
+**Impacto esperado:** comportamento previsível em incidentes; zero downtime total mesmo com falha de todos os LLMs
+**Métrica de sucesso:** MTTR (tempo médio de recuperação) de incidentes de LLM < 5 minutos
+
+---
+
+## Fase 2 — Ganhos Rápidos
+### Semanas 3–6 | Alto impacto, baixo esforço
+
+---
+
+### F2-01 · Versionamento de prompts
+
+**Problema diagnosticado:** Prompts sem versionamento significam que quando algo piora, não há como saber qual mudança causou — e não há como reverter.
+
+**O que fazer:**
+
+Adicionar campo `version`, `updated_at` e `changelog` em cada YAML de prompt, e implementar rollback no `prompt_registry.py`:
+
+```yaml
+# Exemplo: lia_persona.yaml com versionamento
+metadata:
+  version: "1.3.0"
+  updated_at: "2026-03-19"
+  author: "LIA Team"
+  changelog:
+    - "1.3.0: adicionado tom mais assertivo em contextos de negociação"
+    - "1.2.0: ajustado limite de autonomia para decisões financeiras"
+    - "1.1.0: versão inicial de produção"
+```
+
+Adicionar ao `prompt_registry.py`:
+- `get_prompt(name, version=None)` — busca versão específica ou latest
+- `rollback_prompt(name, to_version)` — reverte para versão anterior
+- `list_prompt_history(name)` — lista todas as versões
+
+**Arquivos afetados:**
+- [`app/shared/prompts/prompt_registry.py`](../lia-agent-system/app/shared/prompts/prompt_registry.py)
+- [`app/shared/prompts/loader.py`](../lia-agent-system/app/shared/prompts/loader.py)
+- Todos os YAMLs em `app/prompts/` — adicionar bloco `metadata`
+
+**Esforço:** 1 sprint
+**Impacto esperado:** debugging de regressões de qualidade de 2 dias → 2 horas
+**Métrica de sucesso:** toda mudança de prompt rastreável com autor, data e motivo
+
+---
+
+### F2-02 · Relatório de fairness exportável
+
+**Problema diagnosticado:** O dashboard de bias audit existe mas é apenas interno. Clientes enterprise e reguladores (NYC LL144, EU AI Act) pedem relatório exportável na due diligence.
+
+**O que fazer:**
+
+Adicionar endpoint de exportação no `admin_bias_audit.py`:
+
+```python
+# GET /api/v1/admin/bias-audit/export?format=pdf&period=2026-Q1&tenant_id=...
+async def export_bias_report(
+    format: Literal["pdf", "csv", "json"],
+    period: str,
+    tenant_id: UUID
+) -> FileResponse:
+    report = await bias_audit_service.generate_report(tenant_id, period)
+    # inclui: four_fifths_rule results, disparate impact by group,
+    #          decisions audited, flags raised, actions taken
+    return await export_service.render(report, format)
+```
+
+O relatório deve incluir obrigatoriamente:
+- Taxa de aprovação por grupo demográfico (gênero, raça se disponível)
+- Resultado da regra 4/5 por etapa do pipeline
+- Número de decisões auditadas no período
+- Flags levantadas e ações tomadas
+- Assinatura digital com timestamp
+
+**Arquivos afetados:**
+- [`app/api/v1/admin_bias_audit.py`](../lia-agent-system/app/api/v1/admin_bias_audit.py)
+- [`app/services/bias_audit_service.py`](../lia-agent-system/app/services/bias_audit_service.py)
+- Novo: `app/services/report_export_service.py`
+
+**Esforço:** 1 sprint
+**Impacto esperado:** habilita contratos com clientes enterprise que exigem compliance documentado
+**Métrica de sucesso:** relatório gerado em < 30 segundos para qualquer período
+
+---
+
+### F2-03 · Alertas de custo de tokens por tenant
+
+**Problema diagnosticado:** Sem alertas proativos de custo, um tenant que começa a usar 10x mais tokens (por bug, abuso ou crescimento inesperado) não é detectado até a fatura chegar.
+
+**O que fazer:**
+
+Adicionar thresholds configuráveis com alertas automáticos no `tenant_budget.py`:
+
+```python
+# Em tenant_budget.py — adicionar política de alertas
+class TenantBudgetPolicy:
+    daily_token_limit: int          # limite diário configurável por plano
+    alert_at_percent: float = 0.80  # alerta ao atingir 80%
+    hard_limit_action: Literal["throttle", "block", "notify_only"]
+
+# Job que roda a cada hora verificando consumo
+async def check_tenant_budgets():
+    for tenant in active_tenants:
+        usage = await ai_consumption_service.get_daily_usage(tenant.id)
+        if usage.percent >= tenant.policy.alert_at_percent:
+            await alert_service.send(
+                type="budget_warning",
+                tenant=tenant,
+                usage=usage
+            )
+```
+
+**Arquivos afetados:**
+- [`app/orchestrator/tenant_budget.py`](../lia-agent-system/app/orchestrator/tenant_budget.py)
+- [`app/api/v1/ai_consumption.py`](../lia-agent-system/app/api/v1/ai_consumption.py)
+- [`app/services/agent_health_alert_service.py`](../lia-agent-system/app/services/agent_health_alert_service.py)
+
+**Esforço:** 1 sprint
+**Impacto esperado:** zero surpresas de custo; possibilidade de modelo de pricing baseado em uso real
+**Métrica de sucesso:** 100% dos tenants com limite configurado; alertas com latência < 1 hora
+
+---
+
+### F2-04 · Dead Letter Queue e monitoramento de jobs
+
+**Problema diagnosticado:** Tasks Celery que falham repetidamente desaparecem silenciosamente — sem DLQ, não há visibilidade de jobs problemáticos.
+
+**O que fazer:**
+
+Configurar DLQ no Celery e adicionar endpoint de monitoramento:
+
+```python
+# Em celery_tasks.py — adicionar DLQ
+@app.task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=300,  # 5 min entre retries
+    acks_late=True,
+    reject_on_worker_lost=True,
+)
+def process_drift_check(self, tenant_id: str):
+    try:
+        drift_service.run_check(tenant_id)
+    except Exception as exc:
+        if self.request.retries >= self.max_retries:
+            # move para DLQ com contexto completo
+            dead_letter_queue.push({
+                "task": self.name,
+                "args": self.request.args,
+                "error": str(exc),
+                "failed_at": datetime.utcnow().isoformat(),
+                "tenant_id": tenant_id,
+            })
+        raise self.retry(exc=exc)
+```
+
+Adicionar `GET /api/v1/admin/jobs/dead-letter` para revisão de tasks falhas.
+
+**Arquivos afetados:**
+- [`app/jobs/celery_tasks.py`](../lia-agent-system/app/jobs/celery_tasks.py)
+- [`app/jobs/drift_job.py`](../lia-agent-system/app/jobs/drift_job.py)
+- [`app/api/v1/admin.py`](../lia-agent-system/app/api/v1/admin.py) — novo endpoint DLQ
+
+**Esforço:** 1 sprint
+**Impacto esperado:** visibilidade total de jobs falhos; zero perda silenciosa de tasks críticas
+**Métrica de sucesso:** 100% das falhas de job registradas na DLQ e visíveis no painel admin
+
+---
+
+### F2-05 · Ajuste do threshold de cache semântico
+
+**Problema diagnosticado:** O threshold de cosine similarity de 0.92 para cache semântico pode ser alto demais — perguntas levemente reformuladas sempre vão para o LLM, desperdiçando o benefício do cache.
+
+**O que fazer:**
+
+Usar o A/B testing já existente para testar diferentes thresholds:
+
+```python
+# Em semantic_cache.py — threshold configurável por A/B test
+SEMANTIC_CACHE_THRESHOLD = ab_testing_service.get_variant(
+    experiment="semantic_cache_threshold",
+    variants={
+        "control": 0.92,    # threshold atual
+        "variant_a": 0.88,  # mais permissivo
+        "variant_b": 0.85,  # ainda mais permissivo
+    }
+)
+```
+
+Medir por 2 semanas: taxa de cache hit, taxa de resposta incorreta por threshold, custo total de tokens.
+
+**Arquivos afetados:**
+- [`app/orchestrator/semantic_cache.py`](../lia-agent-system/app/orchestrator/semantic_cache.py)
+- [`app/shared/learning/ab_testing_service.py`](../lia-agent-system/app/shared/learning/ab_testing_service.py)
+
+**Esforço:** 3 dias (configuração do experimento) + 2 semanas (coleta de dados)
+**Impacto esperado:** cache hit rate ↑ estimado 15–30%; custo de tokens ↓ proporcional
+**Métrica de sucesso:** cache hit rate > 40% sem aumento de taxa de erros
+
+---
+
+## Fase 3 — Melhorias Estruturais
+### Meses 2–4 | Refatorações que aumentam qualidade e manutenibilidade a longo prazo
+
+---
+
+### F3-01 · HITL (Human-in-the-Loop) nos grafos LangGraph
+
+**Problema diagnosticado:** Os grafos WSI Interview e Interview Scheduling não têm pontos de pausa para aprovação humana antes de etapas críticas — o agente avança automaticamente mesmo em decisões de alto impacto.
+
+**O que fazer:**
+
+Adicionar nós de HITL usando o suporte nativo do LangGraph:
+
+```python
+# Em wsi_interview_graph.py — adicionar nó de aprovação humana
+from langgraph.checkpoint.postgres import PostgresSaver
+
+# Nó HITL antes de finalizar score WSI
+def human_review_node(state: WSIState):
+    """Pausa o grafo e aguarda aprovação do recrutador."""
+    return Command(
+        goto="__interrupt__",  # pausa a execução
+        update={
+            "pending_review": {
+                "type": "wsi_score_review",
+                "candidate_id": state["candidate_id"],
+                "preliminary_score": state["wsi_score"],
+                "interviewer_notes": state["notes"],
+            }
+        }
+    )
+
+# Retoma quando recrutador aprova via API
+# POST /api/v1/agent/resume/{thread_id}
+```
+
+**Arquivos afetados:**
+- [`app/domains/cv_screening/agents/wsi_interview_graph.py`](../lia-agent-system/app/domains/cv_screening/agents/wsi_interview_graph.py)
+- [`app/domains/interview_scheduling/agents/interview_graph.py`](../lia-agent-system/app/domains/interview_scheduling/agents/interview_graph.py)
+- [`app/shared/agents/checkpointer.py`](../lia-agent-system/app/shared/agents/checkpointer.py) — migrar para PostgresSaver
+- Novo: `app/api/v1/agent_continuity.py` — endpoints resume/reject
+
+**Esforço:** 2 sprints
+**Impacto esperado:** conformidade com EU AI Act (humano sempre no loop para decisões de alto risco); confiança do recrutador ↑
+**Métrica de sucesso:** 100% das decisões de score WSI revisáveis por humano antes de persistir
+
+---
+
+### F3-02 · TTL e compressão da memória de longo prazo
+
+**Problema diagnosticado:** A `LongTermMemory` armazena episódios indefinidamente — para tenants ativos há 12+ meses, o volume de dados pode impactar a performance de busca e o custo de contexto.
+
+**O que fazer:**
+
+Implementar compressão semântica de memórias antigas:
+
+```python
+# Em long_term_memory.py — adicionar compressão mensal
+async def compress_old_memories(self, tenant_id: UUID, older_than_days: int = 30):
+    """Sumariza episódios antigos em memórias condensadas."""
+    old_episodes = await self.get_episodes(
+        tenant_id=tenant_id,
+        older_than=datetime.utcnow() - timedelta(days=older_than_days),
+        compressed=False
+    )
+    if len(old_episodes) > 10:
+        # usa LLM para condensar N episódios em 1 resumo
+        summary = await self.llm.summarize(
+            episodes=old_episodes,
+            prompt="Condense estes episódios em um resumo de no máximo 200 palavras..."
+        )
+        await self.store_compressed_memory(tenant_id, summary, old_episodes)
+        await self.mark_episodes_compressed(old_episodes)
+```
+
+Adicionar política de TTL por tipo de memória:
+- Memória de triagem: 90 dias (dado regulatório)
+- Memória de preferência de recrutador: 180 dias
+- Memória de candidato: permanente (direito ao acesso LGPD)
+
+**Arquivos afetados:**
+- [`app/shared/agents/long_term_memory.py`](../lia-agent-system/app/shared/agents/long_term_memory.py)
+- [`app/jobs/celery_tasks.py`](../lia-agent-system/app/jobs/celery_tasks.py) — adicionar job mensal de compressão
+- [`app/services/lgpd_cleanup_service.py`](../lia-agent-system/app/services/lgpd_cleanup_service.py) — integrar TTL com LGPD
+
+**Esforço:** 2 sprints
+**Impacto esperado:** custo de contexto ↓ ~40% para tenants maduros; latência de busca em memória ↓
+**Métrica de sucesso:** p95 de latência de busca em memória < 100ms independente do tamanho do histórico
+
+---
+
+### F3-03 · Consolidação da estrutura de serviços
+
+**Problema diagnosticado:** `app/services/` tem 244 arquivos planos sem subcategorização, misturando serviços de IA, negócio, integração e notificação. Isso causa duplicação de serviços e dificulta onboarding.
+
+**O que fazer:**
+
+Reorganizar `app/services/` com subcategorias explícitas:
+
+```
+app/services/
+├── ai/                   ← serviços de IA/ML (scoring, embedding, drift, RAGAS)
+│   ├── cv_scoring_service.py
+│   ├── embedding_service.py
+│   ├── model_drift_service.py
+│   ├── ragas_evaluation_service.py
+│   └── ...
+├── integrations/         ← clientes externos (ATS, email, calendar, voz)
+│   ├── ats_clients/
+│   ├── email_providers/
+│   ├── google_calendar_client.py
+│   └── ...
+├── compliance/           ← LGPD, consentimento, DSR, auditoria
+│   ├── lgpd_compliance.py
+│   ├── consent_checker_service.py
+│   ├── dsr_export_service.py
+│   └── ...
+├── notifications/        ← alertas, emails, WhatsApp, push
+│   ├── email_service.py
+│   ├── notification_service.py
+│   └── ...
+├── analytics/            ← métricas, reports, benchmarks
+│   ├── market_benchmark_service.py
+│   ├── pipeline_prediction_service.py
+│   └── ...
+└── core/                 ← serviços de negócio centrais (candidatos, vagas, pipeline)
+    ├── candidate_enrichment_service.py
+    ├── job_vacancy_service.py
+    └── ...
+```
+
+Fazer a migração gradualmente por categoria, sem quebrar imports existentes (usar `__init__.py` com re-exports).
+
+**Arquivos afetados:** todos os 244 arquivos em `app/services/` (renomeação de pasta, sem alteração de lógica)
+
+**Esforço:** 3 sprints (feito gradualmente, categoria por categoria)
+**Impacto esperado:** onboarding de novos devs 50% mais rápido; eliminação de serviços duplicados
+**Métrica de sucesso:** zero arquivos diretamente em `app/services/` (todos em subcategorias)
+
+---
+
+### F3-04 · OpenTelemetry (OTEL) como camada de observabilidade
+
+**Problema diagnosticado:** Sem OTEL, não é possível integrar com Datadog, Grafana ou New Relic sem customização. LangSmith é excelente para traces de LLM mas não cobre métricas de infra.
+
+**O que fazer:**
+
+Adicionar OTEL como camada de exportação complementar ao LangSmith:
+
+```python
+# Em app/observability/ — novo módulo OTEL
+from opentelemetry import trace, metrics
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+# Instrumentar automaticamente FastAPI, SQLAlchemy, Redis, Celery
+# Exportar para Grafana Cloud (gratuito até 50GB/mês) ou Datadog
+
+# Métricas customizadas de IA:
+llm_latency = metrics.create_histogram("lia.llm.latency_ms")
+llm_tokens = metrics.create_counter("lia.llm.tokens_used")
+agent_errors = metrics.create_counter("lia.agent.errors")
+cache_hits = metrics.create_counter("lia.cache.hits")
+fairness_blocks = metrics.create_counter("lia.fairness.blocks")
+```
+
+**Arquivos afetados:**
+- Novo: `app/shared/observability/otel.py`
+- [`app/main.py`](../lia-agent-system/app/main.py) — inicializar OTEL na startup
+- [`app/shared/agents/observability.py`](../lia-agent-system/app/shared/agents/observability.py) — emitir spans OTEL
+
+**Esforço:** 2 sprints
+**Impacto esperado:** visibilidade completa de infra + IA em uma ferramenta; SLAs mensuráveis para clientes
+**Métrica de sucesso:** p95 de latência de API monitorado em tempo real; dashboard com 10 KPIs de IA
+
+---
+
+### F3-05 · Consolidar agentes duplicados de policy
+
+**Problema diagnosticado:** Existem dois agentes de política (`hiring_policy/agents/policy_react_agent.py` e `policy/agents/agent.py`) que provavelmente surgiram em momentos diferentes e têm responsabilidades sobrepostas.
+
+**O que fazer:**
+
+Auditar os dois agentes, identificar diferenças reais, e consolidar em um único com as capacidades de ambos. Manter o mais completo como canônico e fazer o outro virar um alias ou ser removido.
+
+**Arquivos afetados:**
+- [`app/domains/hiring_policy/agents/policy_react_agent.py`](../lia-agent-system/app/domains/hiring_policy/agents/policy_react_agent.py)
+- [`app/domains/policy/agents/agent.py`](../lia-agent-system/app/domains/policy/agents/agent.py)
+- [`app/orchestrator/cascaded_router.py`](../lia-agent-system/app/orchestrator/cascaded_router.py) — unificar roteamento
+
+**Esforço:** 1 sprint
+**Impacto esperado:** redução de superfície de código a manter; comportamento consistente de políticas
+**Métrica de sucesso:** zero requisições roteadas para o agente deprecado
+
+---
+
+## Fase 4 — Evolução Estratégica
+### Meses 4–9 | Capacidades que abrem novos mercados ou diferenciais competitivos
+
+---
+
+### F4-01 · DeepEval no pipeline de CI/CD
+
+**Problema diagnosticado:** 301 arquivos de teste mas sem avaliação automática de qualidade de LLM. Mudanças em prompts ou modelos podem degradar qualidade silenciosamente.
+
+**O que fazer:**
+
+Integrar DeepEval como framework de avaliação de LLM com rodada semanal automatizada:
+
+```python
+# tests/llm_quality/test_agent_quality.py
+from deepeval import evaluate
+from deepeval.metrics import (
+    HallucinationMetric,
+    FaithfulnessMetric,
+    BiasMetric,
+    ToxicityMetric,
+    AnswerRelevancyMetric,
+)
+from deepeval.test_case import LLMTestCase
+
+# Testar com golden_dataset.py existente
+@pytest.mark.llm_quality  # roda separado dos testes unitários
+async def test_cv_screening_quality():
+    test_cases = await golden_dataset.get_screening_cases()
+    results = evaluate(
+        test_cases=test_cases,
+        metrics=[
+            HallucinationMetric(threshold=0.1),   # < 10% de alucinação
+            BiasMetric(threshold=0.05),             # < 5% de viés detectado
+            AnswerRelevancyMetric(threshold=0.85),  # > 85% relevância
+        ]
+    )
+    assert results.is_passing
+```
+
+Pipeline CI/CD:
+- A cada commit: testes unitários (rápidos, sem LLM)
+- Semanalmente: testes de qualidade de LLM (DeepEval com LLM real)
+- A cada mudança de prompt: testes de regressão de qualidade
+
+**Arquivos afetados:**
+- Novo: `tests/llm_quality/` — diretório de testes de qualidade
+- [`app/tests/golden_dataset.py`](../lia-agent-system/app/tests/golden_dataset.py) — expandir dataset
+- CI/CD pipeline — adicionar job semanal
+
+**Esforço:** 2 sprints
+**Impacto esperado:** regressões de qualidade detectadas antes de produção; confiança em mudanças de prompt ↑
+**Métrica de sucesso:** zero regressões de qualidade em produção não detectadas pelo CI
+
+---
+
+### F4-02 · Compressão de PII com Microsoft Presidio
+
+**Problema diagnosticado:** O `pii_masking.py` atual usa regex para detectar PII — não detecta PII em texto livre de currículos em português (nomes compostos, cidades, endereços sem padrão fixo).
+
+**O que fazer:**
+
+Substituir o regex por Microsoft Presidio com modelos de NER em português:
+
+```python
+# Em shared/pii_masking.py — substituir regex por Presidio
+from presidio_analyzer import AnalyzerEngine
+from presidio_anonymizer import AnonymizerEngine
+
+analyzer = AnalyzerEngine()
+anonymizer = AnonymizerEngine()
+
+async def mask_pii(text: str, language: str = "pt") -> MaskedText:
+    """Detecta e mascara PII usando NER — muito mais preciso que regex."""
+    results = analyzer.analyze(
+        text=text,
+        language=language,
+        entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "CPF",
+                  "LOCATION", "DATE_TIME", "NRP"]  # NRP = National Registration Profile
+    )
+    anonymized = anonymizer.anonymize(text=text, analyzer_results=results)
+    return MaskedText(
+        original=text,
+        masked=anonymized.text,
+        entities_found=[(r.entity_type, r.score) for r in results]
+    )
+```
+
+**Arquivos afetados:**
+- [`app/shared/pii_masking.py`](../lia-agent-system/app/shared/pii_masking.py)
+- `requirements.txt` — adicionar `presidio-analyzer`, `presidio-anonymizer`
+
+**Esforço:** 2 sprints (incluindo testes com currículos reais em português)
+**Impacto esperado:** cobertura de detecção de PII de ~60% (regex) para ~92% (NER)
+**Métrica de sucesso:** taxa de PII não detectado < 5% em amostra de 500 currículos reais
+
+---
+
+### F4-03 · Sourcing externo com catálogo de APIs (inspirado no v5)
+
+**Problema diagnosticado:** O principal ponto onde o v5 supera a LIA é no sourcing externo — 51 APIs YAML com 9 subagentes especializados vs. o agente único de sourcing da LIA com acesso limitado.
+
+**O que fazer:**
+
+Adaptar o padrão do v5 para o SourcingReactAgent da LIA, mantendo a arquitetura existente:
+
+```
+Expansão do sourcing da LIA:
+
+SourcingReactAgent (atual, 17 tools)
+  ↓ adicionar
+SourcingPlannerAgent  → seleciona quais fontes consultar (inspirado no APIPlannerAgent do v5)
+SourcingExecutorAgent → executa buscas em paralelo nas APIs selecionadas
+  ↓ APIs a adicionar (gradualmente):
+  ├── LinkedIn (via Apify — já integrado parcialmente)
+  ├── GitHub (candidatos tech)
+  ├── Hunter.io (email discovery)
+  ├── Clearbit (enrichment)
+  └── [outras conforme roadmap]
+```
+
+O catálogo de APIs pode ser em YAML (padrão do v5) ou diretamente via Apify MCP (já integrado na LIA).
+
+**Arquivos afetados:**
+- [`app/domains/sourcing/agents/sourcing_react_agent.py`](../lia-agent-system/app/domains/sourcing/agents/sourcing_react_agent.py)
+- [`app/domains/sourcing/agents/sourcing_tool_registry.py`](../lia-agent-system/app/domains/sourcing/agents/sourcing_tool_registry.py)
+- [`app/services/apify_service.py`](../lia-agent-system/app/services/apify_service.py) — expandir cobertura
+
+**Esforço:** 3–4 sprints (por fase de APIs adicionadas)
+**Impacto esperado:** sourcing externo da LIA equiparável ao v5; fechamento do principal gap competitivo
+**Métrica de sucesso:** sourcing LIA cobre ao menos 10 fontes externas com FairnessGuard aplicado
+
+---
+
+### F4-04 · Perfis de comportamento por recrutador
+
+**Problema diagnosticado:** Todos os recrutadores recebem o mesmo comportamento de agente — sem adaptação ao nível de experiência (júnior vs sênior), especialização (tech vs. comercial) ou preferências aprendidas.
+
+**O que fazer:**
+
+Criar um sistema de "recruiter profiles" que adapta o comportamento dos agentes:
+
+```python
+# Novo: app/shared/agents/recruiter_profile.py
+class RecruiterProfile:
+    experience_level: Literal["junior", "mid", "senior"]
+    specialization: List[str]  # ["tech", "commercial", "executive"]
+    preferred_verbosity: Literal["concise", "detailed"]
+    learned_shortcuts: Dict[str, str]  # atalhos aprendidos pelo uso
+    decision_history: List[DecisionPattern]  # padrões de decisão históricos
+
+# Injetado em cada agente como contexto adicional
+class KanbanReactAgent(LangGraphReactBase):
+    async def process(self, message: str, recruiter_profile: RecruiterProfile):
+        # adapta system prompt baseado no perfil
+        system_prompt = self.prompt_loader.load(
+            "kanban_system_prompt",
+            context={"profile": recruiter_profile}
+        )
+```
+
+**Arquivos afetados:**
+- Novo: `app/shared/agents/recruiter_profile.py`
+- [`app/shared/agents/langgraph_react_base.py`](../lia-agent-system/app/shared/agents/langgraph_react_base.py) — injetar profile
+- [`app/shared/agents/long_term_memory.py`](../lia-agent-system/app/shared/agents/long_term_memory.py) — persistir profile
+- Todos os system prompts — adicionar suporte a variáveis de profile
+
+**Esforço:** 3 sprints
+**Impacto esperado:** experiência personalizada por recrutador; NPS ↑; curva de aprendizado ↓
+**Métrica de sucesso:** recrutadores seniores recebem respostas 40% mais concisas que júniores sem perda de qualidade
+
+---
+
+## Roadmap Visual
+
+```
+SEMANA 1-2    │ F1-01 Decompor agentes (23/22 tools)
+(Urgente)     │ F1-02 Fairness no learning loop
+              │ F1-03 SLOs e modo degradado do circuit breaker
+              │
+SEMANA 3-6    │ F2-01 Versionamento de prompts
+(Ganhos       │ F2-02 Relatório de fairness exportável
+ Rápidos)     │ F2-03 Alertas de custo por tenant
+              │ F2-04 Dead Letter Queue para jobs
+              │ F2-05 Ajuste de threshold semântico (A/B test)
+              │
+MÊS 2-4       │ F3-01 HITL nos grafos LangGraph
+(Estrutural)  │ F3-02 TTL e compressão da memória longa
+              │ F3-03 Consolidação de pastas de serviços
+              │ F3-04 OpenTelemetry como camada de observabilidade
+              │ F3-05 Consolidar agentes de policy duplicados
+              │
+MÊS 4-9       │ F4-01 DeepEval no CI/CD
+(Estratégico) │ F4-02 Microsoft Presidio para PII
+              │ F4-03 Sourcing externo expandido (inspirado v5)
+              │ F4-04 Perfis de comportamento por recrutador
+```
+
+---
+
+## Impacto Consolidado Esperado
+
+| Dimensão | Score Atual | Score Pós-Plano | Principais Mudanças |
+|---|---|---|---|
+| **Orquestração** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Threshold semântico ajustado (F2-05) |
+| **Tool Registries** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Decomposição Kanban + Pipeline (F1-01) |
+| **Fairness** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐+ | Relatório exportável + loop validado (F1-02, F2-02) |
+| **Prompts** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Versionamento completo (F2-01) |
+| **Resiliência** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | SLOs formais + modo degradado (F1-03) |
+| **Memória** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | TTL + compressão (F3-02) |
+| **Observabilidade** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | OTEL + alertas de custo (F3-04, F2-03) |
+| **Testes** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | DeepEval no CI (F4-01) |
+| **PII/LGPD** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐+ | Presidio NER (F4-02) |
+| **Sourcing** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | APIs expandidas (F4-03) |
+| **Estrutura** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Consolidação de serviços + policy (F3-03, F3-05) |
+| **Experiência** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Perfis por recrutador (F4-04) |
+
+---
+
+*Plano de Otimização LIA — versão 1.0 — 19/03/2026*
+*17 itens distribuídos em 4 fases | Esforço total estimado: ~25 sprints (1 sprint = 1 semana)*
+*Todos os itens são não-destrutivos — sem breaking changes em produção*
