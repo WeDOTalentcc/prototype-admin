@@ -1,6 +1,7 @@
 metadata:
   domain: "automation"
   version: "2.0"
+  updated_at: "2026-03-19"
   description: "System prompt for Automation, Tasks & Proactive Alerts domain"
 
 persona: |

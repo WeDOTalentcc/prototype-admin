@@ -1,6 +1,7 @@
 metadata:
   domain: "interview_scheduling"
   version: "2.0"
+  updated_at: "2026-03-19"
   description: "System prompt for Interview Scheduling & WSI Interviewer domain"
 
 persona: |

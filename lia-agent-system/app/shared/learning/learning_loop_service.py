@@ -412,6 +412,17 @@ class LearningLoopService:
                         "[LearningLoop] FairnessGuard check falhou (fail-open): %s", _fge
                     )
 
+            # Z2-01: snapshot ANTES de aplicar — permite rollback em caso de viés posterior
+            try:
+                from app.shared.learning.learning_snapshot_service import (
+                    learning_snapshot_service as _snap_svc,
+                )
+                await _snap_svc.save_snapshot(company_id, db)
+            except Exception as _snap_exc:
+                self.logger.debug(
+                    "[LearningLoop] snapshot falhou (fail-safe): %s", _snap_exc
+                )
+
             for pattern_key, data in patterns_to_update.items():
                 await self._update_pattern(db, company_id, pattern_key, data)
 
