@@ -1,11 +1,14 @@
 # Paralelo Técnico: Plataforma LIA vs recruiter_agent_v5
 ## Estrutura de IA — Arquitetura, Agentes, Serviços e Arquivos
-### com Análise de Mercado, Pros/Contras e Recomendações
+### com Análise de Mercado, Pros/Contras e Recomendações (baseado em leitura real do GitHub)
 
-> **Objetivo:** comparar lado a lado o que foi construído em cada sistema em relação à inteligência artificial — orquestração, agentes, subagentes, serviços de ML/IA, memória, fairness, prompts e observabilidade. Cada seção inclui análise de mercado com pros, contras e recomendação fundamentada.
+> **Objetivo:** Comparar lado a lado o que foi construído em cada sistema em relação à inteligência artificial — orquestração, agentes, subagentes, serviços de ML/IA, memória, fairness, prompts e observabilidade. Cada seção inclui análise de mercado com pros, contras e recomendação fundamentada.
 >
-> **LIA (Replit):** sistema de produção com 1.747 arquivos Python | **v5 (GitHub):** MVP de pesquisa com ~50 arquivos Python
-> **Repositório v5:** `https://github.com/talensestg/recruiter_agent_v5`
+> **LIA (Replit):** sistema de produção com 1.259 arquivos Python | **v5 (GitHub WeDOTalent):** sistema ativo com ~820 arquivos Python
+>
+> **Repositório v5:** `https://github.com/WeDOTalent/recruiter_agent_v5` (privado, acessado em 19/03/2026)
+>
+> **⚠️ NOTA DE ATUALIZAÇÃO (19/03/2026):** Este documento foi integralmente revisado com leitura direta de todos os arquivos do repositório `WeDOTalent/recruiter_agent_v5`. A versão anterior subestimava significativamente o v5 (tratado como "MVP com ~50 arquivos" quando na verdade tem 820 arquivos, LangGraph, PostgreSQL, 96 testes, 8 domínios, memória por tenant com pgvector, PII filtering, circuit breaker e sistema de auditoria). Todas as seções foram corrigidas.
 >
 > **Concorrentes de referência usados na análise:** Eightfold AI · Phenom · SeekOut · HireVue · Paradox (Olivia) · Greenhouse · Ashby · SmartRecruiters · Workday · Beamery · hireEZ · Fetcher
 
@@ -17,8 +20,8 @@
 2. [Filosofia de Arquitetura](#2-filosofia-de-arquitetura)
 3. [Estrutura de Pastas (IA)](#3-estrutura-de-pastas-ia)
 4. [Orquestração e Roteamento](#4-orquestração-e-roteamento)
-5. [Agentes por Domínio](#5-agentes-por-domínio)
-6. [Subagentes e Grafos](#6-subagentes-e-grafos)
+5. [Agentes por Domínio — Infográfico Completo](#5-agentes-por-domínio--infográfico-completo)
+6. [Subagentes e Grafos LangGraph](#6-subagentes-e-grafos-langgraph)
 7. [Tool Registries (Ferramentas por Agente)](#7-tool-registries-ferramentas-por-agente)
 8. [Serviços de IA/ML](#8-serviços-de-iaml)
 9. [Memória e Estado](#9-memória-e-estado)
@@ -32,86 +35,126 @@
 17. [Testes de IA](#17-testes-de-ia)
 18. [Jobs e Processamento Assíncrono](#18-jobs-e-processamento-assíncrono)
 19. [Inventário de Arquivos de IA](#19-inventário-de-arquivos-de-ia)
+20. [Plano de Otimização v5 — Passo a Passo](#20-plano-de-otimização-v5--passo-a-passo)
+21. [Plano de Otimização LIA — Pendências](#21-plano-de-otimização-lia--pendências)
+22. [Mapa de Domínios: Cobertura Cruzada LIA vs v5](#22-mapa-de-domínios-cobertura-cruzada-lia-vs-v5)
 
 ---
 
 ## 1. Visão Geral Quantitativa
 
+> **Nota:** Números do v5 corrigidos após leitura direta do repositório GitHub (19/03/2026).
+
 | Métrica | Plataforma LIA | recruiter_agent_v5 |
 |---|---|---|
-| **Total de arquivos Python** | ~1.747 | ~50 |
-| **Endpoints de API** | 362 | ~10 |
-| **Serviços** | 245+ | ~5 |
-| **Modelos de banco** | 102 | 0 (sem DB) |
-| **Testes** | 4.600+ | ~5 |
-| **Migrações** | 47 (última: 047_add_event_store.py) | 0 |
-| **Agentes principais** | 17 (12 ReAct + 4 StateGraph + 1 PolicySetup) + 6 subagentes Z1 = **23 totais** | 6 agentes pipeline |
-| **Subagentes/Grafos** | 4 grafos StateGraph + 6 subagentes Z1 (Sprint Z1) | 9 subagentes de sourcing |
-| **Domínios de IA** | 13 domínios | 2 domínios |
-| **Ferramentas (tools)** | 163+ tools mapeadas | ~20 tools |
-| **APIs externas** | 4 ATS clients + Apify + Hubspot | 51 APIs em YAML |
-| **Modelos LLM suportados** | Claude + Gemini + OpenAI (cascade) | Claude (primário) + OpenAI |
-| **Linhas de código (est.)** | ~130.000+ | ~4.000 |
+| **Total de arquivos Python** | ~1.259 (app/) + 313 testes | ~820 totais (352 em src/ + 96 testes + deploy/docs) |
+| **Endpoints de API** | 362 (FastAPI) | REST + WebSocket via FastAPI (`src/api.py`) |
+| **Serviços** | 250+ (app/services/ + domains/*/services/) | 51 (src/services/) |
+| **Modelos de banco** | 102 modelos SQLAlchemy + 47 migrações | PostgreSQL: `tenant_memories` (pgvector 768d) + `agent_executions` (audit) |
+| **Testes** | 313 arquivos, 4.600+ casos | 96 arquivos (tests/) |
+| **Domínios de IA** | 13 domínios | 8 domínios (jobs, applies, sourcing, scheduling, evaluation, insights, messaging, autonomous) |
+| **Agentes principais** | 12 ReAct + 4 StateGraph + 1 PolicySetup + 6 subagentes Z1 = **23 totais** | 6 pipeline + 9 sourcing subagentes + 8 domain agents (ReAct/LangGraph) + autonomous = ~30 totais |
+| **Grafos LangGraph** | 5 (WSI, Interview, Wizard, SourcingEngagement, BaseStateMachine) | 4 (workflow/graph.py, supervisor_graph.py, evaluation/graph.py, scheduling/graph.py) |
+| **Ferramentas (tools)** | 163+ tools mapeadas em registries | ~73 tools no autonomous + actions por domínio |
+| **APIs externas** | 4 ATS clients + Apify + Hubspot | 51 APIs em YAML (documentation/) |
+| **Modelos LLM** | Claude + Gemini + OpenAI (cascade) | Google Gemini (gemini-2.5-flash) primário via `create_tracked_llm()` |
+| **Memória persistente** | WorkingMemory + LongTermMemory + PostgreSQL | TenantMemoryStore (PostgreSQL + pgvector, TTL 30 dias) + por-domínio in-session |
+| **Cache semântico** | pgvector cosine ≥ 0.92 | `semantic_cache.py` via Redis |
+| **Circuit breaker** | 15+ circuits (Claude, Gemini, OpenAI, 5 ATS, Redis, DB...) | `circuit_breaker.py` (global, threshold configurável) |
+| **PII filtering** | `pii_masking.py` + Presidio Layer 4 | `pii_filter.py` (CPF, email, phone) + `security.py` (injection) |
+| **Filas assíncronas** | Celery + Redis | RabbitMQ + Celery (`celery_app.py`, `celery_worker.py`) |
+| **Linhas de código (est.)** | ~130.000+ | ~70.000+ |
+| **Multi-tenancy** | Sim — budget + guardrails por empresa | Não (Rails gerencia auth/tenancy) |
+| **Deploy em produção** | Sim (Replit + workers Celery) | GCP configurado (`deploy/GCP_DEPLOY_GUIDE.md`) + systemd workers |
 
 ### 🔍 Análise de Mercado — Seção 1
 
 **Pros LIA:**
 - Volume de código e cobertura de domínio compatível com plataformas enterprise como Greenhouse e SmartRecruiters
-- 4.600+ testes é um número sólido para o estágio atual — a maioria das startups de HR Tech com funding abaixo de série B tem menos de 100
+- 313 arquivos de teste com 4.600+ casos é um número sólido para o estágio atual
 - 362 endpoints cobrem praticamente toda a superfície de um ATS moderno
+- Multi-tenancy nativo no agente (não só no backend) é diferencial real
 
 **Contras LIA:**
-- 245+ serviços é um número alto — quando serviços crescem sem uma arquitetura clara de camadas, surgem problemas de responsabilidades sobrepostas e dificuldade de manutenção (o chamado "serviço faz tudo")
-- Razão tests/código provavelmente abaixo de 30% — plataformas enterprise maduras ficam entre 60–80%
+- 250+ serviços sem hierarquia clara cria confusão sobre onde colocar código novo — duplicação entre `app/services/` (plana) e `domains/*/services/`
+- Razão testes/código provavelmente abaixo de 40%
 
 **Pros v5:**
-- Simplicidade: 50 arquivos = onboarding rápido, risco de debt técnico baixo
-- Escopo bem definido: faz sourcing e só sourcing
+- 820 arquivos cobrindo 8 domínios, com LangGraph, PostgreSQL, memória vetorial, 96 testes, PII filter e circuit breaker — escopo muito maior do que aparenta externamente
+- Stack moderna e coesa: Gemini + LangGraph + PostgreSQL/pgvector + Redis + RabbitMQ + Celery
+- Auditoria arquitetural interna (docs/ARCHITECTURAL_AUDIT.md) mostra maturidade de engenharia
 
 **Contras v5:**
-- Não é um produto — é um experimento. Sem banco, sem testes estruturados, sem multi-tenancy, não vai a produção
+- Sem multi-tenancy no agente — Rails é o guardião, o v5 é um proxy inteligente
+- Sem LGPD compliance formal (consent, DSR, cleanup)
+- Sem learning loop — não melhora com o tempo
 
-**O que o mercado faz:** Eightfold AI tem mais de 2.000 arquivos só no core de ML, mas mantém fronteiras claras entre camadas (data → ML → domain → API → UI). Phenom separou seu sistema em microserviços por domínio desde a série B. Ashby, startup mais moderna, tem ~800 arquivos de backend com cobertura de testes acima de 70%.
+**O que o mercado faz:** Eightfold AI tem mais de 2.000 arquivos só no core de ML. Ashby tem ~800 arquivos de backend com cobertura de testes acima de 70%. Phenom separou seu sistema em microserviços por domínio desde a série B.
 
-**Recomendação para LIA:** Priorizar redução de serviços duplicados e aumentar cobertura de testes para 50%+ nos domínios críticos (cv_screening, fairness, orchestrator). Não é urgente, mas é a dívida técnica que vai custar mais caro quanto mais crescer.
+**Recomendação para LIA:** Consolidar hierarquia de serviços, aumentar cobertura de testes para 50%+ nos domínios críticos.
+**Recomendação para v5:** Adicionar multi-tenancy no agente (budget por tenant via `tenant_budget.py` similar à LIA), implementar LGPD básico.
 
 ---
 
 ## 2. Filosofia de Arquitetura
 
+> **Correção (19/03/2026):** O v5 NÃO é "pipeline sequencial linear". Possui HubOrchestrator com CostLadder routing, 4 grafos LangGraph, checkpointing PostgreSQL/MemorySaver e memória por tenant.
+
 | Aspecto | Plataforma LIA | recruiter_agent_v5 |
 |---|---|---|
-| **Paradigma central** | Plataforma SaaS multi-tenant de produção | MVP de pesquisa / prova de conceito |
-| **Padrão de IA** | ReactAgent + LangGraph (grafos por domínio) | Pipeline sequencial linear |
-| **Roteamento** | CascadedRouter com 6 tiers + cache semântico | IntentAnalyzer → pipeline fixo |
-| **Estado** | WorkingMemory + LongTermMemory + PostgreSQL | Stateless (sem persistência) |
-| **Multi-tenancy** | Sim — budget por tenant, guardrails por empresa | Não |
-| **Fairness** | FairnessGuard em 3 camadas obrigatório | fact_checker + fairness.py opcionais |
-| **Escalabilidade** | Celery + Redis + workers horizontais | Single process |
-| **Observabilidade** | LangSmith + métricas customizadas + drift | Básica (logs) |
-| **Aprendizado contínuo** | Learning Loop + A/B testing + ML feedback | Nenhum |
+| **Paradigma central** | Plataforma SaaS multi-tenant de produção | Sistema ATS multi-agente com hub orchestration |
+| **Padrão de IA** | ReactAgent + LangGraph (grafos por domínio) | Hub→Domain com LangGraph (StateGraph por domínio) |
+| **Roteamento** | CascadedRouter 6 tiers + cache semântico | HubPlanner: fast-path regex + CostLadder + LLM |
+| **Estado** | WorkingMemory + LongTermMemory + PostgreSQL | Redis (session) + PostgreSQL (tenant_memories) + LangGraph checkpointer |
+| **Multi-tenancy** | Sim — budget por tenant, guardrails por empresa | Não (Rails gerencia; v5 usa auth_token por request) |
+| **Fairness** | FairnessGuard 3 camadas obrigatório | fairness.py em jobs e sourcing (não obrigatório) |
+| **Escalabilidade** | Celery + Redis + workers horizontais | RabbitMQ + Celery + workers horizontais |
+| **Observabilidade** | LangSmith + OTEL + métricas customizadas | audit_callback + llm_tracking + react_observer |
+| **Aprendizado contínuo** | Learning Loop + A/B testing + ML feedback | feedback/tracker.py (sem loop automático) |
+| **LLM primário** | Claude (Haiku/Sonnet/Opus) | Google Gemini (gemini-2.5-flash) |
 
 ### 🔍 Análise de Mercado — Seção 2
 
+**Por que o v5 não é "pipeline sequencial"?**
+
+O v5 tem **3 camadas de orquestração**:
+1. `HubOrchestrator` (`src/hub/orchestrator.py`) — sessão, planejamento, execução
+2. `DomainOrchestrator` (`src/domains/orchestrator.py`) — bridge hub→domain com audit e checkpointing
+3. `DomainWorkflow` (`src/domains/workflow.py`) — LangGraph: intent → execute → format
+
+O "pipeline" de 6 agentes (`src/agents/`) é apenas o **fluxo original (legacy)** — o sistema principal usa o hub multi-domain.
+
+**Por que a complexidade de arquitetura é diferente:**
+
+```
+LIA:                                   v5:
+6 tiers (Tier 0→5) + domínios         3 camadas (Hub → Domain → Domain Workflow)
++ 13 domínios                          + 8 domínios
++ FairnessGuard mandatório             + fairness por domínio (opt-in)
++ multi-tenancy                        + auth por token (Rails gerencia)
++ learning loop                        + feedback tracker
+```
+
 **Pros LIA:**
-- ReactAgent + LangGraph é o padrão atual da indústria — Anthropic, LangChain e Google recomendam exatamente esse padrão para sistemas de produção com múltiplos domínios
-- Multi-tenancy com budget e guardrails por empresa é um diferencial real — a maioria dos competidores faz isso no nível de pricing, não no nível de execução de IA
-- Fairness obrigatória (não opcional) coloca a LIA à frente de HireVue, que teve problemas regulatórios exatamente porque a checagem de viés era pós-hoc e não integrada
+- ReactAgent + LangGraph é o padrão atual da indústria
+- Multi-tenancy com budget por empresa é diferencial real
+- Fairness obrigatória coloca a LIA à frente de HireVue
 
 **Contras LIA:**
-- A complexidade da arquitetura cria risco de "over-engineering" — Anthropic em sua própria documentação de agentes avisa: "comece com um único agente antes de ir para multi-agente; cada camada adiciona latência e custo"
-- Com 6 tiers de orquestração, um bug em produção pode ter múltiplas causas possíveis — debugging torna-se mais difícil
+- Com 6 tiers de orquestração, um bug em produção pode ter múltiplas causas — debugging mais complexo
+- Anthropic avisa: "comece com um único agente antes de ir para multi-agente"
 
 **Pros v5:**
-- Pipeline linear é simples de debugar e testar — cada etapa tem input e output claros
-- Para sourcing externo (uso único), pipeline sequencial é suficiente e mais previsível
+- 3 camadas são mais fáceis de debugar que 6 tiers
+- LangGraph nativo por domínio desde o início — arquitetura mais limpa
 
 **Contras v5:**
-- Não tem filosofia de produção — é um protótipo. Não escala, não persiste estado, não tem proteção de dados
+- Sem multi-tenancy no agente — se dois tenants têm comportamentos diferentes, não há como personalizar no v5
+- Sem fairness obrigatória — em produção, risco legal real
 
-**O que o mercado faz:** Eightfold usa "agentic talent operating system" com agentes autônomos e digital twins. Phenom lançou o "X+ Agent Studio" que permite criar agentes customizados por cliente. Paradox (Olivia) usa pipeline conversacional simples mas muito bem afinado — é deliberadamente menos complexo e mais rápido. A tendência do mercado é ir de pipelines lineares para grafos com paralelismo, mas as empresas mais bem-sucedidas mantêm complexidade proporcional ao problema.
+**O que o mercado faz:** Paradox (Olivia) usa pipeline conversacional deliberadamente simples. Eightfold usa orquestração mais próxima do v5 (hub→domain). A tendência é manter complexidade proporcional ao problema.
 
-**Recomendação para LIA:** A arquitetura está correta para produção. O risco é deixar a complexidade crescer sem documentação de decisões arquiteturais (ADRs). Crie um arquivo `docs/architecture/decisions/` com pelo menos 5 ADRs cobrindo as decisões mais críticas (por que 6 tiers, por que LangGraph, por que PostgreSQL para memória, etc.). Isso protege o conhecimento do sistema.
+**Recomendação para v5:** Documentar as 3 camadas formalmente (ADR — Architecture Decision Record). Adicionar guardrail de multi-tenancy no HubOrchestrator: passar `tenant_id` via context e bloquear acesso cross-tenant.
 
 ---
 
@@ -121,12 +164,12 @@
 
 ```
 app/
-├── orchestrator/                    ← ROTEAMENTO CENTRAL DE IA
+├── orchestrator/                    ← ROTEAMENTO CENTRAL DE IA (18 arquivos)
 │   ├── cascaded_router.py           ← 6-tier router (principal)
 │   ├── fast_router.py               ← Tier 4: regex/keyword
 │   ├── semantic_cache.py            ← Tier 3: pgvector
 │   ├── vector_semantic_cache.py     ← Implementação vetorial
-│   ├── llm_cascade.py               ← Tier 5: cascade LLMs
+│   ├── llm_cascade.py               ← Tier 5: Claude→Gemini→GPT
 │   ├── memory_resolver.py           ← Tier 0: resolve referências
 │   ├── main_orchestrator.py         ← Entry point principal
 │   ├── intent_router.py             ← Classificação de intenção
@@ -137,25 +180,25 @@ app/
 │   ├── tenant_budget.py             ← Budget por tenant
 │   └── navigation_intent.py        ← Intents de navegação
 │
-├── domains/                         ← DOMÍNIOS DE NEGÓCIO (IA por área)
+├── domains/                         ← 13 DOMÍNIOS DE NEGÓCIO
 │   ├── analytics/agents/
 │   ├── ats_integration/agents/
 │   ├── automation/agents/
 │   ├── communication/agents/
-│   ├── cv_screening/agents/
+│   ├── cv_screening/agents/         ← incl. wsi_interview_graph.py
 │   ├── hiring_policy/agents/
-│   ├── interview_scheduling/agents/
-│   ├── job_management/agents/
+│   ├── interview_scheduling/agents/ ← incl. interview_graph.py
+│   ├── job_management/agents/       ← incl. job_wizard_graph.py
 │   ├── pipeline/agents/
-│   │   └── subagents/               ← Z1: PipelineContextAgent + PipelineDecisionAgent + PipelineActionAgent
+│   │   └── subagents/               ← Z1: 3 subagentes
 │   ├── recruiter_assistant/agents/
-│   │   └── subagents/               ← Z1: KanbanSearchAgent + KanbanInsightAgent + KanbanActionAgent
+│   │   └── subagents/               ← Z1: 3 subagentes
 │   ├── sourcing/agents/
-│   ├── policy/agents/               ← PolicyAgent canônico (Z5-02 consolidou)
+│   ├── policy/agents/               ← PolicyAgent canônico
 │   └── talent_intelligence/         ← 13º domínio (Y-series)
 │
-├── shared/                          ← INFRA COMPARTILHADA DE IA
-│   ├── agents/                      ← Base classes e infraestrutura
+├── shared/                          ← INFRA COMPARTILHADA DE IA (28+ arquivos)
+│   ├── agents/                      ← Base classes
 │   │   ├── langgraph_react_base.py
 │   │   ├── working_memory.py
 │   │   ├── long_term_memory.py
@@ -163,75 +206,201 @@ app/
 │   │   ├── confidence.py
 │   │   ├── proactive_worker.py
 │   │   └── react_loop.py
-│   ├── compliance/                  ← FAIRNESS E AUDITORIA
-│   │   ├── fairness_guard.py
+│   ├── compliance/                  ← FAIRNESS + AUDITORIA
+│   │   ├── fairness_guard.py        ← 3 camadas obrigatórias
 │   │   ├── fact_checker.py
 │   │   ├── audit_callback.py
 │   │   └── audit_service.py
-│   ├── learning/                    ← APRENDIZADO CONTÍNUO
-│   │   └── learning_snapshot_service.py  ← Snapshots + rollback (Z2-01)
-│   ├── intelligence/                ← INTELIGÊNCIA SEMÂNTICA
-│   ├── prompts/                     ← SISTEMA DE PROMPTS
-│   ├── providers/                   ← PROVEDORES LLM
+│   ├── learning/                    ← APRENDIZADO
+│   │   └── learning_snapshot_service.py
 │   ├── resilience/                  ← RESILIÊNCIA
-│   │   ├── circuit_breaker.py       ← 15+ circuits com SLOs (F1-03, AUD-2)
-│   │   └── dlq_service.py           ← Dead Letter Queue Redis (F2-04)
-│   ├── tracing.py                   ← OpenTelemetry OTLP (Z6-02)
-│   └── governance/                  ← GOVERNANÇA DE IA
+│   │   ├── circuit_breaker.py       ← 15+ circuits
+│   │   └── dlq_service.py           ← Dead Letter Queue Redis
+│   ├── tracing.py                   ← OpenTelemetry OTLP
+│   └── pii_masking.py               ← CPF, email + Presidio
 │
-├── services/                        ← SERVIÇOS (245+ arquivos)
-└── prompts/                         ← PROMPTS (YAML)
+├── services/                        ← SERVIÇOS (250+)
+└── prompts/                         ← PROMPTS (YAML + Python)
     ├── shared/lia_persona.yaml
     └── domains/
 ```
 
-### recruiter_agent_v5 — `src/`
+---
+
+### recruiter_agent_v5 — `src/` (lido do GitHub 19/03/2026)
 
 ```
 src/
-├── agents/                          ← PIPELINE PRINCIPAL (6 agentes)
-│   ├── intent_analyzer.py
-│   ├── api_planner.py
-│   ├── api_executor.py
-│   ├── plan_validator.py
-│   ├── data_processor.py
-│   └── answer_formatter.py
+├── api.py                           ← FastAPI entry point
+├── celery_app.py                    ← Celery configuration
 │
-├── domains/
-│   ├── sourced_profile_sourcing/    ← DOMÍNIO DE SOURCING
-│   │   ├── agents/ (9 subagentes)
+├── agents/                          ← PIPELINE PRINCIPAL (6 agentes — fluxo original)
+│   ├── intent_analyzer.py           ← Classifica intenção (RAG + Gemini)
+│   ├── api_planner.py               ← Planeja chamadas API (51 YAMLs)
+│   ├── api_executor.py              ← Executa chamadas HTTP
+│   ├── plan_validator.py            ← Valida resultado
+│   ├── data_processor.py            ← Estrutura dados
+│   └── answer_formatter.py          ← Formata resposta
+│
+├── hub/                             ← CAMADA DE SESSÃO E ORQUESTRAÇÃO
+│   ├── orchestrator.py              ← HubOrchestrator (sessão, planejamento, execução)
+│   ├── planner.py                   ← HubPlanner (fast-path + CostLadder + LLM)
+│   ├── supervisor_graph.py          ← LangGraph supervisor (domínio→router)
+│   ├── supervisor_state.py          ← TypedDict do estado supervisor
+│   ├── session.py                   ← ConversationSession (Redis)
+│   └── domain_agent_node.py        ← Bridge hub→domain
+│
+├── domains/                         ← 8 DOMÍNIOS ESPECIALIZADOS (231 arquivos)
+│   ├── registry.py                  ← DomainRegistry + @register_domain decorator
+│   ├── orchestrator.py              ← DomainOrchestrator (audit + checkpointing)
+│   ├── workflow.py                  ← DomainWorkflow: LangGraph intent→execute→format
+│   ├── base.py                      ← DomainContext, DomainResponse, DomainPrompt
+│   │
+│   ├── jobs/                        ← CRUD de vagas
+│   │   ├── domain.py
+│   │   ├── api_client.py
+│   │   ├── actions/                 ← search, details, analytics, bulk, create, update
+│   │   ├── fairness.py              ← ← FAIRNESS EM VAGAS (verifica viés em JDs)
+│   │   ├── memory.py                ← JobsConversationMemory
+│   │   └── prompts.py
+│   │
+│   ├── applies/                     ← PIPELINE DE CANDIDATURAS
+│   │   ├── domain.py
+│   │   ├── api_client.py
+│   │   ├── react_agent.py           ← ReAct agent LangGraph (MAX_ITERATIONS=12)
+│   │   ├── actions/                 ← search, details, pipeline, scoring, bulk, comparison, analytics, sourcing, conversational
+│   │   ├── memory.py                ← AppliesConversationMemory
+│   │   ├── prompt_builder/          ← dynamic_builder, action_registry, domain_action
+│   │   ├── formatters/              ← comparison, detail, table
+│   │   ├── cache.py
+│   │   └── cards.py
+│   │
+│   ├── sourced_profile_sourcing/    ← BUSCA E SOURCING (9 subagentes)
+│   │   ├── agents/                  ← orchestrator, router, planner, search, detail, analytics, comparison, report, action
 │   │   ├── actions/
-│   │   ├── fairness.py
-│   │   └── fact_checker.py
-│   └── evaluation/
-│       └── security.py
+│   │   ├── fairness.py              ← ← FAIRNESS EM SOURCING
+│   │   ├── fact_checker.py          ← verifica contagens, médias, scores
+│   │   └── memory.py
+│   │
+│   ├── scheduling/                  ← AGENDAMENTO DE ENTREVISTAS
+│   │   ├── graph.py                 ← ← LangGraph multi-turno (SchedulingState TypedDict)
+│   │   ├── domain.py
+│   │   ├── api_client.py
+│   │   ├── session.py               ← SchedulingSession (multi-turno)
+│   │   ├── inference.py             ← InferenceEngine (parsing de horários)
+│   │   ├── memory.py                ← SchedulingConversationMemory
+│   │   └── formatters/              ← slots, confirmation
+│   │
+│   ├── evaluation/                  ← AVALIAÇÕES E ENTREVISTAS
+│   │   ├── graph.py                 ← ← LangGraph: classify→evaluate→decide→craft
+│   │   ├── state.py                 ← InterviewState TypedDict
+│   │   ├── nodes.py                 ← classify_input, evaluate_response, decide_flow, craft_message
+│   │   └── domain.py
+│   │
+│   ├── insights/                    ← MÉTRICAS E BRIEFINGS
+│   │   ├── domain.py
+│   │   ├── api_client.py
+│   │   ├── actions/                 ← briefing, metrics, alerts, sector_benchmark
+│   │   └── memory.py                ← InsightsConversationMemory
+│   │
+│   ├── messaging/                   ← COMUNICAÇÃO COM CANDIDATOS
+│   │   ├── domain.py
+│   │   ├── api_client.py
+│   │   ├── actions/                 ← send_email, templates, check_history
+│   │   └── memory.py                ← MessagingConversationMemory
+│   │
+│   └── autonomous/                  ← AGENTE REACT UNIVERSAL
+│       ├── agent.py                 ← ← ReAct LangGraph (73+ tools, RetryPolicy)
+│       ├── tools.py                 ← seleção dinâmica de tools por contexto
+│       ├── api_client.py            ← UniversalAPIClient (lê 51 YAMLs)
+│       ├── compression.py           ← compressão de contexto longo
+│       ├── context_builder.py
+│       ├── graph_nodes.py           ← nós do grafo autônomo
+│       └── prompts.py
 │
-├── v5_persona.yaml
-└── docs/ (51 APIs em YAML)
+├── services/                        ← 51 SERVIÇOS TRANSVERSAIS
+│   ├── memory/                      ← ← MEMÓRIA POR TENANT
+│   │   ├── manager.py               ← MemoryManager (remember, recall, categorize)
+│   │   ├── store.py                 ← TenantMemoryStore (PostgreSQL + pgvector 768d)
+│   │   └── models.py                ← TenantMemory dataclass
+│   ├── audit/                       ← ← AUDITORIA COMPLETA
+│   │   ├── audit_callback.py        ← AuditCallbackHandler (LangChain callback)
+│   │   ├── audit_models.py          ← AuditExecution, AuditEvent, AuditEventType
+│   │   ├── audit_storage.py         ← JSONL storage em logs/audit/
+│   │   └── audit_writer.py          ← PostgreSQL: tabela agent_executions
+│   ├── circuit_breaker.py           ← ← CircuitBreaker (threshold, cooldown, reset)
+│   ├── checkpointer.py              ← ← PostgresSaver + MemorySaver fallback
+│   ├── embedding_service.py         ← Gemini embedding-001 (768 dims)
+│   ├── semantic_cache.py            ← Cache semântico via Redis
+│   ├── rag_service.py               ← RAG híbrido (semântico + textual)
+│   ├── pii_filter.py                ← ← PII masking (CPF, email, phone) em logs
+│   ├── security.py                  ← ← Injection detection + sanitização
+│   ├── cost_ladder.py               ← CostLadder multi-tier routing
+│   ├── model_router.py              ← ModelRouter (fast/default/heavy)
+│   ├── llm_tracking_service.py      ← Tracking de tokens e custo por LLM
+│   ├── llm_cache_service.py         ← Cache de respostas LLM
+│   ├── proactive/                   ← ← ALERTAS PROATIVOS
+│   │   ├── detector.py
+│   │   ├── notifier.py
+│   │   └── runner.py
+│   ├── feedback/                    ← ← FEEDBACK TRACKER
+│   │   └── tracker.py
+│   ├── streaming_callback.py        ← Streaming de respostas
+│   ├── react_observer.py            ← ReActObserver (rastreia tool calls)
+│   ├── execution_tracker.py         ← ExecutionTracker (timing por step)
+│   ├── thinking_message.py          ← ThinkingMessageService
+│   ├── timed_node.py                ← _TimeoutError + node timeout
+│   ├── sector_benchmark.py          ← Benchmarks por setor
+│   ├── reference_resolver.py        ← Resolve referências ("ela", "aquela vaga")
+│   ├── pending_action_store.py      ← Ações pendentes de confirmação (HITL)
+│   ├── rabbitmq_service.py          ← RabbitMQ worker
+│   ├── api_client.py                ← HTTP base client
+│   └── rag_service.py               ← RAG com hybrid search
+│
+├── models/                          ← MODELOS DE ESTADO
+│   ├── state.py                     ← QueryState TypedDict
+│   ├── state/__init__.py
+│   └── conversation_state.py        ← ConversationState
+│
+├── config/                          ← CONFIGURAÇÃO
+│   ├── settings.py                  ← Settings singleton
+│   └── memory_config.py
+│
+├── utils/                           ← UTILITÁRIOS
+│   ├── llm_factory.py               ← create_tracked_llm() (factory principal)
+│   └── message_sanitizer.py
+│
+└── docs/ (documentação interna)
+    ├── ARQUITETURA_MULTI_AGENTE_DETALHADA.md
+    ├── ANALISE_ADOCAO_PATTERNS_LIA.md
+    ├── ARCHITECTURAL_AUDIT.md
+    └── FUNCIONALIDADES.md
 ```
 
 ### 🔍 Análise de Mercado — Seção 3
 
 **Pros LIA:**
-- Separação `orchestrator / domains / shared / services` é o padrão de Domain-Driven Design (DDD) — mesma estrutura que times de plataforma em Eightfold e Workday usam internamente
-- `shared/compliance/` como pasta de primeiro nível sinaliza que fairness não é um add-on, é parte da arquitetura — isso é raro e valioso
-- `shared/providers/` com factory de LLMs é a abordagem correta para evitar vendor lock-in
+- `shared/compliance/` como pasta de primeiro nível sinaliza que fairness não é um add-on
+- `shared/providers/` com factory de LLMs garante ausência de vendor lock-in
+- Separação explícita orchestrator / domains / shared segue DDD
 
 **Contras LIA:**
-- Dois lugares para serviços: `app/services/` (244 arquivos, plana) e `domains/*/services/` — isso cria confusão sobre onde colocar código novo. A Seção 8 mostra serviços de IA misturados com serviços de negócio na mesma pasta
-- `app/services/ats_clients/` existe em dois lugares: `app/services/ats_clients/` e `app/domains/ats_integration/services/ats_clients/` — duplicação de responsabilidade
+- Dois lugares para serviços: `app/services/` (plana, 250+) e `domains/*/services/` — confusão sobre onde colocar código novo
+- `app/services/ats_clients/` existe em dois lugares — duplicação de responsabilidade
 
 **Pros v5:**
-- Estrutura limpa e fácil de entender em menos de 5 minutos
-- `domains/sourced_profile_sourcing/` é um bom exemplo de bounded context bem definido
+- `src/services/` consolidada (51 arquivos) vs 250+ espalhados na LIA
+- Cada domínio é totalmente auto-contido: `domain.py`, `api_client.py`, `actions/`, `memory.py`, `prompts.py`
+- `src/hub/` como camada explícita de sessão é um bounded context claro
 
 **Contras v5:**
-- Sem separação entre infra e domínio — `fairness.py` está dentro do domínio mas deveria ser shared
-- Sem pasta `shared/` — qualquer crescimento vai duplicar código
+- `fairness.py` em dois domínios separados (jobs/, sourcing/) — deveria estar em `src/shared/`
+- Sem pasta `shared/compliance/` — quando um 3º domínio precisar de fairness, vai duplicar código
 
-**O que o mercado faz:** Empresas como Ashby e Rippling usam DDD com bounded contexts explícitos. A tendência atual é ter uma pasta `platform/` (infra compartilhada) separada de `features/` (domínio de negócio). Microserviços por domínio é o próximo passo, mas exige maturidade operacional.
-
-**Recomendação para LIA:** Consolidar `app/services/` e `app/domains/*/services/` em uma hierarquia mais clara. Proposta: criar convenção formal de que serviços de IA ficam em `shared/` e serviços de negócio ficam em `domains/*/services/`. Mover gradualmente `app/services/ats_clients/` para `domains/ats_integration/`. Isso vai eliminar a dúvida de "onde coloco esse código".
+**Recomendação para v5:**
+1. Criar `src/shared/` com: `fairness/`, `pii/`, `audit/` (mover os arquivos existentes)
+2. Mover `src/domains/jobs/fairness.py` e `src/domains/sourced_profile_sourcing/fairness.py` → `src/shared/fairness/`
+3. Criar `src/shared/fairness/__init__.py` com `FairnessChecker` unificado
 
 ---
 
@@ -242,7 +411,7 @@ src/
 ```
 Usuário → main_orchestrator.py
              ↓
-    [Tier 0] memory_resolver.py      → resolve "ele", "aquela vaga" etc. (Zero custo)
+    [Tier 0] memory_resolver.py      → resolve "ele", "aquela vaga" (Zero custo)
              ↓ cache miss
     [Tier 1] LRU in-process          → hash MD5, O(1), sem Redis (Zero custo)
              ↓ cache miss
@@ -252,625 +421,1081 @@ Usuário → main_orchestrator.py
              ↓ cache miss
     [Tier 4] fast_router.py           → regex + keyword patterns (Baixo custo)
              ↓ sem match
-    [Tier 5] llm_cascade.py           → Claude Haiku → Sonnet → Opus (Escalado)
+    [Tier 5] llm_cascade.py           → Claude Haiku→Sonnet→Opus→Gemini→GPT-4o
              ↓
          domain_agent.py              → ReactAgent com tools especializadas
              ↓
     [Fallback] clarification_needed   → pergunta ao usuário
 ```
 
-**Arquivos:**
-- [`app/orchestrator/cascaded_router.py`](../lia-agent-system/app/orchestrator/cascaded_router.py)
-- [`app/orchestrator/fast_router.py`](../lia-agent-system/app/orchestrator/fast_router.py)
-- [`app/orchestrator/semantic_cache.py`](../lia-agent-system/app/orchestrator/semantic_cache.py)
-- [`app/orchestrator/llm_cascade.py`](../lia-agent-system/app/orchestrator/llm_cascade.py)
-- [`app/orchestrator/memory_resolver.py`](../lia-agent-system/app/orchestrator/memory_resolver.py)
+**Arquivos LIA:**
+- `app/orchestrator/cascaded_router.py`
+- `app/orchestrator/fast_router.py`
+- `app/orchestrator/semantic_cache.py`
+- `app/orchestrator/llm_cascade.py`
+- `app/orchestrator/memory_resolver.py`
 
 ---
 
-### recruiter_agent_v5 — Pipeline Sequencial Linear
+### recruiter_agent_v5 — Hub Architecture (3 Camadas)
 
 ```
-Usuário → IntentAnalyzerAgent
-             ↓ intenção classificada
-         APIPlannerAgent            → seleciona APIs no catálogo YAML (51 APIs)
-             ↓ plano criado
-         APIExecutorAgent           → executa as chamadas HTTP reais
-             ↓ dados retornados
-         PlanValidatorAgent         → valida se o plano foi executado corretamente
-             ↓ validado
-         DataProcessorAgent         → limpa e estrutura os dados
-             ↓ processado
-         AnswerFormatterAgent       → formata resposta ao usuário
+Usuário (WebSocket/REST)
+         ↓
+    HubOrchestrator              ← src/hub/orchestrator.py
+    (Redis Session Store)        ← ConversationSession por session_id
+         ↓
+    HubPlanner                   ← src/hub/planner.py
+         ├── Fast-path: regex patterns → domínio direto (sem LLM)
+         ├── CostLadder          ← src/services/cost_ladder.py
+         │   ├── Tier: keywords → domain_id + confidence
+         │   ├── Tier: multi-intent detection
+         │   └── Tier: LLM fallback (Gemini)
+         └── Supervisor LangGraph ← src/hub/supervisor_graph.py
+                  ↓
+    HubExecutor
+         ↓
+    DomainOrchestrator           ← src/domains/orchestrator.py
+    (AuditCallback + Checkpointer)
+         ↓
+    DomainWorkflow (LangGraph)   ← src/domains/workflow.py
+    StateGraph: intent → execute → format
+         ↓
+    Domain                       ← src/domains/{domain}/domain.py
+    (process_intent → execute_action)
+         ↓
+    Rails API (Backend)
 ```
 
-**Arquivos:**
-- [`src/agents/intent_analyzer.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/intent_analyzer.py)
-- [`src/agents/api_planner.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/api_planner.py)
-- [`src/agents/api_executor.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/api_executor.py)
-- [`src/agents/plan_validator.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/plan_validator.py)
-- [`src/agents/data_processor.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/data_processor.py)
-- [`src/agents/answer_formatter.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/answer_formatter.py)
-
----
+**Arquivos v5:**
+- `src/hub/orchestrator.py` — HubOrchestrator (sessão, planejamento, execução)
+- `src/hub/planner.py` — HubPlanner (fast-path + CostLadder + LLM)
+- `src/hub/supervisor_graph.py` — LangGraph supervisor com DOMAIN_DESCRIPTIONS
+- `src/hub/session.py` — ConversationSession (Redis + domain memories)
+- `src/services/cost_ladder.py` — CostLadder com DOMAIN_KEYWORDS + ModelRouter
+- `src/services/model_router.py` — ModelRouter (fast/default/heavy Gemini tiers)
+- `src/services/reference_resolver.py` — resolve referências conversacionais
+- `src/domains/orchestrator.py` — DomainOrchestrator
+- `src/domains/workflow.py` — DomainWorkflow (LangGraph)
 
 ### Comparativo de Roteamento
 
 | Aspecto | LIA | v5 |
 |---|---|---|
-| **Tipo** | Hierárquico multi-tier | Pipeline linear |
-| **Cache semântico** | Sim (pgvector, cosine ≥ 0.92) | Não |
-| **Cache de resultado** | Sim (Redis + LRU in-process) | Não |
-| **Resolução de contexto** | Sim (pronomes/referências) | Não |
-| **Fallback** | clarification_needed → pergunta | Falha silenciosa |
-| **Custo otimizado** | Sim (escala Haiku→Sonnet→Opus) | Não |
-| **Routing por intenção** | 13 domínios mapeados | Sim (single-domain) |
-| **Framework** | LangGraph + custom | LangChain básico |
+| **Tipo** | Hierárquico 6-tier | Hub 3-camadas + CostLadder |
+| **Cache semântico** | pgvector (cosine ≥ 0.92) | Redis semantic_cache.py |
+| **Resolução de contexto** | memory_resolver.py | reference_resolver.py |
+| **Roteamento por custo** | Haiku→Sonnet→Opus→Gemini→GPT | ModelRouter: fast/default/heavy Gemini |
+| **Fallback** | clarification_needed | autonomous domain (ReAct universal) |
+| **Multi-domínio** | 13 domínios mapeados | 8 domínios + autonomous fallback |
+| **Framework** | LangGraph + custom | LangGraph (supervisor_graph) |
+| **HITL** | hitl_service.request_approval() | pending_action_store.py |
 
 ### 🔍 Análise de Mercado — Seção 4
 
 **Pros LIA:**
-- Cache semântico via pgvector é uma das técnicas mais recomendadas para redução de custo em produção — GPTCache, LangChain e Anthropic documentam exatamente esse padrão
-- O Tier 0 (memory_resolver) para pronomes é uma sofisticação que a maioria dos concorrentes resolve de forma muito mais cara (mandando contexto completo ao LLM)
-- Custo escalonado (Haiku→Sonnet→Opus) é o que a Anthropic chama de "least capable model that meets requirements" — prática recomendada
+- 6 tiers com otimização de custo escalonada (Haiku→Opus) é o padrão "least capable model that meets requirements" — prática recomendada pela Anthropic
+- Tier 0 (memory_resolver) para pronomes é sofisticação rara — a maioria manda contexto completo ao LLM
 
 **Contras LIA:**
-- 6 tiers aumentam a latência acumulada mesmo com cache miss parcial — cada tier tem overhead de I/O. Em produção com alta carga, o p95 de latência pode ser impactado
-- Manter 6 tiers sincronizados (invalidação de cache entre tiers) é complexo — um bug de invalidação pode fazer o sistema responder dados desatualizados
-- ~~O threshold de cosine 0.92 para cache semântico pode ser alto demais~~ → ✅ **RESOLVIDO (Sprint Z5-03, 19/03/2026)**: `ROUTER_VECTOR_SIMILARITY_THRESHOLD` agora configurável via envvar (default 0.92). A/B flag `ROUTER_VECTOR_CACHE_ENABLED`. Near-miss logging adicionado quando similaridade cai entre 0.85–0.92 para análise.
+- 6 tiers aumentam latência acumulada e complexidade de debugging
+- ✅ Threshold de cosine 0.92 agora configurável via `ROUTER_VECTOR_SIMILARITY_THRESHOLD` (Z5-03)
 
 **Pros v5:**
-- Latência previsível: 6 etapas com tempo estimável por etapa
-- Fácil de monitorar: gargalo é sempre identificável em qual agente parou
+- CostLadder com fallback para autonomous ReAct é uma estratégia elegante — se nenhum domínio tem certeza, o autonomous resolve
+- ModelRouter (fast/default/heavy) é mais simples que 6 tiers com resultado similar para single-LLM
 
 **Contras v5:**
-- Zero economia de custo — toda requisição vai ao LLM do início ao fim
-- Sem fallback: se o IntentAnalyzer errar a classificação, todo o pipeline produz resultado errado
+- Zero otimização de custo entre providers (single-provider Gemini)
+- Sem Tier 0 de resolução de referência — "ela" e "aquela vaga" vão para o LLM sem pré-processamento
 
-**O que o mercado faz:** Paradox (Olivia) usa roteamento por intent com threshold de confiança — abaixo de 80% pede clarificação. Eightfold usa um router neural treinado internamente. Phenom X+ Agent Router é configurável pelo cliente. A tendência é adicionar um "confidence router" antes do LLM: se o classificador tem alta confiança no domínio, pula direto para o agente sem gastar tokens no LLM de intent.
-
-**Recomendação para LIA:** ✅ Threshold agora configurável via `ROUTER_VECTOR_SIMILARITY_THRESHOLD` (Z5-03). Para ajustar: definir envvar e monitorar near-miss log (similaridade 0.85–0.92). Próximo passo: adicionar métricas de taxa de cache hit por tier — se o Tier 3 tem hit rate < 5%, avaliar se vale manter o overhead do pgvector. Implementar invalidação de cache baseada em eventos de negócio (ex: quando um candidato muda de status, invalidar caches relacionados).
+**Recomendação para v5 — ALTA PRIORIDADE:**
+1. Adicionar resolução de referências no HubPlanner (similar ao `memory_resolver.py` da LIA):
+   ```python
+   # src/hub/planner.py — adicionar antes do CostLadder
+   from src.services.reference_resolver import ReferenceResolver
+   resolved_query = ReferenceResolver.resolve(query, session.domain_memories)
+   ```
+2. Adicionar near-miss logging no CostLadder (confidence 0.5–0.7) para analisar onde o roteamento está errando
+3. Configurar threshold do semantic_cache como envvar
 
 ---
 
-## 5. Agentes por Domínio
+## 5. Agentes por Domínio — Infográfico Completo
 
-### Plataforma LIA — 17 Agentes Principais + 6 SubAgentes Z1 = 23 Totais
+### Infográfico: LIA (23 agentes) vs v5 (domínios + agentes)
 
-#### Agentes ReAct (12 — padrão 4 arquivos: agent + tool_registry + system_prompt + stage_context)
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                          PLATAFORMA LIA — 13 DOMÍNIOS / 23 AGENTES                      │
+├──────────────────┬──────────────────────────────────────────────┬───────────┬───────────┤
+│ DOMÍNIO          │ AGENTE PRINCIPAL                             │ TIPO      │ TOOLS     │
+├──────────────────┼──────────────────────────────────────────────┼───────────┼───────────┤
+│ Analytics        │ AnalyticsReactAgent                          │ ReAct     │ 8         │
+│ ATS Integration  │ ATSIntegrationReactAgent                     │ ReAct     │ 7         │
+│ Automation       │ AutomationReactAgent                         │ ReAct     │ 8         │
+│ Communication    │ CommunicationReactAgent                      │ ReAct     │ 7         │
+│ CV Screening     │ PipelineReactAgent                           │ ReAct     │ 16        │
+│ CV Screening     │ WSIInterviewGraph                            │ StateGraph│ 3 nós     │
+│ Hiring Policy    │ PolicyReactAgent (→shim Z5-02)               │ ReAct     │ 14        │
+│ Interview Sched. │ InterviewGraph                               │ StateGraph│ 3 nós     │
+│ Job Management   │ WizardReactAgent                             │ ReAct     │ 12        │
+│ Job Management   │ JobWizardGraph                               │ StateGraph│ 4 nós     │
+│ Pipeline (Z1)    │ PipelineTransitionAgent (supervisor)         │ ReAct     │ 22        │
+│                  │  ├─ PipelineContextAgent                     │ Subagente │ 7         │
+│                  │  ├─ PipelineDecisionAgent                    │ Subagente │ 8         │
+│                  │  └─ PipelineActionAgent                      │ Subagente │ 7         │
+│ Recruiter Asst.  │ KanbanReActAgent (supervisor Z1)             │ ReAct     │ 23        │
+│                  │  ├─ KanbanSearchAgent                        │ Subagente │ 7         │
+│                  │  ├─ KanbanInsightAgent                       │ Subagente │ 7         │
+│                  │  └─ KanbanActionAgent                        │ Subagente │ 8         │
+│ Recruiter Asst.  │ TalentReactAgent                             │ ReAct     │ 14        │
+│ Recruiter Asst.  │ JobsMgmtReactAgent                           │ ReAct     │ 15        │
+│ Sourcing         │ SourcingReactAgent                           │ ReAct     │ 17        │
+│ Policy           │ PolicyAgent (canônico)                       │ StateGraph│ —         │
+│ Talent Intel.    │ TalentIntelligenceAgent (Y-series)           │ ReAct     │ —         │
+│ Sourcing Engage. │ SourcingEngagementGraph                      │ StateGraph│ 3 nós     │
+├──────────────────┴──────────────────────────────────────────────┴───────────┴───────────┤
+│ TOTAL: 12 ReAct + 4 StateGraph + 1 PolicySetup + 6 SubAgentes = 23 | 163 tools          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
 
-| Domínio | Agente | Arquivo | Tools |
-|---|---|---|---|
-| **Analytics** | AnalyticsReactAgent | [`analytics/agents/analytics_react_agent.py`](../lia-agent-system/app/domains/analytics/agents/analytics_react_agent.py) | 8 |
-| **ATS Integration** | ATSIntegrationReactAgent | [`ats_integration/agents/ats_integration_react_agent.py`](../lia-agent-system/app/domains/ats_integration/agents/ats_integration_react_agent.py) | 7 |
-| **Automation** | AutomationReactAgent | [`automation/agents/automation_react_agent.py`](../lia-agent-system/app/domains/automation/agents/automation_react_agent.py) | 8 |
-| **Communication** | CommunicationReactAgent | [`communication/agents/communication_react_agent.py`](../lia-agent-system/app/domains/communication/agents/communication_react_agent.py) | 7 |
-| **CV Screening** | PipelineReactAgent | [`cv_screening/agents/pipeline_react_agent.py`](../lia-agent-system/app/domains/cv_screening/agents/pipeline_react_agent.py) | 16 |
-| **Hiring Policy** | PolicyReactAgent | [`hiring_policy/agents/policy_react_agent.py`](../lia-agent-system/app/domains/hiring_policy/agents/policy_react_agent.py) | 14 |
-| **Job Management (Wizard)** | WizardReactAgent | [`job_management/agents/wizard_react_agent.py`](../lia-agent-system/app/domains/job_management/agents/wizard_react_agent.py) | 12 |
-| **Pipeline Transition** | PipelineTransitionAgent *(supervisor Z1)* | [`pipeline/agents/pipeline_transition_agent.py`](../lia-agent-system/app/domains/pipeline/agents/pipeline_transition_agent.py) | 22 → 3 subagentes |
-| **Recruiter Assistant (Kanban)** | KanbanReactAgent *(supervisor Z1)* | [`recruiter_assistant/agents/kanban_react_agent.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/kanban_react_agent.py) | 23 → 3 subagentes |
-| **Recruiter Assistant (Talent)** | TalentReactAgent | [`recruiter_assistant/agents/talent_react_agent.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/talent_react_agent.py) | 14 |
-| **Recruiter Assistant (Jobs)** | JobsMgmtReactAgent | [`recruiter_assistant/agents/jobs_mgmt_react_agent.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py) | 15 |
-| **Sourcing** | SourcingReactAgent | [`sourcing/agents/sourcing_react_agent.py`](../lia-agent-system/app/domains/sourcing/agents/sourcing_react_agent.py) | 17 |
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                      recruiter_agent_v5 — 8 DOMÍNIOS + HUB LAYER                        │
+├──────────────────┬──────────────────────────────────────────────┬───────────┬───────────┤
+│ DOMÍNIO          │ AGENTE / CAMADA                              │ TIPO      │ TOOLS     │
+├──────────────────┼──────────────────────────────────────────────┼───────────┼───────────┤
+│ HUB (transversal)│ HubOrchestrator                              │ Orquestra │ —         │
+│ HUB (transversal)│ HubPlanner (CostLadder + ModelRouter)        │ Router    │ —         │
+│ HUB (transversal)│ SupervisorGraph (LangGraph)                  │ StateGraph│ —         │
+│ Pipeline Global  │ IntentAnalyzerAgent                          │ Pipeline  │ RAG       │
+│ Pipeline Global  │ APIPlannerAgent                              │ Pipeline  │ 51 YAMLs  │
+│ Pipeline Global  │ APIExecutorAgent                             │ Pipeline  │ HTTP      │
+│ Pipeline Global  │ PlanValidatorAgent                           │ Pipeline  │ —         │
+│ Pipeline Global  │ DataProcessorAgent                           │ Pipeline  │ —         │
+│ Pipeline Global  │ AnswerFormatterAgent                         │ Pipeline  │ —         │
+│ Jobs             │ Domain + Actions (search, details, analytics)│ Domain    │ 6 actions │
+│                  │  + fairness.py (viés em JDs)                 │           │           │
+│ Applies          │ Domain + ReactAgent (MAX_ITER=12)            │ ReAct     │ 12 tools  │
+│                  │  + Actions (scoring, pipeline, bulk, comp.)  │           │           │
+│ Sourcing         │ SourcingOrchestrator (supervisor)            │ Orquestra │ —         │
+│                  │  ├─ RouterAgent                              │ Subagente │ —         │
+│                  │  ├─ PlannerAgent                             │ Subagente │ —         │
+│                  │  ├─ SearchAgent                              │ Subagente │ 6 actions │
+│                  │  ├─ DetailAgent                              │ Subagente │ —         │
+│                  │  ├─ AnalyticsAgent                           │ Subagente │ —         │
+│                  │  ├─ ComparisonAgent                          │ Subagente │ —         │
+│                  │  ├─ ReportAgent                              │ Subagente │ —         │
+│                  │  └─ ActionAgent                              │ Subagente │ —         │
+│                  │  + fairness.py + fact_checker.py             │           │           │
+│ Scheduling       │ SchedulingGraph (LangGraph multi-turno)      │ StateGraph│ API calls │
+│                  │  SchedulingState TypedDict                   │           │           │
+│                  │  InferenceEngine (parsing horários)          │           │           │
+│ Evaluation       │ InterviewGraph (LangGraph)                   │ StateGraph│ 4 nós     │
+│                  │  classify_input→evaluate→decide→craft        │           │           │
+│ Insights         │ Domain + Actions (briefing, metrics, alerts) │ Domain    │ 4 actions │
+│ Messaging        │ Domain + Actions (send_email, templates)     │ Domain    │ 4 actions │
+│ Autonomous       │ ReActAgent (LangGraph, 73+ tools)            │ ReAct     │ 73+       │
+│                  │  + compression + context_builder             │ Fallback  │           │
+├──────────────────┴──────────────────────────────────────────────┴───────────┴───────────┤
+│ TOTAL: 8 domínios | 4 grafos LangGraph | 2 ReAct (applies + autonomous) | 9 subagentes  │
+│ ~30 agentes/camadas quando contados por responsabilidade                                 │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
 
-#### Agentes StateGraph / LangGraph (4)
+### Comparativo de Agentes por Domínio
 
-| Domínio | Agente | Arquivo | Nós |
-|---|---|---|---|
-| **CV Screening (WSI)** | WSIInterviewGraph | [`cv_screening/agents/wsi_interview_graph.py`](../lia-agent-system/app/domains/cv_screening/agents/wsi_interview_graph.py) | generate_question → evaluate → score |
-| **Interview Scheduling** | InterviewGraph | [`interview_scheduling/agents/interview_graph.py`](../lia-agent-system/app/domains/interview_scheduling/agents/interview_graph.py) | propose → confirm → notify |
-| **Job Management** | JobWizardGraph | [`job_management/agents/job_wizard_graph.py`](../lia-agent-system/app/domains/job_management/agents/job_wizard_graph.py) | collect_info → enrich → validate → publish |
-| **Policy** | PolicyAgent | [`policy/agents/agent.py`](../lia-agent-system/app/domains/policy/agents/agent.py) | — |
-
-#### PolicySetup Shim (1) — RESOLVIDO Z5-02
-
-| Agente | Status |
-|---|---|
-| HiringPolicyAgent (`hiring_policy/agents/policy_react_agent.py`) | ✅ **Sprint Z5-02 (19/03/2026)**: convertido para shim com `DeprecationWarning`. Fonte canônica: `policy/agents/agent.py`. Retrocompatibilidade mantida. |
-
-**Total: 163 tools mapeadas** entre todos os agentes principais
-
-### recruiter_agent_v5 — 6 Agentes Pipeline + 9 Subagentes
-
-#### Pipeline Principal
-
-| # | Agente | Função |
+| Domínio LIA | Domínio v5 | Grau de equivalência |
 |---|---|---|
-| 1 | `IntentAnalyzerAgent` | Classifica intenção, define tipo de operação |
-| 2 | `APIPlannerAgent` | Escolhe quais APIs usar (catálogo de 51 YAMLs) |
-| 3 | `APIExecutorAgent` | Executa as chamadas HTTP |
-| 4 | `PlanValidatorAgent` | Verifica se o resultado é válido |
-| 5 | `DataProcessorAgent` | Estrutura e limpa dados |
-| 6 | `AnswerFormatterAgent` | Gera resposta em linguagem natural |
-
-#### Subagentes de Sourcing
-
-| # | Subagente | Função |
-|---|---|---|
-| 1 | [`router.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/router.py) | Distribui tarefa entre subagentes |
-| 2 | [`planner.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/planner.py) | Planeja estratégia de busca |
-| 3 | [`orchestrator.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/orchestrator.py) | Coordena execução dos subagentes |
-| 4 | [`search.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/search.py) | Busca candidatos nas APIs externas |
-| 5 | [`detail.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/detail.py) | Aprofunda perfil do candidato |
-| 6 | [`analytics.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/analytics.py) | Analisa métricas de sourcing |
-| 7 | [`comparison.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/comparison.py) | Compara candidatos entre si |
-| 8 | [`report.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/report.py) | Gera relatório estruturado |
-| 9 | [`action.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/action.py) | Executa ações sobre candidatos |
+| Analytics | Insights | ✅ Parcial (insights/briefing/métricas) |
+| ATS Integration | Autonomous (API universal) | ✅ Parcial (v5 via 51 YAMLs) |
+| Automation | Autonomous | ⚠️ Parcial (v5 sem regras de automação) |
+| Communication | Messaging | ✅ Similar (email + templates) |
+| CV Screening | Applies (scoring) | ✅ Parcial (v5 tem scoring_overview) |
+| Hiring Policy | Jobs (fairness.py) | ⚠️ Parcial (v5 sem compliance engine) |
+| Interview Scheduling | Scheduling | ✅ Similar (ambos multi-turno com LangGraph) |
+| Job Management | Jobs | ✅ Similar (CRUD + analytics) |
+| Pipeline Transition | Applies (pipeline actions) | ✅ Similar |
+| Recruiter Assistant (Kanban) | Applies + Insights | ✅ Parcial |
+| Recruiter Assistant (Talent) | Sourcing | ✅ Similar |
+| Sourcing | Sourcing (9 subagentes) | ✅ Equivalente (v5 mais robusto neste domínio) |
+| Policy (Z5-02) | — | ❌ Não existe no v5 |
+| Talent Intelligence | — | ❌ Não existe no v5 |
 
 ### 🔍 Análise de Mercado — Seção 5
 
+**Sobre a pergunta "Só cobre sourcing":**
+O documento anterior estava **errado**. O v5 cobre: jobs (CRUD + analytics), applies (pipeline completo + scoring), sourcing (9 subagentes), scheduling (multi-turno LangGraph), evaluation (LangGraph interview), insights (briefings + métricas), messaging (email + templates) e autonomous (73+ tools).
+
+O v5 **não** cobre: policy/compliance engine, automation rules engine, talent intelligence avançado.
+
+**Sobre "agentes próprios para clientes" (Eightfold/Phenom model):**
+
+| O que o mercado faz | LIA hoje | v5 hoje | O que precisaria |
+|---|---|---|---|
+| Copilot Agents por persona | ✅ RecruiterBehaviorService (Z7-01) | ❌ Não tem | v5: adicionar perfil de usuário na sessão |
+| Agent Studio (cliente cria agentes) | ❌ Não tem | ❌ Não tem | Ambos: UI + runtime de custom agents |
+| Agentes por processo (R&S, performance) | ✅ 13 domínios | ✅ 8 domínios | Expandir domínios |
+| Memória de persona do usuário | ✅ LongTermMemory | ✅ TenantMemoryStore | ✅ Ambos têm |
+
+**Para oferecer "agentes próprios para clientes" (tipo Phenom X+ Studio):**
+1. **LIA:** Criar endpoint de configuração de agente por tenant (`/api/v1/agents/configure`) que permita: customizar system prompt, adicionar/remover tools, configurar threshold de confiança — isso é possível com o `prompt_loader.py` existente (já tem override por tenant)
+2. **v5:** Adicionar `tenant_config.py` no hub que carregue overrides de domínio por tenant: `{ "jobs": { "tools_enabled": ["search", "details"], "custom_prompt": "..." } }`
+
 **Pros LIA:**
-- Agentes por domínio com system prompts especializados é a recomendação do Anthropic para multi-agent systems — cada agente tem contexto mínimo e responsabilidade clara
-- A existência de `stage_context.py` em cada domínio demonstra que o agente tem consciência de onde o usuário está na jornada — isso é mais sofisticado do que o que HireVue ou Greenhouse fazem com seus chatbots
-- 17 agentes principais cobrindo 13 domínios é uma cobertura funcional completa para um ATS
+- 23 agentes cobrindo 13 domínios é cobertura funcional completa para ATS enterprise
+- Subagentes Z1 mostram padrão de decomposição correto (supervisor + workers)
+- RecruiterBehaviorService (Z7-01) é o primeiro passo para personalização por persona
 
 **Contras LIA:**
-- ~~`hiring_policy` aparece como dois agentes distintos~~ → ✅ **RESOLVIDO (Sprint Z5-02, 19/03/2026)**: `HiringPolicyAgent` convertido para shim que re-exporta de `policy/agents/agent.py` com `DeprecationWarning`. Consolidação funcional completa, retrocompatibilidade mantida.
-- Agentes sem tool registry explícito (`InterviewGraph`, `PolicyAgent`) quebram o padrão — dificulta entender o que cada agente pode fazer olhando o código
+- Sem "Agent Studio" — clientes não podem criar ou configurar agentes sem código
 
 **Pros v5:**
-- Os 9 subagentes de sourcing são altamente coesos — cada um faz exatamente uma coisa bem definida (single responsibility principle)
-- A separação `planner → orchestrator → workers` é o padrão "supervisor + workers" recomendado pelo LangGraph para paralelismo seguro
+- Os 9 subagentes de sourcing são altamente coesos (single responsibility)
+- O autonomous ReAct com 73+ tools é o mais flexível — resolve qualquer query não mapeada
+- A separação `planner → orchestrator → workers` é o padrão supervisor+workers do LangGraph
 
 **Contras v5:**
-- Só cobre sourcing — 11 dos 12 domínios da LIA não existem no v5
+- Sem policy/compliance engine — sem como aplicar regras de negócio por empresa
+- Autonomous pode ser "over-used" — se o CostLadder errar o domínio, o autonomous resolve tudo mas com menor precisão
 
-**O que o mercado faz:** Eightfold tem "Copilot Agents" especializados por persona (recruiter, hiring manager, candidate). Phenom tem o "X+ Agent Studio" onde cada cliente cria seus próprios agentes. Workday lançou "Workday Illuminate" com agentes por processo (R&S, performance, payroll). A tendência em 2025 é agentes com memória de persona do usuário — o agente do recrutador Joana se comporta diferente do agente do recrutador Paulo.
-
-**Recomendação para LIA:** ✅ Consolidação de policy resolvida (Z5-02). Garantir que todos os agentes tenham um `tool_registry.py` explícito — mesmo grafos como `interview_graph.py` devem ter um manifesto de suas capacidades. A próxima evolução natural é adicionar "agent profiles" — comportamento do agente adaptado ao perfil do recrutador (junior vs sênior, generalista vs especialista) — base já disponível via `RecruiterBehaviorService` (Z7-01).
+**Recomendação para v5:**
+1. Criar `src/hub/tenant_config.py` com configurações por tenant lidas do Rails
+2. Adicionar `policy/` domain para regras de negócio (ex: "não enviar email sem aprovação do gerente")
+3. Criar meta-agente de "agent selection confidence" que mostra ao recrutador quando o sistema não tem certeza do domínio
 
 ---
 
-## 6. Subagentes e Grafos
+## 6. Subagentes e Grafos LangGraph
 
-### Plataforma LIA — Grafos LangGraph (StateGraph)
+### Plataforma LIA — Grafos LangGraph (5 StateGraphs)
 
-| Grafo | Arquivo | Função | Nós |
+| Grafo | Arquivo | Nós | Função |
 |---|---|---|---|
-| **WSI Interview Graph** | [`cv_screening/agents/wsi_interview_graph.py`](../lia-agent-system/app/domains/cv_screening/agents/wsi_interview_graph.py) | Entrevista estruturada WSI com IA | generate_question → evaluate → score |
-| **Interview Graph** | [`interview_scheduling/agents/interview_graph.py`](../lia-agent-system/app/domains/interview_scheduling/agents/interview_graph.py) | Agendamento inteligente de entrevistas | propose → confirm → notify |
-| **Job Wizard Graph** | [`job_management/agents/job_wizard_graph.py`](../lia-agent-system/app/domains/job_management/agents/job_wizard_graph.py) | Wizard guiado de criação de vagas | collect_info → enrich → validate → publish |
-| **Sourcing Engagement** | [`shared/agents/sourcing_engagement_nodes.py`](../lia-agent-system/app/shared/agents/sourcing_engagement_nodes.py) | Engajamento proativo com candidatos | discover → contact → follow_up |
-| **Base State Machine** | [`shared/agents/base_state_machine.py`](../lia-agent-system/app/shared/agents/base_state_machine.py) | Base reutilizável para grafos | genérico |
+| **WSI Interview Graph** | `cv_screening/agents/wsi_interview_graph.py` | generate_question → evaluate → score | Entrevista estruturada WSI |
+| **Interview Graph** | `interview_scheduling/agents/interview_graph.py` | propose → confirm → notify | Agendamento inteligente |
+| **Job Wizard Graph** | `job_management/agents/job_wizard_graph.py` | collect_info → enrich → validate → publish | Wizard de criação de vagas |
+| **Sourcing Engagement** | `shared/agents/sourcing_engagement_nodes.py` | discover → contact → follow_up | Engajamento proativo |
+| **Base State Machine** | `shared/agents/base_state_machine.py` | genérico | Base reutilizável |
 
-### Sprint Z1 — 6 SubAgentes Especializados (19/03/2026) ✅
-
-Sprint Z1 decompôs KanbanReActAgent e PipelineTransitionAgent em subagentes via padrão **supervisor + workers** do LangGraph:
+### Sprint Z1 — 6 SubAgentes (19/03/2026) ✅
 
 #### KanbanReActAgent → 3 Subagentes
 
 | SubAgente | Arquivo | Função | Tools |
 |---|---|---|---|
-| **KanbanSearchAgent** | `recruiter_assistant/agents/subagents/kanban_search_agent.py` | Busca e filtro de candidatos no Kanban | 7 |
+| **KanbanSearchAgent** | `recruiter_assistant/agents/subagents/kanban_search_agent.py` | Busca e filtro no Kanban | 7 |
 | **KanbanInsightAgent** | `recruiter_assistant/agents/subagents/kanban_insight_agent.py` | Métricas e insights do pipeline | 7 |
-| **KanbanActionAgent** | `recruiter_assistant/agents/subagents/kanban_action_agent.py` | Movimentação e ações sobre candidatos | 8 |
+| **KanbanActionAgent** | `recruiter_assistant/agents/subagents/kanban_action_agent.py` | Movimentação de candidatos | 8 |
 
 #### PipelineTransitionAgent → 3 Subagentes
 
 | SubAgente | Arquivo | Função | Tools |
 |---|---|---|---|
-| **PipelineContextAgent** | `pipeline/agents/subagents/pipeline_context_agent.py` | Leitura e contexto da etapa atual | 7 |
-| **PipelineDecisionAgent** | `pipeline/agents/subagents/pipeline_decision_agent.py` | Avaliação e decisão de transição | 8 |
-| **PipelineActionAgent** | `pipeline/agents/subagents/pipeline_action_agent.py` | Execução da transição + notificações | 7 |
+| **PipelineContextAgent** | `pipeline/agents/subagents/pipeline_context_agent.py` | Leitura da etapa atual | 7 |
+| **PipelineDecisionAgent** | `pipeline/agents/subagents/pipeline_decision_agent.py` | Avaliação e decisão | 8 |
+| **PipelineActionAgent** | `pipeline/agents/subagents/pipeline_action_agent.py` | Execução + notificações | 7 |
 
-**Resultado Z1:** cada subagente opera dentro do limite seguro de 7–8 tools (vs. 22–23 antes). HITL integrado no PipelineTransitionAgent supervisor (AUD-4).
+---
 
-### recruiter_agent_v5 — Subagentes de Sourcing
+### recruiter_agent_v5 — 4 Grafos LangGraph + 9 SubAgentes
+
+#### Grafos LangGraph Confirmados
 
 ```
-[router.py] → [planner.py] → [orchestrator.py]
-                                  ↓        ↓        ↓
-                            [search.py] [detail.py] [analytics.py]
-                                  ↓
-                            [comparison.py] → [report.py] → [action.py]
+1. src/workflow/graph.py — WorkflowOrchestrator (pipeline de 6 agentes)
+   ┌──────────────────────────────────────────────────────┐
+   │ intent_analyzer → api_planner → api_executor         │
+   │                                    ↓                 │
+   │                   plan_validator ← →                 │
+   │                       ↓                              │
+   │ data_processor → answer_formatter → END              │
+   └──────────────────────────────────────────────────────┘
+   Nós: 6 | Edges condicionais: _should_continue, _should_continue_or_confirm,
+             _should_replan_or_continue
+
+2. src/hub/supervisor_graph.py — SupervisorGraph
+   ┌──────────────────────────────────────────────────────┐
+   │ Entrada → route_to_domain → domain_node → END        │
+   │                ↓                                     │
+   │          DOMAIN_DESCRIPTIONS dict (8 domínios)       │
+   │          AuditCallbackHandler integrado               │
+   └──────────────────────────────────────────────────────┘
+   Usa: get_checkpointer() → PostgresSaver ou MemorySaver
+
+3. src/domains/scheduling/graph.py — SchedulingGraph (multi-turno)
+   ┌──────────────────────────────────────────────────────┐
+   │ SchedulingState TypedDict                            │
+   │ Nós: parse_input → check_slots → confirm → execute  │
+   │ Edges condicionais: needs_more_input, CONFIRMATION   │
+   └──────────────────────────────────────────────────────┘
+   Suporta: multi-turno (pergunta faltante → espera usuário)
+   Memória: SchedulingConversationMemory
+
+4. src/domains/evaluation/graph.py — InterviewGraph (LangGraph)
+   ┌──────────────────────────────────────────────────────┐
+   │ InterviewState TypedDict                             │
+   │ classify_input → [evaluate | decide_flow]            │
+   │      evaluate → decide_flow → craft_message → END   │
+   └──────────────────────────────────────────────────────┘
+   Checkpointer: MemorySaver (by default)
+
+5. src/domains/applies/react_agent.py — ReactAgent (LangGraph)
+   ┌──────────────────────────────────────────────────────┐
+   │ ReactState: messages (annotated list), iteration_count│
+   │ MAX_ITERATIONS = 12                                  │
+   │ Tools: search_candidates, search_jobs, ask_user,     │
+   │        get_job_selective_processes, create_apply,    │
+   │        api_request (genérica)                        │
+   └──────────────────────────────────────────────────────┘
+
+6. src/domains/autonomous/agent.py — AutonomousReAct (LangGraph)
+   ┌──────────────────────────────────────────────────────┐
+   │ 73+ tools selecionadas dinamicamente por contexto   │
+   │ RetryPolicy integrada                                │
+   │ Compression de contexto longo (compression.py)      │
+   │ ExecutionTracker + ReActObserver                     │
+   └──────────────────────────────────────────────────────┘
 ```
 
-**Diferença chave:** v5 tem orquestração especializada para sourcing externo (9 subagentes, 51 APIs). LIA tem grafos para entrevistas e wizard de vagas, mas sourcing é mais simples.
+#### 9 SubAgentes de Sourcing
+
+```
+[router.py] → rota para o subagente correto
+    ↓
+[planner.py] → estratégia de busca
+    ↓
+[orchestrator.py] → coordena execução
+    ├── [search.py]     → busca por skill/score/location/similar (embeddings)
+    ├── [detail.py]     → aprofunda perfil
+    ├── [analytics.py]  → métricas de sourcing
+    └── [comparison.py] → compara candidatos
+            ↓
+        [report.py] → relatório estruturado
+            ↓
+        [action.py] → executa ações (invite, tag, pipeline)
+```
+
+**Diferença chave de checkpointing:**
+
+| Aspecto | LIA | v5 |
+|---|---|---|
+| **Checkpointer** | `shared/agents/checkpointer.py` + PostgresSaver | `src/services/checkpointer.py` (PostgresSaver + MemorySaver fallback) |
+| **Thread config** | thread_id por sessão | `build_thread_config(session_id, domain_id)` |
+| **Estabilidade** | Produção | PostgresSaver instável (ARCHITECTURAL_AUDIT nota) — MemorySaver como default |
 
 ### 🔍 Análise de Mercado — Seção 6
 
+**Resposta à pergunta "o v5 tem grafos ou LangGraph?":**
+**Sim.** O v5 tem 6 grafos LangGraph confirmados no código:
+1. `workflow/graph.py` — pipeline de 6 agentes com edges condicionais
+2. `hub/supervisor_graph.py` — supervisor de domínios com checkpointing
+3. `scheduling/graph.py` — multi-turno com `SchedulingState TypedDict`
+4. `evaluation/graph.py` — entrevista com `InterviewState TypedDict`
+5. `applies/react_agent.py` — ReAct com `ReactState` e `MAX_ITERATIONS=12`
+6. `autonomous/agent.py` — ReAct universal com 73+ tools e `RetryPolicy`
+
+O documento anterior estava **completamente errado** ao dizer que o v5 não usava LangGraph.
+
 **Pros LIA:**
-- LangGraph com grafos por domínio é o estado da arte em 2025 — Google (Vertex AI Agent Builder), Amazon (Bedrock Agents) e Microsoft (Autogen) convergem para grafos de agentes com checkpointing
-- O `Base State Machine` compartilhado é um padrão excelente — garante que todos os grafos se comportam de forma consistente em erros e retries
-- WSI como grafo explícito (não pipeline simples) é a abordagem correta para entrevistas — permite pausar, retomar, ramificar baseado na resposta
+- LangGraph com grafos por domínio é estado da arte — Google, Amazon, Microsoft convergem para grafos com checkpointing
+- Base State Machine compartilhado garante comportamento consistente entre grafos
+- HITL integrado em SourcingReActAgent e CommunicationReActAgent (AUD-4) ✅
 
 **Contras LIA:**
-- Apenas 5 grafos LangGraph para 13 domínios — significa que a maioria dos agentes usa ReactAgent simples quando poderiam se beneficiar de grafos (ex: automation, communication com múltiplas tentativas)
-- ~~Sem Human-in-the-Loop (HITL) explícito nos grafos~~ → ✅ **RESOLVIDO (AUD-4, 08/03/2026)**: HITL integrado em SourcingReActAgent (stage=outreach) e CommunicationReActAgent (initial_contact, rejection_feedback, offer_letter). WSI e Wizard também têm HITL via `hitl_service.request_approval()`. 17 testes.
+- 5 grafos para 13 domínios — maioria dos agentes usa ReAct simples quando poderiam se beneficiar de grafos
 
 **Pros v5:**
-- 9 subagentes com execução paralela é uma vantagem real para sourcing — pesquisar em 10 APIs simultaneamente é 10x mais rápido que sequencial
-- A granularidade (um agente para search, outro para detail, outro para comparison) permite substituição fácil de um agente sem quebrar os outros
+- Scheduling como grafo multi-turno é a abordagem correta — mantém estado entre turnos de conversa sem reprocessar
+- InterviewGraph com checkpointing (MemorySaver) permite retomar entrevistas interrompidas
+- Autonomous com 73+ tools é o mais flexível do mercado para esse escopo
 
 **Contras v5:**
-- Os grafos do v5 não têm checkpointing — se a execução falhar a meio do caminho, tudo recomeça do zero
+- PostgresSaver instável (documentado no ARCHITECTURAL_AUDIT) — fallback para MemorySaver perde estado entre reinicios
+- Sem HITL explícito em ações destrutivas (ex: criar candidatura sem confirmação no workflow geral — o applies/react_agent.py tem `ask_user` mas não é mandatório no hub)
 
-**O que o mercado faz:** CrewAI (framework open-source popular) usa exatamente o padrão supervisor + workers para tarefas paralelas. Autogen (Microsoft) popularizou o padrão de "agentes que conversam entre si" com um moderador. LangGraph adicionou em 2025 suporte a HITL nativamente como nó de espera. HireVue usa grafos de entrevista com ramificação baseada em respostas — exatamente o que o WSI Graph da LIA faz.
-
-**Recomendação para LIA:** ✅ HITL já implementado (AUD-4). Próximo passo: implementar checkpointing em todos os grafos usando o `PostgresSaver` do LangGraph — isso permite retomar grafos interrompidos, o que é especialmente importante para o WSI que pode durar 30+ minutos. Sprint Z1 demonstrou o padrão correto com os 6 subagentes.
+**Recomendação para v5:**
+1. Estabilizar PostgresSaver: criar migration SQL automática no startup + pooling de conexão dedicado
+2. Adicionar HITL explícito no supervisor_graph para ações com `requires_confirmation=True`:
+   ```python
+   # src/hub/supervisor_graph.py — adicionar nó de confirmação
+   workflow.add_conditional_edges(
+       "domain_node",
+       lambda state: "confirm" if state.get("requires_confirmation") else END,
+       {"confirm": "confirmation_node", END: END}
+   )
+   ```
+3. Criar grafo para o domínio de autonomous também — atualmente é ReAct puro sem checkpointing de sub-tarefas
 
 ---
 
 ## 7. Tool Registries (Ferramentas por Agente)
 
-### Plataforma LIA
+### Plataforma LIA — Registry Explícito por Domínio
 
-| Domínio | Arquivo | Nº Tools | Exemplos de Tools |
+| Domínio | Arquivo registry | Nº Tools | Exemplos |
 |---|---|---|---|
-| **Pipeline Transition** | [`pipeline/agents/pipeline_tool_registry.py`](../lia-agent-system/app/domains/pipeline/agents/pipeline_tool_registry.py) | 22 | move_candidate, add_note, request_docs, schedule_interview |
-| **Kanban (Recruiter)** | [`recruiter_assistant/agents/kanban_tool_registry.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/kanban_tool_registry.py) | 23 | search_candidates, bulk_move, filter_stage, get_metrics |
-| **Sourcing** | [`sourcing/agents/sourcing_tool_registry.py`](../lia-agent-system/app/domains/sourcing/agents/sourcing_tool_registry.py) | 17 | search_external, enrich_profile, invite_to_apply |
-| **CV Screening** | [`cv_screening/agents/pipeline_tool_registry.py`](../lia-agent-system/app/domains/cv_screening/agents/pipeline_tool_registry.py) | 16 | score_cv, extract_skills, check_requirements |
-| **Hiring Policy** | [`hiring_policy/agents/policy_tool_registry.py`](../lia-agent-system/app/domains/hiring_policy/agents/policy_tool_registry.py) | 14 | check_compliance, validate_jd, apply_affirmative |
-| **Talent (Recruiter)** | [`recruiter_assistant/agents/talent_tool_registry.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/talent_tool_registry.py) | 14 | compare_candidates, get_profile, add_to_list |
-| **Jobs Mgmt** | [`recruiter_assistant/agents/jobs_mgmt_tool_registry.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py) | 15 | create_job, clone_job, update_status, get_analytics |
-| **Job Wizard** | [`job_management/agents/wizard_tool_registry.py`](../lia-agent-system/app/domains/job_management/agents/wizard_tool_registry.py) | 12 | generate_jd, enrich_requirements, suggest_salary |
-| **Analytics** | [`analytics/agents/analytics_tool_registry.py`](../lia-agent-system/app/domains/analytics/agents/analytics_tool_registry.py) | 8 | get_funnel, time_to_hire, diversity_metrics |
-| **Automation** | [`automation/agents/automation_tool_registry.py`](../lia-agent-system/app/domains/automation/agents/automation_tool_registry.py) | 8 | create_rule, trigger_action, schedule_task |
-| **ATS Integration** | [`ats_integration/agents/ats_integration_tool_registry.py`](../lia-agent-system/app/domains/ats_integration/agents/ats_integration_tool_registry.py) | 7 | sync_candidates, push_feedback, fetch_applications |
-| **Communication** | [`communication/agents/communication_tool_registry.py`](../lia-agent-system/app/domains/communication/agents/communication_tool_registry.py) | 7 | send_email, send_whatsapp, schedule_message |
+| **Pipeline Transition** | `pipeline/agents/pipeline_tool_registry.py` | 22 | move_candidate, add_note, request_docs, schedule_interview |
+| **Kanban (Recruiter)** | `recruiter_assistant/agents/kanban_tool_registry.py` | 23 | search_candidates, bulk_move, filter_stage, get_metrics |
+| **Sourcing** | `sourcing/agents/sourcing_tool_registry.py` | 17 | search_external, enrich_profile, invite_to_apply |
+| **CV Screening** | `cv_screening/agents/pipeline_tool_registry.py` | 16 | score_cv, extract_skills, check_requirements |
+| **Hiring Policy** | `hiring_policy/agents/policy_tool_registry.py` | 14 | check_compliance, validate_jd, apply_affirmative |
+| **Talent (Recruiter)** | `recruiter_assistant/agents/talent_tool_registry.py` | 14 | compare_candidates, get_profile, add_to_list |
+| **Jobs Mgmt** | `recruiter_assistant/agents/jobs_mgmt_tool_registry.py` | 15 | create_job, clone_job, update_status, get_analytics |
+| **Job Wizard** | `job_management/agents/wizard_tool_registry.py` | 12 | generate_jd, enrich_requirements, suggest_salary |
+| **Analytics** | `analytics/agents/analytics_tool_registry.py` | 8 | get_funnel, time_to_hire, diversity_metrics |
+| **Automation** | `automation/agents/automation_tool_registry.py` | 8 | create_rule, trigger_action, schedule_task |
+| **ATS Integration** | `ats_integration/agents/ats_integration_tool_registry.py` | 7 | sync_candidates, push_feedback, fetch_applications |
+| **Communication** | `communication/agents/communication_tool_registry.py` | 7 | send_email, send_whatsapp, schedule_message |
 | **TOTAL** | | **163 tools** | |
 
-### recruiter_agent_v5
+---
 
-O v5 não usa tool_registry explícito. As tools são implícitas no `APIExecutorAgent` que lê os 51 YAMLs de API dinamicamente.
+### recruiter_agent_v5 — Actions como Tool Registry Implícito
+
+O v5 não usa `tool_registry.py` explícito. As tools são organizadas em `actions/` por domínio e como tools do autonomous.
+
+#### Actions por Domínio (equivalente ao tool registry)
+
+| Domínio | Pasta | Actions disponíveis |
+|---|---|---|
+| **Jobs** | `src/domains/jobs/actions/` | search, details, analytics, bulk, create, update |
+| **Applies** | `src/domains/applies/actions/` | search, details, pipeline, scoring, bulk, comparison, analytics, sourcing, conversational |
+| **Applies ReAct** | `src/domains/applies/react_agent.py` | search_candidates, search_jobs, ask_user, get_job_selective_processes, create_apply, api_request |
+| **Sourcing** | `src/domains/sourced_profile_sourcing/agents/search.py` | search, filter_skill, filter_score, top_candidates, filter_location, find_similar (embeddings) |
+| **Scheduling** | `src/domains/scheduling/graph.py` | check_available_slots, create_interview, confirm_scheduling |
+| **Evaluation** | `src/domains/evaluation/nodes.py` | classify_input, evaluate_response, decide_flow, craft_message |
+| **Insights** | `src/domains/insights/actions/` | briefing, metrics, alerts, sector_benchmark |
+| **Messaging** | `src/domains/messaging/actions/` | send_email, check_history, list_templates |
+| **Autonomous** | `src/domains/autonomous/tools.py` | 73+ tools selecionadas dinamicamente por contexto |
+
+#### Autonomous — 51 APIs via YAML (documentados em `documentation/`)
+
+```
+applies_create.yml, applies_search.yml, applies_update.yml, applies_delete.yml
+candidates_create.yml, candidates_search.yml, candidates_show.yml, candidates_update.yml, candidates_delete.yml
+candidates_bulk_import_preview.yml
+evaluations_create.yml, evaluations_search.yml, evaluations_update.yml, evaluations_delete.yml
+evaluation_candidates_create.yml
+experiences_create.yml, experiences_search.yml, experiences_show.yml, experiences_update.yml, experiences_delete.yml
+jobs_create.yml, jobs_search.yml, jobs_show.yml, jobs_update.yml, jobs_delete.yml
+jobs_journey.yml, jobs_status_search.yml, jobs_template_fields_search.yml
+job_field_templates_create.yml, job_field_templates_search.yml, job_field_templates_update.yml, job_field_templates_delete.yml
+job_journeys_create.yml, job_journeys_search.yml, job_journeys_update.yml, job_journeys_delete.yml
+list_relationships_create.yml, list_relationships_create_collection.yml
+lists_search.yml ... (51 total)
+```
 
 ### 🔍 Análise de Mercado — Seção 7
 
 **Pros LIA:**
-- Tool registry como arquivo separado é uma boa prática — facilita auditoria e testes unitários de ferramentas
-- A maioria dos domínios está dentro do range seguro (7–17 tools)
-- Ter exemplos de tools no registry facilita o few-shot de como o agente usa cada ferramenta
+- Registry explícito (`tool_registry.py`) é melhor prática — facilita auditoria, testes unitários e documentação automática
+- 163 tools documentadas permitem geração automática de manifesto de capacidades
 
-**Contras LIA — RESOLVIDO em Sprint Z1:**
-- **Kanban (23 tools) e Pipeline Transition (22 tools) estavam acima do limite recomendado** — ✅ **RESOLVIDO (Sprint Z1, 19/03/2026)**: KanbanReActAgent decomposto em KanbanSearchAgent (busca/filtro) + KanbanActionAgent (movimentação) + KanbanAnalyticsAgent (métricas). PipelineTransitionAgent decomposto em subagentes especializados. Supervisor coordena os 6 subagentes via padrão "supervisor + workers" do LangGraph.
-- Sprint Z1 também decompôs os dois agentes como subagentes especializados dentro do mesmo domínio, mantendo retrocompatibilidade de API.
+**Contras LIA:**
+- Sem `tool_manifest.json` gerado automaticamente — exige leitura de código para saber o que o agente faz
+- ✅ RESOLVIDO Z1: subagentes com 7–8 tools cada vs. 22–23 antes
 
 **Pros v5:**
-- Tools dinâmicas via YAML é um padrão inovador — o APIPlannerAgent pode adicionar novas APIs sem alterar código
+- `documentation/*.yml` são essencialmente um tool registry legível por humanos e máquinas — 51 APIs documentadas em YAML é uma abordagem excelente
+- `tools.py` no autonomous com seleção dinâmica por contexto é mais eficiente que carregar todas as tools sempre
 
 **Contras v5:**
-- Sem registry explícito = sem visibilidade do que o agente pode fazer sem ler o código
-- Tools dinâmicas são difíceis de testar e auditar para fairness
+- Sem registry explícito = sem visibilidade do que cada domain agent pode fazer sem ler o código
+- Tools dinâmicas (51 YAMLs lidos em runtime) são difíceis de testar unitariamente
 
-**O que o mercado faz:** OpenAI estabeleceu limite hard de 128 tools mas recomenda máximo de 10–12 para melhor performance. Anthropic recomenda decompor agentes com muitas tools em subagentes especializados (exatamente o que o v5 faz para sourcing). CrewAI e LangGraph recomendam "tool routing" — um agente roteador que decide qual subagente especializado ativar, em vez de dar todas as tools a um único agente.
+**Recomendação para v5 — Criar Tool Registry Explícito:**
+```python
+# CRIAR: src/domains/jobs/tool_registry.py
+from dataclasses import dataclass
+from typing import List
 
-**Recomendação para LIA — ALTA PRIORIDADE:** Decompor os agentes Kanban (23 tools) e Pipeline Transition (22 tools) em subagentes especializados. Exemplo para Kanban: `KanbanSearchAgent` (busca/filtro, 5–7 tools) + `KanbanActionAgent` (mover/atualizar candidatos, 5–7 tools) + `KanbanAnalyticsAgent` (métricas, 4–6 tools). Isso vai melhorar a precisão das respostas e reduzir o custo por query.
+@dataclass
+class ToolSpec:
+    name: str
+    description: str
+    params: dict
+    requires_confirmation: bool = False
+
+JOBS_TOOLS: List[ToolSpec] = [
+    ToolSpec("search_jobs", "Busca vagas por critérios", {"query": "str", "status": "str"}, False),
+    ToolSpec("get_job_details", "Detalhes de uma vaga", {"job_id": "int"}, False),
+    ToolSpec("create_job", "Cria nova vaga", {"title": "str", "description": "str"}, True),
+    # ... demais actions
+]
+
+# PARA CADA DOMÍNIO: criar tool_registry.py similar
+# Isso permite: auditoria, testes, documentação automática, fairness check por tool
+```
 
 ---
 
 ## 8. Serviços de IA/ML
 
-### Plataforma LIA — Serviços de IA/ML (seleção dos ~245)
+### Comparativo de Serviços de IA/ML
 
-| Serviço | Arquivo | Função |
+| Serviço | LIA | v5 |
 |---|---|---|
-| **CV Scoring** | [`cv_scoring_service.py`](../lia-agent-system/app/services/cv_scoring_service.py) | Score de CV vs. requisitos da vaga |
-| **WSI Screening Pipeline** | [`wsi_screening_pipeline.py`](../lia-agent-system/app/services/wsi_screening_pipeline.py) | Pipeline completo de triagem WSI |
-| **WSI Deterministic Scorer** | [`wsi_deterministic_scorer.py`](../lia-agent-system/app/services/wsi_deterministic_scorer.py) | Score determinístico sem LLM |
-| **Embedding Service** | [`embedding_service.py`](../lia-agent-system/app/services/embedding_service.py) | Embeddings de candidatos e vagas |
-| **Hybrid Search** | [`hybrid_search_service.py`](../lia-agent-system/app/services/hybrid_search_service.py) | BM25 + pgvector combinados |
-| **Intent Classifier** | [`intent_classifier.py`](../lia-agent-system/app/services/intent_classifier.py) | Classificação de intenção via LLM |
-| **Enhanced Intent Classifier** | [`enhanced_intent_classifier.py`](../lia-agent-system/app/services/enhanced_intent_classifier.py) | Classificação aprimorada com contexto |
-| **Model Drift Service** | [`model_drift_service.py`](../lia-agent-system/app/services/model_drift_service.py) | Detecção de drift em modelos |
-| **ML Feedback Service** | [`ml_feedback_service.py`](../lia-agent-system/app/services/ml_feedback_service.py) | Feedback adaptativo para pesos de score (Y3/D6) |
-| **Bias Audit Service** | [`bias_audit_service.py`](../lia-agent-system/app/services/bias_audit_service.py) | Auditoria de viés + disparate impact EEOC chi-square (Y3/D3) |
-| **Learning Loop** | [`learning_loop_service.py`](../lia-agent-system/app/services/learning_loop_service.py) | Loop de aprendizado contínuo + FairnessGuard (F1-02) |
-| **Learning Snapshot** | [`learning_snapshot_service.py`](../lia-agent-system/app/services/learning_snapshot_service.py) | Snapshots versionados do learning loop + rollback (Z2-01) |
-| **A/B Testing** | [`ab_testing_service.py`](../lia-agent-system/app/services/ab_testing_service.py) | A/B testing de prompts e estratégias |
-| **Ragas Evaluation** | [`ragas_evaluation_service.py`](../lia-agent-system/app/services/ragas_evaluation_service.py) | Avaliação de RAG com RAGAS |
-| **Pipeline Prediction** | [`pipeline_prediction_service.py`](../lia-agent-system/app/services/pipeline_prediction_service.py) | Previsão de conversão no pipeline |
-| **Multimodal Service** | [`multimodal_service.py`](../lia-agent-system/app/services/multimodal_service.py) | Processamento multimodal (voz+texto) |
-| **Gemini Voice** | [`gemini_voice_service.py`](../lia-agent-system/app/services/gemini_voice_service.py) | Entrevistas por voz com Gemini |
-| **HITL Service** | [`hitl_service.py`](../lia-agent-system/app/services/hitl_service.py) | Human-in-the-loop para revisão |
-| **Agent Quality Evaluator** | [`agent_quality_evaluator.py`](../lia-agent-system/app/services/agent_quality_evaluator.py) | Avaliação de qualidade do agente |
-| **Recruiter Behavior Service** | [`recruiter_behavior_service.py`](../lia-agent-system/app/services/recruiter_behavior_service.py) | Perfil comportamental de recrutador — Redis TTL 24h, 500 sinais (Z7-01) |
-| **Salary Benchmark Service** | [`salary_benchmark_service.py`](../lia-agent-system/app/services/salary_benchmark_service.py) | Benchmark salarial real (Redis 7d → Apify → fallback estático) (Y4/D7) |
-| **Cultural Fit Integration** | [`cultural_fit_integration_service.py`](../lia-agent-system/app/services/cultural_fit_integration_service.py) | Fit cultural integrado (WSI+entrevistas+cultura empresa) (Y4/E2) |
-| **Granular Consent** | [`granular_consent_service.py`](../lia-agent-system/app/services/granular_consent_service.py) | Consentimento LGPD por finalidade (7 tipos) (Y3/D5) |
-| **Event Store** | [`event_store_service.py`](../lia-agent-system/app/services/event_store_service.py) | Log imutável de eventos (append-only) + replay (Y5/E12) |
-| **Routing Learning** | [`routing_learning_service.py`](../lia-agent-system/app/services/routing_learning_service.py) | Auto-routing adaptativo com ajuste de confiança por domínio (Y5/E9) |
-| **Domain Embedding** | [`domain_embedding_service.py`](../lia-agent-system/app/services/domain_embedding_service.py) | Embeddings separados por domínio RAG (Y5/E6) |
-| **RAG Pipeline** | [`rag_pipeline_service.py`](../lia-agent-system/app/services/rag_pipeline_service.py) | RAG híbrido BM25 + pgvector alpha blend + FairnessGuard (G6) |
+| **Embeddings** | `cv_matching_service.py` (skills matching) | `embedding_service.py` (Gemini embedding-001, 768d) |
+| **Cache semântico** | `semantic_cache.py` (pgvector cosine) | `semantic_cache.py` (Redis) |
+| **RAG** | `rag_service.py` (documentos da vaga) | `rag_service.py` (busca híbrida: semântica + textual, psycopg2+pgvector) |
+| **Scoring de candidatos** | `cv_screening_service.py` + `scoring_service.py` | `applies/actions/scoring.py` (scoring_overview, best_fit_analysis) |
+| **Model routing** | `llm_cascade.py` (multi-provider) | `model_router.py` (fast/default/heavy Gemini) |
+| **Tracking de tokens** | `ai_consumption.py` (por tenant) | `llm_tracking_service.py` (por chamada) |
+| **LLM cache** | Redis + LRU in-process | `llm_cache_service.py` (Redis) |
+| **Benchmarks de setor** | `sector_benchmark_service.py` | `sector_benchmark.py` |
+| **Streaming** | `streaming_callback.py` | `streaming_callback.py` |
+| **Drift detection** | `model_drift_service.py` (job diário) | Não |
+| **A/B testing** | `ab_testing_service.py` | Não |
+| **Scoring ML** | `ml_feedback_service.py` + finetuning | Não |
+| **Qualidade RAGAS** | `ragas_evaluation_service.py` | Não |
+| **Explicabilidade** | `agent_explainability.py` | Não |
+| **Proactive alerts** | `proactive_worker.py` | `proactive/detector.py` + notifier + runner |
+| **Fact checker** | `shared/compliance/fact_checker.py` | `sourcing/fact_checker.py` |
 
-### recruiter_agent_v5 — Serviços de IA
+**Arquivos LIA:**
+- `app/services/cv_screening_service.py`
+- `app/services/scoring_service.py`
+- `app/services/model_drift_service.py`
+- `app/shared/ab_testing.py`
+- `app/services/ragas_evaluation_service.py`
+- `app/services/agent_quality_evaluator.py`
 
-| Serviço | Arquivo | Função |
-|---|---|---|
-| **Fairness Checker** | [`fairness.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/fairness.py) | Checagem de viés em sourcing |
-| **Fact Checker** | [`fact_checker.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/fact_checker.py) | Anti-alucinação em resultados |
-| **Security** | [`evaluation/security.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/evaluation/security.py) | Segurança de avaliação |
-| **Insights** | [`actions/insights.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/actions/insights.py) | Geração de insights |
-| **Distribution** | [`actions/distribution.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/actions/distribution.py) | Distribuição de candidatos |
+**Arquivos v5:**
+- `src/services/embedding_service.py` — Gemini gemini-embedding-001, 768 dims
+- `src/services/semantic_cache.py` — Redis
+- `src/services/rag_service.py` — híbrido (semântico + keyword)
+- `src/services/model_router.py` — ModelRouter(fast, default, heavy)
+- `src/services/llm_tracking_service.py`
+- `src/services/llm_cache_service.py`
+- `src/services/sector_benchmark.py`
+- `src/services/proactive/detector.py`
 
 ### 🔍 Análise de Mercado — Seção 8
 
 **Pros LIA:**
-- `WSI Deterministic Scorer` é um diferencial excelente — score sem LLM para casos previsíveis reduz custo e é mais auditável para fins regulatórios (Eightfold também usa scoring determinístico como camada base)
-- `Hybrid Search` (BM25 + pgvector) é o estado da arte — supera busca vetorial pura em benchmarks de relevância de documentos de RH
-- `Gemini Voice` para entrevistas por voz é uma funcionalidade que apenas HireVue e Paradox têm em produção
-- Dois classificadores de intent (`intent_classifier.py` + `enhanced_intent_classifier.py`) sugere que há um para fallback — boa prática de resiliência
+- Drift detection diário + RAGAS + explicabilidade são os serviços mais avançados — a maioria das startups de HR Tech não tem nada disso
+- A/B testing de prompts com controle de fairness (Sprint F1-02) é muito avançado
 
 **Contras LIA:**
-- Dois classificadores de intent também sugerem que o primeiro não foi suficiente e um segundo foi criado como patch — consolidar seria mais limpo
-- 245+ serviços na mesma pasta plana é difícil de navegar — sem subcategorização, um desenvolvedor novo leva dias para entender o que existe
+- Sem scoring de candidatos baseado em embeddings — o `cv_screening_service.py` usa regras, não vetores
 
 **Pros v5:**
-- Os 5 serviços do v5 são todos de IA pura — sem ruído de serviços de negócio misturados
+- Embedding service com pgvector integrado ao memory store e ao RAG é uma arquitetura coesa
+- RAG híbrido (semântico + textual) é a abordagem que melhores resultados dá — idêntico ao que Retrieval Augmented Generation researchers recomendam
+- Proactive detector + notifier + runner é uma arquitetura de 3 camadas bem separada
 
 **Contras v5:**
-- Praticamente sem serviços de ML — não tem scoring, não tem embedding, não tem drift detection
+- Sem drift detection — o sistema não sabe quando a qualidade das respostas está piorando
+- Sem RAGAS ou avaliação de qualidade — "cego" para qualidade de respostas
+- Sem scoring de candidatos baseado em ML — usa score da API Rails, não calcula internamente
+- Sem A/B testing
 
-**O que o mercado faz:** Eightfold tem um "Talent Intelligence Platform" com camadas separadas: raw data → ML features → scoring → ranking → presentation. Cada camada é um serviço isolado. SeekOut tem um "Profile Enrichment Engine" similar ao `candidate_enrichment_service.py` da LIA. A tendência é criar uma camada de "AI Gateway" que centraliza todas as chamadas a LLMs e modelos, unificando logging, rate limiting e fallback.
-
-**Recomendação para LIA:** Criar subcategorias dentro de `app/services/`: `services/ai/`, `services/integrations/`, `services/notifications/`, `services/analytics/`. Isso vai facilitar onboarding e evitar criação de serviços duplicados. Consolidar os dois classificadores de intent em um único com configuração de estratégia.
+**Recomendação para v5 — Passo a passo para adicionar drift detection (ver Seção 20):**
+1. Criar `src/services/quality_tracker.py` que salva métricas de qualidade por sessão
+2. Criar job Celery `src/tasks/quality_drift_job.py` que roda diariamente
+3. Integrar com `audit_writer.py` existente para acessar histórico de execuções
 
 ---
 
 ## 9. Memória e Estado
 
-| Componente | LIA | v5 |
-|---|---|---|
-| **Memória de trabalho (curto prazo)** | `WorkingMemory` — contexto da conversa atual, resolve pronomes | Não existe |
-| **Memória de longo prazo** | `LongTermMemory` — PostgreSQL, histórico por tenant/usuário | Não existe |
-| **Checkpointing** | `checkpointer.py` — snapshots de estado do grafo LangGraph | Não existe |
-| **Estado de conversa** | `conversation_state.py` — estado completo por sessão | Não existe |
-| **Memória de candidato** | `candidate_list_store.py` — listas e anotações do recrutador | Não existe |
-| **Resolver de referências** | `reference_resolver.py` — resolve "aquele candidato" etc. | Não existe |
-| **Event Store** | `event_store_service.py` — log imutável de eventos | Não existe |
+### Plataforma LIA — Working Memory + Long Term Memory
+
+```
+Memória LIA
+├── WorkingMemory (in-session)          ← shared/agents/working_memory.py
+│   └── estado da conversa atual
+├── LongTermMemory (cross-session)      ← shared/agents/long_term_memory.py
+│   └── preferências e histórico do recrutador
+├── LangGraph Checkpointer              ← shared/agents/checkpointer.py
+│   └── estado dos grafos (PostgresSaver)
+└── PostgreSQL                          ← modelos SQLAlchemy
+    ├── tenant_memories (por empresa)
+    └── agent_execution_logs
+```
 
 **Arquivos LIA:**
-- [`app/shared/agents/working_memory.py`](../lia-agent-system/app/shared/agents/working_memory.py)
-- [`app/shared/agents/long_term_memory.py`](../lia-agent-system/app/shared/agents/long_term_memory.py)
-- [`app/shared/agents/checkpointer.py`](../lia-agent-system/app/shared/agents/checkpointer.py)
-- [`app/shared/memory/conversation_state.py`](../lia-agent-system/app/shared/memory/conversation_state.py)
-- [`app/shared/memory/reference_resolver.py`](../lia-agent-system/app/shared/memory/reference_resolver.py)
+- `app/shared/agents/working_memory.py`
+- `app/shared/agents/long_term_memory.py`
+- `app/shared/agents/checkpointer.py`
+- `app/shared/agents/memory_integration.py`
+
+---
+
+### recruiter_agent_v5 — Sistema de Memória Completo
+
+> **Correção (19/03/2026):** O v5 tem sistema de memória substancial com PostgreSQL + pgvector. A afirmação "sem persistência" e "recrutador que volta no dia seguinte precisa repetir tudo" estava **completamente errada**.
+
+```
+Memória v5
+├── ConversationSession (in-session)      ← src/hub/session.py
+│   ├── session_id → Redis
+│   └── domain_memories dict (por domínio)
+│       ├── AppliesConversationMemory     ← src/domains/applies/memory.py
+│       ├── JobsConversationMemory        ← src/domains/jobs/memory.py
+│       ├── InsightsConversationMemory    ← src/domains/insights/memory.py
+│       ├── MessagingConversationMemory   ← src/domains/messaging/memory.py
+│       ├── SchedulingConversationMemory  ← src/domains/scheduling/memory.py
+│       └── SourcingConversationMemory    ← src/domains/sourced_profile_sourcing/memory.py
+│
+├── TenantMemoryStore (cross-session)     ← src/services/memory/store.py
+│   ├── PostgreSQL: tabela tenant_memories
+│   ├── pgvector: embedding column (768 dims, Gemini)
+│   ├── TTL: 30 dias por padrão
+│   ├── Max: 500 memórias por tenant
+│   └── Dedup: similaridade > 0.92 não duplica
+│
+├── MemoryManager                         ← src/services/memory/manager.py
+│   ├── remember(tenant_id, content, category)  → salva com embedding
+│   ├── recall(tenant_id, query, limit=5)        → busca semântica
+│   └── categorias: hiring_preference, workflow_pattern, entity_insight, search_pattern
+│
+└── LangGraph Checkpointer               ← src/services/checkpointer.py
+    ├── PostgresSaver (CHECKPOINTER_BACKEND=postgres)
+    └── MemorySaver (fallback/default)
+```
+
+**Categorias de memória automáticas (auto-detectadas):**
+| Categoria | Palavras-chave | Exemplo salvo |
+|---|---|---|
+| `hiring_preference` | preferencia, prefiro, gosto de | "prefiro candidatos com inglês fluente" |
+| `workflow_pattern` | sempre, toda vez, fluxo | "sempre peço aprovação do gestor antes de avançar" |
+| `entity_insight` | vaga, candidato, departamento | "vaga 7144 tem 3 etapas" |
+| `search_pattern` | buscar, procurar, filtrar | "filtro padrão: score > 80, Python" |
+
+### Comparativo de Memória
+
+| Aspecto | LIA | v5 |
+|---|---|---|
+| **Memória in-session** | WorkingMemory | ConversationSession (Redis) + domain_memories por domínio |
+| **Memória cross-session** | LongTermMemory (PostgreSQL) | TenantMemoryStore (PostgreSQL + pgvector 768d) |
+| **TTL** | Não documentado | 30 dias (configurável em `DEFAULT_TTL_DAYS`) |
+| **Busca semântica** | Sim (pgvector) | Sim (pgvector + Gemini embedding-001) |
+| **Checkpointing** | PostgresSaver | PostgresSaver + MemorySaver fallback |
+| **Categorização** | Por domínio | Auto-categorizadas (4 categorias) |
+| **Dedup** | Não documentado | Threshold 0.92 — não duplica memórias similares |
+| **Limite por tenant** | Não documentado | MAX_MEMORIES_PER_TENANT = 500 |
 
 ### 🔍 Análise de Mercado — Seção 9
 
 **Pros LIA:**
-- Working Memory + Long-Term Memory é o padrão de 2025 — exatamente o que os papers de "cognitive architectures for LLM agents" recomendam (Mem0, LangMem, Zep usam essa estrutura)
-- O `reference_resolver.py` para pronomes é uma funcionalidade que nenhum competidor de mercado documentou explicitamente — é genuinamente diferenciado
-- Event Store imutável é a base para auditoria e LGPD (direito ao apagamento = marcar eventos como apagados sem alterar o log)
+- LongTermMemory com histório de múltiplas sessões é mais rico semanticamente
+- Integração mais explícita com o orchestrator (memory_resolver.py resolve referências em Tier 0)
 
 **Contras LIA:**
-- Memória baseada em PostgreSQL tem limitação de escala — para muitos tenants com histórico longo, a tabela de memória pode crescer descontroladamente sem uma política de TTL (Time-to-Live) clara
-- Não há evidência de "memória semântica" (embeddings de episódios passados) — a busca em memória de longo prazo pode ser apenas por tenant_id e timestamp, sem busca por similaridade
-- Sem compressão de memória — modelos como Claude têm janela de contexto de 200k tokens mas cobram por token. Memórias longas sem compressão aumentam custo
+- Sem TTL documentado nas memórias — risco de acumulação indefinida de dados PII
+- Sem dedup automático — mesma informação pode ser armazenada múltiplas vezes
 
 **Pros v5:**
-- Stateless é simples e previsível — sem problemas de memória desatualizada ou "contaminação" entre sessões
+- TenantMemoryStore com TTL, dedup por similaridade e limite de 500 entradas é mais seguro que a LIA
+- pgvector + Gemini embedding-001 é a implementação mais clean para busca semântica de memória
+- Categorização automática por keywords é elegante sem precisar de LLM adicional
 
 **Contras v5:**
-- Um recrutador que volta ao sistema no dia seguinte precisa repetir todo o contexto da conversa anterior — experiência ruim em produção
+- PostgresSaver instável (ARCHITECTURAL_AUDIT diz: "checkpointing nota 3/10") — perde estado entre reinicios
+- Sem recall cross-domain — cada domain memory vive em silo
+- Sem summary de memórias antigas — quando chega em 500 entradas, as mais antigas são apagadas sem resumo
 
-**O que o mercado faz:** Mem0 (Y Combinator, 2024) é o framework especializado em memória para agentes — usa 4 tipos: sensorial (conversa atual), episódica (conversas passadas), semântica (fatos sobre o usuário), procedimental (preferências aprendidas). Zep também usa essa taxonomia. Phenom tem "candidate memory" que registra interações ao longo de meses. Paradox (Olivia) tem "candidate continuity" — a candidata que conversou 3 meses atrás é reconhecida.
-
-**Recomendação para LIA:** Adicionar política de TTL e compressão à Long-Term Memory — após 30 dias, sumarizar episódios antigos em um resumo (via LLM) em vez de manter os episódios brutos. Adicionar busca semântica na LongTermMemory (não só por tenant/timestamp). Considerar integrar Mem0 ou Zep como camada de memória dedicada — são otimizados para este problema e já têm integração com LangGraph.
+**Recomendação para v5:**
+1. Estabilizar PostgresSaver (prioridade ALTA — veja Seção 20, item V-09)
+2. Criar `MemorySummarizer` que ao atingir 80% do limite (400/500) resume os mais antigos:
+   ```python
+   # src/services/memory/summarizer.py
+   class MemorySummarizer:
+       def summarize_oldest(self, tenant_id: int, count: int = 50) -> str:
+           oldest = self._store.get_oldest(tenant_id, count)
+           summary = self._llm.invoke(f"Resuma em 1 parágrafo: {oldest}")
+           self._store.replace_batch(oldest, summary)
+   ```
+3. Adicionar recall cross-domain: quando a sessão muda de domínio, carregar memórias relevantes do tenant store
 
 ---
 
 ## 10. Prompts e Persona
 
-### Plataforma LIA
-
-| Arquivo | Função |
-|---|---|
-| [`app/prompts/shared/lia_persona.yaml`](../lia-agent-system/app/prompts/shared/lia_persona.yaml) | Persona central: nome, tom, valores, limitações |
-| [`app/shared/prompts/anti_sycophancy_block.py`](../lia-agent-system/app/shared/prompts/anti_sycophancy_block.py) | Bloco anti-sycophancy em todos os prompts |
-| [`app/shared/prompts/cot.py`](../lia-agent-system/app/shared/prompts/cot.py) | Chain-of-thought templates |
-| [`app/shared/prompts/few_shot_examples.py`](../lia-agent-system/app/shared/prompts/few_shot_examples.py) | Few-shot genérico |
-| [`app/shared/prompts/orchestrator_examples.py`](../lia-agent-system/app/shared/prompts/orchestrator_examples.py) | Few-shot para o orquestrador |
-| [`app/shared/prompts/pipeline_examples.py`](../lia-agent-system/app/shared/prompts/pipeline_examples.py) | Few-shot para pipeline de triagem |
-| [`app/shared/prompts/loader.py`](../lia-agent-system/app/shared/prompts/loader.py) | Loader de YAMLs com override por tenant |
-| [`app/shared/prompts/prompt_registry.py`](../lia-agent-system/app/shared/prompts/prompt_registry.py) | Registro central de prompts |
-
-### recruiter_agent_v5
-
-| Arquivo | Função |
-|---|---|
-| [`v5_persona.yaml`](https://github.com/talensestg/recruiter_agent_v5/blob/main/v5_persona.yaml) | Persona do assistente v5 |
-| Prompts inline nos agentes | Cada agente tem seu prompt hardcoded no construtor |
+### Comparativo de Gestão de Prompts
 
 | Aspecto | LIA | v5 |
 |---|---|---|
-| **Gestão de prompts** | YAML externo + registry + override por tenant | Prompts inline nos agentes |
+| **Gestão de prompts** | YAML externo + registry + override por tenant | `prompts.py` por domínio (Python) + `v5_persona.yaml` |
+| **Formato** | YAML (`.yaml`) + Python (`.py`) — misto | Python (`.py`) — constantes de classe |
 | **Anti-sycophancy** | Bloco estruturado em todos os prompts | Não implementado |
 | **Few-shot** | 3 arquivos dedicados (orchestrator, pipeline, sourcing) | Não dedicado |
-| **Override por empresa** | Sim (loader com tenant_id) | Não |
-| **Chain-of-thought** | Estruturado (`cot.py`) | Implícito |
+| **Override por empresa** | Sim (`prompt_loader.py` com `tenant_id`) | Não |
+| **Chain-of-thought** | Estruturado (`cot.py`) | Implícito nos prompts |
+| **Versionamento** | ✅ Z3-02: `version` + `updated_at` em 9 YAMLs | Git (commit hash como versão implícita) |
+| **Prompt Builder dinâmico** | Não (prompts estáticos) | `applies/prompt_builder/` — construção dinâmica por contexto |
+
+**Arquivos LIA:**
+- `app/prompts/shared/lia_persona.yaml`
+- `app/shared/prompts/prompt_registry.py`
+- `app/shared/prompts/loader.py`
+- `libs/contexts/*.yaml` (9 YAMLs com version + updated_at)
+
+**Arquivos v5:**
+- `src/domains/{domain}/prompts.py` — prompt de sistema por domínio
+- `src/domains/applies/prompt_builder/` — AppliesDynamicPromptBuilder, PromptConfig, AppliesActionRegistry
+  - `dynamic_builder.py` — build_system_prompt() + build_intent_prompt()
+  - `action_registry.py` — registro de actions com exemplos
+  - `domain_action.py` — DomainAction dataclass
+- `v5_persona.yaml` — persona do assistente v5
+- `.github/instructions/langchain-prompts.instructions.md` — guia de prompts para Copilot
+
+**Destaque v5 — AppliesDynamicPromptBuilder:**
+```python
+# src/domains/applies/prompt_builder/dynamic_builder.py
+# Constrói prompt dinâmico baseado em:
+# - contexto do job (tem job_id ou não)
+# - actions disponíveis (max 8 no prompt)
+# - exemplos por action (max 2 por action)
+# - modo compacto ou completo
+class AppliesDynamicPromptBuilder:
+    def build_system_prompt(self, job_id, has_job_context) -> str
+    def build_intent_prompt(self, query, all_actions) -> str
+```
 
 ### 🔍 Análise de Mercado — Seção 10
 
 **Pros LIA:**
-- YAML externo + loader + override por tenant é exatamente o que Langfuse (líder de mercado em prompt management) oferece como enterprise feature — a LIA chegou lá por conta própria
-- Anti-sycophancy como bloco reutilizável é uma sofisticação que poucas empresas documentam explicitamente — a maioria ainda sofre com LLMs que concordam com o usuário mesmo quando errado
-- Few-shot por domínio (orchestrator_examples, pipeline_examples) melhora significativamente a qualidade — é uma das técnicas mais eficazes para reduzir erros de reasoning
+- YAML externo + loader + override por tenant é exatamente o que Langfuse oferece como enterprise feature
+- Anti-sycophancy como bloco reutilizável é sofisticação que poucas empresas documentam
+- Few-shot por domínio melhora significativamente a qualidade
+- ✅ Versionamento implementado (Z3-02)
 
-**Contras LIA — PARCIALMENTE RESOLVIDO:**
-- ~~Sem versionamento de prompts~~ → ✅ **RESOLVIDO (Sprint Z3-02, 19/03/2026)**: campos `version` e `updated_at` adicionados aos 9 YAMLs de contexto em `libs/contexts/` (wizard, pipeline, sourcing, kanban, talent, jobs_mgmt, policy, automation, pipeline_transition). Mudanças de prompt agora rastreáveis via `version` + `updated_at` em cada YAML.
-- Prompts em Python (`.py`) misturados com YAML (`.yaml`) — inconsistência que cria confusão sobre onde procurar/editar um prompt
-- Sem sistema de avaliação automática de prompts — quando um prompt muda, não há pipeline que valide se a qualidade melhorou ou piorou (métricas por versão ainda pendentes)
+**Contras LIA:**
+- Prompts em Python (.py) misturados com YAML (.yaml) — inconsistência
+- Sem sistema de avaliação automática (métricas por versão pendentes)
 
 **Pros v5:**
-- Prompts inline são fáceis de encontrar — você sabe exatamente onde está o prompt de cada agente
+- `AppliesDynamicPromptBuilder` é o componente de prompt mais sofisticado do v5 — construção contextual baseada em availables actions e contexto do job
+- Prompts em `prompts.py` por domínio são fáceis de encontrar — sabe exatamente onde está o prompt de cada agente
 
 **Contras v5:**
-- Hardcoded = impossível de customizar por cliente sem alterar código
-- Sem versionamento, sem few-shot estruturado, sem anti-sycophancy
+- Hardcoded em Python = impossível customizar por cliente sem alterar código
+- Sem anti-sycophancy — LLMs podem concordar com o usuário mesmo quando a resposta está errada
+- Sem versionamento explícito (depende de Git commit hash)
+- Sem few-shot estruturado nos prompts
 
-**O que o mercado faz:** Langfuse tem versionamento de prompts com rollback, A/B testing de variações, e métricas de qualidade por versão — é a ferramenta de referência em 2025. Humanloop e PromptLayer são alternativas. OpenAI Evals e DeepEval são usados para avaliação automática de prompts. A tendência é "prompt-as-code": prompts em controle de versão com pipelines de CI/CD para validação antes de deploy.
-
-**Recomendação para LIA — ALTA PRIORIDADE:** Integrar Langfuse (open-source, self-hostável) para versionamento e avaliação de prompts. Isso vai custar zero de infraestrutura adicional e vai criar um ciclo de melhoria contínua onde cada mudança de prompt passa por avaliação automatizada antes de ir para produção. Padronizar todos os prompts em YAML — migrar os `.py` para `.yaml` e usar o loader existente. Adicionar um campo `version` e `updated_at` em cada YAML de prompt.
+**Recomendação para v5:**
+1. Adicionar bloco anti-sycophancy em todos os prompts de sistema:
+   ```python
+   # Adicionar em src/domains/*/prompts.py — no sistema de todos os domínios
+   ANTI_SYCOPHANCY_BLOCK = """
+   IMPORTANTE: Seja direto e preciso. Não concorde com o usuário quando os dados mostram
+   o contrário. Se um candidato tem score 45 e o usuário diz "ele é excelente",
+   informe o score real e deixe o usuário decidir. Prefira dados a opiniões.
+   """
+   ```
+2. Criar `src/shared/prompts/` com:
+   - `base_system_prompt.py` — bloco compartilhado (anti-sycophancy + HITL rules)
+   - `prompt_versioner.py` — versão baseada em hash do conteúdo
+3. Externalizar prompts para YAML para facilitar customização por cliente
 
 ---
 
 ## 11. Fairness e Compliance de IA
 
-### Plataforma LIA — FairnessGuard 3 Camadas
+### Plataforma LIA — FairnessGuard 3 Camadas (Obrigatório)
 
 ```
-Camada 1: Pre-Decision Guard → fairness_guard.py → block_if_biased()
-Camada 2: In-Process Monitor → audit_callback.py → log_decision()
+Camada 1: Pre-Decision Guard  → fairness_guard.py → block_if_biased()
+Camada 2: In-Process Monitor  → audit_callback.py → log_decision()
 Camada 3: Post-Decision Audit → admin_bias_audit.py → four_fifths_rule()
                                   └── test_four_fifths_rule.py
 ```
 
-**Arquivos:**
-- [`app/shared/compliance/fairness_guard.py`](../lia-agent-system/app/shared/compliance/fairness_guard.py)
-- [`app/shared/compliance/fact_checker.py`](../lia-agent-system/app/shared/compliance/fact_checker.py)
-- [`app/shared/compliance/audit_callback.py`](../lia-agent-system/app/shared/compliance/audit_callback.py)
-- [`app/api/v1/admin_bias_audit.py`](../lia-agent-system/app/api/v1/admin_bias_audit.py)
-- [`docs/compliance/FRIA_WSI.md`](../docs/compliance/FRIA_WSI.md)
+**Arquivos LIA:**
+- `app/shared/compliance/fairness_guard.py` — 3 camadas obrigatórias
+- `app/shared/compliance/fact_checker.py`
+- `app/shared/compliance/audit_callback.py`
+- `app/api/v1/admin_bias_audit.py` — dashboard + regra 4/5
+- `docs/compliance/FRIA_WSI.md` — FRIA documentado
 
-### recruiter_agent_v5
+---
 
-| Arquivo | Cobertura |
-|---|---|
-| [`fairness.py`](https://github.com/talensestag/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/fairness.py) | Só sourcing, não obrigatório |
-| [`fact_checker.py`](https://github.com/talensestag/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/fact_checker.py) | Só sourcing |
+### recruiter_agent_v5 — Fairness em 2 Domínios
+
+> **Correção (19/03/2026):** O v5 tem fairness em **2 domínios** (jobs + sourcing), não apenas sourcing. E tem `fact_checker.py` com 3 métodos de verificação.
+
+**Arquivos v5:**
+
+| Arquivo | Domínio | O que faz |
+|---|---|---|
+| `src/domains/jobs/fairness.py` | Jobs | Verifica viés em job descriptions (termos como "boa aparência", "jovem", "loiro") |
+| `src/domains/sourced_profile_sourcing/fairness.py` | Sourcing | Verifica viés em filtros de busca de candidatos |
+| `src/domains/sourced_profile_sourcing/fact_checker.py` | Sourcing | `verify_count_claim()`, `verify_average_claim()`, `verify_score_claim()` |
+| `tests/test_fairness.py` | — | Testes de fairness |
+| `tests/test_fact_checker.py` | — | Testes de fact checking |
+
+**Detalhe: jobs/fairness.py** — verifica termos de viés em JDs antes de criar vagas no Rails. Se detectar "boa aparência", "bairros nobres", "universidade de primeira linha", bloqueia ou alerta o recrutador.
+
+**Detalhe: fact_checker.py** — 3 verificações numéricas:
+- `verify_count_claim(claimed_count, actual_data)` — se LLM disse "20 candidatos" mas são 18, corrige
+- `verify_average_claim(claimed_avg, data, field)` — verifica médias com tolerância configurável
+- `verify_score_claim(claimed_score, actual_score)` — verifica scores de candidatos
+
+### Comparativo de Fairness
 
 | Aspecto | LIA | v5 |
 |---|---|---|
-| **FairnessGuard estruturado** | Sim — 3 camadas obrigatórias | Não |
+| **FairnessGuard estruturado** | Sim — 3 camadas obrigatórias | Não — fairness por domínio, não obrigatória |
 | **Regra 4/5 (EEOC)** | Implementada + testada | Não |
-| **Anti-alucinação** | Em todos os domínios | Só em sourcing |
-| **Dashboard de auditoria** | Sim | Não |
+| **Anti-alucinação (fact_checker)** | Em todos os domínios | Só em sourcing |
+| **Dashboard de auditoria** | Sim (admin_bias_audit.py) | Não |
 | **Explicabilidade** | API por decisão | Não |
-| **FRIA documentado** | Sim | Não |
+| **FRIA documentado** | Sim (FRIA_WSI.md) | Não |
+| **Fairness em job descriptions** | Sim (FairnessGuard) | Sim (jobs/fairness.py) |
+| **Fairness em sourcing** | Sim (FairnessGuard) | Sim (sourcing/fairness.py) |
+| **Testes de fairness** | `test_four_fifths_rule.py` | `test_fairness.py`, `test_fact_checker.py` |
 
 ### 🔍 Análise de Mercado — Seção 11
 
 **Pros LIA — PONTO FORTE MÁXIMO:**
-- **A LIA está à frente de todos os competidores conhecidos nesta dimensão.** NYC Local Law 144 (vigente desde 2023) exige auditoria de disparate impact anual para ferramentas de decisão de emprego. A FairnessGuard da LIA já implementa a métrica de disparate impact (regra 4/5 = four_fifths_rule) — HireVue foi multado exatamente por não ter isso
-- Fairness como camada 1 (pre-decision) é raro no mercado — a maioria dos competidores faz fairness post-hoc, auditando resultados depois. A LIA bloqueia decisões enviesadas antes de acontecerem
-- Ter um FRIA (Fundamental Rights Impact Assessment) documentado para o WSI é o que a EU AI Act exige para sistemas de IA de alto risco — a LIA já está preparada para o mercado europeu
+- NYC Local Law 144 (vigente 2023) exige auditoria de disparate impact — a LIA já implementa `four_fifths_rule()` — HireVue foi multado exatamente por não ter isso
+- Fairness como camada 1 (pre-decision) é raro no mercado — a maioria faz fairness post-hoc
+- FRIA documentado é o que a EU AI Act exige para sistemas de IA de alto risco
 
 **Contras LIA:**
-- Sem red teaming automatizado — nenhum processo documentado de testar a FairnessGuard com inputs adversariais para ver se ela pode ser contornada
-- Sem relatório de fairness exportável para auditores externos — o dashboard admin é interno; auditores externos (como NYC Local Law 144 requer) precisam de um relatório padronizado
+- Sem red teaming automatizado — nenhum processo de testar a FairnessGuard com inputs adversariais
+- Sem relatório de fairness exportável para auditores externos (NYC LL144 requer isso)
 
 **Pros v5:**
-- Ter fairness.py e fact_checker.py mesmo sendo MVP mostra consciência do problema
+- Fairness em JDs (jobs/fairness.py) e fairness em filtros de sourcing mostra consciência do problema
+- FactChecker com 3 verificações numéricas é uma boa proteção contra alucinação
 
 **Contras v5:**
-- Fairness opcional e não obrigatória é exatamente o que as regulações estão proibindo — em produção, isso seria um risco legal sério
+- Fairness não obrigatória — em produção no Brasil/EUA/Europa, risco legal sério
+- Sem regra 4/5 (EEOC) — não pode fazer auditoria de disparate impact
+- Sem dashboard de auditoria — dados de fairness não são visíveis para gestão
 
-**O que o mercado faz:** Eightfold passou por auditoria independente de viés em 2023 e publicou os resultados. HireVue tem contrato com a Informs Analytics para auditoria externa anual. Pymetrics (adquirida pela Harver) foi pioneer em fairness em 2016 — usa norming groups por demografia. A tendência é "algorithmic auditing as a service" — empresas como BABL AI e Radical AI fazem auditorias externas de sistemas de IA de RH.
+**Recomendação para v5 — Passo a passo para implementar FairnessGuard básico:**
 
-**Recomendação para LIA:** Criar um relatório de fairness exportável em PDF/CSV com os dados do bias_audit_service — isso vai permitir entregar o relatório para clientes que precisam de compliance regulatório (NYC LL144, EU AI Act). Adicionar red teaming no pipeline de testes: criar um dataset de inputs adversariais que tentam contornar a FairnessGuard. Isso é o que separa "fairness declarada" de "fairness comprovada".
+**Passo 1:** Criar `src/shared/fairness/guard.py`:
+```python
+# CRIAR: src/shared/fairness/guard.py
+import re
+from typing import List, Tuple
+
+BIAS_TERMS = [
+    (r"\bboa aparência\b", "aparência física não é critério legal de seleção"),
+    (r"\bjovem\b", "referência a idade pode ser discriminatória"),
+    (r"\brecém-formado\b", "pode excluir candidatos mais experientes"),
+    (r"\buniversidade de primeira linha\b", "critério de prestígio pode ser discriminatório"),
+    (r"\bbairros nobres\b", "localização pode excluir por renda"),
+]
+
+def check_job_description_bias(jd: str) -> Tuple[bool, List[str]]:
+    """Retorna (has_bias, [motivos])"""
+    flags = []
+    for pattern, reason in BIAS_TERMS:
+        if re.search(pattern, jd, re.IGNORECASE):
+            flags.append(reason)
+    return len(flags) > 0, flags
+```
+
+**Passo 2:** Integrar no `src/domains/jobs/fairness.py` (já existe, ampliar):
+```python
+# MODIFICAR: src/domains/jobs/fairness.py
+from src.shared.fairness.guard import check_job_description_bias
+
+class JobsFairnessChecker:
+    def validate_job_description(self, jd: str) -> dict:
+        has_bias, reasons = check_job_description_bias(jd)
+        return {
+            "approved": not has_bias,
+            "bias_detected": has_bias,
+            "reasons": reasons,
+            "recommendation": "Revise os termos destacados antes de publicar" if has_bias else "JD aprovada"
+        }
+```
+
+**Passo 3:** Criar `src/services/audit/fairness_audit.py` (logging de decisões para dashboard futuro):
+```python
+# CRIAR: src/services/audit/fairness_audit.py
+import json, logging
+from datetime import datetime
+
+logger = logging.getLogger("fairness_audit")
+
+class FairnessAuditLogger:
+    def log_decision(self, domain: str, action: str, input_data: dict, bias_detected: bool, reasons: list):
+        logger.info(json.dumps({
+            "timestamp": datetime.utcnow().isoformat(),
+            "domain": domain,
+            "action": action,
+            "bias_detected": bias_detected,
+            "reasons": reasons,
+        }))
+```
+
+**Passo 4:** Adicionar teste de fairness obrigatório no CI:
+```python
+# CRIAR: tests/test_fairness_guard.py
+from src.shared.fairness.guard import check_job_description_bias
+
+def test_detects_appearance_bias():
+    jd = "Procuramos candidato de boa aparência para trabalhar com clientes"
+    has_bias, reasons = check_job_description_bias(jd)
+    assert has_bias == True
+    assert len(reasons) > 0
+
+def test_approves_neutral_jd():
+    jd = "Procuramos desenvolvedor Python com 3 anos de experiência"
+    has_bias, reasons = check_job_description_bias(jd)
+    assert has_bias == False
+```
 
 ---
 
 ## 12. PII e Proteção de Dados
 
+### Plataforma LIA — LGPD Compliance Completo
+
 | Componente | LIA | v5 |
 |---|---|---|
-| **PII Masking** | `pii_masking.py` — CPF, email, nome + **Presidio NER Layer 4 (Z6-03)** opt-in | Não |
-| **Consentimento** | `consent_checker_service.py` + `granular_consent_service.py` | Não |
+| **PII Masking (LLM prompt)** | `pii_masking.py` + Presidio NER Layer 4 | `pii_filter.py` (CPF, email, phone em logs) |
+| **Injection Protection** | Não documentado explicitamente | `security.py` — 20+ padrões de injection |
+| **Consentimento** | `consent_checker_service.py` + `granular_consent_service.py` | Não (Rails gerencia) |
 | **DSR (direito ao esquecimento)** | `dsr_export_service.py` | Não |
 | **LGPD Cleanup** | `lgpd_cleanup_service.py` | Não |
 | **Admin LGPD** | `admin_lgpd.py` | Não |
-| **Audit Trail** | `audit_callback.py` | Não |
+| **Audit Trail** | `audit_callback.py` | `audit_callback.py` + `audit_writer.py` |
+| **PII em logs** | Presidio + regex | PIIMaskingFilter em logging root |
+| **Sanitização de input** | — | `sanitize_input()` + `MAX_SAFE_LENGTH=4000` |
 
 **Arquivos LIA:**
-- [`app/shared/pii_masking.py`](../lia-agent-system/app/shared/pii_masking.py)
-- [`app/services/consent_checker_service.py`](../lia-agent-system/app/services/consent_checker_service.py)
-- [`app/services/dsr_export_service.py`](../lia-agent-system/app/services/dsr_export_service.py)
-- [`app/services/lgpd_cleanup_service.py`](../lia-agent-system/app/services/lgpd_cleanup_service.py)
+- `app/shared/pii_masking.py`
+- `app/services/consent_checker_service.py`
+- `app/services/dsr_export_service.py`
+- `app/services/lgpd_cleanup_service.py`
+- `app/api/v1/admin_lgpd.py`
+
+**Arquivos v5:**
+```python
+# src/services/pii_filter.py — PII em logs
+_PII_PATTERNS = [
+    (re.compile(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b'), '[CPF]'),
+    (re.compile(r'\b[\w.+-]+@[\w.-]+\.\w{2,}\b'), '[EMAIL]'),
+    (re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?\d{4,5}[-\s]?\d{4}\b'), '[PHONE]'),
+]
+# PIIMaskingFilter aplicado no logging.root — TODOS os logs são mascarados
+
+# src/services/security.py — Injection detection
+INJECTION_PATTERNS = [
+    r"ignore\s+(previous\s+|all\s+)*instructions?",
+    r"forget\s+(everything|all|previous)",
+    r"you\s+are\s+now\s+a",
+    r"jailbreak", r"dan\s*mode", r"developer\s*mode",
+    r"esque[çc]a\s+tudo", r"agora\s+voc[êe]\s+[ée]",
+    # ... 20+ padrões PT/EN
+]
+# detect_injection() retorna (bool, pattern_matched)
+# safe_process_input() = sanitize + detect_injection + truncate (4000 chars)
+```
 
 ### 🔍 Análise de Mercado — Seção 12
 
 **Pros LIA:**
-- Consentimento granular (por finalidade, não só "aceito os termos") é a exigência da LGPD art. 7 e GDPR art. 7 — a maioria das plataformas de RH ainda usa consentimento genérico
-- PII Masking antes de enviar dados ao LLM é uma prática de segurança que a maioria dos competidores não implementa — mandando nome, CPF e email diretamente aos modelos da OpenAI/Anthropic, expondo dados pessoais a terceiros
-- DSR (Data Subject Request) com exportação é o que permite ao candidato exercer seu direito de acesso e portabilidade — exigido pela LGPD art. 18
+- LGPD compliance completo (consentimento granular, DSR, cleanup) é exigência legal no Brasil
+- Presidio Layer 4 para NER em texto livre (currículos, descrições) é o estado da arte
+- ✅ Presidio integrado (Sprint Z6-03): controlado por `LLM_PROMPT_PRESIDIO_ENABLED`
 
 **Contras LIA:**
-- Não há evidência de criptografia em repouso dos campos PII no banco de dados — mascarar para o LLM é necessário mas não suficiente se o banco for comprometido
-- Sem TTL automático nos dados de conversa — mensagens de conversas com PII podem ficar indefinidamente no banco
-- O `pii_masking.py` provavelmente usa regex/pattern matching para detectar PII — modelos modernos de NER (Named Entity Recognition) têm muito mais precisão na detecção de PII em texto livre de currículos
+- Sem TTL automático nos dados de conversa — PII pode ficar indefinidamente no banco
+- Sem criptografia de campo para CPF/email no PostgreSQL
 
 **Pros v5:**
-- Sem dados persistidos = sem risco de vazamento de dados em repouso
+- `security.py` com 20+ padrões de injection detection PT/EN é mais completo que a maioria das plataformas
+- `PIIMaskingFilter` no logging root garante que NENHUM log vaza PII — proteção mais profunda que regex só em prompts
+- `MAX_SAFE_LENGTH=4000` previne prompt injection por overflow
 
 **Contras v5:**
-- Sem qualquer proteção de PII, LGPD ou GDPR — inviável para produção no Brasil ou Europa
+- Sem consentimento granular — violação potencial da LGPD Art. 7 para qualquer dado processado
+- Sem DSR — candidatos não têm como solicitar exportação ou deleção dos dados
+- Sem LGPD cleanup automático — dados ficam no banco indefinidamente
 
-**O que o mercado faz:** Greenhouse tem "Candidate Data Removal" automático após período configurável. Lever tem "GDPR Export" para candidatos. Workday usa criptografia campo a campo para PII com chaves por cliente. Microsoft Presidio (open-source) é o framework mais usado para NER e anonimização de PII em texto livre — integrado com LangChain.
-
-**Status LIA (Sprint Z6-03, 19/03/2026):** ✅ Microsoft Presidio integrado como Layer 4 opcional em `strip_pii_for_llm_prompt()`. Controlado por flag `LLM_PROMPT_PRESIDIO_ENABLED` (padrão `false` — gradual rollout). Detecta PERSON, EMAIL_ADDRESS, PHONE_NUMBER, LOCATION, DATE_TIME. Fail-safe: se presidio não estiver instalado, retorna texto intacto. Layers 1–3 (regex + quasi-identifiers) continuam ativos independentemente.
-
-**Recomendação para LIA:** Habilitar `LLM_PROMPT_PRESIDIO_ENABLED=true` em produção após validação em staging. Adicionar TTL nos registros de conversa: após 90 dias sem acesso, sumarizar e apagar mensagens individuais (manter só o resumo). Implementar criptografia de campo para CPF e dados sensíveis no PostgreSQL usando `pgcrypto`.
+**Recomendação para v5 — PII e LGPD mínimo viável:**
+1. Mover `pii_filter.py` para prompts (não só logs): adicionar mascaramento antes de enviar ao Gemini
+2. Adicionar TTL nas `tenant_memories`: já existe `expires_at` no schema — implementar rotina de limpeza:
+   ```python
+   # CRIAR: src/tasks/lgpd_cleanup_task.py
+   @celery_app.task
+   def cleanup_expired_memories():
+       with db.connect() as conn:
+           conn.execute("DELETE FROM tenant_memories WHERE expires_at < NOW()")
+   # Registrar no beat_schedule: diário às 3h
+   ```
+3. Delegar LGPD para Rails (rota mais prática): criar endpoint webhook `POST /v5/lgpd/delete-user` que o Rails chama quando candidato solicita deleção, e o v5 apaga as `tenant_memories` do tenant
 
 ---
 
 ## 13. Resiliência e Fallback de LLM
 
+### Comparativo de Resiliência
+
 | Componente | LIA | v5 |
 |---|---|---|
-| **Circuit Breaker** | Sim — abre circuito após N falhas | Não |
-| **LLM Cascade** | Haiku→Sonnet→Opus→Gemini→GPT-4o | Não |
-| **Cache de fallback** | Sim (resposta cacheada se LLM indisponível) | Não |
-| **Retry com backoff** | Sim | Básico (LangChain default) |
-| **Timeout por chamada** | Sim (`timed_tool_node.py`) | Não documentado |
-| **Métricas de disponibilidade** | Sim (`stats_manager.py`) | Não |
+| **Circuit Breaker** | 15+ circuits com SLOs (threshold=5, window=60s) | `circuit_breaker.py` — threshold configurável, cooldown, reset_all |
+| **Timeout por nó** | `timed_tool_node.py` | `timed_node.py` — _TimeoutError |
+| **Retry policy** | Celery + LangChain | LangGraph `RetryPolicy` no autonomous |
+| **LLM Cascade** | Claude Haiku→Sonnet→Opus→Gemini→GPT-4o | Não (single-provider Gemini) |
+| **Dead Letter Queue** | ✅ DLQService (Sprint F2-04) | Não |
+| **Degraded mode** | ✅ Sprint F1-03 — respostas pré-programadas | Não |
+| **Cache de fallback** | Sim (resposta cacheada) | `llm_cache_service.py` (Redis) |
+| **Métricas de circuit** | Sim (`stats_manager.py` + admin endpoint) | Não |
+| **Testes de circuit breaker** | Sim | `tests/test_circuit_breaker.py` + `test_circuit_breaker_integration.py` |
 
-**Arquivos LIA:**
-- [`app/shared/resilience/circuit_breaker.py`](../lia-agent-system/app/shared/resilience/circuit_breaker.py)
-- [`app/shared/resilience/dlq_service.py`](../lia-agent-system/app/shared/resilience/dlq_service.py)
-- [`app/orchestrator/llm_cascade.py`](../lia-agent-system/app/orchestrator/llm_cascade.py)
-- [`app/shared/agents/timed_tool_node.py`](../lia-agent-system/app/shared/agents/timed_tool_node.py)
-- [`app/shared/resilience/stats_manager.py`](../lia-agent-system/app/shared/resilience/stats_manager.py)
+**Circuits LIA (15+):**
+`CLAUDE`, `GEMINI`, `OPENAI`, `GUPY`, `PANDAPE`, `STACKONE`, `SENDGRID`, `RESEND`, `WORKOS`, `PEARCH`, `DEEPGRAM`, `WHATSAPP`, `TEAMS`, `REDIS`, `DB`
 
-**Circuits ativos (15+) — AUD-2 (08/03/2026) expandiu de 7 para 15+:**
-
-| Circuit | Provider | Adicionado |
-|---|---|---|
-| `CLAUDE_CIRCUIT` | Anthropic Claude | Original |
-| `GEMINI_CIRCUIT` | Google Gemini | AUD-2 |
-| `OPENAI_CIRCUIT` | OpenAI GPT | AUD-2 |
-| `GUPY_CIRCUIT` | Gupy ATS | AUD-2 |
-| `PANDAPE_CIRCUIT` | Pandapé ATS | AUD-2 |
-| `STACKONE_CIRCUIT` | StackOne/Merge ATS | AUD-2 |
-| `SENDGRID_CIRCUIT` | SendGrid Email | AUD-2 |
-| `RESEND_CIRCUIT` | Resend Email | AUD-2 |
-| `WORKOS_CIRCUIT` | WorkOS SSO | AUD-2 |
-| `PEARCH_CIRCUIT` | Pearch AI Sourcing | Original |
-| `DEEPGRAM_CIRCUIT` | Deepgram Speech | Original |
-| `WHATSAPP_CIRCUIT` | WhatsApp Meta API | Original |
-| `TEAMS_CIRCUIT` | Microsoft Teams | Original |
-| `REDIS_CIRCUIT` | Redis cache | Original |
-| `DB_CIRCUIT` | PostgreSQL | Original |
+**Circuit Breaker v5 (global):**
+```python
+# src/services/circuit_breaker.py
+class CircuitBreaker:
+    DEFAULT_FAILURE_THRESHOLD = 5  # configurable
+    # record_failure(), record_success(), is_open()
+    # reset_all() para testes
+    # get_state(key, threshold, cooldown)
+```
 
 ### 🔍 Análise de Mercado — Seção 13
 
 **Pros LIA:**
-- Circuit breaker por provider é o padrão de systems design para dependências externas (Netflix Hystrix popularizou esse padrão) — raro em plataformas de HR AI
-- Cascade Haiku→Sonnet→Opus→Gemini→GPT-4o é uma das poucas implementações multi-provider de fallback que vi documentada em sistemas de RH
-- `timed_tool_node.py` com timeout por tool é uma proteção crítica — sem timeout, uma tool que trava derruba o agente inteiro
+- 15+ circuits com SLOs formais é systems design de referência (Netflix Hystrix pattern)
+- Cascade multi-provider é uma das poucas implementações documentadas em HR AI
+- ✅ Degraded mode e DLQ implementados
 
-**Contras LIA — PARCIALMENTE RESOLVIDO:**
-- ~~Circuit breaker sem SLO~~ → ✅ **RESOLVIDO (Sprint F1-03, 08/03/2026)**: SLOs formais definidos no `circuit_breaker.py` (failure_threshold=5, time_window=60s, recovery_timeout=120s, half_open_max_calls=2). Endpoint admin `GET /api/v1/admin/circuit-breakers` expõe status e SLOs. `POST /reset` e `POST /reset-all` disponíveis.
-- ~~Sem "degraded mode"~~ → ✅ **RESOLVIDO (Sprint F1-03)**: modo degradado implementado com respostas pré-programadas para os intents mais frequentes quando todos os LLMs falham.
-- Sem chaos engineering — não há testes que deliberadamente falham providers para validar que o fallback funciona em produção
+**Contras LIA:**
+- Sem chaos engineering — não há testes que deliberadamente falham providers
 
 **Pros v5:**
-- Menos dependências = menos pontos de falha
+- Circuit breaker com testes (`test_circuit_breaker.py`, `test_circuit_breaker_integration.py`) é melhor que ter circuit breaker sem testes
+- LangGraph `RetryPolicy` no autonomous é retry nativo — sem código adicional
 
 **Contras v5:**
-- Se Claude fica indisponível (como aconteceu em incidentes de 2024), o v5 simplesmente para
+- Se Gemini fica indisponível, o v5 para completamente — zero fallback de provider
+- Sem DLQ — tasks que falham desaparecem silenciosamente
+- Sem métricas de circuit — impossível saber quantas vezes o circuit abriu em produção
 
-**O que o mercado faz:** Stripe tem o padrão mais maduro de circuit breaker (documentado publicamente). Plataformas de IA como Portkey e LiteLLM oferecem "LLM Gateway" com failover automático entre providers — é o que a LIA implementou internamente. A tendência é externalizar o LLM Gateway (LiteLLM, Portkey, OpenRouter) para não ter que manter essa lógica internamente.
-
-**Recomendação para LIA:** Definir SLOs formais para o circuit breaker — ex: abre após 5 falhas em 60 segundos, fecha após 2 minutos. Criar um "modo degradado" para as perguntas mais frequentes: se todos os LLMs falharem, responder com as últimas respostas cacheadas + uma mensagem clara. Considerar LiteLLM como substituição do `llm_cascade.py` — é open-source, mantido ativamente, e suporta 100+ providers com failover, rate limiting e custo tracking.
+**Recomendação para v5:**
+1. Adicionar fallback de provider no `llm_factory.py`:
+   ```python
+   # src/utils/llm_factory.py — adicionar fallback
+   def create_tracked_llm(tier: str = "default"):
+       try:
+           return ChatGoogleGenerativeAI(model=MODEL_MAP[tier])
+       except Exception:
+           logger.warning("Gemini unavailable, fallback to OpenAI")
+           return ChatOpenAI(model="gpt-4o-mini")  # fallback básico
+   ```
+2. Adicionar circuit breaker por provider no `llm_factory.py`
+3. Criar Dead Letter Queue para RabbitMQ messages que falharam (ver Seção 20, item V-11)
 
 ---
 
 ## 14. Aprendizado e Adaptação
 
-### Plataforma LIA — Ciclo de Aprendizado
+### Plataforma LIA — Ciclo Completo de Aprendizado
 
 ```
 Feedback → ml_feedback_service.py → learning_loop_service.py
@@ -881,1384 +1506,1158 @@ Feedback → ml_feedback_service.py → learning_loop_service.py
                → model_drift_service.py (detecta regressões)
 ```
 
-**Arquivos:**
-- [`app/shared/learning/learning_loop_service.py`](../lia-agent-system/app/shared/learning/learning_loop_service.py)
-- [`app/shared/learning/ab_testing_service.py`](../lia-agent-system/app/shared/learning/ab_testing_service.py)
-- [`app/services/model_drift_service.py`](../lia-agent-system/app/services/model_drift_service.py)
-- [`app/services/ml_feedback_service.py`](../lia-agent-system/app/services/ml_feedback_service.py)
-- [`app/jobs/drift_job.py`](../lia-agent-system/app/jobs/drift_job.py)
+**Arquivos LIA:**
+- `app/shared/learning/learning_loop_service.py`
+- `app/shared/learning/learning_snapshot_service.py` (✅ Z2-01)
+- `app/shared/learning/ab_testing_service.py`
+- `app/services/model_drift_service.py`
+- `app/services/ml_feedback_service.py`
+- `app/jobs/drift_job.py`
 
-### recruiter_agent_v5 — Sem mecanismo de aprendizado
+---
+
+### recruiter_agent_v5 — Feedback Tracker (sem loop automático)
+
+**Arquivos v5:**
+- `src/services/feedback/tracker.py` — FeedbackTracker (salva feedback do recrutador)
+- `src/services/proactive/detector.py` — ProactiveDetector (detecta padrões de uso)
+- `src/services/proactive/notifier.py` — notificações proativas
+- `src/services/proactive/runner.py` — executa detecções em background
+
+**O que o v5 captura:**
+- Feedback explícito do recrutador (thumbs up/down) via `FeedbackTracker`
+- Padrões de uso detectados proativamente (ProactiveDetector)
+- **Não tem:** loop automático de atualização de prompts/comportamento baseado no feedback
+
+**Por que o v5 não implementou learning loop (conforme docs/ANALISE_ADOCAO_PATTERNS_LIA.md):**
+> "O v5 não tem visibilidade sobre o que o recrutador faz DEPOIS de receber a resposta. O feedback está no Rails. Sem pipeline de callback Rails → v5, não tem como capturar."
 
 ### 🔍 Análise de Mercado — Seção 14
 
 **Pros LIA:**
-- Learning loop completo (feedback → ajuste → validação → deploy) é o que diferencia um produto que melhora sozinho de um que precisa de intervenção manual constante — apenas Eightfold e Phenom têm algo comparável no segmento de HR Tech
-- A/B testing de prompts é uma técnica que Google, OpenAI e Anthropic recomendam mas poucos implementam de verdade — a LIA tem isso
-- `finetuning_export.py` é pensamento de longo prazo — criar o dataset agora para fine-tuning futuro é a abordagem correta mesmo sem usar fine-tuning hoje
+- Learning loop completo é o que diferencia produto que melhora sozinho de um que exige intervenção manual
+- ✅ LearningSnapshotService com rollback (Z2-01) — se aprendizado introduzir regressão, pode reverter
 
-**Contras LIA — PARCIALMENTE RESOLVIDO:**
-- ~~Risco de "feedback loop viciado"~~ → ✅ **RESOLVIDO (Sprint F1-02, 08/03/2026)**: `FairnessGuard` integrado no loop de aprendizado — cada batch de feedback passa por validação antes de ser aplicado. Disparate impact detectado bloqueia o aprendizado e entra em fila de revisão humana com `audit_service.log_learning_blocked()`. Sprint Z2-01 adiciona `LearningSnapshotService` para versionamento e rollback dos estados de aprendizado.
-- ~~Sem rollback de aprendizado~~ → ✅ **RESOLVIDO (Sprint Z2-01, 19/03/2026)**: `LearningSnapshotService` persiste snapshots do estado do learning loop. Endpoint `POST /api/v1/learning/rollback/{snapshot_id}` disponível.
-- A/B testing com usuários reais de produção pode criar experiências inconsistentes — um recrutador pode achar que o sistema "muda de comportamento" entre sessões
+**Contras LIA:**
+- A/B testing com usuários reais pode criar experiências inconsistentes
+- Risco de feedback loop viciado (✅ mitigado via FairnessGuard no loop — Sprint F1-02)
 
 **Pros v5:**
 - Sem aprendizado = sem risco de feedback loop viciado
+- `proactive/` detector é uma boa base para detecção de padrões
 
 **Contras v5:**
-- Sem aprendizado = o sistema é o mesmo no dia 1 e no dia 365
+- O sistema é o mesmo no dia 1 e no dia 365 — não melhora com uso
+- FeedbackTracker captura dados mas ninguém usa esses dados automaticamente
 
-**O que o mercado faz:** 57% das empresas de IA em produção usam algum tipo de feedback loop (Gartner 2025). Eightfold usa "reinforcement learning from human feedback" (RLHF) similar ao que OpenAI fez com o ChatGPT. Phenom tem "AI that learns from your pipeline" como feature de marketing. A tendência é "RLAIF" (RL from AI feedback) — usar um LLM avaliador para gerar feedback sintético e complementar o feedback humano.
+**Recomendação para v5 — Passo a passo para learning loop mínimo:**
 
-**Recomendação para LIA — CRÍTICO:** Adicionar validação de fairness no ciclo de feedback — antes de aplicar qualquer aprendizado, rodar a `fairness_guard.py` no novo comportamento para garantir que o aprendizado não introduziu viés. Implementar rollback de learning: manter snapshots das versões de prompt/template antes de cada atualização pelo learning loop. Limitar o A/B testing a features não críticas para decisões de admissão — ou garantir que ambas as variantes passem pelo mesmo FairnessGuard.
+```
+Passo 1: Criar webhook Rails → v5 para feedback de uso
+```
+```python
+# CRIAR: src/api/webhooks.py — endpoint para receber feedback do Rails
+@router.post("/webhooks/recruiter-feedback")
+async def receive_feedback(payload: dict):
+    feedback_tracker.save(
+        session_id=payload["session_id"],
+        action_taken=payload["action_taken"],  # ex: candidato aprovado depois da sugestão
+        positive=payload["outcome"] == "approved",
+    )
+```
+
+```
+Passo 2: Criar FeedbackAnalyzer que roda semanalmente
+```
+```python
+# CRIAR: src/tasks/feedback_analysis_task.py
+@celery_app.task
+def analyze_weekly_feedback():
+    insights = FeedbackAnalyzer().analyze_last_7_days()
+    # Ex: "search_pattern 'Python senior' sempre seguido de filtro score > 85"
+    # Salvar como tenant_memories de categoria 'workflow_pattern'
+    MemoryManager().remember(
+        tenant_id=GLOBAL_TENANT,
+        content=insights.summary,
+        category="workflow_pattern",
+        source_action="weekly_feedback_analysis",
+    )
+```
+
+```
+Passo 3: Usar TenantMemoryStore para personalização baseada em histórico
+```
 
 ---
 
 ## 15. Observabilidade de IA
 
+### Comparativo de Observabilidade
+
 | Componente | LIA | v5 |
 |---|---|---|
-| **Tracing de execução** | LangSmith + `execution_log_store.py` + **OpenTelemetry OTLP (Z6-02)** | Logs básicos |
-| **Métricas de token** | `ai_consumption.py` por tenant | Não |
-| **Métricas Prometheus** | 16 métricas (`GET /api/v1/metrics`) — `agent_request_total`, `agent_latency_seconds`, `llm_tokens_total`, etc. (Y2/C4) | Não |
-| **Qualidade de resposta** | `agent_quality_evaluator.py` + RAGAS | Não |
-| **Explicabilidade** | `agent_explainability.py` por decisão | Não |
+| **Tracing de execução** | LangSmith + execution_log_store.py + **OTEL (Z6-02)** | `audit_callback.py` (node_start/end + timing) + `react_observer.py` |
+| **Persistência de audit** | PostgreSQL + LangSmith | `audit_writer.py` (PostgreSQL: agent_executions) + JSONL (logs/audit/) |
+| **Tracking de tokens** | `ai_consumption.py` por tenant | `llm_tracking_service.py` por chamada |
+| **Métricas Prometheus** | 16 métricas (Y2/C4) | Não |
+| **Qualidade de resposta** | RAGAS + `agent_quality_evaluator.py` | Não |
+| **Explicabilidade** | `agent_explainability.py` | Não |
 | **Drift detection** | `model_drift_service.py` + job diário | Não |
 | **Health alerts** | `agent_health_alert_service.py` | Não |
-| **Monitoramento de agente** | `agent_monitoring_service.py` | Não |
-| **Perfil comportamental recruiter** | `recruiter_behavior_service.py` — hora ativa, canais preferidos, velocidade, estilo comunicação (Z7-01) | Não |
+| **ReAct observer** | Não explicitamente mencionado | `react_observer.py` — rastreia tool calls do ReAct |
+| **Execution tracker** | `execution_log_store.py` | `execution_tracker.py` — timing por step |
+| **Thinking messages** | Não | `thinking_message.py` — feedback ao usuário durante processamento |
 
-**Arquivos LIA:**
-- [`app/shared/agents/observability.py`](../lia-agent-system/app/shared/agents/observability.py)
-- [`app/api/v1/ai_consumption.py`](../lia-agent-system/app/api/v1/ai_consumption.py)
-- [`app/api/v1/agent_explainability.py`](../lia-agent-system/app/api/v1/agent_explainability.py)
-- [`app/services/ragas_evaluation_service.py`](../lia-agent-system/app/services/ragas_evaluation_service.py)
+**Arquivos v5 de observabilidade:**
+```python
+# src/services/audit/audit_callback.py — AuditCallbackHandler (LangChain callback)
+class AuditCallbackHandler(BaseCallbackHandler):
+    def on_chain_start(self, serialized, inputs, *, run_id, ...):
+        # registra NODE_START com timestamp
+    def on_chain_end(self, outputs, *, run_id, ...):
+        # registra NODE_END com duration_ms
+    def on_chain_error(self, error, ...):
+        # registra NODE_ERROR
+
+# src/services/audit/audit_writer.py — PostgreSQL
+CREATE TABLE agent_executions (
+    execution_id VARCHAR(36) PRIMARY KEY,
+    session_id VARCHAR(255),
+    domain_id VARCHAR(100),
+    user_query TEXT,  # com PII masking ([EMAIL], etc.)
+    ...
+)
+
+# src/services/react_observer.py — ReActObserver
+# rastreia tool calls: qual tool foi chamada, args, resultado, timing
+
+# src/services/execution_tracker.py — ExecutionTracker
+# timing por step, start/finish, to_dict()
+```
 
 ### 🔍 Análise de Mercado — Seção 15
 
 **Pros LIA:**
-- LangSmith + RAGAS é a combinação de referência para LLM observability em 2025 — LangSmith para tracing, RAGAS para qualidade de RAG
-- `ai_consumption.py` por tenant é um diferencial de negócio além de técnico — permite cobrar por uso real de IA, algo que Phenom e Eightfold fazem mas não documentam como
+- OTEL + LangSmith + RAGAS é a combinação de referência para LLM observability em 2025
+- `ai_consumption.py` por tenant permite cobrar por uso real — diferencial de negócio
+- ✅ OTEL implementado (Sprint Z6-02)
 
-**Contras LIA — PARCIALMENTE RESOLVIDO:**
-- ~~Sem OpenTelemetry (OTEL)~~ → ✅ **RESOLVIDO (Sprint Z6-02, 19/03/2026)**: `app/shared/tracing.py` expandido com suporte OTEL. `_try_init_otlp()` inicializa SDK com `BatchSpanProcessor` + `OTLPSpanExporter` quando `OTEL_EXPORTER_OTLP_ENDPOINT` configurado. `@trace_span` decorator aplicado em `CascadedRouter.route()`, `DLQService.push_failure()`, `LearningLoopService.process_unprocessed_feedback()`. Fallback gracioso para `LightweightTracer` quando SDK não instalado. Endpoint `GET /api/v1/traces/status` expõe `is_otlp_active()`.
-- RAGAS mede qualidade de RAG mas não mede qualidade de raciocínio do agente (tool selection accuracy, plan correctness) — são métricas complementares
-- Sem alertas proativos de custo — se um tenant começar a usar 10x mais tokens que o normal (por bug ou abuso), quanto tempo leva para detectar?
+**Contras LIA:**
+- RAGAS mede qualidade de RAG mas não mede qualidade de raciocínio do agente
 
 **Pros v5:**
-- Sem observabilidade = sem overhead de logging
+- `audit_callback.py` integrado como LangChain callback é elegante — funciona automaticamente em qualquer grafo
+- `audit_writer.py` com PostgreSQL garante persistência de todas as execuções
+- `react_observer.py` para ReAct loop é específico e útil — sabe exatamente qual tool o agente tentou
 
 **Contras v5:**
-- Sem observabilidade = debugging de produção é impossível. "Cego" em produção
+- Sem métricas Prometheus — impossível configurar alertas automáticos de latência/erro
+- Sem RAGAS — sem avaliação de qualidade das respostas
+- Sem drift detection — não sabe quando a qualidade está piorando
 
-**O que o mercado faz:** Arize AI é a referência para observabilidade de LLM em enterprise — monitora hallucinations, toxicity, fairness e performance em tempo real. Helicone é a alternativa mais leve. LangSmith (da LangChain) é o mais integrado com o stack da LIA. A tendência é "LLM Guardrails as Observability" — usar ferramentas como Guardrails AI, NVIDIA NeMo Guardrails para monitorar e interceptar outputs em tempo real.
-
-**Recomendação para LIA:** Adicionar OpenTelemetry como camada de exportação — isso permite redirecionar traces para qualquer destino (Datadog, Grafana, etc.) sem mudar o código. Adicionar alertas de custo por tenant: se o consumo de tokens de um tenant aumentar mais de 3x em 24h, disparar alerta. Implementar "LLM quality scorecard" semanal por domínio de agente — relatório automático de hallucination rate, tool error rate, user satisfaction.
+**Recomendação para v5:**
+1. Adicionar endpoint Prometheus:
+   ```python
+   # CRIAR: src/api/metrics.py
+   from prometheus_client import Counter, Histogram, generate_latest
+   
+   request_count = Counter("v5_requests_total", "Total requests", ["domain", "status"])
+   request_latency = Histogram("v5_request_latency_seconds", "Latency", ["domain"])
+   
+   @router.get("/metrics")
+   async def metrics():
+       return Response(generate_latest(), media_type="text/plain")
+   ```
+2. Adicionar LangSmith para tracing: `LANGCHAIN_TRACING_V2=true, LANGCHAIN_API_KEY=...`
+3. Criar endpoint de saúde com métricas: `GET /health` retornando `circuit_breaker_status`, `memory_count`, `last_audit_at`
 
 ---
 
 ## 16. Integrações com LLMs
 
+### Comparativo de LLMs
+
 | Provider | LIA | v5 |
 |---|---|---|
-| **Claude (Anthropic)** | Haiku, Sonnet, Opus — principal | Sonnet — único |
-| **Gemini (Google)** | Pro, Flash — voz + fallback | Não |
-| **OpenAI** | GPT-4o, GPT-4o-mini — fallback | GPT-4o — alternativo |
-| **Cascade automático** | Haiku→Sonnet→Opus→Gemini→GPT | Não |
-| **Factory pattern** | Sim (`llm_factory.py`) | Não |
-| **Interface base** | Sim (`llm_client.py`) | Não |
+| **Claude (Anthropic)** | Haiku, Sonnet, Opus — principal | Não |
+| **Gemini (Google)** | Pro, Flash — voz + fallback | **gemini-2.5-flash — ÚNICO** |
+| **OpenAI** | GPT-4o, GPT-4o-mini — fallback | Não (mencionado em docs antigos mas não no código atual) |
+| **Embeddings** | Não explicitamente | **Gemini gemini-embedding-001** (768 dims) |
+| **Cascade automático** | Haiku→Sonnet→Opus→Gemini→GPT | Não (ModelRouter: fast/default/heavy DENTRO do Gemini) |
+| **Factory pattern** | `llm_factory.py` | `src/utils/llm_factory.py` (`create_tracked_llm()`) |
+| **Tracking integrado** | `ai_consumption.py` | `llm_tracking_service.py` dentro do `create_tracked_llm()` |
+| **Model selection** | Por tier global | ModelRouter por query complexity |
 
-**Arquivos LIA:**
-- [`app/shared/providers/llm_factory.py`](../lia-agent-system/app/shared/providers/llm_factory.py)
-- [`app/shared/providers/llm_claude.py`](../lia-agent-system/app/shared/providers/llm_claude.py)
-- [`app/shared/providers/llm_gemini.py`](../lia-agent-system/app/shared/providers/llm_gemini.py)
-- [`app/shared/providers/llm_openai.py`](../lia-agent-system/app/shared/providers/llm_openai.py)
+**Detalhe v5 — ModelRouter:**
+```python
+# src/services/model_router.py
+class ModelRouter:
+    def choose(self, query: str, operation: str = "", tool_count: int = 0) -> ModelChoice:
+        if operation in {"compress_result", "synthesize_response"}:
+            return ModelChoice(self._model_fast, "fast", ...)  # gemini-2.0-flash
+        if _HEAVY_PATTERNS.match(query):
+            return ModelChoice(self._model_heavy, "heavy", ...)  # gemini-2.5-pro
+        if _FAST_PATTERNS.match(query):
+            return ModelChoice(self._model_fast, "fast", ...)
+        return ModelChoice(self._model_default, "default", ...)  # gemini-2.5-flash
+```
 
 ### 🔍 Análise de Mercado — Seção 16
 
 **Pros LIA:**
-- Multi-provider com cascade é o padrão de resiliência mais avançado disponível — praticamente nenhuma plataforma de HR Tech documenta isso publicamente
-- Gemini para voz é uma escolha arquitetural inteligente — Gemini 2.0 Flash tem latência muito menor que Claude para streaming de voz
-- Factory pattern garante que adicionar um novo provider (ex: Meta Llama, Mistral) é uma mudança isolada
+- Multi-provider com cascade é resiliência máxima — praticamente nenhuma plataforma de HR Tech documenta isso
+- Factory pattern garante que adicionar novo provider é mudança isolada
 
 **Contras LIA:**
-- Sem suporte a modelos locais (Ollama, vLLM) — para clientes com requisitos de data residency (dados não podem sair do Brasil), seria necessário rodar modelos locais
-- Sem rate limiting por provider no nível do factory — se Haiku tem quota de 100k tokens/min e a LIA ultrapassa, todos os agentes são impactados
-- Sem tracking de custo por provider no factory — o `ai_consumption.py` existe mas não está claro se está integrado ao factory
+- Sem suporte a modelos locais (Ollama) — para clientes com data residency
+- Sem rate limiting por provider no factory
 
 **Pros v5:**
-- Single provider = zero complexidade de routing entre providers
+- Single provider Gemini = zero complexidade de routing entre providers
+- ModelRouter com fast/default/heavy por query é uma otimização de custo elegante dentro do mesmo provider
+- `create_tracked_llm()` integra tracking automaticamente — toda chamada ao LLM é rastreada
 
 **Contras v5:**
-- Vendor lock-in total em Claude — qualquer mudança de preço ou API break da Anthropic impacta 100% do sistema
+- Vendor lock-in total em Gemini — qualquer mudança de preço/API da Google impacta 100% do sistema
+- Sem cascade entre providers — se Gemini cair, o v5 para
 
-**O que o mercado faz:** LiteLLM (open-source, muito popular em 2025) oferece uma API unificada para 100+ LLMs com rate limiting, custo tracking e failover automático — é o "nginx dos LLMs". OpenRouter faz o mesmo como serviço gerenciado. Portkey adiciona guardrails e caching. A tendência é externalizar o LLM Gateway para não reinventar a roda.
-
-**Recomendação para LIA:** Avaliar a migração do `llm_factory.py` + providers para LiteLLM como proxy. Isso vai eliminar ~400 linhas de código de integração e dar acesso a 100+ modelos, incluindo modelos locais via Ollama para clientes com data residency. Se não quiser migrar, adicionar rate limiting por provider e tracking de custo no factory atual.
+**Recomendação para v5:**
+1. Adicionar OpenAI como fallback no `llm_factory.py` (mínimo viável):
+   ```python
+   # src/utils/llm_factory.py — modificar create_tracked_llm()
+   def create_tracked_llm(tier: str = "default", fallback: bool = True):
+       if CircuitBreaker.is_open("gemini"):
+           logger.warning("Gemini circuit open, using OpenAI fallback")
+           return ChatOpenAI(model="gpt-4o-mini")
+       return ChatGoogleGenerativeAI(model=MODEL_MAP[tier])
+   ```
+2. Registrar circuit breaker no `circuit_breaker.py` para `gemini`
 
 ---
 
 ## 17. Testes de IA
 
+### Comparativo de Testes
+
+> **Correção (19/03/2026):** O v5 tem **96 arquivos de teste** (não "~3 arquivos"). Tem testes de fairness, memory, circuit breaker, audit, integração e conversação.
+
 | Tipo de Teste | LIA | v5 |
 |---|---|---|
-| **Testes unitários** | ~289 arquivos de teste (4.600+ casos) | ~3 arquivos |
-| **Testes de fairness** | `test_four_fifths_rule.py` + outros | Não |
-| **Dataset golden** | `golden_dataset.py` | Não |
-| **Testes de agente** | Sim (por domínio) | Não estruturado |
-| **Testes de LLM** | Integração com LLM real | Não documentado |
-| **Testes de regressão** | Não documentado como pipeline CI | Não |
+| **Arquivos de teste** | 313 arquivos (4.600+ casos) | 96 arquivos |
+| **Testes de fairness** | `test_four_fifths_rule.py` + outros | `test_fairness.py`, `test_fact_checker.py` |
+| **Testes de memória** | Sim | `test_memory_preservation.py` |
+| **Testes de circuit breaker** | Sim | `test_circuit_breaker.py`, `test_circuit_breaker_integration.py` |
+| **Testes de auditoria** | Sim | `test_audit.py` |
+| **Testes de agente** | Por domínio | `test_agents.py`, `test_autonomous_domain.py`, `test_autonomous_conversation.py` |
+| **Testes de integração** | Não documentado como pipeline | `tests/integration/` (easy/medium/hard/very_hard/difficult) |
+| **Scripts de conversação** | Não | `tests/conversation_scripts/` (autonomous, sourcing) |
+| **Testes de PII** | Não | `test_pii_filter.py` |
+| **Testes de segurança** | Não | `test_security.py` |
+| **Testes de workflow** | Não | `test_workflow.py` |
+| **Testes de cost ladder** | Não | `test_cost_ladder.py`, `test_conversation_flow/test_cost_ladder_tiers.py` |
+| **Dataset golden** | `golden_dataset.py` | `tests/evals/run_evals.py` (avaliações) |
+| **Pipeline CI/CD** | Não documentado | Não documentado |
+| **DeepEval/RAGAS** | RAGAS (LIA) | Não |
 
-**Arquivos LIA:**
-- [`app/tests/test_four_fifths_rule.py`](../lia-agent-system/app/tests/test_four_fifths_rule.py)
-- [`app/tests/golden_dataset.py`](../lia-agent-system/app/tests/golden_dataset.py)
+**Arquivos de teste v5 (96 total):**
+```
+tests/
+├── conftest.py
+├── test_agents.py                   ← agentes pipeline
+├── test_workflow.py                 ← WorkflowOrchestrator
+├── test_fairness.py                 ← fairness (sourcing + jobs)
+├── test_fact_checker.py             ← FactChecker
+├── test_memory_preservation.py      ← ConversationSession memory
+├── test_circuit_breaker.py          ← CircuitBreaker unitário
+├── test_circuit_breaker_integration.py
+├── test_audit.py                    ← AuditCallbackHandler
+├── test_pii_filter.py               ← PIIMaskingFilter + mask_pii()
+├── test_security.py                 ← injection detection
+├── test_cost_ladder.py              ← CostLadder routing
+├── test_autonomous_domain.py        ← autonomous agent
+├── test_autonomous_conversation.py  ← conversas multi-turno
+├── test_autonomous_fallback.py
+├── test_evaluation.py               ← evaluation domain
+├── test_insights.py                 ← insights domain
+├── test_messaging_domain.py         ← messaging domain
+├── test_scheduling_bypass.py        ← scheduling domain
+├── test_sourcing_conversation.py    ← sourcing domain
+├── test_hallucination_prevention.py
+├── test_semantic_cache.py
+├── test_checkpointer.py
+├── test_model_router.py
+├── test_api_planner.py, test_api_planner_unit.py, test_api_planner_contracts.py
+├── test_api_executor.py
+├── test_intent_analyzer_unit.py
+├── integration/
+│   ├── test_easy_cases.py
+│   ├── test_medium_cases.py
+│   ├── test_hard_cases.py
+│   ├── test_very_hard_cases.py
+│   └── test_difficult_cases.py
+├── test_conversation_flow/
+│   ├── test_cost_ladder_tiers.py
+│   ├── test_cross_domain.py
+│   ├── test_part1_insights_briefing.py
+│   ├── test_part3_applies_triagem.py
+│   ├── test_part4_sourcing.py
+│   ├── test_part5_scheduling.py
+│   ├── test_part6_messaging.py
+│   └── test_part7_insights_eval_closing.py
+└── evals/run_evals.py
+```
 
 ### 🔍 Análise de Mercado — Seção 17
 
 **Pros LIA:**
-- Golden dataset para avaliação de agentes é uma prática que Google, Anthropic e OpenAI usam internamente — ter isso em uma plataforma de HR Tech é avançado
-- `test_four_fifths_rule.py` é o tipo de teste que auditors externos pedem — prova documentada de que o sistema foi validado contra a regra da EEOC
+- Golden dataset para avaliação é prática que Google, Anthropic usam internamente
+- `test_four_fifths_rule.py` é o tipo de teste que auditores externos pedem
 
 **Contras LIA:**
-- 289+ arquivos de teste com 4.600+ casos e coverage gate 30% (pytest.ini) — quantidade de arquivos não equivale a qualidade de cobertura LLM
-- Sem pipeline de CI/CD para testes de LLM — testes que chamam LLMs reais são lentos e caros; sem uma estratégia de quando rodá-los (mock vs real), tende a deixar de rodar
-- Sem "shadow testing" — prática de rodar a nova versão em paralelo com a produção sem servir o resultado, para comparar qualidade
+- Coverage gate 30% (pytest.ini) — plataformas enterprise ficam em 60–80%
+- Sem pipeline CI/CD para testes de LLM — testes lentos e caros sem estratégia de quando rodar
 
 **Pros v5:**
-- Os poucos testes existentes provavelmente têm foco claro
+- `tests/integration/` com 5 níveis de dificuldade (easy→very_hard→difficult) é estrutura de teste de qualidade profissional
+- `test_conversation_flow/` testando cada parte de uma conversa longa é o tipo de teste de agente mais correto
+- Testes de segurança e PII são diferencial — a maioria das plataformas não testa isso
 
 **Contras v5:**
-- 5 testes para 50 arquivos = praticamente sem cobertura
+- 96 arquivos mas sem suite de CI/CD documentada — possivelmente os testes não rodam automaticamente
+- Sem golden dataset formal — `evals/run_evals.py` existe mas sem dataset de referência
+- Sem DeepEval ou métricas de qualidade LLM
 
-**O que o mercado faz:** DeepEval é o framework de referência para testes de LLM em 2025 — tem métricas nativas de hallucination, bias, toxicity, faithfulness (para RAG). Confident AI (empresa por trás do DeepEval) oferece CI/CD para LLM testing. A tendência é "LLM as judge" — usar um LLM mais capaz (Claude Opus ou GPT-4) para avaliar as respostas do LLM de produção automaticamente.
-
-**Recomendação para LIA:** Integrar DeepEval ao pipeline de testes — adicionar ao menos 3 métricas: `hallucination_score`, `faithfulness` (para RAG/WSI), `bias_score`. Criar pipeline separado de "LLM tests" que roda semanalmente (não a cada commit) para controlar custo. Implementar "LLM as judge" usando Claude Opus como avaliador do Claude Haiku/Sonnet em produção — quando o juiz detecta qualidade abaixo de threshold, dispara alerta.
+**Recomendação para v5:**
+1. Criar `.github/workflows/tests.yml`:
+   ```yaml
+   # CRIAR: .github/workflows/tests.yml
+   name: Test Suite
+   on: [push, pull_request]
+   jobs:
+     unit-tests:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+         - name: Run unit tests (sem LLM)
+           run: pytest tests/ -v --ignore=tests/integration --ignore=tests/evals -x
+     integration-tests:
+       runs-on: ubuntu-latest
+       if: github.event_name == 'pull_request'
+       steps:
+         - name: Run integration (com LLM mock)
+           run: pytest tests/integration/test_easy_cases.py -v
+   ```
+2. Criar `tests/golden_dataset.py` com 50 perguntas canônicas + respostas esperadas
+3. Adicionar DeepEval para métricas de qualidade:
+   ```python
+   # tests/test_response_quality.py
+   from deepeval import evaluate
+   from deepeval.metrics import HallucinationMetric, FaithfulnessMetric
+   ```
 
 ---
 
 ## 18. Jobs e Processamento Assíncrono
 
-| Job | LIA | v5 | Beat Schedule |
-|---|---|---|---|
-| **Drift Detection** | `drift_job.py` — diário | Não | 06h Brasília |
-| **LGPD Cleanup** | `lgpd_cleanup_service.py` — diário | Não | 05h UTC |
-| **Follow-up proativo WSI** | `followup_service.py` — horário | Não | crontab minute=0 |
-| **WSI abandonado** | `wsi_abandoned_service.py` — 4h | Não | crontab hour=*/4 |
-| **Briefing diário** | `briefing_service.py` — diário | Não | 09h UTC (06h Brasília) |
-| **ML Feedback Weights** | `ml_feedback_service.py` — `ml.feedback.process_weights` | Não | on-demand |
-| **RAG Domain Index** | `domain_embedding_service.py` — `rag.rebuild_domain_index` | Não | on-demand |
-| **Routing Recompute** | `routing_learning_service.py` — `routing.recompute_adjustments` | Não | 07h UTC diário |
-| **Dead Letter Queue** | `dlq_service.py` + `admin_dlq.py` — Redis LIST, TTL 7d, cap 1000 (F2-04) ✅ | Não | — |
-| **Celery Tasks** | `celery_tasks.py` — geral (todas as tasks acima) | Não | — |
-| **Relatórios agendados** | `scheduled_reports.py` — semanal | Não | semanal |
-| **Framework** | Celery 5.4 + Redis + Beat scheduler | — | — |
+### Plataforma LIA — Jobs Celery (Beat Schedule)
 
-**Arquivos LIA:**
-- [`app/jobs/drift_job.py`](../lia-agent-system/app/jobs/drift_job.py)
-- [`app/jobs/celery_tasks.py`](../lia-agent-system/app/jobs/celery_tasks.py)
-- [`app/jobs/scheduled_reports.py`](../lia-agent-system/app/jobs/scheduled_reports.py)
-- [`app/jobs/followup_service.py`](../lia-agent-system/app/jobs/followup_service.py)
+| Job | Frequência | Função | Arquivo |
+|---|---|---|---|
+| `drift_job` | Diário 3h | Detecta regressão de qualidade | `app/jobs/drift_job.py` |
+| `proactive_alerts` | A cada hora | Alertas para recrutadores | `app/jobs/proactive_alerts_job.py` |
+| `lgpd_cleanup` | Semanal Dom 2h | Remove dados expirados | `app/jobs/lgpd_cleanup_job.py` |
+| `ab_testing_eval` | Diário 4h | Avalia variantes A/B | `app/jobs/ab_testing_job.py` |
+| `finetuning_export` | Semanal | Exporta dataset de treino | `app/jobs/finetuning_export_job.py` |
+| `learning_loop` | Diário | Aplica feedback ao sistema | `app/jobs/learning_loop_job.py` |
+| `memory_consolidation` | Diário | Consolida memórias de longo prazo | `app/jobs/memory_job.py` |
+
+---
+
+### recruiter_agent_v5 — Celery + RabbitMQ
+
+**Arquivos v5:**
+- `src/celery_app.py` — configuração Celery
+- `celery_worker.py` — entry point worker
+- `deploy/systemd/celery-sourcing@.service` — worker de sourcing (multi-instance)
+- `deploy/systemd/celery-evaluation@.service` — worker de evaluation
+- `src/services/rabbitmq_service.py` — consumer RabbitMQ
+
+**Workers documentados:**
+```bash
+# deploy/WORKERS_O_QUE_FAZEM.md (via docs/)
+celery-sourcing@{1..N}   — N instâncias para processamento paralelo de sourcing
+celery-evaluation@{1..N} — N instâncias para processamento de avaliações
+```
+
+**Diferença arquitetural:**
+
+| Aspecto | LIA | v5 |
+|---|---|---|
+| **Broker** | Redis (Celery) | RabbitMQ + Celery |
+| **Jobs scheduled** | 7+ jobs com beat schedule | Workers de domínio (sourcing, evaluation) |
+| **DLQ** | ✅ DLQService (Redis LIST) | Não |
+| **Monitoring** | Admin endpoint | `analyze_rabbitmq.py`, `inspect_celery.py`, `detailed_consumers.py` |
 
 ### 🔍 Análise de Mercado — Seção 18
 
 **Pros LIA:**
-- Celery + Redis é o stack padrão de processamento assíncrono em Python — maduro, bem documentado, escalável horizontalmente
-- `followup_service.py` contínuo para follow-up proativo de candidatos é uma funcionalidade que Paradox (Olivia) comercializa como feature premium — a LIA já tem
-- `wsi_abandoned_service.py` mostra maturidade de produto — recuperar usuários que abandonaram o processo é algo que plataformas de e-commerce fazem mas plataformas de ATS raramente
+- 7+ jobs scheduled cobrem todas as necessidades de manutenção automática
+- DLQ com Redis garante que nenhuma task falha silenciosamente ✅
 
-**Contras LIA — PARCIALMENTE RESOLVIDO:**
-- ~~Sem Dead Letter Queue~~ → ✅ **RESOLVIDO (Sprint F2-04, 08/03/2026)**: `DLQService` implementado em `app/shared/resilience/dlq_service.py`. Redis LIST por fila, cap 1000, TTL 7 dias. `LIATask` base class com `on_failure()` automático. 4 endpoints admin: `GET /api/v1/admin/dlq`, `GET /dlq/{queue}`, `POST /dlq/{queue}/requeue/{entry_id}`, `DELETE /dlq/{queue}`. PII masking nos args antes de persistir. Notificação Bell para tasks críticas (lgpd.run_cleanup_daily, drift.run_batch, etc.).
-- Sem monitoramento de jobs — se o `drift_job.py` falhar silenciosamente por 2 semanas, ninguém vai saber até que um problema de drift seja detectado de outra forma (monitoramento por alertas pendente)
-- Celery tem overhead significativo para jobs simples — para jobs de baixa frequência, alternativas mais leves como APScheduler ou Dramatiq podem ser mais adequadas
+**Contras LIA:**
+- Redis como broker pode ser gargalo sob alta carga — RabbitMQ é mais robusto para produção
 
 **Pros v5:**
-- Sem jobs = sem overhead operacional
+- RabbitMQ é o broker de produção padrão — mais robusto, ACK persistente, exchange routing
+- Multi-instance workers com systemd é arquitetura de produção correta
+- Scripts de diagnóstico (analyze_rabbitmq.py, inspect_celery.py) mostram maturidade operacional
 
 **Contras v5:**
-- Sem processamento assíncrono = operações lentas bloqueiam o usuário
+- Sem DLQ — tasks que falham 3x desaparecem
+- Sem beat schedule — sem manutenção automática (cleanup, drift, etc.)
 
-**O que o mercado faz:** Greenhouse usa Sidekiq (Ruby) para processamento assíncrono com retry automático e DLQ (Dead Letter Queue). Workday usa Quartz Scheduler para jobs enterprise com dependências entre jobs. A tendência em 2025 é "workflow orchestration" com Temporal ou Prefect — permitem definir workflows complexos com retry, versioning e observabilidade muito superiores ao Celery puro.
-
-**Recomendação para LIA:** Adicionar monitoramento de jobs com alertas — se um job scheduled não rodou no tempo esperado (ex: drift_job não rodou em 25h), disparar alerta. Adicionar Dead Letter Queue no Celery — tasks que falharam N vezes devem ir para uma fila especial para revisão manual, não desaparecer silenciosamente. Avaliar Temporal para os workflows mais complexos (WSI pipeline, learning loop) — é open-source e tem UI de monitoramento nativa.
+**Recomendação para v5:**
+1. Adicionar DLQ no RabbitMQ:
+   ```python
+   # src/services/rabbitmq_service.py — adicionar dead letter exchange
+   # No setup do RabbitMQ:
+   channel.exchange_declare("dlx", "direct")
+   channel.queue_declare("dead_letter_queue", durable=True)
+   channel.queue_bind("dead_letter_queue", "dlx", "dead")
+   ```
+2. Criar `src/tasks/scheduled_tasks.py` com beat schedule básico:
+   ```python
+   # celery_app.py — adicionar beat_schedule
+   app.conf.beat_schedule = {
+       'lgpd-cleanup-daily': {
+           'task': 'src.tasks.lgpd_cleanup_task.cleanup_expired_memories',
+           'schedule': crontab(hour=3, minute=0),
+       },
+       'proactive-alerts-hourly': {
+           'task': 'src.tasks.proactive_runner.run_proactive_detection',
+           'schedule': crontab(minute=0),
+       },
+   }
+   ```
 
 ---
 
 ## 19. Inventário de Arquivos de IA
 
-### Arquivos-chave de IA — LIA
+### Plataforma LIA — Arquivos de IA por Categoria
 
-| Categoria | Arquivo | Caminho |
+| Categoria | Quantidade | Exemplos |
 |---|---|---|
-| **Orquestração** | `cascaded_router.py` | [`app/orchestrator/cascaded_router.py`](../lia-agent-system/app/orchestrator/cascaded_router.py) |
-| **Orquestração** | `fast_router.py` | [`app/orchestrator/fast_router.py`](../lia-agent-system/app/orchestrator/fast_router.py) |
-| **Orquestração** | `semantic_cache.py` | [`app/orchestrator/semantic_cache.py`](../lia-agent-system/app/orchestrator/semantic_cache.py) |
-| **Orquestração** | `llm_cascade.py` | [`app/orchestrator/llm_cascade.py`](../lia-agent-system/app/orchestrator/llm_cascade.py) |
-| **Orquestração** | `memory_resolver.py` | [`app/orchestrator/memory_resolver.py`](../lia-agent-system/app/orchestrator/memory_resolver.py) |
-| **Agente base** | `langgraph_react_base.py` | [`app/shared/agents/langgraph_react_base.py`](../lia-agent-system/app/shared/agents/langgraph_react_base.py) |
-| **Agente base** | `autonomy_engine.py` | [`app/shared/agents/autonomy_engine.py`](../lia-agent-system/app/shared/agents/autonomy_engine.py) |
-| **Agente base** | `enhanced_agent_mixin.py` | [`libs/agents-core/lia_agents_core/enhanced_agent_mixin.py`](../libs/agents-core/lia_agents_core/enhanced_agent_mixin.py) |
-| **Fairness** | `fairness_guard.py` | [`app/shared/compliance/fairness_guard.py`](../lia-agent-system/app/shared/compliance/fairness_guard.py) |
-| **Fairness** | `fact_checker.py` | [`app/shared/compliance/fact_checker.py`](../lia-agent-system/app/shared/compliance/fact_checker.py) |
-| **PII** | `pii_masking.py` | [`app/shared/pii_masking.py`](../lia-agent-system/app/shared/pii_masking.py) — Layer 4 Presidio NER (Z6-03) |
-| **Memória** | `working_memory.py` | [`app/shared/agents/working_memory.py`](../lia-agent-system/app/shared/agents/working_memory.py) |
-| **Memória** | `long_term_memory.py` | [`app/shared/agents/long_term_memory.py`](../lia-agent-system/app/shared/agents/long_term_memory.py) |
-| **Memória imutável** | `event_store_service.py` | [`app/services/event_store_service.py`](../lia-agent-system/app/services/event_store_service.py) — Event Sourcing (Y5/E12) |
-| **Aprendizado** | `learning_loop_service.py` | [`app/shared/learning/learning_loop_service.py`](../lia-agent-system/app/shared/learning/learning_loop_service.py) + FairnessGuard (F1-02) |
-| **Aprendizado** | `learning_snapshot_service.py` | [`app/services/learning_snapshot_service.py`](../lia-agent-system/app/services/learning_snapshot_service.py) — snapshots + rollback (Z2-01) |
-| **Aprendizado** | `ab_testing_service.py` | [`app/shared/learning/ab_testing_service.py`](../lia-agent-system/app/shared/learning/ab_testing_service.py) |
-| **Aprendizado** | `routing_learning_service.py` | [`app/services/routing_learning_service.py`](../lia-agent-system/app/services/routing_learning_service.py) — auto-routing adaptativo (Y5/E9) |
-| **Aprendizado** | `ml_feedback_service.py` | [`app/services/ml_feedback_service.py`](../lia-agent-system/app/services/ml_feedback_service.py) — pesos adaptativos score (Y3/D6) |
-| **Comunicação entre agentes** | `agent_bus.py` | [`app/shared/agents/agent_bus.py`](../lia-agent-system/app/shared/agents/agent_bus.py) — A2A via Redis Pub/Sub (Y5/E10) |
-| **Prompts** | `lia_persona.yaml` | [`app/prompts/shared/lia_persona.yaml`](../lia-agent-system/app/prompts/shared/lia_persona.yaml) |
-| **Prompts** | `anti_sycophancy_block.py` | [`app/shared/prompts/anti_sycophancy_block.py`](../lia-agent-system/app/shared/prompts/anti_sycophancy_block.py) — 6 novos prompts (AUD-1) |
-| **LLMs** | `llm_factory.py` | [`app/shared/providers/llm_factory.py`](../lia-agent-system/app/shared/providers/llm_factory.py) |
-| **LLMs** | `agent_model_config.py` | [`app/core/agent_model_config.py`](../lia-agent-system/app/core/agent_model_config.py) — multi-model por agente via envvar (Y4/E5) |
-| **Resiliência** | `circuit_breaker.py` | [`app/shared/resilience/circuit_breaker.py`](../lia-agent-system/app/shared/resilience/circuit_breaker.py) — 15+ circuits, SLOs (F1-03, AUD-2) |
-| **Resiliência** | `dlq_service.py` | [`app/shared/resilience/dlq_service.py`](../lia-agent-system/app/shared/resilience/dlq_service.py) — DLQ Redis (F2-04) |
-| **Observabilidade** | `tracing.py` | [`app/shared/tracing.py`](../lia-agent-system/app/shared/tracing.py) — OpenTelemetry OTLP (Z6-02) |
-| **Comportamental** | `recruiter_behavior_service.py` | [`app/services/recruiter_behavior_service.py`](../lia-agent-system/app/services/recruiter_behavior_service.py) — perfil recrutador (Z7-01) |
-| **RAG** | `rag_pipeline_service.py` | [`app/services/rag_pipeline_service.py`](../lia-agent-system/app/services/rag_pipeline_service.py) — BM25 + pgvector hybrid + domínio (G6, Y5/E6) |
-| **Conformidade** | `granular_consent_service.py` | [`app/services/granular_consent_service.py`](../lia-agent-system/app/services/granular_consent_service.py) — LGPD 7 tipos (Y3/D5) |
-| **Auditoria** | `bias_audit_service.py` | [`app/services/bias_audit_service.py`](../lia-agent-system/app/services/bias_audit_service.py) — EEOC chi-square (Y3/D3) |
-| **Testes** | `test_four_fifths_rule.py` | [`tests/fairness/test_four_fifths_rule.py`](../lia-agent-system/tests/fairness/test_four_fifths_rule.py) |
-| **Testes** | `golden_dataset.py` | [`tests/fixtures/golden_dataset.py`](../lia-agent-system/tests/fixtures/golden_dataset.py) |
+| **Agentes ReAct** | 12 | `*_react_agent.py` por domínio |
+| **Grafos LangGraph** | 5 | `wsi_interview_graph.py`, `interview_graph.py`, `job_wizard_graph.py` |
+| **SubAgentes Z1** | 6 | `kanban_*_agent.py`, `pipeline_*_agent.py` |
+| **Tool Registries** | 12 | `*_tool_registry.py` por domínio |
+| **System Prompts** | 12 | `*_system_prompt.py` por domínio |
+| **Stage Contexts** | 12 | `*_stage_context.py` por domínio |
+| **Fairness** | 4 | `fairness_guard.py`, `fact_checker.py`, `audit_callback.py`, `admin_bias_audit.py` |
+| **Memória** | 3 | `working_memory.py`, `long_term_memory.py`, `memory_integration.py` |
+| **Providers LLM** | 4 | `llm_claude.py`, `llm_gemini.py`, `llm_openai.py`, `llm_factory.py` |
+| **Orchestrator** | 14 | `cascaded_router.py`, `llm_cascade.py`, `semantic_cache.py`... |
+| **Resilência** | 2 | `circuit_breaker.py`, `dlq_service.py` |
+| **Learning** | 5 | `learning_loop_service.py`, `ab_testing_service.py`... |
+| **PII** | 2 | `pii_masking.py`, `consent_checker_service.py` |
+| **LGPD** | 4 | `dsr_export_service.py`, `lgpd_cleanup_service.py`... |
+| **Observabilidade** | 5 | `observability.py`, `execution_log_store.py`, `ai_consumption.py`... |
+| **Testes de IA** | 313 | `test_four_fifths_rule.py`, `golden_dataset.py`... |
 
-### Arquivos-chave de IA — v5
+---
 
-| Categoria | Arquivo | Caminho |
+### recruiter_agent_v5 — Inventário Completo de Arquivos de IA
+
+#### Hub e Orquestração
+
+| Arquivo | Função |
+|---|---|
+| `src/hub/orchestrator.py` | HubOrchestrator — sessão, planejamento, execução |
+| `src/hub/planner.py` | HubPlanner — fast-path + CostLadder + LLM |
+| `src/hub/supervisor_graph.py` | LangGraph supervisor (roteia entre domínios) |
+| `src/hub/supervisor_state.py` | SupervisorState TypedDict |
+| `src/hub/session.py` | ConversationSession (Redis + domain_memories) |
+| `src/hub/domain_agent_node.py` | Nó de execução de domínio no grafo |
+
+#### Grafos LangGraph
+
+| Arquivo | Grafo | Nós |
 |---|---|---|
-| **Pipeline** | `intent_analyzer.py` | [`src/agents/intent_analyzer.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/intent_analyzer.py) |
-| **Pipeline** | `api_planner.py` | [`src/agents/api_planner.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/api_planner.py) |
-| **Pipeline** | `api_executor.py` | [`src/agents/api_executor.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/api_executor.py) |
-| **Pipeline** | `answer_formatter.py` | [`src/agents/answer_formatter.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/agents/answer_formatter.py) |
-| **Sourcing** | `search.py` | [`src/domains/sourced_profile_sourcing/agents/search.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/search.py) |
-| **Sourcing** | `comparison.py` | [`src/domains/sourced_profile_sourcing/agents/comparison.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/agents/comparison.py) |
-| **Fairness** | `fairness.py` | [`src/domains/sourced_profile_sourcing/fairness.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/fairness.py) |
-| **Fact check** | `fact_checker.py` | [`src/domains/sourced_profile_sourcing/fact_checker.py`](https://github.com/talensestg/recruiter_agent_v5/blob/main/src/domains/sourced_profile_sourcing/fact_checker.py) |
-| **Persona** | `v5_persona.yaml` | [`v5_persona.yaml`](https://github.com/talensestg/recruiter_agent_v5/blob/main/v5_persona.yaml) |
+| `src/workflow/graph.py` | WorkflowOrchestrator | 6 (intent→plan→execute→validate→process→format) |
+| `src/hub/supervisor_graph.py` | SupervisorGraph | route→domain→END |
+| `src/domains/scheduling/graph.py` | SchedulingGraph | parse→check_slots→confirm→execute |
+| `src/domains/evaluation/graph.py` | InterviewGraph | classify→evaluate→decide→craft |
+| `src/domains/applies/react_agent.py` | ReactAgent (applies) | ReAct loop (MAX=12) |
+| `src/domains/autonomous/agent.py` | AutonomousReAct | ReAct loop (RetryPolicy) |
+
+#### Agentes de Domínio
+
+| Arquivo | Domínio | Tipo |
+|---|---|---|
+| `src/agents/intent_analyzer.py` | Global | Pipeline + RAG |
+| `src/agents/api_planner.py` | Global | Pipeline + 51 YAMLs |
+| `src/agents/api_executor.py` | Global | Pipeline HTTP |
+| `src/agents/plan_validator.py` | Global | Pipeline |
+| `src/agents/data_processor.py` | Global | Pipeline |
+| `src/agents/answer_formatter.py` | Global | Pipeline |
+| `src/domains/applies/react_agent.py` | Applies | ReAct LangGraph |
+| `src/domains/autonomous/agent.py` | Autonomous | ReAct LangGraph (73+ tools) |
+| `src/domains/sourced_profile_sourcing/agents/orchestrator.py` | Sourcing | Supervisor |
+| `src/domains/sourced_profile_sourcing/agents/router.py` | Sourcing | Router |
+| `src/domains/sourced_profile_sourcing/agents/planner.py` | Sourcing | Planner |
+| `src/domains/sourced_profile_sourcing/agents/search.py` | Sourcing | Search (embeddings) |
+| `src/domains/sourced_profile_sourcing/agents/detail.py` | Sourcing | Detail |
+| `src/domains/sourced_profile_sourcing/agents/analytics.py` | Sourcing | Analytics |
+| `src/domains/sourced_profile_sourcing/agents/comparison.py` | Sourcing | Comparison |
+| `src/domains/sourced_profile_sourcing/agents/report.py` | Sourcing | Report |
+| `src/domains/sourced_profile_sourcing/agents/action.py` | Sourcing | Action |
+
+#### Serviços de IA/ML
+
+| Arquivo | Função |
+|---|---|
+| `src/services/embedding_service.py` | Gemini embedding-001 (768d) |
+| `src/services/semantic_cache.py` | Cache semântico Redis |
+| `src/services/rag_service.py` | RAG híbrido (semântico + textual) |
+| `src/services/model_router.py` | ModelRouter (fast/default/heavy) |
+| `src/services/cost_ladder.py` | CostLadder (routing multi-tier) |
+| `src/services/llm_tracking_service.py` | Tracking de tokens por chamada |
+| `src/services/llm_cache_service.py` | Cache de respostas LLM |
+| `src/services/sector_benchmark.py` | Benchmarks por setor |
+| `src/utils/llm_factory.py` | create_tracked_llm() — factory principal |
+
+#### Memória e Estado
+
+| Arquivo | Função |
+|---|---|
+| `src/services/memory/manager.py` | MemoryManager (remember, recall, categorize) |
+| `src/services/memory/store.py` | TenantMemoryStore (PostgreSQL + pgvector) |
+| `src/services/memory/models.py` | TenantMemory dataclass |
+| `src/services/memory_service.py` | Serviço de memória de alto nível |
+| `src/services/checkpointer.py` | PostgresSaver + MemorySaver |
+| `src/config/memory_config.py` | Configuração de memória |
+| `src/domains/applies/memory.py` | AppliesConversationMemory |
+| `src/domains/jobs/memory.py` | JobsConversationMemory |
+| `src/domains/insights/memory.py` | InsightsConversationMemory |
+| `src/domains/messaging/memory.py` | MessagingConversationMemory |
+| `src/domains/scheduling/memory.py` | SchedulingConversationMemory |
+| `src/domains/sourced_profile_sourcing/memory.py` | SourcingConversationMemory |
+
+#### Fairness, Compliance e Segurança
+
+| Arquivo | Função |
+|---|---|
+| `src/domains/jobs/fairness.py` | Fairness em job descriptions |
+| `src/domains/sourced_profile_sourcing/fairness.py` | Fairness em filtros de sourcing |
+| `src/domains/sourced_profile_sourcing/fact_checker.py` | FactChecker (count, avg, score) |
+| `src/services/pii_filter.py` | PIIMaskingFilter em logs (CPF, email, phone) |
+| `src/services/security.py` | InjectionDetector + Sanitizer |
+
+#### Auditoria e Observabilidade
+
+| Arquivo | Função |
+|---|---|
+| `src/services/audit/audit_callback.py` | AuditCallbackHandler (LangChain) |
+| `src/services/audit/audit_models.py` | AuditExecution, AuditEvent, AuditEventType |
+| `src/services/audit/audit_storage.py` | JSONL storage (logs/audit/audit_YYYY-MM-DD.jsonl) |
+| `src/services/audit/audit_writer.py` | PostgreSQL (agent_executions table) |
+| `src/services/execution_tracker.py` | Timing por step |
+| `src/services/react_observer.py` | ReActObserver (rastreia tool calls) |
+| `src/services/thinking_message.py` | ThinkingMessageService (feedback ao usuário) |
+| `src/services/streaming_callback.py` | Streaming de respostas |
+
+#### Resiliência
+
+| Arquivo | Função |
+|---|---|
+| `src/services/circuit_breaker.py` | CircuitBreaker (threshold, cooldown, reset_all) |
+| `src/services/timed_node.py` | _TimeoutError + timeout por nó |
+| `src/services/pending_action_store.py` | HITL (ações pendentes de confirmação) |
+
+#### Proativo e Feedback
+
+| Arquivo | Função |
+|---|---|
+| `src/services/proactive/detector.py` | Detecção de padrões proativos |
+| `src/services/proactive/notifier.py` | Notificação proativa |
+| `src/services/proactive/runner.py` | Execução em background |
+| `src/services/feedback/tracker.py` | FeedbackTracker |
+
+#### Testes de IA (96 arquivos)
+
+| Arquivo | Cobre |
+|---|---|
+| `tests/test_fairness.py` | fairness.py |
+| `tests/test_fact_checker.py` | fact_checker.py |
+| `tests/test_pii_filter.py` | pii_filter.py |
+| `tests/test_security.py` | security.py |
+| `tests/test_memory_preservation.py` | ConversationSession memory |
+| `tests/test_circuit_breaker.py` | CircuitBreaker |
+| `tests/test_circuit_breaker_integration.py` | CircuitBreaker integration |
+| `tests/test_audit.py` | AuditCallbackHandler |
+| `tests/test_workflow.py` | WorkflowOrchestrator |
+| `tests/test_hallucination_prevention.py` | anti-hallucination |
+| `tests/test_autonomous_conversation.py` | ReAct autonomous |
+| `tests/integration/test_easy_cases.py` | E2E fáceis |
+| `tests/integration/test_very_hard_cases.py` | E2E difíceis |
+| `tests/test_conversation_flow/test_cost_ladder_tiers.py` | CostLadder |
+| `tests/test_conversation_flow/test_cross_domain.py` | cross-domain routing |
+| `tests/evals/run_evals.py` | Avaliações LLM |
 
 ---
 
-## Resumo Executivo e Prioridades de Melhoria
+## 20. Plano de Otimização v5 — Passo a Passo
 
-### Scorecard por Dimensão
+> Cada item indica: **Prioridade | Arquivo a modificar/criar | O que fazer | Código de referência**
 
-| Dimensão | LIA | v5 | Mercado Referência | Urgência LIA |
-|---|---|---|---|---|
-| **1. Orquestração** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ (Eightfold) | Ajustes finos |
-| **2. Filosofia** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ (Phenom) | Documentar ADRs |
-| **3. Estrutura** | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ (Ashby) | Consolidar pastas |
-| **4. Agentes** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ (Eightfold) | ✅ Z5-02 consolidou policy; 17+6=23 agentes |
-| **5. Subagentes/Grafos** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ (CrewAI padrão) | ✅ Sprint Z1 entregou 6 subagentes + HITL AUD-4 |
-| **6. Tool Registries** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ (OpenAI rec.) | ✅ RESOLVIDO — Sprint Z1 decompôs agentes |
-| **7. Serviços ML** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (SeekOut) | Categorizar pastas |
-| **8. Memória** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ (Mem0 padrão) | TTL + compressão |
-| **9. Prompts** | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ (Langfuse) | ✅ PARCIAL — Z3-02 `version`+`updated_at` em 9 YAMLs |
-| **10. Fairness** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ (HireVue) | Relatório exportável |
-| **11. PII/LGPD** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Greenhouse) | ✅ Z6-03 Presidio Layer 4 implementado |
-| **12. Resiliência** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Stripe padrão) | ✅ F1-03 SLOs + degraded mode |
-| **13. Aprendizado** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Eightfold) | ✅ F1-02 FairnessGuard + Z2-01 snapshots |
-| **14. Observabilidade** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ (Arize) | ✅ Z6-02 OpenTelemetry OTLP implementado |
-| **15. LLMs** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ (LiteLLM) | Avaliar LiteLLM |
-| **16. Testes** | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ (DeepEval) | **ALTA — DeepEval + CI** |
-| **17. Jobs** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Sidekiq) | ✅ F2-04 DLQ implementado |
-
-### Top 5 Recomendações por Prioridade
-
-| # | Recomendação | Impacto | Esforço | Status |
-|---|---|---|---|---|
-| **1** | ~~Decompor Kanban (23 tools) e Pipeline (22 tools) em subagentes~~ | Qualidade de resposta ↑ + custo ↓ | Médio (2 sprints) | ✅ **IMPLEMENTADO — Sprint Z1 (19/03/2026)** |
-| **2** | ~~Adicionar validação de fairness no learning loop~~ | Risco regulatório ↓ | Baixo (1 sprint) | ✅ **IMPLEMENTADO — Sprint F1-02 (08/03/2026)** |
-| **3** | ~~Integrar versionamento de prompts~~ | Debugabilidade ↑ + qualidade ↑ | Baixo (1 sprint) | ✅ **PARCIAL — Sprint Z3-02**: `version`+`updated_at` em 9 YAMLs. Métricas por versão ainda pendentes. |
-| **4** | Integrar DeepEval no CI/CD para testes de LLM | Confiabilidade ↑ | Médio (2 sprints) | 🔴 **Pendente** — 4.600+ testes mas sem cobertura de qualidade de LLM |
-| **5** | Criar relatório de fairness exportável (PDF/CSV) | Compliance comercial ↑ | Baixo (1 sprint) | 🔴 **Pendente** — Clientes enterprise e reguladores pedem na due diligence |
+### Fase V-1 — Crítico (Sprint 1–2)
 
 ---
 
-*Documento versão 3.1 — 19/03/2026 | LIA v1.3 (Sprints A–F + G1–G7 + SEG + AUD + Y1–Y5 + Z1–Z7 concluídos) | 4.600+ testes | 30% coverage gate | recruiter_agent_v5 branch: main*
-*Análise de mercado baseada em: Eightfold AI, Phenom, SeekOut, HireVue, Paradox, Greenhouse, Ashby, SmartRecruiters, Workday, Beamery, hireEZ, LangChain docs, Anthropic docs, OpenAI docs, Gartner 2025, NYC Local Law 144, EU AI Act, LGPD*
+#### V-01 · Estabilizar PostgresSaver (Checkpointing)
 
----
+**Por que:** PostgresSaver instável é o maior risco de perda de estado — entrevistas de 30min reiniciam do zero.
+**Nota do ARCHITECTURAL_AUDIT:** "checkpointing nota 3/10 — PostgresSaver quebrado, sem recovery"
 
-# Plano de Otimização da Plataforma LIA
-## Baseado no Diagnóstico Comparativo — Foco exclusivo na LIA
-
-> **Contexto:** O diagnóstico das 17 dimensões revelou que a LIA está acima do mercado em fairness, memória, resiliência e aprendizado, mas tem pontos concretos de melhoria em tool registries, prompts, testes e estrutura de código. Este plano organiza todas as recomendações em 4 fases executáveis, do mais urgente ao mais estratégico.
->
-> **Princípio:** nenhuma otimização aqui quebra funcionalidade existente — todas são aditivas ou refatorações internas.
-
----
-
-## Visão Geral do Plano
-
-| Fase | Horizonte | Foco | Itens |
-|---|---|---|---|
-| **Fase 1 — Correções Críticas** | Semanas 1–2 | Riscos ativos que afetam qualidade ou compliance hoje | 3 itens |
-| **Fase 2 — Ganhos Rápidos** | Semanas 3–6 | Melhorias de alto impacto com baixo esforço | 5 itens |
-| **Fase 3 — Melhorias Estruturais** | Meses 2–4 | Refatorações que aumentam qualidade e manutenibilidade | 5 itens |
-| **Fase 4 — Evolução Estratégica** | Meses 4–9 | Funcionalidades que abrem novos mercados ou capacidades | 4 itens |
-
----
-
-## Fase 1 — Correções Críticas
-### Semanas 1–2 | Riscos ativos que afetam qualidade ou compliance hoje
-
----
-
-### ✅ F1-01 · Decompor agentes com excesso de tools — IMPLEMENTADO (Sprint Z1, 19/03/2026)
-
-**Problema diagnosticado:** KanbanReactAgent (23 tools) e PipelineTransitionAgent (22 tools) estavam acima do limite seguro recomendado pela Anthropic e OpenAI (10–12 tools por agente). Acima desse limite, o modelo confunde ferramentas similares, aumenta a taxa de erro de seleção de tool e consome mais tokens no raciocínio.
-
-**Status:** ✅ Implementado em Sprint Z1 — KanbanReActAgent decomposto em KanbanSearchAgent + KanbanActionAgent + KanbanAnalyticsAgent. PipelineTransitionAgent decomposto em subagentes especializados. Supervisor coordena via padrão "supervisor + workers". 6 subagentes no total, cada um com 7–9 tools (dentro do limite seguro).
-
-**O que fazer:**
-
-Dividir cada agente em 3 subagentes especializados:
-
-```
-KanbanReactAgent (23 tools) → decompor em:
-  ├── KanbanSearchAgent      (7 tools): search_candidates, filter_stage, get_profile, list_candidates, ...
-  ├── KanbanActionAgent      (8 tools): move_candidate, bulk_move, add_note, update_status, ...
-  └── KanbanAnalyticsAgent   (6 tools): get_metrics, time_to_hire, funnel_report, ...
-
-PipelineTransitionAgent (22 tools) → decompor em:
-  ├── PipelineDecisionAgent  (8 tools): evaluate_candidate, score_fit, check_requirements, ...
-  ├── PipelineMoveAgent      (7 tools): move_stage, request_docs, schedule_interview, ...
-  └── PipelineCommsAgent     (6 tools): send_feedback, notify_candidate, log_action, ...
-```
-
-**Arquivos afetados:**
-- [`app/domains/recruiter_assistant/agents/kanban_react_agent.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/kanban_react_agent.py)
-- [`app/domains/recruiter_assistant/agents/kanban_tool_registry.py`](../lia-agent-system/app/domains/recruiter_assistant/agents/kanban_tool_registry.py)
-- [`app/domains/pipeline/agents/pipeline_transition_agent.py`](../lia-agent-system/app/domains/pipeline/agents/pipeline_transition_agent.py)
-- [`app/domains/pipeline/agents/pipeline_tool_registry.py`](../lia-agent-system/app/domains/pipeline/agents/pipeline_tool_registry.py)
-- [`app/orchestrator/cascaded_router.py`](../lia-agent-system/app/orchestrator/cascaded_router.py) — atualizar roteamento para os novos subagentes
-
-**Esforço:** 2 sprints (1 por agente)
-**Impacto esperado:** precisão de resposta ↑ ~20%, custo por query ↓ ~15%
-**Métrica de sucesso:** taxa de tool_call_error < 3% nos dois domínios (medido via LangSmith)
-
----
-
-### ✅ F1-02 · Adicionar validação de fairness no learning loop — IMPLEMENTADO (Sprint F1-02, 08/03/2026)
-
-**Problema diagnosticado:** O learning loop (`learning_loop_service.py`) aplicava aprendizado baseado no feedback dos recrutadores sem passar pelo `FairnessGuard`.
-
-**Status:** ✅ Implementado — `FairnessGuard.validate_learning_batch()` integrado antes de cada aplicação de padrão aprendido. `audit_service.log_learning_blocked()` registra bloqueios. Sprint Z2-01 adicionou `LearningSnapshotService` com rollback por snapshot_id.
-
-**O que fazer:**
-
-Adicionar um passo de validação de fairness antes de qualquer aplicação de aprendizado:
-
+**MODIFICAR: `src/services/checkpointer.py`**
 ```python
-# Em learning_loop_service.py — antes de aplicar mudança aprendida
-async def apply_learning(self, learning_batch: List[FeedbackItem]):
-    # NOVO: validar fairness do batch antes de aplicar
-    fairness_result = await self.fairness_guard.validate_learning_batch(learning_batch)
-    if fairness_result.disparate_impact_detected:
-        await self.audit_service.log_learning_blocked(fairness_result)
-        return  # não aplica — entra em fila de revisão humana
-    
-    # continua com aplicação normal
-    await self._apply_template_updates(learning_batch)
+# Adicionar pool de conexão dedicado e retry
+import psycopg2.pool
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+_pool: Optional[psycopg2.pool.ThreadedConnectionPool] = None
+
+def _get_pool() -> psycopg2.pool.ThreadedConnectionPool:
+    global _pool
+    if _pool is None or _pool.closed:
+        settings = get_settings()
+        _pool = psycopg2.pool.ThreadedConnectionPool(
+            minconn=1, maxconn=5,
+            host=settings.postgres.host,
+            port=settings.postgres.port,
+            user=settings.postgres.user,
+            password=settings.postgres.password,
+            database=settings.postgres.database,
+        )
+    return _pool
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=5))
+def _create_postgres_saver() -> PostgresSaver:
+    conn = _get_pool().getconn()
+    saver = PostgresSaver(conn)
+    saver.setup()
+    return saver
 ```
 
-**Arquivos afetados:**
-- [`app/shared/learning/learning_loop_service.py`](../lia-agent-system/app/shared/learning/learning_loop_service.py)
-- [`app/shared/compliance/fairness_guard.py`](../lia-agent-system/app/shared/compliance/fairness_guard.py) — adicionar método `validate_learning_batch()`
-- [`app/shared/compliance/audit_service.py`](../lia-agent-system/app/shared/compliance/audit_service.py) — adicionar evento `learning_blocked`
-
-**Esforço:** 1 sprint
-**Impacto esperado:** eliminação do risco de viés por aprendizado
-**Métrica de sucesso:** 100% dos batches de aprendizado passam por validação de fairness (log auditável)
-
----
-
-### ✅ F1-03 · Definir SLOs e modo degradado para o circuit breaker — IMPLEMENTADO (Sprint F1-03, 08/03/2026)
-
-**Problema diagnosticado:** O `circuit_breaker.py` não tinha SLOs documentados nem modo degradado.
-
-**Status:** ✅ Implementado — `CIRCUIT_BREAKER_CONFIG` com failure_threshold=5, time_window=60s, recovery_timeout=120s, half_open_max_calls=2. Modo degradado com respostas pré-programadas para os 10 intents mais frequentes. Endpoint `GET /api/v1/admin/circuit-breakers` expõe status de todos os circuits. `POST /reset` e `POST /reset-all` disponíveis para ops.
-
-**O que fazer:**
-
-Definir SLOs formais e criar um "modo degradado" com respostas pré-programadas:
-
+**CRIAR: `src/tasks/checkpointer_health_task.py`**
 ```python
-# Configuração de SLOs no circuit_breaker.py
-CIRCUIT_BREAKER_CONFIG = {
-    "failure_threshold": 5,        # abre após 5 falhas
-    "time_window_seconds": 60,     # dentro de 60 segundos
-    "recovery_timeout_seconds": 120,  # tenta reabrir após 2 min
-    "half_open_max_calls": 2,      # testa com 2 calls antes de reabrir totalmente
-}
-
-# Modo degradado: respostas para as 10 perguntas mais frequentes
-DEGRADED_MODE_RESPONSES = {
-    "status_candidato": "Não consigo verificar o status agora. Tente novamente em alguns minutos.",
-    "mover_candidato": "Sistema temporariamente indisponível. Ação registrada para execução assim que possível.",
-    # ... top 10 intents
-}
-```
-
-**Arquivos afetados:**
-- [`app/shared/resilience/circuit_breaker.py`](../lia-agent-system/app/shared/resilience/circuit_breaker.py)
-- [`app/shared/resilience/stats_manager.py`](../lia-agent-system/app/shared/resilience/stats_manager.py)
-- [`app/api/v1/admin_circuit_breakers.py`](../lia-agent-system/app/api/v1/admin_circuit_breakers.py) — expor SLOs no painel admin
-
-**Esforço:** 1 sprint
-**Impacto esperado:** comportamento previsível em incidentes; zero downtime total mesmo com falha de todos os LLMs
-**Métrica de sucesso:** MTTR (tempo médio de recuperação) de incidentes de LLM < 5 minutos
-
----
-
-## Fase 2 — Ganhos Rápidos
-### Semanas 3–6 | Alto impacto, baixo esforço
-
----
-
-### F2-01 · Versionamento de prompts
-
-**Problema diagnosticado:** Prompts sem versionamento significam que quando algo piora, não há como saber qual mudança causou — e não há como reverter.
-
-**O que fazer:**
-
-Adicionar campo `version`, `updated_at` e `changelog` em cada YAML de prompt, e implementar rollback no `prompt_registry.py`:
-
-```yaml
-# Exemplo: lia_persona.yaml com versionamento
-metadata:
-  version: "1.3.0"
-  updated_at: "2026-03-19"
-  author: "LIA Team"
-  changelog:
-    - "1.3.0: adicionado tom mais assertivo em contextos de negociação"
-    - "1.2.0: ajustado limite de autonomia para decisões financeiras"
-    - "1.1.0: versão inicial de produção"
-```
-
-Adicionar ao `prompt_registry.py`:
-- `get_prompt(name, version=None)` — busca versão específica ou latest
-- `rollback_prompt(name, to_version)` — reverte para versão anterior
-- `list_prompt_history(name)` — lista todas as versões
-
-**Arquivos afetados:**
-- [`app/shared/prompts/prompt_registry.py`](../lia-agent-system/app/shared/prompts/prompt_registry.py)
-- [`app/shared/prompts/loader.py`](../lia-agent-system/app/shared/prompts/loader.py)
-- Todos os YAMLs em `app/prompts/` — adicionar bloco `metadata`
-
-**Esforço:** 1 sprint
-**Impacto esperado:** debugging de regressões de qualidade de 2 dias → 2 horas
-**Métrica de sucesso:** toda mudança de prompt rastreável com autor, data e motivo
-
----
-
-### F2-02 · Relatório de fairness exportável
-
-**Problema diagnosticado:** O dashboard de bias audit existe mas é apenas interno. Clientes enterprise e reguladores (NYC LL144, EU AI Act) pedem relatório exportável na due diligence.
-
-**O que fazer:**
-
-Adicionar endpoint de exportação no `admin_bias_audit.py`:
-
-```python
-# GET /api/v1/admin/bias-audit/export?format=pdf&period=2026-Q1&tenant_id=...
-async def export_bias_report(
-    format: Literal["pdf", "csv", "json"],
-    period: str,
-    tenant_id: UUID
-) -> FileResponse:
-    report = await bias_audit_service.generate_report(tenant_id, period)
-    # inclui: four_fifths_rule results, disparate impact by group,
-    #          decisions audited, flags raised, actions taken
-    return await export_service.render(report, format)
-```
-
-O relatório deve incluir obrigatoriamente:
-- Taxa de aprovação por grupo demográfico (gênero, raça se disponível)
-- Resultado da regra 4/5 por etapa do pipeline
-- Número de decisões auditadas no período
-- Flags levantadas e ações tomadas
-- Assinatura digital com timestamp
-
-**Arquivos afetados:**
-- [`app/api/v1/admin_bias_audit.py`](../lia-agent-system/app/api/v1/admin_bias_audit.py)
-- [`app/services/bias_audit_service.py`](../lia-agent-system/app/services/bias_audit_service.py)
-- Novo: `app/services/report_export_service.py`
-
-**Esforço:** 1 sprint
-**Impacto esperado:** habilita contratos com clientes enterprise que exigem compliance documentado
-**Métrica de sucesso:** relatório gerado em < 30 segundos para qualquer período
-
----
-
-### F2-03 · Alertas de custo de tokens por tenant
-
-**Problema diagnosticado:** Sem alertas proativos de custo, um tenant que começa a usar 10x mais tokens (por bug, abuso ou crescimento inesperado) não é detectado até a fatura chegar.
-
-**O que fazer:**
-
-Adicionar thresholds configuráveis com alertas automáticos no `tenant_budget.py`:
-
-```python
-# Em tenant_budget.py — adicionar política de alertas
-class TenantBudgetPolicy:
-    daily_token_limit: int          # limite diário configurável por plano
-    alert_at_percent: float = 0.80  # alerta ao atingir 80%
-    hard_limit_action: Literal["throttle", "block", "notify_only"]
-
-# Job que roda a cada hora verificando consumo
-async def check_tenant_budgets():
-    for tenant in active_tenants:
-        usage = await ai_consumption_service.get_daily_usage(tenant.id)
-        if usage.percent >= tenant.policy.alert_at_percent:
-            await alert_service.send(
-                type="budget_warning",
-                tenant=tenant,
-                usage=usage
-            )
-```
-
-**Arquivos afetados:**
-- [`app/orchestrator/tenant_budget.py`](../lia-agent-system/app/orchestrator/tenant_budget.py)
-- [`app/api/v1/ai_consumption.py`](../lia-agent-system/app/api/v1/ai_consumption.py)
-- [`app/services/agent_health_alert_service.py`](../lia-agent-system/app/services/agent_health_alert_service.py)
-
-**Esforço:** 1 sprint
-**Impacto esperado:** zero surpresas de custo; possibilidade de modelo de pricing baseado em uso real
-**Métrica de sucesso:** 100% dos tenants com limite configurado; alertas com latência < 1 hora
-
----
-
-### ✅ F2-04 · Dead Letter Queue e monitoramento de jobs — IMPLEMENTADO (Sprint F2-04, 08/03/2026)
-
-**Problema diagnosticado:** Tasks Celery que falhavam repetidamente desapareciam silenciosamente — sem DLQ, sem visibilidade.
-
-**Status:** ✅ Implementado — `DLQService` com Redis LIST por fila, cap 1000 entradas, TTL 7 dias, PII masking automático. `LIATask` base class com `on_failure()`. 4 endpoints admin. 15 testes. (Original F2-04)
-
-**O que fazer:**
-
-Configurar DLQ no Celery e adicionar endpoint de monitoramento:
-
-```python
-# Em celery_tasks.py — adicionar DLQ
-@app.task(
-    bind=True,
-    max_retries=3,
-    default_retry_delay=300,  # 5 min entre retries
-    acks_late=True,
-    reject_on_worker_lost=True,
-)
-def process_drift_check(self, tenant_id: str):
+@celery_app.task
+def verify_checkpointer_health():
+    """Roda a cada 5 min para detectar falha do PostgresSaver antecipadamente."""
     try:
-        drift_service.run_check(tenant_id)
-    except Exception as exc:
-        if self.request.retries >= self.max_retries:
-            # move para DLQ com contexto completo
-            dead_letter_queue.push({
-                "task": self.name,
-                "args": self.request.args,
-                "error": str(exc),
-                "failed_at": datetime.utcnow().isoformat(),
-                "tenant_id": tenant_id,
-            })
-        raise self.retry(exc=exc)
+        saver = get_checkpointer()
+        # simula put/get básico
+        logger.info("[Checkpointer] Health OK")
+    except Exception as e:
+        logger.error(f"[Checkpointer] Health FAIL: {e}")
+        # reset e força MemorySaver
+        global _saver
+        _saver = MemorySaver()
 ```
-
-Adicionar `GET /api/v1/admin/jobs/dead-letter` para revisão de tasks falhas.
-
-**Arquivos afetados:**
-- [`app/jobs/celery_tasks.py`](../lia-agent-system/app/jobs/celery_tasks.py)
-- [`app/jobs/drift_job.py`](../lia-agent-system/app/jobs/drift_job.py)
-- [`app/api/v1/admin.py`](../lia-agent-system/app/api/v1/admin.py) — novo endpoint DLQ
-
-**Esforço:** 1 sprint
-**Impacto esperado:** visibilidade total de jobs falhos; zero perda silenciosa de tasks críticas
-**Métrica de sucesso:** 100% das falhas de job registradas na DLQ e visíveis no painel admin
 
 ---
 
-### F2-05 · Ajuste do threshold de cache semântico
+#### V-02 · Multi-tenancy Básico no Hub
 
-**Problema diagnosticado:** O threshold de cosine similarity de 0.92 para cache semântico pode ser alto demais — perguntas levemente reformuladas sempre vão para o LLM, desperdiçando o benefício do cache.
+**Por que:** Dois clientes diferentes usando o mesmo agente têm memórias e configurações misturadas.
 
-**O que fazer:**
-
-Usar o A/B testing já existente para testar diferentes thresholds:
-
+**CRIAR: `src/hub/tenant_context.py`**
 ```python
-# Em semantic_cache.py — threshold configurável por A/B test
-SEMANTIC_CACHE_THRESHOLD = ab_testing_service.get_variant(
-    experiment="semantic_cache_threshold",
-    variants={
-        "control": 0.92,    # threshold atual
-        "variant_a": 0.88,  # mais permissivo
-        "variant_b": 0.85,  # ainda mais permissivo
-    }
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class TenantContext:
+    tenant_id: int
+    company_name: str
+    features_enabled: list  # ["scheduling", "evaluation", "messaging"]
+    custom_domain_prompts: dict  # {"jobs": "Somos uma startup de tech..."}
+    max_memories: int = 500
+    memory_ttl_days: int = 30
+
+def get_tenant_context(auth_token: str) -> TenantContext:
+    """Busca config do tenant via Rails API."""
+    from src.services.auth_service import AuthService
+    user = AuthService.validate_token(auth_token)
+    return TenantContext(
+        tenant_id=user["company_id"],
+        company_name=user["company_name"],
+        features_enabled=user.get("ai_features", ["jobs", "applies", "sourcing"]),
+        custom_domain_prompts=user.get("custom_prompts", {}),
+    )
+```
+
+**MODIFICAR: `src/hub/orchestrator.py`**
+```python
+# Adicionar tenant_context em todas as execuções
+from src.hub.tenant_context import get_tenant_context
+
+class HubOrchestrator:
+    async def process(self, query: str, auth_token: str, session_id: str) -> dict:
+        tenant = get_tenant_context(auth_token)
+        
+        # Verificar features habilitadas
+        domain = self.planner.plan(query, tenant.features_enabled)
+        
+        # Passar tenant_id para memória
+        self.memory_manager.set_tenant(tenant.tenant_id)
+```
+
+---
+
+#### V-03 · Criar shared/fairness/ Unificado
+
+**Por que:** `fairness.py` em 2 domínios = duplicação. Quando jobs e sourcing crescerem para messaging e autonomous, vai triplicar.
+
+**CRIAR: `src/shared/fairness/__init__.py`**
+**CRIAR: `src/shared/fairness/guard.py`** (ver código em Seção 11)
+
+**MOVER:** `src/domains/jobs/fairness.py` → lógica para `src/shared/fairness/job_description_checker.py`
+**MOVER:** `src/domains/sourced_profile_sourcing/fairness.py` → `src/shared/fairness/candidate_filter_checker.py`
+
+**CRIAR: `src/shared/fairness/fact_checker.py`** (unificado de sourcing para todos os domínios):
+```python
+# Mover src/domains/sourced_profile_sourcing/fact_checker.py → src/shared/fairness/fact_checker.py
+# Renomear para uso genérico (não só sourcing)
+class UniversalFactChecker:
+    def verify_count_claim(self, claimed, actual_list, context="itens") -> FactCheckResult: ...
+    def verify_average_claim(self, claimed_avg, data, field, tolerance=None) -> FactCheckResult: ...
+    def verify_score_claim(self, claimed_score, actual_score, tolerance=5.0) -> FactCheckResult: ...
+```
+
+---
+
+#### V-04 · PII Masking em Prompts (não só em logs)
+
+**Por que:** `pii_filter.py` mascara logs mas o texto do usuário vai para o Gemini sem mascaramento.
+
+**MODIFICAR: `src/utils/llm_factory.py`**
+```python
+# Adicionar wrapper que mascara PII antes de enviar ao LLM
+from src.services.pii_filter import mask_pii
+
+class TrackedLLM:
+    def __init__(self, base_llm):
+        self._llm = base_llm
+    
+    def invoke(self, messages: list) -> str:
+        # Mascarar PII em todas as mensagens
+        masked_messages = []
+        for msg in messages:
+            if hasattr(msg, 'content'):
+                msg.content = mask_pii(msg.content)
+            masked_messages.append(msg)
+        return self._llm.invoke(masked_messages)
+```
+
+---
+
+#### V-05 · Resolver Referências no HubPlanner
+
+**Por que:** Sem `reference_resolver.py` integrado ao Hub, "ela" e "aquela vaga" vão para o Gemini sem contexto.
+
+**CRIAR: `src/hub/context_resolver.py`**
+```python
+from src.services.reference_resolver import ReferenceResolver
+from src.hub.session import ConversationSession
+
+class ContextResolver:
+    def resolve(self, query: str, session: ConversationSession) -> str:
+        """
+        Resolve referências pronominais usando memória de domínio da sessão.
+        "ela" → candidata Maria da última ação
+        "aquela vaga" → vaga 7144 da última ação
+        """
+        last_job_id = None
+        last_candidate_id = None
+        
+        # Checar domain memories por referências recentes
+        for domain, memory in session.domain_memories.items():
+            if hasattr(memory, 'last_job_id') and memory.last_job_id:
+                last_job_id = memory.last_job_id
+            if hasattr(memory, 'last_candidate_id') and memory.last_candidate_id:
+                last_candidate_id = memory.last_candidate_id
+        
+        # Substituir referências
+        if last_job_id and any(ref in query.lower() for ref in ["aquela vaga", "essa vaga", "a vaga"]):
+            query = query + f" (vaga {last_job_id})"
+        if last_candidate_id and any(ref in query.lower() for ref in ["ela", "ele", "esse candidato"]):
+            query = query + f" (candidato {last_candidate_id})"
+        
+        return query
+```
+
+**MODIFICAR: `src/hub/planner.py`** — adicionar `ContextResolver.resolve()` antes do CostLadder.
+
+---
+
+### Fase V-2 — Alta Prioridade (Sprint 3–4)
+
+---
+
+#### V-06 · Tool Registry Explícito por Domínio
+
+**Para cada domínio, CRIAR: `src/domains/{domain}/tool_registry.py`**
+
+Exemplo para jobs:
+```python
+# CRIAR: src/domains/jobs/tool_registry.py
+from dataclasses import dataclass
+from typing import List, Callable
+
+@dataclass
+class JobsTool:
+    name: str
+    description: str
+    handler: Callable
+    requires_confirmation: bool = False
+    fairness_check: bool = False
+
+JOBS_TOOLS: List[JobsTool] = [
+    JobsTool("search_jobs", "Busca vagas por critérios", search_jobs_handler, False, False),
+    JobsTool("get_job_details", "Detalhes de uma vaga", get_job_details_handler, False, False),
+    JobsTool("create_job", "Cria nova vaga (JD gerada)", create_job_handler, True, True),
+    JobsTool("update_job", "Atualiza vaga existente", update_job_handler, True, True),
+    JobsTool("close_job", "Encerra vaga", close_job_handler, True, False),
+]
+```
+
+---
+
+#### V-07 · Bloco Anti-sycophancy em Todos os Prompts
+
+**CRIAR: `src/shared/prompts/base_blocks.py`**
+```python
+ANTI_SYCOPHANCY = """
+REGRA CRÍTICA — Integridade dos dados:
+Você é um agente de dados, não um validador de opiniões. Se o usuário fizer uma afirmação
+incorreta sobre os dados (ex: "esse candidato é excelente" quando o score é 42/100),
+apresente os dados reais de forma clara e respeitosa, sem concordar com a afirmação incorreta.
+Exemplo: "Entendo sua percepção. Os dados mostram score 42/100, com pontos fortes em X mas
+fragilidades em Y. A decisão final é sua."
+"""
+
+HITL_RULES = """
+AÇÕES DESTRUTIVAS — Confirmação obrigatória:
+Para qualquer ação que não pode ser desfeita (criar candidatura, enviar email, mover etapa,
+encerrar vaga), apresente um resumo claro do que será feito e aguarde confirmação explícita
+do usuário antes de executar. Use ask_user() para isso.
+"""
+```
+
+**MODIFICAR: todos os `src/domains/*/prompts.py`** — importar e incluir os blocos:
+```python
+# Adicionar no sistema de cada domínio
+from src.shared.prompts.base_blocks import ANTI_SYCOPHANCY, HITL_RULES
+SYSTEM_PROMPT = f"{DOMAIN_SPECIFIC_PROMPT}\n\n{ANTI_SYCOPHANCY}\n\n{HITL_RULES}"
+```
+
+---
+
+#### V-08 · Dead Letter Queue para RabbitMQ
+
+**MODIFICAR: `src/services/rabbitmq_service.py`**
+```python
+# Configurar DLX (Dead Letter Exchange) na declaração da fila
+def setup_queues(channel):
+    # Dead letter exchange
+    channel.exchange_declare("lia.dlx", "direct", durable=True)
+    channel.queue_declare("lia.dead_letters", durable=True, arguments={
+        "x-message-ttl": 7 * 24 * 3600 * 1000  # 7 dias
+    })
+    channel.queue_bind("lia.dead_letters", "lia.dlx", "dead")
+    
+    # Fila principal com DLX configurado
+    channel.queue_declare("lia.sourcing", durable=True, arguments={
+        "x-dead-letter-exchange": "lia.dlx",
+        "x-dead-letter-routing-key": "dead",
+        "x-max-retries": 3,
+    })
+```
+
+**CRIAR: `src/api/admin_dlq.py`** — endpoint para visualizar mensagens mortas.
+
+---
+
+#### V-09 · Prometheus Metrics
+
+**CRIAR: `src/services/metrics_service.py`**
+```python
+from prometheus_client import Counter, Histogram, Gauge
+
+# Contadores por domínio e status
+request_count = Counter(
+    "v5_requests_total",
+    "Total de requests processados",
+    ["domain", "status"]  # status: success, error, fallback
+)
+
+# Latência por domínio
+request_latency = Histogram(
+    "v5_request_latency_seconds",
+    "Latência de processamento em segundos",
+    ["domain"],
+    buckets=[0.5, 1.0, 2.0, 5.0, 10.0, 30.0]
+)
+
+# Tokens por LLM
+llm_tokens_total = Counter(
+    "v5_llm_tokens_total",
+    "Tokens consumidos por LLM",
+    ["model", "tier"]  # tier: fast, default, heavy
+)
+
+# Circuit breaker status
+circuit_status = Gauge(
+    "v5_circuit_breaker_open",
+    "Status do circuit breaker (1=aberto, 0=fechado)",
+    ["service"]  # service: gemini, rabbitmq, postgres
 )
 ```
 
-Medir por 2 semanas: taxa de cache hit, taxa de resposta incorreta por threshold, custo total de tokens.
-
-**Arquivos afetados:**
-- [`app/orchestrator/semantic_cache.py`](../lia-agent-system/app/orchestrator/semantic_cache.py)
-- [`app/shared/learning/ab_testing_service.py`](../lia-agent-system/app/shared/learning/ab_testing_service.py)
-
-**Esforço:** 3 dias (configuração do experimento) + 2 semanas (coleta de dados)
-**Impacto esperado:** cache hit rate ↑ estimado 15–30%; custo de tokens ↓ proporcional
-**Métrica de sucesso:** cache hit rate > 40% sem aumento de taxa de erros
-
----
-
-## Fase 3 — Melhorias Estruturais
-### Meses 2–4 | Refatorações que aumentam qualidade e manutenibilidade a longo prazo
-
----
-
-### F3-01 · HITL (Human-in-the-Loop) nos grafos LangGraph
-
-**Problema diagnosticado:** Os grafos WSI Interview e Interview Scheduling não têm pontos de pausa para aprovação humana antes de etapas críticas — o agente avança automaticamente mesmo em decisões de alto impacto.
-
-**O que fazer:**
-
-Adicionar nós de HITL usando o suporte nativo do LangGraph:
-
+**MODIFICAR: `src/api.py`** — adicionar endpoint `/metrics`:
 ```python
-# Em wsi_interview_graph.py — adicionar nó de aprovação humana
-from langgraph.checkpoint.postgres import PostgresSaver
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
-# Nó HITL antes de finalizar score WSI
-def human_review_node(state: WSIState):
-    """Pausa o grafo e aguarda aprovação do recrutador."""
-    return Command(
-        goto="__interrupt__",  # pausa a execução
-        update={
-            "pending_review": {
-                "type": "wsi_score_review",
-                "candidate_id": state["candidate_id"],
-                "preliminary_score": state["wsi_score"],
-                "interviewer_notes": state["notes"],
-            }
+@app.get("/metrics")
+async def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+```
+
+---
+
+#### V-10 · Feedback Loop Básico (Learning Mínimo)
+
+Ver Seção 14 — Aprendizado. Implementação em 3 passos:
+
+**CRIAR: `src/api/webhooks.py`** (webhook Rails→v5 para feedback)
+**CRIAR: `src/tasks/feedback_analysis_task.py`** (análise semanal)
+**MODIFICAR: `src/hub/orchestrator.py`** (usar TenantMemoryStore com memórias de padrão)
+
+---
+
+### Fase V-3 — Médio Prazo (Sprint 5–8)
+
+---
+
+#### V-11 · Relatório de Fairness Exportável
+
+**CRIAR: `src/services/fairness_reporter.py`**
+```python
+class FairnessReporter:
+    def generate_period_report(self, tenant_id: int, period: str) -> dict:
+        """
+        period: "2026-Q1", "2026-03", "2026-W12"
+        Retorna: {
+            "period": str,
+            "total_decisions_audited": int,
+            "bias_flags_raised": int,
+            "domains_checked": ["jobs", "sourcing"],
+            "bias_terms_detected": [{"term": str, "count": int}],
+            "recommendations": [str]
         }
-    )
-
-# Retoma quando recrutador aprova via API
-# POST /api/v1/agent/resume/{thread_id}
+        """
+        # Lê audit_storage.py (JSONL) + filtra por tenant e período
+        # Agrega métricas de fairness
+        ...
 ```
 
-**Arquivos afetados:**
-- [`app/domains/cv_screening/agents/wsi_interview_graph.py`](../lia-agent-system/app/domains/cv_screening/agents/wsi_interview_graph.py)
-- [`app/domains/interview_scheduling/agents/interview_graph.py`](../lia-agent-system/app/domains/interview_scheduling/agents/interview_graph.py)
-- [`app/shared/agents/checkpointer.py`](../lia-agent-system/app/shared/agents/checkpointer.py) — migrar para PostgresSaver
-- Novo: `app/api/v1/agent_continuity.py` — endpoints resume/reject
-
-**Esforço:** 2 sprints
-**Impacto esperado:** conformidade com EU AI Act (humano sempre no loop para decisões de alto risco); confiança do recrutador ↑
-**Métrica de sucesso:** 100% das decisões de score WSI revisáveis por humano antes de persistir
-
----
-
-### F3-02 · TTL e compressão da memória de longo prazo
-
-**Problema diagnosticado:** A `LongTermMemory` armazena episódios indefinidamente — para tenants ativos há 12+ meses, o volume de dados pode impactar a performance de busca e o custo de contexto.
-
-**O que fazer:**
-
-Implementar compressão semântica de memórias antigas:
-
+**CRIAR: `src/api/admin_fairness.py`**
 ```python
-# Em long_term_memory.py — adicionar compressão mensal
-async def compress_old_memories(self, tenant_id: UUID, older_than_days: int = 30):
-    """Sumariza episódios antigos em memórias condensadas."""
-    old_episodes = await self.get_episodes(
-        tenant_id=tenant_id,
-        older_than=datetime.utcnow() - timedelta(days=older_than_days),
-        compressed=False
-    )
-    if len(old_episodes) > 10:
-        # usa LLM para condensar N episódios em 1 resumo
-        summary = await self.llm.summarize(
-            episodes=old_episodes,
-            prompt="Condense estes episódios em um resumo de no máximo 200 palavras..."
-        )
-        await self.store_compressed_memory(tenant_id, summary, old_episodes)
-        await self.mark_episodes_compressed(old_episodes)
+@router.get("/admin/fairness/report")
+async def get_fairness_report(period: str = "current-month"):
+    reporter = FairnessReporter()
+    report = reporter.generate_period_report(get_tenant_id(), period)
+    return report
+
+@router.get("/admin/fairness/export")
+async def export_fairness_report(period: str, format: str = "json"):
+    # format: json, csv
+    ...
 ```
-
-Adicionar política de TTL por tipo de memória:
-- Memória de triagem: 90 dias (dado regulatório)
-- Memória de preferência de recrutador: 180 dias
-- Memória de candidato: permanente (direito ao acesso LGPD)
-
-**Arquivos afetados:**
-- [`app/shared/agents/long_term_memory.py`](../lia-agent-system/app/shared/agents/long_term_memory.py)
-- [`app/jobs/celery_tasks.py`](../lia-agent-system/app/jobs/celery_tasks.py) — adicionar job mensal de compressão
-- [`app/services/lgpd_cleanup_service.py`](../lia-agent-system/app/services/lgpd_cleanup_service.py) — integrar TTL com LGPD
-
-**Esforço:** 2 sprints
-**Impacto esperado:** custo de contexto ↓ ~40% para tenants maduros; latência de busca em memória ↓
-**Métrica de sucesso:** p95 de latência de busca em memória < 100ms independente do tamanho do histórico
 
 ---
 
-### F3-03 · Consolidação da estrutura de serviços
+#### V-12 · Golden Dataset e Testes de Qualidade
 
-**Problema diagnosticado:** `app/services/` tem 244 arquivos planos sem subcategorização, misturando serviços de IA, negócio, integração e notificação. Isso causa duplicação de serviços e dificulta onboarding.
-
-**O que fazer:**
-
-Reorganizar `app/services/` com subcategorias explícitas:
-
-```
-app/services/
-├── ai/                   ← serviços de IA/ML (scoring, embedding, drift, RAGAS)
-│   ├── cv_scoring_service.py
-│   ├── embedding_service.py
-│   ├── model_drift_service.py
-│   ├── ragas_evaluation_service.py
-│   └── ...
-├── integrations/         ← clientes externos (ATS, email, calendar, voz)
-│   ├── ats_clients/
-│   ├── email_providers/
-│   ├── google_calendar_client.py
-│   └── ...
-├── compliance/           ← LGPD, consentimento, DSR, auditoria
-│   ├── lgpd_compliance.py
-│   ├── consent_checker_service.py
-│   ├── dsr_export_service.py
-│   └── ...
-├── notifications/        ← alertas, emails, WhatsApp, push
-│   ├── email_service.py
-│   ├── notification_service.py
-│   └── ...
-├── analytics/            ← métricas, reports, benchmarks
-│   ├── market_benchmark_service.py
-│   ├── pipeline_prediction_service.py
-│   └── ...
-└── core/                 ← serviços de negócio centrais (candidatos, vagas, pipeline)
-    ├── candidate_enrichment_service.py
-    ├── job_vacancy_service.py
-    └── ...
-```
-
-Fazer a migração gradualmente por categoria, sem quebrar imports existentes (usar `__init__.py` com re-exports).
-
-**Arquivos afetados:** todos os 244 arquivos em `app/services/` (renomeação de pasta, sem alteração de lógica)
-
-**Esforço:** 3 sprints (feito gradualmente, categoria por categoria)
-**Impacto esperado:** onboarding de novos devs 50% mais rápido; eliminação de serviços duplicados
-**Métrica de sucesso:** zero arquivos diretamente em `app/services/` (todos em subcategorias)
-
----
-
-### ✅ F3-04 · OpenTelemetry (OTEL) como camada de observabilidade — IMPLEMENTADO (Sprint Z6-02, 19/03/2026)
-
-**Problema diagnosticado:** Sem OTEL, não era possível integrar com Datadog, Grafana ou New Relic sem customização.
-
-**Status:** ✅ Implementado — `app/shared/tracing.py` expandido com suporte OTEL + OTLP exporter. Configurado via `OTEL_EXPORTER_OTLP_ENDPOINT` (env). Decorator `@trace_span` aplicado nos pontos principais. Endpoint `GET /api/v1/traces/status` + `GET /api/v1/traces` + `GET /api/v1/traces/stats`. Fallback gracioso para `LightweightTracer`. (Original F3-04 / Z6-02)
-
-**O que fazer:**
-
-Adicionar OTEL como camada de exportação complementar ao LangSmith:
-
+**CRIAR: `tests/golden_dataset.py`**
 ```python
-# Em app/observability/ — novo módulo OTEL
-from opentelemetry import trace, metrics
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+GOLDEN_DATASET = [
+    {
+        "query": "quantos candidatos temos na vaga 7144?",
+        "expected_domain": "applies",
+        "expected_action": "count",
+        "expected_contains": ["candidatos", "7144"],
+    },
+    {
+        "query": "lista as vagas abertas de tecnologia",
+        "expected_domain": "jobs",
+        "expected_action": "search",
+        "expected_contains": ["tecnologia"],
+    },
+    # ... 50+ casos canônicos
+]
 
-# Instrumentar automaticamente FastAPI, SQLAlchemy, Redis, Celery
-# Exportar para Grafana Cloud (gratuito até 50GB/mês) ou Datadog
-
-# Métricas customizadas de IA:
-llm_latency = metrics.create_histogram("lia.llm.latency_ms")
-llm_tokens = metrics.create_counter("lia.llm.tokens_used")
-agent_errors = metrics.create_counter("lia.agent.errors")
-cache_hits = metrics.create_counter("lia.cache.hits")
-fairness_blocks = metrics.create_counter("lia.fairness.blocks")
-```
-
-**Arquivos afetados:**
-- Novo: `app/shared/observability/otel.py`
-- [`app/main.py`](../lia-agent-system/app/main.py) — inicializar OTEL na startup
-- [`app/shared/agents/observability.py`](../lia-agent-system/app/shared/agents/observability.py) — emitir spans OTEL
-
-**Esforço:** 2 sprints
-**Impacto esperado:** visibilidade completa de infra + IA em uma ferramenta; SLAs mensuráveis para clientes
-**Métrica de sucesso:** p95 de latência de API monitorado em tempo real; dashboard com 10 KPIs de IA
-
----
-
-### F3-05 · Consolidar agentes duplicados de policy
-
-**Problema diagnosticado:** Existem dois agentes de política (`hiring_policy/agents/policy_react_agent.py` e `policy/agents/agent.py`) que provavelmente surgiram em momentos diferentes e têm responsabilidades sobrepostas.
-
-**O que fazer:**
-
-Auditar os dois agentes, identificar diferenças reais, e consolidar em um único com as capacidades de ambos. Manter o mais completo como canônico e fazer o outro virar um alias ou ser removido.
-
-**Arquivos afetados:**
-- [`app/domains/hiring_policy/agents/policy_react_agent.py`](../lia-agent-system/app/domains/hiring_policy/agents/policy_react_agent.py)
-- [`app/domains/policy/agents/agent.py`](../lia-agent-system/app/domains/policy/agents/agent.py)
-- [`app/orchestrator/cascaded_router.py`](../lia-agent-system/app/orchestrator/cascaded_router.py) — unificar roteamento
-
-**Esforço:** 1 sprint
-**Impacto esperado:** redução de superfície de código a manter; comportamento consistente de políticas
-**Métrica de sucesso:** zero requisições roteadas para o agente deprecado
-
----
-
-## Fase 4 — Evolução Estratégica
-### Meses 4–9 | Capacidades que abrem novos mercados ou diferenciais competitivos
-
----
-
-### F4-01 · DeepEval no pipeline de CI/CD
-
-**Problema diagnosticado:** 301 arquivos de teste mas sem avaliação automática de qualidade de LLM. Mudanças em prompts ou modelos podem degradar qualidade silenciosamente.
-
-**O que fazer:**
-
-Integrar DeepEval como framework de avaliação de LLM com rodada semanal automatizada:
-
-```python
-# tests/llm_quality/test_agent_quality.py
-from deepeval import evaluate
-from deepeval.metrics import (
-    HallucinationMetric,
-    FaithfulnessMetric,
-    BiasMetric,
-    ToxicityMetric,
-    AnswerRelevancyMetric,
-)
-from deepeval.test_case import LLMTestCase
-
-# Testar com golden_dataset.py existente
-@pytest.mark.llm_quality  # roda separado dos testes unitários
-async def test_cv_screening_quality():
-    test_cases = await golden_dataset.get_screening_cases()
-    results = evaluate(
-        test_cases=test_cases,
-        metrics=[
-            HallucinationMetric(threshold=0.1),   # < 10% de alucinação
-            BiasMetric(threshold=0.05),             # < 5% de viés detectado
-            AnswerRelevancyMetric(threshold=0.85),  # > 85% relevância
-        ]
-    )
-    assert results.is_passing
-```
-
-Pipeline CI/CD:
-- A cada commit: testes unitários (rápidos, sem LLM)
-- Semanalmente: testes de qualidade de LLM (DeepEval com LLM real)
-- A cada mudança de prompt: testes de regressão de qualidade
-
-**Arquivos afetados:**
-- Novo: `tests/llm_quality/` — diretório de testes de qualidade
-- [`app/tests/golden_dataset.py`](../lia-agent-system/app/tests/golden_dataset.py) — expandir dataset
-- CI/CD pipeline — adicionar job semanal
-
-**Esforço:** 2 sprints
-**Impacto esperado:** regressões de qualidade detectadas antes de produção; confiança em mudanças de prompt ↑
-**Métrica de sucesso:** zero regressões de qualidade em produção não detectadas pelo CI
-
----
-
-### F4-02 · Compressão de PII com Microsoft Presidio
-
-**Problema diagnosticado:** O `pii_masking.py` atual usa regex para detectar PII — não detecta PII em texto livre de currículos em português (nomes compostos, cidades, endereços sem padrão fixo).
-
-**O que fazer:**
-
-Substituir o regex por Microsoft Presidio com modelos de NER em português:
-
-```python
-# Em shared/pii_masking.py — substituir regex por Presidio
-from presidio_analyzer import AnalyzerEngine
-from presidio_anonymizer import AnonymizerEngine
-
-analyzer = AnalyzerEngine()
-anonymizer = AnonymizerEngine()
-
-async def mask_pii(text: str, language: str = "pt") -> MaskedText:
-    """Detecta e mascara PII usando NER — muito mais preciso que regex."""
-    results = analyzer.analyze(
-        text=text,
-        language=language,
-        entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "CPF",
-                  "LOCATION", "DATE_TIME", "NRP"]  # NRP = National Registration Profile
-    )
-    anonymized = anonymizer.anonymize(text=text, analyzer_results=results)
-    return MaskedText(
-        original=text,
-        masked=anonymized.text,
-        entities_found=[(r.entity_type, r.score) for r in results]
-    )
-```
-
-**Arquivos afetados:**
-- [`app/shared/pii_masking.py`](../lia-agent-system/app/shared/pii_masking.py)
-- `requirements.txt` — adicionar `presidio-analyzer`, `presidio-anonymizer`
-
-**Esforço:** 2 sprints (incluindo testes com currículos reais em português)
-**Impacto esperado:** cobertura de detecção de PII de ~60% (regex) para ~92% (NER)
-**Métrica de sucesso:** taxa de PII não detectado < 5% em amostra de 500 currículos reais
-
----
-
-### F4-03 · Sourcing externo com catálogo de APIs (inspirado no v5)
-
-**Problema diagnosticado:** O principal ponto onde o v5 supera a LIA é no sourcing externo — 51 APIs YAML com 9 subagentes especializados vs. o agente único de sourcing da LIA com acesso limitado.
-
-**O que fazer:**
-
-Adaptar o padrão do v5 para o SourcingReactAgent da LIA, mantendo a arquitetura existente:
-
-```
-Expansão do sourcing da LIA:
-
-SourcingReactAgent (atual, 17 tools)
-  ↓ adicionar
-SourcingPlannerAgent  → seleciona quais fontes consultar (inspirado no APIPlannerAgent do v5)
-SourcingExecutorAgent → executa buscas em paralelo nas APIs selecionadas
-  ↓ APIs a adicionar (gradualmente):
-  ├── LinkedIn (via Apify — já integrado parcialmente)
-  ├── GitHub (candidatos tech)
-  ├── Hunter.io (email discovery)
-  ├── Clearbit (enrichment)
-  └── [outras conforme roadmap]
-```
-
-O catálogo de APIs pode ser em YAML (padrão do v5) ou diretamente via Apify MCP (já integrado na LIA).
-
-**Arquivos afetados:**
-- [`app/domains/sourcing/agents/sourcing_react_agent.py`](../lia-agent-system/app/domains/sourcing/agents/sourcing_react_agent.py)
-- [`app/domains/sourcing/agents/sourcing_tool_registry.py`](../lia-agent-system/app/domains/sourcing/agents/sourcing_tool_registry.py)
-- [`app/services/apify_service.py`](../lia-agent-system/app/services/apify_service.py) — expandir cobertura
-
-**Esforço:** 3–4 sprints (por fase de APIs adicionadas)
-**Impacto esperado:** sourcing externo da LIA equiparável ao v5; fechamento do principal gap competitivo
-**Métrica de sucesso:** sourcing LIA cobre ao menos 10 fontes externas com FairnessGuard aplicado
-
----
-
-### F4-04 · Perfis de comportamento por recrutador
-
-**Problema diagnosticado:** Todos os recrutadores recebem o mesmo comportamento de agente — sem adaptação ao nível de experiência (júnior vs sênior), especialização (tech vs. comercial) ou preferências aprendidas.
-
-**O que fazer:**
-
-Criar um sistema de "recruiter profiles" que adapta o comportamento dos agentes:
-
-```python
-# Novo: app/shared/agents/recruiter_profile.py
-class RecruiterProfile:
-    experience_level: Literal["junior", "mid", "senior"]
-    specialization: List[str]  # ["tech", "commercial", "executive"]
-    preferred_verbosity: Literal["concise", "detailed"]
-    learned_shortcuts: Dict[str, str]  # atalhos aprendidos pelo uso
-    decision_history: List[DecisionPattern]  # padrões de decisão históricos
-
-# Injetado em cada agente como contexto adicional
-class KanbanReactAgent(LangGraphReactBase):
-    async def process(self, message: str, recruiter_profile: RecruiterProfile):
-        # adapta system prompt baseado no perfil
-        system_prompt = self.prompt_loader.load(
-            "kanban_system_prompt",
-            context={"profile": recruiter_profile}
-        )
-```
-
-**Arquivos afetados:**
-- Novo: `app/shared/agents/recruiter_profile.py`
-- [`app/shared/agents/langgraph_react_base.py`](../lia-agent-system/app/shared/agents/langgraph_react_base.py) — injetar profile
-- [`app/shared/agents/long_term_memory.py`](../lia-agent-system/app/shared/agents/long_term_memory.py) — persistir profile
-- Todos os system prompts — adicionar suporte a variáveis de profile
-
-**Esforço:** 3 sprints
-**Impacto esperado:** experiência personalizada por recrutador; NPS ↑; curva de aprendizado ↓
-**Métrica de sucesso:** recrutadores seniores recebem respostas 40% mais concisas que júniores sem perda de qualidade
-
----
-
-## Roadmap Visual
-
-```
-SEMANA 1-2    │ ✅ F1-01 Decompor agentes (23/22 tools) — Sprint Z1
-(Urgente)     │ ✅ F1-02 Fairness no learning loop — Sprint F1-02
-              │ ✅ F1-03 SLOs e modo degradado do circuit breaker — Sprint F1-03
-              │
-SEMANA 3-6    │ ✅ F2-01 Versionamento de prompts (PARCIAL) — Sprint Z3-02
-(Ganhos       │ 🔴 F2-02 Relatório de fairness exportável — PENDENTE
- Rápidos)     │ 🔴 F2-03 Alertas de custo por tenant — PENDENTE
-              │ ✅ F2-04 Dead Letter Queue para jobs — Sprint F2-04
-              │ ✅ F2-05 Threshold semântico configurável — Sprint Z5-03 (ROUTER_VECTOR_SIMILARITY_THRESHOLD)
-              │
-MÊS 2-4       │ F3-01 HITL nos grafos LangGraph — parcialmente implementado
-(Estrutural)  │ F3-02 TTL e compressão da memória longa — PENDENTE
-              │ ✅ F3-03 ATS clients consolidados como shims — Sprint Z6-01
-              │ ✅ F3-04 OpenTelemetry como camada de observabilidade — Sprint Z6-02
-              │ F3-05 Consolidar agentes de policy duplicados
-              │
-MÊS 4-9       │ F4-01 DeepEval no CI/CD
-(Estratégico) │ F4-02 Microsoft Presidio para PII
-              │ F4-03 Sourcing externo expandido (inspirado v5)
-              │ F4-04 Perfis de comportamento por recrutador
+def test_golden_dataset(hub_orchestrator, mock_rails_api):
+    for case in GOLDEN_DATASET:
+        result = hub_orchestrator.process(case["query"], mock_token)
+        assert result["domain"] == case["expected_domain"]
+        for term in case["expected_contains"]:
+            assert term.lower() in result["response"].lower()
 ```
 
 ---
 
-## Impacto Consolidado Esperado
+#### V-13 · Pipeline CI/CD para Testes
 
-| Dimensão | Score Atual | Score Pós-Plano | Principais Mudanças |
-|---|---|---|---|
-| **Orquestração** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Threshold semântico ajustado (F2-05) |
-| **Tool Registries** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Decomposição Kanban + Pipeline (F1-01) |
-| **Fairness** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐+ | Relatório exportável + loop validado (F1-02, F2-02) |
-| **Prompts** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Versionamento completo (F2-01) |
-| **Resiliência** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | SLOs formais + modo degradado (F1-03) |
-| **Memória** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | TTL + compressão (F3-02) |
-| **Observabilidade** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | OTEL + alertas de custo (F3-04, F2-03) |
-| **Testes** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | DeepEval no CI (F4-01) |
-| **PII/LGPD** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐+ | Presidio NER (F4-02) |
-| **Sourcing** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | APIs expandidas (F4-03) |
-| **Estrutura** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Consolidação de serviços + policy (F3-03, F3-05) |
-| **Experiência** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Perfis por recrutador (F4-04) |
-
----
-
-*Plano de Otimização LIA — versão 1.0 — 19/03/2026*
-*17 itens distribuídos em 4 fases | Esforço total estimado: ~25 sprints (1 sprint = 1 semana)*
-
----
-
----
-
-# Seção 20 — Diagnóstico Estratégico: O que a LIA deve fazer agora
-
-> **Contexto:** Esta seção consolida o diagnóstico gerado a partir da análise comparativa LIA vs. v5, com foco exclusivo em otimizações executáveis dentro da plataforma LIA. O v5 permanece em ambiente separado e não será alterado. As recomendações abaixo derivam do cruzamento entre: (a) o diagnóstico comparativo das 19 seções anteriores, (b) melhores práticas de mercado referenciadas, e (c) análise de prioridade por impacto/esforço.
->
-> **Data:** 19/03/2026 | **Versão:** 1.0
-
----
-
-## 20.1 · Pergunta Central Respondida
-
-> **Vale ajustar a LIA para ficar igual à v5?**
-
-**Não globalmente — mas sim em 3 padrões arquiteturais específicos.**
-
-A v5 é um MVP de pesquisa. A LIA é um produto de produção. São categorias incomparáveis em escopo. Puxar a v5 para dentro da LIA de forma ampla regride a plataforma. Contudo, existem 3 padrões estruturais do v5 genuinamente superiores para os casos de uso onde se aplicam — e devem ser adotados cirurgicamente.
-
----
-
-## 20.2 · O que adotar da v5 na LIA (3 padrões)
-
-### Padrão A — Decomposição de subagentes para sourcing
-
-O v5 implementa `planner → orchestrator → [search, detail, analytics, comparison, report, action]` em paralelo. A LIA tem um `SourcingReActAgent` único com 17 tools.
-
-**O problema concreto:** com 17 tools, o modelo toma decisões subótimas quando há ambiguidade entre ferramentas similares (ex: `search_external` vs `enrich_profile` vs `invite_to_apply`). O Anthropic documenta que acima de 10–12 tools o raciocínio de seleção de ferramenta degrada.
-
-**Arquitetura proposta para a LIA:**
-
-```
-SourcingReActAgent (atual, 17 tools)
-    ↓ decompor em
-SourcingPlannerAgent     → route_to_specialist (1 tool: roteamento)
-    ├── SourcingSearchAgent      → search_external, filter_by_requirements, rank_profiles (4–5 tools)
-    ├── SourcingEnrichAgent      → enrich_profile, fetch_linkedin, fetch_pearch (4 tools)
-    └── SourcingEngagementAgent  → invite_to_apply, send_outreach, follow_up (4–5 tools)
-```
-
-**Arquivos afetados:**
-- `app/domains/sourcing/agents/sourcing_react_agent.py` — refatorar para SourcingPlannerAgent
-- `app/domains/sourcing/agents/sourcing_tool_registry.py` — dividir em 3 registries
-- `app/domains/sourcing/agents/` — criar `sourcing_search_agent.py`, `sourcing_enrich_agent.py`, `sourcing_engagement_agent.py`
-
-**Esforço:** 2 sprints | **Impacto:** qualidade de sourcing ↑, custo por query ↓ ~30%
-
----
-
-### Padrão B — Decomposição do Kanban e Pipeline Transition (CRÍTICA)
-
-Este é o item com maior impacto imediato em qualidade. 23 tools no Kanban e 22 no Pipeline estão acima do limite seguro da Anthropic. Esses são os agentes mais usados em produção — qualidade ruim aqui impacta o recrutador diariamente.
-
-**Arquitetura proposta:**
-
-```
-KanbanReActAgent (23 tools) → decompor em:
-  KanbanSearchAgent     → search_candidates, filter_stage, get_by_criteria, sort_by_score (5 tools)
-  KanbanActionAgent     → move_candidate, bulk_move, add_to_short_list, add_note, archive (6 tools)
-  KanbanInsightAgent    → get_metrics, funnel_view, time_in_stage, diversity_snapshot (5 tools)
-
-PipelineTransitionAgent (22 tools) → decompor em:
-  PipelineDecisionAgent → evaluate_stage_fit, check_requirements, request_docs, check_consent (6 tools)
-  PipelineActionAgent   → move_candidate, add_note, schedule_interview, reject_with_feedback (6 tools)
-  PipelineNotifyAgent   → notify_candidate, notify_recruiter, trigger_automation, send_gate_feedback (5 tools)
-```
-
-**Arquivos afetados:**
-- `app/domains/recruiter_assistant/agents/kanban_react_agent.py`
-- `app/domains/recruiter_assistant/agents/kanban_tool_registry.py`
-- `app/domains/pipeline/agents/pipeline_transition_agent.py`
-- `app/domains/pipeline/agents/pipeline_tool_registry.py`
-
-**Esforço:** 2 sprints | **Impacto:** qualidade de resposta dos agentes mais críticos ↑ significativamente
-
----
-
-### Padrão C — Catálogo YAML de APIs externas de sourcing
-
-O v5 tem 51 APIs documentadas em YAML que o APIPlannerAgent lê dinamicamente. A LIA tem ATS clients hard-coded. Para integrações de sourcing externo, o padrão YAML é superior porque:
-
-- Adicionar nova API = criar YAML, sem alterar código Python
-- Auditável por pessoas não-técnicas (RH Ops)
-- Compatível com o `tool_registry_metadata.yaml` que a LIA já implementou (Sprint G5)
-
-**O que fazer:** criar `docs/integrations/apis/sourcing/` com YAMLs para cada fonte externa (Pearch, Apify, futuras APIs de jobboards). O SourcingPlannerAgent usa esse catálogo como contexto para decidir quais fontes consultar.
-
-**Esforço:** 1 sprint | **Impacto:** sourcing externo escalável sem intervenção de engenharia
-
----
-
-## 20.3 · O que a LIA tem e DEVE manter (não simplificar)
-
-Estes são os diferenciais reais de produto da LIA frente ao mercado. Qualquer tentativa de simplificá-los para "ficar mais parecido com o v5" é um erro estratégico:
-
-| Componente | Por que é diferencial competitivo | Risco se remover |
-|---|---|---|
-| **FairnessGuard 3 camadas (obrigatória)** | HireVue foi multado por não ter isso. NYC LL144 + EU AI Act exigem | Risco regulatório máximo |
-| **WorkingMemory + LongTermMemory** | Nenhum ATS do mercado médio tem. A LIA "lembra" — experiência de produto superior | Regressão de produto |
-| **Learning Loop com A/B testing** | 57% dos produtos de IA em produção não têm (Gartner 2025) | Perde capacidade de melhoria autônoma |
-| **Circuit Breaker + LLM Cascade** | Resiliência enterprise — Haiku→Sonnet→Opus→Gemini→GPT | Sistema para se Claude/OpenAI ficarem fora |
-| **Consentimento granular LGPD** | LGPD art. 7 exige granular. Maioria usa consentimento genérico | Risco jurídico direto |
-| **Drift detection diário** | Sem isso, o modelo degrada silenciosamente sem ninguém perceber | Qualidade se deteriora invisível |
-| **Event Store imutável** | Base para auditoria SOX + direito ao apagamento LGPD | Perde rastreabilidade |
-| **Anti-sycophancy em todos os prompts** | Raríssimo no mercado. Impede que o sistema concorde com viés do recrutador | Volta a comportamento sycophantic |
-
----
-
-## 20.4 · Débito técnico identificado — priorizado por impacto/esforço
-
-### Prioridade 1 — Decomposição dos agentes com excesso de tools
-**(Kanban 23, Pipeline 22, Sourcing 17) — fazer nas próximas 2 sprints**
-
-Coberto nos Padrões A e B acima e no item F1-01 da Fase 1 deste documento.
-
----
-
-### Prioridade 2 — Fairness no learning loop (CRÍTICO — risco regulatório)
-
-Atualmente o learning loop aprende com feedback de recrutadores sem validação de viés. Se recrutadores têm viés sistemático, o sistema aprende e amplifica esse viés silenciosamente.
-
-**Solução:**
-
-```python
-# app/shared/learning/learning_loop_service.py
-async def apply_learning(feedback_batch: List[FeedbackSignal]) -> ApplyResult:
-    new_behavior = compute_adjustments(feedback_batch)
-
-    # VALIDAÇÃO DE FAIRNESS ANTES DE APLICAR
-    fairness_check = await fairness_guard.evaluate_behavior_change(
-        current=current_behavior,
-        proposed=new_behavior,
-        dimensions=["gender", "age_group", "disability", "region"]
-    )
-
-    if fairness_check.has_disparate_impact:
-        await audit_service.log_decision(
-            decision_type="learning_blocked",
-            reason=fairness_check.violations,
-            proposed_change=new_behavior
-        )
-        return ApplyResult(applied=False, reason="fairness_violation")
-
-    # snapshot antes de aplicar (permite rollback)
-    await snapshot_service.save(tag=f"pre_learning_{datetime.utcnow().isoformat()}")
-    await template_learning_service.apply(new_behavior)
-    return ApplyResult(applied=True)
-```
-
-**Arquivos afetados:**
-- `app/shared/learning/learning_loop_service.py` — adicionar validação
-- `app/shared/compliance/fairness_guard.py` — adicionar `evaluate_behavior_change()`
-- Novo: `app/shared/learning/learning_snapshot_service.py` — snapshots para rollback
-
-**Esforço:** 1 sprint | **Impacto:** risco regulatório ↓ significativamente; aprendizado não degrada fairness
-
----
-
-### Prioridade 3 — Versionamento de prompts
-
-Atualmente mudanças de prompt são invisíveis: não há como saber qual versão estava ativa em uma data específica, impossibilitando debugging de regressões de qualidade.
-
-**Solução imediata (zero custo, 1 sprint):** padronizar campos `version` e `updated_at` em todos os YAMLs de prompt:
-
+**CRIAR: `.github/workflows/tests.yml`**
 ```yaml
-# app/prompts/domains/kanban_system_prompt.yaml
-version: "1.3.0"
-updated_at: "2026-03-19"
-updated_by: "sprint-z3"
-changelog: "Adicionado contexto de perfil do recrutador"
-prompt: |
-  Você é um assistente especializado em gestão de pipeline de candidatos...
-```
+name: v5 Test Suite
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
 
-**Solução robusta (Langfuse self-hosted, 2 sprints):** plataforma open-source de gerenciamento de prompts com versionamento automático, diff entre versões, A/B testing de variantes e métricas de qualidade por versão. Já tem integração nativa com LangSmith (que a LIA usa).
-
-**Arquivos afetados:**
-- Todos os arquivos em `app/prompts/` — adicionar campos de metadados
-- `app/shared/prompts/loader.py` — registrar versão ativa no LangSmith ao carregar
-
-**Esforço:** 1 sprint (básico) / 2 sprints (Langfuse) | **Impacto:** debugging de regressões possível; mudanças de prompt rastreáveis
-
----
-
-### Prioridade 4 — Relatório de fairness exportável
-
-O `bias_audit_service.py` já calcula tudo (Four-Fifths Rule em 4 dimensões). Falta apenas gerar o relatório em formato que auditores externos possam consumir.
-
-**Solução:**
-
-```python
-# app/api/v1/bias_audit.py — novo endpoint
-@router.get("/bias-audit/job/{job_id}/export")
-async def export_bias_audit_report(
-    job_id: str,
-    format: Literal["pdf", "csv", "json"] = "pdf",
-    company_id: str = Header(..., alias="X-Company-ID"),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Gera relatório exportável de auditoria de fairness.
-    Formato compatível com NYC Local Law 144 e EU AI Act.
-    """
-    audit_data = await bias_audit_service.get_full_audit(job_id, company_id, db)
-    snapshot_history = await bias_audit_service.get_snapshot_history(job_id, db)
-    return await report_generator.generate(
-        audit_data, snapshot_history, format=format,
-        include_sections=["four_fifths_rule", "disparate_impact", "eeoc_compliance",
-                          "dimension_breakdown", "historical_trend", "methodology"]
-    )
-```
-
-**Arquivos afetados:**
-- `app/api/v1/bias_audit.py` — novo endpoint `/export`
-- Novo: `app/services/bias_audit_report_generator.py` — gerador PDF/CSV
-- `src/app/api/backend-proxy/bias-audit/[job_id]/export/route.ts` — proxy FE
-
-**Esforço:** 1 sprint | **Impacto comercial direto:** requisito em contratos enterprise e licitações públicas
-
----
-
-### Prioridade 5 — DeepEval no CI/CD
-
-4.600+ testes mas ainda sem validação de qualidade de LLM (respostas de agentes). O pipeline testa se o código executa — não se o agente responde bem. DeepEval adicionaria métricas de qualidade de IA diretamente no CI.
-
-**Métricas mínimas para adicionar:**
-
-```python
-# tests/llm_quality/test_agents_quality.py
-import pytest
-from deepeval import evaluate
-from deepeval.metrics import HallucinationMetric, FaithfulnessMetric, BiasMetric
-
-@pytest.mark.llm_quality
-class TestAgentQuality:
-
-    def test_kanban_no_hallucination(self, kanban_test_cases):
-        metric = HallucinationMetric(threshold=0.1)  # máximo 10% de alucinação
-        evaluate(test_cases=kanban_test_cases, metrics=[metric])
-
-    def test_wsi_faithfulness(self, wsi_test_cases):
-        # respostas do WSI devem ser fiéis ao conteúdo do CV
-        metric = FaithfulnessMetric(threshold=0.85)
-        evaluate(test_cases=wsi_test_cases, metrics=[metric])
-
-    def test_pipeline_no_bias(self, pipeline_test_cases):
-        metric = BiasMetric(threshold=0.05)
-        evaluate(test_cases=pipeline_test_cases, metrics=[metric])
-```
-
-**Pipeline CI (`.github/workflows/ci.yml`):** adicionar job `llm-quality-tests` com schedule semanal (não a cada commit — controle de custo) e threshold de falha configurável.
-
-**Esforço:** 2 sprints | **Impacto:** qualidade de resposta dos agentes monitorada automaticamente; regressões detectadas antes de chegarem a produção
-
----
-
-## 20.5 · O que NÃO fazer (armadilhas identificadas)
-
-| Tentação | Por que é errada | Alternativa correta |
-|---|---|---|
-| Tornar a LIA stateless "para simplificar" | A memória é diferencial de produto — candidatos e recrutadores esperam que o sistema lembre | Manter WorkingMemory + LongTermMemory; adicionar TTL e compressão (F3-02) |
-| Reduzir FairnessGuard para 1 camada | As 3 camadas são o que garante compliance regulatório proativo vs. reativo | Manter 3 camadas; adicionar relatório exportável (Prioridade 4) |
-| Colapsar os 12 domínios em menos agentes | A separação garante system prompts especializados e tool sets enxutos | Manter domínios; decompor agentes *dentro* dos domínios que têm excess de tools |
-| Migrar llm_factory.py para LiteLLM agora | Risco de regressão alto; LiteLLM é ganho marginal dado que factory já funciona | Avaliar LiteLLM após Sprint Z4, quando as prioridades 1–5 estiverem resolvidas |
-| Simplificar o cascade de 6 tiers | Cada tier tem função específica; remover um cria buraco de cobertura | Ajustar threshold semântico (F2-05) sem remover tiers |
-
----
-
-## 20.6 · Plano de Execução — Sprints Z1–Z4
-
-Estas sprints complementam e refinam o roadmap F1–F4 já definido neste documento, com foco na sequência de execução otimizada:
-
-```
-Sprint Z1 (Semanas 1–2) — Agentes Críticos
-──────────────────────────────────────────
-Z1-01  Decomposição KanbanReActAgent (23 → 3 subagentes)
-       KanbanSearchAgent + KanbanActionAgent + KanbanInsightAgent
-Z1-02  Decomposição PipelineTransitionAgent (22 → 3 subagentes)
-       PipelineDecisionAgent + PipelineActionAgent + PipelineNotifyAgent
-Z1-03  Testes de regressão: validar que decomposição não quebra comportamentos existentes
-
-Sprint Z2 (Semanas 3–4) — Fairness e Qualidade
-───────────────────────────────────────────────
-Z2-01  Fairness no learning loop + snapshots para rollback
-Z2-02  Decomposição SourcingReActAgent (17 → 3 subagentes, padrão v5)
-       SourcingPlannerAgent + SourcingSearchAgent + SourcingEnrichAgent + SourcingEngagementAgent
-Z2-03  Catálogo YAML de APIs externas de sourcing (docs/integrations/apis/sourcing/)
-
-Sprint Z3 (Semanas 5–6) — Compliance e Visibilidade
-────────────────────────────────────────────────────
-Z3-01  Relatório de fairness exportável (PDF/CSV) — endpoint + gerador + proxy FE
-Z3-02  Versionamento de prompts: campos version/updated_at em todos os YAMLs + loader
-Z3-03  Alertas de custo por tenant (complementa F2-03)
-
-Sprint Z4 (Semanas 7–8) — Robustez
-───────────────────────────────────
-Z4-01  DeepEval integrado no CI/CD (3 métricas: hallucination, faithfulness, bias)
-Z4-02  TTL + compressão na LongTermMemory (episódios >30 dias → resumo via LLM)
-Z4-03  SLOs formais para circuit breaker + modo degradado (complementa F1-03)
+jobs:
+  unit-tests:
+    name: Unit Tests (sem LLM)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test
+      redis:
+        image: redis:7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements.txt
+      - run: pytest tests/ -v
+          --ignore=tests/integration
+          --ignore=tests/evals
+          -x --tb=short
+          -m "not slow"
+  
+  integration-tests:
+    name: Integration Tests (com mock LLM)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - run: pytest tests/integration/test_easy_cases.py
+              tests/test_conversation_flow/ -v --tb=short
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 ```
 
 ---
 
-## 20.7 · Scorecard Atualizado — Antes e Depois das Sprints Z1–Z4
+## 21. Plano de Otimização LIA — Pendências
 
-| Dimensão | Score Antes | Score Após Z1–Z4 | O que muda |
+### Alta Prioridade (Sprint próximo)
+
+| Item | Problema | Arquivo | Ação |
 |---|---|---|---|
-| **Tool Registries / Agentes** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Kanban + Pipeline + Sourcing decompostos (Z1, Z2) |
-| **Fairness** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐+ | Loop validado + relatório exportável (Z2, Z3) |
-| **Sourcing** | ⭐⭐⭐ | ⭐⭐⭐⭐ | Subagentes especializados + catálogo YAML (Z2) |
-| **Prompts** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Versionamento rastreável (Z3) |
-| **Testes de IA** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | DeepEval com métricas de qualidade de LLM (Z4) |
-| **Memória** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | TTL + compressão reduz custo DB (Z4) |
-| **Resiliência** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | SLOs formais + modo degradado documentado (Z4) |
-| **Compliance comercial** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Relatório exportável para due diligence enterprise (Z3) |
+| **L-01** | Sem TTL em dados de conversa | `app/shared/agents/working_memory.py` | Adicionar TTL de 90 dias com cleanup automático |
+| **L-02** | Relatório de fairness não exportável | `app/api/v1/admin_bias_audit.py` | Adicionar `GET /export?format=pdf` |
+| **L-03** | Sem red teaming da FairnessGuard | `app/tests/` | Criar dataset adversarial + CI test |
+| **L-04** | Cobertura de testes < 40% | `pytest.ini` | Aumentar `--cov-fail-under=50` |
+| **L-05** | Sem prompts 100% YAML | `app/domains/*/agents/*_system_prompt.py` | Migrar .py → .yaml gradualmente |
+
+### Médio Prazo
+
+| Item | Problema | Ação |
+|---|---|---|
+| **L-06** | Sem Agent Studio para clientes | Criar `/api/v1/agents/configure` com tenant override |
+| **L-07** | Sem criptografia de campo (CPF) | Adicionar `pgcrypto` para colunas PII no banco |
+| **L-08** | LiteLLM vs llm_factory.py | Avaliar migração do cascade para LiteLLM |
+| **L-09** | RAGAS só para RAG | Expandir RAGAS para avaliar qualidade de agente (tool selection, plan correctness) |
+| **L-10** | Broker Redis → RabbitMQ | Migrar Celery broker para RabbitMQ (mais robusto em produção) |
 
 ---
 
-## 20.8 · Síntese Estratégica
+## 22. Mapa de Domínios: Cobertura Cruzada LIA vs v5
 
-A LIA está arquiteturalmente à frente do v5 em praticamente todas as dimensões que importam para produção: multi-tenancy, fairness obrigatória, memória persistente, learning loop, resiliência, LGPD. **O v5 tem superioridade em exatamente um ponto: a decomposição de subagentes especializados para tarefas de alta paralelismo.** Esse padrão deve ser adotado nos 3 agentes com excesso de tools (Kanban, Pipeline, Sourcing).
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      COBERTURA DE DOMÍNIOS                                   │
+├──────────────────────────┬────────────────────────────┬─────────────────────┤
+│ FUNCIONALIDADE           │ LIA                        │ v5                  │
+├──────────────────────────┼────────────────────────────┼─────────────────────┤
+│ CRUD de Vagas            │ ✅ Job Management           │ ✅ Jobs domain       │
+│ Pipeline de Candidatos   │ ✅ CV Screening + Pipeline  │ ✅ Applies domain    │
+│ Scoring de CVs           │ ✅ cv_screening_service     │ ✅ scoring.py action │
+│ Sourcing de Talentos     │ ✅ Sourcing (1 agente)      │ ✅ 9 subagentes      │
+│ Agendamento Entrevistas  │ ✅ InterviewGraph           │ ✅ SchedulingGraph   │
+│ Avaliações / WSI         │ ✅ WSIInterviewGraph        │ ✅ InterviewGraph    │
+│ Métricas / Insights      │ ✅ Analytics domain         │ ✅ Insights domain   │
+│ Comunicação (Email)      │ ✅ Communication domain     │ ✅ Messaging domain  │
+│ Automação de Regras      │ ✅ Automation domain        │ ⚠️ Via autonomous   │
+│ Integração ATS           │ ✅ ATS Integration domain   │ ⚠️ Via 51 YAMLs     │
+│ Policy / Compliance      │ ✅ Policy domain (Z5-02)    │ ❌ Não existe        │
+│ Talent Intelligence      │ ✅ Y-series                 │ ❌ Não existe        │
+│ LGPD Compliance          │ ✅ lgpd_cleanup + DSR       │ ❌ Sem compliance    │
+│ Fairness 3 camadas       │ ✅ FairnessGuard mandatory  │ ⚠️ Opt-in 2 domínios│
+│ Multi-tenancy no agente  │ ✅ budget + guardrails      │ ❌ Rails gerencia    │
+│ Learning Loop            │ ✅ Ciclo completo           │ ⚠️ Só feedback tracker│
+│ A/B Testing              │ ✅ ab_testing_service       │ ❌ Não               │
+│ Drift Detection          │ ✅ model_drift_service      │ ❌ Não               │
+│ LLM Multi-provider       │ ✅ Claude+Gemini+GPT cascade│ ❌ Gemini único      │
+│ OTEL / Prometheus        │ ✅ OTEL (Z6-02)             │ ❌ Sem metrics       │
+│ Memória por tenant       │ ✅ LongTermMemory           │ ✅ TenantMemoryStore │
+│ Checkpointing LangGraph  │ ✅ PostgresSaver (estável)  │ ⚠️ instável (nota 3/10)|
+│ Proactive Alerts         │ ✅ proactive_worker.py      │ ✅ proactive/         │
+│ PII Masking              │ ✅ Presidio + regex         │ ✅ pii_filter.py     │
+│ Injection Protection     │ Implícita                  │ ✅ security.py (20+) │
+│ Circuit Breaker          │ ✅ 15+ circuits             │ ✅ 1 circuit global  │
+│ Testes de IA             │ ✅ 313 arquivos             │ ✅ 96 arquivos       │
+│ RAGAS / Qualidade LLM    │ ✅ ragas_evaluation_service │ ❌ Não               │
+│ RAG Híbrido              │ ✅ rag_service.py           │ ✅ rag_service.py    │
+│ Embeddings               │ Não explicitamente          │ ✅ Gemini 768d       │
+│ RabbitMQ                 │ ❌ Usa Redis como broker    │ ✅ RabbitMQ nativo   │
+│ Autonomous ReAct (73t.)  │ ⚠️ Via domains individuais │ ✅ autonomous/agent  │
+└──────────────────────────┴────────────────────────────┴─────────────────────┘
 
-O restante das melhorias identificadas é débito técnico interno da LIA — não inspirado pelo v5, mas mapeado pelo diagnóstico comparativo com as melhores práticas de mercado. A execução das Sprints Z1–Z4 (complementando o roadmap F1–F4 já planejado) posiciona a LIA como a plataforma de R&S com IA mais completa e regulatoriamente segura do mercado brasileiro de médio e grande porte.
+Legenda: ✅ Implementado | ⚠️ Parcial | ❌ Não existe
+```
 
-**Gap mais estratégico a resolver após Z1–Z4:** os 9 subagentes de sourcing do v5 têm acesso a 51 APIs externas que a LIA não cobre. Investigar quais dessas APIs são relevantes para o mercado brasileiro e criar o catálogo YAML correspondente é a próxima fronteira de expansão do sourcing externo da LIA (F4-03).
+### Gap Analysis Resumido
+
+**A LIA está à frente do v5 em:**
+- Multi-tenancy no agente
+- LGPD compliance completo
+- FairnessGuard 3 camadas obrigatório
+- Learning loop completo
+- LLM multi-provider com cascade
+- OTEL + Prometheus + RAGAS
+- Cobertura de domínios (13 vs 8)
+- Volume de testes (313 vs 96)
+- Relatórios e explicabilidade
+
+**O v5 está à frente da LIA em:**
+- RabbitMQ como broker (mais robusto que Redis para mensageria)
+- Autonomous ReAct com 73+ tools e seleção dinâmica
+- 9 subagentes de sourcing (mais granular que o SourcingReactAgent da LIA)
+- injection protection explícita e testada (security.py com 20+ padrões)
+- TenantMemoryStore com TTL + dedup + limite explícitos
+- Scoring actions no domínio applies (best_fit_analysis, scoring_overview)
+- Proactive detector com 3 camadas separadas
 
 ---
 
-*Diagnóstico Estratégico — versão 1.0 — 19/03/2026*
-*Elaborado com base na análise comparativa das 19 seções anteriores + melhores práticas de mercado*
-*Sprints Z1–Z4 complementam e refinam o Plano de Otimização F1–F4 (versão 1.0)*
-*Todos os itens são não-destrutivos — sem breaking changes em produção*
+*Documento gerado em 19/03/2026 com base em leitura direta de todos os arquivos dos repositórios `WeDOTalent/recruiter_agent_v5` (820 arquivos) e `lia-agent-system/` (1.259 arquivos Python) via GitHub API.*
+
+*Repositório v5 analisado: branch `main` | commit atualizado em 19/03/2026*
+*Repositório LIA: branch `main` | Sprint mais recente: Z7-01 (19/03/2026)*
