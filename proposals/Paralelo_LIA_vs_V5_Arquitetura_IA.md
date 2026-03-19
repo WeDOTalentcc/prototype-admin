@@ -637,17 +637,1060 @@ O v5 **não** cobre: policy/compliance engine, automation rules engine, talent i
 | Agentes por processo (R&S, performance) | ✅ 13 domínios | ✅ 8 domínios | Expandir domínios |
 | Memória de persona do usuário | ✅ LongTermMemory | ✅ TenantMemoryStore | ✅ Ambos têm |
 
-**Para oferecer "agentes próprios para clientes" (tipo Phenom X+ Studio):**
-1. **LIA:** Criar endpoint de configuração de agente por tenant (`/api/v1/agents/configure`) que permita: customizar system prompt, adicionar/remover tools, configurar threshold de confiança — isso é possível com o `prompt_loader.py` existente (já tem override por tenant)
-2. **v5:** Adicionar `tenant_config.py` no hub que carregue overrides de domínio por tenant: `{ "jobs": { "tools_enabled": ["search", "details"], "custom_prompt": "..." } }`
+---
+
+## 🛠️ Guia Técnico: Como Construir Agent Studio na WeDOTalent
+
+> Baseado na leitura real do código-fonte de `lia-agent-system/` e do repositório `recruiter_agent_v5` (GitHub WeDOTalent).
+> Cada passo referencia arquivos reais que existem hoje. Nada aqui é hipotético.
+
+---
+
+### PARTE 1 — LIA: Passo a Passo para Agent Studio
+
+#### O que já existe e serve de base
+
+| Arquivo existente | O que já faz | O que falta para Agent Studio |
+|---|---|---|
+| `app/shared/prompts/prompt_registry.py` | `PromptRegistry` com versionamento semântico — `register_prompt()`, `get_prompt()`, `compare_versions()` | Não tem override **por tenant** — registry é global em memória |
+| `app/orchestrator/tenant_budget.py` | `TenantBudget` — Redis rastreia tokens/mês por `company_id`, alerta a 80%, bloqueia a 100% | Só controla tokens, não configura comportamento do agente |
+| `app/services/tenant_context_service.py` | `TenantContextService.get_context()` — lê `company_name`, `sector`, `autonomy_level`, `open_vacancies` do DB e injeta como snippet no prompt do orquestrador | Campos lidos são fixos — cliente não pode customizar o que é injetado |
+| `app/orchestrator/cascaded_router.py` | Flui `company_id` por todos os 6 tiers de roteamento; chama `TenantContextService` no Tier 5 | Roteamento não varia por tenant — mesmos agentes para todos |
+| `app/tools/tool_registry_loader.py` | Carrega `tool_registry_metadata.yaml` com `allowed_agents` por tool | Filtro é por tipo de agente, não por tenant |
+| `app/api/v1/admin_agents.py` | `POST /api/v1/admin/agents/reload` — hot-reload do YAML de agentes | Sem endpoint de configuração por tenant |
+| `app/api/v1/admin_prompts.py` | Endpoints admin para consultar prompts do `PromptRegistry` | Sem escrita/override por tenant |
+
+**Conclusão sobre a LIA:** a espinha dorsal existe. `tenant_context_service.py` já prova que o sistema sabe ler configuração por tenant e injetá-la no prompt. Falta: (1) tabela para guardar configurações de agente por tenant, (2) serviço que carregue essa config, (3) hook no fluxo do prompt para aplicar o override, (4) filtro de tools por tenant, (5) endpoint para o cliente salvar sua config.
+
+---
+
+#### Passo LIA-1: Tabela de configuração de agente por tenant
+
+Criar migration no Rails ATS (ou via Alembic na LIA, dependendo de onde vive o schema compartilhado):
+
+```sql
+-- Migration: create_tenant_agent_configs
+CREATE TABLE tenant_agent_configs (
+    id              BIGSERIAL PRIMARY KEY,
+    company_id      BIGINT       NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    agent_name      VARCHAR(64)  NOT NULL,   -- ex: "sourcing", "cv_screening", "scheduling"
+    is_enabled      BOOLEAN      NOT NULL DEFAULT true,
+    custom_prompt_suffix TEXT,               -- texto que é APPENDED ao system prompt base
+    tools_disabled  TEXT[]       DEFAULT '{}',  -- ex: {"linkedin_search", "export_csv"}
+    confidence_threshold NUMERIC(3,2) DEFAULT 0.75, -- 0.0 a 1.0
+    tone            VARCHAR(32)  DEFAULT 'profissional', -- "profissional"|"informal"|"tecnico"
+    sector_context  TEXT,                    -- ex: "Empresa de logística com foco em motoristas CLT"
+    created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    created_by      BIGINT       REFERENCES users(id),
+    UNIQUE (company_id, agent_name)          -- uma config por agente por empresa
+);
+
+CREATE INDEX idx_tenant_agent_configs_company ON tenant_agent_configs(company_id);
+```
+
+**Por que `custom_prompt_suffix` e não substituição total?** Porque o prompt base (registrado no `PromptRegistry`) contém regras éticas, LGPD e FairnessGuard obrigatórios — o cliente personaliza a camada de contexto/tom, não as regras de compliance.
+
+---
+
+#### Passo LIA-2: `TenantAgentConfigService` — carrega config do DB
+
+Criar `lia-agent-system/app/services/tenant_agent_config_service.py`:
+
+```python
+"""
+TenantAgentConfigService — carrega configuração de agentes por empresa.
+Usa Redis como cache com TTL de 5 minutos para evitar query ao DB a cada mensagem.
+"""
+from __future__ import annotations
+import json
+import logging
+from dataclasses import dataclass, field
+from typing import Optional, List
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+logger = logging.getLogger(__name__)
+_CACHE_TTL = 300  # 5 minutos
+
+
+@dataclass
+class AgentConfig:
+    agent_name: str
+    is_enabled: bool = True
+    custom_prompt_suffix: Optional[str] = None
+    tools_disabled: List[str] = field(default_factory=list)
+    confidence_threshold: float = 0.75
+    tone: str = "profissional"
+    sector_context: Optional[str] = None
+
+
+class TenantAgentConfigService:
+
+    async def get_config(
+        self, company_id: str, agent_name: str, db: AsyncSession
+    ) -> AgentConfig:
+        """Retorna configuração do agente para o tenant. Fail-safe: retorna defaults."""
+
+        # 1. Tenta cache Redis
+        cached = await self._get_from_cache(company_id, agent_name)
+        if cached:
+            return cached
+
+        # 2. Busca no DB
+        try:
+            from app.models.tenant_agent_config import TenantAgentConfig
+            result = await db.execute(
+                select(TenantAgentConfig).where(
+                    TenantAgentConfig.company_id == company_id,
+                    TenantAgentConfig.agent_name == agent_name,
+                )
+            )
+            row = result.scalar_one_or_none()
+
+            config = AgentConfig(
+                agent_name=agent_name,
+                is_enabled=row.is_enabled if row else True,
+                custom_prompt_suffix=row.custom_prompt_suffix if row else None,
+                tools_disabled=row.tools_disabled if row else [],
+                confidence_threshold=float(row.confidence_threshold) if row else 0.75,
+                tone=row.tone if row else "profissional",
+                sector_context=row.sector_context if row else None,
+            )
+            await self._set_cache(company_id, agent_name, config)
+            return config
+        except Exception as exc:
+            logger.warning("[TenantAgentConfig] fallback defaults: %s", exc)
+            return AgentConfig(agent_name=agent_name)
+
+    async def _get_from_cache(self, company_id: str, agent_name: str) -> Optional[AgentConfig]:
+        try:
+            import redis.asyncio as aioredis
+            from app.core.config import settings
+            r = await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+            async with r:
+                raw = await r.get(f"agent_cfg:{company_id}:{agent_name}")
+                if raw:
+                    d = json.loads(raw)
+                    return AgentConfig(**d)
+        except Exception:
+            pass
+        return None
+
+    async def _set_cache(self, company_id: str, agent_name: str, cfg: AgentConfig):
+        try:
+            import redis.asyncio as aioredis
+            from app.core.config import settings
+            r = await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+            async with r:
+                import dataclasses
+                await r.setex(
+                    f"agent_cfg:{company_id}:{agent_name}",
+                    _CACHE_TTL,
+                    json.dumps(dataclasses.asdict(cfg)),
+                )
+        except Exception:
+            pass
+
+
+tenant_agent_config_service = TenantAgentConfigService()
+```
+
+---
+
+#### Passo LIA-3: Integrar override no `PromptRegistry`
+
+Adicionar método `get_tenant_prompt()` em `app/shared/prompts/prompt_registry.py`:
+
+```python
+def get_tenant_prompt(
+    self,
+    name: str,
+    tenant_suffix: Optional[str] = None,
+    tone: str = "profissional",
+    sector_context: Optional[str] = None,
+) -> Optional[str]:
+    """
+    Retorna prompt base + customizações do tenant.
+    
+    O prompt base nunca é substituído — apenas complementado.
+    Ordem de composição:
+      1. Prompt base (versão latest do registry)
+      2. Bloco de contexto do setor (sector_context)
+      3. Sufixo customizado do tenant (custom_prompt_suffix)
+      4. Instrução de tom (tone)
+    """
+    base = self.get_prompt(name, "latest")
+    if base is None:
+        return None
+
+    parts = [base]
+
+    if sector_context:
+        parts.append(
+            f"\n\n## Contexto da Empresa\n{sector_context}"
+        )
+
+    TONE_INSTRUCTIONS = {
+        "profissional": "Mantenha tom formal e profissional em todas as respostas.",
+        "informal":     "Use linguagem mais próxima e informal, mas sempre respeitosa.",
+        "tecnico":      "Priorize precisão técnica; use termos específicos da área sem simplificar.",
+    }
+    if tone and tone in TONE_INSTRUCTIONS:
+        parts.append(f"\n\n## Tom de Comunicação\n{TONE_INSTRUCTIONS[tone]}")
+
+    if tenant_suffix:
+        parts.append(f"\n\n## Instruções Adicionais do Cliente\n{tenant_suffix}")
+
+    return "\n".join(parts)
+```
+
+**Ponto de integração:** em cada agente especializado da LIA, onde hoje se faz:
+```python
+prompt = prompt_registry.get_prompt("sourcing")
+```
+Passa a ser:
+```python
+cfg = await tenant_agent_config_service.get_config(company_id, "sourcing", db)
+prompt = prompt_registry.get_tenant_prompt(
+    "sourcing",
+    tenant_suffix=cfg.custom_prompt_suffix,
+    tone=cfg.tone,
+    sector_context=cfg.sector_context,
+)
+```
+
+---
+
+#### Passo LIA-4: Filtro de tools por tenant
+
+Adicionar `filter_tools_for_tenant()` em `app/tools/tool_registry_loader.py`:
+
+```python
+def filter_tools_for_tenant(
+    tools: list,
+    disabled_tool_names: list[str],
+    company_id: str,
+) -> list:
+    """
+    Remove tools desabilitadas pelo tenant da lista de tools ativas.
+    
+    Args:
+        tools:               lista de LangChain Tool objects já instanciados
+        disabled_tool_names: nomes de tools que o tenant desabilitou
+                             (vem de AgentConfig.tools_disabled)
+        company_id:          usado apenas para log
+
+    Returns:
+        Lista filtrada de tools
+    """
+    if not disabled_tool_names:
+        return tools
+
+    disabled_set = set(disabled_tool_names)
+    filtered = [t for t in tools if t.name not in disabled_set]
+
+    removed = [t.name for t in tools if t.name in disabled_set]
+    if removed:
+        logger.info(
+            "[ToolFilter] company=%s removeu tools=%s do agente", company_id, removed
+        )
+    return filtered
+```
+
+**Ponto de integração:** em `app/domains/sourcing/agents/sourcing_tool_registry.py` (e equivalentes por domínio), antes de montar o agente LangChain:
+
+```python
+tools = build_sourcing_tools(context)  # lista atual
+cfg = await tenant_agent_config_service.get_config(company_id, "sourcing", db)
+tools = filter_tools_for_tenant(tools, cfg.tools_disabled, company_id)
+agent = create_react_agent(llm, tools, prompt)
+```
+
+---
+
+#### Passo LIA-5: Endpoint de configuração — `POST /api/v1/admin/agents/configure`
+
+Criar `app/api/v1/admin_agent_config.py`:
+
+```python
+"""
+Admin — Configuração de agentes por tenant (Agent Studio API).
+
+Endpoints:
+  GET  /api/v1/admin/agents/config          → lista configs do tenant
+  GET  /api/v1/admin/agents/config/{name}   → config de um agente específico
+  PUT  /api/v1/admin/agents/config/{name}   → salva/atualiza config
+  DELETE /api/v1/admin/agents/config/{name} → restaura defaults
+"""
+from fastapi import APIRouter, Depends, Header
+from pydantic import BaseModel, Field
+from typing import Optional, List
+from app.auth.dependencies import require_admin
+from app.core.database import get_db
+
+router = APIRouter(prefix="/admin/agents/config", tags=["Agent Studio"])
+
+
+class AgentConfigRequest(BaseModel):
+    is_enabled: bool = True
+    custom_prompt_suffix: Optional[str] = Field(
+        None, max_length=2000,
+        description="Texto adicionado ao final do system prompt. "
+                    "Não pode sobrescrever regras éticas ou LGPD."
+    )
+    tools_disabled: List[str] = Field(
+        default_factory=list,
+        description="Nomes de tools a desabilitar. Ex: ['linkedin_search', 'export_csv']"
+    )
+    confidence_threshold: float = Field(0.75, ge=0.0, le=1.0)
+    tone: str = Field("profissional", pattern="^(profissional|informal|tecnico)$")
+    sector_context: Optional[str] = Field(None, max_length=500)
+
+
+@router.get("")
+async def list_agent_configs(
+    x_company_id: str = Header(..., alias="X-Company-ID"),
+    _user=Depends(require_admin),
+    db=Depends(get_db),
+):
+    """Lista todas as configurações de agentes do tenant."""
+    from app.models.tenant_agent_config import TenantAgentConfig
+    from sqlalchemy import select
+    result = await db.execute(
+        select(TenantAgentConfig).where(TenantAgentConfig.company_id == x_company_id)
+    )
+    rows = result.scalars().all()
+    return {"configs": [r.to_dict() for r in rows], "company_id": x_company_id}
+
+
+@router.put("/{agent_name}")
+async def upsert_agent_config(
+    agent_name: str,
+    body: AgentConfigRequest,
+    x_company_id: str = Header(..., alias="X-Company-ID"),
+    _user=Depends(require_admin),
+    db=Depends(get_db),
+):
+    """Cria ou atualiza configuração de um agente para o tenant."""
+    from app.models.tenant_agent_config import TenantAgentConfig
+    from sqlalchemy import select
+
+    VALID_AGENTS = {
+        "sourcing", "cv_screening", "interviewer", "scheduling",
+        "wsi_evaluator", "analyst_feedback", "ats_integrator",
+        "recruiter_assistant", "proactive_insights", "job_planner",
+    }
+    if agent_name not in VALID_AGENTS:
+        from fastapi import HTTPException
+        raise HTTPException(400, f"Agente '{agent_name}' inválido. Válidos: {VALID_AGENTS}")
+
+    result = await db.execute(
+        select(TenantAgentConfig).where(
+            TenantAgentConfig.company_id == x_company_id,
+            TenantAgentConfig.agent_name == agent_name,
+        )
+    )
+    row = result.scalar_one_or_none()
+
+    if row:
+        row.is_enabled = body.is_enabled
+        row.custom_prompt_suffix = body.custom_prompt_suffix
+        row.tools_disabled = body.tools_disabled
+        row.confidence_threshold = body.confidence_threshold
+        row.tone = body.tone
+        row.sector_context = body.sector_context
+    else:
+        row = TenantAgentConfig(
+            company_id=x_company_id,
+            agent_name=agent_name,
+            **body.model_dump(),
+        )
+        db.add(row)
+
+    await db.commit()
+
+    # Invalidar cache Redis do tenant
+    from app.services.tenant_agent_config_service import tenant_agent_config_service
+    await tenant_agent_config_service._invalidate_cache(x_company_id, agent_name)
+
+    return {"status": "ok", "agent": agent_name, "company_id": x_company_id}
+```
+
+---
+
+#### Passo LIA-6: Hook no orquestrador — injetar config no início do chain
+
+Em `app/orchestrator/main_orchestrator.py`, onde hoje ocorre:
+```python
+_tenant_ctx = await self._tenant_context_service.get_context(
+    company_id=str(ctx.company_id), db=db
+)
+ctx.tenant_context_snippet = _tenant_ctx.to_prompt_snippet()
+```
+
+Adicionar logo abaixo:
+```python
+# Carregar config de agente do tenant para o domínio roteado
+_agent_cfg = await tenant_agent_config_service.get_config(
+    company_id=str(ctx.company_id),
+    agent_name=route_result.domain_id,  # ex: "sourcing", "scheduling"
+    db=db,
+)
+ctx.agent_config = _agent_cfg   # propagar no contexto para os agentes usarem
+
+# Bloquear agente desabilitado pelo tenant
+if not _agent_cfg.is_enabled:
+    return self._build_disabled_agent_response(route_result.domain_id)
+```
+
+---
+
+#### Resumo LIA — O que ficou faltando vs. o que foi mapeado
+
+| Componente | Arquivo | Status |
+|---|---|---|
+| Tabela `tenant_agent_configs` | Migration SQL (Passo 1) | ❌ Criar |
+| `TenantAgentConfigService` | `app/services/tenant_agent_config_service.py` | ❌ Criar |
+| `PromptRegistry.get_tenant_prompt()` | `app/shared/prompts/prompt_registry.py` | ❌ Adicionar método |
+| `filter_tools_for_tenant()` | `app/tools/tool_registry_loader.py` | ❌ Adicionar função |
+| Endpoint `/admin/agents/config` | `app/api/v1/admin_agent_config.py` | ❌ Criar |
+| Hook no orquestrador | `app/orchestrator/main_orchestrator.py` | ❌ Modificar |
+| UI de configuração (frontend) | `plataforma-lia/` | ❌ Criar (fora do escopo deste guia) |
+
+**Esforço estimado:** 2 sprints de backend (2 semanas) + 2 sprints de frontend para UI no-code.
+
+---
+
+### PARTE 2 — v5: Passo a Passo para Agent Studio
+
+#### O que já existe e serve de base
+
+| Arquivo existente | O que já faz | O que falta para Agent Studio |
+|---|---|---|
+| `src/domains/base.py` | `DomainPrompt` (ABC) com `get_system_prompt(context: DomainContext)` — cada domínio implementa seu próprio prompt | Não há mecanismo de override externo; o prompt é hard-coded na classe do domínio |
+| `src/domains/registry.py` | `DomainRegistry` — `register()`, `get_instance()`, `list_domains()` | Registry é global e estático — sem filtro por tenant |
+| `src/hub/catalog.py` | `DomainCatalog` — monta catálogo de domínios + rotas de navegação para o HubPlanner | Catálogo é único para todos os tenants — sem versão por empresa |
+| `src/hub/planner.py` | `HubPlanner` — usa `DomainCatalog.get_catalog()` para decidir para qual domínio rotear | Sem awareness de tenant — não sabe quais domínios o tenant tem acesso |
+| `src/hub/executor.py` | `HubExecutor.execute()` — chama `DomainOrchestrator.process_query(domain_id, query, context_data)` | `context_data` já tem `workspace_id` — é o ponto de entrada do tenant_id |
+| `src/domains/base.py` | `DomainContext.workspace_id: Optional[int]` — campo já existe no dataclass | Não é usado para carregar config do tenant — apenas passado para a API |
+| `src/api.py` | `ChatRequest.context_data: Dict[str, Any]` — payload livre; `workspace_id` é enviado pelo Rails via `context_data` | Sem middleware de validação de tenant; sem injeção de config |
+
+**Conclusão sobre o v5:** `workspace_id` já chega no `DomainContext` — o tenant ID existe no sistema. O problema é que nada usa esse `workspace_id` para personalizar o comportamento dos domínios. O ponto cirúrgico de intervenção é o `DomainOrchestrator._build_context()` que constrói o `DomainContext` — é ali que a config do tenant precisa ser injetada.
+
+---
+
+#### Passo v5-1: `src/hub/tenant_config.py` — loader de config por tenant
+
+Criar `src/hub/tenant_config.py`:
+
+```python
+"""
+TenantConfig — carrega configuração de agentes por workspace_id.
+
+O v5 não tem DB próprio. A config vive no Rails ATS (ats_api).
+Este loader chama a API interna do Rails e cacheia em Redis.
+
+Estrutura da config:
+{
+  "workspace_id": 42,
+  "domains_enabled": ["jobs", "applies", "sourcing", "scheduling"],
+  "domain_overrides": {
+    "sourcing": {
+      "custom_prompt_suffix": "Foco em candidatos CLT para logística.",
+      "tools_disabled":       ["enrich_linkedin"],
+      "confidence_threshold": 0.80,
+      "tone":                 "informal"
+    },
+    "jobs": {
+      "custom_prompt_suffix": null,
+      "tools_disabled":       [],
+      "confidence_threshold": 0.75,
+      "tone":                 "profissional"
+    }
+  }
+}
+"""
+import json
+import logging
+import os
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional
+import urllib.request
+
+logger = logging.getLogger(__name__)
+
+_ALL_DOMAINS = [
+    "jobs", "applies", "sourcing", "sourced_profile_sourcing",
+    "scheduling", "evaluation", "insights", "messaging", "autonomous",
+]
+_CACHE_TTL = 300  # 5 minutos
+
+
+@dataclass
+class DomainOverride:
+    custom_prompt_suffix: Optional[str] = None
+    tools_disabled: List[str] = field(default_factory=list)
+    confidence_threshold: float = 0.75
+    tone: str = "profissional"
+    sector_context: Optional[str] = None
+
+
+@dataclass
+class TenantConfig:
+    workspace_id: int
+    domains_enabled: List[str] = field(default_factory=lambda: list(_ALL_DOMAINS))
+    domain_overrides: Dict[str, DomainOverride] = field(default_factory=dict)
+
+    def is_domain_enabled(self, domain_id: str) -> bool:
+        return domain_id in self.domains_enabled
+
+    def get_override(self, domain_id: str) -> DomainOverride:
+        return self.domain_overrides.get(domain_id, DomainOverride())
+
+
+class TenantConfigLoader:
+
+    _RAILS_BASE = os.getenv("RAILS_INTERNAL_URL", "http://ats_api:3000")
+
+    def load(self, workspace_id: int) -> TenantConfig:
+        """Carrega config do tenant. Tenta Redis → Rails API → defaults."""
+        cached = self._from_redis(workspace_id)
+        if cached:
+            return cached
+
+        config = self._from_rails_api(workspace_id)
+        self._to_redis(workspace_id, config)
+        return config
+
+    def _from_redis(self, workspace_id: int) -> Optional[TenantConfig]:
+        try:
+            import redis
+            from src.config.settings import get_settings
+            r = redis.from_url(get_settings().REDIS_URL, decode_responses=True)
+            raw = r.get(f"tenant_cfg_v5:{workspace_id}")
+            if raw:
+                return self._parse(workspace_id, json.loads(raw))
+        except Exception as e:
+            logger.debug("[TenantConfig] Redis miss: %s", e)
+        return None
+
+    def _from_rails_api(self, workspace_id: int) -> TenantConfig:
+        """Chama /internal/agent_studio/config/{workspace_id} no Rails."""
+        try:
+            url = f"{self._RAILS_BASE}/internal/agent_studio/config/{workspace_id}"
+            token = os.getenv("INTERNAL_API_TOKEN", "")
+            req = urllib.request.Request(
+                url,
+                headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=2) as resp:
+                data = json.loads(resp.read().decode())
+                return self._parse(workspace_id, data)
+        except Exception as e:
+            logger.warning("[TenantConfig] Rails API falhou, usando defaults: %s", e)
+            return TenantConfig(workspace_id=workspace_id)
+
+    def _parse(self, workspace_id: int, data: dict) -> TenantConfig:
+        overrides = {}
+        for domain_id, ov in data.get("domain_overrides", {}).items():
+            overrides[domain_id] = DomainOverride(
+                custom_prompt_suffix=ov.get("custom_prompt_suffix"),
+                tools_disabled=ov.get("tools_disabled", []),
+                confidence_threshold=float(ov.get("confidence_threshold", 0.75)),
+                tone=ov.get("tone", "profissional"),
+                sector_context=ov.get("sector_context"),
+            )
+        return TenantConfig(
+            workspace_id=workspace_id,
+            domains_enabled=data.get("domains_enabled", list(_ALL_DOMAINS)),
+            domain_overrides=overrides,
+        )
+
+    def _to_redis(self, workspace_id: int, config: TenantConfig):
+        try:
+            import redis
+            import dataclasses
+            from src.config.settings import get_settings
+            r = redis.from_url(get_settings().REDIS_URL, decode_responses=True)
+            payload = {
+                "domains_enabled": config.domains_enabled,
+                "domain_overrides": {
+                    k: dataclasses.asdict(v)
+                    for k, v in config.domain_overrides.items()
+                },
+            }
+            r.setex(f"tenant_cfg_v5:{workspace_id}", _CACHE_TTL, json.dumps(payload))
+        except Exception as e:
+            logger.debug("[TenantConfig] Redis write falhou: %s", e)
+
+    def invalidate(self, workspace_id: int):
+        try:
+            import redis
+            from src.config.settings import get_settings
+            r = redis.from_url(get_settings().REDIS_URL, decode_responses=True)
+            r.delete(f"tenant_cfg_v5:{workspace_id}")
+        except Exception:
+            pass
+
+
+tenant_config_loader = TenantConfigLoader()
+```
+
+---
+
+#### Passo v5-2: Filtrar domínios no `DomainCatalog` por tenant
+
+Em `src/hub/catalog.py`, adicionar método `get_catalog_for_tenant()`:
+
+```python
+@classmethod
+def get_catalog_for_tenant(cls, workspace_id: int) -> str:
+    """
+    Retorna catálogo de domínios filtrado para o tenant.
+    Domínios não habilitados para o tenant são removidos do catálogo
+    que o HubPlanner usa para rotear — o LLM do planner nunca os vê.
+    """
+    from src.hub.tenant_config import tenant_config_loader
+    tenant_cfg = tenant_config_loader.load(workspace_id)
+
+    sections = ["## Domínios Disponíveis (Backend AI Agents)"]
+    domains = DomainRegistry.list_domains()
+
+    for domain_id, domain_name in domains.items():
+        # ← Filtro central: remove domínio se tenant não tem acesso
+        if not tenant_cfg.is_domain_enabled(domain_id):
+            continue
+
+        instance = DomainRegistry.get_instance(domain_id)
+        if not instance:
+            continue
+        actions = instance.get_allowed_actions()
+        action_list = "\n".join(
+            f"    - {a.id}: {a.description} (tipo: {a.action_type.value})"
+            for a in actions
+        )
+        sections.append(
+            f"- **{domain_id}** ({domain_name}): {instance.description}\n"
+            f"  Ações:\n{action_list}"
+        )
+
+    # Rotas de navegação são iguais para todos (frontend não tem restrição por tenant agora)
+    sections.append("\n## Rotas de Navegação (Frontend)")
+    for route_id, route_info in cls.NAVIGATION_ROUTES.items():
+        sections.append(f"- **{route_id}**: {route_info['description']}")
+
+    return "\n".join(sections)
+```
+
+**Ponto de integração** — em `src/hub/planner.py`, onde hoje se usa `DomainCatalog.get_catalog()`:
+```python
+# Antes:
+catalog = DomainCatalog.get_catalog()
+
+# Depois:
+workspace_id = context_data.get("workspace_id")
+catalog = (
+    DomainCatalog.get_catalog_for_tenant(workspace_id)
+    if workspace_id else DomainCatalog.get_catalog()
+)
+```
+
+---
+
+#### Passo v5-3: Override de prompt por tenant no `DomainOrchestrator`
+
+Em `src/domains/orchestrator.py`, dentro de `process_query()`, após `domain = DomainRegistry.get_instance(domain_id)`:
+
+```python
+def process_query(self, domain_id: str, user_query: str, context_data: Dict[str, Any]) -> DomainResponse:
+    domain = DomainRegistry.get_instance(domain_id)
+    if not domain:
+        return DomainResponse(success=False, message=f"Domínio '{domain_id}' não encontrado", ...)
+
+    # ← NOVO: carregar config do tenant
+    workspace_id = context_data.get("workspace_id")
+    tenant_cfg = None
+    domain_override = None
+    if workspace_id:
+        from src.hub.tenant_config import tenant_config_loader
+        tenant_cfg = tenant_config_loader.load(int(workspace_id))
+
+        # Bloquear domínio desabilitado pelo tenant
+        if not tenant_cfg.is_domain_enabled(domain_id):
+            return DomainResponse(
+                success=False,
+                message=f"Este recurso não está habilitado para sua conta. "
+                        f"Entre em contato com o suporte.",
+                error="domain_disabled_for_tenant",
+            )
+
+        domain_override = tenant_cfg.get_override(domain_id)
+
+    context = self._build_context(domain_id, context_data)
+
+    # ← NOVO: injetar override na chamada de get_system_prompt
+    # DomainWorkflow.run() vai chamar domain.get_system_prompt(context)
+    # Wrappamos o domain com um proxy que aplica o override
+    if domain_override:
+        domain = _TenantOverrideDomain(domain, domain_override)
+
+    # Resto do fluxo existente continua igual...
+    result = self.workflow.run(domain, context, user_query)
+    return result
+```
+
+O proxy `_TenantOverrideDomain` (criar no mesmo arquivo):
+
+```python
+class _TenantOverrideDomain:
+    """
+    Proxy leve que aplica override de tenant em cima de qualquer DomainPrompt.
+    Não altera o comportamento do domínio — apenas compõe o system prompt.
+    """
+    def __init__(self, domain: "DomainPrompt", override: "DomainOverride"):
+        self._domain = domain
+        self._override = override
+
+    def __getattr__(self, name):
+        return getattr(self._domain, name)
+
+    def get_system_prompt(self, context: "DomainContext") -> str:
+        base_prompt = self._domain.get_system_prompt(context)
+        parts = [base_prompt]
+
+        if self._override.sector_context:
+            parts.append(f"\n\n## Contexto da Empresa\n{self._override.sector_context}")
+
+        TONE_MAP = {
+            "profissional": "Mantenha tom formal e profissional.",
+            "informal":     "Use linguagem próxima e acolhedora, mas respeitosa.",
+            "tecnico":      "Priorize precisão técnica e terminologia específica da área.",
+        }
+        tone_instr = TONE_MAP.get(self._override.tone)
+        if tone_instr:
+            parts.append(f"\n\n## Tom\n{tone_instr}")
+
+        if self._override.custom_prompt_suffix:
+            parts.append(
+                f"\n\n## Instruções do Cliente\n{self._override.custom_prompt_suffix}"
+            )
+
+        return "\n".join(parts)
+
+    def get_tools(self, context: "DomainContext") -> list:
+        """Filtra tools desabilitadas pelo tenant antes de passar para o grafo."""
+        all_tools = self._domain.get_tools(context)
+        if not self._override.tools_disabled:
+            return all_tools
+        disabled = set(self._override.tools_disabled)
+        return [t for t in all_tools if t.name not in disabled]
+```
+
+---
+
+#### Passo v5-4: Propagar `workspace_id` obrigatório no `api.py`
+
+Em `src/api.py`, adicionar validação no endpoint `/chat`:
+
+```python
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    domain: str | None = None
+    hub_mode: bool = True
+    context_data: Dict[str, Any] = Field(default_factory=dict)
+    workspace_id: int | None = None  # ← NOVO: pode vir aqui OU dentro de context_data
+
+@app.post("/chat")
+async def chat(req: ChatRequest):
+    router = _get_router()
+    loop = asyncio.get_event_loop()
+
+    # ← NOVO: garantir que workspace_id esteja sempre em context_data
+    context_data = {**req.context_data, "session_id": req.session_id}
+    if req.workspace_id:
+        context_data["workspace_id"] = req.workspace_id
+
+    payload = {
+        "question":    req.message,
+        "domain":      req.domain,
+        "context_data": context_data,
+        "session_id":  req.session_id,
+        "hub_mode":    req.hub_mode,
+    }
+    result = await loop.run_in_executor(None, router.route, payload)
+    return JSONResponse(content={...})
+```
+
+O Rails ATS (`ats_api`) já envia `workspace_id` dentro de `context_data` — confirmado no código do `HubOrchestrator` que usa `context_data.get("workspace_id")` para a `SessionStore`. A mudança aqui apenas garante que também pode vir como campo de primeiro nível.
+
+---
+
+#### Passo v5-5: Endpoint de configuração no Rails (`ats_api`)
+
+O v5 é um serviço Python sem DB próprio — as configurações de tenant vivem no **Rails** (`ats_api`). Criar no Rails:
+
+```ruby
+# config/routes.rb (adicionar no namespace :internal)
+namespace :internal do
+  resources :agent_studio, only: [] do
+    collection do
+      get  "config/:workspace_id", to: "agent_studio#show"
+      put  "config/:workspace_id/domains/:domain_id", to: "agent_studio#update_domain"
+      delete "config/:workspace_id/domains/:domain_id", to: "agent_studio#reset_domain"
+    end
+  end
+end
+
+# app/controllers/internal/agent_studio_controller.rb
+module Internal
+  class AgentStudioController < ApplicationController
+    before_action :authenticate_internal_token!
+
+    VALID_DOMAINS = %w[
+      jobs applies sourcing sourced_profile_sourcing
+      scheduling evaluation insights messaging autonomous
+    ].freeze
+
+    def show
+      workspace = Workspace.find(params[:workspace_id])
+      configs   = workspace.agent_studio_configs.index_by(&:domain_id)
+
+      render json: {
+        workspace_id:     workspace.id,
+        domains_enabled:  workspace.agent_studio_domains_enabled || VALID_DOMAINS,
+        domain_overrides: configs.transform_values(&:to_api_hash),
+      }
+    end
+
+    def update_domain
+      domain_id = params[:domain_id]
+      return render_error("Domínio inválido") unless VALID_DOMAINS.include?(domain_id)
+
+      workspace = Workspace.find(params[:workspace_id])
+      config    = workspace.agent_studio_configs
+                           .find_or_initialize_by(domain_id: domain_id)
+
+      config.update!(
+        custom_prompt_suffix:  params[:custom_prompt_suffix],
+        tools_disabled:        params[:tools_disabled] || [],
+        confidence_threshold:  params[:confidence_threshold] || 0.75,
+        tone:                  params[:tone] || "profissional",
+        sector_context:        params[:sector_context],
+      )
+
+      # Invalidar cache do Python v5
+      TenantConfigInvalidatorJob.perform_later(workspace.id)
+
+      render json: { status: "ok", domain_id: domain_id }
+    end
+  end
+end
+```
+
+**Modelos Rails necessários:**
+```ruby
+# app/models/agent_studio_config.rb
+class AgentStudioConfig < ApplicationRecord
+  belongs_to :workspace
+  validates :domain_id, inclusion: { in: Internal::AgentStudioController::VALID_DOMAINS }
+  validates :confidence_threshold, numericality: { in: 0.0..1.0 }
+  validates :tone, inclusion: { in: %w[profissional informal tecnico] }
+
+  def to_api_hash
+    {
+      custom_prompt_suffix:  custom_prompt_suffix,
+      tools_disabled:        tools_disabled || [],
+      confidence_threshold:  confidence_threshold,
+      tone:                  tone,
+      sector_context:        sector_context,
+    }
+  end
+end
+```
+
+---
+
+#### Resumo v5 — O que ficou mapeado
+
+| Componente | Arquivo | Status |
+|---|---|---|
+| `TenantConfigLoader` | `src/hub/tenant_config.py` | ❌ Criar (Passo v5-1) |
+| Catálogo filtrado por tenant | `src/hub/catalog.py` | ❌ Adicionar método (Passo v5-2) |
+| Override de prompt + tools | `src/domains/orchestrator.py` | ❌ Modificar (Passo v5-3) |
+| `workspace_id` garantido no payload | `src/api.py` | ❌ Modificar (Passo v5-4) |
+| Endpoint de config no Rails | `ats_api` Rails | ❌ Criar (Passo v5-5) |
+| Model `AgentStudioConfig` | `ats_api` Rails | ❌ Criar migration + model |
+| UI de configuração (frontend) | `ats_front` / `wedo-nuxt` | ❌ Fora do escopo deste guia |
+
+**Esforço estimado:** 1.5 sprint Python + 1 sprint Rails (2.5 semanas total, pode ser paralelo).
+
+---
+
+### Comparativo LIA vs v5 para Agent Studio
+
+| Dimensão | LIA | v5 |
+|---|---|---|
+| **Tenant ID no sistema** | `company_id` (já flui em todos os componentes via `ctx.company_id`) | `workspace_id` (já existe em `DomainContext`, vem via `context_data`) |
+| **Base para override de prompt** | `PromptRegistry` com versionamento — só precisa adicionar `get_tenant_prompt()` | `get_system_prompt()` abstrato por domínio — precisa de proxy decorator |
+| **Base para filtro de tools** | `tool_registry_metadata.yaml` com `allowed_agents` — adicionar dimensão `tenant` | Tools são instanciadas por domínio — precisa interceptar antes do grafo LangGraph |
+| **Onde vive a config** | DB LIA (PostgreSQL local) — acesso direto via SQLAlchemy | DB Rails (`ats_api`) — acesso via HTTP interno |
+| **Cache** | Redis já integrado (`TenantBudget` usa o mesmo padrão) | Redis disponível — padrão idêntico ao que TenantMemoryStore usa |
+| **Complexidade de implementação** | ⭐⭐ Moderada — infraestrutura de tenant já madura | ⭐⭐⭐ Alta — v5 nunca foi multi-tenant; adicionar a noção de workspace em todos os pontos |
+| **Risco de regressão** | Baixo — override é aditivo (suffix), não substitui prompt base | Médio — proxy `_TenantOverrideDomain` precisa implementar todos os métodos abstratos |
+| **Tempo estimado (backend)** | ~2 semanas | ~2.5 semanas |
+| **Dependência de outro time** | Não — tudo na LIA | Sim — precisa de endpoint Rails + migration no `ats_api` |
+
+**Recomendação de ordem:** implementar na LIA primeiro (menor risco, infraestrutura mais madura), usar como piloto com 2-3 clientes, então portar o aprendizado para o v5.
+
+---
+
+### 🔬 Pesquisa de Mercado: Quem oferece "Agent Studio" em Recrutamento?
+
+> Pesquisa realizada em 19/03/2026 com base em anúncios oficiais, press releases e sites das plataformas.
+
+**Definição de "Agent Studio":** funcionalidade que permite ao cliente (empresa contratante) criar, configurar ou personalizar seus próprios agentes de IA sem escrever código — via interface no-code/low-code dentro da plataforma.
+
+---
+
+#### Tier 1 — Agent Studio Nativo (cliente cria agentes sem código)
+
+| Plataforma | Produto | Lançamento | Modelo | Link |
+|---|---|---|---|---|
+| **Phenom** | **X+ Agent Studio** | Abril 2025 | No-code, zero-config, agentes por setor (manufatura, saúde, hospitality, transporte, varejo). Cliente escolhe tipo de agente, setor, e personaliza perguntas de triagem. Sem código. | phenom.com/x-plus-ai-agents |
+| **Workday** | **Flowise Agent Builder** | H1 FY2026 (preview 2025) | Low-code. Workday adquiriu a Flowise em agosto 2025 e integrou como builder de agentes dentro do Workday Extend Professional. Permite criar agentes por processo sem codificar. | workday.com |
+| **SAP SuccessFactors** | **Joule Studio** | Beta Q4 2025 | Low-code/no-code. Extensão do Joule (copilot SAP) para criar agentes Joule customizados via SAP Build. Global GA planejado para 2026. | sap.com |
+
+---
+
+#### Tier 2 — Agentes Configuráveis (cliente parametriza, não cria do zero)
+
+| Plataforma | Produto | Lançamento | Modelo | Obs. |
+|---|---|---|---|---|
+| **Juicebox (PeopleGPT)** | **Juicebox Agents 2.0** | Janeiro 2026 | Cliente cria múltiplos agentes de sourcing — um por vaga, setor ou mercado. Cada agente aprende com feedback em tempo real. Dashboard centralizado de desempenho. $116M captados (Sequoia). **Foco exclusivo: sourcing.** | YC S22 · juicebox.ai/agent |
+| **Eightfold AI** | **Project Andromeda (Digital Twins)** | 2025 | "Digital Twins" captura conhecimento institucional de SMEs (especialistas internos) e o transforma em agentes. O cliente configura quem é o "especialista" que o twin vai imitar. Não é studio visual, é um processo de treinamento do twin. | eightfold.ai |
+| **iCIMS** | **iCIMS Agents** | Junho 2025 (AI Sourcing Agent: Outubro 2025) | Agentes pré-construídos que o cliente ativa — sem editor de agente. Filosófico de "agente que age dentro de parâmetros definidos pelo recrutador". Roadmap: cobrir todo o ciclo de aquisição. | icims.com |
+| **hireEZ** | **EZ Agent** | Março 2025 | "Guided autonomy" — semi-autônomo. Recrutador define parâmetros (perfil, localização, estratégias); EZ Agent executa múltiplas estratégias em paralelo e apresenta os melhores candidatos. 800M+ profiles, 45+ fontes. | hireez.com |
+| **Paradox (Olivia)** | **AI Video Studio** | 2025 | Foco em vídeo: cliente cria vídeos de job preview com IA. **Não** é agente de recrutamento configurável pelo cliente — é uma ferramenta de produção de conteúdo. (Nota: Paradox foi **adquirida pela Workday em 2025**.) | paradox.ai |
+
+---
+
+#### Tier 3 — Plataformas SEM Agent Studio (usam integrações de terceiros)
+
+| Plataforma | Situação | Como clientes constroem agentes |
+|---|---|---|
+| **Greenhouse** | Sem agent studio nativo | Via integrações: Relevance AI, Beam.ai, Tray.ai (700+ apps), Arahi AI |
+| **Ashby** | Sem agent studio | AI Notetaker, AI summaries — ferramentas de assistência, não agentes configuráveis |
+| **Lever** | Sem agent studio | Integrações com plataformas terceiras |
+| **SmartRecruiters** | Winston AI integrado ao Joule SAP (2026) após aquisição pela SAP em Set 2025 | Convergindo para Joule Studio do SAP |
+| **Beamery** | "Ray" (copilot AI) | Agente advisor — não configurável pelo cliente |
+| **SeekOut** | Talent intelligence avançado | Sem studio — interface de busca sofisticada |
+| **Gem** | CRM + sourcing avançado | Sem studio — automação de sequências, não agentes |
+| **Fetcher** | Hybrid AI + humano | Sem studio — curadoria humana em cima de IA |
+
+---
+
+#### Análise Detalhada: Juicebox (a plataforma que o usuário perguntou)
+
+**Juicebox** (também chamada de **PeopleGPT**) é a plataforma de sourcing AI nativa mais avançada do mercado em 2026 em termos de multi-agent scaling:
+
+```
+Juicebox Agents 2.0 (lançado Janeiro 2026)
+├── Multi-agent: crie N agentes, um por vaga/função/mercado
+├── Real-time learning: rejeitar um candidato com feedback
+│     → agente recalibra critérios imediatamente
+├── Dashboard centralizado: performance de todos os agentes
+├── 800M+ profiles · 30+ fontes de dados
+├── 35 emails personalizados/dia por agente
+└── 200+ perfis qualificados/semana por agente
+
+Clientes: Ramp, Cognition, Quora, Perplexity
+Funding: $116M (Sequoia Series B, Set 2025) · Valuation: ~$850M
+Fundado: 2022 (Y Combinator S22)
+```
+
+**Diferença crítica do Juicebox vs. Phenom X+ Studio:**
+- Juicebox = agentes de **sourcing** (busca + outreach) — não cobre triagem estruturada, agendamento, avaliações, onboarding
+- Phenom X+ Studio = agentes para **todo o ciclo** (sourcing, triagem por voz, fraude, agendamento, entrevista por avatar, retenção)
+
+**Por que o Juicebox é relevante para a WeDOTalent:**
+- É o competidor direto do módulo de sourcing da LIA — mas foca 100% em sourcing
+- A LIA cobre mais domínios (agendamento, avaliação, analytics, automação, comunicação)
+- Se um cliente WeDOTalent precisar de sourcing puro em escala, o Juicebox é a alternativa especializada
+
+---
+
+#### Resumo: Posicionamento Competitivo para Agent Studio
+
+```
+SOFISTICAÇÃO DE AGENT STUDIO NO MERCADO (Março 2026)
+
+Mais sofisticado
+        ▲
+        │
+Phenom  ●  X+ Agent Studio — no-code, por setor, zero-config (LÍDER)
+        │
+Workday ●  Flowise Agent Builder — low-code, H1 FY2026
+        │
+SAP     ●  Joule Studio — low-code, beta Q4 2025
+        │
+Juicebox●  Multi-agent dashboard — sourcing only, jan 2026
+        │
+Eightfold● Digital Twins — treinamento por especialista
+        │
+iCIMS  ●   Agentes pré-built ativáveis, sem editor
+        │
+hireEZ ●   EZ Agent configurável por parâmetros
+        │
+LIA    ●   Tenant override de prompts (técnico, não UI)  ← POSIÇÃO ATUAL
+        │
+v5     ●   Sem personalização por cliente
+        │
+GH/Ashby● Sem studio nativo — integração terceiros
+        ▼
+Menos sofisticado
+```
+
+**O que a LIA precisaria para entrar no Tier 1 (Agent Studio):**
+
+```
+Fase 1 (MVP — 2 sprints):
+├── UI: painel "Configurar Agente" no admin do cliente
+│   └── Campos: nome do agente, tom de voz, domínios ativos, persona
+├── Backend: /api/v1/agents/configure (usa prompt_loader.py existente)
+└── Persistência: tenant_agent_config table
+
+Fase 2 (Produto — 4 sprints):
+├── Criador visual de fluxo (ex: quando candidato passa para triagem → agente envia email)
+├── Galeria de templates pré-construídos por setor
+│   └── Exemplos: "Triagem para vagas de tecnologia", "Sourcing para varejo"
+├── Métricas por agente configurado (taxa de resposta, conversão)
+└── A/B testing de configurações de agente
+
+Fase 3 (Diferencial — roadmap):
+├── Agente de voz (Deepgram já integrado na LIA)
+├── Avatar de entrevista (como Phenom Interview Agent)
+└── Agente de retenção (monitorar sinais de saída proativamente)
+```
+
+**Por que a LIA tem vantagem técnica sobre Phenom/Workday para implementar isso:**
+- `prompt_loader.py` já carrega prompts com override por `tenant_id` — 80% do backend já existe
+- `RecruiterBehaviorService` (Z7-01) já captura perfil do recrutador — pode ser usado para personalizar o agente
+- FairnessGuard embutido — qualquer agente criado pelo cliente passa automaticamente pela fairness check (Phenom não tem isso explícito)
+- LGPD compliance nativo — agentes configurados pelo cliente herdam toda a proteção de dados
+
+---
 
 **Pros LIA:**
 - 23 agentes cobrindo 13 domínios é cobertura funcional completa para ATS enterprise
 - Subagentes Z1 mostram padrão de decomposição correto (supervisor + workers)
 - RecruiterBehaviorService (Z7-01) é o primeiro passo para personalização por persona
+- `prompt_loader.py` com override por tenant é a base técnica para um Agent Studio
 
 **Contras LIA:**
-- Sem "Agent Studio" — clientes não podem criar ou configurar agentes sem código
+- Sem "Agent Studio" com UI — clientes não podem criar ou configurar agentes sem código
+- Para chegar ao nível Phenom X+ Studio: 2–3 quarters de produto dedicado
 
 **Pros v5:**
 - Os 9 subagentes de sourcing são altamente coesos (single responsibility)
@@ -656,6 +1699,7 @@ O v5 **não** cobre: policy/compliance engine, automation rules engine, talent i
 
 **Contras v5:**
 - Sem policy/compliance engine — sem como aplicar regras de negócio por empresa
+- Sem qualquer mecanismo de personalização por cliente
 - Autonomous pode ser "over-used" — se o CostLadder errar o domínio, o autonomous resolve tudo mas com menor precisão
 
 **Recomendação para v5:**
