@@ -132,10 +132,19 @@ class CascadedRouter:
         }
 
     def _init_vector_cache(self):
-        """Inicializa VectorSemanticCache (gracioso — nunca falha na init)."""
+        """Inicializa VectorSemanticCache (gracioso — nunca falha na init).
+
+        Z5-03: respeita ROUTER_VECTOR_CACHE_ENABLED para A/B testing.
+        Threshold injetado via settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD.
+        """
         try:
+            if not settings.ROUTER_VECTOR_CACHE_ENABLED:
+                logger.debug("[CascadedRouter] Tier 3 (vector cache) desabilitado via ROUTER_VECTOR_CACHE_ENABLED=false")
+                return None
             from app.orchestrator.vector_semantic_cache import VectorSemanticCache
-            return VectorSemanticCache()
+            return VectorSemanticCache(
+                similarity_threshold=settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD,
+            )
         except Exception as exc:
             logger.debug("[CascadedRouter] VectorSemanticCache não disponível: %s", exc)
             return None

@@ -44,9 +44,15 @@ class VectorSemanticCache:
 
     def __init__(
         self,
-        similarity_threshold: float = 0.92,
+        similarity_threshold: Optional[float] = None,
         embedding_model: str = _EMBED_MODEL_OPENAI,
     ):
+        if similarity_threshold is None:
+            try:
+                from lia_config.config import settings as _s
+                similarity_threshold = _s.ROUTER_VECTOR_SIMILARITY_THRESHOLD
+            except Exception:
+                similarity_threshold = 0.92
         self.threshold = similarity_threshold
         self.embedding_model = embedding_model
         self._db_available: Optional[bool] = None  # None = não testado ainda
@@ -187,6 +193,14 @@ class VectorSemanticCache:
             LIMIT 1
         """
 
+        # Z5-03: near-miss query para logging — busca o melhor match abaixo do threshold
+        near_miss_sql = """
+            SELECT domain_id, 1 - (message_embedding <=> :embedding::vector) AS similarity
+            FROM routing_cache_vectors
+            ORDER BY message_embedding <=> :embedding::vector
+            LIMIT 1
+        """
+
         try:
             db = await self._get_db()
             async with db as session:
@@ -198,6 +212,29 @@ class VectorSemanticCache:
                 )
                 row = row.fetchone()
                 if row is None:
+                    # Z5-03: logar near-misses para análise de threshold A/B
+                    try:
+                        _near_margin = 0.05
+                        try:
+                            from lia_config.config import settings as _s
+                            _near_margin = _s.ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN
+                        except Exception:
+                            pass
+                        nm_row = await session.execute(
+                            sa_text(near_miss_sql),
+                            {"embedding": vec_str},
+                        )
+                        nm_row = nm_row.fetchone()
+                        if nm_row is not None:
+                            _nm_domain, _nm_sim = nm_row
+                            if _nm_sim >= (self.threshold - _near_margin):
+                                logger.debug(
+                                    "[VectorSemanticCache][near-miss] melhor_sim=%.4f threshold=%.2f "
+                                    "domain=%s — considere reduzir ROUTER_VECTOR_SIMILARITY_THRESHOLD",
+                                    _nm_sim, self.threshold, _nm_domain,
+                                )
+                    except Exception:
+                        pass
                     return None
 
                 row_id, domain_id, confidence, source, hit_count = row

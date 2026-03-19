@@ -1,4 +1,13 @@
-# Shim — real implementation moved to app/domains/policy/agents/ (I3c)
+# Shim de compatibilidade — implementação real em app/domains/policy/agents/ (Z5-02)
+# DEPRECATED: importe diretamente de app.domains.policy.agents.agent
+# Este shim será removido em sprint futura.
+import warnings
+warnings.warn(
+    "app.agents.policy_setup_agent está depreciado. "
+    "Use app.domains.policy.agents.agent.PolicySetupAgent diretamente.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 from app.domains.policy.agents.agent import PolicySetupAgent, policy_setup_agent  # noqa: F401
 from app.domains.policy.agents.stage_context import (  # noqa: F401
     QUESTIONS,

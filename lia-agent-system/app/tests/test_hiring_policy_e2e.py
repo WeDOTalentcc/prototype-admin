@@ -265,23 +265,23 @@ class TestPolicySetupAgentIntents:
     """Test PolicySetupAgent natural language understanding."""
 
     def test_import_agent(self):
-        from app.agents.policy_setup_agent import PolicySetupAgent
+        from app.domains.policy.agents.agent import PolicySetupAgent
         assert PolicySetupAgent is not None
 
     def test_agent_has_required_methods(self):
-        from app.agents.policy_setup_agent import PolicySetupAgent
+        from app.domains.policy.agents.agent import PolicySetupAgent
         agent = PolicySetupAgent.__new__(PolicySetupAgent)
         assert hasattr(agent, 'process_message') or hasattr(agent, 'handle_message') or hasattr(agent, 'run')
 
     def test_extract_number_from_natural_response(self):
-        from app.agents.policy_setup_agent import PolicySetupAgent
+        from app.domains.policy.agents.agent import PolicySetupAgent
         agent = PolicySetupAgent.__new__(PolicySetupAgent)
         if hasattr(agent, '_extract_number'):
             assert agent._extract_number("3 entrevistas") == 3
             assert agent._extract_number("pelo menos 2") == 2
 
     def test_extract_boolean_from_natural_response(self):
-        from app.agents.policy_setup_agent import PolicySetupAgent
+        from app.domains.policy.agents.agent import PolicySetupAgent
         agent = PolicySetupAgent.__new__(PolicySetupAgent)
         if hasattr(agent, '_extract_boolean'):
             assert agent._extract_boolean("sim, com certeza") is True
