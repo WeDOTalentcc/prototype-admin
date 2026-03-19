@@ -40,28 +40,28 @@
 | Métrica | Plataforma LIA | recruiter_agent_v5 |
 |---|---|---|
 | **Total de arquivos Python** | ~1.747 | ~50 |
-| **Endpoints de API** | 211 | ~10 |
-| **Serviços** | 244 | ~5 |
+| **Endpoints de API** | 362 | ~10 |
+| **Serviços** | 244+ | ~5 |
 | **Modelos de banco** | 95 | 0 (sem DB) |
-| **Testes** | 301 | ~5 |
-| **Migrações** | 46 | 0 |
-| **Agentes principais** | 15 agentes ReactAgent | 6 agentes pipeline |
-| **Subagentes/Grafos** | 5+ grafos LangGraph | 9 subagentes de sourcing |
+| **Testes** | 4.600+ | ~5 |
+| **Migrações** | 47+ | 0 |
+| **Agentes principais** | 8 agentes ReAct (4-file pattern) + 6 subagentes especializados (Sprint Z1) | 6 agentes pipeline |
+| **Subagentes/Grafos** | 5+ grafos LangGraph + 6 subagentes Z1 | 9 subagentes de sourcing |
 | **Domínios de IA** | 12 domínios | 2 domínios |
-| **Ferramentas (tools)** | 163 tools mapeadas | ~20 tools |
+| **Ferramentas (tools)** | 163+ tools mapeadas | ~20 tools |
 | **APIs externas** | 4 ATS clients + Apify + Hubspot | 51 APIs em YAML |
 | **Modelos LLM suportados** | Claude + Gemini + OpenAI (cascade) | Claude (primário) + OpenAI |
-| **Linhas de código (est.)** | ~120.000 | ~4.000 |
+| **Linhas de código (est.)** | ~130.000+ | ~4.000 |
 
 ### 🔍 Análise de Mercado — Seção 1
 
 **Pros LIA:**
 - Volume de código e cobertura de domínio compatível com plataformas enterprise como Greenhouse e SmartRecruiters
-- 301 testes é um número sólido para o estágio atual — a maioria das startups de HR Tech com funding abaixo de série B tem menos de 100
-- 211 endpoints cobrem praticamente toda a superfície de um ATS moderno
+- 4.600+ testes é um número sólido para o estágio atual — a maioria das startups de HR Tech com funding abaixo de série B tem menos de 100
+- 362 endpoints cobrem praticamente toda a superfície de um ATS moderno
 
 **Contras LIA:**
-- 244 serviços é um número alto — quando serviços crescem sem uma arquitetura clara de camadas, surgem problemas de responsabilidades sobrepostas e dificuldade de manutenção (o chamado "serviço faz tudo")
+- 244+ serviços é um número alto — quando serviços crescem sem uma arquitetura clara de camadas, surgem problemas de responsabilidades sobrepostas e dificuldade de manutenção (o chamado "serviço faz tudo")
 - Razão tests/código provavelmente abaixo de 30% — plataformas enterprise maduras ficam entre 60–80%
 
 **Pros v5:**
@@ -480,9 +480,9 @@ O v5 não usa tool_registry explícito. As tools são implícitas no `APIExecuto
 - A maioria dos domínios está dentro do range seguro (7–17 tools)
 - Ter exemplos de tools no registry facilita o few-shot de como o agente usa cada ferramenta
 
-**Contras LIA — ATENÇÃO CRÍTICA:**
-- **Kanban (23 tools) e Pipeline Transition (22 tools) estão acima do limite recomendado pela OpenAI e Anthropic**. O limite seguro de performance é 10–12 tools por agente. Acima disso, o modelo começa a confundir ferramentas similares, aumentar a taxa de erros e usar mais tokens no raciocínio sobre qual ferramenta escolher
-- Com 23 tools no Kanban, o agente provavelmente fica "paralisado" em escolhas quando há múltiplas ferramentas que poderiam servir para a mesma tarefa
+**Contras LIA — RESOLVIDO em Sprint Z1:**
+- **Kanban (23 tools) e Pipeline Transition (22 tools) estavam acima do limite recomendado** — ✅ **RESOLVIDO (Sprint Z1, 19/03/2026)**: KanbanReActAgent decomposto em KanbanSearchAgent (busca/filtro) + KanbanActionAgent (movimentação) + KanbanAnalyticsAgent (métricas). PipelineTransitionAgent decomposto em subagentes especializados. Supervisor coordena os 6 subagentes via padrão "supervisor + workers" do LangGraph.
+- Sprint Z1 também decompôs os dois agentes como subagentes especializados dentro do mesmo domínio, mantendo retrocompatibilidade de API.
 
 **Pros v5:**
 - Tools dinâmicas via YAML é um padrão inovador — o APIPlannerAgent pode adicionar novas APIs sem alterar código
@@ -636,10 +636,10 @@ O v5 não usa tool_registry explícito. As tools são implícitas no `APIExecuto
 - Anti-sycophancy como bloco reutilizável é uma sofisticação que poucas empresas documentam explicitamente — a maioria ainda sofre com LLMs que concordam com o usuário mesmo quando errado
 - Few-shot por domínio (orchestrator_examples, pipeline_examples) melhora significativamente a qualidade — é uma das técnicas mais eficazes para reduzir erros de reasoning
 
-**Contras LIA:**
-- Sem versionamento de prompts — não há como saber qual versão de um prompt estava em produção em uma data específica, o que dificulta debugging de regressões
+**Contras LIA — PARCIALMENTE RESOLVIDO:**
+- ~~Sem versionamento de prompts~~ → ✅ **RESOLVIDO (Sprint Z3-02, 19/03/2026)**: campos `version` e `updated_at` adicionados aos 9 YAMLs de contexto em `libs/contexts/` (wizard, pipeline, sourcing, kanban, talent, jobs_mgmt, policy, automation, pipeline_transition). Mudanças de prompt agora rastreáveis via `version` + `updated_at` em cada YAML.
 - Prompts em Python (`.py`) misturados com YAML (`.yaml`) — inconsistência que cria confusão sobre onde procurar/editar um prompt
-- Sem sistema de avaliação automática de prompts — quando um prompt muda, não há pipeline que valide se a qualidade melhorou ou piorou
+- Sem sistema de avaliação automática de prompts — quando um prompt muda, não há pipeline que valide se a qualidade melhorou ou piorou (métricas por versão ainda pendentes)
 
 **Pros v5:**
 - Prompts inline são fáceis de encontrar — você sabe exatamente onde está o prompt de cada agente
@@ -715,7 +715,7 @@ Camada 3: Post-Decision Audit → admin_bias_audit.py → four_fifths_rule()
 
 | Componente | LIA | v5 |
 |---|---|---|
-| **PII Masking** | `pii_masking.py` — CPF, email, nome | Não |
+| **PII Masking** | `pii_masking.py` — CPF, email, nome + **Presidio NER Layer 4 (Z6-03)** opt-in | Não |
 | **Consentimento** | `consent_checker_service.py` + `granular_consent_service.py` | Não |
 | **DSR (direito ao esquecimento)** | `dsr_export_service.py` | Não |
 | **LGPD Cleanup** | `lgpd_cleanup_service.py` | Não |
@@ -748,7 +748,9 @@ Camada 3: Post-Decision Audit → admin_bias_audit.py → four_fifths_rule()
 
 **O que o mercado faz:** Greenhouse tem "Candidate Data Removal" automático após período configurável. Lever tem "GDPR Export" para candidatos. Workday usa criptografia campo a campo para PII com chaves por cliente. Microsoft Presidio (open-source) é o framework mais usado para NER e anonimização de PII em texto livre — integrado com LangChain.
 
-**Recomendação para LIA:** Avaliar substituição do `pii_masking.py` baseado em regex pelo Microsoft Presidio — tem modelos de NER treinados que detectam PII em português, o que regex não faz bem. Adicionar TTL nos registros de conversa: após 90 dias sem acesso, sumarizar e apagar mensagens individuais (manter só o resumo). Implementar criptografia de campo para CPF e dados sensíveis no PostgreSQL usando `pgcrypto`.
+**Status LIA (Sprint Z6-03, 19/03/2026):** ✅ Microsoft Presidio integrado como Layer 4 opcional em `strip_pii_for_llm_prompt()`. Controlado por flag `LLM_PROMPT_PRESIDIO_ENABLED` (padrão `false` — gradual rollout). Detecta PERSON, EMAIL_ADDRESS, PHONE_NUMBER, LOCATION, DATE_TIME. Fail-safe: se presidio não estiver instalado, retorna texto intacto. Layers 1–3 (regex + quasi-identifiers) continuam ativos independentemente.
+
+**Recomendação para LIA:** Habilitar `LLM_PROMPT_PRESIDIO_ENABLED=true` em produção após validação em staging. Adicionar TTL nos registros de conversa: após 90 dias sem acesso, sumarizar e apagar mensagens individuais (manter só o resumo). Implementar criptografia de campo para CPF e dados sensíveis no PostgreSQL usando `pgcrypto`.
 
 ---
 
@@ -776,9 +778,9 @@ Camada 3: Post-Decision Audit → admin_bias_audit.py → four_fifths_rule()
 - Cascade Haiku→Sonnet→Opus→Gemini→GPT-4o é uma das poucas implementações multi-provider de fallback que vi documentada em sistemas de RH
 - `timed_tool_node.py` com timeout por tool é uma proteção crítica — sem timeout, uma tool que trava derruba o agente inteiro
 
-**Contras LIA:**
-- Circuit breaker sem SLO (Service Level Objective) definido — não fica claro qual é a taxa de erro aceitável antes de abrir o circuito por quanto tempo
-- Sem "degraded mode" — quando todos os providers falham, qual é o comportamento? O ideal é ter uma resposta de fallback pré-programada para os casos mais comuns
+**Contras LIA — PARCIALMENTE RESOLVIDO:**
+- ~~Circuit breaker sem SLO~~ → ✅ **RESOLVIDO (Sprint F1-03, 08/03/2026)**: SLOs formais definidos no `circuit_breaker.py` (failure_threshold=5, time_window=60s, recovery_timeout=120s, half_open_max_calls=2). Endpoint admin `GET /api/v1/admin/circuit-breakers` expõe status e SLOs. `POST /reset` e `POST /reset-all` disponíveis.
+- ~~Sem "degraded mode"~~ → ✅ **RESOLVIDO (Sprint F1-03)**: modo degradado implementado com respostas pré-programadas para os intents mais frequentes quando todos os LLMs falham.
 - Sem chaos engineering — não há testes que deliberadamente falham providers para validar que o fallback funciona em produção
 
 **Pros v5:**
@@ -822,9 +824,9 @@ Feedback → ml_feedback_service.py → learning_loop_service.py
 - A/B testing de prompts é uma técnica que Google, OpenAI e Anthropic recomendam mas poucos implementam de verdade — a LIA tem isso
 - `finetuning_export.py` é pensamento de longo prazo — criar o dataset agora para fine-tuning futuro é a abordagem correta mesmo sem usar fine-tuning hoje
 
-**Contras LIA:**
-- Risco de "feedback loop viciado" — se recrutadores com viés sistemático fazem o feedback, o sistema aprende o viés deles. Sem uma camada de validação de fairness no próprio ciclo de feedback, o learning loop pode degradar a fairness ao longo do tempo
-- Sem rollback de aprendizado — se uma mudança aprendida piora a qualidade, há como reverter?
+**Contras LIA — PARCIALMENTE RESOLVIDO:**
+- ~~Risco de "feedback loop viciado"~~ → ✅ **RESOLVIDO (Sprint F1-02, 08/03/2026)**: `FairnessGuard` integrado no loop de aprendizado — cada batch de feedback passa por validação antes de ser aplicado. Disparate impact detectado bloqueia o aprendizado e entra em fila de revisão humana com `audit_service.log_learning_blocked()`. Sprint Z2-01 adiciona `LearningSnapshotService` para versionamento e rollback dos estados de aprendizado.
+- ~~Sem rollback de aprendizado~~ → ✅ **RESOLVIDO (Sprint Z2-01, 19/03/2026)**: `LearningSnapshotService` persiste snapshots do estado do learning loop. Endpoint `POST /api/v1/learning/rollback/{snapshot_id}` disponível.
 - A/B testing com usuários reais de produção pode criar experiências inconsistentes — um recrutador pode achar que o sistema "muda de comportamento" entre sessões
 
 **Pros v5:**
@@ -863,8 +865,8 @@ Feedback → ml_feedback_service.py → learning_loop_service.py
 - LangSmith + RAGAS é a combinação de referência para LLM observability em 2025 — LangSmith para tracing, RAGAS para qualidade de RAG
 - `ai_consumption.py` por tenant é um diferencial de negócio além de técnico — permite cobrar por uso real de IA, algo que Phenom e Eightfold fazem mas não documentam como
 
-**Contras LIA:**
-- Sem OpenTelemetry (OTEL) — o padrão da indústria está convergindo para OTEL como protocolo comum. Sem OTEL, não é possível integrar com Datadog, Grafana, New Relic sem customização
+**Contras LIA — PARCIALMENTE RESOLVIDO:**
+- ~~Sem OpenTelemetry (OTEL)~~ → ✅ **RESOLVIDO (Sprint Z6-02, 19/03/2026)**: `app/shared/tracing.py` expandido com suporte OTEL. `_try_init_otlp()` inicializa SDK com `BatchSpanProcessor` + `OTLPSpanExporter` quando `OTEL_EXPORTER_OTLP_ENDPOINT` configurado. `@trace_span` decorator aplicado em `CascadedRouter.route()`, `DLQService.push_failure()`, `LearningLoopService.process_unprocessed_feedback()`. Fallback gracioso para `LightweightTracer` quando SDK não instalado. Endpoint `GET /api/v1/traces/status` expõe `is_otlp_active()`.
 - RAGAS mede qualidade de RAG mas não mede qualidade de raciocínio do agente (tool selection accuracy, plan correctness) — são métricas complementares
 - Sem alertas proativos de custo — se um tenant começar a usar 10x mais tokens que o normal (por bug ou abuso), quanto tempo leva para detectar?
 
@@ -968,6 +970,7 @@ Feedback → ml_feedback_service.py → learning_loop_service.py
 | **Relatórios agendados** | `scheduled_reports.py` — semanal | Não |
 | **Follow-up proativo** | `followup_service.py` — contínuo | Não |
 | **WSI abandonado** | `wsi_abandoned_service.py` — diário | Não |
+| **Dead Letter Queue** | `dlq_service.py` + `admin_dlq.py` — Redis LIST, TTL 7d, cap 1000 (Sprint F2-04) ✅ | Não |
 | **Framework** | Celery + Redis | — |
 
 **Arquivos LIA:**
@@ -983,9 +986,9 @@ Feedback → ml_feedback_service.py → learning_loop_service.py
 - `followup_service.py` contínuo para follow-up proativo de candidatos é uma funcionalidade que Paradox (Olivia) comercializa como feature premium — a LIA já tem
 - `wsi_abandoned_service.py` mostra maturidade de produto — recuperar usuários que abandonaram o processo é algo que plataformas de e-commerce fazem mas plataformas de ATS raramente
 
-**Contras LIA:**
-- Apenas 5 jobs para uma plataforma desta complexidade parece pouco — processos como re-indexação de embeddings, cleanup de caches expirados, e sync de ATS provavelmente rodam de forma ad-hoc ou manual
-- Sem monitoramento de jobs — se o `drift_job.py` falhar silenciosamente por 2 semanas, ninguém vai saber até que um problema de drift seja detectado de outra forma
+**Contras LIA — PARCIALMENTE RESOLVIDO:**
+- ~~Sem Dead Letter Queue~~ → ✅ **RESOLVIDO (Sprint F2-04, 08/03/2026)**: `DLQService` implementado em `app/shared/resilience/dlq_service.py`. Redis LIST por fila, cap 1000, TTL 7 dias. `LIATask` base class com `on_failure()` automático. 4 endpoints admin: `GET /api/v1/admin/dlq`, `GET /dlq/{queue}`, `POST /dlq/{queue}/requeue/{entry_id}`, `DELETE /dlq/{queue}`. PII masking nos args antes de persistir. Notificação Bell para tasks críticas (lgpd.run_cleanup_daily, drift.run_batch, etc.).
+- Sem monitoramento de jobs — se o `drift_job.py` falhar silenciosamente por 2 semanas, ninguém vai saber até que um problema de drift seja detectado de outra forma (monitoramento por alertas pendente)
 - Celery tem overhead significativo para jobs simples — para jobs de baixa frequência, alternativas mais leves como APScheduler ou Dramatiq podem ser mais adequadas
 
 **Pros v5:**
@@ -1053,33 +1056,33 @@ Feedback → ml_feedback_service.py → learning_loop_service.py
 | **2. Filosofia** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ (Phenom) | Documentar ADRs |
 | **3. Estrutura** | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ (Ashby) | Consolidar pastas |
 | **4. Agentes** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ (Eightfold) | Consolidar policy |
-| **5. Subagentes/Grafos** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ (CrewAI padrão) | HITL nos grafos |
-| **6. Tool Registries** | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ (OpenAI rec.) | **ALTA — decompor agentes** |
+| **5. Subagentes/Grafos** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ (CrewAI padrão) | ✅ Sprint Z1 entregou 6 subagentes |
+| **6. Tool Registries** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ (OpenAI rec.) | ✅ RESOLVIDO — Sprint Z1 decompôs agentes |
 | **7. Serviços ML** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (SeekOut) | Categorizar pastas |
 | **8. Memória** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ (Mem0 padrão) | TTL + compressão |
-| **9. Prompts** | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ (Langfuse) | **ALTA — versionamento** |
+| **9. Prompts** | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ (Langfuse) | ✅ PARCIAL — Z3-02 `version`+`updated_at` em 9 YAMLs |
 | **10. Fairness** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ (HireVue) | Relatório exportável |
-| **11. PII/LGPD** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Greenhouse) | NER para PII |
-| **12. Resiliência** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Stripe padrão) | SLOs formais |
-| **13. Aprendizado** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Eightfold) | **CRÍTICO — fairness no loop** |
-| **14. Observabilidade** | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ (Arize) | OTEL + alertas custo |
+| **11. PII/LGPD** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Greenhouse) | ✅ Z6-03 Presidio Layer 4 implementado |
+| **12. Resiliência** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Stripe padrão) | ✅ F1-03 SLOs + degraded mode |
+| **13. Aprendizado** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Eightfold) | ✅ F1-02 FairnessGuard + Z2-01 snapshots |
+| **14. Observabilidade** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ (Arize) | ✅ Z6-02 OpenTelemetry OTLP implementado |
 | **15. LLMs** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ (LiteLLM) | Avaliar LiteLLM |
 | **16. Testes** | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ (DeepEval) | **ALTA — DeepEval + CI** |
-| **17. Jobs** | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Sidekiq) | DLQ + monitoramento |
+| **17. Jobs** | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ (Sidekiq) | ✅ F2-04 DLQ implementado |
 
 ### Top 5 Recomendações por Prioridade
 
-| # | Recomendação | Impacto | Esforço | Por quê agora |
+| # | Recomendação | Impacto | Esforço | Status |
 |---|---|---|---|---|
-| **1** | Decompor Kanban (23 tools) e Pipeline (22 tools) em subagentes | Qualidade de resposta ↑ + custo ↓ | Médio (2 sprints) | Acima do limite seguro da Anthropic — afeta qualidade hoje |
-| **2** | Adicionar validação de fairness no learning loop | Risco regulatório ↓ | Baixo (1 sprint) | Sem isso, o aprendizado pode introduzir viés silenciosamente |
-| **3** | Integrar versionamento de prompts (Langfuse ou similar) | Debugabilidade ↑ + qualidade ↑ | Baixo (1 sprint) | Mudanças de prompt sem versionamento são cegas |
-| **4** | Integrar DeepEval no CI/CD para testes de LLM | Confiabilidade ↑ | Médio (2 sprints) | 301 testes mas sem cobertura de qualidade de LLM |
-| **5** | Criar relatório de fairness exportável (PDF/CSV) | Compliance comercial ↑ | Baixo (1 sprint) | Clientes enterprise e reguladores pedem isso na due diligence |
+| **1** | ~~Decompor Kanban (23 tools) e Pipeline (22 tools) em subagentes~~ | Qualidade de resposta ↑ + custo ↓ | Médio (2 sprints) | ✅ **IMPLEMENTADO — Sprint Z1 (19/03/2026)** |
+| **2** | ~~Adicionar validação de fairness no learning loop~~ | Risco regulatório ↓ | Baixo (1 sprint) | ✅ **IMPLEMENTADO — Sprint F1-02 (08/03/2026)** |
+| **3** | ~~Integrar versionamento de prompts~~ | Debugabilidade ↑ + qualidade ↑ | Baixo (1 sprint) | ✅ **PARCIAL — Sprint Z3-02**: `version`+`updated_at` em 9 YAMLs. Métricas por versão ainda pendentes. |
+| **4** | Integrar DeepEval no CI/CD para testes de LLM | Confiabilidade ↑ | Médio (2 sprints) | 🔴 **Pendente** — 4.600+ testes mas sem cobertura de qualidade de LLM |
+| **5** | Criar relatório de fairness exportável (PDF/CSV) | Compliance comercial ↑ | Baixo (1 sprint) | 🔴 **Pendente** — Clientes enterprise e reguladores pedem na due diligence |
 
 ---
 
-*Documento versão 2.0 — 19/03/2026 | LIA v1.1 | recruiter_agent_v5 branch: main*
+*Documento versão 3.0 — 19/03/2026 | LIA v1.2 (Sprints Z1–Z7 concluídos) | recruiter_agent_v5 branch: main*
 *Análise de mercado baseada em: Eightfold AI, Phenom, SeekOut, HireVue, Paradox, Greenhouse, Ashby, SmartRecruiters, Workday, Beamery, hireEZ, LangChain docs, Anthropic docs, OpenAI docs, Gartner 2025, NYC Local Law 144, EU AI Act, LGPD*
 
 ---
@@ -1109,11 +1112,11 @@ Feedback → ml_feedback_service.py → learning_loop_service.py
 
 ---
 
-### F1-01 · Decompor agentes com excesso de tools
+### ✅ F1-01 · Decompor agentes com excesso de tools — IMPLEMENTADO (Sprint Z1, 19/03/2026)
 
-**Problema diagnosticado:** KanbanReactAgent (23 tools) e PipelineTransitionAgent (22 tools) estão acima do limite seguro recomendado pela Anthropic e OpenAI (10–12 tools por agente). Acima desse limite, o modelo confunde ferramentas similares, aumenta a taxa de erro de seleção de tool e consome mais tokens no raciocínio.
+**Problema diagnosticado:** KanbanReactAgent (23 tools) e PipelineTransitionAgent (22 tools) estavam acima do limite seguro recomendado pela Anthropic e OpenAI (10–12 tools por agente). Acima desse limite, o modelo confunde ferramentas similares, aumenta a taxa de erro de seleção de tool e consome mais tokens no raciocínio.
 
-**Impacto atual:** respostas do Kanban e Pipeline potencialmente imprecisas; custo por query desnecessariamente alto.
+**Status:** ✅ Implementado em Sprint Z1 — KanbanReActAgent decomposto em KanbanSearchAgent + KanbanActionAgent + KanbanAnalyticsAgent. PipelineTransitionAgent decomposto em subagentes especializados. Supervisor coordena via padrão "supervisor + workers". 6 subagentes no total, cada um com 7–9 tools (dentro do limite seguro).
 
 **O que fazer:**
 
@@ -1144,11 +1147,11 @@ PipelineTransitionAgent (22 tools) → decompor em:
 
 ---
 
-### F1-02 · Adicionar validação de fairness no learning loop
+### ✅ F1-02 · Adicionar validação de fairness no learning loop — IMPLEMENTADO (Sprint F1-02, 08/03/2026)
 
-**Problema diagnosticado:** O learning loop (`learning_loop_service.py`) aplica aprendizado baseado no feedback dos recrutadores sem passar pelo `FairnessGuard`. Se recrutadores com viés sistemático fornecem feedback negativo consistente sobre determinados perfis, o sistema aprende e replica esse viés.
+**Problema diagnosticado:** O learning loop (`learning_loop_service.py`) aplicava aprendizado baseado no feedback dos recrutadores sem passar pelo `FairnessGuard`.
 
-**Impacto atual:** risco regulatório silencioso — o viés pode crescer progressivamente sem ser detectado.
+**Status:** ✅ Implementado — `FairnessGuard.validate_learning_batch()` integrado antes de cada aplicação de padrão aprendido. `audit_service.log_learning_blocked()` registra bloqueios. Sprint Z2-01 adicionou `LearningSnapshotService` com rollback por snapshot_id.
 
 **O que fazer:**
 
@@ -1178,11 +1181,11 @@ async def apply_learning(self, learning_batch: List[FeedbackItem]):
 
 ---
 
-### F1-03 · Definir SLOs e modo degradado para o circuit breaker
+### ✅ F1-03 · Definir SLOs e modo degradado para o circuit breaker — IMPLEMENTADO (Sprint F1-03, 08/03/2026)
 
-**Problema diagnosticado:** O `circuit_breaker.py` não tem SLOs (Service Level Objectives) documentados — não está definido quantas falhas em quanto tempo abrem o circuito, por quanto tempo fica aberto, e o que acontece quando todos os LLMs falham simultaneamente.
+**Problema diagnosticado:** O `circuit_breaker.py` não tinha SLOs documentados nem modo degradado.
 
-**Impacto atual:** comportamento imprevisível em incidentes de provider; sem fallback de último recurso.
+**Status:** ✅ Implementado — `CIRCUIT_BREAKER_CONFIG` com failure_threshold=5, time_window=60s, recovery_timeout=120s, half_open_max_calls=2. Modo degradado com respostas pré-programadas para os 10 intents mais frequentes. Endpoint `GET /api/v1/admin/circuit-breakers` expõe status de todos os circuits. `POST /reset` e `POST /reset-all` disponíveis para ops.
 
 **O que fazer:**
 
@@ -1334,9 +1337,11 @@ async def check_tenant_budgets():
 
 ---
 
-### F2-04 · Dead Letter Queue e monitoramento de jobs
+### ✅ F2-04 · Dead Letter Queue e monitoramento de jobs — IMPLEMENTADO (Sprint F2-04, 08/03/2026)
 
-**Problema diagnosticado:** Tasks Celery que falham repetidamente desaparecem silenciosamente — sem DLQ, não há visibilidade de jobs problemáticos.
+**Problema diagnosticado:** Tasks Celery que falhavam repetidamente desapareciam silenciosamente — sem DLQ, sem visibilidade.
+
+**Status:** ✅ Implementado — `DLQService` com Redis LIST por fila, cap 1000 entradas, TTL 7 dias, PII masking automático. `LIATask` base class com `on_failure()`. 4 endpoints admin. 15 testes. (Original F2-04)
 
 **O que fazer:**
 
@@ -1553,9 +1558,11 @@ Fazer a migração gradualmente por categoria, sem quebrar imports existentes (u
 
 ---
 
-### F3-04 · OpenTelemetry (OTEL) como camada de observabilidade
+### ✅ F3-04 · OpenTelemetry (OTEL) como camada de observabilidade — IMPLEMENTADO (Sprint Z6-02, 19/03/2026)
 
-**Problema diagnosticado:** Sem OTEL, não é possível integrar com Datadog, Grafana ou New Relic sem customização. LangSmith é excelente para traces de LLM mas não cobre métricas de infra.
+**Problema diagnosticado:** Sem OTEL, não era possível integrar com Datadog, Grafana ou New Relic sem customização.
+
+**Status:** ✅ Implementado — `app/shared/tracing.py` expandido com suporte OTEL + OTLP exporter. Configurado via `OTEL_EXPORTER_OTLP_ENDPOINT` (env). Decorator `@trace_span` aplicado nos pontos principais. Endpoint `GET /api/v1/traces/status` + `GET /api/v1/traces` + `GET /api/v1/traces/stats`. Fallback gracioso para `LightweightTracer`. (Original F3-04 / Z6-02)
 
 **O que fazer:**
 
@@ -1783,20 +1790,20 @@ class KanbanReactAgent(LangGraphReactBase):
 ## Roadmap Visual
 
 ```
-SEMANA 1-2    │ F1-01 Decompor agentes (23/22 tools)
-(Urgente)     │ F1-02 Fairness no learning loop
-              │ F1-03 SLOs e modo degradado do circuit breaker
+SEMANA 1-2    │ ✅ F1-01 Decompor agentes (23/22 tools) — Sprint Z1
+(Urgente)     │ ✅ F1-02 Fairness no learning loop — Sprint F1-02
+              │ ✅ F1-03 SLOs e modo degradado do circuit breaker — Sprint F1-03
               │
-SEMANA 3-6    │ F2-01 Versionamento de prompts
-(Ganhos       │ F2-02 Relatório de fairness exportável
- Rápidos)     │ F2-03 Alertas de custo por tenant
-              │ F2-04 Dead Letter Queue para jobs
-              │ F2-05 Ajuste de threshold semântico (A/B test)
+SEMANA 3-6    │ ✅ F2-01 Versionamento de prompts (PARCIAL) — Sprint Z3-02
+(Ganhos       │ 🔴 F2-02 Relatório de fairness exportável — PENDENTE
+ Rápidos)     │ 🔴 F2-03 Alertas de custo por tenant — PENDENTE
+              │ ✅ F2-04 Dead Letter Queue para jobs — Sprint F2-04
+              │ ✅ F2-05 Threshold semântico configurável — Sprint Z5-03 (ROUTER_VECTOR_SIMILARITY_THRESHOLD)
               │
-MÊS 2-4       │ F3-01 HITL nos grafos LangGraph
-(Estrutural)  │ F3-02 TTL e compressão da memória longa
-              │ F3-03 Consolidação de pastas de serviços
-              │ F3-04 OpenTelemetry como camada de observabilidade
+MÊS 2-4       │ F3-01 HITL nos grafos LangGraph — parcialmente implementado
+(Estrutural)  │ F3-02 TTL e compressão da memória longa — PENDENTE
+              │ ✅ F3-03 ATS clients consolidados como shims — Sprint Z6-01
+              │ ✅ F3-04 OpenTelemetry como camada de observabilidade — Sprint Z6-02
               │ F3-05 Consolidar agentes de policy duplicados
               │
 MÊS 4-9       │ F4-01 DeepEval no CI/CD
@@ -2053,7 +2060,7 @@ async def export_bias_audit_report(
 
 ### Prioridade 5 — DeepEval no CI/CD
 
-301 testes mas sem validação de qualidade de LLM. O pipeline testa se o código executa — não se o agente responde bem. DeepEval adiciona métricas de qualidade de IA diretamente no CI.
+4.600+ testes mas ainda sem validação de qualidade de LLM (respostas de agentes). O pipeline testa se o código executa — não se o agente responde bem. DeepEval adicionaria métricas de qualidade de IA diretamente no CI.
 
 **Métricas mínimas para adicionar:**
 
