@@ -1,0 +1,17 @@
+[project]
+name = "lia-models"
+version = "0.1.0"
+description = "LIA SQLAlchemy models (scaffold — migration completa na Phase 6b)"
+requires-python = ">=3.11"
+dependencies = [
+    "lia-config",
+    "sqlalchemy>=2.0.36",
+    "pgvector>=0.3.6",
+]
+
+[tool.uv.sources]
+lia-config = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

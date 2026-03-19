@@ -1,0 +1,19 @@
+[project]
+name = "lia-agents-core"
+version = "0.1.0"
+description = "LIA shared LangGraph agent infrastructure"
+requires-python = ">=3.11"
+dependencies = [
+    "lia-config",
+    "langgraph>=0.2.53",
+    "langchain>=0.3.9",
+    "langchain-anthropic>=0.3.22",
+    "sqlalchemy>=2.0.36",
+]
+
+[tool.uv.sources]
+lia-config = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

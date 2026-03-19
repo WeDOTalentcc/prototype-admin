@@ -1,0 +1,121 @@
+---
+description: Padronização visual DS v4.2.1 — use ao criar ou modificar qualquer componente de UI, tela, modal, botão ou elemento visual. Aplica regra 90/10, tipografia, tokens canônicos, dark mode e acessibilidade WCAG 2.1 AA.
+alwaysApply: false
+---
+
+# Design Standardize — DS v4.2.1
+
+> Referência completa: `plataforma-lia/docs/design-system/00-design-system-v4.md`
+> Tokens TS: `plataforma-lia/src/lib/design-tokens.ts`
+
+> "90% monocromático, 10% acento WeDo. Botões são pretos. Cyan é da LIA."
+
+## Regras Absolutas
+
+- **Primary SEMPRE preto:** `bg-gray-900 text-white` — NUNCA cyan em botões
+- **Cyan `#60BED1`:** apenas brain icon LIA e badges LIA
+- **Border radius:** `rounded-md` (8px) padrão universal — botões/inputs/cards/modais
+- **Sem hex hardcoded:** usar Tailwind grays ou tokens `wedo-*`
+- **Dark mode obrigatório** em todos os componentes
+- **Sem `box-shadow`** — bordas substituem sombras para separação visual
+- **Fonte base 11px** (`text-xs` redefinido no tailwind.config.ts)
+
+## Botões
+
+| Variante | Classes |
+|----------|---------|
+| **Primary** | `bg-gray-900 text-white hover:bg-gray-800 rounded-md font-semibold font-['Open_Sans'] dark:bg-gray-50 dark:text-gray-900` |
+| **Secondary** | `bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-md dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600` |
+| **Ghost** | `bg-transparent text-gray-700 hover:bg-gray-100 rounded-md dark:text-gray-300 dark:hover:bg-gray-800` |
+| **Destructive** | `bg-red-600 text-white hover:bg-red-700 rounded-md` |
+| **Disabled** | `bg-gray-300 text-gray-500 cursor-not-allowed rounded-md` |
+
+## Inputs
+
+```
+w-full px-3 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-md
+hover:border-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/20
+dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600
+```
+- Todo input com `<label htmlFor>` + `id`. Erro: `border-red-500 focus:ring-red-500/20`
+
+## Cards
+
+```
+bg-white border border-gray-200 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-700
+```
+Estrutura: Header `px-6 py-4 border-b` | Body `p-6` | Footer `px-6 py-4 bg-gray-50 border-t`
+
+## Tipografia (2 Fontes)
+
+| Fonte | Proporção | Uso |
+|-------|-----------|-----|
+| **Open Sans** | 60% | UI geral: headers, labels, botões, body, nav |
+| **Inter** | 40% | Dados: métricas, KPIs, números em tabelas |
+
+Escala Open Sans: H1 24px/600 | H2 18px/600 | H3 14px/600 | Body 13px/400 | Label 11px/500
+
+## Cores
+
+**90% Monocromático:**
+- Fundo: `bg-white` / `bg-gray-50` / `bg-gray-100`
+- Texto: `text-gray-900` / `text-gray-800` / `text-gray-600`
+- Borda: `border-gray-200` / `border-gray-300`
+
+**10% Acento WeDo (uso exclusivo):**
+- Cyan `#60BED1` → brain icon LIA, badges LIA
+- Green `#5DA47A` → candidatos, sucesso
+- Orange `#D19960` → urgência
+- Purple `#9860D1` → insights IA
+
+## Dark Mode Tokens
+
+| Token | Light | Dark |
+|-------|-------|------|
+| bg-primary | #FFFFFF | #0F1113 |
+| bg-secondary | #F9FAFB | #1A1D1F |
+| bg-tertiary | #F3F4F6 | #26292B |
+| text-primary | #111827 | #F9FAFB |
+| border-subtle | #E5E7EB | #374151 |
+
+## Badges
+
+```
+inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium border
+```
+Sempre ícone + cor + texto (acessibilidade para daltonismo).
+
+## Acessibilidade (WCAG 2.1 AA)
+
+- `aria-label` em botões ícone
+- `role="dialog" aria-modal="true"` em modais
+- `aria-required` em inputs obrigatórios
+- `aria-live="polite"` em mensagens dinâmicas
+- Contraste mínimo 4.5:1
+- Tab navega, Enter ativa, Esc fecha
+
+## Checklist de Validação
+
+```bash
+# Cyan em botões (PROIBIDO):
+grep -rn "bg-cyan\|bg-\[#60BED1\]" [ARQUIVOS] --include="*.tsx" | grep -i "button\|btn"
+
+# rounded incorreto em botões:
+grep -rn "rounded-sm\|rounded-lg\|rounded-xl" [ARQUIVOS] --include="*.tsx" | grep -i "button\|btn\|input"
+
+# Hex hardcoded:
+grep -rn "#[0-9A-Fa-f]\{6\}" [ARQUIVOS] --include="*.tsx" | grep -v "60BED1\|5DA47A\|D19960\|9860D1\|D160AB\|F59E0B"
+
+# Dark mode ausente:
+grep -L "dark:" [ARQUIVOS] --include="*.tsx"
+```
+
+## Checklist Final
+
+- [ ] Botões: primary preto, cyan apenas ícones LIA
+- [ ] Inputs: labels com htmlFor, focus ring grayscale
+- [ ] Cards: rounded-md, shadow-sm, sem gradientes
+- [ ] Tipografia: Open Sans 60%, Inter 40%
+- [ ] Dark mode: variantes `dark:` em todos os elementos
+- [ ] Acessibilidade: ARIA labels, focus rings, contraste AA
+- [ ] Sem hex hardcoded fora dos 6 acentos WeDo

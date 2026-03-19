@@ -1,0 +1,7 @@
+{
+  "returns_agent_output": true,
+  "message_non_empty": true,
+  "no_error": true,
+  "domain": "pipeline",
+  "company_id": "test-company-001"
+}
