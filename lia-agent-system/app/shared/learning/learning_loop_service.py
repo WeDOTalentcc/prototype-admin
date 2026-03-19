@@ -377,9 +377,44 @@ class LearningLoopService:
                 
                 event.processed_for_learning = True
             
+            # F1-02: FairnessGuard — bloqueia padrões discriminatórios antes de persistir
+            import os as _os
+            if _os.getenv("FAIRNESS_LEARNING_CHECK_ENABLED", "true").lower() != "false":
+                try:
+                    from app.shared.compliance.fairness_guard import FairnessGuard as _FG
+                    _validation = _FG().validate_learning_batch(patterns_to_update)
+                    if not _validation.is_clean:
+                        for _bk in _validation.blocked_patterns:
+                            patterns_to_update.pop(_bk, None)
+                            self.logger.warning(
+                                "[LearningLoop] FairnessGuard bloqueou padrão: %s", _bk
+                            )
+                        # Audit trail (fail-safe)
+                        try:
+                            from app.shared.compliance.audit_service import audit_service
+                            await audit_service.log_decision(
+                                db=db,
+                                company_id=company_id,
+                                agent_name="learning_loop",
+                                decision_type="fairness_check",
+                                action="block_learning_pattern",
+                                decision="blocked",
+                                reasoning=_validation.warnings,
+                                criteria_used=["fairness_guard_layer1", "fairness_guard_layer2"],
+                                criteria_ignored=_validation.blocked_patterns,
+                            )
+                        except Exception as _ae:
+                            self.logger.debug(
+                                "[LearningLoop] audit log falhou (fail-safe): %s", _ae
+                            )
+                except Exception as _fge:
+                    self.logger.debug(
+                        "[LearningLoop] FairnessGuard check falhou (fail-open): %s", _fge
+                    )
+
             for pattern_key, data in patterns_to_update.items():
                 await self._update_pattern(db, company_id, pattern_key, data)
-            
+
             await db.commit()
             
             self.logger.info(

@@ -10,16 +10,18 @@ Acesso restrito a admins (require_admin).
 Referência: app/shared/resilience/circuit_breaker.py
 """
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Path
 
 from app.auth.dependencies import require_admin
 from app.shared.resilience.circuit_breaker import (
     ALL_CIRCUITS,
+    CIRCUIT_BREAKER_SLOS,
     _circuits,
     get_all_circuit_stats,
     get_all_circuits_status,
+    get_degraded_response,
     reset_all_circuits,
     reset_circuit,
 )
@@ -41,20 +43,49 @@ def _get_combined_status() -> Dict[str, Any]:
 
     # Instâncias baseadas em classe
     for name, stats in class_stats.items():
+        slo = CIRCUIT_BREAKER_SLOS.get(name)
         combined[name] = {
             "implementation": "class",
             **stats,
+            "slo": slo,
+            "slo_status": _compute_slo_status(name, stats, slo),
+            "degraded_mode_message": get_degraded_response(name),
         }
 
     # Instâncias funcionais (podem ter nomes diferentes)
     for name, status in functional_status.items():
         if name not in combined:
+            slo = CIRCUIT_BREAKER_SLOS.get(name)
             combined[name] = {
                 "implementation": "functional",
                 **status,
+                "slo": slo,
+                "slo_status": _compute_slo_status(name, status, slo),
+                "degraded_mode_message": get_degraded_response(name),
             }
 
     return combined
+
+
+def _compute_slo_status(name: str, stats: dict, slo: Optional[dict]) -> str:
+    """
+    Calcula se o circuit está dentro do SLO definido.
+    Retorna: 'ok' | 'breached' | 'unknown'
+    """
+    if not slo:
+        return "unknown"
+    # Se o circuit está OPEN, SLO de disponibilidade está sendo violado
+    if stats.get("state") == "open":
+        return "breached"
+    # Se falhas recentes > (1 - availability_target) * total_calls, SLO comprometido
+    total = stats.get("total_calls", 0) or stats.get("total_calls", 0)
+    failed = stats.get("failed_calls", 0) or stats.get("total_failures", 0)
+    if total > 0:
+        error_rate = failed / total
+        budget = 1.0 - slo.get("availability_target", 0.999)
+        if error_rate > budget:
+            return "breached"
+    return "ok"
 
 
 @router.get("", summary="Status de todos os circuit breakers")

@@ -483,6 +483,185 @@ ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
 }
 
 
+# F1-03: SLOs documentados por serviço — usados no admin endpoint e para error budget tracking
+CIRCUIT_BREAKER_SLOS: Dict[str, Dict[str, Any]] = {
+    "anthropic": {
+        "availability_target": 0.999,   # 99.9% → ~43 min downtime/mês
+        "latency_p95_ms": 8000,
+        "error_budget_pct": 0.1,
+        "tier": "critical",
+        "description": "LLM primário — Claude (Anthropic)",
+    },
+    "openai": {
+        "availability_target": 0.999,
+        "latency_p95_ms": 10000,
+        "error_budget_pct": 0.1,
+        "tier": "critical",
+        "description": "LLM alternativo — OpenAI GPT",
+    },
+    "gemini": {
+        "availability_target": 0.995,
+        "latency_p95_ms": 15000,
+        "error_budget_pct": 0.5,
+        "tier": "high",
+        "description": "LLM multimodal — Google Gemini",
+    },
+    "pearch": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 1.0,
+        "tier": "high",
+        "description": "Busca de candidatos — Pearch AI (190M+ perfis)",
+    },
+    "workos": {
+        "availability_target": 0.999,
+        "latency_p95_ms": 3000,
+        "error_budget_pct": 0.1,
+        "tier": "critical",
+        "description": "Autenticação SSO/SCIM — WorkOS",
+    },
+    "merge": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 1.0,
+        "tier": "high",
+        "description": "Conector multi-ATS — Merge.dev",
+    },
+    "google_calendar": {
+        "availability_target": 0.995,
+        "latency_p95_ms": 3000,
+        "error_budget_pct": 0.5,
+        "tier": "medium",
+        "description": "Agendamento — Google Calendar",
+    },
+    "gupy": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 1.0,
+        "tier": "high",
+        "description": "ATS — Gupy",
+    },
+    "pandape": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 1.0,
+        "tier": "high",
+        "description": "ATS — Pandapé",
+    },
+    "stackone": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 1.0,
+        "tier": "medium",
+        "description": "Conector ATS — StackOne",
+    },
+    "sendgrid": {
+        "availability_target": 0.999,
+        "latency_p95_ms": 2000,
+        "error_budget_pct": 0.1,
+        "tier": "critical",
+        "description": "Email transacional — SendGrid",
+    },
+    "resend": {
+        "availability_target": 0.999,
+        "latency_p95_ms": 2000,
+        "error_budget_pct": 0.1,
+        "tier": "high",
+        "description": "Email transacional alternativo — Resend",
+    },
+    "iugu": {
+        "availability_target": 0.995,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 0.5,
+        "tier": "medium",
+        "description": "Pagamentos — Iugu",
+    },
+    "vindi": {
+        "availability_target": 0.995,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 0.5,
+        "tier": "medium",
+        "description": "Pagamentos recorrentes — Vindi",
+    },
+}
+
+# F1-03: respostas de modo degradado — retornadas quando o circuit está OPEN
+# e nenhum fallback específico está disponível
+DEGRADED_MODE_RESPONSES: Dict[str, str] = {
+    "anthropic": (
+        "A assistente LIA está temporariamente indisponível. "
+        "O serviço de IA principal (Anthropic) está com instabilidades. "
+        "Tente novamente em alguns minutos ou contate o suporte."
+    ),
+    "openai": (
+        "O serviço de IA alternativo está temporariamente indisponível. "
+        "Tente novamente em instantes."
+    ),
+    "gemini": (
+        "A análise multimodal está temporariamente indisponível. "
+        "Tente novamente em instantes."
+    ),
+    "pearch": (
+        "A busca de candidatos externos está temporariamente indisponível. "
+        "Você pode buscar na base interna de candidatos enquanto isso."
+    ),
+    "workos": (
+        "O serviço de autenticação está com instabilidades. "
+        "Tente fazer login novamente ou contate o suporte."
+    ),
+    "merge": (
+        "A sincronização com ATS externo está temporariamente indisponível. "
+        "Os dados locais continuam acessíveis."
+    ),
+    "google_calendar": (
+        "O agendamento via Google Calendar está temporariamente indisponível. "
+        "Agende manualmente e tente a sincronização mais tarde."
+    ),
+    "gupy": (
+        "A integração com Gupy está temporariamente indisponível. "
+        "Os dados locais continuam acessíveis."
+    ),
+    "pandape": (
+        "A integração com Pandapé está temporariamente indisponível. "
+        "Os dados locais continuam acessíveis."
+    ),
+    "stackone": (
+        "A integração ATS via StackOne está temporariamente indisponível. "
+        "Os dados locais continuam acessíveis."
+    ),
+    "sendgrid": (
+        "O envio de emails está temporariamente indisponível. "
+        "As mensagens serão reenviadas assim que o serviço for restaurado."
+    ),
+    "resend": (
+        "O serviço de email alternativo está temporariamente indisponível. "
+        "Tente novamente em instantes."
+    ),
+    "iugu": (
+        "O serviço de pagamentos está temporariamente indisponível. "
+        "Tente novamente em alguns minutos ou contate o suporte financeiro."
+    ),
+    "vindi": (
+        "O serviço de pagamentos recorrentes está temporariamente indisponível. "
+        "Tente novamente em alguns minutos."
+    ),
+}
+
+_DEGRADED_FALLBACK = (
+    "Este serviço está temporariamente indisponível. Tente novamente em alguns minutos."
+)
+
+
+def get_degraded_response(service_name: str) -> str:
+    """Retorna mensagem de modo degradado para o circuit dado (F1-03)."""
+    return DEGRADED_MODE_RESPONSES.get(service_name, _DEGRADED_FALLBACK)
+
+
+def get_slo(service_name: str) -> Optional[Dict[str, Any]]:
+    """Retorna a configuração de SLO para o serviço, ou None se não definido (F1-03)."""
+    return CIRCUIT_BREAKER_SLOS.get(service_name)
+
+
 async def with_circuit_breaker(circuit: CircuitBreaker, func: Callable, *args, **kwargs) -> Any:
     """
     Wrapper function to execute a function with circuit breaker protection.

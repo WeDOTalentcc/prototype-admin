@@ -243,6 +243,27 @@ def _ensure_compiled() -> None:
         )
 
 
+# F1-02: campos que NUNCA devem gerar padrões de aprendizado (atributos protegidos)
+_LEARNING_PROTECTED_FIELDS: frozenset = frozenset({
+    "gender", "genero", "gênero", "sex", "sexo",
+    "race", "raca", "raça", "ethnicity", "etnia",
+    "age", "idade", "birth_date", "data_nascimento",
+    "religion", "religiao", "religião",
+    "disability", "deficiencia", "deficiência", "pcd",
+    "nationality", "nacionalidade",
+    "marital_status", "estado_civil",
+    "skin_color", "cor_pele",
+})
+
+
+@dataclass
+class LearningBatchValidationResult:
+    """Resultado da validação de fairness de um batch de padrões aprendidos (F1-02)."""
+    is_clean: bool
+    blocked_patterns: List[str]
+    warnings: List[str] = field(default_factory=list)
+
+
 class FairnessGuard:
     def __init__(self):
         _ensure_compiled()
@@ -446,6 +467,79 @@ class FairnessGuard:
                 confidence=0.5,
                 soft_warnings=implicit_warnings,
             )
+
+    def validate_learning_batch(
+        self,
+        patterns_to_update: Dict[str, Any],
+    ) -> "LearningBatchValidationResult":
+        """
+        Valida um batch de padrões aprendidos antes de persistir no DB (F1-02).
+
+        Verifica duas camadas:
+          - Layer 1: field_name do padrão é atributo protegido (LGPD/EU AI Act)
+          - Layer 2: valores aceitos contêm termos discriminatórios (FairnessGuard L1)
+
+        Args:
+            patterns_to_update: Dict[pattern_key, {values, pattern_type, ...}]
+                                 construído por process_unprocessed_feedback().
+
+        Returns:
+            LearningBatchValidationResult. is_clean=True quando nenhum padrão bloqueado.
+        """
+        blocked: List[str] = []
+        warnings: List[str] = []
+
+        for pattern_key, data in patterns_to_update.items():
+            # pattern_key format: "field_name:role:seniority"
+            field_name = (
+                pattern_key.split(":")[0].lower()
+                if ":" in pattern_key
+                else pattern_key.lower()
+            )
+
+            # Layer 1: campo é atributo protegido
+            if field_name in _LEARNING_PROTECTED_FIELDS:
+                blocked.append(pattern_key)
+                warnings.append(
+                    f"Campo protegido '{field_name}' não pode gerar padrão de aprendizado "
+                    f"(LGPD Art. 11 / EU AI Act Art. 10)"
+                )
+                logger.warning(
+                    "[FairnessGuard] Learning blocked — campo protegido: key=%s field=%s",
+                    pattern_key, field_name,
+                )
+                continue
+
+            # Layer 2: valores aceitos contêm termos discriminatórios
+            for value in data.get("values", []):
+                if not isinstance(value, str) or not value.strip():
+                    continue
+                result = self.check_explicit_bias(value)
+                if result.is_blocked:
+                    blocked.append(pattern_key)
+                    warnings.append(
+                        f"Valor discriminatório em '{field_name}': "
+                        f"categoria={result.category}, termo={result.blocked_terms[:1]}"
+                    )
+                    logger.warning(
+                        "[FairnessGuard] Learning blocked — valor discriminatório: "
+                        "key=%s categoria=%s",
+                        pattern_key, result.category,
+                    )
+                    break
+
+        if blocked and _METRICS_AVAILABLE:
+            try:
+                for _ in blocked:
+                    fairness_blocks_total.labels(category="learning_batch").inc()
+            except Exception:
+                pass
+
+        return LearningBatchValidationResult(
+            is_clean=len(blocked) == 0,
+            blocked_patterns=blocked,
+            warnings=warnings,
+        )
 
     def get_categories(self) -> List[str]:
         return list(DISCRIMINATORY_CATEGORIES.keys())
