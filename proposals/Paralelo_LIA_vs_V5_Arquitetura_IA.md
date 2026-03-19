@@ -1828,4 +1828,337 @@ MÊS 4-9       │ F4-01 DeepEval no CI/CD
 
 *Plano de Otimização LIA — versão 1.0 — 19/03/2026*
 *17 itens distribuídos em 4 fases | Esforço total estimado: ~25 sprints (1 sprint = 1 semana)*
+
+---
+
+---
+
+# Seção 20 — Diagnóstico Estratégico: O que a LIA deve fazer agora
+
+> **Contexto:** Esta seção consolida o diagnóstico gerado a partir da análise comparativa LIA vs. v5, com foco exclusivo em otimizações executáveis dentro da plataforma LIA. O v5 permanece em ambiente separado e não será alterado. As recomendações abaixo derivam do cruzamento entre: (a) o diagnóstico comparativo das 19 seções anteriores, (b) melhores práticas de mercado referenciadas, e (c) análise de prioridade por impacto/esforço.
+>
+> **Data:** 19/03/2026 | **Versão:** 1.0
+
+---
+
+## 20.1 · Pergunta Central Respondida
+
+> **Vale ajustar a LIA para ficar igual à v5?**
+
+**Não globalmente — mas sim em 3 padrões arquiteturais específicos.**
+
+A v5 é um MVP de pesquisa. A LIA é um produto de produção. São categorias incomparáveis em escopo. Puxar a v5 para dentro da LIA de forma ampla regride a plataforma. Contudo, existem 3 padrões estruturais do v5 genuinamente superiores para os casos de uso onde se aplicam — e devem ser adotados cirurgicamente.
+
+---
+
+## 20.2 · O que adotar da v5 na LIA (3 padrões)
+
+### Padrão A — Decomposição de subagentes para sourcing
+
+O v5 implementa `planner → orchestrator → [search, detail, analytics, comparison, report, action]` em paralelo. A LIA tem um `SourcingReActAgent` único com 17 tools.
+
+**O problema concreto:** com 17 tools, o modelo toma decisões subótimas quando há ambiguidade entre ferramentas similares (ex: `search_external` vs `enrich_profile` vs `invite_to_apply`). O Anthropic documenta que acima de 10–12 tools o raciocínio de seleção de ferramenta degrada.
+
+**Arquitetura proposta para a LIA:**
+
+```
+SourcingReActAgent (atual, 17 tools)
+    ↓ decompor em
+SourcingPlannerAgent     → route_to_specialist (1 tool: roteamento)
+    ├── SourcingSearchAgent      → search_external, filter_by_requirements, rank_profiles (4–5 tools)
+    ├── SourcingEnrichAgent      → enrich_profile, fetch_linkedin, fetch_pearch (4 tools)
+    └── SourcingEngagementAgent  → invite_to_apply, send_outreach, follow_up (4–5 tools)
+```
+
+**Arquivos afetados:**
+- `app/domains/sourcing/agents/sourcing_react_agent.py` — refatorar para SourcingPlannerAgent
+- `app/domains/sourcing/agents/sourcing_tool_registry.py` — dividir em 3 registries
+- `app/domains/sourcing/agents/` — criar `sourcing_search_agent.py`, `sourcing_enrich_agent.py`, `sourcing_engagement_agent.py`
+
+**Esforço:** 2 sprints | **Impacto:** qualidade de sourcing ↑, custo por query ↓ ~30%
+
+---
+
+### Padrão B — Decomposição do Kanban e Pipeline Transition (CRÍTICA)
+
+Este é o item com maior impacto imediato em qualidade. 23 tools no Kanban e 22 no Pipeline estão acima do limite seguro da Anthropic. Esses são os agentes mais usados em produção — qualidade ruim aqui impacta o recrutador diariamente.
+
+**Arquitetura proposta:**
+
+```
+KanbanReActAgent (23 tools) → decompor em:
+  KanbanSearchAgent     → search_candidates, filter_stage, get_by_criteria, sort_by_score (5 tools)
+  KanbanActionAgent     → move_candidate, bulk_move, add_to_short_list, add_note, archive (6 tools)
+  KanbanInsightAgent    → get_metrics, funnel_view, time_in_stage, diversity_snapshot (5 tools)
+
+PipelineTransitionAgent (22 tools) → decompor em:
+  PipelineDecisionAgent → evaluate_stage_fit, check_requirements, request_docs, check_consent (6 tools)
+  PipelineActionAgent   → move_candidate, add_note, schedule_interview, reject_with_feedback (6 tools)
+  PipelineNotifyAgent   → notify_candidate, notify_recruiter, trigger_automation, send_gate_feedback (5 tools)
+```
+
+**Arquivos afetados:**
+- `app/domains/recruiter_assistant/agents/kanban_react_agent.py`
+- `app/domains/recruiter_assistant/agents/kanban_tool_registry.py`
+- `app/domains/pipeline/agents/pipeline_transition_agent.py`
+- `app/domains/pipeline/agents/pipeline_tool_registry.py`
+
+**Esforço:** 2 sprints | **Impacto:** qualidade de resposta dos agentes mais críticos ↑ significativamente
+
+---
+
+### Padrão C — Catálogo YAML de APIs externas de sourcing
+
+O v5 tem 51 APIs documentadas em YAML que o APIPlannerAgent lê dinamicamente. A LIA tem ATS clients hard-coded. Para integrações de sourcing externo, o padrão YAML é superior porque:
+
+- Adicionar nova API = criar YAML, sem alterar código Python
+- Auditável por pessoas não-técnicas (RH Ops)
+- Compatível com o `tool_registry_metadata.yaml` que a LIA já implementou (Sprint G5)
+
+**O que fazer:** criar `docs/integrations/apis/sourcing/` com YAMLs para cada fonte externa (Pearch, Apify, futuras APIs de jobboards). O SourcingPlannerAgent usa esse catálogo como contexto para decidir quais fontes consultar.
+
+**Esforço:** 1 sprint | **Impacto:** sourcing externo escalável sem intervenção de engenharia
+
+---
+
+## 20.3 · O que a LIA tem e DEVE manter (não simplificar)
+
+Estes são os diferenciais reais de produto da LIA frente ao mercado. Qualquer tentativa de simplificá-los para "ficar mais parecido com o v5" é um erro estratégico:
+
+| Componente | Por que é diferencial competitivo | Risco se remover |
+|---|---|---|
+| **FairnessGuard 3 camadas (obrigatória)** | HireVue foi multado por não ter isso. NYC LL144 + EU AI Act exigem | Risco regulatório máximo |
+| **WorkingMemory + LongTermMemory** | Nenhum ATS do mercado médio tem. A LIA "lembra" — experiência de produto superior | Regressão de produto |
+| **Learning Loop com A/B testing** | 57% dos produtos de IA em produção não têm (Gartner 2025) | Perde capacidade de melhoria autônoma |
+| **Circuit Breaker + LLM Cascade** | Resiliência enterprise — Haiku→Sonnet→Opus→Gemini→GPT | Sistema para se Claude/OpenAI ficarem fora |
+| **Consentimento granular LGPD** | LGPD art. 7 exige granular. Maioria usa consentimento genérico | Risco jurídico direto |
+| **Drift detection diário** | Sem isso, o modelo degrada silenciosamente sem ninguém perceber | Qualidade se deteriora invisível |
+| **Event Store imutável** | Base para auditoria SOX + direito ao apagamento LGPD | Perde rastreabilidade |
+| **Anti-sycophancy em todos os prompts** | Raríssimo no mercado. Impede que o sistema concorde com viés do recrutador | Volta a comportamento sycophantic |
+
+---
+
+## 20.4 · Débito técnico identificado — priorizado por impacto/esforço
+
+### Prioridade 1 — Decomposição dos agentes com excesso de tools
+**(Kanban 23, Pipeline 22, Sourcing 17) — fazer nas próximas 2 sprints**
+
+Coberto nos Padrões A e B acima e no item F1-01 da Fase 1 deste documento.
+
+---
+
+### Prioridade 2 — Fairness no learning loop (CRÍTICO — risco regulatório)
+
+Atualmente o learning loop aprende com feedback de recrutadores sem validação de viés. Se recrutadores têm viés sistemático, o sistema aprende e amplifica esse viés silenciosamente.
+
+**Solução:**
+
+```python
+# app/shared/learning/learning_loop_service.py
+async def apply_learning(feedback_batch: List[FeedbackSignal]) -> ApplyResult:
+    new_behavior = compute_adjustments(feedback_batch)
+
+    # VALIDAÇÃO DE FAIRNESS ANTES DE APLICAR
+    fairness_check = await fairness_guard.evaluate_behavior_change(
+        current=current_behavior,
+        proposed=new_behavior,
+        dimensions=["gender", "age_group", "disability", "region"]
+    )
+
+    if fairness_check.has_disparate_impact:
+        await audit_service.log_decision(
+            decision_type="learning_blocked",
+            reason=fairness_check.violations,
+            proposed_change=new_behavior
+        )
+        return ApplyResult(applied=False, reason="fairness_violation")
+
+    # snapshot antes de aplicar (permite rollback)
+    await snapshot_service.save(tag=f"pre_learning_{datetime.utcnow().isoformat()}")
+    await template_learning_service.apply(new_behavior)
+    return ApplyResult(applied=True)
+```
+
+**Arquivos afetados:**
+- `app/shared/learning/learning_loop_service.py` — adicionar validação
+- `app/shared/compliance/fairness_guard.py` — adicionar `evaluate_behavior_change()`
+- Novo: `app/shared/learning/learning_snapshot_service.py` — snapshots para rollback
+
+**Esforço:** 1 sprint | **Impacto:** risco regulatório ↓ significativamente; aprendizado não degrada fairness
+
+---
+
+### Prioridade 3 — Versionamento de prompts
+
+Atualmente mudanças de prompt são invisíveis: não há como saber qual versão estava ativa em uma data específica, impossibilitando debugging de regressões de qualidade.
+
+**Solução imediata (zero custo, 1 sprint):** padronizar campos `version` e `updated_at` em todos os YAMLs de prompt:
+
+```yaml
+# app/prompts/domains/kanban_system_prompt.yaml
+version: "1.3.0"
+updated_at: "2026-03-19"
+updated_by: "sprint-z3"
+changelog: "Adicionado contexto de perfil do recrutador"
+prompt: |
+  Você é um assistente especializado em gestão de pipeline de candidatos...
+```
+
+**Solução robusta (Langfuse self-hosted, 2 sprints):** plataforma open-source de gerenciamento de prompts com versionamento automático, diff entre versões, A/B testing de variantes e métricas de qualidade por versão. Já tem integração nativa com LangSmith (que a LIA usa).
+
+**Arquivos afetados:**
+- Todos os arquivos em `app/prompts/` — adicionar campos de metadados
+- `app/shared/prompts/loader.py` — registrar versão ativa no LangSmith ao carregar
+
+**Esforço:** 1 sprint (básico) / 2 sprints (Langfuse) | **Impacto:** debugging de regressões possível; mudanças de prompt rastreáveis
+
+---
+
+### Prioridade 4 — Relatório de fairness exportável
+
+O `bias_audit_service.py` já calcula tudo (Four-Fifths Rule em 4 dimensões). Falta apenas gerar o relatório em formato que auditores externos possam consumir.
+
+**Solução:**
+
+```python
+# app/api/v1/bias_audit.py — novo endpoint
+@router.get("/bias-audit/job/{job_id}/export")
+async def export_bias_audit_report(
+    job_id: str,
+    format: Literal["pdf", "csv", "json"] = "pdf",
+    company_id: str = Header(..., alias="X-Company-ID"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Gera relatório exportável de auditoria de fairness.
+    Formato compatível com NYC Local Law 144 e EU AI Act.
+    """
+    audit_data = await bias_audit_service.get_full_audit(job_id, company_id, db)
+    snapshot_history = await bias_audit_service.get_snapshot_history(job_id, db)
+    return await report_generator.generate(
+        audit_data, snapshot_history, format=format,
+        include_sections=["four_fifths_rule", "disparate_impact", "eeoc_compliance",
+                          "dimension_breakdown", "historical_trend", "methodology"]
+    )
+```
+
+**Arquivos afetados:**
+- `app/api/v1/bias_audit.py` — novo endpoint `/export`
+- Novo: `app/services/bias_audit_report_generator.py` — gerador PDF/CSV
+- `src/app/api/backend-proxy/bias-audit/[job_id]/export/route.ts` — proxy FE
+
+**Esforço:** 1 sprint | **Impacto comercial direto:** requisito em contratos enterprise e licitações públicas
+
+---
+
+### Prioridade 5 — DeepEval no CI/CD
+
+301 testes mas sem validação de qualidade de LLM. O pipeline testa se o código executa — não se o agente responde bem. DeepEval adiciona métricas de qualidade de IA diretamente no CI.
+
+**Métricas mínimas para adicionar:**
+
+```python
+# tests/llm_quality/test_agents_quality.py
+import pytest
+from deepeval import evaluate
+from deepeval.metrics import HallucinationMetric, FaithfulnessMetric, BiasMetric
+
+@pytest.mark.llm_quality
+class TestAgentQuality:
+
+    def test_kanban_no_hallucination(self, kanban_test_cases):
+        metric = HallucinationMetric(threshold=0.1)  # máximo 10% de alucinação
+        evaluate(test_cases=kanban_test_cases, metrics=[metric])
+
+    def test_wsi_faithfulness(self, wsi_test_cases):
+        # respostas do WSI devem ser fiéis ao conteúdo do CV
+        metric = FaithfulnessMetric(threshold=0.85)
+        evaluate(test_cases=wsi_test_cases, metrics=[metric])
+
+    def test_pipeline_no_bias(self, pipeline_test_cases):
+        metric = BiasMetric(threshold=0.05)
+        evaluate(test_cases=pipeline_test_cases, metrics=[metric])
+```
+
+**Pipeline CI (`.github/workflows/ci.yml`):** adicionar job `llm-quality-tests` com schedule semanal (não a cada commit — controle de custo) e threshold de falha configurável.
+
+**Esforço:** 2 sprints | **Impacto:** qualidade de resposta dos agentes monitorada automaticamente; regressões detectadas antes de chegarem a produção
+
+---
+
+## 20.5 · O que NÃO fazer (armadilhas identificadas)
+
+| Tentação | Por que é errada | Alternativa correta |
+|---|---|---|
+| Tornar a LIA stateless "para simplificar" | A memória é diferencial de produto — candidatos e recrutadores esperam que o sistema lembre | Manter WorkingMemory + LongTermMemory; adicionar TTL e compressão (F3-02) |
+| Reduzir FairnessGuard para 1 camada | As 3 camadas são o que garante compliance regulatório proativo vs. reativo | Manter 3 camadas; adicionar relatório exportável (Prioridade 4) |
+| Colapsar os 12 domínios em menos agentes | A separação garante system prompts especializados e tool sets enxutos | Manter domínios; decompor agentes *dentro* dos domínios que têm excess de tools |
+| Migrar llm_factory.py para LiteLLM agora | Risco de regressão alto; LiteLLM é ganho marginal dado que factory já funciona | Avaliar LiteLLM após Sprint Z4, quando as prioridades 1–5 estiverem resolvidas |
+| Simplificar o cascade de 6 tiers | Cada tier tem função específica; remover um cria buraco de cobertura | Ajustar threshold semântico (F2-05) sem remover tiers |
+
+---
+
+## 20.6 · Plano de Execução — Sprints Z1–Z4
+
+Estas sprints complementam e refinam o roadmap F1–F4 já definido neste documento, com foco na sequência de execução otimizada:
+
+```
+Sprint Z1 (Semanas 1–2) — Agentes Críticos
+──────────────────────────────────────────
+Z1-01  Decomposição KanbanReActAgent (23 → 3 subagentes)
+       KanbanSearchAgent + KanbanActionAgent + KanbanInsightAgent
+Z1-02  Decomposição PipelineTransitionAgent (22 → 3 subagentes)
+       PipelineDecisionAgent + PipelineActionAgent + PipelineNotifyAgent
+Z1-03  Testes de regressão: validar que decomposição não quebra comportamentos existentes
+
+Sprint Z2 (Semanas 3–4) — Fairness e Qualidade
+───────────────────────────────────────────────
+Z2-01  Fairness no learning loop + snapshots para rollback
+Z2-02  Decomposição SourcingReActAgent (17 → 3 subagentes, padrão v5)
+       SourcingPlannerAgent + SourcingSearchAgent + SourcingEnrichAgent + SourcingEngagementAgent
+Z2-03  Catálogo YAML de APIs externas de sourcing (docs/integrations/apis/sourcing/)
+
+Sprint Z3 (Semanas 5–6) — Compliance e Visibilidade
+────────────────────────────────────────────────────
+Z3-01  Relatório de fairness exportável (PDF/CSV) — endpoint + gerador + proxy FE
+Z3-02  Versionamento de prompts: campos version/updated_at em todos os YAMLs + loader
+Z3-03  Alertas de custo por tenant (complementa F2-03)
+
+Sprint Z4 (Semanas 7–8) — Robustez
+───────────────────────────────────
+Z4-01  DeepEval integrado no CI/CD (3 métricas: hallucination, faithfulness, bias)
+Z4-02  TTL + compressão na LongTermMemory (episódios >30 dias → resumo via LLM)
+Z4-03  SLOs formais para circuit breaker + modo degradado (complementa F1-03)
+```
+
+---
+
+## 20.7 · Scorecard Atualizado — Antes e Depois das Sprints Z1–Z4
+
+| Dimensão | Score Antes | Score Após Z1–Z4 | O que muda |
+|---|---|---|---|
+| **Tool Registries / Agentes** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Kanban + Pipeline + Sourcing decompostos (Z1, Z2) |
+| **Fairness** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐+ | Loop validado + relatório exportável (Z2, Z3) |
+| **Sourcing** | ⭐⭐⭐ | ⭐⭐⭐⭐ | Subagentes especializados + catálogo YAML (Z2) |
+| **Prompts** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Versionamento rastreável (Z3) |
+| **Testes de IA** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | DeepEval com métricas de qualidade de LLM (Z4) |
+| **Memória** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | TTL + compressão reduz custo DB (Z4) |
+| **Resiliência** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | SLOs formais + modo degradado documentado (Z4) |
+| **Compliance comercial** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Relatório exportável para due diligence enterprise (Z3) |
+
+---
+
+## 20.8 · Síntese Estratégica
+
+A LIA está arquiteturalmente à frente do v5 em praticamente todas as dimensões que importam para produção: multi-tenancy, fairness obrigatória, memória persistente, learning loop, resiliência, LGPD. **O v5 tem superioridade em exatamente um ponto: a decomposição de subagentes especializados para tarefas de alta paralelismo.** Esse padrão deve ser adotado nos 3 agentes com excesso de tools (Kanban, Pipeline, Sourcing).
+
+O restante das melhorias identificadas é débito técnico interno da LIA — não inspirado pelo v5, mas mapeado pelo diagnóstico comparativo com as melhores práticas de mercado. A execução das Sprints Z1–Z4 (complementando o roadmap F1–F4 já planejado) posiciona a LIA como a plataforma de R&S com IA mais completa e regulatoriamente segura do mercado brasileiro de médio e grande porte.
+
+**Gap mais estratégico a resolver após Z1–Z4:** os 9 subagentes de sourcing do v5 têm acesso a 51 APIs externas que a LIA não cobre. Investigar quais dessas APIs são relevantes para o mercado brasileiro e criar o catálogo YAML correspondente é a próxima fronteira de expansão do sourcing externo da LIA (F4-03).
+
+---
+
+*Diagnóstico Estratégico — versão 1.0 — 19/03/2026*
+*Elaborado com base na análise comparativa das 19 seções anteriores + melhores práticas de mercado*
+*Sprints Z1–Z4 complementam e refinam o Plano de Otimização F1–F4 (versão 1.0)*
 *Todos os itens são não-destrutivos — sem breaking changes em produção*
