@@ -21,7 +21,7 @@ dependencies = [
     "langchain-google-vertexai==2.0.8",
     "langgraph==0.2.53",
     "langgraph-checkpoint-postgres==2.0.8",
-    "langsmith==0.2.5",
+    "langsmith>=0.2.6,<0.3.0",
     # Async & Queue
     "celery==5.4.0",
     "redis==5.2.0",
