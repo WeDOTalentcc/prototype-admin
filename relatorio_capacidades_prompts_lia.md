@@ -65,7 +65,7 @@ Execute cada comando no diretório raiz do projeto backend (`lia-agent-system/` 
 | B1 | Circuit breakers em providers | `grep -r "circuit_breaker_decorator\|@circuit" app/ --include="*.py" -l` | ≥ 8 arquivos: openai, gemini, gupy, pandape, sendgrid, resend, pearch, workos |
 | B2 | Fallback LLM chain | `grep -r "FALLBACK_ORDER\|llm_cascade\|LLMCascade" app/ --include="*.py"` | Deve ter lista `["claude", "gemini", "openai"]` ou equivalente |
 | B3 | Token budget por tenant | `grep -r "TokenBudget\|token_budget\|MONTHLY_LIMIT" app/ --include="*.py"` | Deve existir serviço + Redis tracking por `company_id` |
-| B4 | Celery beat schedules | `grep -r "beat_schedule" . --include="*.py"` | ≥ 8 entradas: drift, lgpd, briefing, followup, wsi-abandoned, ragas, routing, agent-registry, rag-rebuild, ml-feedback; **DLQ** via `process_dlq_task` (F2-04) |
+| B4 | Celery beat schedules | `grep -r "beat_schedule" . --include="*.py"` | ≥ 8 entradas: drift, lgpd, briefing, followup, wsi-abandoned, ragas, routing, agent-registry, rag-rebuild, ml-feedback; **DLQ** via `process_dlq_task` (F2-04); **RecruiterBehavior** via `compute_behavior_profiles_task` (Z7-01) |
 | B5 | Rate limiting | `grep -r "RateLimiter\|rate_limit\|rate_limiter" app/ --include="*.py"` | Deve existir middleware por tenant |
 | B6 | Multi-tenant em models | `grep -r "company_id" app/models/ --include="*.py" -l` | ≥ 20 models com `company_id` column |
 
@@ -90,6 +90,7 @@ Execute cada comando no diretório raiz do projeto backend (`lia-agent-system/` 
 | D2 | Confidence calibration | `grep -r "record_confidence\|confidence_action" app/ --include="*.py" -l` | ≥ 8 arquivos — todos os agentes principais |
 | D3 | Model drift detection | `grep -r "drift_service\|run_drift_check\|ModelDrift" app/ --include="*.py"` | Service + Celery task + beat schedule diário |
 | D4 | WSI assíncrono | `grep -r "WsiSession\|wsi_async\|wsi_invite_token" app/ --include="*.py"` | Model com status enum + service + endpoint |
+| D5 | OpenTelemetry tracing (Z6-02) | `grep -r "OTEL_TRACES_ENABLED\|trace_span\|LightweightTracer" app/ --include="*.py"` | tracing.py com suporte OTLP + @trace_span em Router, DLQ e LearningLoop; fallback gracioso se lib não instalada |
 
 ### Interpretação dos Resultados
 
@@ -100,7 +101,7 @@ PASS em B1–B6        → Resiliência OK
 FAIL em B1 (circuits) → ALTO RISCO — providers externos sem proteção
 PASS em C1–C8        → Inteligência completa (diferencial competitivo)
 FAIL em C            → GAP funcional — priorizar por impacto no produto
-PASS em D1–D4        → Observabilidade OK
+PASS em D1–D5        → Observabilidade OK
 FAIL em D            → Risco operacional — sem visibilidade em produção
 ```
 
@@ -900,10 +901,10 @@ LOADER → COLLECTOR → ROUTER
 **Diferença do PolicyReActAgent (2.7):** O PolicyReActAgent gerencia políticas existentes (CRUD, consulta, validação), enquanto o PolicySetupAgent foca no onboarding inicial com wizard guiado.
 
 **Localização canônica (Z5-02):**
-- **Canônico:** `app/domains/recruiter_assistant/agents/policy_setup_agent.py`
-- **Shim (deprecado):** `app/agents/policy_setup_agent.py` — re-exporta do canônico com `DeprecationWarning`
+- **Canônico:** `app/domains/policy/agents/agent.py` → classe `PolicySetupAgent`
+- **Shim (deprecado):** `app/agents/policy_setup_agent.py` — re-exporta de `app.domains.policy.agents.agent.PolicySetupAgent` com `DeprecationWarning`
 
-> A partir do Sprint Z5-02, o arquivo `app/agents/policy_setup_agent.py` é apenas um shim de compatibilidade retroativa. Todo código novo deve importar de `app/domains/recruiter_assistant/agents/policy_setup_agent.py`.
+> A partir do Sprint Z5-02, o arquivo `app/agents/policy_setup_agent.py` é apenas um shim de compatibilidade retroativa. Todo código novo deve importar de `app.domains.policy.agents.agent.PolicySetupAgent` diretamente.
 
 ---
 
@@ -5253,7 +5254,7 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 
 | Arquivo (shim) | Canônico | Sprint |
 |----------------|----------|--------|
-| `lia-agent-system/app/agents/policy_setup_agent.py` | `app/domains/recruiter_assistant/agents/policy_setup_agent.py` | Z5-02 |
+| `lia-agent-system/app/agents/policy_setup_agent.py` | `app/domains/policy/agents/agent.py` (classe `PolicySetupAgent`) | Z5-02 |
 | `lia-agent-system/app/domains/ats_integration/services/ats_clients/gupy.py` | `app/services/ats_clients/gupy.py` | Z6-01 |
 | `lia-agent-system/app/domains/ats_integration/services/ats_clients/pandape.py` | `app/services/ats_clients/pandape.py` | Z6-01 |
 | `lia-agent-system/app/domains/ats_integration/services/ats_clients/stackone.py` | `app/services/ats_clients/stackone.py` | Z6-01 |
@@ -5428,10 +5429,14 @@ Baseado nos 242 itens do Compliance Health Check e nas 13 Crenças do WeDO Talen
 | Arquivo | Responsabilidade |
 |---------|-----------------|
 | `lia-agent-system/app/domains/ats_integration/services/ats_sync_service.py` | Serviço de sincronização bidirecional |
-| `lia-agent-system/app/domains/ats_integration/services/ats_clients/gupy.py` | Client ATS Gupy |
-| `lia-agent-system/app/domains/ats_integration/services/ats_clients/pandape.py` | Client ATS Pandapé |
-| `lia-agent-system/app/domains/ats_integration/services/ats_clients/stackone.py` | Client ATS StackOne (unificado) |
-| `lia-agent-system/app/domains/ats_integration/services/ats_clients/merge.py` | Client ATS Merge (unificado) |
+| `lia-agent-system/app/services/ats_clients/gupy.py` | **[CANÔNICO — Z6-01]** Client ATS Gupy |
+| `lia-agent-system/app/services/ats_clients/pandape.py` | **[CANÔNICO — Z6-01]** Client ATS Pandapé |
+| `lia-agent-system/app/services/ats_clients/stackone.py` | **[CANÔNICO — Z6-01]** Client ATS StackOne (unificado) |
+| `lia-agent-system/app/services/ats_clients/merge.py` | **[CANÔNICO — Z6-01]** Client ATS Merge (unificado) |
+| `lia-agent-system/app/domains/ats_integration/services/ats_clients/gupy.py` | **[SHIM — Z6-01]** Re-exporta de `app/services/ats_clients/gupy.py` com `DeprecationWarning` |
+| `lia-agent-system/app/domains/ats_integration/services/ats_clients/pandape.py` | **[SHIM — Z6-01]** Re-exporta de `app/services/ats_clients/pandape.py` |
+| `lia-agent-system/app/domains/ats_integration/services/ats_clients/stackone.py` | **[SHIM — Z6-01]** Re-exporta de `app/services/ats_clients/stackone.py` |
+| `lia-agent-system/app/domains/ats_integration/services/ats_clients/merge.py` | **[SHIM — Z6-01]** Re-exporta de `app/services/ats_clients/merge.py` |
 
 ### 34.19 Comunicação Multi-Canal
 
@@ -5966,8 +5971,16 @@ grep -r "ANTI_SYCOPHANCY" app/shared/agents/system_prompts/ --include="*.py"
 - `app/orchestrator/intent_router.py` — `IntentRouter` com few-shot examples T3
 - `app/orchestrator/semantic_cache.py` — cache de classificações anteriores (Redis TTL 1h)
 
+**Knobs de configuração do Tier 1 — Cache Semântico (Z5-03):**
+
+| Variável de Ambiente | Padrão | Descrição |
+|---------------------|--------|-----------|
+| `ROUTER_VECTOR_SIMILARITY_THRESHOLD` | `0.92` | Score mínimo cosine similarity para cache hit |
+| `ROUTER_VECTOR_CACHE_ENABLED` | `true` | Habilita/desabilita o cache semântico vetorial |
+| `ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN` | `0.05` | Margem abaixo do threshold para logar near-misses |
+
 **Tiers:**
-1. Cache semântico (embedding similarity > `ROUTER_VECTOR_SIMILARITY_THRESHOLD`, default `0.92` — configurável via env, Z5-03)
+1. Cache semântico (embedding similarity > `ROUTER_VECTOR_SIMILARITY_THRESHOLD`, default `0.92` — configurável via env, Z5-03; habilitável via `ROUTER_VECTOR_CACHE_ENABLED`; near-misses logados quando similarity > threshold − `ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN`)
 2. Regras explícitas (keywords exatas)
 3. Embeddings locais (sem LLM)
 4. LLM classificador (Claude Haiku — barato)
