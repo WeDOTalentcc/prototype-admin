@@ -631,6 +631,12 @@ app.include_router(admin_agents_router, prefix="/api/v1")
 from app.api.v1.admin_dlq import router as admin_dlq_router
 app.include_router(admin_dlq_router, prefix="/api/v1")
 
+from app.api.v1.traces import router as traces_router
+app.include_router(traces_router, prefix="/api/v1")
+
+from app.api.v1.recruiter_behavior import router as recruiter_behavior_router
+app.include_router(recruiter_behavior_router, prefix="/api/v1")
+
 from app.api.v1.salary_benchmark import router as salary_benchmark_router
 app.include_router(salary_benchmark_router, prefix="/api/v1", tags=["salary-benchmark"])
 

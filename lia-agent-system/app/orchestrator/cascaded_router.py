@@ -22,6 +22,7 @@ from datetime import datetime
 from app.orchestrator.fast_router import FastRouter, FastRouteResult
 from app.orchestrator.semantic_cache import SemanticCache
 from app.core.config import settings
+from app.shared.tracing import trace_span
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +154,7 @@ class CascadedRouter:
         normalized = message.lower().strip()
         return hashlib.md5(normalized.encode()).hexdigest()
 
+    @trace_span("router.route", attributes={"component": "cascaded_router"})
     async def route(
         self,
         message: str,

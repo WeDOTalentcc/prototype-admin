@@ -22,6 +22,8 @@ import statistics
 from sqlalchemy import select, func, and_, or_, update, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.tracing import trace_span
+
 logger = logging.getLogger(__name__)
 
 
@@ -321,6 +323,7 @@ class LearningLoopService:
         
         return await self.capture_feedback(db, capture)
     
+    @trace_span("learning.process_feedback", attributes={"component": "learning_loop"})
     async def process_unprocessed_feedback(
         self,
         db: AsyncSession,

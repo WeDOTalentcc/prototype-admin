@@ -108,6 +108,11 @@ class LLMSettings(BaseSettings):
     LANGCHAIN_API_KEY: Optional[str] = None
     LANGCHAIN_PROJECT: str = "lia-agent-system"
 
+    # Z6-02: OpenTelemetry / OTLP
+    OTEL_SERVICE_NAME: str = "lia-agent-system"
+    OTEL_EXPORTER_OTLP_ENDPOINT: str = ""  # ex: http://jaeger:4318 — vazio = desabilitado
+    OTEL_TRACES_ENABLED: bool = True
+
 
 # ---------------------------------------------------------------------------
 # 5. Audit Storage (Phase 1)

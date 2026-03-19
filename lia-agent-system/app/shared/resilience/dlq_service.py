@@ -20,6 +20,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from app.shared.tracing import trace_span
+
 logger = logging.getLogger(__name__)
 
 DLQ_TTL_SECONDS = 7 * 24 * 3600  # 7 dias
@@ -74,6 +76,7 @@ class DLQService:
         DEL  /api/v1/admin/dlq/{queue}
     """
 
+    @trace_span("dlq.push_failure", attributes={"component": "dlq_service"})
     async def push_failure(
         self,
         task_name: str,

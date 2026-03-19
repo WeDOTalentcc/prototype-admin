@@ -2,25 +2,38 @@
 Distributed Tracing with OpenTelemetry.
 
 Provides instrumentation helpers for tracing agent workflows,
-domain routing, and LLM calls. Currently uses console exporter
-for development; production would use OTLP exporters.
+domain routing, and LLM calls.
 
-Note: Full OpenTelemetry SDK is optional. This module provides
-lightweight span tracking that works without the SDK installed.
+Exporters (em ordem de preferência):
+  1. OpenTelemetry SDK com OTLP exporter (quando SDK instalado e OTEL_EXPORTER_OTLP_ENDPOINT configurado)
+  2. LightweightTracer interno — compatível, zero dependências
+
+Configuração via env vars:
+  OTEL_SERVICE_NAME              — nome do serviço (padrão: lia-agent-system)
+  OTEL_EXPORTER_OTLP_ENDPOINT   — ex: http://jaeger:4318 (ativa OTLP export)
+  OTEL_TRACES_ENABLED            — true/false (padrão: true)
+
+Cobertura de traces (Z6-02):
+  - CascadedRouter.route() → span "router.route"
+  - DLQService.push_failure() → span "dlq.push_failure"
+  - LearningLoopService.process_unprocessed_feedback() → span "learning.process_feedback"
+  - AgentChatWS handle → span "ws.agent_chat"
+  - ReAct loop _act() → span "react.act"
 
 Usage:
     from app.shared.tracing import trace_span, get_tracer
-    
+
     @trace_span("domain.execute", attributes={"domain": "job_management"})
     async def execute_action(...):
         ...
-    
+
     # Or manual spans:
     tracer = get_tracer()
     async with tracer.start_span("custom.operation") as span:
         span.set_attribute("key", "value")
         ...
 """
+import os
 import time
 import uuid
 import logging
@@ -135,6 +148,65 @@ class LightweightTracer:
 
 _tracer: Optional[LightweightTracer] = None
 
+# Z6-02: flag global para desabilitar tracing (ex: testes)
+_TRACES_ENABLED = os.environ.get("OTEL_TRACES_ENABLED", "true").lower() == "true"
+
+
+# ---------------------------------------------------------------------------
+# Z6-02: OTLP Exporter — tentativa de integração com OpenTelemetry SDK real
+# ---------------------------------------------------------------------------
+
+_otel_tracer_provider = None  # OTel TracerProvider quando SDK disponível
+
+
+def _try_init_otlp() -> bool:
+    """Tenta inicializar OTLP exporter com o OpenTelemetry SDK.
+
+    Retorna True se inicializado com sucesso, False caso contrário.
+    Falha graciosamente — nunca propaga exceção.
+    """
+    global _otel_tracer_provider
+    endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT", "")
+    if not endpoint:
+        return False
+    try:
+        from opentelemetry import trace as otel_trace
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from opentelemetry.sdk.resources import Resource
+
+        service_name = os.environ.get("OTEL_SERVICE_NAME", "lia-agent-system")
+        resource = Resource.create({"service.name": service_name})
+        provider = TracerProvider(resource=resource)
+        exporter = OTLPSpanExporter(endpoint=f"{endpoint.rstrip('/')}/v1/traces")
+        provider.add_span_processor(BatchSpanProcessor(exporter))
+        otel_trace.set_tracer_provider(provider)
+        _otel_tracer_provider = provider
+        logger.info("[TRACING] OTLP exporter ativado: endpoint=%s service=%s", endpoint, service_name)
+        return True
+    except ImportError:
+        logger.debug("[TRACING] opentelemetry-sdk não instalado — usando LightweightTracer")
+        return False
+    except Exception as exc:
+        logger.debug("[TRACING] OTLP init falhou (gracioso): %s", exc)
+        return False
+
+
+# Tenta inicializar OTLP na importação do módulo
+_otlp_active = _try_init_otlp()
+
+
+def _get_otel_tracer(name: str = "lia-agent-system"):
+    """Retorna tracer OpenTelemetry real se SDK disponível, None caso contrário."""
+    if not _otlp_active or _otel_tracer_provider is None:
+        return None
+    try:
+        from opentelemetry import trace as otel_trace
+        return otel_trace.get_tracer(name)
+    except Exception:
+        return None
+
 
 def get_tracer(service_name: str = "lia-agent-system") -> LightweightTracer:
     global _tracer
@@ -147,9 +219,27 @@ def trace_span(
     name: str,
     attributes: Optional[Dict[str, Any]] = None,
 ):
+    """Decorador que cria um span para a função async decorada.
+
+    Usa OTLP/OTel SDK se disponível, LightweightTracer como fallback.
+    Noop quando OTEL_TRACES_ENABLED=false.
+    """
     def decorator(func: Callable):
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
+            if not _TRACES_ENABLED:
+                return await func(*args, **kwargs)
+            # Tenta OTel SDK primeiro
+            otel = _get_otel_tracer()
+            if otel is not None:
+                try:
+                    with otel.start_as_current_span(name) as span:
+                        for k, v in (attributes or {}).items():
+                            span.set_attribute(k, str(v))
+                        return await func(*args, **kwargs)
+                except Exception:
+                    pass  # fall through to lightweight tracer
+            # Fallback: LightweightTracer
             tracer = get_tracer()
             async with tracer.start_span(name, attributes=attributes) as span:
                 for key, value in (attributes or {}).items():
@@ -166,7 +256,12 @@ def get_recent_traces(limit: int = 50) -> list:
 
 def get_trace_stats() -> Dict[str, Any]:
     if not _completed_spans:
-        return {"total_spans": 0, "active_spans": len(_active_spans)}
+        return {
+            "total_spans": 0,
+            "active_spans": len(_active_spans),
+            "otlp_active": _otlp_active,
+            "traces_enabled": _TRACES_ENABLED,
+        }
 
     durations = [s["duration_ms"] for s in _completed_spans]
     errors = sum(1 for s in _completed_spans if s["status"] == "error")
@@ -179,4 +274,6 @@ def get_trace_stats() -> Dict[str, Any]:
         "avg_duration_ms": round(sum(durations) / len(durations), 2),
         "max_duration_ms": round(max(durations), 2),
         "min_duration_ms": round(min(durations), 2),
+        "otlp_active": _otlp_active,
+        "traces_enabled": _TRACES_ENABLED,
     }

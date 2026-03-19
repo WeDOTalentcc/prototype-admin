@@ -125,10 +125,12 @@ _LLM_PROMPT_PII_PATTERNS: List[Tuple[Pattern, str]] = [
 def strip_pii_for_llm_prompt(text: str) -> str:
     """Remove PII e quasi-identificadores de texto antes de enviar ao LLM.
 
-    Aplica 2 camadas:
+    Aplica até 4 camadas:
       - Layer 1: Regex direto (CPF, email, telefone, RG, CNPJ)
       - Layer 3 basic: Quasi-identificadores (ano de formatura, idade explícita,
         referências de endereço)
+      - Layer 4: NER via Microsoft Presidio (opt-in, requer LLM_PROMPT_PRESIDIO_ENABLED=true
+        e pacote presidio-analyzer instalado)
 
     Controlado pela env LLM_PROMPT_PII_STRIPPING_ENABLED (padrão: true).
 
@@ -141,6 +143,78 @@ def strip_pii_for_llm_prompt(text: str) -> str:
     if not _LLM_PROMPT_PII_STRIPPING_ENABLED or not text:
         return text
     result = text
+    # Layer 1 + Layer 3: regex patterns
     for pattern, replacement in _LLM_PROMPT_PII_PATTERNS:
         result = pattern.sub(replacement, result)
+    # Layer 4: Presidio NER (opt-in)
+    result = _presidio_layer4_strip(result)
     return result
+
+
+_PRESIDIO_ENABLED = _os.environ.get("LLM_PROMPT_PRESIDIO_ENABLED", "false").lower() == "true"
+
+_presidio_analyzer_instance = None  # lazy singleton
+
+
+def _get_presidio_analyzer():
+    """Retorna AnalyzerEngine do Presidio (lazy, fail-safe)."""
+    global _presidio_analyzer_instance
+    if _presidio_analyzer_instance is not None:
+        return _presidio_analyzer_instance
+    try:
+        from presidio_analyzer import AnalyzerEngine
+        _presidio_analyzer_instance = AnalyzerEngine()
+        logging.getLogger(__name__).info("[PII-L4] Presidio AnalyzerEngine carregado")
+    except ImportError:
+        logging.getLogger(__name__).debug(
+            "[PII-L4] presidio_analyzer não instalado — Layer 4 desabilitada. "
+            "Instale com: pip install presidio-analyzer"
+        )
+        _presidio_analyzer_instance = None
+    except Exception as exc:
+        logging.getLogger(__name__).debug("[PII-L4] Presidio init falhou: %s", exc)
+        _presidio_analyzer_instance = None
+    return _presidio_analyzer_instance
+
+
+# Entidades Presidio a remover (subconjunto relevante para currículos BR)
+_PRESIDIO_ENTITIES = [
+    "PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "LOCATION",
+    "DATE_TIME", "NRP",  # NRP = nationality/religion/political group
+]
+
+
+def _presidio_layer4_strip(text: str) -> str:
+    """Aplica NER Presidio para remover entidades PII não capturadas por regex.
+
+    Fail-safe: retorna texto original em qualquer erro ou se Presidio não disponível.
+    """
+    if not _PRESIDIO_ENABLED or not text:
+        return text
+    try:
+        analyzer = _get_presidio_analyzer()
+        if analyzer is None:
+            return text
+        results = analyzer.analyze(
+            text=text,
+            entities=_PRESIDIO_ENTITIES,
+            language="pt",
+        )
+        if not results:
+            # Tentar fallback em inglês (currículos em inglês)
+            results = analyzer.analyze(
+                text=text,
+                entities=_PRESIDIO_ENTITIES,
+                language="en",
+            )
+        if not results:
+            return text
+        # Substituir de trás para frente para preservar índices
+        redacted = list(text)
+        for r in sorted(results, key=lambda x: x.start, reverse=True):
+            placeholder = f"[{r.entity_type} REMOVIDO]"
+            redacted[r.start:r.end] = list(placeholder)
+        return "".join(redacted)
+    except Exception as exc:
+        logging.getLogger(__name__).debug("[PII-L4] Presidio strip falhou (fail-safe): %s", exc)
+        return text
