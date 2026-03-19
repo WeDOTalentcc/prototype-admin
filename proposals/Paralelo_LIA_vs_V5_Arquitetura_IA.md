@@ -1546,6 +1546,1966 @@ end
 
 ---
 
+## 🤖 Parte 3 — Como Cada Tipo de Agente do Mercado Funciona e Como Construir na WeDOTalent
+
+> Baseado em leitura real dos arquivos de `lia-agent-system/` e `recruiter_agent_v5` (GitHub WeDOTalent).
+> Para cada padrão: mecanismo técnico do mercado → UI do concorrente → precificação → implementação LIA com código → implementação v5 com código.
+
+---
+
+### Agente Tipo 1 — Digital Twins (Eightfold Project Andromeda)
+
+#### Como o Eightfold implementa tecnicamente
+
+Um **Digital Twin** no Eightfold é um agente que imita o raciocínio de um especialista humano interno (SME — Subject Matter Expert). O processo de criação tem 3 fases:
+
+```
+FASE 1 — CAPTURA DE CONHECIMENTO (1-2 semanas com o especialista)
+├── Entrevistas gravadas com o SME (recrutador sênior, gestor de área)
+│   └── Pergunta-padrão: "Por que você aprovou esse candidato?"
+├── Histórico de decisões do especialista no ATS (últimos 12 meses)
+│   ├── Aprovações: quais perfis viraram contratação
+│   └── Rejeições: quais perfis foram descartados e por quê
+├── Documentos produzidos pelo SME
+│   ├── Scorecard de vagas anteriores
+│   ├── Emails de feedback para candidatos
+│   └── Notas de entrevista
+└── Output: corpus de ~500-2000 exemplos rotulados
+
+FASE 2 — INDEXAÇÃO DO CORPUS (automático, horas)
+├── Cada exemplo vira um embedding de 768d (text-embedding-gecko)
+├── Armazenado em pgvector com metadados:
+│   ├── decision: "approved" | "rejected"
+│   ├── reasoning: texto livre do SME
+│   ├── candidate_profile: JSON resumido
+│   └── job_context: título, área, nível
+└── Resultado: base vetorial do twin = "cérebro" do especialista
+
+FASE 3 — AGENTE TWIN (runtime)
+├── Input: novo candidato + vaga
+├── RAG: busca os K=5 exemplos mais similares no corpus do twin
+├── Few-shot prompt:
+│   "[SME Name] costuma aprovar perfis como: {exemplos_recuperados}
+│    [SME Name] costuma rejeitar perfis como: {exemplos_rejeitados}
+│    Avalie este candidato: {perfil_atual}"
+└── Output: score + justificativa no estilo do SME
+```
+
+#### UI do Eightfold — Como aparece para o cliente
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Eightfold AI — Project Andromeda                    [+ Novo Twin]│
+├─────────────────────────────────────────────────────────────────┤
+│  Seus Digital Twins                                              │
+│  ┌─────────────────────────┐  ┌─────────────────────────┐      │
+│  │ 👤 Ana Costa            │  │ 👤 Pedro Oliveira        │      │
+│  │ Gerente de Eng. Sênior  │  │ Especialista Comercial   │      │
+│  │ ★★★★★ 94% precisão    │  │ ★★★★☆ 87% precisão    │      │
+│  │ 312 decisões indexadas  │  │ 189 decisões indexadas   │      │
+│  │ Vagas: Backend, Data    │  │ Vagas: Sales, CS         │      │
+│  │ [Usar] [Ver raciocínio] │  │ [Usar] [Treinar mais]   │      │
+│  └─────────────────────────┘  └─────────────────────────┘      │
+│                                                                  │
+│  Criar novo Twin:                                                │
+│  1. Selecione o especialista ──────────────── [Ana Costa ▾]     │
+│  2. Período de histórico ──────────────────── [12 meses ▾]     │
+│  3. Áreas de vaga ─────────────── [Tecnologia] [+ Adicionar]   │
+│  4. Importar documentos ──────────────────── [Arrastar aqui]   │
+│  [Iniciar treinamento do Twin →]                                │
+└─────────────────────────────────────────────────────────────────┘
+
+Quando o recrutador usa o twin em uma vaga:
+┌─────────────────────────────────────────────────────────────────┐
+│  Candidato: Maria Souza  │  Twin: Ana Costa                     │
+├─────────────────────────────────────────────────────────────────┤
+│  Score Twin: 87/100  ▓▓▓▓▓▓▓▓▓░░                              │
+│                                                                  │
+│  💭 Raciocínio da Ana:                                          │
+│  "Perfil muito similar ao João Silva (contratado em ago/24).    │
+│   Os 6 anos em Python distribuído e a experiência com           │
+│   sistemas de alta escala compensam a ausência de              │
+│   graduação formal. Recomendo entrevista técnica."              │
+│                                                                  │
+│  📊 Exemplos que embasaram:                                     │
+│  ✅ João Silva (contratado) — 94% similar                       │
+│  ✅ Carla Lima (contratada) — 89% similar                       │
+│  ❌ Rafael Torres (rejeitado) — 78% similar                     │
+│                                                                  │
+│  [Aceitar recomendação] [Ver exemplos] [Discordar + feedback]  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Precificação do Eightfold (Digital Twins)
+
+| Modelo | Valor | Estrutura |
+|---|---|---|
+| **Plataforma base** | $150K–$500K/ano | Enterprise license, negociado |
+| **Twin por especialista** | Incluído na licença | Até X twins conforme tier |
+| **Overage de indexação** | ~$0.10–0.30/documento indexado | Acima da cota contratada |
+| **Inferência (uso do twin)** | Incluída | Pooled compute |
+| **Modelo de venda** | Direto enterprise, mínimo 1.000 funcionários | Sem self-serve |
+
+#### Como construir na LIA — Digital Twins
+
+**Arquivos que já existem e servem de base:**
+- `app/services/gemini_voice_service.py` — transcrição de entrevistas gravadas com o SME
+- `app/domains/sourcing/services/pgv_analyzer.py` — análise de candidatos via pgvector
+- `app/domains/sourcing/services/es_analyzer.py` — busca híbrida (pgvector + ES)
+- `app/shared/prompts/prompt_registry.py` — versionamento de prompts (o "prompt do twin")
+
+**Passo LIA-Twin-1: Tabela de corpus do twin**
+
+```sql
+-- Migration: create_digital_twins
+CREATE TABLE digital_twins (
+    id              BIGSERIAL PRIMARY KEY,
+    company_id      BIGINT      NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    twin_name       VARCHAR(128) NOT NULL,  -- "Ana Costa - Eng. Sênior"
+    sme_user_id     BIGINT      REFERENCES users(id),
+    specialties     TEXT[]      DEFAULT '{}',  -- ["backend", "data", "cloud"]
+    decision_count  INT         DEFAULT 0,
+    accuracy_pct    NUMERIC(5,2),
+    is_active       BOOLEAN     DEFAULT true,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE twin_decisions (
+    id              BIGSERIAL PRIMARY KEY,
+    twin_id         BIGINT      NOT NULL REFERENCES digital_twins(id) ON DELETE CASCADE,
+    decision        VARCHAR(16) NOT NULL CHECK (decision IN ('approved','rejected','maybe')),
+    reasoning       TEXT        NOT NULL,  -- texto do SME explicando a decisão
+    candidate_snapshot  JSONB,            -- snapshot do perfil no momento da decisão
+    job_snapshot        JSONB,            -- snapshot da vaga
+    embedding       vector(768),          -- embedding do reasoning+perfil combinados
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_twin_decisions_embedding
+    ON twin_decisions USING ivfflat (embedding vector_cosine_ops) WITH (lists = 50);
+CREATE INDEX idx_twin_decisions_twin ON twin_decisions(twin_id, decision);
+```
+
+**Passo LIA-Twin-2: `TwinKnowledgeIndexer` — captura de corpus**
+
+Criar `lia-agent-system/app/services/twin_knowledge_indexer.py`:
+
+```python
+"""
+TwinKnowledgeIndexer — constrói o corpus de conhecimento de um Digital Twin.
+
+Fontes de dados:
+  1. Transcrições de entrevistas (gemini_voice_service.py já faz isso)
+  2. Histórico de decisões no ATS (aprovações/rejeições com reasoning)
+  3. Documentos uploadados (scorecards, emails de feedback)
+"""
+import json
+import logging
+from typing import List, Dict, Any, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+from app.services.gemini_voice_service import GeminiVoiceService
+from app.shared.providers.llm_factory import get_llm
+
+logger = logging.getLogger(__name__)
+
+
+class TwinKnowledgeIndexer:
+
+    def __init__(self):
+        self._voice_svc = None
+        self._embedding_fn = None
+
+    @property
+    def voice_svc(self) -> GeminiVoiceService:
+        if self._voice_svc is None:
+            self._voice_svc = GeminiVoiceService()
+        return self._voice_svc
+
+    async def index_from_ats_history(
+        self,
+        twin_id: int,
+        company_id: str,
+        months_back: int = 12,
+        db: AsyncSession = None,
+    ) -> int:
+        """
+        Indexa histórico de decisões do ATS para o twin.
+        Busca aprovações e rejeições com reasoning do recrutador.
+
+        Returns: número de decisões indexadas
+        """
+        from app.models.job_application import JobApplication
+        from app.models.digital_twin import TwinDecision
+
+        # Buscar decisões com reasoning no ATS
+        # (depende da estrutura do modelo Rails — adaptar conforme schema)
+        result = await db.execute(
+            select(JobApplication).where(
+                JobApplication.company_id == company_id,
+                JobApplication.reviewer_notes.isnot(None),
+            ).limit(2000)
+        )
+        applications = result.scalars().all()
+
+        indexed = 0
+        for app in applications:
+            decision = self._map_status_to_decision(app.status)
+            if not decision:
+                continue
+
+            # Combinar perfil + reasoning para embedding
+            text_for_embedding = (
+                f"Decisão: {decision}\n"
+                f"Cargo: {app.job_title}\n"
+                f"Perfil: {json.dumps(app.candidate_snapshot or {})}\n"
+                f"Raciocínio: {app.reviewer_notes}"
+            )
+            embedding = await self._embed(text_for_embedding)
+
+            twin_decision = TwinDecision(
+                twin_id=twin_id,
+                decision=decision,
+                reasoning=app.reviewer_notes or "",
+                candidate_snapshot=app.candidate_snapshot,
+                job_snapshot={"title": app.job_title},
+                embedding=embedding,
+            )
+            db.add(twin_decision)
+            indexed += 1
+
+        await db.commit()
+        logger.info("[TwinIndexer] twin=%d indexed %d decisions", twin_id, indexed)
+        return indexed
+
+    async def index_from_audio(
+        self, twin_id: int, audio_bytes: bytes, db: AsyncSession
+    ) -> str:
+        """
+        Transcreve entrevista gravada com o SME e indexa o raciocínio.
+        Usa GeminiVoiceService (já integrado na LIA).
+        """
+        # 1. Transcrever áudio — serviço já existe na LIA
+        transcription = await self.voice_svc.transcribe_audio(
+            audio_bytes, "audio/mp4", "pt-BR"
+        )
+
+        # 2. Extrair decisões e reasonings do transcript via LLM
+        llm = get_llm(tier="default")
+        extract_prompt = f"""
+        A seguir é a transcrição de uma entrevista onde um especialista de RH
+        explica suas decisões sobre candidatos. Extraia cada decisão como JSON:
+        
+        Transcrição: {transcription.text}
+        
+        Retorne um array JSON:
+        [
+          {{
+            "candidato_mencionado": "Nome ou descrição",
+            "decisao": "approved|rejected|maybe",
+            "raciocinio": "Texto explicativo do especialista"
+          }}
+        ]
+        Responda APENAS com o JSON, sem texto adicional.
+        """
+        response = await llm.ainvoke(extract_prompt)
+        decisions = json.loads(response.content)
+
+        # 3. Indexar cada decisão extraída
+        indexed = 0
+        for d in decisions:
+            text_for_embedding = f"Decisão: {d['decisao']}\nRaciocínio: {d['raciocinio']}"
+            embedding = await self._embed(text_for_embedding)
+
+            from app.models.digital_twin import TwinDecision
+            db.add(TwinDecision(
+                twin_id=twin_id,
+                decision=d["decisao"],
+                reasoning=d["raciocinio"],
+                embedding=embedding,
+            ))
+            indexed += 1
+
+        await db.commit()
+        return f"Transcrição indexada: {indexed} decisões extraídas"
+
+    async def _embed(self, text: str) -> List[float]:
+        """Gera embedding de 768d. Reutiliza padrão do pgv_analyzer da LIA."""
+        try:
+            from app.domains.sourcing.services.pgv_analyzer import get_text_embedding
+            return await get_text_embedding(text)
+        except Exception as e:
+            logger.warning("[TwinIndexer] embedding falhou: %s", e)
+            return []
+
+    @staticmethod
+    def _map_status_to_decision(status: str) -> Optional[str]:
+        APPROVED = {"hired", "offer_accepted", "passed_interview", "shortlisted"}
+        REJECTED = {"rejected", "disqualified", "failed_screening", "declined"}
+        if status in APPROVED:
+            return "approved"
+        if status in REJECTED:
+            return "rejected"
+        return None
+
+
+twin_indexer = TwinKnowledgeIndexer()
+```
+
+**Passo LIA-Twin-3: `TwinInferenceService` — agente twin em runtime**
+
+```python
+"""
+TwinInferenceService — avalia candidatos usando o raciocínio de um Digital Twin.
+
+Fluxo:
+  1. Recebe candidato + vaga
+  2. Busca K=5 exemplos mais similares no corpus do twin (pgvector)
+  3. Monta few-shot prompt com os exemplos
+  4. LLM gera score + reasoning no estilo do especialista
+"""
+import json
+import logging
+from dataclasses import dataclass
+from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TwinEvaluation:
+    twin_id: int
+    twin_name: str
+    score: int                    # 0-100
+    decision: str                 # "approved" | "rejected" | "maybe"
+    reasoning: str                # texto no estilo do SME
+    supporting_examples: List[dict]  # exemplos do corpus que embasaram
+
+
+class TwinInferenceService:
+
+    async def evaluate(
+        self,
+        twin_id: int,
+        candidate_profile: dict,
+        job_context: dict,
+        k: int = 5,
+        db: AsyncSession = None,
+    ) -> TwinEvaluation:
+        """
+        Avalia candidato usando o twin. Retorna score + raciocínio do especialista.
+        """
+        # 1. Gerar embedding do candidato atual
+        candidate_text = (
+            f"Cargo: {job_context.get('title')}\n"
+            f"Perfil: {json.dumps(candidate_profile)}"
+        )
+        from app.domains.sourcing.services.pgv_analyzer import get_text_embedding
+        query_embedding = await get_text_embedding(candidate_text)
+
+        # 2. Buscar exemplos similares no corpus do twin via pgvector
+        examples = await self._retrieve_similar_examples(twin_id, query_embedding, k, db)
+
+        # 3. Separar aprovados de rejeitados para o few-shot
+        approved_ex = [e for e in examples if e["decision"] == "approved"][:3]
+        rejected_ex = [e for e in examples if e["decision"] == "rejected"][:2]
+
+        # 4. Buscar metadados do twin
+        from app.models.digital_twin import DigitalTwin
+        from sqlalchemy import select
+        result = await db.execute(select(DigitalTwin).where(DigitalTwin.id == twin_id))
+        twin = result.scalar_one()
+
+        # 5. Montar few-shot prompt
+        approved_block = "\n".join(
+            f"  - Perfil aprovado: {e['candidate_snapshot']}\n"
+            f"    Raciocínio: \"{e['reasoning']}\""
+            for e in approved_ex
+        ) or "  (sem exemplos aprovados ainda)"
+
+        rejected_block = "\n".join(
+            f"  - Perfil rejeitado: {e['candidate_snapshot']}\n"
+            f"    Raciocínio: \"{e['reasoning']}\""
+            for e in rejected_ex
+        ) or "  (sem exemplos rejeitados ainda)"
+
+        prompt = f"""
+Você é {twin.twin_name}, especialista em recrutamento.
+Com base no seu histórico de decisões:
+
+PERFIS QUE VOCÊ COSTUMA APROVAR:
+{approved_block}
+
+PERFIS QUE VOCÊ COSTUMA REJEITAR:
+{rejected_block}
+
+Agora avalie este candidato para a vaga de {job_context.get('title')}:
+{json.dumps(candidate_profile, ensure_ascii=False, indent=2)}
+
+Responda com JSON:
+{{
+  "score": <0-100>,
+  "decision": "approved|rejected|maybe",
+  "reasoning": "<seu raciocínio em primeira pessoa, máx 3 frases>"
+}}
+"""
+        from app.shared.providers.llm_factory import get_llm
+        llm = get_llm(tier="default")
+        response = await llm.ainvoke(prompt)
+        result = json.loads(response.content)
+
+        return TwinEvaluation(
+            twin_id=twin_id,
+            twin_name=twin.twin_name,
+            score=result["score"],
+            decision=result["decision"],
+            reasoning=result["reasoning"],
+            supporting_examples=examples,
+        )
+
+    async def _retrieve_similar_examples(
+        self, twin_id: int, embedding: List[float], k: int, db: AsyncSession
+    ) -> List[dict]:
+        """Busca K exemplos mais similares no corpus do twin via pgvector."""
+        result = await db.execute(
+            f"""
+            SELECT decision, reasoning, candidate_snapshot,
+                   1 - (embedding <=> '{embedding}'::vector) AS similarity
+            FROM twin_decisions
+            WHERE twin_id = {twin_id}
+              AND embedding IS NOT NULL
+            ORDER BY embedding <=> '{embedding}'::vector
+            LIMIT {k}
+            """
+        )
+        rows = result.fetchall()
+        return [
+            {
+                "decision": r[0],
+                "reasoning": r[1],
+                "candidate_snapshot": r[2] or {},
+                "similarity": round(float(r[3]), 3),
+            }
+            for r in rows
+        ]
+
+
+twin_inference = TwinInferenceService()
+```
+
+**Passo LIA-Twin-4: Endpoint API**
+
+```python
+# app/api/v1/digital_twins.py
+from fastapi import APIRouter, Depends, UploadFile, File, Header
+from app.auth.dependencies import require_admin
+from app.core.database import get_db
+from app.services.twin_knowledge_indexer import twin_indexer
+from app.services.twin_inference import twin_inference
+
+router = APIRouter(prefix="/digital-twins", tags=["Digital Twins"])
+
+@router.post("")
+async def create_twin(body: CreateTwinRequest, x_company_id=Header(..., alias="X-Company-ID"),
+                      _user=Depends(require_admin), db=Depends(get_db)):
+    """Cria um Digital Twin para um especialista."""
+    # Cria registro + dispara indexação do histórico ATS em background
+    twin_id = await _create_twin_record(body, x_company_id, db)
+    await twin_indexer.index_from_ats_history(twin_id, x_company_id, body.months_back, db)
+    return {"twin_id": twin_id, "status": "indexing"}
+
+@router.post("/{twin_id}/index-audio")
+async def index_audio(twin_id: int, file: UploadFile = File(...),
+                      db=Depends(get_db), _user=Depends(require_admin)):
+    """Indexa entrevista gravada com o SME."""
+    audio = await file.read()
+    msg = await twin_indexer.index_from_audio(twin_id, audio, db)
+    return {"status": "ok", "message": msg}
+
+@router.post("/{twin_id}/evaluate")
+async def evaluate_candidate(twin_id: int, body: EvaluateRequest,
+                             db=Depends(get_db)):
+    """Avalia candidato usando o Digital Twin."""
+    evaluation = await twin_inference.evaluate(
+        twin_id, body.candidate_profile, body.job_context, db=db
+    )
+    return {"evaluation": evaluation}
+```
+
+**Implementar no v5:** o v5 tem `TenantMemoryStore` com pgvector 768d e TTL — a tabela `tenant_memories` já é exatamente o que precisamos para o corpus do twin. Adicionar categoria `"twin_decision"` e campo `source_action = "twin:{twin_id}"`. O `RAGService` do v5 já implementa busca híbrida pgvector + keyword — reutilizar diretamente.
+
+| Componente | LIA | v5 |
+|---|---|---|
+| Embedding | `pgv_analyzer.get_text_embedding()` | `EmbeddingService` + `RAGService` |
+| Armazenamento vetorial | Criar `twin_decisions` table | Reutilizar `tenant_memories` (adicionar categoria "twin") |
+| Transcrição | `GeminiVoiceService.transcribe_audio()` | Adicionar `audio_transcription_service.py` já existe no v5 |
+| Inference | `TwinInferenceService` (criar) | Criar `src/services/twin_inference.py` |
+
+**Esforço estimado:** 3 sprints (LIA) · 2.5 sprints (v5 — reutiliza mais)
+
+---
+
+### Agente Tipo 2 — Multi-Agent de Sourcing por Vaga (Juicebox Agents 2.0)
+
+#### Como o Juicebox implementa tecnicamente
+
+O modelo do Juicebox é "**N agentes em paralelo, um por vaga**". Cada agente é uma instância isolada com:
+
+```
+ESTRUTURA DE UM JUICEBOX AGENT (por vaga)
+├── identity: {agent_id, job_id, job_title, criado_em}
+├── search_strategy: critérios base extraídos da vaga (skills, senioridade, local)
+├── outreach_config: templates de email, cadência (dia 1, dia 3, dia 7)
+├── learning_state:
+│   ├── positive_signals: [{candidato_id, o_que_gostei}] ← feedback "aprovar"
+│   ├── negative_signals: [{candidato_id, por_que_rejeitar}] ← feedback "rejeitar"
+│   └── calibration_version: int  ← incrementa a cada recalibração
+└── performance:
+    ├── profiles_viewed: int
+    ├── emails_sent: int
+    ├── replies_received: int
+    └── conversion_rate: float
+
+CICLO DE VIDA DO AGENTE
+Day 0: Criação → extrai critérios da JD → configura estratégia inicial
+Day 1-N:
+  ├── Busca perfis (30+ fontes, 800M+ base)
+  ├── Ranqueia por fit com estratégia atual
+  ├── Envia emails personalizados (max 35/dia)
+  └── Recebe feedback do recrutador
+       ↓
+       Recrutador rejeita candidato com motivo
+       ↓ (real-time)
+       Agente recalibra: ajusta pesos, exclui perfil-tipo
+       ↓
+       Próxima rodada usa estratégia calibrada
+```
+
+**O mecanismo de recalibração em tempo real** (o que diferencia do concorrente):
+- Cada rejeição com motivo → LLM extrai "anti-critério" → adiciona ao vetor de exclusão
+- Cada aprovação → LLM extrai "critério positivo" → reforça vetor de busca
+- Critérios novos → nova busca em paralelo com a estratégia anterior → compara resultados
+
+#### UI do Juicebox — Como aparece para o cliente
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Juicebox Agents          [+ Novo Agente]  [Ver todos os agentes]│
+├─────────────────────────────────────────────────────────────────┤
+│  Agentes ativos (3/5 do plano)                                   │
+│                                                                  │
+│  ┌────────────────────────────────────┐                         │
+│  │ 🤖 Agente: Senior Backend Engineer │  ● Ativo — Dia 12      │
+│  │ Vaga #4521 · São Paulo / Remoto    │                         │
+│  ├────────────────────────────────────┤                         │
+│  │ Esta semana:                       │  Desde o início:        │
+│  │ 📧 47 emails enviados              │  📋 312 perfis analis.  │
+│  │ 💬 8 respostas (17%)               │  ✅ 23 aprovados        │
+│  │ 🎯 3 entrevistas agendadas         │  ❌ 289 filtrados       │
+│  ├────────────────────────────────────┤                         │
+│  │ Estratégia atual (v3):             │                         │
+│  │ ✅ Python + Go · 5+ anos           │                         │
+│  │ ✅ Sistemas distribuídos           │                         │
+│  │ ❌ Sem: bootcamp recente (<2 anos) │  ← adicionado no dia 8 │
+│  │ ❌ Sem: apenas CRUD/e-commerce     │  ← adicionado no dia 10│
+│  │ [Editar estratégia]                │                         │
+│  └────────────────────────────────────┘                         │
+│                                                                  │
+│  Candidatos desta semana:                                        │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ Carlos M.  Fit: 94%  [✅ Aprovar] [❌ Rejeitar ▾] [📧]   │   │
+│  │ Ana L.     Fit: 89%  [✅ Aprovar] [❌ Rejeitar ▾] [📧]   │   │
+│  │ Paulo S.   Fit: 71%  [✅ Aprovar] [❌ Rejeitar ▾] [📧]   │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                  │
+│  Ao rejeitar → modal de motivo:                                  │
+│  ┌──────────────────────────────────────────────────┐           │
+│  │ Por que rejeitar Paulo S.?                        │           │
+│  │ ○ Experiência insuficiente                        │           │
+│  │ ○ Stack diferente do necessário                   │           │
+│  │ ● Apenas CRUD/ecommerce, sem sistemas complexos   │           │
+│  │ ○ Outro: [________________________]               │           │
+│  │ [Confirmar rejeição + treinar agente]             │           │
+│  └──────────────────────────────────────────────────┘           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Precificação do Juicebox (Agents 2.0)
+
+| Tier | Preço | Agentes | Perfis/mês | Emails/dia |
+|---|---|---|---|---|
+| **Starter** | ~$500/mês | 1 agente | 2.000 | 15/agente |
+| **Growth** | ~$1.500/mês | 5 agentes | 10.000 | 35/agente |
+| **Scale** | ~$4.000/mês | 20 agentes | 50.000 | 35/agente |
+| **Enterprise** | Custom | Ilimitado | Custom | Custom |
+
+**Modelo:** SaaS por número de agentes ativos (não por candidato).
+Overage de emails: ~$0.02/email acima da cota.
+
+#### Como construir na LIA — Multi-Agent Sourcing por Vaga
+
+**Já existe na LIA:**
+- `SourcingReActAgent` em `app/domains/sourcing/agents/sourcing_react_agent.py` — agente ReAct completo de sourcing
+- `SourcingPlannerAgent`, `SourcingSearchAgent`, `SourcingEnrichAgent`, `SourcingEngagementAgent` — 4 subagentes especializados por etapa
+- Stage context em `sourcing_stage_context.py` com: `search-criteria → talent-search → profile-analysis → shortlist-creation → outreach`
+
+**O que falta:** cada agente acima é **único e síncrono** — não existe o modelo de "N instâncias por vaga, persistentes entre sessões, com feedback loop".
+
+**Passo LIA-Sourcing-1: Modelo de dados para agente persistente por vaga**
+
+```sql
+CREATE TABLE sourcing_agents (
+    id              BIGSERIAL PRIMARY KEY,
+    company_id      BIGINT      NOT NULL REFERENCES companies(id),
+    job_id          BIGINT      REFERENCES job_vacancies(id),
+    agent_name      VARCHAR(128) NOT NULL,       -- "Agente Backend Sênior"
+    status          VARCHAR(16)  DEFAULT 'active', -- active|paused|completed
+    calibration_v   INT          DEFAULT 1,       -- versão da estratégia
+
+    -- Estratégia atual (JSON atualizado a cada recalibração)
+    search_strategy JSONB NOT NULL DEFAULT '{}', -- skills, seniority, location, exclusions
+    outreach_config JSONB NOT NULL DEFAULT '{}', -- email templates, cadência
+
+    -- Contadores de performance
+    profiles_viewed INT DEFAULT 0,
+    emails_sent     INT DEFAULT 0,
+    emails_replied  INT DEFAULT 0,
+    candidates_approved INT DEFAULT 0,
+
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE sourcing_agent_signals (
+    id          BIGSERIAL PRIMARY KEY,
+    agent_id    BIGINT      NOT NULL REFERENCES sourcing_agents(id) ON DELETE CASCADE,
+    signal_type VARCHAR(16) NOT NULL CHECK (signal_type IN ('positive','negative')),
+    candidate_id BIGINT,
+    reason      TEXT        NOT NULL,  -- motivo dado pelo recrutador
+    anti_criteria TEXT[],              -- critérios extraídos pelo LLM da rejeição
+    pos_criteria TEXT[],              -- critérios extraídos da aprovação
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Passo LIA-Sourcing-2: `SourcingAgentOrchestrator` — cria e gerencia N agentes por empresa**
+
+Criar `lia-agent-system/app/services/sourcing_agent_orchestrator.py`:
+
+```python
+"""
+SourcingAgentOrchestrator — gerencia múltiplos agentes de sourcing persistentes.
+
+Cada agente é uma instância isolada vinculada a uma vaga.
+Reutiliza os subagentes existentes (SourcingSearchAgent, SourcingEnrichAgent, etc.)
+mas adiciona: persistência entre sessões + feedback loop de recalibração.
+"""
+import json
+import logging
+from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+from app.shared.providers.llm_factory import get_llm
+
+logger = logging.getLogger(__name__)
+
+
+class SourcingAgentOrchestrator:
+
+    async def create_agent(
+        self, company_id: str, job_id: int, db: AsyncSession
+    ) -> dict:
+        """
+        Cria um novo agente de sourcing para uma vaga.
+        Extrai a estratégia inicial automaticamente da JD.
+        """
+        # 1. Carregar vaga do ATS
+        job = await self._load_job(job_id, db)
+
+        # 2. Extrair estratégia inicial da JD via LLM
+        strategy = await self._extract_strategy_from_jd(job["description"], job["title"])
+
+        # 3. Persistir agente
+        from app.models.sourcing_agent import SourcingAgent
+        agent = SourcingAgent(
+            company_id=company_id,
+            job_id=job_id,
+            agent_name=f"Agente {job['title']}",
+            search_strategy=strategy,
+            outreach_config=self._default_outreach_config(),
+        )
+        db.add(agent)
+        await db.commit()
+        await db.refresh(agent)
+
+        logger.info("[SourcingAgentOrchestrator] Criado agent_id=%d para job_id=%d", agent.id, job_id)
+        return {"agent_id": agent.id, "strategy": strategy}
+
+    async def process_feedback(
+        self,
+        agent_id: int,
+        candidate_id: int,
+        signal_type: str,    # "positive" | "negative"
+        reason: str,
+        db: AsyncSession,
+    ) -> dict:
+        """
+        Processa feedback do recrutador e recalibra a estratégia do agente.
+        Este é o coração do feedback loop em tempo real.
+        """
+        # 1. Carregar agente
+        result = await db.execute(
+            select(SourcingAgent).where(SourcingAgent.id == agent_id)  # type: ignore
+        )
+        agent = result.scalar_one()
+
+        # 2. Extrair critérios do motivo via LLM
+        llm = get_llm(tier="fast")  # Haiku — tarefa simples
+        extract_prompt = f"""
+        Um recrutador {('aprovou' if signal_type == 'positive' else 'rejeitou')} um candidato.
+        Motivo: "{reason}"
+        
+        Extraia os critérios técnicos como lista de strings curtas (máx 5 itens).
+        Responda APENAS com JSON: {{"criterios": ["critério 1", "critério 2"]}}
+        """
+        resp = await llm.ainvoke(extract_prompt)
+        criterios = json.loads(resp.content).get("criterios", [])
+
+        # 3. Persistir sinal
+        from app.models.sourcing_agent import SourcingAgentSignal
+        signal = SourcingAgentSignal(
+            agent_id=agent_id,
+            signal_type=signal_type,
+            candidate_id=candidate_id,
+            reason=reason,
+            anti_criteria=criterios if signal_type == "negative" else [],
+            pos_criteria=criterios if signal_type == "positive" else [],
+        )
+        db.add(signal)
+
+        # 4. Recalibrar estratégia do agente
+        new_strategy = await self._recalibrate_strategy(agent, signal_type, criterios)
+        agent.search_strategy = new_strategy
+        agent.calibration_v += 1
+
+        await db.commit()
+        logger.info(
+            "[SourcingAgentOrchestrator] agent=%d recalibrado para v%d | signal=%s | criterios=%s",
+            agent_id, agent.calibration_v, signal_type, criterios
+        )
+        return {"calibration_version": agent.calibration_v, "new_strategy": new_strategy}
+
+    async def run_sourcing_cycle(
+        self, agent_id: int, db: AsyncSession
+    ) -> List[dict]:
+        """
+        Executa um ciclo de sourcing para o agente.
+        Reutiliza SourcingSearchAgent + SourcingEnrichAgent existentes da LIA.
+        """
+        result = await db.execute(
+            select(SourcingAgent).where(SourcingAgent.id == agent_id)  # type: ignore
+        )
+        agent = result.scalar_one()
+
+        # Reutilizar SourcingSearchAgent existente com a estratégia do agente
+        from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
+        from app.shared.agents.agent_interface import AgentInput
+
+        search_agent = SourcingSearchAgent()
+        agent_input = AgentInput(
+            message=self._strategy_to_query(agent.search_strategy),
+            context={
+                "company_id": agent.company_id,
+                "job_id": agent.job_id,
+                "sourcing_agent_id": agent_id,
+            },
+        )
+        output = await search_agent.process(agent_input)
+
+        # Atualizar contadores
+        candidates = output.data.get("candidates", [])
+        agent.profiles_viewed += len(candidates)
+        await db.commit()
+
+        return candidates
+
+    async def _extract_strategy_from_jd(self, jd: str, title: str) -> dict:
+        llm = get_llm(tier="fast")
+        prompt = f"""
+        Extraia os critérios de busca desta vaga para um agente de sourcing.
+        Vaga: {title}
+        Descrição: {jd[:2000]}
+        
+        Responda com JSON:
+        {{
+          "required_skills": ["skill1", "skill2"],
+          "seniority": "junior|mid|senior|lead",
+          "location": "cidade ou remote",
+          "min_years_exp": 0,
+          "exclusions": []
+        }}
+        """
+        resp = await llm.ainvoke(prompt)
+        return json.loads(resp.content)
+
+    async def _recalibrate_strategy(
+        self, agent, signal_type: str, criterios: List[str]
+    ) -> dict:
+        strategy = dict(agent.search_strategy)
+        if signal_type == "negative":
+            strategy.setdefault("exclusions", [])
+            strategy["exclusions"] = list(set(strategy["exclusions"] + criterios))
+        else:
+            strategy.setdefault("positive_signals", [])
+            strategy["positive_signals"] = list(set(
+                strategy.get("positive_signals", []) + criterios
+            ))
+        return strategy
+
+    @staticmethod
+    def _strategy_to_query(strategy: dict) -> str:
+        skills = ", ".join(strategy.get("required_skills", []))
+        loc = strategy.get("location", "")
+        excl = strategy.get("exclusions", [])
+        excl_str = f" Excluir: {', '.join(excl)}." if excl else ""
+        return f"Buscar candidatos com {skills} em {loc}.{excl_str}"
+
+    @staticmethod
+    def _default_outreach_config() -> dict:
+        return {
+            "template_initial": "Olá {nome}, vi seu perfil e gostaria de conversar sobre uma oportunidade em {empresa}...",
+            "template_followup": "Olá {nome}, seguindo minha mensagem anterior...",
+            "cadence_days": [1, 3, 7],
+            "max_emails_per_day": 35,
+        }
+
+    async def _load_job(self, job_id: int, db: AsyncSession) -> dict:
+        from app.models.job_vacancy import JobVacancy
+        result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+        job = result.scalar_one()
+        return {"title": job.title, "description": job.description}
+
+
+sourcing_agent_orchestrator = SourcingAgentOrchestrator()
+```
+
+**Implementar no v5:** o v5 tem 9 subagentes de sourcing (`search`, `planner`, `orchestrator`, `router`, `action`, `analytics`, `comparison`, `detail`, `report`) e o `QUERY_PATTERNS` que mapeia intenções a pipelines. A estratégia de implementação no v5:
+
+1. Adicionar `workspace_id` + `sourcing_agent_id` no `context_data` passado para o hub
+2. O `HubPlanner` detecta domínio `sourced_profile_sourcing` + verifica se há agente persistente vinculado à vaga
+3. O `SourcingAgentOrchestrator` (criar em `src/services/sourcing_agent_orchestrator.py`) usa os mesmos subagentes existentes mas carrega a estratégia do DB antes de cada ciclo
+
+**Esforço estimado:** 2.5 sprints (LIA — reutiliza subagentes) · 2 sprints (v5 — estrutura mais simples)
+
+---
+
+### Agente Tipo 3 — Agentes por Setor/Template (Phenom X+ Studio)
+
+#### Como o Phenom implementa tecnicamente
+
+O Phenom X+ Studio usa o conceito de **Agent Templates** — configurações pré-montadas por setor industrial. Em vez de o cliente criar do zero, ele escolhe um template e personaliza apenas o que precisa:
+
+```
+ARQUITETURA DO PHENOM X+ STUDIO
+
+agent_template_library: {                    ← biblioteca de templates
+  "manufacturing": {
+    name: "Agente para Manufatura",
+    description: "Triagem acelerada para posições operacionais de chão de fábrica",
+    system_prompt_base: "...",               ← prompt otimizado para o setor
+    screening_questions: [                   ← perguntas padrão do setor
+      "Você tem disponibilidade para turnos noturnos?",
+      "Possui NR-35 (trabalho em altura)?",
+      "Experiência com linha de montagem?"
+    ],
+    tools_enabled: ["voice_screening", "schedule", "bulk_outreach"],
+    tools_disabled: ["linkedin_search"],     ← linkedin é irrelevante para operacional
+    scoring_weights: {
+      "certifications": 0.4,               ← NRs valem mais que graduação
+      "experience_years": 0.3,
+      "location_proximity": 0.3,           ← deslocamento é fator crítico
+    },
+    languages_supported: ["pt-BR", "es"],
+    created_at: "2025-04-10"
+  },
+  "healthcare": { ... },
+  "retail": { ... },
+  "transportation": { ... },
+  "technology": { ... }
+}
+
+FLUXO DE CRIAÇÃO DO AGENTE PELO CLIENTE (no-code):
+1. Cliente escolhe template (ex: "Manufatura")
+2. Phenom mostra campos pré-preenchidos
+3. Cliente ajusta: nome do agente, perguntas extras, tom
+4. Click "Ativar" → agente fica disponível no portal de candidatos
+5. Candidatos interagem com o agente (chat ou voz)
+6. Agente triagem automática → envia approved para ATS
+```
+
+#### UI do Phenom X+ Studio — Como aparece para o cliente
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  X+ Agent Studio                                [Meus Agentes ▾]│
+├─────────────────────────────────────────────────────────────────┤
+│  Criar Agente — Passo 1 de 3: Escolha o template               │
+│                                                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ 🏭           │  │ 🏥           │  │ 🛒           │          │
+│  │ MANUFATURA   │  │ SAÚDE        │  │ VAREJO       │          │
+│  │              │  │              │  │              │          │
+│  │ Para vagas   │  │ Para vagas   │  │ Para vagas   │          │
+│  │ operacionais │  │ de saúde e   │  │ de atendente │          │
+│  │ e linha de   │  │ cuidadores   │  │ e estoque    │          │
+│  │ montagem     │  │              │  │              │          │
+│  │ [Selecionar] │  │ [Selecionar] │  │ [Selecionar] │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ 🚛           │  │ 💻           │  │ ✨           │          │
+│  │ TRANSPORTE   │  │ TECNOLOGIA   │  │ PERSONALIZADO│          │
+│  │ [Selecionar] │  │ [Selecionar] │  │ [Criar do 0] │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│                                                                  │
+│  ─────────────── Passo 2: Personalizar ──────────────────────  │
+│  Nome do agente: [Agente Manufatura Unidade SP_____________]    │
+│  Idioma: [Português ▾]  Tom: [○Formal ●Amigável ○Direto]       │
+│                                                                  │
+│  Perguntas de triagem:                               [+ Add]    │
+│  ✅ Disponibilidade para turnos? ─────────────────── [✎] [🗑]  │
+│  ✅ Possui NR-35?  ─────────────────────────────────── [✎] [🗑] │
+│  + [Adicionar pergunta personalizada]                            │
+│                                                                  │
+│  ─────────────── Passo 3: Publicar ──────────────────────────  │
+│  Canal: ●Chat no portal  ○Voz (telefone)  ○WhatsApp             │
+│  [← Voltar]          [Pré-visualizar] [Ativar Agente →]         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Precificação do Phenom X+ Studio
+
+| Tier | Preço | Agentes | Candidatos/mês | Canais |
+|---|---|---|---|---|
+| **X+ Core** | ~$80K/ano | 3 agentes | 5.000 | Chat |
+| **X+ Professional** | ~$150K/ano | 10 agentes | 20.000 | Chat + Voz |
+| **X+ Enterprise** | Custom | Ilimitado | Ilimitado | Todos |
+| **Por agente extra** | ~$8K/ano | +1 agente | — | — |
+
+**Add-ons:** Avatar de entrevista (+$25K/ano) · Detecção de fraude (+$15K/ano) · Analytics avançado (+$10K/ano).
+
+#### Como construir na LIA — Agent Templates por Setor
+
+**Já existe na LIA:**
+- `TenantAgentConfigService` (criado na Parte 1) — armazena config por tenant+agente
+- `PromptRegistry.get_tenant_prompt()` — composição de prompts
+- Agente de voz: `deepgram_service.py` + `lia_voice.py` + `gemini_voice_service.py`
+
+**Passo LIA-Template-1: Biblioteca de templates embutida no código**
+
+Criar `lia-agent-system/app/shared/agent_templates/sector_templates.py`:
+
+```python
+"""
+Biblioteca de templates de agente por setor industrial.
+Equivalente ao que o Phenom X+ Studio chama de "Agent Templates".
+
+Para adicionar um template novo:
+  1. Adicionar entrada no dict SECTOR_TEMPLATES
+  2. Deploy — nenhuma migration necessária (templates são read-only, config por tenant vai no DB)
+"""
+from typing import Dict, Any, List
+
+SECTOR_TEMPLATES: Dict[str, Dict[str, Any]] = {
+
+    "manufacturing": {
+        "display_name": "Manufatura",
+        "description": "Para vagas operacionais, linha de montagem e chão de fábrica",
+        "icon": "🏭",
+        "system_prompt_suffix": (
+            "Foque em critérios práticos: disponibilidade de turno, proximidade geográfica, "
+            "certificações NR e experiência com equipamentos específicos. "
+            "Não penalize ausência de graduação formal em vagas operacionais. "
+            "Pergunte sobre disponibilidade para horas extras antes de qualquer outra coisa."
+        ),
+        "default_screening_questions": [
+            "Você tem disponibilidade para trabalhar em turnos (manhã/tarde/noite)?",
+            "Qual é sua distância de deslocamento até a unidade?",
+            "Possui alguma certificação NR (NR-10, NR-12, NR-35)? Se sim, quais?",
+            "Tem experiência com linha de montagem ou processos industriais?",
+        ],
+        "scoring_weights": {
+            "certifications": 0.40,
+            "experience_years": 0.30,
+            "location_proximity": 0.30,
+        },
+        "tools_enabled": [
+            "voice_screening", "schedule_interview",
+            "bulk_outreach", "send_screening_form"
+        ],
+        "tools_disabled": ["linkedin_search", "github_search"],
+        "confidence_threshold": 0.70,
+        "tone": "informal",
+    },
+
+    "healthcare": {
+        "display_name": "Saúde",
+        "description": "Para vagas de enfermagem, cuidadores, técnicos de saúde",
+        "icon": "🏥",
+        "system_prompt_suffix": (
+            "Priorize habilitação profissional, experiência clínica e registro em conselho (COREN, CRM). "
+            "Pergunte sobre especialidades e experiência com equipamentos médicos específicos. "
+            "Seja empático e compreensivo — candidatos da saúde têm agenda complexa."
+        ),
+        "default_screening_questions": [
+            "Qual é seu número de registro no conselho profissional (COREN/CRM)?",
+            "Possui experiência em qual área clínica? (UTI, PS, ambulatório, home care)",
+            "Tem disponibilidade para plantões de 12h ou 24h?",
+            "Possui ACLS ou BLS atualizado?",
+        ],
+        "scoring_weights": {
+            "professional_license": 0.50,
+            "clinical_experience": 0.35,
+            "certifications": 0.15,
+        },
+        "tools_enabled": ["schedule_interview", "send_screening_form", "verify_credentials"],
+        "tools_disabled": ["linkedin_search"],
+        "confidence_threshold": 0.80,
+        "tone": "profissional",
+    },
+
+    "retail": {
+        "display_name": "Varejo",
+        "description": "Para atendentes, operadores de caixa e repositores",
+        "icon": "🛒",
+        "system_prompt_suffix": (
+            "Foque em disponibilidade (fins de semana são obrigatórios no varejo), "
+            "habilidades de atendimento ao cliente e experiência com PDV. "
+            "Considere candidatos sem experiência se demonstrarem proatividade."
+        ),
+        "default_screening_questions": [
+            "Você tem disponibilidade para trabalhar aos fins de semana e feriados?",
+            "Tem experiência com atendimento ao cliente?",
+            "Já trabalhou com sistema de caixa/PDV?",
+            "Qual é sua disponibilidade de horário (parcial/integral)?",
+        ],
+        "scoring_weights": {
+            "availability": 0.40,
+            "customer_service_exp": 0.35,
+            "pdv_experience": 0.25,
+        },
+        "tools_enabled": ["voice_screening", "schedule_interview", "bulk_outreach"],
+        "tools_disabled": ["github_search", "linkedin_search"],
+        "confidence_threshold": 0.65,
+        "tone": "informal",
+    },
+
+    "technology": {
+        "display_name": "Tecnologia",
+        "description": "Para vagas de software, dados, infra e produto",
+        "icon": "💻",
+        "system_prompt_suffix": (
+            "Avalie profundidade técnica, não apenas lista de tecnologias no currículo. "
+            "Priorize contribuições open source, projetos reais e raciocínio sobre "
+            "soluções técnicas. Para seniores, verifique experiência com sistemas em produção."
+        ),
+        "default_screening_questions": [
+            "Descreva o sistema mais complexo que você já desenvolveu ou manteve.",
+            "Quais tecnologias usa no dia a dia? Qual delas você domina mais profundamente?",
+            "Tem contribuições open source ou projetos pessoais? Pode compartilhar?",
+            "Como você lida com débito técnico no ambiente de trabalho?",
+        ],
+        "scoring_weights": {
+            "technical_depth": 0.50,
+            "experience_years": 0.30,
+            "open_source": 0.20,
+        },
+        "tools_enabled": ["linkedin_search", "github_search", "schedule_interview"],
+        "tools_disabled": ["bulk_outreach"],
+        "confidence_threshold": 0.80,
+        "tone": "tecnico",
+    },
+
+    "transportation": {
+        "display_name": "Transporte e Logística",
+        "description": "Para motoristas, operadores de logística e entregadores",
+        "icon": "🚛",
+        "system_prompt_suffix": (
+            "CNH atualizada e histórico de infrações são os critérios mais críticos. "
+            "Pergunte sobre categorias de habilitação, experiência com tipos de carga "
+            "e disponibilidade para viagens. Verifique a validade do ASO."
+        ),
+        "default_screening_questions": [
+            "Qual a categoria da sua CNH e quando vence?",
+            "Tem histórico de infrações graves nos últimos 12 meses?",
+            "Tem disponibilidade para viagens? (municipal/estadual/interestadual)",
+            "Experiência com qual tipo de carga? (seca, refrigerada, perigosa)",
+            "Seu ASO (Atestado de Saúde Ocupacional) está em dia?",
+        ],
+        "scoring_weights": {
+            "license_validity": 0.40,
+            "clean_record": 0.35,
+            "cargo_experience": 0.25,
+        },
+        "tools_enabled": ["voice_screening", "schedule_interview", "verify_credentials"],
+        "tools_disabled": ["linkedin_search", "github_search"],
+        "confidence_threshold": 0.75,
+        "tone": "informal",
+    },
+}
+
+
+def get_template(sector: str) -> Dict[str, Any]:
+    """Retorna template de setor. Raise ValueError se não encontrado."""
+    if sector not in SECTOR_TEMPLATES:
+        raise ValueError(f"Template '{sector}' não existe. Disponíveis: {list(SECTOR_TEMPLATES.keys())}")
+    return SECTOR_TEMPLATES[sector]
+
+
+def list_templates() -> List[Dict[str, str]]:
+    """Lista templates disponíveis para exibir na UI."""
+    return [
+        {
+            "id": k,
+            "display_name": v["display_name"],
+            "description": v["description"],
+            "icon": v["icon"],
+        }
+        for k, v in SECTOR_TEMPLATES.items()
+    ]
+```
+
+**Passo LIA-Template-2: Endpoint para instanciar um template como config de tenant**
+
+```python
+# Em app/api/v1/admin_agent_config.py — adicionar endpoint:
+
+@router.post("/templates/{sector}/apply")
+async def apply_sector_template(
+    sector: str,
+    agent_name: str,
+    x_company_id: str = Header(..., alias="X-Company-ID"),
+    _user=Depends(require_admin),
+    db=Depends(get_db),
+):
+    """
+    Instancia um template de setor como configuração de agente do tenant.
+    O cliente ainda pode sobrescrever qualquer campo depois.
+    """
+    from app.shared.agent_templates.sector_templates import get_template
+
+    template = get_template(sector)
+
+    # Upsert em tenant_agent_configs usando dados do template
+    body = AgentConfigRequest(
+        is_enabled=True,
+        custom_prompt_suffix=template["system_prompt_suffix"],
+        tools_disabled=template["tools_disabled"],
+        confidence_threshold=template["confidence_threshold"],
+        tone=template["tone"],
+        sector_context=f"Setor: {template['display_name']}. {template['description']}",
+    )
+
+    # Reutilizar endpoint upsert existente
+    return await upsert_agent_config(
+        agent_name=agent_name,
+        body=body,
+        x_company_id=x_company_id,
+        _user=_user,
+        db=db,
+    )
+
+
+@router.get("/templates")
+async def list_agent_templates():
+    """Lista templates disponíveis para exibir na UI do Agent Studio."""
+    from app.shared.agent_templates.sector_templates import list_templates
+    return {"templates": list_templates()}
+```
+
+**Implementar no v5:** adicionar `src/hub/agent_templates.py` com o mesmo `SECTOR_TEMPLATES` dict. O endpoint de aplicação chama `TenantConfigLoader.invalidate()` + Rails `PUT /internal/agent_studio/config/{workspace_id}/domains/{domain_id}` com os dados do template.
+
+**Esforço estimado:** 1 sprint (LIA — reutiliza Partes 1 e 2) · 1 sprint (v5)
+
+---
+
+### Agente Tipo 4 — Guided Autonomy (hireEZ EZ Agent)
+
+#### Como o hireEZ implementa tecnicamente
+
+O **EZ Agent** executa **múltiplas estratégias de busca em paralelo** e apresenta os resultados ranqueados. O diferencial: o agente não espera o recrutador definir tudo — ele propõe estratégias e executa em paralelo:
+
+```
+ARQUITETURA DO EZ AGENT (hireEZ)
+
+INPUT do recrutador:
+  - Título da vaga
+  - Localização
+  - 2-3 habilidades-chave (opcional)
+
+FASE 1 — PLANEJAMENTO DE ESTRATÉGIAS (LLM, ~2s)
+  O agente gera automaticamente 3-5 estratégias de busca:
+  ┌─────────────────────────────────────────────┐
+  │ Estratégia A: "Busca direta"                │
+  │   → Skills exatas + localização             │
+  │                                             │
+  │ Estratégia B: "Adjacentes"                  │
+  │   → Títulos similares + skills relacionadas │
+  │                                             │
+  │ Estratégia C: "Silver medalists"            │
+  │   → Candidatos que passaram de entrevista   │
+  │     em vagas similares recentemente         │
+  │                                             │
+  │ Estratégia D: "Reengajamento"               │
+  │   → Candidatos inativos há 6+ meses com     │
+  │     perfil compatível no banco interno      │
+  └─────────────────────────────────────────────┘
+
+FASE 2 — EXECUÇÃO PARALELA (30-90s)
+  Estratégias A, B, C, D rodam simultaneamente
+  em threads/workers separados → 45+ fontes de dados
+
+FASE 3 — DEDUPLICAÇÃO + RANKING (LLM, ~5s)
+  Merge de resultados → remove duplicatas (email/LinkedIn)
+  → Score de fit calculado por estratégia
+  → Ranking final: melhor candidato de cada estratégia
+  → Apresenta top-N com "como foi encontrado"
+```
+
+#### UI do hireEZ EZ Agent — Como aparece para o cliente
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  EZ Agent — Nova busca                                           │
+├─────────────────────────────────────────────────────────────────┤
+│  Vaga: [Senior Data Engineer___________________________]         │
+│  Local: [São Paulo, SP ou Remoto___________]                    │
+│  Skills-chave (opcional): [Python] [Spark] [+ adicionar]        │
+│  [🚀 Iniciar busca guiada]                                      │
+│                                                                  │
+│  ───── EZ Agent trabalhando ──────────────────────────────────  │
+│  ✅ Estratégia A: Busca direta ─────────────── 89 candidatos    │
+│  ✅ Estratégia B: Títulos adjacentes ──────────── 142 candidatos │
+│  🔄 Estratégia C: Silver medalists ──────── (buscando...)       │
+│  ✅ Estratégia D: Reengajamento banco interno ─── 23 candidatos │
+│                                              Total: 300+ únicos  │
+│                                                                  │
+│  ───── Top candidatos (ranqueados) ───────────────────────────  │
+│                                                                  │
+│  #1  Ana Lima  ●●●●● 96 pts              via Estratégia A       │
+│  8 anos · Senior Data Engineer · SP      Python, Spark, Airflow │
+│  [Ver perfil] [Contatar] [Mover para pipeline]                  │
+│                                                                  │
+│  #2  Carlos M. ●●●●○ 88 pts              via Estratégia B       │
+│  6 anos · Data Platform Lead · Remoto    PySpark, dbt, Kafka    │
+│  [Ver perfil] [Contatar] [Mover para pipeline]                  │
+│                                                                  │
+│  #3  Beatriz S. ●●●●○ 85 pts             via Estratégia D       │
+│  ♻️ Reengajamento — candidatou-se há 8 meses (vaga similar)     │
+│  [Ver perfil] [Contatar] [Mover para pipeline]                  │
+│                                                                  │
+│  [Ver todos os 300 candidatos] [Refinar estratégias] [Exportar] │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Precificação do hireEZ EZ Agent
+
+| Tier | Preço | Buscas/mês | Estratégias paralelas | Fontes |
+|---|---|---|---|---|
+| **Professional** | ~$300/usuário/mês | 50 | 3 | 30+ |
+| **Business** | ~$500/usuário/mês | 200 | 5 | 45+ |
+| **Enterprise** | Custom | Ilimitado | Ilimitado | 45+ |
+
+**Nota:** hireEZ cobra por **usuário-recrutador**, não por vaga ou candidato.
+
+#### Como construir na LIA — Guided Autonomy
+
+**Já existe na LIA:**
+- `SourcingPlannerAgent` — define critérios de busca (etapa de planning)
+- `SourcingSearchAgent` — executa busca (uma estratégia por vez, síncrona)
+- `SourcingEnrichAgent` — enriquece perfis encontrados
+- `app/domains/sourcing/services/vacancy_search.py` — busca por vagas similares
+
+**O que falta:** execução paralela de múltiplas estratégias + merge + ranking.
+
+**Passo LIA-Guided-1: `MultiStrategySearchService`**
+
+Criar `lia-agent-system/app/services/multi_strategy_search.py`:
+
+```python
+"""
+MultiStrategySearchService — executa múltiplas estratégias de busca em paralelo.
+Implementa o padrão "guided autonomy" do hireEZ EZ Agent.
+
+Estratégias implementadas:
+  A. direct_search    — critérios exatos da vaga
+  B. adjacent_titles  — títulos similares + skills relacionadas
+  C. silver_medalists — candidatos que passaram por vagas similares
+  D. reengagement     — candidatos inativos no banco com perfil compatível
+"""
+import asyncio
+import logging
+from dataclasses import dataclass, field
+from typing import List, Dict, Any
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class StrategyResult:
+    strategy_id: str
+    strategy_name: str
+    candidates: List[Dict[str, Any]]
+    count: int
+    elapsed_ms: float
+
+
+@dataclass
+class MultiStrategyResult:
+    total_unique: int
+    candidates_ranked: List[Dict[str, Any]]  # deduplicados + ranqueados
+    strategy_results: List[StrategyResult]
+    elapsed_ms: float
+
+
+class MultiStrategySearchService:
+
+    async def search(
+        self,
+        job_title: str,
+        required_skills: List[str],
+        location: str,
+        company_id: str,
+        job_id: int = None,
+        strategies: List[str] = None,
+    ) -> MultiStrategyResult:
+        """
+        Executa múltiplas estratégias em paralelo e retorna candidatos ranqueados.
+        """
+        import time
+        start = time.time()
+
+        # Estratégias a executar (default: todas)
+        enabled = strategies or ["direct", "adjacent", "silver", "reengagement"]
+
+        # Executar todas em paralelo com asyncio.gather
+        tasks = {}
+        if "direct" in enabled:
+            tasks["direct"] = self._strategy_direct(job_title, required_skills, location)
+        if "adjacent" in enabled:
+            tasks["adjacent"] = self._strategy_adjacent_titles(job_title, required_skills, location)
+        if "silver" in enabled and job_id:
+            tasks["silver"] = self._strategy_silver_medalists(job_id, required_skills)
+        if "reengagement" in enabled:
+            tasks["reengagement"] = self._strategy_reengagement(company_id, required_skills)
+
+        results_raw = await asyncio.gather(*tasks.values(), return_exceptions=True)
+        strategy_results = []
+        for (sid, _), result in zip(tasks.items(), results_raw):
+            if isinstance(result, Exception):
+                logger.warning("[MultiStrategy] estratégia=%s falhou: %s", sid, result)
+                continue
+            strategy_results.append(result)
+
+        # Deduplicar por email/LinkedIn URL
+        all_candidates = []
+        seen_ids: set = set()
+        for sr in strategy_results:
+            for c in sr.candidates:
+                uid = c.get("email") or c.get("linkedin_url") or c.get("id")
+                if uid and uid not in seen_ids:
+                    seen_ids.add(uid)
+                    c["found_via"] = sr.strategy_id
+                    all_candidates.append(c)
+
+        # Ranquear por fit score (descendente)
+        ranked = sorted(all_candidates, key=lambda x: x.get("fit_score", 0), reverse=True)
+
+        elapsed = (time.time() - start) * 1000
+        return MultiStrategyResult(
+            total_unique=len(ranked),
+            candidates_ranked=ranked,
+            strategy_results=strategy_results,
+            elapsed_ms=elapsed,
+        )
+
+    async def _strategy_direct(
+        self, job_title: str, skills: List[str], location: str
+    ) -> StrategyResult:
+        """Estratégia A: busca direta com critérios exatos."""
+        import time; t = time.time()
+        from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
+        from app.shared.agents.agent_interface import AgentInput
+
+        agent = SourcingSearchAgent()
+        query = f"Buscar {job_title} com {', '.join(skills)} em {location}"
+        output = await agent.process(AgentInput(message=query, context={}))
+        candidates = output.data.get("candidates", [])
+
+        return StrategyResult(
+            strategy_id="direct",
+            strategy_name="Busca Direta",
+            candidates=candidates,
+            count=len(candidates),
+            elapsed_ms=(time.time() - t) * 1000,
+        )
+
+    async def _strategy_adjacent_titles(
+        self, job_title: str, skills: List[str], location: str
+    ) -> StrategyResult:
+        """Estratégia B: títulos similares e skills relacionadas."""
+        import time; t = time.time()
+        from app.shared.providers.llm_factory import get_llm
+        import json
+
+        # Gerar títulos adjacentes via LLM
+        llm = get_llm(tier="fast")
+        resp = await llm.ainvoke(
+            f"Liste 3 títulos de cargo similares a '{job_title}' no mercado brasileiro. "
+            f"Responda APENAS com JSON: {{\"titles\": [\"título1\", \"título2\", \"título3\"]}}"
+        )
+        adj_titles = json.loads(resp.content).get("titles", [job_title])
+
+        from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
+        from app.shared.agents.agent_interface import AgentInput
+        agent = SourcingSearchAgent()
+        query = f"Buscar {' ou '.join(adj_titles)} com {', '.join(skills)} em {location}"
+        output = await agent.process(AgentInput(message=query, context={}))
+        candidates = output.data.get("candidates", [])
+
+        return StrategyResult(
+            strategy_id="adjacent",
+            strategy_name="Títulos Adjacentes",
+            candidates=candidates,
+            count=len(candidates),
+            elapsed_ms=(time.time() - t) * 1000,
+        )
+
+    async def _strategy_silver_medalists(
+        self, job_id: int, skills: List[str]
+    ) -> StrategyResult:
+        """
+        Estratégia C: candidatos que já foram entrevistados em vagas similares
+        e chegaram à etapa final mas não foram contratados.
+        Reutiliza vacancy_search.py da LIA para encontrar vagas similares.
+        """
+        import time; t = time.time()
+        from app.domains.sourcing.services.vacancy_search import find_similar_vacancies
+
+        similar_jobs = await find_similar_vacancies(job_id, limit=5)
+        silver_candidates = []
+        for similar_job in similar_jobs:
+            # Buscar candidatos que chegaram à etapa de entrevista nessas vagas
+            finalists = await self._get_job_finalists(similar_job["id"])
+            silver_candidates.extend(finalists)
+
+        return StrategyResult(
+            strategy_id="silver",
+            strategy_name="Silver Medalists",
+            candidates=silver_candidates,
+            count=len(silver_candidates),
+            elapsed_ms=(time.time() - t) * 1000,
+        )
+
+    async def _strategy_reengagement(
+        self, company_id: str, skills: List[str]
+    ) -> StrategyResult:
+        """
+        Estratégia D: candidatos inativos há 6+ meses no banco interno
+        com skills compatíveis. Evita sourcing externo caro.
+        """
+        import time; t = time.time()
+        from app.domains.sourcing.services.pgv_analyzer import search_internal_candidates
+
+        candidates = await search_internal_candidates(
+            company_id=company_id,
+            skills=skills,
+            inactive_days_min=180,
+        )
+        return StrategyResult(
+            strategy_id="reengagement",
+            strategy_name="Reengajamento Banco Interno",
+            candidates=candidates,
+            count=len(candidates),
+            elapsed_ms=(time.time() - t) * 1000,
+        )
+
+    @staticmethod
+    async def _get_job_finalists(job_id: int) -> List[dict]:
+        """Busca candidatos que chegaram à etapa de entrevista em uma vaga."""
+        try:
+            from app.core.database import get_db_sync
+            from app.models.job_application import JobApplication
+            # Buscar applies em etapas avançadas
+            finalists = []  # implementar query real
+            return finalists
+        except Exception:
+            return []
+
+
+multi_strategy_search = MultiStrategySearchService()
+```
+
+**Implementar no v5:** usar `asyncio.gather()` com 4 chamadas paralelas ao `DomainOrchestrator.process_query()` (uma por estratégia, todas com domain `sourced_profile_sourcing`) + deduplicação pelo `candidate_resolver.py` existente no hub.
+
+**Esforço estimado:** 2 sprints (LIA) · 1.5 sprints (v5 — `candidate_resolver.py` já existe)
+
+---
+
+### Agente Tipo 5 — Agente de Voz para Triagem (Phenom Interview Agent / Olivia)
+
+#### Como o Phenom e a Olivia (Paradox) implementam tecnicamente
+
+```
+ARQUITETURA DO AGENTE DE VOZ DE TRIAGEM
+
+Canal 1 — WebSocket (triagem via navegador/app):
+  Candidato → microfone → WebSocket → STT (Deepgram) → texto
+  → Agente LLM → resposta texto → TTS (OpenAI/ElevenLabs) → áudio
+  → Candidato ouve
+
+Canal 2 — Telefone outbound (OpenMic.ai / Twilio):
+  Agente liga para candidato → gravação → STT → Agente LLM
+  → TTS → fala para candidato → grava respostas
+
+FLUXO DA ENTREVISTA DE VOZ (state machine):
+  [INTRO] → [QUESTIONS] → [SCORING] → [CLOSING]
+
+  INTRO: "Olá {nome}, sou a LIA, assistente da {empresa}.
+          Vou fazer algumas perguntas rápidas sobre sua candidatura à vaga de {cargo}."
+
+  QUESTIONS (N perguntas configuradas pelo recrutador):
+    Para cada pergunta:
+      1. Agente faz a pergunta em voz
+      2. Candidato responde (máx 90s)
+      3. Deepgram transcreve em tempo real
+      4. Agente confirma entendimento ou pede esclarecimento
+      5. Score parcial calculado
+
+  SCORING:
+    Resposta do candidato → embedding → compare com respostas ideais do SME
+    → Score 0-100 por pergunta → Score final = média ponderada
+
+  CLOSING: "Obrigada {nome}! Suas respostas foram registradas.
+             O time de RH entrará em contato em até 3 dias úteis."
+  → Envia resumo ao recrutador via webhook
+```
+
+#### UI do Phenom/Olivia — Como aparece para o cliente (recrutador) e candidato
+
+**Tela do recrutador (configuração):**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Configurar Entrevista de Voz — Vaga: Operador de Logística     │
+├─────────────────────────────────────────────────────────────────┤
+│  Agente: ●LIA (texto+voz)  ○Somente voz  ○Somente texto        │
+│  Canal: ●WhatsApp  ○Telefone automático  ○Link de acesso        │
+│  Idioma: [Português BR ▾]                                        │
+│  Duração máx: [10 min ▾]                                        │
+│                                                                  │
+│  Perguntas de triagem:                         [+ Nova pergunta] │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ 1. "Você tem disponibilidade para turnos?"               │   │
+│  │    Resposta ideal: "Sim, disponível"  Peso: 30%  [✎][🗑] │   │
+│  ├──────────────────────────────────────────────────────────┤   │
+│  │ 2. "Tem CNH válida categoria D ou E?"                    │   │
+│  │    Resposta ideal: "Sim, categoria [D/E]" Peso: 40% [✎][🗑]│  │
+│  ├──────────────────────────────────────────────────────────┤   │
+│  │ 3. "Onde você mora atualmente?"                          │   │
+│  │    Resposta ideal: <cidade próxima>  Peso: 30%  [✎][🗑]  │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│  [Pré-visualizar conversa] [Testar com meu número] [Ativar ▸]   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**O que o candidato vê (WhatsApp / link):**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  LIA — Assistente de Recrutamento          [🔴 Gravando]        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  🤖 "Olá João! Sou a LIA, assistente da LogisBr.               │
+│       Vou te fazer 3 perguntas rápidas sobre a vaga             │
+│       de Motorista. Levará cerca de 5 minutos.                  │
+│       Pode começar quando quiser!"                               │
+│                                                                  │
+│  🎙️ [●●●●●●●●●●●●●●●●●●●●●●●●]  0:23                          │
+│  "Sim, tenho disponibilidade para trabalhar de segunda a..."    │
+│                                                                  │
+│  ──────────────────────────────────────────────────────────     │
+│  Pergunta 1/3  ████████░░░░░░░░░░░░  35%                       │
+│                                                                  │
+│  [⏸ Pausar]  [🔄 Repetir pergunta]  [💬 Mudar para texto]      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Precificação do Phenom Interview Agent / Olivia (Paradox)
+
+| Produto | Preço | Modelo | Inclui |
+|---|---|---|---|
+| **Phenom Interview Agent** | +$25K/ano (add-on ao X+) | Licença anual | Triagem por voz + scoring |
+| **Olivia (Paradox)** | $30K–$100K/ano | Enterprise, por volume | Voz + texto + agendamento |
+| **OpenMic.ai** (white-label) | ~$0.15/minuto de ligação | Pay-per-use | STT + TTS + orquestração |
+| **Deepgram Nova-2** | ~$0.0043/minuto | Pay-per-use | Somente STT |
+
+**Para a WeDOTalent:** usar Deepgram (já integrado) para STT + OpenMic (já integrado) para chamadas outbound. Custo estimado por entrevista de 10 min: ~$0.20 de Deepgram + $1.50 de OpenMic = **~$1.70/entrevista** — repassar ao cliente com margem de 3x = ~$5/entrevista ou incluir em pacote.
+
+#### Como construir na LIA — Agente de Voz para Triagem
+
+**Já existe na LIA — base completa pronta:**
+- `app/api/v1/lia_voice.py` — WebSocket + REST para voz (`VoiceTranscriptionResponse`, `VoiceChatResponse`)
+- `app/services/gemini_voice_service.py` — STT via Gemini Flash (transcrição de arquivos de áudio)
+- `app/api/v1/voice_screening_test.py` — `deepgram_service` + `openmic_service` já integrados
+- `app/models/voice_screening.py` — modelo de dados de triagem por voz já existe
+
+**O que já existe no modelo:**
+```python
+# app/models/voice_screening.py — já existe na LIA
+class VoiceScreening:
+    id, company_id, job_id, candidate_id
+    agent_id        # ID do agente de voz configurado
+    channel         # "whatsapp" | "web" | "phone"
+    status          # "scheduled" | "in_progress" | "completed" | "failed"
+    transcript      # JSON com a conversa completa
+    score           # 0-100 score final
+    scores_by_q     # JSONB {pergunta_id: score}
+    duration_secs
+    created_at, completed_at
+```
+
+**O que falta: conectar tudo em um fluxo de entrevista gerenciado por state machine.**
+
+**Passo LIA-Voice-1: `VoiceInterviewStateMachine` — orquestrador da entrevista**
+
+Criar `lia-agent-system/app/services/voice_interview_state_machine.py`:
+
+```python
+"""
+VoiceInterviewStateMachine — controla o fluxo de uma entrevista de voz.
+
+States:
+  INTRO → QUESTION_{N} → SCORING → CLOSING → DONE
+
+Cada state tem:
+  - prompt do agente (o que a LIA fala)
+  - handler de resposta do candidato
+  - condição de transição para o próximo state
+
+Reutiliza:
+  - gemini_voice_service.py → STT (transcrição)
+  - voice_service.py → TTS (síntese de fala para a LIA "falar")
+  - PromptRegistry → prompts de entrevista configurados pelo tenant
+"""
+import json
+import logging
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import List, Dict, Optional
+
+from app.services.gemini_voice_service import GeminiVoiceService
+from app.shared.prompts.prompt_registry import prompt_registry
+
+logger = logging.getLogger(__name__)
+
+
+class InterviewState(Enum):
+    INTRO = "intro"
+    QUESTIONING = "questioning"
+    SCORING = "scoring"
+    CLOSING = "closing"
+    DONE = "done"
+
+
+@dataclass
+class ScreeningQuestion:
+    question_id: str
+    text: str           # "Você tem disponibilidade para turnos noturnos?"
+    ideal_answer: str   # resposta ideal para comparação de score
+    weight: float       # peso no score final (soma = 1.0)
+    max_duration_s: int = 90
+
+
+@dataclass
+class VoiceInterviewSession:
+    session_id: str
+    company_id: str
+    job_id: int
+    candidate_id: int
+    candidate_name: str
+    questions: List[ScreeningQuestion]
+    state: InterviewState = InterviewState.INTRO
+    current_q_idx: int = 0
+    answers: Dict[str, str] = field(default_factory=dict)   # q_id → transcrição
+    scores: Dict[str, float] = field(default_factory=dict)  # q_id → score 0-100
+    final_score: Optional[float] = None
+
+
+class VoiceInterviewStateMachine:
+
+    def __init__(self):
+        self._voice_svc = GeminiVoiceService()
+
+    async def handle_audio_input(
+        self,
+        session: VoiceInterviewSession,
+        audio_bytes: bytes,
+        audio_format: str = "audio/webm",
+    ) -> dict:
+        """
+        Processa input de áudio do candidato e avança o state machine.
+
+        Returns:
+            {
+              "agent_text": "...",        # o que a LIA vai falar/escrever
+              "agent_audio_b64": "...",   # TTS do texto (base64)
+              "state": "questioning",
+              "progress": 0.33,          # 0.0 a 1.0
+              "is_done": False
+            }
+        """
+        # 1. Transcrever áudio do candidato
+        transcription = await self._voice_svc.transcribe_audio(
+            audio_bytes, audio_format, "pt-BR"
+        )
+        candidate_answer = transcription.text
+        logger.info(
+            "[VoiceInterview] session=%s state=%s answer=%s",
+            session.session_id, session.state.value, candidate_answer[:80]
+        )
+
+        # 2. Avançar state machine
+        if session.state == InterviewState.INTRO:
+            return await self._handle_intro(session)
+
+        elif session.state == InterviewState.QUESTIONING:
+            return await self._handle_answer(session, candidate_answer)
+
+        elif session.state == InterviewState.SCORING:
+            return await self._handle_scoring(session)
+
+        elif session.state == InterviewState.CLOSING:
+            return await self._handle_closing(session)
+
+        return {"agent_text": "Obrigada! Entrevista encerrada.", "is_done": True}
+
+    async def _handle_intro(self, session: VoiceInterviewSession) -> dict:
+        """Gera mensagem de boas-vindas e faz primeira pergunta."""
+        first_q = session.questions[0]
+        text = (
+            f"Olá {session.candidate_name}! Sou a LIA, assistente de recrutamento. "
+            f"Vou fazer {len(session.questions)} perguntas rápidas. "
+            f"Pode começar respondendo: {first_q.text}"
+        )
+        session.state = InterviewState.QUESTIONING
+        session.current_q_idx = 0
+        return self._build_response(session, text)
+
+    async def _handle_answer(
+        self, session: VoiceInterviewSession, answer: str
+    ) -> dict:
+        """Registra resposta atual e avança para próxima pergunta ou scoring."""
+        current_q = session.questions[session.current_q_idx]
+
+        # Registrar resposta
+        session.answers[current_q.question_id] = answer
+
+        # Score parcial via LLM
+        score = await self._score_answer(answer, current_q)
+        session.scores[current_q.question_id] = score
+
+        # Avançar
+        session.current_q_idx += 1
+        if session.current_q_idx < len(session.questions):
+            next_q = session.questions[session.current_q_idx]
+            text = f"Entendido! Próxima pergunta: {next_q.text}"
+        else:
+            session.state = InterviewState.SCORING
+            text = "Perfeito! Aguarde um momento enquanto processo suas respostas."
+
+        return self._build_response(session, text)
+
+    async def _handle_scoring(self, session: VoiceInterviewSession) -> dict:
+        """Calcula score final e prepara mensagem de encerramento."""
+        total = sum(
+            session.scores.get(q.question_id, 0) * q.weight
+            for q in session.questions
+        )
+        session.final_score = round(total, 1)
+        session.state = InterviewState.CLOSING
+        return await self._handle_closing(session)
+
+    async def _handle_closing(self, session: VoiceInterviewSession) -> dict:
+        """Mensagem de encerramento e disparo de webhook ao recrutador."""
+        text = (
+            f"Obrigada {session.candidate_name}! "
+            f"Suas respostas foram registradas com sucesso. "
+            f"O time de RH da empresa entrará em contato em breve. Até logo!"
+        )
+        session.state = InterviewState.DONE
+
+        # Salvar resultado no banco + notificar recrutador
+        await self._save_and_notify(session)
+
+        return {**self._build_response(session, text), "is_done": True}
+
+    async def _score_answer(self, answer: str, question: ScreeningQuestion) -> float:
+        """Scoring via LLM: compara resposta com a resposta ideal."""
+        from app.shared.providers.llm_factory import get_llm
+        llm = get_llm(tier="fast")
+        prompt = f"""
+        Pergunta: "{question.text}"
+        Resposta ideal: "{question.ideal_answer}"
+        Resposta do candidato: "{answer}"
+        
+        Dê um score de 0 a 100 para a adequação da resposta.
+        Responda APENAS com o número inteiro.
+        """
+        resp = await llm.ainvoke(prompt)
+        try:
+            return float(resp.content.strip())
+        except Exception:
+            return 50.0
+
+    def _build_response(self, session: VoiceInterviewSession, text: str) -> dict:
+        progress = session.current_q_idx / max(len(session.questions), 1)
+        return {
+            "agent_text": text,
+            "state": session.state.value,
+            "progress": round(progress, 2),
+            "current_question": session.current_q_idx,
+            "total_questions": len(session.questions),
+            "is_done": session.state == InterviewState.DONE,
+        }
+
+    async def _save_and_notify(self, session: VoiceInterviewSession):
+        """Salva resultado da entrevista e notifica recrutador."""
+        try:
+            from app.services.notification_service import notification_service
+            await notification_service.send(
+                company_id=session.company_id,
+                event_type="voice_screening_completed",
+                title=f"Triagem por voz concluída — {session.candidate_name}",
+                body=f"Score: {session.final_score}/100 · {len(session.questions)} perguntas respondidas",
+                severity="info",
+                channels=["bell", "email"],
+                metadata={
+                    "candidate_id": session.candidate_id,
+                    "job_id": session.job_id,
+                    "score": session.final_score,
+                    "answers": session.answers,
+                    "scores_by_question": session.scores,
+                },
+            )
+        except Exception as e:
+            logger.warning("[VoiceInterview] notify falhou: %s", e)
+
+
+voice_interview_state_machine = VoiceInterviewStateMachine()
+```
+
+**Passo LIA-Voice-2: Endpoint WebSocket para triagem em tempo real**
+
+```python
+# Em app/api/v1/lia_voice.py — adicionar endpoint WebSocket:
+
+@voice_router.websocket("/voice/interview/{session_id}")
+async def voice_interview_ws(
+    websocket: WebSocket,
+    session_id: str,
+    db=Depends(get_db),
+):
+    """
+    WebSocket de entrevista de voz em tempo real.
+    
+    Protocolo:
+      → Cliente envia: {"type": "audio", "data": "<base64>", "format": "audio/webm"}
+      ← Servidor responde: {"type": "agent", "text": "...", "state": "...", "progress": 0.33}
+    
+    Para triagem por telefone, usar POST /voice/interview/{session_id}/phone-call
+    que dispara chamada outbound via openmic_service (já integrado na LIA).
+    """
+    await websocket.accept()
+
+    # Carregar sessão de entrevista do Redis
+    session = await _load_voice_session(session_id)
+    if not session:
+        await websocket.close(code=4004, reason="session_not_found")
+        return
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            if data["type"] == "audio":
+                audio_bytes = base64.b64decode(data["data"])
+                audio_format = data.get("format", "audio/webm")
+
+                response = await voice_interview_state_machine.handle_audio_input(
+                    session, audio_bytes, audio_format
+                )
+
+                # TTS: converter resposta da LIA em áudio
+                audio_response = await voice_service.synthesize_speech(
+                    response["agent_text"], language="pt-BR"
+                )
+                response["agent_audio_b64"] = base64.b64encode(
+                    audio_response
+                ).decode() if audio_response else None
+
+                await websocket.send_json(response)
+
+                if response.get("is_done"):
+                    await websocket.close()
+                    break
+
+    except WebSocketDisconnect:
+        logger.info("[VoiceInterview] ws desconectado: session=%s", session_id)
+
+    except Exception as e:
+        logger.error("[VoiceInterview] erro: %s", e)
+        await websocket.close(code=1011)
+```
+
+**Implementar no v5:** adicionar rota WebSocket em `src/api.py` + criar `src/services/voice_interview_state_machine.py` (mesmo código acima, ajustando imports). O v5 já tem `tts_service.py` e `audio_transcription_service.py` — toda a infraestrutura de voz já está lá.
+
+| Componente | LIA | v5 |
+|---|---|---|
+| STT | `GeminiVoiceService.transcribe_audio()` ✅ | `audio_transcription_service.py` ✅ |
+| TTS | `voice_service.synthesize_speech()` ✅ | `tts_service.py` ✅ |
+| Chamada telefônica | `openmic_service` ✅ | Criar integração OpenMic |
+| State machine | `VoiceInterviewStateMachine` ❌ Criar | ❌ Criar |
+| WebSocket endpoint | `lia_voice.py` — adicionar rota ✅ | `src/api.py` — adicionar rota |
+| Scoring de respostas | `_score_answer()` via LLM ❌ Criar | ❌ Criar |
+
+**Esforço estimado:** 2 sprints (LIA — infraestrutura 80% pronta) · 2.5 sprints (v5)
+
+---
+
+### Resumo: Todos os Tipos de Agente × Esforço × Custo Operacional
+
+| Tipo de Agente | Referência | LIA (sprints) | v5 (sprints) | Custo operacional est. |
+|---|---|---|---|---|
+| **Digital Twins** | Eightfold Andromeda | 3 | 2.5 | ~$0.05/avaliação (LLM few-shot) |
+| **Multi-agent sourcing** | Juicebox Agents 2.0 | 2.5 | 2 | ~$0.02/ciclo (busca + feedback LLM) |
+| **Templates por setor** | Phenom X+ Studio | 1 | 1 | Zero extra (config only) |
+| **Guided autonomy** | hireEZ EZ Agent | 2 | 1.5 | ~$0.10/busca paralela (4 estratégias) |
+| **Voz para triagem** | Phenom Interview · Olivia | 2 | 2.5 | ~$1.70/entrevista (Deepgram + OpenMic) |
+| **Agent Studio (infra base)** | Partes 1 + 2 deste guia | 2+2.5 | 1.5+2.5 | — |
+
+**Sequência recomendada de implementação:**
+```
+Sprint 1-2:  Templates por setor (menor risco, mais impacto de produto)
+Sprint 3-4:  Agent Studio infra (Partes 1+2 — habilita tudo)
+Sprint 5-6:  Multi-agent sourcing (retorno imediato — aceleração de sourcing)
+Sprint 7-8:  Guided autonomy (diferencial competitivo)
+Sprint 9-11: Digital Twins (requer histórico de dados do cliente)
+Sprint 12-13: Voz para triagem (infra 80% pronta, finalizar state machine)
+```
+
+---
+
 ### 🔬 Pesquisa de Mercado: Quem oferece "Agent Studio" em Recrutamento?
 
 > Pesquisa realizada em 19/03/2026 com base em anúncios oficiais, press releases e sites das plataformas.
