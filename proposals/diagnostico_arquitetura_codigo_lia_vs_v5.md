@@ -77,6 +77,55 @@ src/domains/<domain>/
 
 ---
 
+## Painel de Cobertura Expandido — v5 por Domínio (Verificado via GitHub API)
+
+Verificação realizada em 20 de março de 2026 via listagem de diretório via GitHub API (`/repos/WeDOTalent/recruiter_agent_v5/contents/src/domains/<domain>/`). Cada célula indica presença (✅) ou ausência (❌) do arquivo/diretório **dentro do diretório do domínio**. Coluna `[v5 srvcs]` indica disponibilidade em `src/services/` (existe globalmente, mas não integrado individualmente por cada domínio). Coluna `LIA` indica cobertura automática via `EnhancedAgentMixin`.
+
+**Abreviações de coluna:** `appl.` = applies · `eval.` = evaluation · `sched.` = scheduling · `srcp.` = sourced_profile_sourcing · `insig.` = insights · `msg.` = messaging · `auto.` = autonomous
+
+```
+Dimensão / Arquivo                  jobs  appl.  eval.  sched.  srcp.  insig.  msg.   auto.  [v5 srvcs]          LIA
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+── Dimensões originais (Seção 5) ───────────────────────────────────────────────────────────────────────────────────
+fairness.py                          ✅     ❌      ❌      ❌      ✅      ❌      ❌      ❌      ❌                  ✅
+cache.py                             ✅     ✅      ❌      ❌      ✅      ✅      ✅      ❌      ❌                  ✅
+memory.py                            ✅     ✅      ❌      ✅      ✅      ✅      ✅      ❌      ✅ memory/mgr+store  ✅
+cards.py                             ✅     ✅      ❌      ✅      ❌      ❌      ❌      ❌      ❌                  ✅
+tasks.py (Celery)                    ✅     ❌      ✅      ❌      ✅      ❌      ❌      ❌      ❌                  ⚠️
+fact_checker.py                      ❌     ❌      ❌      ❌      ✅      ❌      ❌      ❌      ❌                  ✅
+security.py                          ❌     ❌      ✅      ❌      ❌      ❌      ❌      ❌      ✅ security.py       ✅
+dispatcher.py                        ✅     ❌      ✅      ❌      ✅      ❌      ❌      ❌      ❌                  ✅
+graph.py / nodes.py                  ❌     ❌      ✅      ✅      ❌      ❌      ❌      ✅      ❌                  ✅
+agents/ (sub-agentes)                ❌     ❌      ❌      ❌      ✅      ❌      ❌      ❌      ❌                  ✅
+react_agent.py                       ❌     ✅      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+── Novas dimensões (verificadas em 20/03/2026) ───────────────────────────────────────────────────────────────────────
+audit/ (callback+writer+storage)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ✅ audit/ 4 arqs     ✅
+feedback/ (learning loop)            ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ⚠️ tracker.py basic  ✅
+guardrails.py (persistido em DB)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+confidence.py (calibração certeza)   ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+dlq_service.py (dead letter)         ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ⚠️ rabbitmq_svc.py  ✅
+hiring_policy.py (política/tenant)   ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+checkpoints/ (memória LangGraph)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ✅ checkpointer.py   ✅
+bias_audit.py (snap. + 4/5 rule)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+wsi_interview_graph.py               ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+pii_masking.py (pré-LLM, 4 camadas) ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ⚠️ pii_filter 3 pat ✅
+persona.py (centralizada, YAML)      ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+anti_sycophancy.py                   ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+semantic_intel.py (embed+search)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ✅ semantic_cache.py ✅
+```
+
+**Legenda:** ✅ = presente e integrado · ❌ = ausente · ⚠️ = parcial (existe globalmente com cobertura ou profundidade menor)
+
+**Leitura rápida:**
+- Todas as 13 novas dimensões são **❌ em todos os 8 domínios v5**. Algumas existem em `src/services/` (global), mas sem integração por domínio.
+- A coluna `srcp.` (`sourced_profile_sourcing`) é o domínio v5 mais completo: único com `fact_checker.py` + `fairness.py` + `agents/` + `smart_extractor.py`.
+- O domínio `eval.` (`evaluation`) — que avalia candidatos com score por rubrica — não tem `fairness.py`, `fact_checker.py`, `bias_audit.py` nem `guardrails.py`.
+- `⚠️ tracker.py basic` = v5 tem captura de sinal positivo/negativo; LIA tem `learning_loop_service.py` (1.137L) + snapshot + A/B testing + `validate_learning_batch`.
+- `⚠️ pii_filter 3 pat` = v5 aplica apenas em logging; LIA aplica em 4 camadas incluindo pré-envio ao LLM.
+
+---
+
 ## 1. Contrato Base Compartilhado: DomainPrompt ABC
 
 ### LIA — `lia-agent-system/app/domains/base.py` (linhas 122-171)
@@ -663,26 +712,47 @@ O `applies` pertence ao Grupo 1 pela estrutura de diretório, mas contém `react
 
 ### Tabela de Cobertura por Domínio v5
 
-A presença de cada arquivo foi verificada pela listagem de diretório via GitHub API:
+A presença de cada arquivo foi verificada pela listagem de diretório via GitHub API. Esta tabela é a versão de referência completa — o Painel logo após o Sumário Executivo apresenta o mesmo conteúdo no formato compacto de visão rápida.
+
+**Abreviações:** `appl.` = applies · `eval.` = evaluation · `sched.` = scheduling · `srcp.` = sourced_profile_sourcing · `insig.` = insights · `msg.` = messaging · `auto.` = autonomous · `[srvcs]` = `src/services/` (global, não por domínio)
 
 ```
-                    jobs  applies  evaluation  scheduling  sourced  insights  messaging  autonomous
-fairness.py          ✅     ❌        ❌          ❌          ✅       ❌        ❌          ❌
-cache.py             ✅     ✅        ❌          ❌          ✅       ✅        ✅          ❌
-memory.py            ✅     ✅        ❌          ✅          ✅       ✅        ✅          ❌
-cards.py             ✅     ✅        ❌          ✅          ❌       ❌        ❌          ❌
-tasks.py (Celery)    ✅     ❌        ✅          ❌          ✅       ❌        ❌          ❌
-fact_checker.py      ❌     ❌        ❌          ❌          ✅       ❌        ❌          ❌
-security.py          ❌     ❌        ✅          ❌          ❌       ❌        ❌          ❌
-dispatcher.py        ✅     ❌        ✅          ❌          ✅       ❌        ❌          ❌
-graph.py/nodes       ❌     ❌        ✅          ✅          ❌       ❌        ❌          ✅
-agents/ (subagents)  ❌     ❌        ❌          ❌          ✅       ❌        ❌          ❌
-react_agent.py       ❌     ✅        ❌          ❌          ❌       ❌        ❌          ❌
+Dimensão / Arquivo                  jobs  appl.  eval.  sched.  srcp.  insig.  msg.   auto.  [v5 srvcs]          LIA
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+── Dimensões originais ──────────────────────────────────────────────────────────────────────────────────────────────
+fairness.py                          ✅     ❌      ❌      ❌      ✅      ❌      ❌      ❌      ❌                  ✅
+cache.py                             ✅     ✅      ❌      ❌      ✅      ✅      ✅      ❌      ❌                  ✅
+memory.py                            ✅     ✅      ❌      ✅      ✅      ✅      ✅      ❌      ✅ memory/mgr+store  ✅
+cards.py                             ✅     ✅      ❌      ✅      ❌      ❌      ❌      ❌      ❌                  ✅
+tasks.py (Celery)                    ✅     ❌      ✅      ❌      ✅      ❌      ❌      ❌      ❌                  ⚠️
+fact_checker.py                      ❌     ❌      ❌      ❌      ✅      ❌      ❌      ❌      ❌                  ✅
+security.py                          ❌     ❌      ✅      ❌      ❌      ❌      ❌      ❌      ✅ security.py       ✅
+dispatcher.py                        ✅     ❌      ✅      ❌      ✅      ❌      ❌      ❌      ❌                  ✅
+graph.py / nodes.py                  ❌     ❌      ✅      ✅      ❌      ❌      ❌      ✅      ❌                  ✅
+agents/ (sub-agentes)                ❌     ❌      ❌      ❌      ✅      ❌      ❌      ❌      ❌                  ✅
+react_agent.py                       ❌     ✅      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+── Novas dimensões (verificadas em 20/03/2026) ───────────────────────────────────────────────────────────────────────
+audit/ (callback+writer+storage)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ✅ audit/ 4 arqs     ✅
+feedback/ (learning loop)            ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ⚠️ tracker.py basic  ✅
+guardrails.py (persistido em DB)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+confidence.py (calibração certeza)   ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+dlq_service.py (dead letter)         ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ⚠️ rabbitmq_svc.py  ✅
+hiring_policy.py (política/tenant)   ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+checkpoints/ (memória LangGraph)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ✅ checkpointer.py   ✅
+bias_audit.py (snap. + 4/5 rule)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+wsi_interview_graph.py               ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+pii_masking.py (pré-LLM, 4 camadas) ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ⚠️ pii_filter 3 pat ✅
+persona.py (centralizada, YAML)      ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+anti_sycophancy.py                   ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ❌                  ✅
+semantic_intel.py (embed+search)     ❌     ❌      ❌      ❌      ❌      ❌      ❌      ❌      ✅ semantic_cache.py ✅
 ```
 
-**Resultado:** 2/8 domínios com fairness; 3/8 sem memory; 2/8 sem cache.
+**Legenda:** ✅ = presente e integrado · ❌ = ausente · ⚠️ = parcial (existe globalmente com cobertura ou profundidade menor)
 
-*(Nota: os números "6/8 sem fairness, 3/8 sem memory, 2/8 sem cache" citados no contexto do projeto referem-se à mesma tabela, contando os ❌: fairness=6 sem, memory=3 sem, cache=2 sem.)*
+**Resultado (dimensões originais):** 2/8 domínios com fairness · 3/8 sem memory · 2/8 sem cache
+
+**Resultado (novas dimensões):** 0/8 domínios com audit integrado por domínio · 0/8 com guardrails · 0/8 com bias_audit · 0/8 com pii_masking pré-LLM por domínio
 
 ### Cobertura LIA — Universal por Herança
 
@@ -706,15 +776,27 @@ lia-agent-system/app/shared/
     └── response_filter.py       # ToneFilter
 ```
 
-| Cross-Cutting | LIA | v5 (cobertura máx.) |
-|--------------|-----|---------------------|
-| Fairness | 100% agentes (herança) | 2/8 domínios (opt-in) |
-| Memory | 100% agentes (herança) | 5/8 domínios (opt-in) |
-| Cache | Serviço compartilhado | 6/8 domínios (opt-in) |
-| Circuit breaker | 14 serviços pré-configurados | `src/services/circuit_breaker.py` (singleton global) |
-| Audit trail | 100% agentes (AuditCallback) | Parcial (evaluation, sourced_profile) |
-| Tone filter | Todos via ToneFilter | `src/services/response_filter.py` (global) |
-| PII masking | Log-level (LGPD) | `src/services/pii_filter.py` (global, logging filter) |
+| Cross-Cutting | LIA | v5 por domínio | v5 global (`src/services/`) |
+|--------------|-----|----------------|------------------------------|
+| Fairness | 100% agentes (herança) | 2/8 domínios | ❌ |
+| Memory | 100% agentes (herança) | 5/8 domínios | ✅ `memory/` (manager+store) |
+| Cache | 100% agentes (herança) | 6/8 domínios | ❌ |
+| Audit trail | 100% agentes (AuditCallback) | 0/8 domínios | ✅ `audit/` (4 arquivos) |
+| Fact-checking | 100% via EnhancedAgentMixin | 1/8 domínios | ❌ |
+| Circuit breaker | 14 instâncias pré-configuradas | 0/8 domínios | ✅ singleton global |
+| Tone filter | 100% via ToneFilter | 0/8 domínios | ✅ `response_filter.py` |
+| PII masking pré-LLM (4 camadas) | 100% agentes | 0/8 domínios | ⚠️ `pii_filter.py` (log only, 3 padrões) |
+| Learning loop | 100% via EnhancedAgentMixin | 0/8 domínios | ⚠️ `feedback/tracker.py` (sinal básico) |
+| Guardrails (persistidos em DB) | 100% via EnhancedAgentMixin | 0/8 domínios | ❌ |
+| Confidence calibration | 100% via EnhancedAgentMixin | 0/8 domínios | ❌ |
+| Dead Letter Queue | 100% via `dlq_service.py` | 0/8 domínios | ⚠️ `rabbitmq_service.py` |
+| Hiring Policy (política/tenant) | 100% via policy_middleware | 0/8 domínios | ❌ |
+| Checkpoints (LangGraph memory) | 100% via checkpointer | 0/8 domínios | ✅ `checkpointer.py` (global) |
+| Bias Audit (snapshot + 4/5 rule) | 100% via EnhancedAgentMixin | 0/8 domínios | ❌ |
+| WSI Methodology | cv_screening domain | 0/8 domínios | ❌ |
+| Persona centralizada (YAML) | 100% via prompt_registry | 0/8 domínios | ❌ |
+| Anti-sycophancy (módulo) | 100% via anti_sycophancy_block | 0/8 domínios | ❌ |
+| Inteligência semântica (embed+search) | 100% via embedding_service | 0/8 domínios | ✅ `semantic_cache.py` (cache, não search) |
 
 ### Análise da Diferença Filosófica
 
