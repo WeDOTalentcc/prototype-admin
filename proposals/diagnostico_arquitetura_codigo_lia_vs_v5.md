@@ -264,7 +264,38 @@ async def get_candidate_stage_history(
     }
 ```
 
-**Contraste com v5:** O v5 não tem SQL direto em nenhum domínio. Todas as operações de dados passam por `api_client.py` → HTTP para Rails API. Isso cria uma separação de responsabilidades clara (agentes não conhecem o schema do banco), mas adiciona ~10-100ms de latência por operação.
+**Contraste com v5 — `src/domains/jobs/actions/query.py` (lido via GitHub API):**
+
+```python
+# src/domains/jobs/actions/query.py — QueryActions usa HTTP para Rails, não SQL direto
+class QueryActions(BaseJobAction):
+
+    @require_job_id
+    def show_job_details(self, params: Dict[str, Any], context: DomainContext, **kwargs) -> DomainResponse:
+        job_id = params["job_id"]
+        focus = params.get("focus")
+        api = self.get_api_client(context)   # api_client.py → HTTP para Rails
+
+        # Tier-1: tenta endpoint de contexto enriquecido
+        ctx_resp = api.get_context_for_ai(job_id, tier=1)
+
+        if ctx_resp.success:
+            ctx_data = ctx_resp.data if isinstance(ctx_resp.data, dict) else {}
+            attrs = ctx_data.get("job", ctx_data)
+            pipeline_summary = ctx_data.get("pipeline_summary")
+        else:
+            # Fallback: endpoint padrão
+            resp = api.get_job(job_id, includes=includes)
+            if not resp.success:
+                return DomainResponse(success=False, message=f"❌ Erro ao buscar vaga {job_id}: {resp.error}")
+            attrs = resp.data.get("attributes", resp.data)
+
+        # Formata e retorna card UI
+        metadata["cards"] = [job_detail_card(attrs, pipeline_summary)]
+        return DomainResponse(success=True, message=message, data={...}, metadata=metadata)
+```
+
+**Contraste:** O v5 não tem SQL direto em nenhum domínio lido. Todas as operações de dados passam por `api_client.py` → HTTP para Rails API. A classe `BaseJobAction` encapsula `get_api_client(context)` que resolve o token e a URL base do Rails. Isso cria separação clara (agentes não conhecem o schema do banco), mas adiciona ~10-100ms de latência por operação.
 
 ### 3.2 `domain.py` LIA — keyword matching (linhas 168-192)
 
@@ -626,9 +657,9 @@ lia-agent-system/app/shared/
 
 ### Análise da Diferença Filosófica
 
-**LIA:** `EnhancedAgentMixin.__init_subclass__` injeta compliance automaticamente. Criar agente LIA sem FairnessGuard é impossível sem modificar a classe base.
+**LIA:** `EnhancedAgentMixin.__init_subclass__` injeta compliance automaticamente. Na prática, criar um agente LIA sem FairnessGuard exigiria modificar deliberadamente a classe base ou não herdar de `EnhancedAgentMixin` — a convenção arquitetural torna essa omissão explícita e visível em code review.
 
-**v5:** `fairness.py` por domínio é opt-in. O `FairnessChecker` em `src/services/` existe como recurso disponível, mas 6 dos 8 domínios não o importam. A disciplina falhou.
+**v5:** `fairness.py` por domínio é opt-in. O recurso em `src/services/` existe como opção disponível, mas 6 dos 8 domínios não o conectam ao fluxo de processamento de mensagens do usuário. A disciplina não foi suficiente para garantir cobertura uniforme.
 
 ---
 
@@ -1019,24 +1050,24 @@ class ReActObserver:
 
 ### 8.3 O Caso Concreto que Define o Risco
 
-Na LIA:
+Na LIA, a convenção arquitetural exige herança de `EnhancedAgentMixin`:
 ```python
-# Impossível criar agente sem FairnessGuard:
+# Padrão LIA — omitir EnhancedAgentMixin seria anomalia visível em code review:
 class MeuNovoAgenteLIA(LangGraphReActBase, EnhancedAgentMixin):
-    # FairnessGuard está aqui — sem escolha do desenvolvedor
+    # FairnessGuard disponível via mixin — por padrão em todos os agentes
     pass
 ```
 
-No v5:
+No v5, o contrato `DomainPrompt` não inclui fairness — é responsabilidade por domínio:
 ```python
-# Perfeitamente válido criar domínio sem fairness:
+# Padrão v5 — consistente com a maioria dos domínios existentes:
 class MeuNovoDominioV5(DomainPrompt):
     async def execute_action(self, action_id, params, context):
-        # Nenhum FairnessGuard aqui — esqueceu ou não sabia
+        # FairnessChecker não faz parte do contrato DomainPrompt
         return await self._do_something(params)
 ```
 
-O v5 `autonomous` domain — que toma **decisões autônomas com timeout global de 180s e HARD_BUDGET=50 tool calls** — não tem fairness.py.
+**Evidência empírica:** O v5 `autonomous` domain — que toma decisões autônomas com timeout global de 180s e HARD_BUDGET=50 tool calls — não tem fairness.py. O domínio `evaluation` — que avalia candidatos — também não tem fairness.py. Apenas `jobs` e `sourced_profile_sourcing` (2/8) implementaram o arquivo.
 
 ---
 
@@ -1279,24 +1310,24 @@ O comentário `"Compatible with existing BaseAgent but independent"` em `base.py
 
 ### A Diferença Filosófica Fundamental
 
-**LIA: Compliance como restrição estrutural**
+**LIA: Compliance como convenção estrutural obrigatória por padrão**
 
 ```python
-# Impossível criar agente LIA sem FairnessGuard:
+# Padrão LIA — EnhancedAgentMixin é parte da convenção de todos os agentes:
 class NovoAgente(LangGraphReActBase, EnhancedAgentMixin):
-    pass  # FairnessGuard já está aqui
+    pass  # FairnessGuard disponível via mixin — omissão seria anomalia em code review
 ```
 
-**v5: Compliance como responsabilidade do desenvolvedor**
+**v5: Compliance como responsabilidade do desenvolvedor de cada domínio**
 
 ```python
-# Totalmente válido criar domínio v5 sem fairness:
+# Padrão v5 — consistente com 6 dos 8 domínios existentes:
 class NovoDominio(DomainPrompt):
     async def execute_action(self, action_id, params, context):
-        return await self._do_something(params)  # sem fairness
+        return await self._do_something(params)  # fairness não é parte do contrato
 ```
 
-**O resultado empírico:** 6/8 domínios v5 sem fairness.
+**O resultado empírico verificado por leitura de código:** 6/8 domínios v5 sem fairness.py conectado ao fluxo de processamento de intenção do usuário.
 
 ### Veredicto por Dimensão
 
