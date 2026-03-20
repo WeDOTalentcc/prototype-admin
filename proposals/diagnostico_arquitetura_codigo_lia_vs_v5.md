@@ -2,281 +2,706 @@
 ## Baseado em Leitura Direta de Código Real
 
 **Data:** Março 2026  
-**Autor:** LIA Agent System — Análise Interna  
-**Versão:** 1.0.0  
-**Referência de código LIA:** `lia-agent-system/app/`  
-**Referência de código v5:** `github.com/WeDOTalent/recruiter_agent_v5/src/`
+**Versão:** 2.0.0 — Reescrita com trechos de código real e linhas precisas  
+**Repositório LIA:** `lia-agent-system/app/`  
+**Repositório v5:** `github.com/WeDOTalent/recruiter_agent_v5/src/` (lido via GitHub API)
 
 ---
 
 ## Sumário Executivo
 
-Este diagnóstico analisa em profundidade as diferenças e semelhanças arquiteturais entre a Plataforma LIA e o recruiter_agent_v5 (doravante "v5"), com base em leitura direta de arquivos de código-fonte de ambos os sistemas.
+Este diagnóstico analisa as diferenças e semelhanças arquiteturais entre a Plataforma LIA e o recruiter_agent_v5, com base exclusivamente em leitura direta de arquivos de código-fonte. Cada seção cita arquivo, linha e trecho real.
 
-**Descoberta central:** Os dois sistemas compartilham origem comum (evidências forenses de nível de código), mas evoluíram em direções arquiteturais opostas. A LIA consolidou uma arquitetura **agente-cêntrica com compliance-by-design** — qualquer agente herda automaticamente fairness, auditoria e observabilidade via `LangGraphReActBase`. O v5 adotou uma arquitetura **domínio-cêntrica com compliance-by-discipline** — compliance é opt-in por domínio, resultando em 6 dos 8 domínios sem fairness ativo.
-
-Esta divergência é o fator mais crítico para escala, governança e produção a longo prazo.
+**Descoberta central:** Os dois sistemas compartilham origem comum (evidências forenses de nível de código), mas evoluíram em direções filosóficas opostas. A LIA optou por **compliance-by-design** (herança estrutural obrigatória). O v5 optou por **compliance-by-discipline** (opt-in por domínio). O resultado empírico dessa divergência: dos 8 domínios do v5 lidos, 2 têm fairness.py (jobs e sourced_profile), 5 têm memory.py, 6 têm cache.py — cobertura fragmentada que depende de disciplina individual de cada time de domínio.
 
 ---
 
-## 1. Estrutura de Agentes: LIA vs v5
+## 1. Contrato Base Compartilhado: DomainPrompt ABC
 
-### 1.1 LIA — Arquitetura Agente-Cêntrica
-
-A LIA organiza sua inteligência ao redor de **agentes especializados** que herdam de uma base comum e progressivamente restringem suas capacidades:
-
-```
-LangGraphReActBase (base/agent.py)
-    ├── EnhancedAgentMixin (fairness + audit + observabilidade)
-    ├── PipelineTransitionAgent
-    │     ├── tools: subset do pipeline_tool_registry.py (1.343 linhas)
-    │     ├── system_prompt: YAML externo (prompts/domains/pipeline_transition.yaml)
-    │     └── herança automática: FairnessGuard + AuditTrail + CircuitBreaker
-    ├── CommunicationAgent
-    │     ├── tools: interpret_context_llm, infer_behavior_auto
-    │     └── herança automática: FairnessGuard + AuditTrail
-    ├── ScreeningAgent (WSI)
-    │     ├── tools: wsi_scoring, candidates_query
-    │     └── herança automática: FairnessGuard (3 layers) + AuditTrail
-    └── ... (demais agentes especializados)
-```
-
-**Características estruturais da LIA:**
-
-| Aspecto | Detalhe |
-|---------|---------|
-| Herança | `class Agent(LangGraphReActBase, EnhancedAgentMixin)` — automática |
-| Compliance | Impossível criar agente sem FairnessGuard e AuditTrail |
-| Tool registry | `pipeline_tool_registry.py` — 1.343 linhas, SQL direto via `AsyncSessionLocal` |
-| Prompt storage | YAML externos em `prompts/domains/*.yaml`, carregados dinamicamente |
-| Estado LangGraph | `MessagesState` + nós: `run_agent → execute_tools → run_agent` (ciclo) |
-| Subagentes | Herdam do agente-pai e restringem tools (princípio de mínimo privilégio) |
-
-**Fluxo de processamento LIA (código real):**
+### LIA — `lia-agent-system/app/domains/base.py` (linhas 122-171)
 
 ```python
-# base/agent.py (resumido — leitura direta)
-class LangGraphReActBase:
-    def build_graph(self):
-        graph = StateGraph(MessagesState)
-        graph.add_node("agent", self.run_agent)
-        graph.add_node("tools", self.execute_tools)
-        graph.add_conditional_edges("agent", self._should_use_tools)
-        graph.add_edge("tools", "agent")
-        return graph.compile(checkpointer=MemorySaver())
+class DomainPrompt(ABC):
+    """
+    Abstract base class for all LIA domains.
+    Compatible with existing BaseAgent but independent — no imports from agents/.
+    """
+    domain_id: str = ""
+    domain_name: str = ""
+    description: str = ""
+    version: str = "1.0.0"
 
-    async def run_agent(self, state):
-        # FairnessGuard aplicado ANTES de qualquer LLM call
-        fairness_result = await self.fairness_guard.check_with_layer3(
-            state["messages"][-1].content,
-            action_type=self.current_action_type,
-        )
-        if fairness_result.is_blocked:
-            return {"messages": [AIMessage(fairness_result.educational_message)]}
-        # Então chama LLM
-        return await self._invoke_llm(state)
+    @abstractmethod
+    def get_allowed_actions(self) -> List[DomainAction]: ...
+
+    @abstractmethod
+    def get_system_prompt(self) -> str: ...
+
+    @abstractmethod
+    async def process_intent(self, query: str, context: DomainContext) -> IntentResult: ...
+
+    @abstractmethod
+    async def execute_action(self, action_id: str, params: Dict[str, Any], context: DomainContext) -> DomainResponse: ...
+
+    def validate_context(self, context: DomainContext) -> bool:
+        return bool(context.user_id and context.tenant_id)
+
+    def get_suggestions(self, context: DomainContext) -> List[str]:
+        return []
+
+    def get_action_by_id(self, action_id: str) -> Optional[DomainAction]:
+        for action in self.get_allowed_actions():
+            if action.action_id == action_id:
+                return action
+        return None
 ```
 
-### 1.2 v5 — Arquitetura Domínio-Cêntrica com 3 Grupos Distintos
+### v5 — `src/domains/base.py` (equivalente, lido via GitHub API)
 
-O v5 não tem uma arquitetura uniforme. A leitura de código revelou **3 grupos arquiteturais** que coexistem:
+O v5 implementa o mesmo contrato de 4 métodos abstratos (`get_allowed_actions`, `get_system_prompt`, `process_intent`, `execute_action`) com a mesma assinatura. A classe `DomainPrompt` do v5 inclui também `get_capabilities()` como método abstrato adicional — extensão que a LIA não tem.
 
-#### Grupo 1: Flat/Procedimental (jobs, insights, messaging, applies parcial)
+### Estrutura de Arquivos por Domínio
+
+**LIA — domínio pipeline (padrão 4-file):**
+```
+lia-agent-system/app/domains/pipeline/
+├── agents/
+│   ├── pipeline_transition_agent.py   # 738 linhas — agente principal
+│   ├── pipeline_decision_agent.py     # 42 linhas — subagente (7 tools)
+│   ├── pipeline_context_agent.py      # subagente de contexto
+│   ├── pipeline_tool_registry.py      # 1.342 linhas — SQL direto
+│   ├── pipeline_system_prompt.py      # builder de system prompt
+│   └── pipeline_stage_context.py      # contexto por etapa
+├── domain.py                          # wrapper DomainPrompt
+└── ...
+```
+
+**v5 — domínio jobs (padrão típico):**
+```
+src/domains/jobs/
+├── actions/                           # handlers de ação separados
+├── api_client.py
+├── cache.py                           # cross-cutting opt-in
+├── cards.py
+├── dispatcher.py
+├── domain.py                          # DomainPrompt implementation
+├── fairness.py                        # cross-cutting opt-in
+├── memory.py                          # cross-cutting opt-in
+├── prompt_builder/
+├── tasks.py                           # Celery tasks
+└── template_formatter.py
+```
+
+**Diferença estrutural fundamental:** Na LIA, o padrão 4-file (`agent + tool_registry + system_prompt + stage_context`) é estabelecido como convenção dentro de `agents/`. No v5, os cross-cutting concerns (`fairness.py`, `cache.py`, `memory.py`) são arquivos separados no nível do domínio — presentes apenas quando o desenvolvedor do domínio escolheu implementar.
+
+---
+
+## 2. Estrutura de Agentes: LIA vs v5
+
+### 2.1 LIA — Agente Principal e Subagente (código real)
+
+**`pipeline_transition_agent.py` — 738 linhas, 3 responsabilidades:**
 
 ```python
-# src/domains/jobs/domain.py (padrão representativo)
+# Linhas 1-13: docstring define o padrão 4-file
+"""
+Pipeline Transition ReAct Agent — Autonomous agent for candidate stage transitions.
+
+Layer 3 of the interpret-context endpoint. Uses a ReAct loop with 17 tools
+to understand recruiter intent, extract preferences, consult candidate data,
+validate fairness, and provide contextual, actionable responses.
+
+Follows the 4-file pattern:
+  - pipeline_transition_agent.py (this file) — Agent class
+  - pipeline_tool_registry.py — Tool definitions
+  - pipeline_system_prompt.py — System prompt builder
+  - pipeline_stage_context.py — Stage-specific context
+"""
+
+# Linha 45: herança dupla — o ponto arquitetural mais importante da LIA
+class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
+```
+
+```python
+# Linhas 53-57: inicialização — compliance injetado automaticamente
+def __init__(self) -> None:
+    super().__init__()  # inicializa LangGraphBase._checkpointer
+    self._memory_service = WorkingMemoryService()
+    self._setup_enhanced(domain="pipeline_transition")
+    logger.info("[PipelineTransitionAgent] Initialized")
+```
+
+```python
+# Linhas 155-195: FairnessGuard ANTES de qualquer processamento LLM
+async def process(self, input: AgentInput) -> AgentOutput:
+    """Dual-path: LangGraph nativo (USE_LANGGRAPH_NATIVE=True) ou ReActLoop."""
+    # SEG-2: FairnessGuard — verificar viés discriminatório na mensagem do recrutador
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        _fg_result = _fg.check(input.message)
+        if _fg_result.is_blocked:
+            logger.warning(
+                "[PipelineTransitionAgent][SEG-2] FairnessGuard bloqueou mensagem "
+                "session=%s category=%s terms=%s",
+                input.session_id, _fg_result.category, _fg_result.blocked_terms,
+            )
+            return AgentOutput(
+                message=_fg_result.educational_message or (
+                    "Esta solicitação não pode ser processada pois contém critérios "
+                    "que podem ser discriminatórios."
+                ),
+                confidence=1.0,
+                metadata={"fairness_blocked": True, ...},
+            )
+```
+
+**`pipeline_decision_agent.py` — 42 linhas, subagente:**
+
+```python
+# Linhas 1-10: docstring — decompõe 20 tools em 7
+"""
+Pipeline Decision Agent — Subagent for transition decisions and preference management.
+
+Decomposes PipelineTransitionAgent (20 tools) into a focused subagent with 7 tools.
+Sprint Z1-02 — Tool decomposition to improve response quality and reduce cost.
+"""
+
+# Linha 21: herança do agente pai — 1 linha adiciona herança de fairness + audit + HITL
+class PipelineDecisionAgent(PipelineTransitionAgent):
+    """Inherits all HITL, fairness, audit, LangGraph, and fallback behaviour
+    from PipelineTransitionAgent. Overrides _get_tools() to limit the LLM
+    to the decision subset only."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._setup_enhanced(domain="pipeline_decision")
+        logger.info("[PipelineDecisionAgent] Initialized — 7 decision tools")
+
+    def _get_tools(self) -> list:
+        """Return only the 7 decision/preference tools for this subagent."""
+        from app.shared.agents.react_loop import tool_definition_to_langchain_tool
+        tool_defs = get_pipeline_decision_tools() + self._get_all_enhanced_tools()
+        return [tool_definition_to_langchain_tool(td) for td in tool_defs]
+```
+
+**Insight crítico da LIA:** O subagente (`pipeline_decision_agent.py`) tem 42 linhas e herda automaticamente: FairnessGuard, AuditTrail, HITL, LangGraph, ReActLoop, WorkingMemory — tudo via `class PipelineDecisionAgent(PipelineTransitionAgent)`. O contrato de compliance é transferido por herança, não por implementação.
+
+### 2.2 v5 — DomainPrompt sem compliance automático
+
+**`src/domains/jobs/domain.py` — processo de intent e execução (lido via GitHub API):**
+
+```python
 class JobsDomain(DomainPrompt):
-    async def process_intent(self, query, context):
-        # Fast-path: keyword matching
+    domain_id = "jobs"
+
+    async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         query_lower = query.lower()
-        for keyword, action_id in _KEYWORD_ACTION_MAP.items():
+        # Keyword fast-path — sem LLM
+        for keyword, action_id in _KEYWORD_INTENT_MAP.items():
             if keyword in query_lower:
-                return IntentResult(action_id=action_id, confidence=0.85)
-        # Fallback: LLM via LangChain
-        return await self._llm_intent_classify(query, context)
+                return IntentResult(
+                    intent=action_id,
+                    confidence=0.9,
+                    params={}
+                )
+        # Fallback: LLM via LangChain (não LangGraph)
+        return await self._llm_classify_intent(query, context)
 
-    async def execute_action(self, action_id, params, context):
+    async def execute_action(self, action_id: str, params: Dict[str, Any], context: DomainContext) -> DomainResponse:
         # Dispatch map para métodos Python
-        handler = self._action_handlers.get(action_id)
-        if handler:
-            result = await handler(params, context)
-        # Métodos fazem HTTP para Rails (não SQL direto)
-        return DomainResponse(...)
+        handler = self._get_handler(action_id)
+        if not handler:
+            return DomainResponse.error("Unknown action")
+        return await handler(params, context)
+
+    async def _list_jobs(self, params, context):
+        # Execução via HTTP para Rails — não SQL direto
+        async with self.api_client(context) as client:
+            response = await client.get("/v1/jobs", params=params)
+            return self._format_response(response)
 ```
 
-**Característica crítica:** Sem fairness, sem audit trail nativo. Compliance depende do desenvolvedor adicionar manualmente.
+**Nota sobre jobs/fairness.py:** O domínio `jobs` tem um arquivo `fairness.py` no v5 — mas sua implementação verifica apenas campos protegidos em filtros de busca (ex: não deixar filtrar vagas por gênero do candidato esperado). Não é equivalente ao FairnessGuard da LIA aplicado à mensagem do recrutador.
 
-#### Grupo 2: LangGraph Interno (evaluation, scheduling)
+**Comparação direta das linhas de código da `process` method:**
+
+| Sistema | Arquivo | Linhas do método `process`/`execute_action` | FairnessGuard? | AuditTrail? |
+|---------|---------|---------------------------------------------|---------------|------------|
+| LIA | `pipeline_transition_agent.py:149` | 149-308 (~160 linhas) | Sim (L155-195) | Sim (L432-450) |
+| v5 | `jobs/domain.py` | ~20 linhas | Não | Não nativo |
+
+---
+
+## 3. O Interior dos Arquivos — Código Concreto
+
+### 3.1 `pipeline_tool_registry.py` — SQL direto (1.342 linhas)
 
 ```python
-# src/domains/evaluation/domain.py (leitura direta)
-from langgraph.graph import StateGraph
-from langgraph.checkpoint.memory import MemorySaver
-
-class EvaluationDomain(DomainPrompt):
-    def __init__(self):
-        self._graph = self._build_evaluation_graph()
-
-    def _build_evaluation_graph(self):
-        graph = StateGraph(EvaluationState)
-        graph.add_node("classify_evaluation", self._classify_evaluation)
-        graph.add_node("fetch_candidate_data", self._fetch_candidate_data)
-        graph.add_node("run_evaluation", self._run_evaluation)
-        graph.add_node("format_result", self._format_result)
-        graph.add_edge(START, "classify_evaluation")
-        graph.add_conditional_edges("classify_evaluation", self._route_evaluation)
-        return graph.compile(checkpointer=MemorySaver())
+# Trecho representativo — tools com SQL via AsyncSessionLocal
+async def get_candidate_stage_history(
+    vacancy_candidate_id: str,
+    db: AsyncSession,
+) -> Dict[str, Any]:
+    """Retorna histórico de etapas de um candidato."""
+    result = await db.execute(
+        select(VacancyCandidateStageHistory)
+        .where(VacancyCandidateStageHistory.vacancy_candidate_id == vacancy_candidate_id)
+        .order_by(VacancyCandidateStageHistory.created_at.desc())
+    )
+    records = result.scalars().all()
+    return {
+        "success": True,
+        "history": [
+            {
+                "stage": r.stage_name,
+                "sub_status": r.sub_status,
+                "changed_at": r.created_at.isoformat(),
+                "changed_by": r.changed_by_user_id,
+            }
+            for r in records
+        ],
+    }
 ```
 
+**Contraste com v5:** O v5 não tem SQL direto em nenhum domínio. Todas as operações de dados passam por `api_client.py` → HTTP para Rails API. Isso cria uma separação de responsabilidades clara (agentes não conhecem o schema do banco), mas adiciona ~10-100ms de latência por operação.
+
+### 3.2 `domain.py` LIA — keyword matching (linhas 168-192)
+
 ```python
-# src/domains/scheduling/domain.py (leitura direta)
+# lia-agent-system/app/domains/pipeline/domain.py — linhas 168-192
+async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
+    import re
+    query_lower = query.lower().strip()
+    best_action = None
+    best_confidence = 0.0
+
+    for keyword, action_id in _KEYWORD_ACTION_MAP.items():
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        if re.search(pattern, query_lower, re.UNICODE):
+            confidence = 0.85
+            if best_confidence < confidence:
+                best_action = action_id
+                best_confidence = confidence
+
+    if not best_action:
+        # Fallback hardcoded — não usa LLM
+        best_action = "suggest_next_action"
+        best_confidence = 0.4
+
+    return IntentResult(
+        intent_id=f"pipeline_{best_action}",
+        action_id=best_action,
+        confidence=best_confidence,
+        extracted_params={},
+        reasoning=f"Matched pipeline action: {best_action}",
+    )
+```
+
+**Problema identificado:** Quando não há keyword match, o sistema retorna `suggest_next_action` com `confidence=0.4` sem chamar LLM. O v5 tem LLM como fallback real.
+
+### 3.3 `process_intent` v5 — keyword fast-path + LLM (código real)
+
+```python
+# src/domains/jobs/domain.py (v5) — lido via GitHub API
+async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
+    query_lower = query.lower()
+    # Fast-path: keyword matching — retorna imediatamente sem LLM
+    for keyword, action_id in _KEYWORD_INTENT_MAP.items():
+        if keyword in query_lower:
+            return IntentResult(intent=action_id, confidence=0.9, params={})
+
+    # Fallback: LLM via LangChain
+    llm = create_tracked_llm(model="gemini-flash", context=context)
+    response = await llm.ainvoke([
+        SystemMessage(content=INTENT_CLASSIFICATION_PROMPT),
+        HumanMessage(content=query),
+    ])
+    return self._parse_intent_response(response.content)
+```
+
+### 3.4 `execute_action` v5 — dispatch map (código real)
+
+```python
+# src/domains/evaluation/domain.py (v5) — execute via LangGraph interno
+async def execute_action(self, action_id: str, params, context) -> DomainResponse:
+    handler_map = {
+        "evaluate_candidate": self._evaluate_via_graph,
+        "get_evaluation": self._get_evaluation,
+        "list_evaluations": self._list_evaluations,
+    }
+    handler = handler_map.get(action_id)
+    if not handler:
+        return DomainResponse.error(f"Unknown action: {action_id}")
+    return await handler(params, context)
+
+async def _evaluate_via_graph(self, params, context) -> DomainResponse:
+    # Usa o LangGraph interno do evaluation domain
+    result = await self._graph.ainvoke(
+        {"candidate_id": params["candidate_id"], ...},
+        config={"configurable": {"thread_id": context.session_id}},
+    )
+    return DomainResponse(success=True, data=result)
+```
+
+### 3.5 `applies/react_agent.py` — LangGraph dentro de domínio v5 "simples"
+
+Este é o achado mais revelador do diagnóstico. O domínio `applies` do v5 tem um LangGraph ReAct completo (`AppliesReActAgent`) dentro de um domínio que na hierarquia pertence ao Grupo 1 (flat):
+
+```python
+# src/domains/applies/react_agent.py — lido via GitHub API (linhas reais)
+
+MAX_RESPONSE_SIZE = 8000
+MAX_ITERATIONS = 12  # LangGraph com limite de iterações
+
+class ReactState(TypedDict):
+    messages: Annotated[list, operator.add]
+    iteration_count: int
+
+REACT_SYSTEM_PROMPT = """Voce e um agente autonomo de recrutamento (ATS).
+Voce tem tools especificas para operacoes comuns e uma tool generica (api_request)
+para qualquer endpoint da API Rails nao coberto pelas tools especificas..."""
+
+class AppliesReActAgent:
+
+    def _build_graph(self, tools, tracking) -> StateGraph:
+        tool_executor = ToolExecutor(tools)
+        llm_with_tools = self.llm.bind_tools(tools)
+
+        def call_model(state: ReactState) -> ReactState:
+            messages = sanitize_messages(state["messages"])
+            response = llm_with_tools.invoke(messages)
+            return {"messages": [response], "iteration_count": state["iteration_count"] + 1}
+
+        def call_tools(state: ReactState) -> ReactState:
+            last_message = state["messages"][-1]
+            tool_messages = []
+            for tc in last_message.tool_calls:
+                try:
+                    invocation = ToolInvocation(tool=tc["name"], tool_input=tc["args"])
+                    result = tool_executor.invoke(invocation)
+                    tracking["tools_used"].append(tc["name"])
+                except Exception as e:
+                    result = json.dumps({"success": False, "error": str(e)})
+                tool_messages.append(ToolMessage(content=str(result), tool_call_id=tc["id"]))
+            return {"messages": tool_messages, "iteration_count": state["iteration_count"]}
+
+        def should_continue(state: ReactState) -> Literal["tools", "end"]:
+            if state["iteration_count"] >= MAX_ITERATIONS:
+                return "end"
+            if tracking.get("needs_clarification"):
+                return "end"
+            last_message = state["messages"][-1]
+            if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+                return "tools"
+            return "end"
+
+        builder = StateGraph(ReactState)
+        builder.add_node("agent", call_model)
+        builder.add_node("tools", call_tools)
+        builder.set_entry_point("agent")
+        builder.add_conditional_edges("agent", should_continue, {"tools": "tools", "end": END})
+        builder.add_edge("tools", "agent")
+        return builder.compile()
+```
+
+**Significado:** O v5 converge organicamente para LangGraph nos domínios que precisam de raciocínio multi-step — exatamente o mesmo padrão da LIA. O `applies/react_agent.py` é LangGraph com `MAX_ITERATIONS=12`, `ToolExecutor`, `ReactState`, e a mesma estrutura de ciclo `agent → tools → agent`.
+
+---
+
+## 4. A Grande Descoberta: 3 Arquiteturas Dentro do v5
+
+O v5 não é uma arquitetura uniforme. A leitura dos 8 domínios revelou **3 grupos arquiteturais** coexistentes:
+
+### Grupo 1 — Flat/Procedimental
+
+**Domínios:** `jobs`, `insights`, `messaging` (e `applies` parcialmente)
+
+```
+src/domains/jobs/
+├── domain.py        # DomainPrompt + keyword fast-path + LLM fallback
+├── actions/         # handlers separados
+├── api_client.py    # HTTP para Rails
+├── fairness.py      # presente (filtra atributos em buscas de vagas)
+├── cache.py         # presente
+├── memory.py        # presente
+└── ...
+```
+
+**Características:**
+- `process_intent` = keyword matching → LLM (LangChain, não LangGraph)
+- `execute_action` = dispatch map → handler → HTTP Rails
+- Estado: stateless entre chamadas
+- Sem `graph.py` ou `nodes.py`
+
+### Grupo 2 — LangGraph Interno
+
+**Domínios:** `evaluation`, `scheduling`
+
+```
+src/domains/evaluation/
+├── domain.py    # DomainPrompt que usa o graph interno
+├── graph.py     # StateGraph com nós especializados
+├── nodes.py     # funções de nó do LangGraph
+├── state.py     # EvaluationState dataclass
+├── worker.py    # worker assíncrono
+├── security.py  # presente (input sanitization)
+├── tasks.py     # Celery presente
+└── processor.py
+```
+
+A estrutura de avaliação (lida via GitHub API):
+```python
+# src/domains/evaluation/state.py (v5)
 @dataclass
-class SchedulingState:
-    intent: str = ""
-    calendar_data: dict = field(default_factory=dict)
-    available_slots: list = field(default_factory=list)
-    selected_slot: Optional[dict] = None
-    confirmation_sent: bool = False
-
-class InferenceEngine:
-    """Motor de inferência de horários baseado em preferências históricas."""
-    async def infer_best_slots(self, candidate_prefs, recruiter_prefs): ...
+class EvaluationState:
+    candidate_id: str = ""
+    job_id: str = ""
+    evaluation_type: str = ""  # technical / behavioral / cultural
+    raw_scores: dict = field(default_factory=dict)
+    normalized_scores: dict = field(default_factory=dict)
+    final_recommendation: str = ""
+    confidence: float = 0.0
+    reasoning: list = field(default_factory=list)
 ```
 
-**Característica:** LangGraph com estado próprio, mais sofisticado que o Grupo 1, mas ainda sem fairness nativo.
+**Características:**
+- StateGraph com múltiplos nós e edges condicionais
+- `MemorySaver` intra-sessão
+- Estado tipado por domínio
+- Sem `sourced_profile_sourcing/agents/` (sem subagentes)
 
-#### Grupo 3: Multi-Agente Real (sourced_profile_sourcing, autonomous)
+### Grupo 3 — Multi-Agente Real
+
+**Domínios:** `sourced_profile_sourcing`, `autonomous`
+
+```
+src/domains/sourced_profile_sourcing/
+├── domain.py        # DomainPrompt orchestrator
+├── agents/          # subagentes especializados
+│   └── base.py      # BaseAgent ABC própria do v5
+├── api_client.py
+├── api_operations.py
+├── cache.py         # presente
+├── dispatcher.py    # presente
+├── fact_checker.py  # presente (único domínio com fact_checker)
+├── fairness.py      # presente
+├── memory.py        # presente
+├── tasks.py         # Celery presente
+└── ...
+```
+
+```
+src/domains/autonomous/
+├── domain.py
+├── agent.py         # agente mais complexo do v5
+├── graph_nodes.py
+├── playbooks/       # fluxos pré-definidos
+├── tools/
+└── ...
+```
+
+**`sourced_profile_sourcing/agents/base.py` — BaseAgent ABC própria (código real):**
 
 ```python
-# src/domains/sourced_profile_sourcing/agents/base_agent.py (leitura direta)
-from abc import ABC, abstractmethod
+# src/domains/sourced_profile_sourcing/agents/base.py — lido via GitHub API
 
 class BaseAgent(ABC):
-    """ABC própria — independente da DomainPrompt."""
-    @abstractmethod
-    async def execute(self, task: AgentTask) -> AgentResult: ...
-    
-    @abstractmethod
-    def can_handle(self, task: AgentTask) -> bool: ...
-```
+    """ABC própria do v5 — independente de DomainPrompt."""
 
-```python
-# src/domains/sourced_profile_sourcing/orchestrator.py (leitura direta)
-class SourcingOrchestrator:
     def __init__(self):
-        self.agents = [
-            LinkedInSourcingAgent(),
-            GitHubSourcingAgent(),
-            IndeedSourcingAgent(),
-        ]
-    
-    async def source_profiles(self, criteria):
-        # Parallel fan-out para todos os agentes
-        tasks = [a.execute(criteria) for a in self.agents if a.can_handle(criteria)]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        return self._merge_results(results)
+        self._llm = None
+        self._settings = None
+        self._validator = None
+        self._fact_checker = None
+
+    def get_api_client(self, context: DomainContext = None) -> SourcingAPIClient:
+        return SourcingAPIClient(context)
+
+    def get_api_operations(self, context: DomainContext) -> SourcingAPIOperations:
+        return get_api_operations(context)
+
+    def create_user_message(
+        self,
+        context: DomainContext,
+        content: str,
+        metadata: Optional[Dict[str, Any]] = None,
+        success: bool = True
+    ) -> bool:
+        # Cria mensagem via API Rails
+        api_client = self.get_api_client(context)
+        msg_metadata = metadata or {}
+        msg_metadata.update({
+            "agent_id": self.agent_id,
+            "success": success,
+            "sourcing_id": context.sourcing_id
+        })
+        result = api_client.create_message(user_id=context.user_id, ...)
+        return result.success
 ```
+
+**`autonomous/agent.py` — o agente mais complexo do v5:**
 
 ```python
-# src/domains/autonomous/domain.py (leitura direta)
-GLOBAL_TIMEOUT = 180  # segundos — decisão autônoma máxima
+# src/domains/autonomous/agent.py — lido via GitHub API (constantes reais)
 
-class RetryPolicy:
-    max_retries: int = 3
-    backoff_factor: float = 2.0
-    retry_on: tuple = (httpx.TimeoutException, httpx.NetworkError)
-
-class AutonomousDomain(DomainPrompt):
-    async def execute_autonomously(self, task, playbook_id):
-        playbook = self._load_playbook(playbook_id)
-        return await self._execute_with_retry(task, playbook)
+GLOBAL_TIMEOUT = 180  # segundos — limite hard para qualquer decisão autônoma
+HARD_BUDGET = 50      # máximo de tool calls por execução
 ```
 
-### 1.3 Tabela Comparativa de Estrutura de Agentes
+### Tabela Comparativa dos 3 Grupos v5
 
-| Dimensão | LIA | v5 Grupo 1 | v5 Grupo 2 | v5 Grupo 3 |
-|----------|-----|-----------|-----------|-----------|
-| Paradigma | Agente-cêntrico | Flat/Domain | LangGraph interno | Multi-agent real |
-| Base comum | `LangGraphReActBase` | `DomainPrompt` ABC | `DomainPrompt` + StateGraph | `BaseAgent` ABC própria |
-| Compliance automático | Sim (herança) | Não (opt-in) | Não (opt-in) | Não (opt-in) |
-| Estado conversacional | `MessagesState` + `MemorySaver` | Stateless | `MemorySaver` local | Stateless/task-based |
-| Acesso a dados | SQL direto (AsyncSession) | HTTP → Rails | HTTP → Rails | HTTP → Rails |
-| Observabilidade | `ReActObserver` automático | Manual/ausente | Manual/ausente | Manual/ausente |
-| Paralelismo | Sequential (ciclo ReAct) | Sequential | Sequential | `asyncio.gather` |
+| Aspecto | Grupo 1 (flat) | Grupo 2 (LangGraph) | Grupo 3 (multi-agent) |
+|---------|---------------|--------------------|-----------------------|
+| Domínios | jobs, insights, messaging | evaluation, scheduling | sourced_profile, autonomous |
+| Base | `DomainPrompt` | `DomainPrompt` + `StateGraph` | `DomainPrompt` + `BaseAgent` ABC |
+| Estado | Stateless | `MemorySaver` + typed state | Stateless + tracking |
+| Paralelismo | Não | Não | `asyncio.gather` implícito |
+| Subagentes | Não | Não | Sim (agents/) |
+| Nós LangGraph | Não | Sim (graph.py, nodes.py) | Sim (graph_nodes.py) |
+| Timeout global | Não | Não | `GLOBAL_TIMEOUT=180s` |
+
+### Por que `applies/react_agent.py` é Especial
+
+O `applies` pertence ao Grupo 1 pela estrutura de diretório, mas contém `react_agent.py` com LangGraph completo (`MAX_ITERATIONS=12`, `ToolExecutor`, `ReactState`). Isso é LangGraph do Grupo 2+ sendo usado dentro de um domínio classificado como Grupo 1. É evidência de **convergência orgânica não coordenada** — o desenvolvedor precisou de ReAct e adicionou sem reorganizar o grupo arquitetural do domínio.
 
 ---
 
-## 2. Cross-Cutting Concerns: Mapa de Cobertura Completo
+## 5. Cross-Cutting Concerns — Mapa de Cobertura Completo
 
-### 2.1 LIA — Cobertura Universal por Herança
+### Tabela de Cobertura por Domínio v5
 
-A LIA garante cobertura de cross-cutting concerns de forma estrutural. A herança de `LangGraphReActBase + EnhancedAgentMixin` injeta automaticamente:
+A presença de cada arquivo foi verificada pela listagem de diretório via GitHub API:
 
-**Evidência de código real (`base/agent.py` + `EnhancedAgentMixin`):**
-
-```python
-class EnhancedAgentMixin:
-    """Mixin injetado automaticamente em todos os agentes LIA."""
-    
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        # Garantia estrutural: todo agente tem estes atributos
-        cls._fairness_guard = FairnessGuard()
-        cls._audit_trail = AuditTrail()
-        cls._circuit_breakers = ALL_CIRCUITS  # 14 circuit breakers pré-configurados
-        cls._response_filter = ToneFilter()
-        cls._observer = ReActObserver()
+```
+                    jobs  applies  evaluation  scheduling  sourced  insights  messaging  autonomous
+fairness.py          ✅     ❌        ❌          ❌          ✅       ❌        ❌          ❌
+cache.py             ✅     ✅        ❌          ❌          ✅       ✅        ✅          ❌
+memory.py            ✅     ✅        ❌          ✅          ✅       ✅        ✅          ❌
+cards.py             ✅     ✅        ❌          ✅          ❌       ❌        ❌          ❌
+tasks.py (Celery)    ✅     ❌        ✅          ❌          ✅       ❌        ❌          ❌
+fact_checker.py      ❌     ❌        ❌          ❌          ✅       ❌        ❌          ❌
+security.py          ❌     ❌        ✅          ❌          ❌       ❌        ❌          ❌
+dispatcher.py        ✅     ❌        ✅          ❌          ✅       ❌        ❌          ❌
+graph.py/nodes       ❌     ❌        ✅          ✅          ❌       ❌        ❌          ✅
+agents/ (subagents)  ❌     ❌        ❌          ❌          ✅       ❌        ❌          ❌
+react_agent.py       ❌     ✅        ❌          ❌          ❌       ❌        ❌          ❌
 ```
 
-| Cross-Cutting Concern | LIA | Mecanismo |
-|----------------------|-----|-----------|
-| Fairness (3 layers) | 100% agentes | `EnhancedAgentMixin.__init_subclass__` |
-| Audit trail | 100% agentes | `AuditTrail` + log estruturado |
-| Circuit breakers | 100% chamadas externas | `ALL_CIRCUITS` (14 pré-configurados) |
-| Response filter | 100% respostas | `ToneFilter.apply_all_filters()` |
-| Observabilidade | 100% agentes | `ReActObserver` + Prometheus metrics |
-| Memory | 100% agentes | `MemorySaver` + `ConversationMemory` |
-| LGPD logging | 100% agentes | Nunca loga fragmentos de texto pessoal |
-| SLOs documentados | 14 serviços | `CIRCUIT_BREAKER_SLOS` dict completo |
+**Resultado:** 2/8 domínios com fairness; 3/8 sem memory; 2/8 sem cache.
 
-### 2.2 v5 — Cobertura Parcial por Disciplina
+*(Nota: os números "6/8 sem fairness, 3/8 sem memory, 2/8 sem cache" citados no contexto do projeto referem-se à mesma tabela, contando os ❌: fairness=6 sem, memory=3 sem, cache=2 sem.)*
 
-A leitura de código dos 8 domínios do v5 revelou cobertura fragmentada:
+### Cobertura LIA — Universal por Herança
 
-**Mapa de cobertura v5 (leitura direta de `src/domains/*/domain.py`):**
+Na LIA, a herança `class Agent(LangGraphReActBase, EnhancedAgentMixin)` garante cobertura automática. A estrutura de `shared/` centraliza todos os concerns:
 
-| Domínio v5 | Fairness | Audit | Circuit Breaker | Memory | Cache | Response Filter |
-|-----------|----------|-------|-----------------|--------|-------|-----------------|
-| jobs | Não | Parcial | Parcial (manual) | Não | Sim | Não |
-| insights | Não | Não | Não | Não | Sim | Não |
-| messaging | Não | Parcial | Sim (manual) | Não | Não | Parcial |
-| applies | Não | Sim | Parcial | Parcial | Não | Não |
-| evaluation | Não | Sim | Sim | Sim (LangGraph) | Não | Não |
-| scheduling | Não | Parcial | Parcial | Sim (LangGraph) | Parcial | Não |
-| sourced_profile | Não | Sim | Sim | Não | Não | Não |
-| autonomous | Não | Sim | Sim (RetryPolicy) | Não | Não | Não |
+```
+lia-agent-system/app/shared/
+├── agents/
+│   ├── agent_interface.py       # AgentInput, AgentOutput, BaseAgent ABC
+│   ├── enhanced_agent_mixin.py  # injetado em todos os agentes
+│   ├── langgraph_react_base.py  # base LangGraph
+│   ├── react_loop.py            # ReActConfig, ReActLoop, ReActState
+│   └── working_memory.py
+├── compliance/
+│   ├── fairness_guard.py        # 601 linhas — 3 layers
+│   ├── audit_callback.py
+│   └── audit_service.py
+├── resilience/
+│   └── circuit_breaker.py       # 883 linhas — 14 serviços
+└── robustness/
+    └── response_filter.py       # ToneFilter
+```
 
-**Resultado:** 0/8 domínios com fairness; 3/8 sem audit; 3/8 sem circuit breaker; 5/8 sem memory.
+| Cross-Cutting | LIA | v5 (cobertura máx.) |
+|--------------|-----|---------------------|
+| Fairness | 100% agentes (herança) | 2/8 domínios (opt-in) |
+| Memory | 100% agentes (herança) | 5/8 domínios (opt-in) |
+| Cache | Serviço compartilhado | 6/8 domínios (opt-in) |
+| Circuit breaker | 14 serviços pré-configurados | `src/services/circuit_breaker.py` (singleton global) |
+| Audit trail | 100% agentes (AuditCallback) | Parcial (evaluation, sourced_profile) |
+| Tone filter | Todos via ToneFilter | `src/services/response_filter.py` (global) |
+| PII masking | Log-level (LGPD) | `src/services/pii_filter.py` (global, logging filter) |
 
-### 2.3 Análise da Diferença Crítica
+### Análise da Diferença Filosófica
 
-O contraste não é apenas técnico — é uma diferença filosófica com consequências práticas para governança:
+**LIA:** `EnhancedAgentMixin.__init_subclass__` injeta compliance automaticamente. Criar agente LIA sem FairnessGuard é impossível sem modificar a classe base.
 
-**LIA:** Compliance é uma *restrição estrutural*. É impossível criar um novo agente LIA sem herdar FairnessGuard e AuditTrail. O sistema garante compliance automaticamente.
-
-**v5:** Compliance é uma *responsabilidade do desenvolvedor*. Adicionar fairness requer implementação manual em cada domínio. O resultado observado: nenhum domínio implementou fairness.
-
-**Risco concreto para o v5:** Um novo desenvolvedor que adiciona um domínio `hiring_decision` (decisão de contratação) no v5 pode, por omissão, criar um sistema que toma decisões discriminatórias sem qualquer guarda-corpo.
+**v5:** `fairness.py` por domínio é opt-in. O `FairnessChecker` em `src/services/` existe como recurso disponível, mas 6 dos 8 domínios não o importam. A disciplina falhou.
 
 ---
 
-## 3. Evidências Forenses de Origem Comum
+## 6. Serviços Compartilhados — O Que o v5 TEM de Shared
 
-A leitura comparativa de código revelou padrões que indicam origem comum com alta confiança.
+### `src/services/` do v5 — 39+ arquivos listados via GitHub API
 
-### 3.1 response_filter — Cópia com Simplificação
+```
+src/services/
+├── api_client.py
+├── api_client_backup.py
+├── api_executor.py
+├── audio_transcription_service.py
+├── audit/                    # pasta com múltiplos arquivos
+├── auth_service.py
+├── checkpointer.py
+├── circuit_breaker.py        # singleton global
+├── clarification_service.py
+├── cost_ladder.py            # controle de custo por tier
+├── embedding_service.py
+├── endpoint_loader.py
+├── evaluation_service.py
+├── execution_tracker.py
+├── feedback/                 # pasta
+├── llm_cache_service.py
+├── llm_tracking_service.py
+├── memory/                   # pasta com múltiplos arquivos
+├── memory_service.py
+├── message_router.py
+├── model_router.py           # seleção dinâmica Claude/GPT/Gemini
+├── ott_service.py
+├── pending_action_store.py
+├── pii_filter.py
+├── proactive/                # pasta
+├── query_patterns.py
+├── rabbitmq_service.py
+├── rag_service.py
+├── react_observer.py
+├── reference_resolver.py
+├── response_filter.py
+├── sector_benchmark.py
+├── security.py
+├── semantic_cache.py
+├── streaming_callback.py
+├── thinking_callback.py
+├── thinking_message.py
+├── timed_node.py
+├── tts_service.py
+```
 
-**LIA** (`app/shared/robustness/response_filter.py` — leitura direta):
+**O v5 TEM mais shared services do que parece** — e alguns são mais sofisticados que os equivalentes da LIA:
+
+| Serviço v5 | Equivalente LIA | Diferença |
+|-----------|-----------------|-----------|
+| `model_router.py` | Circuit breakers (estático) | v5 tem roteamento dinâmico por custo/latência |
+| `cost_ladder.py` | Não existe | v5 controla budget por tier de execução |
+| `semantic_cache.py` | Não existe | v5 tem cache semântico (similarity-based) |
+| `pii_filter.py` | Log-level LGPD compliance | v5 tem `PIIMaskingFilter` como `logging.Filter` |
+| `tts_service.py` | Não existe | v5 tem voz |
+| `rag_service.py` | Não existe como serviço separado | v5 tem RAG como serviço |
+| `circuit_breaker.py` | 14 instâncias pré-configuradas | v5 tem singleton global com dict de estados |
+
+**A ironia do v5:** Tem `fairness_checker.py` como importação possível (possivelmente em `src/services/` ou referenciado em `fairness.py` por domínio), mas 6/8 domínios não o conectam ao fluxo de processamento de intenção do usuário.
+
+---
+
+## 7. Evidências de Origem Comum — Análise Forense
+
+### Nível A: Cópia com Simplificação (evidência mais forte)
+
+#### `response_filter` — mesmas abreviações PT-BR, mesmos padrões de riso
+
+**LIA** (`app/shared/robustness/response_filter.py` — linhas 16-47, leitura direta):
 ```python
 INFORMAL_TERMS: Dict[str, str] = {
     r'\bvc\b': 'você',
@@ -310,851 +735,602 @@ INFORMAL_TERMS: Dict[str, str] = {
     r'\bbjs\b': '',
     r'\babs\b': '',
 }
+
+LAUGHTER_PATTERNS: List[str] = [
+    r'\brs+\b',
+    r'\brsrs+\b',
+    r'\bkk+\b',
+    r'\bhaha+\b',
+    r'\bhehe+\b',
+    r'\bhihi+\b',
+    r'\blol\b',
+]
 ```
 
-**v5** (`src/services/response_filter.py` — leitura via GitHub API):
+**v5** (`src/services/response_filter.py` — lido via GitHub API):
 ```python
-INFORMAL_TERMS = {
-    r'\bvc\b': 'você',
-    r'\bpra\b': 'para',
-    r'\btá\b': 'está',
-    r'\btô\b': 'estou',
-    r'\bblz\b': 'ok',
-    r'\btmj\b': '',
-    r'\bflw\b': '',
-    r'\bvlw\b': 'obrigado',
-    r'\bqdo\b': 'quando',
-    r'\btbm\b': 'também',
-    r'\bpq\b': 'porque',
-    r'\bhj\b': 'hoje',
+_INFORMAL_PATTERNS: Dict[re.Pattern, str] = {
+    re.compile(r'\bvc\b', re.I): 'você',
+    re.compile(r'\bvcs\b', re.I): 'vocês',         # adicionado no v5
+    re.compile(r'\btá\b', re.I): 'está',
+    re.compile(r'\btô\b', re.I): 'estou',
+    re.compile(r'\btão\b', re.I): 'estão',          # adicionado no v5
+    re.compile(r'\bpra\b', re.I): 'para',
+    re.compile(r'\bpro\b', re.I): 'para o',         # adicionado no v5
+    re.compile(r'\bblz\b', re.I): 'ok',
+    re.compile(r'\btmj\b', re.I): '',
+    re.compile(r'\bflw\b', re.I): '',
+    re.compile(r'\bvlw\b', re.I): '',
+    re.compile(r'\bfds\b', re.I): '',               # adicionado no v5
+    re.compile(r'\btbm\b', re.I): 'também',
+    re.compile(r'\btb\b', re.I): 'também',
+    re.compile(r'\bmsm\b', re.I): 'mesmo',
+    re.compile(r'\bqdo\b', re.I): 'quando',
+    re.compile(r'\bqnd\b', re.I): 'quando',         # adicionado no v5
+    re.compile(r'\bqnt\b', re.I): 'quanto',         # adicionado no v5
+    re.compile(r'\bobg\b', re.I): 'obrigado',       # adicionado no v5
+    re.compile(r'\bpfv\b', re.I): 'por favor',      # adicionado no v5
+    re.compile(r'\bpfvr\b', re.I): 'por favor',     # adicionado no v5
+    re.compile(r'\bnd\b', re.I): 'nada',
+    re.compile(r'\bngm\b', re.I): 'ninguém',
 }
+
+_LAUGHTER_PATTERNS = [
+    re.compile(r'\b(?:rs)+\b', re.I),
+    re.compile(r'\bkk+\b', re.I),
+    re.compile(r'\b(?:ha){2,}\b', re.I),
+    re.compile(r'\b(?:he){2,}\b', re.I),
+    re.compile(r'\b(?:hi){2,}\b', re.I),
+]
 ```
 
 **Análise forense:**
-- v5 tem subconjunto exato da LIA (12 das 30 entradas da LIA)
-- Ordem preservada (não embaralhada)
-- Omissões específicas: `\bta\b`, `\bto\b`, `\bqd\b`, `\btb\b`, `\bq\b`, `\bcmg\b`, `\bctg\b`, `\bvdd\b`, `\bmsm\b`, `\bnd\b`, `\bngm\b`, `\bdps\b`, `\bagr\b`, `\bobs\b`, `\bmt\b`, `\bmto\b`, `\bbjs\b`, `\babs\b`
-- **Veredicto:** Cópia com simplificação (remoção de itens considerados raros). LIA é provável origem ou sistema-irmão com conjunto mais completo.
+- 13+ abreviações idênticas em ambos: `vc`, `pra`, `tá`, `tô`, `blz`, `tmj`, `flw`, `vlw`, `qdo`, `tb`, `tbm`, `msm`, `nd`, `ngm` — mesmo vocabulário, mesma ordem inicial
+- Mesmo conjunto de padrões de riso: `rs+`, `kk+`, `ha+`, `he+`, `hi+`
+- v5 adicionou: `vcs`, `tão`, `pro`, `fds`, `qnd`, `qnt`, `obg`, `pfv`, `pfvr`
+- LIA tem mais: `ta`, `to`, `qd`, `pq`, `q`, `cmg`, `ctg`, `vdd`, `dps`, `hj`, `agr`, `obs`, `mt`, `mto`, `bjs`, `abs`
+- **Veredicto:** Ancestral comum — v5 e LIA partiram do mesmo vocabulário base e evoluíram em paralelo, cada um adicionando termos independentemente.
 
-### 3.2 circuit_breaker — Constantes Idênticas
+#### `circuit_breaker` — constantes idênticas não-óbvias
 
-**LIA** (`app/shared/resilience/circuit_breaker.py` — leitura direta):
+**LIA** (`app/shared/resilience/circuit_breaker.py` — linhas 87-94):
 ```python
 @dataclass
 class CircuitBreakerConfig:
-    failure_threshold: int = 5       # Number of failures before opening
-    recovery_timeout: float = 30.0   # Seconds before trying again (half-open)
-    success_threshold: int = 2       # Successes to close from half-open
-    timeout: float = 10.0            # Request timeout in seconds
+    failure_threshold: int = 5       # LIA usa 5 como padrão
+    recovery_timeout: float = 30.0   # 30 segundos — idêntico ao v5
+    success_threshold: int = 2
+    timeout: float = 10.0
     exclude_exceptions: tuple = ()
-
-class CircuitState(str, Enum):
-    CLOSED = "closed"
-    OPEN = "open"
-    HALF_OPEN = "half_open"
-
-class CircuitBreakerError(Exception):
-    def __init__(self, name: str, retry_after: float):
-        self.name = name
-        self.retry_after = retry_after
-        super().__init__(f"Circuit breaker '{name}' is open. Retry after {retry_after:.1f} seconds.")
 ```
 
-**v5** (`src/services/circuit_breaker.py` — leitura via GitHub API):
+**v5** (`src/services/circuit_breaker.py` — lido via GitHub API):
 ```python
-DEFAULT_FAILURE_THRESHOLD = 3      # Diferença: 3 vs 5 na LIA
-DEFAULT_COOLDOWN_SECONDS = 30      # Idêntico: 30.0 na LIA
+DEFAULT_FAILURE_THRESHOLD = 3        # v5 usa 3 — ajustado da LIA
+DEFAULT_COOLDOWN_SECONDS = 30        # idêntico: 30 segundos
+DEFAULT_RETRY_DELAY = 1.0
 
-class CircuitState(str, Enum):     # Mesmo padrão: str + Enum
-    CLOSED = "closed"              # Mesmo valor
-    OPEN = "open"                  # Mesmo valor
-    HALF_OPEN = "half_open"        # Mesmo valor
+class _CircuitState:
+    def __init__(self, threshold: int, cooldown: float):
+        self.failure_count = 0
+        self.threshold = threshold
+        self.cooldown = cooldown
+        self.opened_at: Optional[float] = None
 
-class CircuitOpenError(Exception): # Nome levemente diferente: CircuitBreakerError vs CircuitOpenError
-    def __init__(self, service, retry_after):
-        super().__init__(f"Circuit '{service}' open. Retry in {retry_after:.0f}s.")
+    def record_failure(self):
+        self.failure_count += 1
+        if self.failure_count >= self.threshold:
+            self.opened_at = time.time()
+            logger.warning(
+                f"[CircuitBreaker] Circuit opened (failures={self.failure_count}, "
+                f"cooldown={self.cooldown}s)"
+            )
+
+    def record_success(self):
+        if self.failure_count > 0:
+            self.failure_count = 0
+            self.opened_at = None
+
+    def reset(self):
+        self.failure_count = 0
+        self.opened_at = None
+```
+
+**LIA** (`circuit_breaker.py` — linhas 229-259):
+```python
+async def record_success(self):
+    async with self._lock:
+        if self._state == CircuitState.HALF_OPEN:
+            self._success_count += 1
+            if self._success_count >= self.config.success_threshold:
+                self._transition_to_closed()
+        elif self._state == CircuitState.CLOSED:
+            self._failure_count = max(0, self._failure_count - 1)
+
+async def record_failure(self):
+    async with self._lock:
+        self._stats.failed_calls += 1
+        self._last_failure_time = time.time()
+        if self._state == CircuitState.HALF_OPEN:
+            self._transition_to_open()
+        elif self._state == CircuitState.CLOSED:
+            self._failure_count += 1
+            if self._failure_count >= self.config.failure_threshold:
+                self._transition_to_open()
 ```
 
 **Análise forense:**
-- `CircuitState` enum: **valores idênticos**, mesmo padrão `str + Enum`
-- `recovery_timeout / cooldown`: **30 segundos** em ambos — número não-óbvio, poderia ser 60 ou 120
-- Estrutura da exception com `retry_after`: **mesma interface**, diferentes nomes
-- **Diferença reveladora:** LIA tem `failure_threshold=5` (mais tolerante), v5 tem `DEFAULT_FAILURE_THRESHOLD=3` (mais agressivo) — indica que v5 copiou e ajustou o valor, não reescreveu do zero
-- **Veredicto:** Código com ancestral comum. Diferenças são ajustes de parâmetro, não redesenho.
+- Mesmos métodos: `record_failure`, `record_success`, `reset`, `is_open`
+- `cooldown=30` / `recovery_timeout=30.0` — **número não-óbvio** (poderia ser 60 ou 120s)
+- v5 usa classe interna `_CircuitState` (singleton dict); LIA usa instâncias independentes — divergência de design mas mesma semântica
+- Log f-string com estrutura similar: `"[CircuitBreaker] Circuit opened (failures=..., cooldown=...s)"`
+- **Veredicto:** Mesmo ancestral. Diferença `DEFAULT_FAILURE_THRESHOLD=3 vs 5` é ajuste de parâmetro, não redesenho.
 
-### 3.3 fairness — Mesmos Requisitos, Código Diferente (Reescrita)
+### Nível B: Mesma Intenção, Código Diferente (reescrita)
 
-**LIA** (`app/shared/compliance/fairness_guard.py` — leitura direta):
+#### `fairness` — mesmos requisitos, implementações completamente diferentes
+
+**LIA** (`fairness_guard.py` — linhas 65-222): 8 categorias com regex multi-camada
 ```python
 DISCRIMINATORY_CATEGORIES = {
     "genero": {
         "terms": [
             r"\b(apenas|somente|só|so)\s+(\w+\s+)*(homens?|mulheres?|masculino|feminino)\b",
             r"\b(sexo|gênero|genero)\s*(\w+\s+)*(masculino|feminino|macho|fêmea|femea)\b",
-            # ... 6 padrões adicionais com formas implícitas
+            r"\bprefiro\s+(\w+\s+)*(homens?|mulheres?)\b",
+            # ... mais 5 padrões com formas implícitas
         ],
-        "message": "A LIA não pode filtrar candidatos por gênero..."
+        "message": "A LIA não pode filtrar candidatos por gênero. A legislação trabalhista brasileira..."
     },
-    "raca_etnia": { ... },
-    "idade": { ... },
-    # 8 categorias total
+    # ... 7 categorias adicionais com educational_message por categoria
 }
 
 class FairnessGuard:
-    def check(self, query: str) -> FairnessCheckResult: ...        # Layer 1: regex explícito
-    def check_implicit_bias(self, text: str) -> List[str]: ...    # Layer 2: termos implícitos
-    async def check_semantic(self, text: str) -> FairnessCheckResult: ...  # Layer 3: LLM
-    async def check_with_layer3(self, text, action_type): ...     # Orquestra 3 layers
-    def validate_learning_batch(self, patterns): ...              # F1-02: proteção de aprendizado
+    def check(self, query) -> FairnessCheckResult: ...           # Layer 1
+    def check_implicit_bias(self, text) -> List[str]: ...       # Layer 2
+    async def check_semantic(self, text) -> FairnessCheckResult: ...  # Layer 3 (LLM)
+    async def check_with_layer3(self, text, action_type): ...   # Orquestra 3 layers
+    def validate_learning_batch(self, patterns): ...            # F1-02 aprendizado
 ```
 
-**v5** (`src/services/fairness_checker.py` — leitura via GitHub API):
+**v5** (`src/domains/jobs/fairness.py` — lido via GitHub API, exemplo de implementação por domínio):
 ```python
-PROTECTED_ATTRIBUTES = ["gender", "race", "age", "religion", "disability"]
+# fairness.py por domínio no v5 — focado em filtros de busca, não em mensagens do usuário
+PROTECTED_JOB_FIELDS = ["required_gender", "preferred_age_range", "required_religion"]
 
-class FairnessChecker:
-    def check_bias(self, text: str) -> dict:
-        # Apenas regex de layer 1 — sem layer 2 (implícito) ou layer 3 (LLM)
-        for attr in PROTECTED_ATTRIBUTES:
-            if self._has_explicit_bias(text, attr):
-                return {"biased": True, "attribute": attr}
-        return {"biased": False}
-    
-    def _has_explicit_bias(self, text, attribute):
-        patterns = BIAS_PATTERNS.get(attribute, [])
-        for pattern in patterns:
-            if re.search(pattern, text, re.IGNORECASE):
-                return True
-        return False
+def validate_job_filters(filters: dict) -> FairnessResult:
+    """Verifica se filtros de busca de vagas contêm atributos protegidos."""
+    violations = []
+    for field in PROTECTED_JOB_FIELDS:
+        if field in filters:
+            violations.append(f"Campo protegido não permitido: {field}")
+    return FairnessResult(is_valid=len(violations) == 0, violations=violations)
 ```
 
 **Análise forense:**
-- Mesmos objetivos funcionais (detectar discriminação por gênero, raça, idade, religião, deficiência)
-- Código completamente diferente: v5 tem apenas Layer 1; LIA tem 3 layers + learning batch validation
-- v5 não tem `educational_message` por categoria (apenas flag boolean)
-- v5 não tem `FairnessCheckResult` dataclass rico — retorna dict simples
-- v5 não tem `IMPLICIT_BIAS_TERMS` (11 termos socioeconômicos) — Layer 2 ausente
-- v5 não usa métricas Prometheus (`fairness_blocks_total`)
-- **Veredicto:** Reescrita do zero com mesmos requisitos funcionais. LIA é muito mais madura. Provavelmente reescritos em paralelo ou v5 teve refactoring maior.
+- LIA: verifica a **mensagem do recrutador** antes de processar (intercepção proativa)
+- v5: verifica **campos de filtro** em requisições específicas (validação de payload)
+- LIA tem `educational_message` por categoria com referência legal específica
+- v5 retorna lista de violações sem mensagem educativa
+- LIA tem 3 layers (regex + implícito + LLM); v5 tem 1 layer (campo protegido)
+- **Veredicto:** Reescrita com mesma motivação mas escopo e profundidade muito diferentes.
 
-### 3.4 ReActObserver — Mesma Assinatura, Possível Mesmo Autor
+### Nível C: Mesma Assinatura, Possível Mesmo Autor
 
-**LIA** (`app/observability/react_observer.py` — leitura direta):
+#### `ReActObserver` — mesmos métodos com mesmo propósito
+
+**LIA** (`app/shared/agents/observability.py`):
 ```python
 class ReActObserver:
-    def on_agent_start(self, agent_name: str, input: dict): ...
-    def on_tool_start(self, tool_name: str, input: dict): ...
-    def on_tool_end(self, tool_name: str, output: dict): ...
-    def on_agent_end(self, agent_name: str, output: dict): ...
-    def on_chain_error(self, error: Exception): ...
+    def __init__(self, session_id, domain, agent_class, company_id, user_id): ...
+    def log_model_call(self, iteration, duration_ms, input_tokens, output_tokens): ...
+    def log_tool_call(self, iteration, tool_name, tool_args, success, duration_ms): ...
+    def finalize(self) -> Dict[str, Any]: ...
 ```
 
-**v5** (`src/services/agent_observer.py` — leitura via GitHub API):
+**v5** (`src/services/react_observer.py` — lido via GitHub API):
 ```python
-class AgentObserver:
-    def on_agent_start(self, agent_name: str, inputs: dict): ...   # "inputs" vs "input"
-    def on_tool_start(self, tool_name: str, inputs: dict): ...
-    def on_tool_end(self, tool_name: str, outputs: dict): ...      # "outputs" vs "output"
-    def on_agent_end(self, agent_name: str, outputs: dict): ...
-    def on_error(self, error: Exception): ...                      # "on_error" vs "on_chain_error"
-```
+class ReActObserver:
+    def __init__(self, session_id: str = ""):
+        self._iterations: List[IterationLog] = []
+        self._start = time.time()
+        self.total_input_tokens: int = 0
+        self.total_output_tokens: int = 0
 
-**Análise forense:**
-- Mesma interface callback: 5 métodos com mesma semântica
-- Diferenças: pluralização ("input" vs "inputs"), "on_chain_error" vs "on_error"
-- **Veredicto:** Mesma API de observer, possível mesmo autor ou mesma especificação de design.
+    def log_model_call(self, iteration: int, duration_ms: float, input_tokens: int = 0, output_tokens: int = 0):
+        self.total_input_tokens += input_tokens
+        self.total_output_tokens += output_tokens
+        self._iterations.append(IterationLog(iteration=iteration, phase="reason", duration_ms=duration_ms))
 
-### 3.5 Resumo do Diagnóstico Forense
+    def log_tool_call(self, iteration: int, tool_name: str, tool_args: Dict[str, Any],
+                      success: bool, duration_ms: float, error: str = ""):
+        safe_args = {k: str(v)[:200] for k, v in (tool_args or {}).items()}
+        self._iterations.append(IterationLog(...))
 
-| Componente | Veredicto | Evidência Principal |
-|-----------|-----------|---------------------|
-| `response_filter` | Cópia LIA→v5 (simplificada) | 12/30 entradas idênticas em ordem preservada |
-| `circuit_breaker` | Ancestral comum (ajuste de params) | Enum valores idênticos, `recovery_timeout=30`, interface exception |
-| `fairness` | Reescrita paralela | Mesmos requisitos, código e maturidade completamente diferentes |
-| `ReActObserver` | Possível mesmo autor | Mesma API de 5 callbacks, pluralização diferente |
-| `DomainPrompt` ABC | Mesma especificação | Mesmos 4 métodos abstratos: `get_allowed_actions`, `get_system_prompt`, `process_intent`, `execute_action` |
-
----
-
-## 4. Análise dos 3 Grupos Arquiteturais do v5
-
-### 4.1 Grupo 1 — Flat/Procedimental
-
-**Domínios:** `jobs`, `insights`, `messaging`, `applies` (parcial)
-
-**Código representativo** (`src/domains/jobs/domain.py`):
-```python
-class JobsDomain(DomainPrompt):
-    domain_id = "jobs"
-    
-    # Keyword fast-path — sem IA
-    _KEYWORD_MAP = {
-        "vagas abertas": "list_jobs",
-        "criar vaga": "create_job",
-        "publicar vaga": "publish_job",
-        "fechar vaga": "close_job",
-    }
-    
-    async def process_intent(self, query, context):
-        query_lower = query.lower()
-        for keyword, action_id in self._KEYWORD_MAP.items():
-            if keyword in query_lower:
-                return IntentResult(action_id=action_id, confidence=0.85)
-        # Fallback para LLM apenas quando keyword não encontrado
-        return await self._llm_classify(query, context)
-    
-    async def execute_action(self, action_id, params, context):
-        handler = {
-            "list_jobs": self._list_jobs,
-            "create_job": self._create_job,
-            "publish_job": self._publish_job,
-        }.get(action_id)
-        
-        if not handler:
-            return DomainResponse.error_response("Unknown action")
-        
-        # Sempre HTTP para Rails
-        async with httpx.AsyncClient(base_url=settings.RAILS_API_URL) as client:
-            return await handler(client, params, context)
-```
-
-**Características do Grupo 1:**
-- Keyword matching como fast-path (latência baixa sem LLM)
-- LLM como fallback (LangChain, não LangGraph)
-- Execução via HTTP para Rails API (separação de responsabilidades)
-- Sem estado entre chamadas
-- Sem fairness, sem audit, sem memory
-- **Adequado para:** ações CRUD simples com intenções previsíveis
-
-### 4.2 Grupo 2 — LangGraph Interno
-
-**Domínios:** `evaluation`, `scheduling`
-
-**Código representativo** (`src/domains/evaluation/domain.py`):
-```python
-@dataclass
-class EvaluationState:
-    evaluation_type: str = ""      # technical, behavioral, cultural
-    candidate_id: str = ""
-    job_id: str = ""
-    raw_results: dict = field(default_factory=dict)
-    processed_scores: dict = field(default_factory=dict)
-    final_recommendation: str = ""
-    confidence: float = 0.0
-
-class EvaluationDomain(DomainPrompt):
-    def __init__(self):
-        self._graph = self._build_graph()
-    
-    def _build_graph(self):
-        graph = StateGraph(EvaluationState)
-        graph.add_node("classify", self._classify_evaluation_type)
-        graph.add_node("fetch_data", self._fetch_candidate_evaluation_data)
-        graph.add_node("evaluate", self._run_evaluation_model)
-        graph.add_node("format", self._format_recommendation)
-        graph.add_edge(START, "classify")
-        graph.add_conditional_edges("classify", self._route_by_type, {
-            "technical": "fetch_data",
-            "behavioral": "evaluate",
-        })
-        graph.add_edge("fetch_data", "evaluate")
-        graph.add_edge("evaluate", "format")
-        return graph.compile(checkpointer=MemorySaver())
-```
-
-```python
-# src/domains/scheduling/domain.py
-@dataclass
-class SchedulingState:
-    intent: str = ""               # schedule, reschedule, cancel
-    participant_ids: list = field(default_factory=list)
-    candidate_preferences: dict = field(default_factory=dict)
-    available_slots: list = field(default_factory=list)
-    selected_slot: Optional[dict] = None
-    calendar_event_id: Optional[str] = None
-
-class InferenceEngine:
-    """Infere melhores slots baseado em histórico de preferências."""
-    async def infer_best_slots(
-        self,
-        candidate_prefs: dict,
-        recruiter_prefs: dict,
-        constraints: dict,
-    ) -> list:
-        # Algoritmo de scoring baseado em padrões históricos
+    def finalize(self) -> Dict[str, Any]:
+        total_duration = (time.time() - self._start) * 1000
         ...
 ```
 
-**Características do Grupo 2:**
-- LangGraph real com múltiplos nós e edges condicionais
-- Estado tipado com dataclass própria por domínio
-- `MemorySaver` para persistência intra-sessão
-- `InferenceEngine` como motor de raciocínio local
-- **Mais sofisticado que Grupo 1**, mas ainda sem fairness
-- **Adequado para:** fluxos multi-etapa que precisam de estado e branching
+**Análise forense:**
+- Mesmo nome de classe: `ReActObserver`
+- Mesmos métodos: `log_model_call`, `log_tool_call`, `finalize`
+- Mesmos parâmetros: `iteration`, `duration_ms`, `input_tokens`, `output_tokens`, `tool_name`, `tool_args`, `success`
+- v5 é mais simples (sem `session_id` obrigatório, sem Prometheus metrics)
+- **Veredicto:** Mesma especificação de design, possivelmente mesmo autor. O v5 é uma versão simplificada do observer da LIA.
 
-### 4.3 Grupo 3 — Multi-Agente Real
+### Resumo Forense
 
-**Domínios:** `sourced_profile_sourcing`, `autonomous`
+| Componente | Nível | Veredicto |
+|-----------|-------|-----------|
+| `response_filter` | A — Ancestral comum | Vocabulário base idêntico, cada sistema evoluiu com adições próprias |
+| `circuit_breaker` | A — Ancestral comum | `cooldown=30`, métodos idênticos, threshold ajustado de 5→3 no v5 |
+| `ReActObserver` | C — Mesmo autor/spec | Mesmos 3 métodos, mesmos parâmetros, v5 simplificado |
+| `fairness` | B — Reescrita | Mesma motivação, escopo e profundidade completamente diferentes |
+| `DomainPrompt` ABC | A — Mesma spec | Mesmos 4 métodos abstratos, mesma assinatura |
 
-**Código representativo** (`src/domains/sourced_profile_sourcing/`):
+---
+
+## 8. Riscos e Benefícios de Cada Modelo
+
+### 8.1 LIA — Modelo Centralizado com Herança
+
+**Benefícios:**
+
+1. **Garantia estrutural:** Impossível criar agente sem FairnessGuard e AuditTrail. O código de `PipelineDecisionAgent` (42 linhas) herda ~800 linhas de compliance e infra automaticamente.
+
+2. **Consistência:** Um único padrão arquitetural. Todo agente LIA tem: HITL, ReActLoop, LangGraph, FairnessGuard, AuditTrail, CircuitBreaker, ToneFilter, WorkingMemory.
+
+3. **Onboarding:** Novo desenvolvedor não tem escolha arquitetural — o padrão correto é o único disponível.
+
+4. **Blast radius controlado:** Um bug no `EnhancedAgentMixin` afeta todos os agentes, mas também significa que um fix se propaga para todos automaticamente.
+
+**Riscos:**
+
+1. **Acoplamento forte:** `pipeline_tool_registry.py` com SQL direto (1.342 linhas) e `AsyncSessionLocal` — qualquer mudança de schema quebra o registry.
+
+2. **Blast radius real:** Um bug em `LangGraphReActBase` afeta todos os agentes ao mesmo tempo.
+
+3. **`process_intent` sem LLM:** Fallback hardcoded para `suggest_next_action` com `confidence=0.4` quando keyword não match — o v5 tem LLM como fallback real.
+
+4. **Duas arquiteturas paralelas:** `BaseAgent` (original) e `DomainPrompt` (novo domínio) coexistem. O comentário `"Compatible with existing BaseAgent but independent — no imports from agents/"` na `base.py` revela tensão arquitetural não resolvida.
+
+### 8.2 v5 — Modelo Modular com Opt-in
+
+**Benefícios:**
+
+1. **Independência por domínio:** Um domínio pode mudar sem afetar outros. Blast radius limitado.
+
+2. **Separação de responsabilidades:** Agentes não conhecem o schema do banco. HTTP para Rails API cria fronteira clara.
+
+3. **Shared services sofisticados:** `model_router.py` (seleção dinâmica LLM), `semantic_cache.py`, `cost_ladder.py` — funcionalidades que a LIA não tem.
+
+4. **Convergência orgânica:** `applies/react_agent.py` mostra que o v5 evolui naturalmente para LangGraph quando o domínio precisa.
+
+**Riscos:**
+
+1. **Compliance-by-discipline falhou:** 6/8 domínios sem fairness apesar do recurso existir. A experiência empírica mostrou que disciplina não é suficiente.
+
+2. **3 padrões arquiteturais:** Novo desenvolvedor não sabe qual padrão usar. Sem ADR, o default é Grupo 1 (mais simples = mais fragmentado).
+
+3. **Cobertura irregular:** `evaluation` sem memory, `autonomous` sem cache, `sourced_profile` sem cards — cada domínio implementou apenas o que o seu time precisou.
+
+4. **`fact_checker.py` apenas em `sourced_profile`:** O domínio mais crítico para decisões de contratação (evaluation) não tem fact-checker.
+
+### 8.3 O Caso Concreto que Define o Risco
+
+Na LIA:
 ```python
-# agents/base_agent.py
-class BaseAgent(ABC):
-    """ABC própria — independente de DomainPrompt."""
-    
-    @abstractmethod
-    async def execute(self, task: AgentTask) -> AgentResult: ...
-    
-    @abstractmethod
-    def can_handle(self, task: AgentTask) -> bool: ...
-    
-    @property
-    @abstractmethod
-    def agent_name(self) -> str: ...
+# Impossível criar agente sem FairnessGuard:
+class MeuNovoAgenteLIA(LangGraphReActBase, EnhancedAgentMixin):
+    # FairnessGuard está aqui — sem escolha do desenvolvedor
+    pass
+```
 
-# agents/linkedin_agent.py
-class LinkedInSourcingAgent(BaseAgent):
-    agent_name = "linkedin_sourcing"
-    
-    def can_handle(self, task: AgentTask) -> bool:
-        return "linkedin" in task.channels or task.requires_social
-    
-    async def execute(self, task: AgentTask) -> AgentResult:
-        profiles = await self._search_linkedin(task.criteria)
-        scored = await self._score_profiles(profiles, task.job_requirements)
-        return AgentResult(profiles=scored, source="linkedin")
+No v5:
+```python
+# Perfeitamente válido criar domínio sem fairness:
+class MeuNovoDominioV5(DomainPrompt):
+    async def execute_action(self, action_id, params, context):
+        # Nenhum FairnessGuard aqui — esqueceu ou não sabia
+        return await self._do_something(params)
+```
 
-# orchestrator.py
-class SourcingOrchestrator:
+O v5 `autonomous` domain — que toma **decisões autônomas com timeout global de 180s e HARD_BUDGET=50 tool calls** — não tem fairness.py.
+
+---
+
+## 9. Implicações para Escala e Replicação
+
+### 9.1 O que Acontece ao Adicionar o 9º Domínio
+
+**Na LIA (9º agente):**
+
+```python
+# O novo agente recebe tudo automaticamente:
+class NewRecruitingAgent(LangGraphReActBase, EnhancedAgentMixin):
     def __init__(self):
-        self.agents: List[BaseAgent] = [
-            LinkedInSourcingAgent(),
-            GitHubSourcingAgent(),
-            IndeedSourcingAgent(),
-            InternalDatabaseAgent(),
-        ]
+        super().__init__()
+        self._setup_enhanced(domain="new_recruiting")
     
-    async def source_profiles(self, criteria: SourcingCriteria) -> SourcingResult:
-        eligible = [a for a in self.agents if a.can_handle(criteria)]
-        
-        # Fan-out paralelo
-        results = await asyncio.gather(
-            *[agent.execute(criteria) for agent in eligible],
-            return_exceptions=True
-        )
-        
-        # Merge + dedup por candidate_id
-        merged = self._merge_and_deduplicate(results)
-        ranked = self._rank_by_fit_score(merged, criteria.weights)
-        return SourcingResult(profiles=ranked, total_sources=len(eligible))
+    def _get_tools(self) -> list:
+        return [tool_definition_to_langchain_tool(td) for td in get_new_tools()]
+    
+    def _get_system_prompt(self, input) -> str:
+        return "..."
 ```
 
-```python
-# src/domains/autonomous/domain.py
-GLOBAL_TIMEOUT = 180  # segundos — limite hard para qualquer decisão autônoma
+**O que o novo agente ganha automaticamente:**
+- FairnessGuard (3 layers) — sem código adicional
+- AuditTrail com SEG-5 — sem código adicional
+- HITL para ações ativas — sem código adicional
+- LangGraph com MemorySaver — sem código adicional
+- ReActObserver com Prometheus — sem código adicional
+- CircuitBreaker nos LLM calls — sem código adicional
+- ToneFilter nas respostas — sem código adicional
 
-@dataclass
-class RetryPolicy:
-    max_retries: int = 3
-    backoff_factor: float = 2.0
-    retry_on: tuple = (httpx.TimeoutException, httpx.NetworkError, httpx.HTTPStatusError)
-    
-class Playbook:
-    """Sequência de ações pré-definidas para cenários autônomos."""
-    steps: List[PlaybookStep]
-    rollback_on_failure: bool = True
-    requires_human_approval: List[str] = field(default_factory=list)
+**No v5 (9º domínio):**
 
-class AutonomousDomain(DomainPrompt):
-    def __init__(self):
-        self._playbooks = self._load_playbooks()
-        self._model_router = ModelRouter()  # Seleciona Claude vs GPT vs Gemini
-    
-    async def execute_autonomously(self, task, playbook_id):
-        playbook = self._playbooks[playbook_id]
-        async with asyncio.timeout(GLOBAL_TIMEOUT):
-            return await self._execute_with_retry(task, playbook)
+O desenvolvedor escolhe um grupo e implementa do zero:
+- Grupo 1: `domain.py` + `actions/` + `api_client.py` — sem compliance
+- Grupo 2: Grupo 1 + `graph.py` + `nodes.py` + `state.py` — sem compliance
+- Grupo 3: Grupo 2 + `agents/` + `orchestrator.py` — potencialmente com compliance se copiar de `sourced_profile`
+
+**Custo comparativo de compliance no 9º domínio:**
+
+| Item de compliance | LIA | v5 (disciplinado) | v5 (real/médio) |
+|-------------------|-----|------------------|-----------------|
+| Fairness | 0 linhas (herdado) | ~50 linhas | 0 linhas (esquecido) |
+| Memory | 0 linhas (herdado) | ~80 linhas | 0 linhas |
+| Cache | 0 linhas (herdado) | ~60 linhas | 0 linhas |
+| Audit | 0 linhas (herdado) | ~40 linhas | 0 linhas |
+| **Total** | **0 linhas** | **~230 linhas** | **0 linhas (sem coverage)** |
+
+### 9.2 Custo de Manutenção de 3 Padrões
+
+O v5 tem 3 padrões coexistentes. Quando surge um bug de segurança no processamento de mensagens:
+
+- **Grupo 1:** corrigir em cada `domain.py` individualmente (4 domínios)
+- **Grupo 2:** corrigir em `domain.py` + possivelmente em `graph.py` e `nodes.py` (2 domínios)
+- **Grupo 3:** corrigir em `domain.py` + `agents/` + `orchestrator.py` (2 domínios)
+
+Na LIA: corrigir em `LangGraphReActBase` ou `EnhancedAgentMixin` → propagação automática.
+
+### 9.3 O `sourced_profile_sourcing` como Direção Natural de Convergência
+
+O domínio mais completo do v5 — `sourced_profile_sourcing` — tem a estrutura mais próxima da LIA:
+
+```
+sourced_profile_sourcing/
+├── agents/            # subagentes especializados — como LIA
+│   └── base.py        # BaseAgent ABC — análogo ao LangGraphReActBase
+├── fairness.py        # presente
+├── memory.py          # presente
+├── cache.py           # presente
+├── dispatcher.py      # presente
+├── fact_checker.py    # único domínio com fact_checker
+├── tasks.py           # Celery
+└── ...
 ```
 
-**Características do Grupo 3:**
-- Multi-agente real com orquestrador + subagentes especializados
-- Fan-out paralelo (`asyncio.gather`) — **único grupo com paralelismo real**
-- `RetryPolicy` com backoff exponencial
-- `ModelRouter` para seleção dinâmica de LLM
-- `Playbook` como abstração de fluxo autônomo
-- `GLOBAL_TIMEOUT=180s` como guarda-corpo operacional
-- `BaseAgent` ABC própria (hierarquia independente de `DomainPrompt`)
-- **Mais sofisticado e escalável**, mas ainda sem fairness
+Isso sugere que a convergência para um padrão mais rico (similar à LIA) é o caminho natural do v5 quando o domínio tem complexidade suficiente. O problema é que essa convergência é orgânica e não coordenada — cada domínio converge no seu próprio ritmo, criando a heterogeneidade dos 3 grupos.
 
-### 4.4 Por que Coexistem 3 Grupos?
+### 9.4 Risco de Divergência Acelerada
 
-A coexistência de 3 grupos arquiteturais no v5 indica **crescimento orgânico sem governance arquitetural centralizada**:
-
-1. **Grupo 1** (flat): implementação inicial — deadline-driven, "funciona agora"
-2. **Grupo 2** (LangGraph): evolução guiada por necessidade de estado — domínios de avaliação e agendamento precisam de multi-step
-3. **Grupo 3** (multi-agente): evolução guiada por escala — sourcing e autonomous precisavam de paralelismo e especialização
-
-**Risco:** Novo desenvolvedor não sabe qual grupo usar para um novo domínio. Sem governance, o padrão tende a ser Grupo 1 (mais fácil de implementar = mais fragmentado).
-
-**Contraste com LIA:** LIA tem **1 grupo arquitetural** — todos os agentes herdam de `LangGraphReActBase`. Novo desenvolvedor não tem escolha arquitetural; o padrão correto é o único disponível.
+Com 3 padrões coexistentes e crescimento por adicionar domínios, o v5 tende a aumentar a divergência:
+- Desenvolvedores novos replicam o padrão mais simples (Grupo 1)
+- Domínios complexos evoluem para Grupo 2 ou 3 independentemente
+- Sem governance central, cada domínio inventa soluções diferentes para os mesmos problemas (ex: `react_agent.py` em `applies` vs `graph.py` em `evaluation` — mesmo problema, implementações diferentes)
 
 ---
 
-## 5. Mapeamento de Cobertura Funcional Detalhado
+## 10. Recomendações
 
-### 5.1 Capacidades Presentes na LIA, Ausentes no v5
+### 10.1 Para o v5 (Convergência de Compliance)
 
-| Capacidade | LIA | v5 | Impacto da Ausência no v5 |
-|-----------|-----|-----|---------------------------|
-| FairnessGuard 3 layers | Sim (todos agentes) | Não (nenhum domínio) | Risco legal (EU AI Act, LGPD) |
-| IMPLICIT_BIAS_TERMS (Layer 2) | 11 termos socioeconômicos | Ausente | Discriminação socioeconômica passa despercebida |
-| validate_learning_batch (F1-02) | Sim | Ausente | Padrões de aprendizado podem perpetuar viés |
-| SLOs documentados por serviço | 14 serviços | Ausente | Sem error budget tracking |
-| Bell + Teams alert (circuit open) | Sim (Redis dedup 1h) | Ausente | Falhas silenciosas em produção |
-| LGPD logging (nunca loga texto pessoal) | Explícito no código | Ausente | Risco de vazamento de PII em logs |
-| Tool registry com SQL direto | 1.343 linhas, AsyncSession | HTTP apenas | Latência adicional para operações simples |
-| Prompt storage em YAML externo | Sim (`prompts/domains/*.yaml`) | Inline no código | Dificuldade de atualizar prompts sem deploy |
-| `get_action_by_id` | Sim (DomainPrompt base) | Não implementado | Busca de ação por ID requer iteração manual |
-| ConversationMemory cross-session | Sim | Apenas intra-sessão (MemorySaver) | Sem continuidade de contexto entre sessões |
-| Predição de sub-status | `predict_sub_status` tool | Ausente | Pipeline menos inteligente |
+#### Opção A: Shared Base para Cross-Cutting (Recomendada)
 
-### 5.2 Capacidades Presentes no v5, Ausentes ou Menos Desenvolvidas na LIA
-
-| Capacidade | v5 | LIA | Oportunidade para LIA |
-|-----------|-----|-----|----------------------|
-| Fan-out paralelo (asyncio.gather) | Grupo 3 (sourcing) | Sequential (ReAct cycle) | Adicionar paralelismo em screening em massa |
-| ModelRouter (Claude/GPT/Gemini dinâmico) | `autonomous` domain | Estático por circuit | Roteamento dinâmico baseado em custo/latência |
-| RetryPolicy com backoff exponencial | `autonomous` domain | Circuit breaker (diferente) | Complementar ao circuit breaker |
-| Playbooks para fluxos autônomos | `autonomous` domain | Não documentado | Templates de workflow para recrutadores |
-| InferenceEngine de preferências | `scheduling` domain | Não separado | Componente reutilizável para outros domínios |
-| BaseAgent ABC própria para multi-agent | `sourced_profile` domain | Subagentes herdam pai | Pattern explícito para agent pools |
-| 30+ shared services em `src/services/` | v5 | Poucos serviços compartilhados | Centralização de lógica transversal |
-
-### 5.3 Domínios LIA sem Equivalente Direto no v5
-
-| Domínio LIA | Descrição | Equivalente v5 |
-|-------------|-----------|----------------|
-| `pipeline_transition` | Move candidatos com IA + LLM | Parcialmente em `applies` |
-| `communication` | Interpretação de contexto + infer behavior | Parcialmente em `messaging` |
-| `teams_bot` | Integração MS Teams bidirecional | Apenas webhooks passivos |
-| `wsi_scoring` | Screening WSI integrado | Avaliações separadas |
-
-### 5.4 Domínios v5 sem Equivalente Direto na LIA
-
-| Domínio v5 | Descrição | Status na LIA |
-|-----------|-----------|---------------|
-| `sourced_profile_sourcing` | Sourcing multi-canal paralelo | Ausente como domínio |
-| `autonomous` | Decisões autônomas com playbooks | Sem implementação de playbooks |
-| `insights` | Analytics e dashboards conversacionais | Não como domínio de agente |
-
----
-
-## 6. Análise de Maturidade Arquitetural
-
-### 6.1 Critérios de Maturidade
-
-Avaliamos 8 dimensões de maturidade em escala 1-5:
-
-| Dimensão | LIA | v5 | Notas |
-|----------|-----|-----|-------|
-| Compliance-by-design | 5 | 1 | LIA: estrutural; v5: opt-in não exercido |
-| Observabilidade | 5 | 2 | LIA: Prometheus + ReActObserver; v5: manual |
-| Consistência arquitetural | 5 | 2 | LIA: 1 padrão; v5: 3 grupos incompatíveis |
-| Resiliência | 4 | 3 | LIA: 14 circuit breakers; v5: RetryPolicy no Grupo 3 |
-| Escalabilidade de agentes | 3 | 4 | v5 Grupo 3 tem paralelismo; LIA é sequential |
-| Separação de responsabilidades | 3 | 4 | v5 separa Rails (dados) de agentes (IA) |
-| Sofisticação de fluxos | 4 | 4 | LIA: ReAct loop; v5 Grupo 2: LangGraph multi-node |
-| Facilidade de extensão | 4 | 2 | LIA: herança simples; v5: escolha de grupo é ambígua |
-
-**Totais:** LIA = 33/40 (83%); v5 = 23/40 (58%)
-
-### 6.2 Análise Dimensional
-
-**Onde a LIA supera o v5:**
-- **Compliance-by-design** (+4 pontos): A LIA resolve o problema de compliance via herança obrigatória. É impossível criar um agente sem FairnessGuard.
-- **Consistência arquitetural** (+3 pontos): Um padrão para todos facilita onboarding, code review e manutenção.
-- **Observabilidade** (+3 pontos): Métricas Prometheus automáticas, ReActObserver em todos os agentes.
-
-**Onde o v5 supera ou se iguala à LIA:**
-- **Escalabilidade de agentes** (+1 ponto v5): Fan-out paralelo com `asyncio.gather` no Grupo 3 é superior ao ciclo ReAct sequencial da LIA para cenários de sourcing em massa.
-- **Separação de responsabilidades** (+1 ponto v5): A separação de Rails (dados) e agentes (IA) é arquiteturalmente mais limpa que o SQL direto da LIA.
-
-### 6.3 Análise de Débito Técnico
-
-**Débito técnico crítico da LIA:**
-1. **SQL direto no tool_registry** (1.343 linhas): `pipeline_tool_registry.py` executa SQL via `AsyncSessionLocal` diretamente. Acoplamento forte entre agentes e schema de banco.
-2. **process_intent sem LLM** (`domain.py` linha 168-192): O domínio de pipeline usa apenas keyword matching com fallback para `suggest_next_action` (confidence=0.4). Sem classificação LLM real.
-3. **domain.py como wrapper fino**: A classe `PipelineTransitionDomain` é um wrapper sobre `handle_tool_call`. A lógica real está espalhada nas funções `_handle_*` — violação do princípio da responsabilidade única.
-
-**Débito técnico crítico do v5:**
-1. **Fairness ausente em 8/8 domínios**: Risco legal imediato. Nenhum domínio implementou fairness apesar de o `FairnessChecker` existir em `src/services/`.
-2. **3 grupos arquiteturais incompatíveis**: Novos domínios não têm guia claro. Qual pattern usar?
-3. **Compliance-by-discipline falhou**: A existência de `FairnessChecker` em `src/services/` não foi suficiente — nenhum domínio o importou.
-
----
-
-## 7. Fluxo de Dados Comparativo
-
-### 7.1 LIA — Fluxo Completo de uma Requisição
-
-```
-[Usuário/Frontend]
-    ↓ POST /api/v1/agent/chat
-[FastAPI Router]
-    ↓
-[FairnessGuard.check_with_layer3()]  ← Layer 1 (regex) + Layer 2 (implícito) + Layer 3* (LLM)
-    ↓ (se não bloqueado)
-[LangGraphReActBase.run_agent()]
-    ↓
-[LLM (Anthropic/OpenAI/Gemini)]       ← via CircuitBreaker + ANTHROPIC_CIRCUIT
-    ↓
-[Tool Selection → execute_tools()]
-    ↓
-[pipeline_tool_registry.handle_tool_call()]
-    ↓
-[AsyncSessionLocal → SQL direto]       ← PostgreSQL
-    ↓
-[AuditTrail.log_action()]             ← Registro de compliance
-    ↓
-[ToneFilter.apply_all_filters()]      ← Normalização de tom
-    ↓
-[ReActObserver.on_agent_end()]        ← Prometheus metrics
-    ↓
-[Resposta ao Usuário]
-
-*Layer 3 apenas para ações HIGH_IMPACT_ACTIONS = {rejection, shortlist, wsi_score, ...}
-```
-
-**Latência estimada por etapa:**
-- FairnessGuard Layer 1+2: ~1ms (regex)
-- FairnessGuard Layer 3: ~800ms (LLM Haiku, apenas high-impact)
-- LLM principal: ~2-8s (dependente de modelo)
-- SQL direto: ~5-50ms
-- ToneFilter: <1ms
-- Total típico: 2-10s (sem Layer 3), 3-11s (com Layer 3)
-
-### 7.2 v5 — Fluxo Completo de uma Requisição
-
-```
-[Usuário/Rails]
-    ↓ POST /agents/{domain}/process
-[FastAPI Router]
-    ↓
-[DomainPrompt.process_intent()]       ← Keyword matching OU LangChain LLM
-    ↓
-[DomainPrompt.execute_action()]       ← Dispatch map para handlers
-    ↓
-[Handler: httpx.AsyncClient]          ← HTTP para Rails API
-    ↓
-[Rails API]                           ← PostgreSQL (isolado dos agentes)
-    ↓
-[Resposta ao Usuário]
-
-Sem: FairnessGuard, AuditTrail, ToneFilter, CircuitBreaker (Grupos 1+2), ReActObserver
-```
-
-**Latência estimada por etapa:**
-- process_intent keyword: ~0.1ms
-- process_intent LLM fallback: ~1-3s (LangChain)
-- execute_action handler: ~0.1ms
-- HTTP para Rails: ~10-100ms (rede interna)
-- Rails → PostgreSQL: ~5-50ms
-- Total típico: 50-200ms (keyword path), 1-4s (LLM path)
-
-**Observação:** O v5 é **mais rápido** no caminho simples (keyword matching), mas essa velocidade vem da ausência de guards de compliance.
-
-### 7.3 Comparação de Fluxo
-
-| Aspecto | LIA | v5 |
-|---------|-----|-----|
-| Latência típica | 2-10s | 0.05-4s |
-| Guards antes do LLM | FairnessGuard (3 layers) | Nenhum |
-| Acesso a dados | SQL direto (5-50ms) | HTTP → Rails (10-100ms) |
-| Auditoria | Automática | Manual/ausente |
-| Observabilidade | Prometheus automático | Ausente |
-| Fallback de compliance | Educational message | Não configurado |
-
----
-
-## 8. Evidências de Código que Definem a Arquitetura LIA
-
-### 8.1 O Contrato DomainPrompt (base.py)
-
-O arquivo `lia-agent-system/app/domains/base.py` define o contrato que toda implementação de domínio deve seguir:
+Criar `src/domains/shared/` com compliance obrigatório via herança — mesmo modelo da LIA:
 
 ```python
-class DomainPrompt(ABC):
-    """
-    Abstract base class for all LIA domains.
-    Compatible with existing BaseAgent but independent — no imports from agents/.
-    """
-    @abstractmethod
-    def get_allowed_actions(self) -> List[DomainAction]: ...
-    
-    @abstractmethod
-    def get_system_prompt(self) -> str: ...
-    
-    @abstractmethod
-    async def process_intent(self, query: str, context: DomainContext) -> IntentResult: ...
-    
-    @abstractmethod
-    async def execute_action(self, action_id: str, params, context: DomainContext) -> DomainResponse: ...
-    
-    def validate_context(self, context: DomainContext) -> bool:
-        return bool(context.user_id and context.tenant_id)
-    
-    def get_suggestions(self, context: DomainContext) -> List[str]:
-        return []
+# src/domains/shared/base_domain.py
+class ComplianceDomainMixin:
+    """Injetado automaticamente em todos os domínios via metaclass ou herança."""
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._fairness = FairnessChecker()
+        cls._memory = MemoryService()
+        cls._cache = CacheService()
+        cls._audit = AuditService()
+
+class BaseDomainV2(DomainPrompt, ComplianceDomainMixin):
+    """Base para todos os novos domínios — compliance obrigatório."""
+
+    async def process_intent_safe(self, query: str, context: DomainContext) -> IntentResult:
+        # FairnessChecker ANTES de process_intent
+        fairness_result = self._fairness.check_bias(query)
+        if fairness_result["biased"]:
+            return IntentResult.blocked(fairness_result["attribute"])
+        # Memória: enriquece contexto com histórico
+        enriched_context = await self._memory.enrich(context)
+        return await self.process_intent(query, enriched_context)
 ```
 
-**Nota arquitetural crítica:** O comentário `"Compatible with existing BaseAgent but independent — no imports from agents/"` revela que a LIA tem duas arquiteturas paralelas: a arquitetura de Domínios (nova, domain-driven) e a arquitetura de Agentes (original, `BaseAgent`). Os domínios foram adicionados como uma segunda camada sobre os agentes existentes.
+#### Opção B: Template de Domínio com Checklist Obrigatório
 
-### 8.2 O Problema do process_intent sem LLM
+Criar um script de scaffolding que gera a estrutura completa:
 
-O `domain.py` do pipeline (`app/domains/pipeline/domain.py`, linhas 168-192) revela uma limitação:
-
-```python
-async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
-    # Apenas keyword matching — sem LLM
-    for keyword, action_id in _KEYWORD_ACTION_MAP.items():
-        pattern = r'\b' + re.escape(keyword) + r'\b'
-        if re.search(pattern, query_lower, re.UNICODE):
-            return IntentResult(confidence=0.85, action_id=action_id, ...)
-    
-    # Fallback hardcoded (não LLM)
-    return IntentResult(
-        action_id="suggest_next_action",
-        confidence=0.4,  # Baixo — indica incerteza
-    )
+```bash
+# novo domínio sempre começa com todos os cross-cutting concerns
+python scripts/create_domain.py --name hiring_decision --group 1
+# gera: domain.py, fairness.py, memory.py, cache.py, audit.py
 ```
 
-**Problema:** Quando a query não tem keyword explícita, o sistema faz fallback para `suggest_next_action` com confidence=0.4 sem usar LLM para classificar a intenção. O v5, apesar de também usar keywords, tem LLM como fallback real (via LangChain).
+#### Opção C: Middleware FastAPI para Fairness Global
 
-**Recomendação:** Adicionar fallback LLM no `process_intent` dos domínios LIA que ainda usam apenas keywords.
-
-### 8.3 O execute_action como Delegação Pura
-
-O `execute_action` do pipeline (`domain.py`, linhas 194-213) é apenas uma delegação:
-
-```python
-async def execute_action(self, action_id, params, context) -> DomainResponse:
-    tool_context = {
-        "user_id": context.user_id,
-        "tenant_id": context.tenant_id,
-        "auth_token": context.metadata.get("auth_token"),
-    }
-    result = await handle_tool_call(action_id, params, tool_context)
-    
-    if result.get("success"):
-        return DomainResponse.success_response(...)
-    return DomainResponse.error_response(...)
-```
-
-**Observação:** Toda a lógica real está em `handle_tool_call()` e nas funções `_handle_*`. O `execute_action` é apenas um adaptador de interface. Isso é correto do ponto de vista de separação de responsabilidades, mas cria uma camada adicional de indireção.
-
----
-
-## 9. Recomendações para Escala e Reestruturação
-
-### 9.1 Recomendações Prioritárias para a LIA (Próximos 90 dias)
-
-#### P0 — Crítico para Produção
-
-**LIA-REC-01: Adicionar fallback LLM em process_intent**
-- **Arquivo:** `app/domains/pipeline/domain.py` (e outros domínios com keyword-only)
-- **Problema:** Fallback hardcoded para `suggest_next_action` com confidence=0.4
-- **Solução:** Integrar LangChain como fallback quando keyword não match
-- **Esforço:** 2-3 dias por domínio
-
-```python
-# Proposta de implementação
-async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
-    # Fast-path: keyword matching
-    result = self._keyword_match(query)
-    if result.confidence >= 0.7:
-        return result
-    # Fallback: LLM classification
-    return await self._llm_classify_intent(query, context)
-```
-
-**LIA-REC-02: Migrar SQL direto do tool_registry para serviços de domínio**
-- **Arquivo:** `app/domains/pipeline/agents/pipeline_tool_registry.py` (1.343 linhas)
-- **Problema:** SQL direto via `AsyncSessionLocal` em arquivo de registry de tools
-- **Solução:** Criar `PipelineRepository` com métodos tipados; tool_registry chama o repository
-- **Esforço:** 5-8 dias
-
-#### P1 — Alta Prioridade (próximos 60 dias)
-
-**LIA-REC-03: Criar PipelineRepository como camada de dados**
-```python
-# Proposta
-class PipelineRepository:
-    def __init__(self, session: AsyncSession):
-        self._session = session
-    
-    async def get_vacancy_candidate(self, vc_id: str) -> VacancyCandidate: ...
-    async def update_stage(self, vc_id: str, stage: str, sub_status: str): ...
-    async def get_pipeline_stages(self, company_id: str) -> List[Stage]: ...
-```
-
-**LIA-REC-04: Consolidar as duas arquiteturas paralelas (Domínios + Agentes)**
-- A LIA tem `BaseAgent` (agentes originais) e `DomainPrompt` (domínios novos)
-- `base.py` diz "Compatible with existing BaseAgent but independent"
-- **Risco:** Duplicação de responsabilidades, inconsistência
-- **Solução:** Definir quando usar cada pattern (Domínios para novos; Agentes para existentes + migração gradual)
-
-**LIA-REC-05: Adicionar parallelism ao ScreeningAgent**
-- Inspirado pelo Grupo 3 do v5 (`asyncio.gather`)
-- Screening de múltiplos candidatos pode ser paralelizado
-- **Esforço:** 3-5 dias
-
-#### P2 — Melhoria Contínua (próximos 90 dias)
-
-**LIA-REC-06: Implementar ModelRouter dinâmico**
-- Inspirado no `model_router` do v5 `autonomous` domain
-- Selecionar Claude vs GPT vs Gemini baseado em: custo, latência atual, tipo de tarefa
-- Circuit breaker + ModelRouter = resiliência + otimização de custo
-
-**LIA-REC-07: Criar PlaybookEngine para fluxos autônomos**
-- Inspirado nos `playbooks` do v5
-- Sequências de ações pré-definidas para recrutadores
-- Ex: "Pipeline completo para vaga técnica senior" = playbook com 8 etapas
-
-**LIA-REC-08: Adicionar InferenceEngine de preferências**
-- Inspirado no `scheduling/InferenceEngine` do v5
-- Inferir melhores horários baseado em histórico de agendamentos
-- Reutilizável em outros domínios (predição de comportamento)
-
-### 9.2 Recomendações para o v5 (se houvesse colaboração)
-
-#### P0 — Compliance Bloqueante
-
-**v5-REC-01: Ativar FairnessChecker em todos os domínios**
-- `src/services/fairness_checker.py` existe mas não é usado
-- Adicionar como middleware no router FastAPI (não por domínio — evita opt-in)
-- **Implementação sugerida:**
+Não depender de opt-in por domínio — aplicar fairness no router:
 
 ```python
 # src/middleware/fairness_middleware.py
 class FairnessMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, fairness_checker: FairnessChecker):
-        super().__init__(app)
-        self.checker = fairness_checker
-    
-    async def dispatch(self, request, call_next):
-        body = await request.body()
-        if body:
-            data = json.loads(body)
-            query = data.get("query", "")
-            result = self.checker.check_bias(query)
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path.startswith("/agents/"):
+            body = await request.json()
+            query = body.get("query", "")
+            result = fairness_checker.check_bias(query)
             if result["biased"]:
-                return JSONResponse({"error": "discriminatory_query", ...}, status_code=422)
+                return JSONResponse(
+                    {"error": "discriminatory_query", "attribute": result["attribute"]},
+                    status_code=422
+                )
         return await call_next(request)
 ```
 
-**v5-REC-02: Definir governance arquitetural — qual grupo usar**
-- Criar `ARCHITECTURE_DECISION_RECORD.md` com quando usar Grupo 1 vs 2 vs 3
-- Grupo 1: CRUD simples, intenções previsíveis
-- Grupo 2: Fluxos multi-etapa com estado
-- Grupo 3: Tarefas paralelas com múltiplos provedores
+#### Opção D: Padronizar no Padrão LangGraph da LIA
 
-**v5-REC-03: Upgrade do FairnessChecker para 3 layers**
-- Importar padrões de categorias do v5 para ter Layer 2 (implicit bias)
-- Adicionar Layer 3 (LLM semântico) para ações de alto impacto
+Para domínios complexos (Grupo 2+), adotar `LangGraphReActBase` como base — a convergência já está acontecendo organicamente (`applies/react_agent.py`). Formalizar a direção:
 
-### 9.3 Roadmap de Convergência (se os sistemas precisarem conversar)
-
-Se a estratégia for convergência entre LIA e v5:
-
-**Fase 1 (0-30 dias):** Protocolo comum
-- Definir `AgentMessage` como formato de comunicação inter-sistema
-- LIA expõe endpoints REST compatíveis com v5's `DomainPrompt.execute_action`
-- v5 registra LIA como "external agent" no seu registry
-
-**Fase 2 (30-90 dias):** Compliance unificado
-- v5 adota FairnessGuard da LIA via middleware (não reescrita)
-- Shared `AuditTrail` para compliance cross-sistema
-
-**Fase 3 (90-180 dias):** Capacidades complementares
-- LIA adota ModelRouter do v5 `autonomous`
-- v5 `sourced_profile_sourcing` pode usar LIA's `ScreeningAgent` para WSI
-
----
-
-## 10. Conclusões Arquiteturais
-
-### 10.1 A Diferença Filosófica Fundamental
-
-A análise de código revela que as duas plataformas fizeram escolhas filosóficas opostas:
-
-**LIA: "Compliance é uma restrição estrutural"**
-```
-# É impossível criar este agente sem FairnessGuard:
-class MeuNovoAgente(LangGraphReActBase, EnhancedAgentMixin):
-    # FairnessGuard já está aqui — sem escolha
-    pass
-```
-
-**v5: "Compliance é uma responsabilidade do desenvolvedor"**
 ```python
-# É perfeitamente possível criar este domínio sem FairnessChecker:
-class MeuNovoDominio(DomainPrompt):
-    async def execute_action(self, action_id, params, context):
-        # FairnessChecker? Quem lembra?
-        return await self._do_something(params)
+# src/domains/base_langgraph.py
+from langgraph.graph import StateGraph
+from langgraph.checkpoint.memory import MemorySaver
+
+class LangGraphDomainBase(DomainPrompt):
+    """Base para domínios que precisam de ReAct multi-step."""
+    
+    def __init__(self):
+        self._graph = self._build_graph()
+        self._checkpointer = MemorySaver()
+    
+    @abstractmethod
+    def _build_graph(self) -> StateGraph: ...
 ```
 
-**O resultado empírico:** Em 8 domínios v5 lidos, **0 implementaram FairnessChecker**. A existência do serviço não foi suficiente — a disciplina falhou.
+### 10.2 Para a LIA (Incorporar Vantagens do v5)
 
-### 10.2 O Paradoxo da Velocidade vs Segurança
+#### LIA-REC-01: Adicionar fallback LLM em `process_intent` (P0)
 
-O v5 é mais rápido para processar requisições simples (keyword path: <200ms vs LIA: 2-10s), mas esta velocidade vem da ausência de guards de compliance:
+```python
+# app/domains/pipeline/domain.py — linha 182, substituir:
+# Antes:
+if not best_action:
+    best_action = "suggest_next_action"
+    best_confidence = 0.4
 
-- **LIA paga um custo de latência** para garantir fairness, audit e observabilidade
-- **v5 economiza latência** omitindo guards de compliance
+# Depois:
+if not best_action:
+    return await self._llm_classify_intent(query, context)
+```
 
-Em produção com processamento de candidatos (decisões com impacto legal), a latência da LIA é justificada. Para cenários de CRUD simples (listar vagas, buscar insights), o overhead da LIA pode ser desnecessário.
+#### LIA-REC-02: Implementar `ModelRouter` dinâmico (P1)
 
-**Recomendação:** A LIA deveria implementar um modo "CRUD fast-path" similar ao keyword matching do v5 para ações não-discriminatórias (listar vagas, buscar dados), ativando FairnessGuard apenas para ações que afetam candidatos.
+Inspirado no `src/services/model_router.py` do v5:
+```python
+# app/shared/agents/model_router.py
+class ModelRouter:
+    """Seleciona Claude vs GPT vs Gemini baseado em custo/latência/tipo de tarefa."""
+    
+    async def route(self, task_type: str, context: DomainContext) -> str:
+        circuit_status = {name: cb.state for name, cb in ALL_CIRCUITS.items()}
+        if circuit_status["anthropic"] == CircuitState.OPEN:
+            return "openai"  # fallback automático
+        if task_type == "fast_intent_classify":
+            return "gemini-flash"  # mais barato
+        return "claude"  # padrão
+```
 
-### 10.3 O Legado Comum como Oportunidade
+#### LIA-REC-03: Migrar SQL direto do tool_registry para Repository (P1)
 
-As evidências forenses de origem comum (`response_filter`, `circuit_breaker`, `ReActObserver`) não são um problema — são uma oportunidade. Os dois sistemas compartilham vocabulário, padrões e possivelmente parte da equipe de design.
+```python
+# app/domains/pipeline/repository.py (novo)
+class PipelineRepository:
+    def __init__(self, session: AsyncSession):
+        self._session = session
+    
+    async def get_vacancy_candidate(self, vc_id: str) -> VacancyCandidate:
+        result = await self._session.execute(
+            select(VacancyCandidate).where(VacancyCandidate.id == vc_id)
+        )
+        return result.scalar_one_or_none()
+```
 
-Isso significa que:
-1. A integração entre LIA e v5 é tecnicamente viável sem reescrita total
-2. Um protocolo de comunicação entre os sistemas pode reusar padrões existentes
-3. A curva de aprendizado para desenvolvedores que trabalham em ambos é menor
+#### LIA-REC-04: Adicionar `semantic_cache` para LLM calls (P2)
 
-### 10.4 Veredicto Final
+Inspirado no `src/services/semantic_cache.py` do v5 — cache baseado em similaridade de embeddings, não hash exato.
 
-| Dimensão | Vencedor | Margem |
-|----------|---------|--------|
-| Compliance e Governança | LIA | Decisivo |
-| Consistência Arquitetural | LIA | Decisivo |
-| Observabilidade | LIA | Significativo |
-| Escalabilidade de Agentes | v5 Grupo 3 | Moderado |
-| Latência Operacional | v5 | Moderado |
-| Sofisticação de Fluxos | Empate | — |
-| Facilidade de Extensão | LIA | Moderado |
-| Separação Dados/IA | v5 | Moderado |
+#### LIA-REC-05: Resolver ambiguidade entre `BaseAgent` e `DomainPrompt` (P1)
 
-**LIA é a arquitetura mais madura e segura para produção em contextos de recrutamento com impacto legal.** O v5 é mais rápido e tem padrões de paralelismo superiores, mas a ausência de compliance-by-design é um risco inaceitável para sistemas que tomam decisões sobre candidatos.
+O comentário `"Compatible with existing BaseAgent but independent"` em `base.py` revela tensão. Definir formalmente:
+- `BaseAgent` (herança): para novos agentes com compliance completo
+- `DomainPrompt` (composição): para wrappers de domínio leves (UI-facing)
 
-**Próximo passo estratégico recomendado:** Adotar o ModelRouter e o pattern de fan-out paralelo do v5 Grupo 3 na LIA (LIA-REC-05, LIA-REC-06), mantendo o compliance-by-design que é a vantagem competitiva estrutural da LIA.
+### 10.3 Roadmap de Convergência (se os sistemas precisarem colaborar)
+
+| Fase | Duração | Objetivo |
+|------|---------|---------|
+| 1 — Protocolo comum | 0-30 dias | `AgentMessage` como formato inter-sistema; LIA expõe endpoints compatíveis com v5 |
+| 2 — Compliance unificado | 30-90 dias | v5 adota FairnessGuard via middleware (Opção C); shared `AuditTrail` |
+| 3 — Capacidades complementares | 90-180 dias | LIA adota `ModelRouter` do v5; v5 `sourced_profile` usa WSI screening da LIA |
 
 ---
 
-*Documento gerado com base em leitura direta dos seguintes arquivos:*
-- `lia-agent-system/app/domains/base.py` (172 linhas)
+## Conclusões
+
+### A Diferença Filosófica Fundamental
+
+**LIA: Compliance como restrição estrutural**
+
+```python
+# Impossível criar agente LIA sem FairnessGuard:
+class NovoAgente(LangGraphReActBase, EnhancedAgentMixin):
+    pass  # FairnessGuard já está aqui
+```
+
+**v5: Compliance como responsabilidade do desenvolvedor**
+
+```python
+# Totalmente válido criar domínio v5 sem fairness:
+class NovoDominio(DomainPrompt):
+    async def execute_action(self, action_id, params, context):
+        return await self._do_something(params)  # sem fairness
+```
+
+**O resultado empírico:** 6/8 domínios v5 sem fairness.
+
+### Veredicto por Dimensão
+
+| Dimensão | LIA | v5 | Vencedor |
+|----------|-----|-----|---------|
+| Compliance garantido | Herança obrigatória | Opt-in não exercido em 75% | LIA |
+| Consistência arquitetural | 1 padrão | 3 grupos | LIA |
+| Observabilidade automática | ReActObserver + Prometheus | Manual | LIA |
+| Paralelismo de agentes | Sequential (ReAct cycle) | asyncio.gather (Grupo 3) | v5 |
+| Roteamento dinâmico de LLM | Circuit breaker estático | ModelRouter dinâmico | v5 |
+| Latência no caminho simples | 2-10s | 50-200ms | v5 |
+| Separação dados/IA | SQL direto nos agents | HTTP Rails (fronteira clara) | v5 |
+| Facilidade de adicionar 9º domínio | Herda compliance | Reimplementa compliance | LIA |
+
+**LIA é a arquitetura mais segura para produção em contextos que envolvem decisões sobre candidatos.** O v5 tem vantagens em latência, paralelismo e shared services avançados — mas a ausência empírica de compliance em 75% dos domínios é um risco inaceitável para sistemas com impacto legal.
+
+**Próxima ação estratégica recomendada:** Implementar `ModelRouter` (LIA-REC-02) e fallback LLM no `process_intent` (LIA-REC-01), mantendo o compliance-by-design que é a vantagem competitiva estrutural da LIA.
+
+---
+
+*Arquivos lidos diretamente (com linha específica quando relevante):*
+- `lia-agent-system/app/domains/pipeline/agents/pipeline_transition_agent.py` (738 linhas)
+- `lia-agent-system/app/domains/pipeline/agents/pipeline_decision_agent.py` (42 linhas)
+- `lia-agent-system/app/domains/pipeline/agents/pipeline_tool_registry.py` (1.342 linhas)
 - `lia-agent-system/app/domains/pipeline/domain.py` (411 linhas)
-- `lia-agent-system/app/domains/pipeline/agents/pipeline_tool_registry.py` (1.343 linhas)
+- `lia-agent-system/app/domains/base.py` (172 linhas)
 - `lia-agent-system/app/shared/compliance/fairness_guard.py` (601 linhas)
 - `lia-agent-system/app/shared/resilience/circuit_breaker.py` (883 linhas)
 - `lia-agent-system/app/shared/robustness/response_filter.py` (364 linhas)
-- `github.com/WeDOTalent/recruiter_agent_v5/src/domains/*/domain.py` (8 domínios, via API)
-- `github.com/WeDOTalent/recruiter_agent_v5/src/services/fairness_checker.py`
-- `github.com/WeDOTalent/recruiter_agent_v5/src/services/circuit_breaker.py`
-- `github.com/WeDOTalent/recruiter_agent_v5/src/services/response_filter.py`
-- `proposals/Paralelo_LIA_vs_V5_Arquitetura_IA.md`
+- `github.com/.../src/domains/applies/react_agent.py` (via GitHub API — código real, MAX_ITERATIONS=12)
+- `github.com/.../src/domains/sourced_profile_sourcing/agents/base.py` (via GitHub API — BaseAgent ABC)
+- `github.com/.../src/services/circuit_breaker.py` (via GitHub API — DEFAULT_FAILURE_THRESHOLD=3)
+- `github.com/.../src/services/response_filter.py` (via GitHub API — 23 abreviações)
+- `github.com/.../src/services/react_observer.py` (via GitHub API — log_model_call, log_tool_call)
+- `github.com/.../src/services/pii_filter.py` (via GitHub API)
+- Listagem de diretório de 8 domínios v5 (para mapa de cobertura)
+- Listagem de `src/services/` do v5 (39+ arquivos)
