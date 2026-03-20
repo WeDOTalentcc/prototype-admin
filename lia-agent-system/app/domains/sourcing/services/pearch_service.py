@@ -231,7 +231,38 @@ class PearchService:
         """
         if not self.api_key:
             raise ValueError("PEARCH_API_KEY environment variable is not set")
-        
+
+        # FAR-2: FairnessGuard — bloquear queries discriminatórias antes de enviar ao Pearch
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard, FairnessCheckResult
+            _fg = FairnessGuard()
+            _fg_result = _fg.check(request.query)
+            if _fg_result.is_blocked:
+                logger.warning(
+                    "[PearchService][FAR-2] FairnessGuard bloqueou query pearch: "
+                    "category=%s terms=%s",
+                    _fg_result.category, _fg_result.blocked_terms,
+                )
+                _blocked = PearchSearchResponse(
+                    uuid="fairness-blocked",
+                    thread_id="",
+                    query=request.query,
+                    status="fairness_blocked",
+                    total_estimate=0,
+                    search_results=[],
+                )
+                try:
+                    await _fg.log_check(
+                        result=_fg_result,
+                        context="pearch_search",
+                        company_id=getattr(request, "company_id", None),
+                    )
+                except Exception:
+                    pass
+                return _blocked
+        except Exception as _fg_exc:
+            logger.debug("[PearchService] FairnessGuard check skipped: %s", _fg_exc)
+
         logger.info(f"Searching Pearch AI v2: '{request.query}' (limit={request.limit}, type={request.type})")
         
         start_time = datetime.now()

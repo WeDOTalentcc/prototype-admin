@@ -677,7 +677,9 @@ async def agent_chat_ws(
                 conversation_history.append({"role": "user", "content": content})
                 conversation_history.append({"role": "assistant", "content": clean_message})
 
-                await ws_manager.send_to_session(session_id, {
+                # FAR-3: incluir soft_warnings de fairness na resposta ao cliente
+                _fairness_warnings = (output.metadata or {}).get("fairness_warnings", [])
+                _ws_payload: Dict[str, Any] = {
                     "type": "message",
                     "content": clean_message,
                     "confidence": output.confidence,
@@ -686,7 +688,10 @@ async def agent_chat_ws(
                     "state_updates": output.state_updates or {},
                     "domain": active_domain,
                     "source": "direct",
-                })
+                }
+                if _fairness_warnings:
+                    _ws_payload["fairness_warnings"] = _fairness_warnings
+                await ws_manager.send_to_session(session_id, _ws_payload)
 
             except asyncio.TimeoutError:
                 await ws_manager.send_to_session(session_id, {

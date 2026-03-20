@@ -36,10 +36,14 @@ export interface UseFloatStreamingResult {
   thinkingSteps: string[]
   /** E7: true enquanto o agente está no loop ReAct */
   isThinking: boolean
+  /** FAR-2/C: warnings de viés implícito detectados na última resposta */
+  fairnessWarnings: string[]
   /** Envia mensagem ao agente especificando o domain e opcionalmente o scope */
   sendMessage: (content: string, domain?: string, scope?: string) => void
   /** Confirma ou rejeita a ação HITL pendente */
   sendApproval: (approved: boolean) => void
+  /** FAR-2/C: limpa fairness warnings (após dismiss pelo recrutador) */
+  dismissFairnessWarnings: () => void
   connect: () => void
   disconnect: () => void
 }
@@ -55,6 +59,8 @@ export function useFloatStreaming(
   // E7: estado de pensamentos ReAct
   const [thinkingSteps, setThinkingSteps] = useState<string[]>([])
   const [isThinking, setIsThinking] = useState(false)
+  // FAR-2/C: warnings de viés implícito
+  const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([])
 
   useEffect(() => {
     onCompleteRef.current = onComplete
@@ -92,6 +98,12 @@ export function useFloatStreaming(
         setIsThinking(false)
         hitlRef.current = null
         setHitlPending(null)
+        // FAR-2/C: capturar fairness warnings se presentes
+        if (event.fairness_warnings && event.fairness_warnings.length > 0) {
+          setFairnessWarnings(event.fairness_warnings)
+        } else {
+          setFairnessWarnings([])
+        }
         if (event.content) {
           onCompleteRef.current(event.content)
         }
@@ -166,6 +178,8 @@ export function useFloatStreaming(
     }
   }, [sendRaw])
 
+  const dismissFairnessWarnings = useCallback(() => setFairnessWarnings([]), [])
+
   return {
     isConnected,
     isStreaming,
@@ -176,6 +190,8 @@ export function useFloatStreaming(
     hitlPending,
     thinkingSteps,
     isThinking,
+    fairnessWarnings,
+    dismissFairnessWarnings,
     sendMessage,
     sendApproval,
     connect,

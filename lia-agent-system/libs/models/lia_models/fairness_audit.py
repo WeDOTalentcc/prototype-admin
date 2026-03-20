@@ -45,6 +45,9 @@ class FairnessAuditLog(Base):
     # Where in the system the check was triggered: pipeline | wizard | sourcing | search
     context = Column(String(100), nullable=True)
 
+    # FAR-5: Soft warnings gerados pelo Layer 2 (léxico implícito) — nullable para compatibilidade
+    soft_warnings = Column(JSONB, nullable=True)
+
     created_at = Column(
         DateTime(timezone=True),
         server_default=text("now()"),

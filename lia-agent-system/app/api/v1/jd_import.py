@@ -118,11 +118,34 @@ async def import_batch_jds(
     """
     company_id = parse_company_id(get_user_company_id(current_user))
     user_id = str(current_user.id) if current_user.id else None
-    
+
+    # FAR-2: FairnessGuard — verificar JDs antes de importar
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        for _jd in request.jds:
+            _text = f"{_jd.title} {_jd.description or ''}"
+            _fg_result = _fg.check(_text)
+            if _fg_result.is_blocked:
+                from fastapi import HTTPException
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "category": _fg_result.category,
+                        "message": _fg_result.educational_message,
+                        "job_title": _jd.title,
+                    },
+                )
+    except Exception as _fg_exc:
+        if getattr(_fg_exc, "status_code", None) == 422:
+            raise
+        pass  # fail-open
+
     service = JDImportService()
-    
+
     jds_data = [jd.model_dump() for jd in request.jds]
-    
+
     batch = await service.import_batch_jds(
         db=db,
         company_id=company_id,
@@ -155,9 +178,30 @@ async def import_single_jd(
     Returns the parsed and normalized JD data.
     """
     company_id = parse_company_id(get_user_company_id(current_user))
-    
+
+    # FAR-2: FairnessGuard — verificar JD antes de importar
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        _text = f"{jd.title} {jd.description or ''}"
+        _fg_result = _fg.check(_text)
+        if _fg_result.is_blocked:
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "fairness_blocked",
+                    "category": _fg_result.category,
+                    "message": _fg_result.educational_message,
+                },
+            )
+    except Exception as _fg_exc:
+        if getattr(_fg_exc, "status_code", None) == 422:
+            raise
+        pass  # fail-open
+
     service = JDImportService()
-    
+
     imported = await service.import_jd(
         db=db,
         company_id=company_id,

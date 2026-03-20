@@ -49,6 +49,8 @@ export interface StreamingEvent {
   action?: string
   description?: string
   data?: Record<string, unknown>
+  // FAR-2/C: fairness warnings visíveis ao recrutador
+  fairness_warnings?: string[]
 }
 
 export interface UseAgentStreamingOptions {

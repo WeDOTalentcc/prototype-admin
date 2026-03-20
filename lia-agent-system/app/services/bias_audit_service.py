@@ -439,4 +439,83 @@ class BiasAuditService:
         return list(result.scalars().all())
 
 
+    def audit_ranking_results(
+        self,
+        results: List[Dict],
+        dimension: str = "gender",
+        top_n: int = 10,
+        company_id: Optional[str] = None,
+    ) -> Dict:
+        """
+        FAR-5: Audita disparate impact em tempo real para uma lista de candidatos rankeados.
+
+        Aplica a Four-Fifths Rule (80%) ao top-N de resultados de busca/ranking,
+        verificando se algum grupo demográfico está sub-representado.
+
+        Args:
+            results: Lista de dicts de candidatos (devem ter campo correspondente à dimension).
+            dimension: Campo demográfico a auditar ("gender", "age_group", "disability", "region").
+            top_n: Quantos candidatos do topo analisar.
+            company_id: Para logging multi-tenant.
+
+        Returns:
+            Dict com:
+              - fairness_ok: bool (True se todos os grupos >= 80% da taxa do grupo dominante)
+              - dimension: str
+              - group_counts: Dict[str, int]
+              - adverse_impact_ratios: Dict[str, float]
+              - flagged_groups: List[str] (grupos com ratio < 0.80)
+              - alert: str | None (mensagem de alerta se houver problema)
+        """
+        top = results[:top_n]
+        if not top:
+            return {"fairness_ok": True, "dimension": dimension, "group_counts": {}, "adverse_impact_ratios": {}, "flagged_groups": [], "alert": None}
+
+        from collections import Counter
+        values = [r.get(dimension) for r in top if r.get(dimension)]
+        if len(values) < 3:
+            logger.debug(
+                "[BiasAuditService][FAR-5] Dados insuficientes para auditar dimension=%s (n=%d)",
+                dimension, len(values),
+            )
+            return {"fairness_ok": True, "dimension": dimension, "group_counts": {}, "adverse_impact_ratios": {}, "flagged_groups": [], "alert": None}
+
+        counts = Counter(values)
+        total = sum(counts.values())
+        max_count = max(counts.values())
+        max_rate = max_count / total
+
+        adverse_impact_ratios: Dict[str, float] = {}
+        flagged_groups: List[str] = []
+        for group, cnt in counts.items():
+            rate = cnt / total
+            ratio = rate / max_rate if max_rate > 0 else 1.0
+            adverse_impact_ratios[group] = round(ratio, 3)
+            if ratio < FOUR_FIFTHS_THRESHOLD:
+                flagged_groups.append(group)
+
+        fairness_ok = len(flagged_groups) == 0
+        alert = None
+        if not fairness_ok:
+            alert = (
+                f"[FAR-5] Disparate impact detectado em '{dimension}': "
+                f"grupos sub-representados no top-{top_n}: {flagged_groups}. "
+                f"Razões de impacto adverso: {adverse_impact_ratios}."
+            )
+            logger.warning(
+                "[BiasAuditService][FAR-5] Disparate impact em ranking: "
+                "dimension=%s flagged=%s company=%s",
+                dimension, flagged_groups, company_id or "unknown",
+            )
+
+        return {
+            "fairness_ok": fairness_ok,
+            "dimension": dimension,
+            "group_counts": dict(counts),
+            "adverse_impact_ratios": adverse_impact_ratios,
+            "flagged_groups": flagged_groups,
+            "alert": alert,
+        }
+
+
 bias_audit_service = BiasAuditService()

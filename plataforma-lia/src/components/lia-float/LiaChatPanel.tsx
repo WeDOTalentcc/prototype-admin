@@ -23,6 +23,7 @@ import { useNavigationIntent } from "@/hooks/use-navigation-intent"
 import { useActionIntent, actionTypeToDomain, type ActionType } from "@/hooks/use-action-intent"
 import { useFloatStreaming } from "@/hooks/use-float-streaming"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
+import { FairnessWarningBanner } from "@/components/fairness-warning-banner"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import {
   useFloatConversation,
@@ -88,6 +89,8 @@ export function LiaChatPanel() {
     streamingContent,
     error: wsError,
     hitlPending,
+    fairnessWarnings,
+    dismissFairnessWarnings,
     sendMessage: wsSend,
     sendApproval,
     connect: wsConnect,
@@ -421,6 +424,12 @@ export function LiaChatPanel() {
           <div ref={messagesEndRef} />
         </div>
       )}
+
+      {/* FAR-2/C: Fairness warning banner — viés implícito detectado */}
+      <FairnessWarningBanner
+        warnings={fairnessWarnings}
+        onDismiss={dismissFairnessWarnings}
+      />
 
       {/* Navigation hint */}
       {navIntent?.page && (

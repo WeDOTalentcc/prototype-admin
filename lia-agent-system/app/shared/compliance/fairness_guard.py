@@ -43,6 +43,29 @@ IMPLICIT_BIAS_TERMS: Dict[str, str] = {
     "apresentacao pessoal": "O termo 'apresentação pessoal' pode configurar discriminação estética. Use critérios objetivos.",
     "morar proximo": "Filtrar por 'morar próximo' pode configurar discriminação socioeconômica. Considere disponibilidade ou trabalho remoto.",
     "boa familia": "O termo 'boa família' pode configurar discriminação socioeconômica ou de origem. Use critérios profissionais.",
+    # Proxy socioeconômico por localização
+    "zona rural": "Filtrar por 'zona rural' pode configurar discriminação socioeconômica ou geográfica indireta. Considere critérios de mobilidade ou trabalho remoto.",
+    "periferia": "Filtrar por 'periferia' pode configurar discriminação socioeconômica. Considere critérios de disponibilidade, transporte ou trabalho remoto.",
+    "interior do estado": "Filtrar por 'interior do estado' como critério eliminatório pode configurar discriminação geográfica indireta.",
+    "suburbio": "Filtrar por 'subúrbio' pode configurar discriminação socioeconômica indireta.",
+    # Proxy PCD / acessibilidade
+    "sem adaptacoes": "O termo 'sem adaptações' pode configurar discriminação indireta contra PCDs (Lei 13.146/15). Especifique os requisitos funcionais objetivos.",
+    "sem necessidade de acessibilidade": "Este critério pode configurar discriminação indireta contra PCDs. Descreva os requisitos funcionais objetivos da vaga.",
+    "sem restricoes fisicas": "O termo 'sem restrições físicas' pode configurar discriminação contra PCDs. Use requisitos funcionais objetivos.",
+    # Religiões afro-brasileiras e outras (diversidade religiosa)
+    "espirita": "Referência a 'espírita' pode configurar discriminação religiosa (CF Art. 5º, VI). Avalie candidatos por competências.",
+    "candomble": "Referência a 'candomblé' pode configurar discriminação religiosa. Avalie candidatos por competências.",
+    "umbanda": "Referência a 'umbanda' pode configurar discriminação religiosa. Avalie candidatos por competências.",
+    "valores cristaos": "Exigir 'valores cristãos' pode configurar discriminação religiosa (CF Art. 5º, VI). Use critérios comportamentais objetivos.",
+    "principios religiosos": "Exigir 'princípios religiosos' pode configurar discriminação religiosa. Especifique valores comportamentais objetivos.",
+    # Proxy estado civil / maternidade
+    "sem obrigacoes": "O termo 'sem obrigações' pode ser proxy para discriminação por estado civil ou responsabilidades familiares (Lei 9.029/95).",
+    "disponibilidade total": "Exigir 'disponibilidade total' sem especificação pode mascarar discriminação por estado civil ou responsabilidades familiares.",
+    "sem compromissos pessoais": "Este critério pode ser proxy para discriminação por estado civil ou maternidade/paternidade (CLT Art. 373-A).",
+    "mae solo": "Referência a 'mãe solo' como critério pode configurar discriminação por maternidade (Lei 9.029/95).",
+    # Proxy etário
+    "alto potencial de crescimento rapido": "Este critério pode ser proxy para discriminação etária. Especifique competências e resultados esperados.",
+    "energia jovem": "O critério 'energia jovem' pode configurar discriminação etária (Lei 10.741/03). Use competências objetivas.",
 }
 
 
@@ -108,14 +131,14 @@ DISCRIMINATORY_CATEGORIES = {
             r"\b(idade|anos?)\s*(máxim[oa]|mínim[oa]|maxim[oa]|minim[oa])\s*[:\s]*\d+\b",
             r"\bexcluir?\s+maiores?\s+de\s+\d+\b",
             r"\bexcluir?\s+menores?\s+de\s+\d+\b",
-            r"\b(máximo|mínimo|maximo|minimo)\s+\d+\s+anos\b(?!\s+de\s+(experiên|experienc|atua|mercado|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
+            r"\b(máximo|mínimo|maximo|minimo)\s+\d+\s+anos\b(?!\s+(?:de|no|na|em)\s+(experiên|experienc|atua|mercado|setor|ramo|empresa|cargo|fun[çc]|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
             r"\bidade\s+entre\s+\d+\s+e\s+\d+\b",
-            r"\bde\s+\d+\s+(a|até|ate)\s+\d+\s+anos\b",
+            r"\bde\s+\d+\s+(a|até|ate)\s+\d+\s+anos\b(?!\s+(?:de|no|na|em)\s+(experiên|experienc|atua|mercado|setor|ramo|empresa|cargo|fun[çc]|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi|atuac))",
             r"\b(age|old|young)\s+only\b",
             r"\b(velho|velha|idoso|idosa)\s+(para|pra|demais)\b",
             # Formas implícitas: "até 30 anos", "mais de 50 anos" (sem range explícito)
-            r"\baté\s+\d+\s+anos\b(?!\s+de\s+(experiên|experienc|atua|mercado|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
-            r"\bmais\s+de\s+\d+\s+anos\b(?!\s+de\s+(experiên|experienc|atua|mercado|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
+            r"\baté\s+\d+\s+anos\b(?!\s+(?:de|no|na|em)\s+(experiên|experienc|atua|mercado|setor|ramo|empresa|cargo|fun[çc]|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
+            r"\bmais\s+de\s+\d+\s+anos\b(?!\s+(?:de|no|na|em)\s+(experiên|experienc|atua|mercado|setor|ramo|empresa|cargo|fun[çc]|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
             r"\bn[ãa]o\s+(quero|queremos)\s+.*\b(mais\s+de|acima\s+de)\s+\d+\b",
         ],
         "message": (
@@ -219,13 +242,95 @@ DISCRIMINATORY_CATEGORIES = {
             "ou experiência regional?"
         ),
     },
+    # FAR-1: novas categorias adicionadas em Sprint FAR (20/03/2026)
+    "antecedentes_criminais": {
+        "terms": [
+            r"\bsem\s+(antecedentes?\s+criminais?|antecedentes?\s+policiais?|passagem\s+policial|ocorrências?\s+policiais?|ocorrencias?\s+policiais?)\b",
+            r"\bficha\s+limpa\s+(obrigatória|obrigatorio|exigida|exigido|requerida|requerido|comprovada|comprovado)\b",
+            r"\bexcluir?\s+(\w+\s+)*(com\s+)?(ficha\s+suja|antecedentes?\s+criminais?|passagem\s+policial)\b",
+            r"\bn[ãa]o\s+(aceitar?|queremos?|aceitamos?)\s+(\w+\s+)*(com\s+)?(ficha\s+suja|antecedentes?|passagem\s+policial)\b",
+            r"\b(apenas|somente|só|so)\s+(\w+\s+)*(candidatos?\s+)?(com\s+)?ficha\s+limpa\b",
+            r"\bcertidão\s+de\s+(nada\s+consta|antecedentes?)\s+(obrigatória|obrigatorio|exigida|exigido|requerida|requerido)\b",
+            r"\bcertidao\s+de\s+(nada\s+consta|antecedentes?)\s+(obrigatoria|exigida|exigido|requerida|requerido)\b",
+        ],
+        "message": (
+            "A LIA não pode discriminar candidatos por antecedentes criminais de forma genérica. "
+            "A CNJ Resolução 65/08 e a Lei 7.210/84 proíbem o uso de certidões criminais como "
+            "critério eliminatório generalizado. Apenas funções específicas regulamentadas "
+            "(ex: segurança armada, instituições financeiras) podem exigir esse requisito. "
+            "Consulte o setor jurídico antes de incluir esse critério."
+        ),
+    },
+    "saude_doenca": {
+        "terms": [
+            r"\bsem\s+(HIV|AIDS|hepatite\s+[ABC]|doenças?\s+cr[oô]nicas?|enfermidades?\s+cr[oô]nicas?)\b",
+            r"\bsem\s+(hiv|aids|hepatite)\b",
+            r"\bn[ãa]o\s+(aceitar?|queremos?|aceitamos?)\s+(\w+\s+)*(com\s+)?(HIV|AIDS|doenças?\s+cr[oô]nicas?|hiv|aids)\b",
+            r"\bexcluir?\s+(\w+\s+)*(portadores?\s+de\s+)?(HIV|AIDS|doenças?\s+cr[oô]nicas?|hiv|aids)\b",
+            r"\bteste\s+(HIV|de\s+HIV|de\s+AIDS|hiv|aids)\s+(obrigatório|obrigatorio|exigido|requerido)\b",
+            r"\bportadores?\s+de\s+(HIV|AIDS|doenças?\s+cr[oô]nicas?|hiv|aids)\s+n[ãa]o\b",
+            r"\bsaúde\s+perfeita\s+(obrigatória|obrigatorio|exigida|exigido|comprovada|comprovado)\b",
+            r"\bsaude\s+perfeita\s+(obrigatoria|exigida|exigido|comprovada|comprovado)\b",
+        ],
+        "message": (
+            "A LIA não pode discriminar candidatos por condições de saúde. "
+            "A Lei 9.029/95 (Art. 1º) e a Lei 9.313/96 proíbem discriminação "
+            "por doenças crônicas, incluindo HIV/AIDS, em processos seletivos. "
+            "Posso ajudar a definir requisitos funcionais objetivos para a vaga?"
+        ),
+    },
+    "filiacao_sindical": {
+        "terms": [
+            r"\bn[ãa]o\s+(sindicalizado|filiado\s+a\s+sindicato|filiado\s+ao\s+sindicato)\b",
+            r"\bsem\s+filia[çc][ãa]o\s+sindical\b",
+            r"\bsem\s+filiacao\s+sindical\b",
+            r"\bexcluir?\s+(\w+\s+)*(sindicalistas?|filiados?\s+(ao?\s+)sindicato)\b",
+            r"\bn[ãa]o\s+(aceitar?|queremos?|aceitamos?)\s+(\w+\s+)*(sindicalistas?|filiados?\s+(ao?\s+)sindicato)\b",
+            r"\bfilia[çc][ãa]o\s+sindical\s+(proibida|n[ãa]o\s+permitida|n[ãa]o\s+aceita)\b",
+        ],
+        "message": (
+            "A LIA não pode discriminar candidatos por filiação sindical. "
+            "A CLT (Art. 543) e a Constituição Federal (Art. 8º) garantem "
+            "liberdade de associação sindical e proíbem discriminação por esse motivo. "
+            "Posso ajudar a definir critérios baseados em competências profissionais?"
+        ),
+    },
+    "aparencia_fisica": {
+        "terms": [
+            r"\baltura\s+(m[íi]nima|m[áa]xima|minima|maxima|m[íi]n\.?|m[áa]x\.?)\s*[:\s]*\d+",
+            r"\bestatura\s+(m[íi]nima|m[áa]xima|minima|maxima)\b",
+            r"\bpeso\s+(m[áa]ximo|m[íi]nimo|maximo|minimo|ideal)\s*[:\s]*\d*",
+            r"\bsem\s+(sobrepeso|obesidade|excesso\s+de\s+peso)\b",
+            r"\b(boa\s+forma|em\s+boa\s+forma)\s*(f[íi]sica)?\s*(obrigatória|obrigatorio|exigida|exigido|requerida|requerido)\b",
+            r"\bboa\s+forma\s+f[íi]sica\b",
+            r"\b(corpo|f[íi]sico|fisico)\s+(atl[eé]tico|atletico|definido|escultural)\b",
+            r"\bperfil\s+atl[eé]tico\b",
+            r"\b(ótima|excelente)\s+aparência\s+(f[íi]sica|pessoal)?\b",
+            r"\b(otima|excelente)\s+aparencia\b",
+        ],
+        "message": (
+            "A LIA não pode filtrar candidatos por características físicas como altura, "
+            "peso, forma física ou aparência. A Lei 9.029/95 e a jurisprudência trabalhista "
+            "proíbem discriminação estética em processos seletivos, salvo funções com "
+            "requisito funcional objetivo comprovado (ex: atleta profissional). "
+            "Posso ajudar a definir critérios baseados em capacidade técnica e experiência?"
+        ),
+    },
 }
 
 _COMPILED_PATTERNS: Dict[str, List[re.Pattern]] = {}
 # Versão dos patterns — incrementar quando patterns forem adicionados para forçar recompilação
-_PATTERNS_VERSION = 2
+# v3: FAR-1 — 5 novas categorias (antecedentes_criminais, saude_doenca, filiacao_sindical,
+#              aparencia_fisica), expansão IMPLICIT_BIAS_TERMS, fix regex idade
+_PATTERNS_VERSION = 3
 
-HIGH_IMPACT_ACTIONS = {"rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection"}
+HIGH_IMPACT_ACTIONS = {
+    "rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection",
+    # FAR-4: sourcing search e import de JD são ações de alto impacto para Layer 3
+    "sourcing_search", "jd_import",
+    # FAR-2/A: transição de pipeline também é ação de alto impacto
+    "pipeline_move",
+}
 
 
 def _ensure_compiled() -> None:
@@ -295,8 +400,8 @@ class FairnessGuard:
         if blocked_terms and detected_category:
             educational_message = DISCRIMINATORY_CATEGORIES[detected_category]["message"]
             logger.warning(
-                f"FairnessGuard BLOCKED query: category={detected_category}, "
-                f"terms={blocked_terms}, query='{query[:60]}...'"
+                "FairnessGuard BLOCKED query: category=%s, terms=%s, query_len=%d",
+                detected_category, blocked_terms, len(query),
             )
             if _METRICS_AVAILABLE:
                 fairness_blocks_total.labels(category=detected_category).inc()
@@ -425,7 +530,25 @@ class FairnessGuard:
         except Exception:
             pass
 
-        # Layer 3 — LLM semântico com Haiku (custo baixo)
+        # Layer 3 — LLM semântico com Haiku — respeitando feature flag FAIRNESS_LAYER3_ENABLED
+        _layer3_enabled = False
+        try:
+            from lia_config.config import settings as _settings
+            _layer3_enabled = getattr(_settings, "FAIRNESS_LAYER3_ENABLED", False)
+        except Exception:
+            pass
+
+        if not _layer3_enabled:
+            return FairnessCheckResult(
+                is_blocked=base_result.is_blocked,
+                blocked_terms=base_result.blocked_terms,
+                category=base_result.category,
+                educational_message=base_result.educational_message,
+                original_query=text,
+                confidence=base_result.confidence,
+                soft_warnings=implicit_warnings,
+            )
+
         try:
             semantic_result = await self.check_semantic(
                 text,
@@ -547,12 +670,14 @@ class FairnessGuard:
     async def log_check(
         self,
         result: "FairnessCheckResult",
-        db: "AsyncSession",
-        context: str = "unknown",
+        db: Optional["AsyncSession"] = None,
+        context: Any = "unknown",
         company_id: Optional[str] = None,
         recruiter_id: Optional[str] = None,
         job_id: Optional[str] = None,
         candidate_id: Optional[str] = None,
+        # Parâmetro ignorado (compatibilidade com chamadas antigas que passavam input_text)
+        input_text: Optional[str] = None,
     ) -> None:
         """
         Persist a FairnessGuard check result to the audit log (EU AI Act compliance).
@@ -562,22 +687,28 @@ class FairnessGuard:
 
         Args:
             result: The FairnessCheckResult from check().
-            db: Async SQLAlchemy session.
+            db: Async SQLAlchemy session. Se None, usa AsyncSessionLocal() internamente.
             context: Where the check occurred (pipeline | wizard | sourcing | search).
+                     Aceita str ou dict; dict é convertido para str.
             company_id: Company that made the request.
             recruiter_id: Recruiter user ID.
             job_id: Related job vacancy ID.
             candidate_id: Related candidate ID.
+            input_text: Ignorado (retrocompatibilidade).
         """
         if not result.is_blocked and not result.soft_warnings:
             return
 
-        try:
+        # Normalizar context para str
+        if isinstance(context, dict):
+            context_str = context.get("domain", context.get("context", "unknown"))
+        else:
+            context_str = str(context) if context else "unknown"
+
+        async def _persist(session: "AsyncSession") -> None:
             from app.models.fairness_audit import FairnessAuditLog
-
-            query_hash = hashlib.sha256(result.original_query.encode("utf-8")).hexdigest()
-
             import uuid as _uuid
+            query_hash = hashlib.sha256(result.original_query.encode("utf-8")).hexdigest()
             record = FairnessAuditLog(
                 company_id=_uuid.UUID(company_id) if company_id else None,
                 recruiter_id=_uuid.UUID(recruiter_id) if recruiter_id else None,
@@ -588,13 +719,23 @@ class FairnessGuard:
                 blocked_terms=result.blocked_terms or [],
                 confidence=result.confidence,
                 is_blocked=result.is_blocked,
-                context=context,
+                context=context_str,
+                soft_warnings=result.soft_warnings or [],
             )
-            db.add(record)
-            await db.flush()
+            session.add(record)
+            await session.flush()
             logger.debug(
-                f"FairnessGuard audit logged: is_blocked={result.is_blocked} "
-                f"category={result.category} context={context}"
+                "FairnessGuard audit logged: is_blocked=%s category=%s context=%s warnings=%d",
+                result.is_blocked, result.category, context_str, len(result.soft_warnings or []),
             )
+
+        try:
+            if db is not None:
+                await _persist(db)
+            else:
+                from app.core.database import AsyncSessionLocal
+                async with AsyncSessionLocal() as _db:
+                    await _persist(_db)
+                    await _db.commit()
         except Exception as e:
-            logger.error(f"FairnessGuard audit log failed (non-blocking): {e}")
+            logger.error("FairnessGuard audit log failed (non-blocking): %s", e)

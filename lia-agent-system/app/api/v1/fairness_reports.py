@@ -4,6 +4,7 @@ FairnessGuard reports API — EU AI Act compliance reporting.
 Endpoints:
 - GET /fairness/reports/summary   — hits por categoria (últimos N dias)
 - GET /fairness/reports/trend     — série temporal de bloqueios
+- GET /fairness/audit/logs        — audit trail paginado (FAR-2/B)
 """
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
@@ -152,6 +153,93 @@ async def get_fairness_trend(
         period_days=days,
         company_id=company_id,
         trend=trend,
+    )
+
+
+class FairnessAuditLogEntry(BaseModel):
+    id: str
+    category: Optional[str]
+    is_blocked: bool
+    blocked_terms: Optional[List[str]]
+    soft_warnings: Optional[List[str]]
+    context: Optional[str]
+    recruiter_id: Optional[str]
+    job_id: Optional[str]
+    created_at: datetime
+
+
+class FairnessAuditLogsResponse(BaseModel):
+    company_id: Optional[str]
+    total: int
+    limit: int
+    offset: int
+    items: List[FairnessAuditLogEntry]
+
+
+@router.get("/audit/logs", response_model=FairnessAuditLogsResponse)
+async def get_fairness_audit_logs(
+    company_id: Optional[str] = Query(None, description="Filter by company UUID"),
+    category: Optional[str] = Query(None, description="Filter by bias category"),
+    blocked_only: bool = Query(False, description="Return only blocked events"),
+    days: int = Query(30, ge=1, le=365, description="Look-back period in days"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """
+    Paginado audit trail do FairnessGuard — EU AI Act / LGPD compliance.
+
+    Retorna eventos de bloqueio e soft-warning com metadados de contexto.
+    Queries originais NÃO são expostas (apenas query_hash SHA-256).
+    """
+    from app.models.fairness_audit import FairnessAuditLog
+    import uuid as _uuid
+
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+
+    stmt = select(FairnessAuditLog).where(FairnessAuditLog.created_at >= since)
+
+    if company_id:
+        try:
+            stmt = stmt.where(FairnessAuditLog.company_id == _uuid.UUID(company_id))
+        except ValueError:
+            pass
+
+    if category:
+        stmt = stmt.where(FairnessAuditLog.category == category)
+
+    if blocked_only:
+        stmt = stmt.where(FairnessAuditLog.is_blocked.is_(True))
+
+    # Count total
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    total = (await db.execute(count_stmt)).scalar() or 0
+
+    stmt = stmt.order_by(FairnessAuditLog.created_at.desc()).limit(limit).offset(offset)
+    rows = (await db.execute(stmt)).scalars().all()
+
+    items = [
+        FairnessAuditLogEntry(
+            id=str(row.id),
+            category=row.category,
+            is_blocked=row.is_blocked,
+            blocked_terms=row.blocked_terms or [],
+            soft_warnings=row.soft_warnings or [],
+            context=row.context if isinstance(row.context, str) else None,
+            recruiter_id=str(row.recruiter_id) if row.recruiter_id else None,
+            job_id=str(row.job_id) if row.job_id else None,
+            created_at=row.created_at,
+        )
+        for row in rows
+    ]
+
+    return FairnessAuditLogsResponse(
+        company_id=company_id,
+        total=total,
+        limit=limit,
+        offset=offset,
+        items=items,
     )
 
 

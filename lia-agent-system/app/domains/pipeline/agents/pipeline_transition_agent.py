@@ -152,26 +152,24 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
         HITL: ações de transição de candidato requerem aprovação humana.
         O context.hitl_approved=True bypassa o HITL (já aprovado).
         """
-        # SEG-2: FairnessGuard — verificar viés discriminatório na mensagem do recrutador
+        # SEG-2 / FAR-2/A: FairnessGuard Layer 3 — verificar viés na mensagem do recrutador
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
             _fg = FairnessGuard()
-            _fg_result = _fg.check(input.message)
+            _fg_result = await _fg.check_with_layer3(
+                input.message, action_type="pipeline_move",
+            )
             if _fg_result.is_blocked:
                 logger.warning(
                     "[PipelineTransitionAgent][SEG-2] FairnessGuard bloqueou mensagem "
                     "session=%s category=%s terms=%s",
                     input.session_id, _fg_result.category, _fg_result.blocked_terms,
                 )
-                try:
-                    await _fg.log_check(
-                        input_text=input.message,
-                        result=_fg_result,
-                        context={"session_id": str(input.session_id), "domain": "pipeline_transition"},
-                        company_id=str(input.company_id or ""),
-                    )
-                except Exception:
-                    pass
+                await _fg.log_check(
+                    result=_fg_result,
+                    context="pipeline_transition",
+                    company_id=str(input.company_id or ""),
+                )
                 return AgentOutput(
                     message=_fg_result.educational_message or (
                         "Esta solicitação não pode ser processada pois contém critérios "
@@ -185,14 +183,21 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
                         "domain": self.domain_name,
                     },
                 )
-            _soft_warnings = _fg.check_implicit_bias(input.message)
+            # FAR-3: soft_warnings já estão em _fg_result.soft_warnings
+            _soft_warnings = _fg_result.soft_warnings or []
             if _soft_warnings:
                 logger.info(
-                    "[PipelineTransitionAgent][SEG-2] FairnessGuard soft warnings session=%s: %s",
-                    input.session_id, _soft_warnings,
+                    "[PipelineTransitionAgent][FAR-3] FairnessGuard soft warnings session=%s count=%d",
+                    input.session_id, len(_soft_warnings),
+                )
+                await _fg.log_check(
+                    result=_fg_result,
+                    context="pipeline_transition",
+                    company_id=str(input.company_id or ""),
                 )
         except Exception as _fg_exc:
             logger.debug("[PipelineTransitionAgent] FairnessGuard check skipped: %s", _fg_exc)
+            _soft_warnings = []
 
         # ── HITL pre-check: transição de candidato requer aprovação ──────────
         action_behavior = input.context.get("action_behavior", "passive")
@@ -304,8 +309,17 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
 
         from app.core.config import settings
         if settings.USE_LANGGRAPH_NATIVE:
-            return await self._process_langgraph(input)
-        return await self._process_react_loop(input)
+            _output = await self._process_langgraph(input)
+        else:
+            _output = await self._process_react_loop(input)
+
+        # FAR-3: propagar soft_warnings ao output para exibição ao recrutador via WS
+        if _soft_warnings:
+            if _output.metadata is None:
+                _output.metadata = {}
+            _output.metadata.setdefault("fairness_warnings", _soft_warnings)
+
+        return _output
 
     async def _process_react_loop(self, input: AgentInput) -> AgentOutput:
         start_time = time.time()

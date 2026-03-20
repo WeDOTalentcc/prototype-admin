@@ -306,6 +306,37 @@ class RAGPipelineService:
         """
         t0 = time.perf_counter()
 
+        # FAR-2: FairnessGuard — bloquear queries discriminatórias antes do retrieval
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _fg = FairnessGuard()
+            _fg_result = _fg.check(query)
+            if _fg_result.is_blocked:
+                logger.warning(
+                    "[RAGPipeline][FAR-2] FairnessGuard bloqueou query: category=%s terms=%s",
+                    _fg_result.category, _fg_result.blocked_terms,
+                )
+                _blocked = RAGSearchResult(
+                    results=[],
+                    query=query,
+                    total=0,
+                    source="blocked",
+                    fairness_ok=False,
+                    search_time_ms=0.0,
+                    metadata={
+                        "fairness_blocked": True,
+                        "fairness_category": _fg_result.category,
+                        "educational_message": _fg_result.educational_message,
+                    },
+                )
+                try:
+                    await _fg.log_check(result=_fg_result, context="rag_search", company_id=company_id)
+                except Exception:
+                    pass
+                return _blocked
+        except Exception as _fg_exc:
+            logger.debug("[RAGPipeline] FairnessGuard check skipped: %s", _fg_exc)
+
         # Normalizar domínio se fornecido
         normalized_domain: Optional[str] = normalize_domain(domain) if domain else None
 
@@ -376,8 +407,23 @@ class RAGPipelineService:
         except Exception as _wrf_exc:
             logger.debug("[RAGPipeline] WRF re-ranking skipped: %s", _wrf_exc)
 
-        # --- FairnessGuard ---
+        # --- FairnessGuard (diversidade de gênero no top-10) ---
         fairness_ok = _check_fairness(merged, top_n=10)
+
+        # FAR-5: Auditoria de disparate impact em tempo real nos resultados
+        ranking_audit: Dict[str, Any] = {}
+        try:
+            from app.services.bias_audit_service import bias_audit_service
+            ranking_audit = bias_audit_service.audit_ranking_results(
+                results=merged,
+                dimension="gender",
+                top_n=10,
+                company_id=company_id,
+            )
+            if not ranking_audit.get("fairness_ok", True) and ranking_audit.get("alert"):
+                logger.warning("[RAGPipeline][FAR-5] %s", ranking_audit["alert"])
+        except Exception as _audit_exc:
+            logger.debug("[RAGPipeline] audit_ranking_results skipped: %s", _audit_exc)
 
         elapsed_ms = (time.perf_counter() - t0) * 1000
 
@@ -395,6 +441,7 @@ class RAGPipelineService:
                 "embedding_available": embedding is not None,
                 "semantic_threshold": self.semantic_threshold,
                 "domain": normalized_domain,
+                "ranking_audit": ranking_audit,
             },
         )
 

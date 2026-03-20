@@ -155,6 +155,33 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
     async def process(self, input: AgentInput) -> AgentOutput:
         """Dual-path: LangGraph nativo (USE_LANGGRAPH_NATIVE=True) ou ReActLoop."""
+        # FAR-2: FairnessGuard — bloquear mensagens com linguagem discriminatória
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _fg = FairnessGuard()
+            _fg_result = _fg.check(input.message)
+            if _fg_result.is_blocked:
+                logger.warning(
+                    "[CommunicationReActAgent][FAR-2] FairnessGuard bloqueou mensagem: "
+                    "category=%s terms=%s",
+                    _fg_result.category, _fg_result.blocked_terms,
+                )
+                try:
+                    await _fg.log_check(
+                        result=_fg_result,
+                        context="communication",
+                        company_id=str(input.company_id or ""),
+                    )
+                except Exception:
+                    pass
+                return AgentOutput(
+                    message=_fg_result.educational_message,
+                    confidence=1.0,
+                    metadata={"fairness_blocked": True, "fairness_category": _fg_result.category},
+                )
+        except Exception as _fg_exc:
+            logger.debug("[CommunicationReActAgent] FairnessGuard check skipped: %s", _fg_exc)
+
         # AUD-4: HITL — primeiro contato e feedback de rejeição exigem aprovação humana
         _hitl_approved = input.context.get("hitl_approved", False)
         _msg_type = input.context.get("message_type", "")
