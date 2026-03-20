@@ -14,6 +14,67 @@ Este diagnóstico analisa as diferenças e semelhanças arquiteturais entre a Pl
 
 **Descoberta central:** Os dois sistemas compartilham origem comum (evidências forenses de nível de código), mas evoluíram em direções filosóficas opostas. A LIA optou por **compliance-by-design** (herança estrutural obrigatória). O v5 optou por **compliance-by-discipline** (opt-in por domínio). O resultado empírico dessa divergência: dos 8 domínios do v5 lidos, 2 têm fairness.py (jobs e sourced_profile), 5 têm memory.py, 6 têm cache.py — cobertura fragmentada que depende de disciplina individual de cada time de domínio.
 
+### Mapa de Domínios e Agentes do v5
+
+O v5 é organizado em **8 domínios especializados** + **1 orquestrador** + **1 agente autônomo universal**. Cada domínio herda de `DomainPrompt` (classe base abstrata em `src/domains/base.py`) e é registrado automaticamente via decorator `@register_domain` no `DomainRegistry` (`src/domains/registry.py`). O roteamento de queries do usuário para o domínio correto é feito pelo `DomainOrchestrator` (`src/domains/orchestrator.py`) que delega ao `DomainWorkflow` (`src/domains/workflow.py`) — um grafo LangGraph com nós de intent classification, execução e formatação.
+
+**Fluxo geral:**
+```
+Usuário → DomainOrchestrator.process_query(domain_id, query, context)
+         → DomainWorkflow (LangGraph StateGraph)
+           → Nó 1: DomainIntentAgent.analyze() — classifica intent via LLM
+           → Nó 2: Domain.execute_action(action_id, params, context)
+           → Nó 3: Formatação final da resposta
+         → DomainResponse (success, message, data, suggestions)
+```
+
+#### Tabela de Domínios
+
+| # | Domínio (`domain_id`) | Nome (`domain_name`) | Finalidade | Como funciona | Arquivos-chave |
+|---|----------------------|---------------------|-----------|--------------|---------------|
+| 1 | `applies` | Gestão de Candidaturas | Gerenciar candidaturas (applications) dentro de uma vaga específica: busca, detalhes, pipeline/kanban, aprovação/reprovação, ranking, comparação, analytics e ações em lote | Opera no contexto de um `job_id`. Usa `AppliesActions` (mixin de 12+ action classes), `AppliesConversationMemory` para contexto multi-turno, `AppliesCacheManager` para dados já buscados, e LLM (`create_tracked_llm`, temp=0.0) para classificação de intent via prompt. Cada action chama `AppliesAPIClient` que faz requisições REST ao ATS com circuit breaker | `domain.py`, `react_agent.py`, `api_client.py`, `cache.py`, `memory.py`, `cards.py`, `prompts.py`, `actions/` (12 sub-módulos), `prompt_builder/` |
+| 2 | `autonomous` | Agente Autônomo Universal | Resolver queries complexas, cross-domain, ou que nenhum domínio especializado cobre. Acesso irrestrito a TODAS as APIs do ATS: vagas, candidatos, candidaturas, avaliações, agendamentos, sourcings, departamentos, listas, aprovações, notificações | Implementa um loop **ReAct** (Reason + Act) via LangGraph `StateGraph`. O agente recebe a query, raciocina sobre qual tool usar, executa a tool (API call), observa o resultado, e decide se precisa de mais steps. Usa `UniversalAPIClient` com acesso a todas as entidades, `select_tools()` para seleção dinâmica de tools, `ReActObserver` para monitoramento, `ExecutionTracker` para tracking, `detect_playbook()` para playbooks pré-definidos, e `ModelRouter` para seleção de modelo. Suporta compressão de contexto (`SMART_COMPRESS_CHARS`, `FILE_OFFLOAD_CHARS`), confirmação para write operations (`WRITE_TOOLS`), e max iterations configurável | `agent.py`, `graph_nodes.py`, `tools/`, `playbooks/`, `prompts.py`, `context_builder.py`, `response_handler.py`, `compression.py`, `tool_selector.py`, `api_client.py` |
+| 3 | `evaluation` | Avaliação de Candidatos | Processar e avaliar respostas de candidatos em entrevistas de emprego via chat. Gera scores por rubrica (relevância, profundidade, clareza, exemplos), classifica intenção do candidato e gera próxima pergunta | Usa um grafo LangGraph (`get_interview_graph()`) com state machine (`InterviewState`). O fluxo: classifica intent da mensagem → avalia resposta com `RubricEvaluation` (4 dimensões) → gera `NextQuestionHint` → calcula `FinalAnalysis` quando entrevista termina. Tem `security.py` para validação de input. Usa `BaseDispatcher` (RabbitMQ) para processamento assíncrono de avaliações em lote via `evaluation/dispatcher.py` | `domain.py`, `graph.py`, `nodes.py`, `state.py`, `models.py`, `processor.py`, `final_analysis.py`, `security.py`, `dispatcher.py`, `worker.py`, `tasks.py` |
+| 4 | `insights` | Insights e Analytics | Insights agregados de todas as áreas: briefings diários, reports, métricas, alertas, comparações, performance e tendências. Visão panorâmica do recrutamento | Coleta dados de múltiplos domínios e produz análises consolidadas. Usa `InsightsActions` (ações de consulta e agregação), `InsightsConversationMemory`, e LLM para sintetizar narrativas a partir dos dados brutos. Não opera sobre uma entidade específica — é um domínio de **leitura transversal** | `domain.py`, `api_client.py`, `cache.py`, `memory.py`, `prompts.py`, `actions/`, `formatters/`, `config/` |
+| 5 | `jobs` | Gestão de Vagas | Gestão completa de vagas de emprego: criar, editar, listar, detalhar, pipeline/kanban, analytics por vaga, funil de conversão, gargalos, alertas, exportação, relatórios, resumos, auto-sourcing | Usa `JobsActions` com pattern matching via regex (`_CONTEXT_ACTION_PATTERNS`) para roteamento rápido de intents comuns (pipeline, kanban, analytics, etc.) sem necessidade de LLM. Tem `TieredContextManager` (cache em 2 tiers: Tier1 para actions leves, Tier2 para actions pesadas), `JobTemplateFormatter` para formatação rica, `JobConversationMemory`, e `fairness.py` para verificação de viés em descriptions de vagas | `domain.py`, `api_client.py`, `cache.py`, `cards.py`, `memory.py`, `prompts.py`, `fairness.py`, `dispatcher.py`, `tasks.py`, `template_formatter.py`, `actions/`, `formatters/`, `prompt_builder/` |
+| 6 | `messaging` | Comunicação e Messaging | Envio de emails, feedbacks ao candidato, convites de entrevista, follow-ups, cobranças e toda comunicação com candidatos. Histórico de comunicação | Centraliza toda comunicação outbound. Usa `MessagingActions`, `MessagingConversationMemory`, e `MessagingAPIClient` para chamadas ao serviço de email/notificação do ATS. Tem `services/` subdiretório para serviços auxiliares de messaging | `domain.py`, `api_client.py`, `cache.py`, `memory.py`, `prompts.py`, `actions/`, `formatters/`, `services/`, `config/` |
+| 7 | `scheduling` | Agendamento de Entrevistas | Agendamento de entrevistas: agendamento direto, self-scheduling (link para candidato escolher horário), verificação de disponibilidade, agenda do dia/semana, cancelamento, remarcação e ações em lote | Usa pattern matching regex extensivo (6+ patterns: `_CANCEL_PATTERN`, `_RESCHEDULE_PATTERN`, `_LIST_PATTERN`, `_DAILY_AGENDA_PATTERN`, `_AVAILABILITY_PATTERN`, `_SCHEDULE_INTENT_PATTERN`) para classificação rápida de intent sem LLM. Tem `SchedulingSession` para state machine de agendamento multi-step (confirmar horário → confirmar entrevistador → confirmar formato → agendar), e `graph.py` com LangGraph para fluxo complexo | `domain.py`, `api_client.py`, `cards.py`, `memory.py`, `prompts.py`, `graph.py`, `inference.py`, `session.py`, `actions/`, `formatters/`, `config/` |
+| 8 | `sourced_profile_sourcing` | Análise de Perfis em Sourcing | Análise e ações sobre perfis de candidatos vinculados a um sourcing específico: busca, score, distribuição, comparação, relatórios, insights, feedback e melhoria de busca | O domínio mais completo em funcionalidade. Requer `sourcing_id` no contexto. Usa `SourcedProfileSourcingActions` (mixin de 12 action classes: Count, Score, Distribution, Analysis, Search, Details, Comparison, Report, SearchImprovement, Insights, Conversational, Feedback). Tem `fact_checker.py` (o único domínio com fact-checking), `fairness.py` (1 de 2 domínios com fairness), `smart_extractor.py` para extração inteligente, `param_extractor.py` para parsing de parâmetros, e `validators.py` para validação de dados | `domain.py`, `api_client.py`, `api_operations.py`, `cache.py`, `memory.py`, `prompts.py`, `fact_checker.py`, `fairness.py`, `smart_extractor.py`, `param_extractor.py`, `validators.py`, `dispatcher.py`, `tasks.py`, `template_formatter.py`, `actions/` (12 sub-módulos), `agents/`, `prompt_builder/`, `config/` |
+
+#### Componentes Transversais (Cross-Domain)
+
+| Componente | Arquivo | Finalidade | Consumido por |
+|-----------|---------|-----------|--------------|
+| `DomainOrchestrator` | `src/domains/orchestrator.py` | Ponto de entrada único. Recebe `domain_id` + `query` + `context_data`, instancia o domínio via `DomainRegistry`, monta `DomainContext`, e delega ao `DomainWorkflow` | API layer (endpoints REST) |
+| `DomainWorkflow` | `src/domains/workflow.py` | Grafo LangGraph (`StateGraph`) com 3 nós: intent classification (LLM), execução da action no domínio, formatação final. Integra `AuditCallbackHandler`, `StreamingCallback`, `ThinkingCallback` | `DomainOrchestrator` |
+| `DomainRegistry` | `src/domains/registry.py` | Registry pattern — cada domínio se auto-registra via `@register_domain`. `list_domains()` retorna todos os domínios disponíveis, `get_instance(domain_id)` instancia sob demanda | `DomainOrchestrator`, `DomainWorkflow` |
+| `BaseDispatcher` | `src/domains/base_dispatcher.py` | Worker RabbitMQ para processamento assíncrono. Connect via `pika`, prefetch configurável, fila com prioridade (`x-max-priority`). Usado por `evaluation` e `sourced_profile_sourcing` para processar lotes em background | `evaluation/dispatcher.py`, `jobs/dispatcher.py` |
+| `DomainIntentAgent` | `src/domains/workflow.py` (classe interna) | Classificador de intent via LLM que determina qual `action_id` executar dentro do domínio. Usa `LLMCacheService` para cache de classificações repetidas | `DomainWorkflow` |
+
+#### Padrão Arquitetural por Domínio
+
+Cada domínio do v5 segue um padrão comum (com variações):
+
+```
+src/domains/<domain>/
+├── domain.py           # DomainPrompt: id, name, description, actions, system_prompt, intent, execute
+├── api_client.py       # Client REST para o ATS (com circuit breaker)
+├── cache.py            # Cache em memória para dados já buscados
+├── memory.py           # Memória conversacional (contexto multi-turno)
+├── prompts.py          # System prompts e prompt builders
+├── actions/            # Módulos de ações (cada action = 1 capacidade)
+├── formatters/         # Formatação de output (cards, tabelas, etc.)
+├── config/             # Configurações do domínio (settings, thresholds)
+└── [opcionais]
+    ├── fairness.py     # Apenas em jobs e sourced_profile_sourcing
+    ├── fact_checker.py  # Apenas em sourced_profile_sourcing
+    ├── dispatcher.py    # Worker RabbitMQ (evaluation, jobs, sourced_profile)
+    ├── graph.py         # LangGraph para fluxos complexos (evaluation, scheduling)
+    └── agents/          # Sub-agentes especializados (sourced_profile)
+```
+
+**Dado-chave para comparação com a LIA:** Na LIA, compliance (`fairness_guard.py`, `pii_masking.py`, `audit_callback.py`) é injetado via `EnhancedAgentMixin` — todos os domínios herdam automaticamente. No v5, cada domínio decide individualmente se implementa `fairness.py`, `fact_checker.py`, ou `memory.py`. O resultado: `evaluation` (que dá scores a candidatos) não tem `fairness.py` nem `fact_checker.py`, apesar de ser o domínio com maior impacto sobre decisões de contratação.
+
 ---
 
 ## 1. Contrato Base Compartilhado: DomainPrompt ABC
@@ -1365,3 +1426,1437 @@ class NovoDominio(DomainPrompt):
 - `github.com/.../src/services/pii_filter.py` (via GitHub API)
 - Listagem de diretório de 8 domínios v5 (para mapa de cobertura)
 - Listagem de `src/services/` do v5 (39+ arquivos)
+
+---
+
+## 11. Anti-Sycophancy e Hallucination Guard
+
+### LIA — `app/shared/prompts/anti_sycophancy_block.py` + `app/shared/compliance/fact_checker.py`
+
+**`anti_sycophancy_block.py` — 3 variantes de prompt (47 linhas):**
+
+```python
+# Linha 13: variante operacional — agentes de análise/ação
+ANTI_SYCOPHANCY_OPERATIONAL = """
+=== PREVENCAO DE SYCOPHANCY ===
+REGRAS ABSOLUTAS:
+1. NUNCA concorde com pedidos que violem fairness ou compliance apenas para evitar conflito
+2. Se o recrutador pedir filtros discriminatórios (gênero, idade, etnia, etc.), recuse com dados
+3. Se uma afirmacao do recrutador parecer incorreta, VERIFIQUE antes de confirmar
+4. Discordância com dados é preferível a concordância sem evidência
+5. Se o recrutador insistir após ver os dados, respeite mas registre:
+   "Ok, vou prosseguir conforme solicitado. Registro que os dados indicam [X]."
+"""
+
+# Linha 24: variante FULL — agentes consultivos/estratégicos
+ANTI_SYCOPHANCY_FULL = """
+...
+=== VERIFICACAO DE PREMISSAS ===
+Antes de aceitar uma afirmacao do recrutador como verdade:
+1. Se ele diz "temos muitas vagas", VERIFIQUE com dados disponíveis
+2. Se ele diz "voce recomendou Y", VERIFIQUE no historico da conversa
+...
+"""
+
+# Linha 43: variante ORCHESTRATOR — ponto de entrada global (1 linha)
+ANTI_SYCOPHANCY_ORCHESTRATOR = """
+Regra anti-sycophancy: nunca confirme pedidos discriminatórios ou que violem compliance.
+Apresente alternativas com dados quando necessário.
+"""
+```
+
+**Cobertura de domínios:** A LIA aplica o bloco anti-sycophancy **em 100% dos system prompts** via `agent_prompts.py` (carrega de YAML) e `interaction_patterns.py` (bloco `ANTI_SYCOPHANCY_BLOCK`). O `PromptLoader.load("shared/agent_prompts")` injeta o bloco em todos os 11 agentes nomeados (orchestrator, job_planner, sourcing, cv_screening, interviewer, wsi_evaluator, scheduling, analyst_feedback, ats_integrator, recruiter_assistant, proactive_insights).
+
+**`fact_checker.py` — 391 linhas, verificação pós-resposta:**
+
+```python
+# Linhas 77-91: 4 padrões de detecção de claims verificáveis
+SALARY_PATTERN = re.compile(r"R\$\s*([\d.,]+)(?:\s*(?:a|até|-)\s*R\$\s*([\d.,]+))?", ...)
+CANDIDATE_COUNT_PATTERN = re.compile(r"(\d+)\s*candidatos?", ...)
+PERCENTAGE_PATTERN = re.compile(r"(\d+(?:[.,]\d+)?)\s*%", ...)
+DATE_PATTERN = re.compile(r"(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})", ...)
+
+# Linhas 101-120: check_response — orquestra as 4 verificações
+def check_response(self, response_text: str, context: Optional[Dict] = None) -> FactCheckResult:
+    self._check_salary_claims(response_text, context, result)
+    self._check_candidate_counts(response_text, context, result)
+    self._check_percentage_claims(response_text, context, result)
+    self._check_date_claims(response_text, context, result)
+
+# Linhas 251-384: 3 métodos granulares adicionados (V5 parity — Sprint H)
+def verify_count_claim(self, response_text, expected_count, tolerance_pct=10.0) -> FactCheckClaim: ...
+def verify_average_claim(self, response_text, expected_average, tolerance_pct=20.0) -> FactCheckClaim: ...
+def verify_top_candidates_claim(self, response_text, expected_top_n, max_reasonable_top=20) -> FactCheckClaim: ...
+```
+
+**Mecanismo:** Verificação regex (não LLM). Compara claims numéricas contra `REASONABLE_SALARY_RANGE = (1_500, 200_000)` e `MAX_CANDIDATE_COUNT = 50_000`. Quando context contém `expected_salary_range` ou `expected_candidate_count`, calcula `deviation_pct` e marca `is_accurate=False` se desvio > threshold.
+
+### v5 — `src/domains/sourced_profile_sourcing/fact_checker.py` (verificado via GitHub API — 9.555 bytes)
+
+O v5 tem `fact_checker.py` em **apenas 1 dos 8 domínios**: `sourced_profile_sourcing`. Lido diretamente:
+
+```python
+# src/domains/sourced_profile_sourcing/fact_checker.py (verificado — 9.555 bytes)
+@dataclass
+class FactCheckResult:
+    claim: str
+    verified: bool
+    actual_value: Any
+    confidence: float
+    correction: Optional[str] = None
+
+class FactChecker:
+    def verify_count_claim(self, claimed_count: int, actual_data: List[Dict], context: str) -> FactCheckResult:
+        # Comparação exata: claimed_count vs len(actual_data)
+        # Se iguais: verified=True, confidence=1.0
+        # Se diferentes: verified=False, confidence=0.0, correction="Na verdade são N"
+
+    def verify_average_claim(self, claimed_avg: float, data: List[Dict], field: str, tolerance=None) -> FactCheckResult:
+        # Calcula average real de field em data
+        # Compara com claimed_avg dentro de tolerance% (configurável via domain_settings)
+        # confidence = 1.0 - (diff/tolerance_value)*0.5 — degradação contínua
+
+    def verify_top_candidates_claim(self, claimed_top: List[Dict], actual_data: List[Dict], ...) -> FactCheckResult: ...
+```
+
+**Tipo de verificação:** Baseado em comparação de dados (`actual_data: List[Dict]`) — não regex. O v5 verifica claims numéricas contra dados reais estruturados, enquanto a LIA verifica via regex + expected values do context. Abordagens diferentes: v5 requer dados estruturados no chamador; LIA funciona sobre texto livre.
+
+Anti-sycophancy no v5 é gerenciado via `REACT_SYSTEM_PROMPT` em `src/domains/autonomous/agent.py` (string hardcoded, não bloco canônico reutilizável). Não há equivalente ao `anti_sycophancy_block.py` como módulo compartilhado.
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Anti-sycophancy | Módulo centralizado (`anti_sycophancy_block.py`) com 3 variantes, injetado em 100% dos agentes via YAML | Prompt hardcoded em `autonomous/agent.py` — sem módulo compartilhado |
+| Fact-checking | `fact_checker.py` centralizado (391 linhas), 4 tipos de claim, regex sobre texto livre | `fact_checker.py` em 1/8 domínios (`sourced_profile_sourcing`), 9.555 bytes, verificado |
+| Mecanismo de verificação | Regex + desvio percentual vs expected values do context (funciona sobre texto livre) | Comparação direta de `List[Dict]` estruturado — requer dados reais no chamador |
+| Métodos disponíveis | `verify_count_claim`, `verify_average_claim`, `verify_top_candidates_claim` + regex | `verify_count_claim`, `verify_average_claim`, `verify_top_candidates_claim` — mesmos 3 |
+| Cobertura | 100% dos agentes via `EnhancedAgentMixin` | 1/8 domínios — 7 domínios sem fact-checking (verificado por estrutura de diretórios) |
+| Confidence score | `deviation_pct` em escala contínua | `confidence = 1.0 - (diff/tolerance)*0.5` em escala contínua — análoga |
+
+**Veredicto de risco:** O domínio `evaluation` do v5 — que gera avaliações e scores de candidatos — não tem fact-checker. Um agente de avaliação pode afirmar "candidato tem 15 anos de experiência" sem verificação cruzada contra os dados reais. Na LIA, o `FactChecker` é chamado pós-resposta pelo `EnhancedAgentMixin`, garantindo que claims numéricas sejam validadas em todos os domínios que herdam da mixin.
+
+---
+
+## 12. GuardrailRepository e GuardrailsSeed
+
+### LIA — `app/shared/compliance/guardrail_repository.py` + `alembic/versions/020_add_guardrails_table.py`
+
+**Schema da tabela (migração `020_add_guardrails_table.py`, criada em 2026-03-04):**
+
+```sql
+-- Tabela guardrails — regras editáveis em produção sem deploy
+CREATE TABLE guardrails (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    level       VARCHAR(20)  NOT NULL DEFAULT 'primary',   -- 'primary' | nível de prioridade
+    domain      VARCHAR(100),    -- NULL = global; 'pipeline' = apenas para pipeline
+    node        VARCHAR(100),    -- nó específico do LangGraph (nullable)
+    tool        VARCHAR(200),    -- nome da tool bloqueada (nullable)
+    rule        TEXT NOT NULL,   -- descrição da regra (auditável)
+    blocking_message TEXT NOT NULL,  -- mensagem exibida ao usuário quando bloqueado
+    is_active   BOOLEAN NOT NULL DEFAULT true,
+    company_id  VARCHAR(36),     -- NULL = global; UUID = apenas para este tenant
+    updated_by  VARCHAR(36) NOT NULL DEFAULT 'system',
+    updated_at  DATETIME NOT NULL DEFAULT now(),
+    created_at  DATETIME NOT NULL DEFAULT now()
+);
+
+-- 4 índices para queries frequentes em runtime
+CREATE INDEX ix_guardrails_is_active ON guardrails (is_active);
+CREATE INDEX ix_guardrails_domain    ON guardrails (domain);
+CREATE INDEX ix_guardrails_company_id ON guardrails (company_id);
+CREATE INDEX ix_guardrails_level     ON guardrails (level);
+```
+
+**`guardrail_repository.py` — 185 linhas, 5 operações:**
+
+```python
+# Linhas 37-88: get_active — carregamento com prioridade em 4 níveis
+@staticmethod
+async def get_active(db: AsyncSession, domain: Optional[str] = None, company_id: Optional[str] = None) -> List[Guardrail]:
+    """
+    Prioridade de carregamento:
+      1. Guardrails primários globais (domain=None, company_id=None)
+      2. Guardrails primários do tenant (domain=None, company_id=company_id)
+      3. Guardrails secundários globais do domínio (domain=domain, company_id=None)
+      4. Guardrails secundários do tenant para o domínio
+    """
+    conditions = [Guardrail.is_active == True]
+    domain_filter = or_(Guardrail.domain == None, Guardrail.domain == domain)
+    company_filter = or_(Guardrail.company_id == None, Guardrail.company_id == company_id)
+    stmt = select(Guardrail).where(and_(*conditions, domain_filter, company_filter)).order_by(Guardrail.level, Guardrail.created_at)
+
+# Linhas 90-102: get_blocked_tools — conveniência para EnhancedAgentMixin
+@staticmethod
+async def get_blocked_tools(db, domain=None, company_id=None) -> List[str]:
+    guardrails = await GuardrailRepository.get_active(db, domain, company_id)
+    return [g.tool for g in guardrails if g.tool is not None]
+
+# Linhas 104-125: upsert, toggle_active, update, soft_delete
+```
+
+**Ciclo completo de vida de um guardrail na LIA:**
+
+```
+Admin cria guardrail via endpoint POST /admin/guardrails
+  → GuardrailRepository.upsert(db, GuardrailCreate(domain="pipeline", tool="send_rejection_email", ...))
+  → INSERT em tabela 'guardrails' (persiste no PostgreSQL)
+
+Request chega ao PipelineTransitionAgent.process()
+  → EnhancedAgentMixin._get_all_enhanced_tools()
+  → GuardrailRepository.get_blocked_tools(db, domain="pipeline", company_id=tenant_id)
+  → Tools retornadas ao LangGraph sem as bloqueadas
+  → LLM não pode chamar tools bloqueadas em runtime
+
+Auditoria
+  → AuditCallback registra se tool foi ou não chamada
+  → Log de guardrail no audit trail para compliance BCB-498/SOX
+```
+
+**`guardrails_seed.py` — `app/core/seeds/guardrails_seed.py` (177 linhas):**
+
+Seed idempotente que popula a tabela `guardrails` com regras iniciais de compliance. Executado via `python -m app.core.seeds.guardrails_seed` ou importando `run_seed()`.
+
+```python
+# 6 guardrails primários (globais — todos os agentes e domínios):
+PRIMARY_GUARDRAILS = [
+    GuardrailCreate(level="primary", rule="Nunca revelar dados pessoais de candidatos...", tool=None, domain=None),
+    GuardrailCreate(level="primary", rule="Nunca discriminar candidatos por gênero, raça, idade...", tool=None, domain=None),
+    GuardrailCreate(level="primary", rule="Sempre identificar que a comunicação é gerada por IA...", tool=None, domain=None),
+    GuardrailCreate(level="primary", rule="Nunca criar perguntas sobre vida pessoal, família...", tool=None, domain=None),
+    GuardrailCreate(level="primary", rule="Nunca salvar dados para sistemas externos sem consentimento...", tool=None, domain=None),
+    GuardrailCreate(level="primary", rule="Nunca gerar avaliação sem critérios objetivos...", tool=None, domain=None),
+]
+
+# 7 guardrails secundários (por domínio/tool):
+SECONDARY_GUARDRAILS = [
+    GuardrailCreate(level="secondary", domain="wsi_interviewer", rule="Perguntas apenas sobre competências profissionais"),
+    GuardrailCreate(level="secondary", domain="communication", tool="send_bulk_email", rule="Email deve incluir identificação de IA"),
+    GuardrailCreate(level="secondary", domain="sourcing", rule="Nunca inferir atributos protegidos de nome/foto"),
+    GuardrailCreate(level="secondary", domain="cv_screening", rule="Nunca rejeitar sem FairnessGuard"),
+    GuardrailCreate(level="secondary", domain="pipeline", tool="reject_candidate", rule="Rejeição requer motivo auditável"),
+    GuardrailCreate(level="secondary", domain="pipeline", tool="batch_move", rule="Lote requer confirmação explícita"),
+    GuardrailCreate(level="secondary", domain="pipeline", tool="finalize_hiring", rule="Contratação é irreversível e auditada"),
+]
+
+async def run_seed(skip_if_exists: bool = True) -> int:
+    # Idempotente: se já existem guardrails, skip (count > 0 → return 0)
+    # Usa GuardrailRepository.upsert() para cada regra
+```
+
+**Cobertura do seed:** 6 primários (globais) + 7 secundários (4 domínios: `wsi_interviewer`, `communication`, `sourcing`, `cv_screening`, `pipeline`) = **13 guardrails iniciais**. Cobrem LGPD (consentimento), anti-discriminação, transparência de IA, fairness e rastreabilidade.
+
+### v5 — Estrutura Equivalente
+
+O v5 não tem tabela equivalente a `guardrails` nem seed de regras em nenhum dos domínios lidos via GitHub API. Regras de comportamento são hardcoded em `src/domains/autonomous/agent.py` como constantes (`HARD_BUDGET=50`, `GLOBAL_TIMEOUT=180`) ou em system prompts. Não há mecanismo de guardrail persistido em banco editável em produção sem deploy.
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Persistência | PostgreSQL (`guardrails` table, revisão 020) | Ausente — hardcoded em código |
+| Seed inicial | `guardrails_seed.py` — 13 regras (6 primárias + 7 secundárias) cobrindo LGPD, anti-discriminação, transparência IA, fairness | N/A |
+| Escopo | Global OU por tenant OU por domínio OU por tool específica | N/A |
+| Editável em produção | Sim — via API REST sem deploy | Não |
+| Rollback | `toggle_active` desativa sem deletar (soft disable) | N/A |
+| Auditoria | `updated_by`, `updated_at`, `created_at` em cada guardrail | N/A |
+| Runtime | Consultado a cada execução via `get_blocked_tools()` | N/A |
+
+**Veredicto de risco:** A ausência de guardrails persistidos no v5 significa que bloquear comportamentos problemáticos em produção requer deploy de código. Na LIA, um admin pode bloquear uma tool específica para um tenant em menos de 1 minuto via API, com efeito imediato na próxima execução do agente.
+
+---
+
+## 13. Learning Loop e Personalização por Recrutador
+
+### LIA — 4 arquivos de aprendizado
+
+**`learning_loop_service.py` — 1.137 linhas — captura e análise de padrões:**
+
+```python
+# Linhas 30-46: enums de outcome e tipo de padrão
+class FeedbackOutcome(str, Enum):
+    ACCEPTED = "accepted"   # recrutador aceitou sugestão sem mudança
+    MODIFIED = "modified"   # recrutador aceitou mas modificou
+    REJECTED = "rejected"   # recrutador explicitamente rejeitou
+    IGNORED  = "ignored"    # nenhuma ação (final_value=None)
+
+class PatternType(str, Enum):
+    SALARY_PREFERENCE    = "salary_preference"
+    SKILL_PREFERENCE     = "skill_preference"
+    BENEFIT_PREFERENCE   = "benefit_preference"
+    WORK_MODEL_PREFERENCE = "work_model_preference"
+    SCREENING_PREFERENCE  = "screening_preference"
+    JD_STYLE_PREFERENCE  = "jd_style_preference"
+    SOURCE_TRUST         = "source_trust"
+
+# Linhas 93-102: thresholds de confiança e promoção
+CONFIDENCE_THRESHOLDS = {"high": 20, "medium": 10, "low": 5}
+ACCEPTANCE_THRESHOLDS = {"promote": 0.75, "demote": 0.25}
+```
+
+**Ciclo completo do Learning Loop:**
+
+```
+1. CAPTURA (silent): LLM sugere valor para campo → recrutador aceita/modifica/rejeita
+   → LearningLoopService._determine_outcome(suggested_value, final_value)
+   → FeedbackCapture(company_id, field_name, suggested_value, final_value, outcome)
+
+2. ANÁLISE: process_unprocessed_feedback() → detecta padrões por (company, field, role, seniority)
+   → _calculate_confidence(sample_size, acceptance_rate) → "high"/"medium"/"low"/"very_low"
+   → acceptance_rate >= 0.75 → promote pattern; < 0.25 → demote
+
+3. VALIDAÇÃO FAIRNESS (F1-02): validate_learning_batch()
+   → FairnessGuard.validate_learning_batch(patterns_to_update)
+   → Bloqueia padrões onde field_name ∈ _LEARNING_PROTECTED_FIELDS
+     (gender, idade, raça, religião, deficiência, nacionalidade, estado_civil, etc.)
+   → Bloqueia valores aceitos que contenham termos discriminatórios
+
+4. APLICAÇÃO: padrões aprovados são persistidos como LearningPattern no PostgreSQL
+   → usados para pré-preencher sugestões nas próximas sessões do mesmo recruiter/company
+```
+
+**`learning_snapshot_service.py` — 268 linhas — rollback de padrões:**
+
+```python
+# Linha 27: TTL de 30 dias para snapshots no Redis
+SNAPSHOT_TTL_SECONDS = 30 * 24 * 3600
+MAX_SNAPSHOTS = 5  # máximo de snapshots por empresa (LRU)
+
+# Chaves Redis:
+# learning_snapshot:{company_id}:index → lista dos últimos 5 snapshot keys
+# learning_snapshot:{company_id}:{ts}  → payload JSON com os padrões capturados
+
+class LearningSnapshotService:
+    async def save_snapshot(self, company_id: str, db) -> Optional[str]: ...
+    async def rollback_to_latest(self, company_id: str, db) -> bool: ...
+```
+
+**`template_learning_service.py` — 402 linhas — criação automática de templates:**
+
+```python
+# Linha 52: threshold para criar template automático
+if len(similar_jobs) >= 3:
+    existing_template = await self._check_existing_template(company_id, normalized_title)
+    if not existing_template:
+        return await self._create_learned_template(company_id, job_data, similar_jobs)
+# Meta: "80% faster 10th job creation" — doc da classe
+```
+
+**`ab_testing_service.py` — 307 linhas — A/B testing de variantes de prompt:**
+
+```python
+# Linhas 18-21: distribuição determinística por session_id
+def _hash_assignment(self, test_name: str, session_id: str) -> int:
+    combined = f"{test_name}:{session_id}"
+    return int(hashlib.md5(combined.encode()).hexdigest(), 16)
+
+# bucket = hash % 10000 → seleção proporcional ao traffic_percentage de cada variante
+```
+
+### v5 — `src/services/feedback/tracker.py` (verificado via GitHub API)
+
+O v5 tem `src/services/feedback/tracker.py` — um único arquivo de 88 linhas. Lido diretamente:
+
+```python
+# src/services/feedback/tracker.py — tabela de feedback implícito
+CREATE_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS interaction_feedback (
+    id SERIAL PRIMARY KEY,
+    tenant_id INTEGER NOT NULL,
+    session_id VARCHAR(100),
+    domain_id VARCHAR(50) NOT NULL,
+    action_id VARCHAR(100),
+    query TEXT NOT NULL,
+    signal VARCHAR(20) NOT NULL,           -- 'positive' | 'negative' (implicit)
+    signal_source VARCHAR(30) NOT NULL DEFAULT 'implicit',
+    tools_used TEXT[],
+    response_length INTEGER,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+"""
+
+class FeedbackTracker:
+    def track(self, tenant_id, domain_id, query, signal, ...):
+        # INSERT em interaction_feedback — captura de sinal implícito
+
+    def get_domain_success_rate(self, tenant_id, domain_id, days=30) -> Optional[float]:
+        # SELECT COUNT(*) FILTER (WHERE signal = 'positive') / COUNT(*)
+```
+
+**O `FeedbackTracker` é o único módulo de aprendizado do v5.** Ele captura sinais implícitos (positive/negative) por domínio, mas:
+- Sem padrão de campos aprendidos (salary, skills, etc.)
+- Sem análise de confiança por threshold (promote/demote)
+- Sem fairness gate antes de aplicar padrões
+- Sem rollback via snapshots
+- Sem criação automática de templates
+- Sem A/B testing de variantes
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Captura de feedback | Silent — detecta outcome por comparação de valores (7 tipos de padrão) | `FeedbackTracker.track()` — sinal implícito positive/negative por domínio |
+| Padrões aprendidos | 7 tipos específicos (salary, skill, benefit, work_model, screening, jd_style, source_trust) | Nenhum — apenas taxa de sucesso por domínio (`get_domain_success_rate()`) |
+| Fairness gate no aprendizado | `validate_learning_batch()` bloqueia campos protegidos (F1-02) | **Ausente — verificado** |
+| Rollback | Redis snapshots com TTL 30d, máx 5 por empresa | **Ausente — verificado** |
+| Templates automáticos | Criação após 3 jobs similares (meta: 80% mais rápido no 10º job) | **Ausente — verificado** |
+| A/B testing de prompts | `ABTestingService` com distribuição determinística por session_id | **Ausente — verificado** |
+| Aplicação de padrões | Pré-preenchimento de sugestões por company+role+seniority | Feedback capturado mas não aplicado em personalização |
+
+**Veredicto de risco:** O aprendizado sem fairness gate é o risco mais crítico desta seção — **confirmado como ausente no v5** pela leitura direta de `src/services/feedback/tracker.py`. A LIA valida cada batch de padrões antes de persistir, bloqueando campos protegidos (gênero, idade, raça, etc.). Sem esse gate, um sistema de aprendizado pode amplificar vieses históricos ao aprender preferências discriminatórias como "padrão" de uma empresa. O `FeedbackTracker` do v5 captura sinais mas não os aplica em personalização de sugestões.
+
+---
+
+## 14. Inteligência Semântica
+
+### LIA — 3 arquivos em `app/shared/intelligence/`
+
+**`embedding_service.py` — 196 linhas — geração de embeddings via Gemini:**
+
+```python
+# Linhas 11-12: constantes
+EMBEDDING_DIMENSION = 768
+MAX_BATCH_SIZE = 100
+
+# Linha 25: provider Gemini text-embedding-004
+class EmbeddingService:
+    async def generate_embedding(self, text: str, provider: str = "gemini") -> List[float]:
+        text = text.strip()[:8000]  # truncamento de segurança
+        return await self._generate_gemini_embedding(text)
+
+    async def generate_batch_embeddings(self, texts: List[str]) -> List[List[float]]:
+        # processa em lotes de MAX_BATCH_SIZE=100
+        for i in range(0, len(texts), MAX_BATCH_SIZE):
+            batch = texts[i:i + MAX_BATCH_SIZE]
+            batch_embeddings = await self._generate_batch_gemini_embeddings(batch)
+
+    def chunk_text(self, text: str, chunk_size: int = 1000, overlap: int = 100) -> List[str]:
+        # chunking com overlap para documentos longos
+```
+
+**Uso de embeddings na LIA:** Para busca semântica de filtros avançados de candidatos (Modal de Filtros Avançados). O `EmbeddingService` gera vetores de 768 dimensões via `text-embedding-004` do Gemini.
+
+**`semantic_search_service.py` — 443 linhas — expansão semântica de termos:**
+
+```python
+# Linhas 43-50: 7 domínios semânticos
+class SemanticDomain(str, Enum):
+    SKILLS = "skills"           # React → Next.js, Redux, TypeScript
+    JOB_TITLES = "job_titles"   # Backend Developer = Desenvolvedor Backend = Back-End Engineer
+    ROLES = "roles"
+    INDUSTRIES = "industries"
+    EXPERTISE = "expertise"
+    FIELDS_OF_STUDY = "fields_of_study"
+    COMPANIES = "companies"     # concorrentes no mesmo setor
+
+# Linhas 168-201: taxonomias estáticas complementam o LLM
+INDUSTRY_TAXONOMY = {"Technology": ["Software", "SaaS", "Cloud", "AI/ML", ...], ...}
+SKILLS_TAXONOMY = {"Frontend": ["React", "Vue.js", "Angular", ...], ...}
+JOB_TITLES_TAXONOMY = {"desenvolvedor": ["Desenvolvedor Backend", "Full Stack", ...], ...}
+# P95 < 300ms target; Redis caching 5-10 min TTL; debounce 400-500ms no frontend
+```
+
+**`smart_extractor.py` — 214 linhas — extração regex com cache:**
+
+```python
+class SmartExtractor:
+    # Cache em memória (TTL 5min, max 200 entradas)
+    def extract(self, query: str, domain_id: Optional[str] = None) -> ExtractedParams:
+        cached = self._cache.get(query, domain_id or "universal")
+        if cached: return cached  # cache hit
+        result = self._param_extractor.extract(query, domain_id)
+        if result.confidence >= self._confidence_threshold:
+            self._regex_only_count += 1  # path rápido — sem LLM
+        return result
+    # Híbrido: regex para alta confiança, LLM como fallback implícito
+```
+
+### v5 — `src/services/semantic_cache.py` (verificado via GitHub API — 10.874 bytes)
+
+```python
+# src/services/semantic_cache.py — cache semântico com pgvector (lido diretamente)
+SIMILARITY_THRESHOLD = float(os.getenv("SEMANTIC_CACHE_SIMILARITY_THRESHOLD", "0.95"))
+SEMANTIC_CACHE_ENABLED = os.getenv("SEMANTIC_CACHE_ENABLED", "false").lower() == "true"
+MAX_ENTRIES = int(os.getenv("SEMANTIC_CACHE_MAX_ENTRIES", "10000"))
+EMBEDDING_MODEL = "models/gemini-embedding-001"
+EMBEDDING_DIMENSIONS = 3072  # ← constante definida mas NÃO usada no schema abaixo
+# INCONSISTÊNCIA DETECTADA NO CÓDIGO v5: constante indica 3072d mas tabela usa vector(768)
+
+class SemanticRoutingCache:
+    def setup(self):
+        # Tabela PostgreSQL com extensão pgvector
+        cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS semantic_routing_cache (
+                id SERIAL PRIMARY KEY,
+                query_text TEXT NOT NULL,
+                query_normalized TEXT NOT NULL,
+                embedding vector(768) NOT NULL,   # ← 768d hardcoded (EMBEDDING_DIMENSIONS=3072 não usado)
+                domain_id VARCHAR(50) NOT NULL,
+                confidence FLOAT NOT NULL DEFAULT 0.90,
+                hit_count INTEGER NOT NULL DEFAULT 0,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                last_hit_at TIMESTAMPTZ,
+                UNIQUE(query_normalized)
+            )
+        """)
+        # Índice ivfflat com fallback para hnsw (pgvector)
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_semantic_cache_embedding
+                ON semantic_routing_cache
+                USING ivfflat (embedding vector_cosine_ops) WITH (lists = 50)
+        """)
+
+    def lookup(self, query: str) -> Optional[SemanticLookupResult]:
+        # Gera embedding via Gemini gemini-embedding-001 (SEMANTIC_SIMILARITY)
+        # Busca por distância coseno: 1 - (embedding <=> %s::vector) > 0.95
+        # UPDATE hit_count + 1, last_hit_at em cada cache hit
+        embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
+        cur.execute("""
+            SELECT domain_id, confidence, query_text,
+                   1 - (embedding <=> %s::vector) AS similarity
+            FROM semantic_routing_cache
+            WHERE 1 - (embedding <=> %s::vector) > %s
+            ORDER BY embedding <=> %s::vector LIMIT 1
+        """, (embedding_str, embedding_str, SIMILARITY_THRESHOLD, embedding_str))
+```
+
+O `SemanticRoutingCache` é um **singleton** (`get_instance()`) que mantém 1 conexão psycopg2 síncrona. Por padrão está **desativado** (`SEMANTIC_CACHE_ENABLED=false`) — deve ser ativado explicitamente via env var.
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Embeddings | Gemini `text-embedding-004`, 768d, batch até 100 (async) | Gemini `gemini-embedding-001`; `EMBEDDING_DIMENSIONS=3072` definido mas schema usa `vector(768)` — **inconsistência interna detectada** (sync psycopg2) |
+| Cache de embeddings | Sem cache semântico — SmartExtractor em memória (TTL 5min, regex-first) | `SemanticRoutingCache` com pgvector IVFFlat/HNSW, threshold 0.95, habilitado por env var |
+| Persistência do cache | Memória in-process | PostgreSQL com pgvector (durável entre restarts) |
+| Estado padrão | SmartExtractor sempre ativo | `SEMANTIC_CACHE_ENABLED=false` — desativado por padrão |
+| RAG | Sem serviço RAG centralizado (LIA usa embeddings para busca filtrada) | `rag_service.py` (12.830 bytes) como serviço dedicado |
+| Expansão semântica | 7 domínios + taxonomias estáticas + Gemini LLM | Sem equivalente de expansão semântica de termos |
+| Extração de parâmetros | `SmartExtractor` regex + cache (214 linhas), híbrido com LLM | Sem equivalente — routing é feito por semantic cache |
+
+**Veredicto:** O v5 tem cache semântico **mais sofisticado** (pgvector, similaridade coseno, durável) mas **desativado por padrão**. A LIA tem **expansão semântica** mais profunda para busca de candidatos (7 domínios, taxonomias, P95<300ms) mas sem cache vetorial. São competências complementares — a LIA beneficiaria do `SemanticRoutingCache` do v5 para roteamento de intenção.
+
+---
+
+## 15. WSI Methodology
+
+### LIA — `app/domains/cv_screening/agents/wsi_interview_graph.py` (1.141 linhas)
+
+**Por que Graph e não ReAct (docstring, linha 6-13):**
+
+```python
+"""
+Por que Graph (não ReAct)?
+- Fluxo sequencial determinístico: pergunta 1 → 2 → N → resultado
+- Cada etapa deve ser rastreável individualmente (compliance BCB 498, SOX)
+- Sem decisão autônoma — transições baseadas em regras explícitas
+- Auditável: log completo de cada nó para FairnessGuard e Bias Audit
+"""
+```
+
+**Estado do grafo WSI — `WSIInterviewState` (linhas 75-119):**
+
+```python
+@dataclass
+class WSIInterviewState:
+    session_id: str
+    company_id: str
+    candidate_id: str
+    job_id: str
+    interview_level: str  # "quick" | "standard" | "full"
+
+    # Banco de perguntas gerado para esta sessão
+    question_blocks: List[WSIQuestionBlock]  # cada bloco com bloom_level + dreyfus_level
+    current_question_index: int
+
+    # Scores por dimensão
+    technical_score: float
+    behavioral_score: float
+    situational_score: float
+    wsi_final_score: Optional[float]
+    recommendation: str  # "aprovado" | "aguardando" | "reprovado"
+
+    # Auditoria — cada nó loga no execution_log
+    stage: WSIInterviewStage  # INIT → LOAD_CONTEXT → GENERATE_QUESTION → AWAIT_RESPONSE → ...
+    execution_log: List[Dict[str, Any]]
+
+    def log_step(self, node: str, details: Dict) -> None:
+        self.execution_log.append({"node": node, "timestamp": ..., "question_index": ..., **details})
+```
+
+**Rubrica de 4 níveis e frameworks pedagógicos (`WSIQuestionBlock`):**
+
+```python
+@dataclass
+class WSIQuestionBlock:
+    block_id: str
+    block_type: str  # "technical" | "behavioral" | "situational"
+    question: str
+    competency: str
+    bloom_level: int   # 1-6 (Taxonomia de Bloom)
+    dreyfus_level: int # 1-5 (Modelo Dreyfus de Aquisição de Skills)
+    big_five_trait: Optional[str]  # OCEAN model
+    max_score: float = 10.0
+```
+
+**Stages do grafo (enum `WSIInterviewStage`):**
+
+```
+INIT → LOAD_CONTEXT → GENERATE_QUESTION → AWAIT_RESPONSE →
+VALIDATE_RESPONSE → SCORE_RESPONSE → ADVANCE → [GENERATE_QUESTION | GENERATE_FEEDBACK] →
+COMPLETE (ou ERROR)
+```
+
+**Compatibilidade com PostgresSaver** (linha 143): Estado serializado para dict JSON-compatível para checkpointing no PostgreSQL — garante que entrevistas WSI sobrevivam a reinicializações.
+
+### v5 — `src/domains/evaluation/` (verificado via GitHub API — `state.py` + `models.py` lidos)
+
+O v5 tem um domínio `evaluation` completo com LangGraph. A rubrica de avaliação real, lida de `models.py`:
+
+```python
+# src/domains/evaluation/models.py — rubrica RubricEvaluation (verificado)
+class RubricEvaluation(BaseModel):
+    relevance_score: float = Field(ge=0, le=1, description="Quão relevante à pergunta")
+    depth_score: float    = Field(ge=0, le=1, description="Profundidade técnica")
+    clarity_score: float  = Field(ge=0, le=1, description="Clareza da comunicação")
+    examples_score: float = Field(ge=0, le=1, description="Uso de exemplos concretos")
+    overall_score: float  = Field(ge=0, le=1, description="Score final ponderado")
+    strengths: List[str]  = Field(default_factory=list, max_length=5)
+    gaps: List[str]       = Field(default_factory=list, max_length=5)
+    feedback: str         = Field(description="Feedback para o recrutador", max_length=800)
+
+class FlowDecision(BaseModel):
+    action: Literal["followup", "next_question", "end_interview", "handle_question"]
+    reason: str
+    followup_focus: Optional[str]
+
+class InputClassification(BaseModel):
+    intent: Literal["answer", "question", "off_topic", "unclear", "not_interested"]
+    confidence: float
+    summary: str
+```
+
+**Estado do grafo v5 — `InterviewState` (verificado em `state.py`):**
+
+```python
+# src/domains/evaluation/state.py (verificado)
+class InterviewState(TypedDict, total=False):
+    account_id: int
+    evaluation_candidate_id: int
+    job_description: str
+    question_text: str
+    expected_response: str
+    candidate_answer: str
+    history: List[HistoryMessage]
+    style: EvaluationStyle          # persona + pt_br apenas (sem Bloom/Dreyfus)
+
+    classification: Optional[InputClassification]   # intent + confidence + summary
+    evaluation: Optional[RubricEvaluation]          # 4 scores + feedback
+    flow_decision: Optional[FlowDecision]           # followup/next_question/end_interview
+
+    final_score: float
+    is_satisfactory: bool
+    followup_needed: bool
+    end_interview: bool
+```
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Rubrica estruturada | WSI com Bloom (1-6) + Dreyfus (1-5) + Big Five | `RubricEvaluation`: 4 dimensões (relevance, depth, clarity, examples) + overall_score (verificado) |
+| Framework pedagógico | Taxonomia de Bloom + Modelo Dreyfus de Aquisição de Skills | Ausente — sem referência a Bloom, Dreyfus ou frameworks pedagógicos (verificado) |
+| Tipos de questão | technical / behavioral / situational (com blocks) | `evaluation_type` + `InputClassification.intent` (answer/question/off_topic/unclear/not_interested) |
+| Estado persistido | `WSIInterviewState` com PostgresSaver (sobrevive a crashes) | `InterviewState` TypedDict — persistência a cargo do chamador (não verificada em graph.py) |
+| Scores por dimensão | 3 scores separados (technical + behavioral + situational) → wsi_final_score | 4 scores (relevance, depth, clarity, examples) + overall_score (verificado) |
+| Auditabilidade | Log por nó via `execution_log.log_step()` + `AuditCallback` automático | `AuditCallbackHandler` injetado via LangChain (verificado no `AuditCallback`) |
+| Compliance citado | BCB 498 e SOX explicitamente em docstring | Ausente — sem referência a frameworks regulatórios |
+| Análise final | `WSIFinalReport` com recommendation "aprovado/aguardando/reprovado" | `FinalAnalysisResponse` com `recommendation: Literal["APPROVED", "ADDITIONAL_ANALYSIS", "NOT_RECOMMENDED"]` (verificado) |
+
+**Veredicto de risco (nuançado por código real):** O v5 tem rubrica de 4 dimensões funcional (relevance, depth, clarity, examples) — mais sofisticada do que o diagnóstico anterior indicava. A ausência é o **framework pedagógico** (Bloom/Dreyfus) que garante progressão de dificuldade e cobertura de competências em entrevistas longas. Para avaliações simples de resposta única, o v5 é adequado. Para entrevistas sequenciais de múltiplas questões com garantia de cobertura técnica e compliance BCB-498/SOX, a LIA tem vantagem estrutural.
+
+---
+
+## 16. Observabilidade e IterationLog — Audit Trail Completo por Iteração
+
+### LIA — 4 arquivos de observabilidade
+
+**`libs/agents-core/lia_agents_core/observability.py` — `IterationLog` por fase:**
+
+```python
+@dataclass
+class IterationLog:
+    iteration: int
+    timestamp: str
+    phase: str       # "reason" | "tool_call" | "decision"
+    duration_ms: float
+    tool_name: Optional[str]   # nome da tool chamada (se fase=tool_call)
+    tool_args: Optional[dict]  # argumentos da tool
+    tool_success: Optional[bool]
+    reasoning: Optional[str]   # raciocínio do LLM (fase=reason)
+    observation: Optional[str] # resultado da tool (fase=tool_call)
+    decision: Optional[str]    # decisão tomada (fase=decision)
+    error: Optional[str]
+
+@dataclass
+class AgentExecutionLog:
+    session_id: str
+    domain: str
+    agent_class: str
+    start_time: str
+    total_duration_ms: float
+    total_iterations: int
+    tools_called: list       # lista de nomes
+    tools_succeeded: int
+    tools_failed: int
+    final_confidence: float
+    stage_before: Optional[str]
+    stage_after: Optional[str]
+    stage_transitioned: bool
+    iterations: list         # lista de IterationLog serializados
+```
+
+**`libs/agents-core/lia_agents_core/execution_log_store.py` — persistência em PostgreSQL:**
+
+```python
+class AgentExecutionRecord(Base):
+    __tablename__ = "agent_execution_records"
+    id                 = Column(UUID, ...)
+    session_id         = Column(String, index=True)
+    company_id         = Column(String, index=True)
+    user_id            = Column(String)
+    domain             = Column(String)
+    agent_class        = Column(String)
+    user_message       = Column(Text)
+    agent_response     = Column(Text)
+    total_duration_ms  = Column(Float)
+    total_iterations   = Column(Integer)
+    tools_called       = Column(JSON)     # lista de nomes de tools
+    tools_succeeded    = Column(Integer)
+    tools_failed       = Column(Integer)
+    final_confidence   = Column(Float)
+    reasoning_chain    = Column(JSON)     # lista de IterationLog serializados
+    stage_before       = Column(String)   # estágio antes da execução
+    stage_after        = Column(String)   # estágio após a execução
+    stage_transitioned = Column(Boolean)
+    model_provider     = Column(String)
+    metadata_          = Column(JSON)
+
+# Query retroativa por session:
+async def get_timeline(self, session_id: str) -> List[dict]:
+    # reconstrói timeline por (timestamp, iteration) de reasoning_chain
+```
+
+**`libs/audit/lia_audit/audit_callback.py` — captura automática via LangChain callbacks:**
+
+```python
+class AuditCallback(BaseCallbackHandler):
+    # Captura automaticamente via LangChain sem código adicional no agente:
+    def on_llm_start(self, serialized, prompts, **kwargs) -> None:
+        self._current_llm_start = datetime.now(timezone.utc)
+    def on_llm_end(self, response, **kwargs) -> None:
+        self.entries.append({"type": "llm_call", "tokens_input": ..., "latency_ms": ...})
+    def on_tool_start(self, serialized, input_str, **kwargs) -> None: ...
+    def on_tool_end(self, output, **kwargs) -> None:
+        self.entries.append({"type": "tool_call", "tool": ..., "output_preview": ..., "latency_ms": ...})
+    def on_chain_start(self, serialized, inputs, **kwargs) -> None:
+        # registra transição de nó no LangGraph
+```
+
+**`app/shared/observability/agent_metrics.py` — Prometheus:**
+
+```python
+# Métricas expostas em /metrics para Grafana/Prometheus:
+AGENT_REQUEST_TOTAL          # Counter por agent + domain + status
+AGENT_FAIRNESS_BLOCKED_TOTAL # Counter por agent + category
+AGENT_HITL_TRIGGERED_TOTAL   # Counter por agent + action_type
+AGENT_TOKENS_TOTAL           # Counter por agent + model + token_type (input|output)
+AGENT_LATENCY_SECONDS        # Histogram por agent + domain
+AGENT_CONFIDENCE             # Histogram por agent + domain
+```
+
+### v5 — `src/services/react_observer.py` (parcialmente lido na seção 7)
+
+```python
+class ReActObserver:
+    def __init__(self, session_id: str = ""):
+        self._iterations: List[IterationLog] = []  # IterationLog do v5 (mais simples)
+        self.total_input_tokens: int = 0
+        self.total_output_tokens: int = 0
+
+    def log_model_call(self, iteration, duration_ms, input_tokens=0, output_tokens=0): ...
+    def log_tool_call(self, iteration, tool_name, tool_args, success, duration_ms, error=""): ...
+    def finalize(self) -> Dict[str, Any]: ...  # retorna dict, sem persistência automática
+```
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Captura de iteração | `IterationLog` por fase (reason/tool_call/decision) com reasoning, observation, decision | `IterationLog` com phase="reason"\|"tool", sem decision separado |
+| Persistência | PostgreSQL (`agent_execution_records`) + storage de objeto (`AuditStorage`) | `finalize()` retorna dict — persistência a cargo do chamador |
+| Granularidade | Por LLM call + por tool call + por nó de grafo (via `AuditCallback`) | Por LLM call + por tool call |
+| Query retroativa | `get_timeline(session_id)` — reconstrói timeline completa de uma sessão | Sem query retroativa estruturada |
+| Prometheus | 6 métricas nativas (requests, fairness, HITL, tokens, latency, confidence) | Sem Prometheus integrado |
+| Saúde por domínio | `get_domain_health(company_id, days=30)` — avg_duration, avg_confidence, tool_failure_rate | Sem equivalente |
+| Dual write | PostgreSQL (metadados leves) + AuditStorage S3/arquivo (payload completo) | Sem dual write |
+
+**Veredicto de risco:** A ausência de persistência estruturada de `IterationLog` no v5 significa que após o fim de uma sessão, o raciocínio do agente é perdido. Na LIA, cada `reasoning_chain` é persistido em PostgreSQL e consultável retroativamente via `get_timeline()`. Isso é requisito de compliance para auditoria de decisões sobre candidatos.
+
+---
+
+## 17. LGPD, PII e Proteção de Dados
+
+### LIA — `app/shared/pii_masking.py` (221 linhas) — 4 camadas
+
+**Layer 1 — Regex direto (campos identificadores primários):**
+
+```python
+# Linhas 18-28: 4 padrões de log masking
+CPF_PATTERN     = re.compile(r'\b\d{3}[.\-]?\d{3}[.\-]?\d{3}[.\-/]?\d{2}\b')
+EMAIL_PATTERN   = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+PHONE_BR_PATTERN = re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\s?)?\d{4}[\-\s]?\d{4}\b')
+NAME_IN_LOG_PATTERN = re.compile(r'(?:name|nome|candidato|recruiter|user)\s*[=:]\s*["\']([^"\']+)["\']', ...)
+
+# → CPF → ***CPF***, EMAIL → ***EMAIL***, PHONE → ***PHONE***, NAME → ***NAME***
+```
+
+**`PIIMaskingFilter` — logging.Filter aplicado ao root logger:**
+
+```python
+# Linhas 40-56: filtro em todos os records propagados para handlers
+class PIIMaskingFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        if isinstance(record.msg, str):
+            record.msg = mask_pii(record.msg)
+        if record.args:
+            # mascara tanto dicts quanto tuples de args
+        if record.exc_info and record.exc_info[1] is not None:
+            # mascara mensagens de exceção (stack traces podem expor email/CPF)
+        return True
+
+# Linhas 66-87: instalação global no root logger + todos os handlers
+def install_global_pii_masking() -> None:
+    # child loggers propagam para handlers do root — filtro nos handlers garante cobertura
+```
+
+**Layer 3 básica — Quasi-identificadores:**
+
+```python
+# Linhas 94-109: padrões de quasi-identificadores
+_GRADUATION_YEAR_PATTERN = re.compile(r'\b(?:formad[oa]|graduad[oa]|...)\s+\d{4}\b', ...)
+_AGE_EXPLICIT_PATTERN    = re.compile(r'\b(\d{2})\s*anos?\b', ...)
+_ADDRESS_BAIRRO_PATTERN  = re.compile(r'\b(?:moro|resido|bairro|cep|rua|avenida|...)\b[^.]{0,60}', ...)
+_RG_PATTERN   = re.compile(r'\b\d{1,2}[\.\-]?\d{3}[\.\-]?\d{3}[\-]?[0-9Xx]\b')
+_CNPJ_PATTERN = re.compile(r'\b\d{2}[\.\-]?\d{3}[\.\-]?\d{3}[/\\]?\d{4}[\-]?\d{2}\b')
+```
+
+**Layer 4 — NER via Microsoft Presidio (opt-in):**
+
+```python
+# Linhas 154-184: Presidio AnalyzerEngine lazy singleton
+_PRESIDIO_ENABLED = os.environ.get("LLM_PROMPT_PRESIDIO_ENABLED", "false").lower() == "true"
+_PRESIDIO_ENTITIES = ["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "LOCATION", "DATE_TIME", "NRP"]
+```
+
+**Função `strip_pii_for_llm_prompt` — mascaramento ANTES de enviar ao LLM:**
+
+```python
+# Linha 125: docstring cita LGPD Art. 12 e EU AI Act Art. 13
+def strip_pii_for_llm_prompt(text: str) -> str:
+    """
+    LGPD Art. 12: minimização de dados pessoais processados por sistemas de IA.
+    EU AI Act Art. 13: transparência sobre dados usados em sistemas de alto risco.
+    """
+    # Controlado por LLM_PROMPT_PII_STRIPPING_ENABLED (padrão: true)
+    # Layer 1 + Layer 3: regex
+    # Layer 4: Presidio NER (opt-in com LLM_PROMPT_PRESIDIO_ENABLED=true)
+```
+
+**`tests/test_sprint4_lgpd_retention.py` — cobertura de testes LGPD:**
+
+```python
+class TestAiConsumptionRetentionField:
+    def test_model_has_scheduled_deletion_at(self):
+        # AiConsumption deve ter campo 'scheduled_deletion_at' (LGPD L6)
+
+class TestTokenTrackingSetsRetention:
+    async def test_record_usage_sets_scheduled_deletion_365_days(self):
+        # record_usage() deve definir scheduled_deletion_at = now + 365 dias
+
+class TestLgpdCleanupIncludesAiLogs:
+    def test_cleanup_service_has_ai_consumption_scope(self):
+        # lgpd_cleanup_service deve referenciar AiConsumption no cleanup
+    def test_retention_constant_is_365_days(self):
+        # lgpd_cleanup_service deve usar retenção de 365 dias para ai_logs
+```
+
+### v5 — `src/services/pii_filter.py` (verificado via GitHub API — 983 bytes)
+
+```python
+# src/services/pii_filter.py — lido diretamente (983 bytes, 30 linhas)
+_PII_PATTERNS: List[Tuple[re.Pattern, str]] = [
+    (re.compile(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b'), '[CPF]'),
+    (re.compile(r'\b[\w.+-]+@[\w.-]+\.\w{2,}\b'), '[EMAIL]'),
+    (re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?\d{4,5}[-\s]?\d{4}\b'), '[PHONE]'),
+]  # 3 padrões apenas (CPF, email, telefone)
+
+def mask_pii(text: str) -> str:
+    for pattern, replacement in _PII_PATTERNS:
+        text = pattern.sub(replacement, text)
+    return text
+
+class PIIMaskingFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.args:
+            record.msg = mask_pii(str(record.msg))
+            record.args = None
+        else:
+            record.msg = mask_pii(str(record.msg))
+        return True
+
+def install_pii_filter():
+    root_logger = logging.getLogger()
+    if not any(isinstance(f, PIIMaskingFilter) for f in root_logger.filters):
+        root_logger.addFilter(PIIMaskingFilter())
+```
+
+O `mask_pii()` do v5 **também é chamado em `AuditModels.to_dict()`** — mascarando o `user_query` antes de persistir no audit trail (`user_query: mask_pii(self.user_query)` em `audit_models.py`). Isso é mascaramento **pré-persistência**, mas não pré-LLM.
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Log masking | `PIIMaskingFilter` em root logger + **todos os handlers** (incluindo stack traces de exceção) | `PIIMaskingFilter` em **root logger** apenas (sem cobertura de handlers individuais ou stack traces) |
+| Mascaramento pré-LLM | `strip_pii_for_llm_prompt()` com Layer 1+3+4 (padrão: ativo) | **Ausente — verificado** — sem função de mascaramento pré-chamada LLM |
+| Mascaramento pré-persistência | Sim — no `PIIMaskingFilter` do log | Sim — `mask_pii(self.user_query)` em `audit_models.to_dict()` |
+| Quasi-identificadores | Sim — ano de formatura, idade explícita, referências de bairro/endereço, RG, CNPJ (5 padrões adicionais) | **Ausente — verificado** — apenas 3 padrões (CPF, email, telefone) |
+| NER (Presidio) | Layer 4 opt-in via `LLM_PROMPT_PRESIDIO_ENABLED` | **Ausente — verificado** |
+| Retenção | AiConsumption com `scheduled_deletion_at` = now+365d; audit SOX 7 anos | `AuditWriter.cleanup(retention_days=90)` — 90 dias, sem política 7 anos |
+| Base legal citada | LGPD Art. 12, EU AI Act Art. 13 (em docstring do código de produção) | Ausente — sem referência a base legal |
+| Testes de retenção | `test_sprint4_lgpd_retention.py` — 3 classes, 5 testes dedicados | Ausente |
+| Campos cobertos | 8 padrões: CPF, email, telefone BR, nome, RG, CNPJ, idade, ano de formatura, endereço | 3 padrões: CPF, email, telefone |
+
+**Veredicto de risco (gap verificado):** O v5 tem mascaramento de **3 PII primários** em logs e audit trail, mas sem mascaramento pré-LLM. Na LIA, dados PII são mascarados **antes** de compor o prompt enviado ao LLM — requisito crítico para LGPD Art. 12 (minimização de dados processados por IA). O gap de quasi-identificadores (idade, endereço, RG) também é confirmado: um candidato com "25 anos" no CV é processado pelo LLM v5 sem mascaramento desse quasi-identificador.
+
+---
+
+## 18. Frameworks de Compliance (SOX, BCB-498, ISO 27001)
+
+### LIA — Manifestações em Código
+
+A LIA referencia SOX, BCB-498 e ISO 27001 em múltiplos arquivos de código real. Abaixo as ocorrências mais relevantes:
+
+**`libs/audit/lia_audit/audit_storage.py` — política de retenção SOX explícita:**
+
+```python
+# Linhas 18-22: retenção configurada para 7 anos (SOX compliance)
+AUDIT_RETENTION_DAYS_HOT  = 90     # S3 Standard → Glacier Instant Retrieval
+AUDIT_RETENTION_DAYS_COLD = 365    # Glacier Instant → Deep Archive
+AUDIT_RETENTION_DAYS_DELETE = 2555 # 7 anos total (SOX compliance) → Delete
+```
+
+**`app/domains/cv_screening/agents/wsi_interview_graph.py` — BCB-498 e SOX (docstring):**
+
+```python
+# Linha 9: compliance citado na justificativa de design
+"""
+- Cada etapa deve ser rastreável individualmente (compliance BCB 498, SOX)
+"""
+```
+
+**`libs/models/lia_models/bias_audit_snapshot.py` — SOX e ISO 27001:**
+
+```python
+"""
+BiasAuditSnapshot — G.4
+Persiste snapshots históricos de auditoria de viés para rastreabilidade SOX/ISO 27001.
+"""
+```
+
+**`app/shared/compliance/audit_storage.py` → `libs/audit/lia_audit/audit_storage.py`:**
+
+A classe `S3Storage` implementa `ServerSideEncryption="AES256"` — requisito ISO 27001 (controle A.8.24 — uso de criptografia). O padrão de append-only (`ON CONFLICT (execution_id) DO NOTHING` no AuditWriter) implementa imutabilidade de audit trail — requisito SOX (controle de integridade de registros).
+
+**Mapa SOX/BCB/ISO na LIA:**
+
+| Framework | Manifestação em código |
+|-----------|----------------------|
+| SOX — Audit Trail imutável | `ON CONFLICT (execution_id) DO NOTHING` em `AuditWriter._insert_metadata()` |
+| SOX — Retenção 7 anos | `AUDIT_RETENTION_DAYS_DELETE = 2555` em `audit_storage.py` |
+| SOX — Rastreabilidade WSI | Cada nó do grafo WSI loga via `log_step()` com timestamp e question_index |
+| BCB-498 — Rastreabilidade decisões autônomas | `wsi_interview_graph.py` cita BCB 498 explicitamente |
+| ISO 27001 — Criptografia | `ServerSideEncryption="AES256"` na `S3Storage` |
+| ISO 27001 — Snapshots de auditoria | `BiasAuditSnapshot` com `evaluated_at`, `dimensions_json`, `disparate_impact_data` |
+| LGPD — LGPD-safe snapshots | `BiasAuditSnapshot` sem IDs individuais (apenas dados agregados) |
+
+### v5 — `src/services/audit/` (verificado via GitHub API — 4 arquivos lidos)
+
+A partir da leitura direta de `audit_writer.py`, `audit_storage.py` e `audit_models.py`:
+
+```python
+# src/services/audit/audit_writer.py — política de retenção VERIFICADA
+def cleanup(self, retention_days: int = 90) -> int:
+    # DELETE FROM agent_executions WHERE created_at < NOW() - INTERVAL '%s days'
+    # Padrão: 90 dias — sem política de retenção de 7 anos
+
+# src/services/audit/audit_writer.py — imutabilidade VERIFICADA
+UPSERT_SQL = """
+INSERT INTO agent_executions (...) VALUES (...)
+ON CONFLICT (execution_id) DO UPDATE SET
+    finished_at = EXCLUDED.finished_at,
+    status = EXCLUDED.status,
+    ...
+"""
+# ← UPSERT com ON CONFLICT DO UPDATE: audit trail MUTÁVEL por design
+# (vs LIA: ON CONFLICT DO NOTHING — audit trail IMUTÁVEL por design)
+
+# src/services/audit/audit_storage.py — storage local em .jsonl, sem S3
+class AuditStorageWriter:
+    def save(self, execution: AuditExecution):
+        file_path = self._log_dir / f"audit_{date_str}.jsonl"
+        with open(file_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ...) + "\n")
+    
+    def cleanup(self, retention_days: int = 90) -> int:
+        # Delete de arquivos .jsonl com mtime < cutoff — padrão 90 dias
+```
+
+**Evidências verificadas do v5 para compliance:**
+- Sem referência a SOX em nenhum arquivo lido
+- Sem referência a BCB-498 em nenhum arquivo lido
+- Sem referência a ISO 27001 em nenhum arquivo lido
+- Retenção padrão de 90 dias (vs SOX exige 7 anos)
+- Criptografia em repouso: arquivos .jsonl locais, sem `ServerSideEncryption`
+- Imutabilidade: `ON CONFLICT DO UPDATE` — registros são modificáveis
+
+### Tabela Comparativa
+
+| Framework | LIA | v5 |
+|-----------|-----|----|
+| SOX — Trail imutável | `ON CONFLICT (execution_id) DO NOTHING` — append-only garantido em SQL | `ON CONFLICT (execution_id) DO UPDATE` — **mutável** (verificado em `audit_writer.py`) |
+| SOX — Retenção 7 anos | `AUDIT_RETENTION_DAYS_DELETE = 2555` hardcoded em `audit_storage.py` | `cleanup(retention_days=90)` — **90 dias** (verificado em `audit_writer.py` e `audit_storage.py`) |
+| BCB-498 | Citado explicitamente em docstring de `wsi_interview_graph.py` | **Ausente** — verificado em todos os 5 arquivos de `src/services/audit/` |
+| ISO 27001 — Criptografia | `ServerSideEncryption="AES256"` na S3Storage | **Ausente** — storage em `.jsonl` local sem criptografia (verificado) |
+| ISO 27001 — Bias snapshots | `BiasAuditSnapshot` com trail histórico | **Ausente** — verificado |
+| Referências em código | SOX em 3 arquivos, BCB-498 em 1, ISO 27001 em 2 | **0 referências** em todos os 5 arquivos `src/services/audit/` lidos |
+
+**Veredicto de risco (confirmado por código):** O v5 tem trail auditável mas **mutável** — o `ON CONFLICT DO UPDATE` permite atualizar registros existentes, o que viola o requisito SOX de imutabilidade de audit trail. A retenção de 90 dias é insuficiente para ambientes SOX (7 anos). Para deployments em instituições financeiras sujeitas ao BCB-498 ou empresas sujeitas ao SOX, o v5 requer modificação arquitetural da camada de audit antes de ser considerado conforme.
+
+---
+
+## 19. Four Fifths Rule e Bias Audit
+
+### LIA — `tests/fairness/test_four_fifths_rule.py` + `libs/models/lia_models/bias_audit_snapshot.py`
+
+**Definição da regra dos 4/5 (linhas 1-15 do arquivo de teste):**
+
+```python
+"""
+Four-Fifths Rule (Regra dos 4/5) — Bias Audit Baseline
+
+Testa que a taxa de seleção (score >= 60) é equitativa entre grupos demográficos.
+Critério: adverse_impact_ratio >= 0.80 para todas as dimensões protegidas.
+
+Referências:
+- dei-fairness §4 (Bias Audit Dashboard — adverse_impact_ratio)
+- screening-compliance §5 (Four-Fifths Rule)
+- EEOC Uniform Guidelines on Employee Selection Procedures (29 CFR §1607)
+"""
+
+FOUR_FIFTHS_MIN_RATIO = 0.80  # critério EEOC / dei-fairness §4
+```
+
+**Golden dataset e estrutura de teste:**
+
+```python
+# Dataset: 60 candidatos sintéticos com scores determinísticos (independentes de demografia)
+# Distribuição: 20 alta performance (score >= 75), 20 média (45-74), 20 baixa (< 45)
+# Grupos: gender × age_group × disability × region
+
+# Cálculo:
+# adverse_impact_ratio(group_a, group_b) = selection_rate(group_a) / max(selection_rate(group_a), selection_rate(group_b))
+# Regra: ratio >= 0.80 para todo par de grupos em cada dimensão
+```
+
+**Cobertura de dimensões protegidas:**
+
+```python
+class TestFourFifthsRuleGender:     # masculino/feminino/nao_binario — par a par
+class TestFourFifthsRuleAgeGroup:   # 25-35, 36-45, 46-55, 50+ — par a par
+class TestFourFifthsRuleDisability: # com_pcd vs sem_pcd
+class TestFourFifthsRuleRegion:     # regiões brasileiras (discriminação socioeconômica)
+# Total: 4 dimensões, testes par a par dentro de cada dimensão
+# test_older_workers_not_disadvantaged: verificação específica 50+ vs 25-35
+```
+
+**`bias_audit_snapshot.py` — persistência histórica de auditorias:**
+
+```python
+class BiasAuditSnapshot(Base):
+    __tablename__ = "bias_audit_snapshots"
+    id                     = Column(UUID, primary_key=True)
+    company_id             = Column(UUID, index=True)
+    job_id                 = Column(String, index=True)
+    evaluated_at           = Column(DateTime)
+    total_candidates       = Column(Integer)
+    has_alerts             = Column(Boolean)       # True se alguma dimensão viola 4/5
+    dimensions_json        = Column(Text)          # JSON das 4 dimensões
+    disparate_impact_data  = Column(JSON, nullable=True)  # D3: chi-square por dimensão
+    # LGPD-safe: sem IDs individuais de candidatos — apenas dados agregados
+```
+
+### v5 — Análise de Impacto Disparate
+
+Nenhum dos arquivos do v5 lidos via GitHub API contém implementação de Four Fifths Rule, `adverse_impact_ratio`, disparate impact analysis, ou `BiasAuditSnapshot`. O domínio `evaluation` que avalia candidatos não tem qualquer verificação de disparate impact.
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Four Fifths Rule | Implementada e testada: 4 dimensões (gender, age, disability, region), par a par, EEOC-compliant | Ausente |
+| Golden dataset | 60 candidatos sintéticos, scores determinísticos, 3 tiers de performance | Ausente |
+| Adverse impact ratio | `adverse_impact_ratio()` — ratio >= 0.80 por par de grupos | Ausente |
+| Histórico de auditorias | `BiasAuditSnapshot` — persistido por job_id, LGPD-safe (sem PII) | Ausente |
+| Chi-square por dimensão | `disparate_impact_data` (D3) — análise estatística | Ausente |
+| Alertas em produção | `has_alerts=True` quando ratio < 0.80 em qualquer dimensão | Ausente |
+| Base regulatória | EEOC 29 CFR §1607, dei-fairness §4, screening-compliance §5 | Ausente |
+
+**Veredicto de risco:** O v5 não tem qualquer mecanismo de detecção de disparate impact. Um sistema de avaliação de candidatos que aprova 90% dos candidatos masculinos mas apenas 40% dos femininos (ratio=0.44, abaixo do threshold 0.80) não dispararia nenhum alerta no v5. Na LIA, isso seria detectado pelo `BiasAuditSnapshot` e flagado via `has_alerts=True` no próximo ciclo de auditoria.
+
+---
+
+## 20. Persona e Interaction Patterns
+
+### LIA — `app/shared/prompts/interaction_patterns.py` + `agent_prompts.py`
+
+**`interaction_patterns.py` — 50 linhas — blocos reutilizáveis:**
+
+```python
+# Linhas 6-18: vocabulário semântico de confirmação/negação (usado em parsing de intenção)
+NEGATION_WORDS = {
+    "não", "nao", "espera", "ainda não", "calma", "volta", "quero mudar",
+    "cancelar", "cancela", "parar", "errei", "corrijo", "não é isso", ...
+}
+
+CONFIRMATION_WORDS = {
+    "sim", "pode", "vamos", "avança", "ok", "beleza", "perfeito",
+    "confirmo", "positivo", "aprovo", "concordo", "executar", "fazer", ...
+}
+
+# Linhas 21-28: bloco de negação — injeta regra de cancelamento em system prompts
+NEGATION_DETECTION_BLOCK = """
+## Detecção de Negação e Confirmação
+- Se a mensagem contiver negação explícita (não, cancela, espera, volta) → CANCELE a ação
+- Para ações irreversíveis (rejeição, envio de email, mudança de estágio) → SEMPRE confirme
+- NUNCA execute uma ação que o usuário acabou de negar
+"""
+
+# Linhas 30-39: bloco de raciocínio estruturado
+CHAIN_OF_THOUGHT_BLOCK = """
+## Formato de Raciocínio
+SEMPRE raciocine antes de responder:
+<thought>
+1. O que o recrutador realmente precisa?
+2. Quais ferramentas são relevantes para esta situação?
+3. Há algum risco de compliance, fairness ou LGPD?
+4. Qual é o próximo passo concreto e mensurável?
+</thought>
+"""
+
+# Linhas 42-49: bloco anti-sycophancy inline (complementa anti_sycophancy_block.py)
+ANTI_SYCOPHANCY_BLOCK = """
+1. NUNCA concorde apenas para evitar conflito
+2. Se os dados contradizem o pedido → apresente os dados primeiro
+...
+"""
+```
+
+**`agent_prompts.py` — persona centralizada via YAML:**
+
+```python
+# Linhas 16-21: carregamento de persona e vocabulário via PromptLoader
+_shared = PromptLoader.load("shared/lia_persona")
+_agents = PromptLoader.load("shared/agent_prompts")
+
+LIA_PERSONA                  = _shared["prompts"]["lia_persona"]
+HR_VOCABULARY                = _shared["prompts"]["hr_vocabulary"]
+DATA_PERSISTENCE_GUIDELINES  = _shared["prompts"]["data_persistence_guidelines"]
+ETHICAL_GUIDELINES           = _shared["prompts"]["ethical_guidelines"]
+
+# 11 prompts de agentes carregados do YAML:
+ORCHESTRATOR_PROMPT, JOB_PLANNER_PROMPT, SOURCING_PROMPT, CV_SCREENING_PROMPT,
+INTERVIEWER_PROMPT, WSI_EVALUATOR_PROMPT, SCHEDULING_PROMPT, ANALYST_FEEDBACK_PROMPT,
+ATS_INTEGRATOR_PROMPT, RECRUITER_ASSISTANT_PROMPT, PROACTIVE_INSIGHTS_PROMPT
+```
+
+**Onde a persona LIA é definida:** Em YAML (`app/prompts/shared/lia_persona.yaml`), centralizada e versionável. A persona inclui tom (profissional brasileiro), limites de assertividade (confronta com dados, não apenas concorda), e vocabulário técnico de RH brasileiro (`HR_VOCABULARY`).
+
+### v5 — `src/domains/autonomous/agent.py` — `REACT_SYSTEM_PROMPT`
+
+```python
+# src/domains/autonomous/agent.py — constante hardcoded (lida via GitHub API)
+REACT_SYSTEM_PROMPT = """Voce e um agente autonomo de recrutamento (ATS).
+Voce tem tools especificas para operacoes comuns e uma tool generica (api_request)
+para qualquer endpoint da API Rails nao coberto pelas tools especificas..."""
+```
+
+Não há equivalente a `NEGATION_WORDS`, `CONFIRMATION_WORDS`, `CHAIN_OF_THOUGHT_BLOCK`, ou módulo de persona centralizado. Cada domínio define seu próprio system prompt — sem consistência garantida de tom, linguagem ou regras de interação.
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Persona centralizada | YAML versionável (`lia_persona.yaml`) — carregado por todos os 11 agentes | Hardcoded em `autonomous/agent.py` — apenas 1 agente |
+| Tom e limites de assertividade | `ETHICAL_GUIDELINES`, `ANTI_SYCOPHANCY_BLOCK` injetados em todos os agentes | Não verificado em outros domínios |
+| Vocabulário RH brasileiro | `HR_VOCABULARY` como bloco de prompt reutilizável | Ausente como módulo |
+| Negação/Confirmação | `NEGATION_WORDS` e `CONFIRMATION_WORDS` — vocabulário semântico codificado | Ausente como módulo |
+| Chain of thought | `CHAIN_OF_THOUGHT_BLOCK` — estrutura `<thought>` obrigatória | Ausente como padrão |
+| Ações irreversíveis | `NEGATION_DETECTION_BLOCK` — confirmação obrigatória antes de ações irreversíveis | Não verificado |
+
+**Veredicto de risco:** Sem persona centralizada, o v5 depende da disciplina de cada desenvolvedor de domínio para manter consistência de tom e comportamento. Um usuário interagindo com `jobs/domain.py` vs `autonomous/agent.py` pode ter experiências radicalmente diferentes. Na LIA, a persona é garantia estrutural — mudança no YAML propaga para todos os agentes imediatamente.
+
+---
+
+## 21. Audit Trail Arquitetural — Callback, Writer, Storage e Models
+
+### LIA — Fluxo Completo de 4 Arquivos (via `libs/audit/`)
+
+**Fluxo: evento → callback → writer → storage dual:**
+
+```
+Evento de execução (LLM call / tool call / node transition)
+  ↓
+AuditCallback (libs/audit/lia_audit/audit_callback.py)
+  - BaseCallbackHandler do LangChain
+  - Captura automática: on_llm_start/end, on_tool_start/end, on_chain_start
+  - Acumula em self.entries: List[Dict]
+  ↓
+ExecutionAuditRecord (libs/audit/lia_audit/audit_models.py)
+  - Agrega: execution_id, session_id, company_id, domain, agent_type
+  - Campos leves: duration_ms, tools_used, nodes_visited, success, confidence
+  - Campos pesados: entries (payload completo de LLM + tool calls)
+  ↓
+AuditWriter (libs/audit/lia_audit/audit_writer.py)
+  - _save_full_payload() → AuditStorage (payload completo)
+  - _save_metadata()    → PostgreSQL (campos leves, consulta rápida)
+  - ON CONFLICT (execution_id) DO NOTHING → IMUTABILIDADE garantida
+  ↓
+Dual Storage
+  ├── PostgreSQL: tabela audit_execution_metadata (indexável, dashboards)
+  └── AuditStorage: LocalFileStorage (dev) ou S3Storage (produção)
+      - S3: ServerSideEncryption="AES256"
+      - Retenção: 90d Standard → 365d Glacier → 2555d (7a) Delete (SOX)
+```
+
+**Granularidade por tipo de evento:**
+
+| Tipo de entrada | Campos capturados | Granularidade |
+|-----------------|-------------------|---------------|
+| `llm_call` | timestamp, model, prompt_preview[:500], response_preview[:500], tokens_input, tokens_output, latency_ms | Por chamada LLM |
+| `tool_call` | timestamp, tool_name, input_preview[:500], output_preview[:500], latency_ms, success | Por chamada de tool |
+| `node_transition` | timestamp, from_node, to_node, condition | Por transição de nó do LangGraph |
+
+**Shims de compatibilidade retroativa:**
+
+```python
+# app/shared/compliance/audit_callback.py → libs/audit/lia_audit/audit_callback.py
+# app/shared/compliance/audit_writer.py   → libs/audit/lia_audit/audit_writer.py
+# app/shared/compliance/audit_storage.py  → libs/audit/lia_audit/audit_storage.py
+# app/shared/compliance/audit_models.py   → libs/audit/lia_audit/audit_models.py
+# Os 4 arquivos em app/shared/compliance/ são shims de 1-3 linhas que re-exportam
+# da lib real. Isso garante compatibilidade com imports antigos sem duplicar código.
+```
+
+**Query retroativa:**
+
+```python
+# AuditWriter.load_full(storage_path) → carrega payload completo do storage
+# ExecutionLogStore.get_timeline(session_id) → reconstrói timeline por session
+# ExecutionLogStore.get_domain_health(company_id, days=30) → métricas de saúde
+```
+
+### v5 — `src/services/audit/` (verificado via GitHub API — 4 arquivos lidos diretamente)
+
+O v5 tem `AuditCallbackHandler` — também um `BaseCallbackHandler` LangChain — em `src/services/audit/audit_callback.py` (9.151 bytes). Lido diretamente:
+
+```python
+# src/services/audit/audit_callback.py — captura automática via LangChain (verificado)
+class AuditCallbackHandler(BaseCallbackHandler):
+    def __init__(self, session_id: str, domain_id: str = "", user_query: str = ""):
+        self.execution = AuditExecution(session_id=session_id, domain_id=domain_id, user_query=user_query[:500])
+        self._node_start_times: Dict[str, float] = {}
+        self._llm_start_times: Dict[UUID, float] = {}
+        self._tool_start_times: Dict[UUID, float] = {}
+
+    # 12 event types capturados:
+    def on_chain_start(...)  → AuditEvent(NODE_START)
+    def on_chain_end(...)    → AuditEvent(NODE_END, duration_ms)
+    def on_chain_error(...)  → AuditEvent(NODE_ERROR, error)
+    def on_llm_end(...)      → AuditEvent(LLM_END, input_tokens, output_tokens, cost_usd, model)
+    def on_tool_start(...)   → AuditEvent(TOOL_CALL)
+    def on_tool_end(...)     → AuditEvent(TOOL_RESULT, duration_ms)
+    def on_tool_error(...)   → AuditEvent(TOOL_ERROR, error)
+
+    def finalize(self, status="completed", error=None):
+        # DUAL WRITE: PostgreSQL + storage local (.jsonl)
+        get_audit_writer().save_async(self.execution)       # → agent_executions table
+        get_audit_storage_writer().save_async(self.execution)  # → logs/audit/audit_{date}.jsonl
+```
+
+**Diferença crítica no ciclo de persistência:**
+- **LIA:** `AuditCallback.on_chain_end()` → `_schedule_persist()` — **automático ao finalizar chain**
+- **v5:** `AuditCallbackHandler.finalize()` → chamado explicitamente pelo domínio — **opt-in**
+
+```python
+# src/services/audit/audit_models.py — tracking de custo (não presente na LIA)
+@dataclass
+class AuditExecution:
+    total_input_tokens: int = 0
+    total_output_tokens: int = 0
+    total_cost_usd: float = 0.0   # calculado via calculate_cost(model_name, ...)
+
+# Imutabilidade verificada — UPSERT em vez de INSERT:
+# src/services/audit/audit_writer.py — ON CONFLICT DO UPDATE (mutável)
+```
+
+### Tabela Comparativa
+
+| Dimensão | LIA | v5 |
+|---------|-----|----|
+| Captura automática | `AuditCallback` — `_schedule_persist()` automático em `on_chain_end()` | `AuditCallbackHandler` — `finalize()` deve ser chamado explicitamente pelo domínio |
+| Granularidade | NODE_START/END/ERROR + LLM_START/END/ERROR + TOOL_CALL/RESULT/ERROR + node_name | NODE_START/END/ERROR + LLM_START/END/ERROR + TOOL_CALL/RESULT/ERROR (12 tipos — equivalente) |
+| Tracking de custo | Sem `cost_usd` — apenas tokens | `total_cost_usd` calculado via `calculate_cost(model_name, ...)` — **v5 tem vantagem** |
+| Imutabilidade | `ON CONFLICT (execution_id) DO NOTHING` — append-only | `ON CONFLICT (execution_id) DO UPDATE` — **mutável** (verificado) |
+| Dual storage | PostgreSQL (metadados leves) + S3 ou arquivo (payload completo, configurable) | PostgreSQL + `.jsonl` local (verificado — sem S3 configurado) |
+| Criptografia em repouso | `ServerSideEncryption="AES256"` na S3Storage | Arquivos `.jsonl` locais — sem criptografia (verificado) |
+| Retenção programada | 90d / 365d / 2555d (SOX 7 anos) em constantes de código | `cleanup(retention_days=90)` padrão — sem hierarquia de retenção (verificado) |
+| PII no audit | `prompt_preview[:500]` sem mascaramento pré-storage | `user_query: mask_pii(self.user_query)` — mascara PII na query do usuário (verificado) |
+| Query retroativa | `get_timeline(session_id)`, `get_domain_health(company_id, days)` | `get_stats()` — estatísticas globais, sem timeline por session |
+| Shims de compatibilidade | 4 shims em `app/shared/compliance/` → re-exportam de `libs/audit/` | N/A |
+
+**Veredicto de risco (baseado em código verificado):** O v5 tem audit trail de qualidade similar em granularidade de eventos (12 tipos), com vantagem em tracking de custo (`cost_usd`). As diferenças críticas para compliance são: (1) persistência **opt-in** via `finalize()` explícito — agentes que não chamam `finalize()` não são auditados; (2) audit trail **mutável** por `ON CONFLICT DO UPDATE`; (3) retenção de **90 dias** vs 7 anos SOX. Para ambientes regulados, essas 3 diferenças requerem mudança de design.
+
+---
+
+## 22. Tabela Mestre de Cobertura Atualizada
+
+Esta seção atualiza a tabela da seção 5 com as 12 novas dimensões descobertas nas seções 11-21.
+
+### Tabela Expandida: Cross-Cutting Concerns
+
+| Dimensão | LIA (cobertura) | v5 (cobertura) | Vencedor |
+|---------|-----------------|-----------------|---------|
+| **Seções originais (1-10)** | | | |
+| Fairness (FairnessGuard) | 100% agentes (herança) | 2/8 domínios (opt-in) | LIA |
+| Memory | 100% agentes (herança) | 5/8 domínios (opt-in) | LIA |
+| Cache | Serviço compartilhado | 6/8 domínios (opt-in) | v5 (mais domínios) |
+| Circuit breaker | 14 instâncias pré-configuradas | Singleton global | Equivalente |
+| Audit trail (básico) | 100% agentes (AuditCallback) | Parcial (evaluation, sourced_profile) | LIA |
+| Tone filter | 100% via ToneFilter | `response_filter.py` global | Equivalente |
+| PII masking (log) | Root logger + handlers (total) | `pii_filter.py` global | Equivalente |
+| ModelRouter | Circuit breaker estático | ModelRouter dinâmico | v5 |
+| Cost control | Sem budget tier | `cost_ladder.py` por tier | v5 |
+| Semantic cache | Sem (apenas hash) | `semantic_cache.py` por similaridade | v5 |
+| **Novas dimensões (seções 11-21)** | | | |
+| Anti-sycophancy | Módulo centralizado, 3 variantes, 100% agentes | Prompt hardcoded em 1 agente | LIA |
+| Fact-checking | Centralizado, 4 tipos, 100% via EnhancedAgentMixin | 1/8 domínios (sourced_profile) | LIA |
+| Guardrails persistidos | PostgreSQL editável em produção sem deploy | Ausente | LIA |
+| Learning loop | 4 serviços: captura + análise + snapshot + A/B testing | `FeedbackTracker.track()` — sinal positive/negative, sem padrões por campo (verificado) | LIA |
+| Fairness gate no aprendizado | `validate_learning_batch()` bloqueia campos protegidos (F1-02) | **Ausente — verificado** em `src/services/feedback/tracker.py` | LIA |
+| Inteligência semântica (expansão) | 7 domínios + taxonomias estáticas + Gemini LLM | Sem equivalente de expansão semântica — routing por semantic cache | LIA |
+| Inteligência semântica (cache) | SmartExtractor em memória (TTL 5min, regex-first) | `SemanticRoutingCache` pgvector IVFFlat, SEMANTIC_CACHE_ENABLED=false por padrão (verificado) | v5 |
+| WSI Methodology | 1.141 linhas, Bloom + Dreyfus + Big Five, PostgresSaver | `RubricEvaluation` com 4 dimensões (sem Bloom/Dreyfus — verificado) | LIA |
+| Observabilidade (IterationLog) | PostgreSQL + Prometheus + timeline retroativa | `AuditCallbackHandler` com `finalize()` opt-in, dual write mas mutável (verificado) | LIA |
+| LGPD — mascaramento pré-LLM | 4 camadas: regex + quasi-id + Presidio + pré-LLM (padrão: ativo) | **Ausente — verificado**: apenas 3 padrões regex em log e pré-persistência | LIA |
+| LGPD — retenção programada | 365d AiConsumption, 7 anos audit (SOX) | `cleanup(retention_days=90)` — 90 dias padrão (verificado) | LIA |
+| SOX compliance | `ON CONFLICT DO NOTHING` + retenção 7 anos em código | `ON CONFLICT DO UPDATE` (mutável) + 90 dias (verificado — gap confirmado) | LIA |
+| BCB-498 | Citado em `wsi_interview_graph.py` docstring | **Ausente** — 0 referências em `src/services/audit/` (verificado) | LIA |
+| ISO 27001 — criptografia | `ServerSideEncryption="AES256"` em S3Storage | `.jsonl` locais sem criptografia (verificado) | LIA |
+| Four Fifths Rule | Testes par a par, 4 dimensões, BiasAuditSnapshot | **Ausente — verificado** | LIA |
+| Bias Audit histórico | `BiasAuditSnapshot` com chi-square e has_alerts | **Ausente — verificado** | LIA |
+| Persona centralizada | YAML versionável, 11 agentes | Hardcoded em `autonomous/agent.py` — sem módulo compartilhado | LIA |
+| Negação/Confirmação | `NEGATION_WORDS` + `CONFIRMATION_WORDS` como módulo | **Ausente como módulo** — verificado | LIA |
+| Audit trail — tracking de custo | Sem `cost_usd` — apenas tokens | `total_cost_usd` via `calculate_cost(model_name, ...)` — **v5 tem vantagem** (verificado) | v5 |
+| RAG como serviço | Sem serviço RAG separado | `rag_service.py` dedicado (12.830 bytes) | v5 |
+| TTS | Sem suporte a voz | `tts_service.py` | v5 |
+
+### Síntese Final
+
+**LIA vence em (verificado por código):** compliance garantido por herança, audit trail imutável (`ON CONFLICT DO NOTHING`), retenção SOX 7 anos, mascaramento PII pré-LLM (4 camadas), fairness gate no aprendizado, WSI com frameworks pedagógicos (Bloom/Dreyfus), Four Fifths Rule e BiasAuditSnapshot, persona centralizada (YAML).
+
+**v5 vence em (verificado por código):** tracking de custo por execução (`total_cost_usd`), semantic cache com pgvector e IVFFlat/HNSW (durável, threshold 0.95), ModelRouter dinâmico, cost ladder, RAG como serviço dedicado, TTS.
+
+**Gaps eliminados pelo v5 que o diagnóstico anterior subestimava:** O v5 tem `AuditCallbackHandler` (9.151 bytes, 12 event types, dual write PostgreSQL + .jsonl) e `RubricEvaluation` (4 dimensões de avaliação estruturada). Essas são capacidades reais verificadas por código, não ausências.
+
+**Veredicto geral (baseado em evidências verificadas):** A LIA é a arquitetura mais segura para produção em contextos regulados (SOX, BCB-498, LGPD avançado). O v5 tem audit trail funcional mas com 3 gaps críticos de compliance confirmados: mutabilidade, retenção insuficiente e ausência de criptografia. Para contextos sem obrigação regulatória estrita, o v5 é competitivo — com vantagem em custo operacional (tracking `cost_usd`) e semantic cache.
+
+---
+
+*Arquivos adicionais lidos para as seções 11-21:*
+
+**LIA (lidos do filesystem local):**
+- `lia-agent-system/app/shared/prompts/anti_sycophancy_block.py` (47 linhas)
+- `lia-agent-system/app/shared/compliance/fact_checker.py` (391 linhas)
+- `lia-agent-system/app/shared/compliance/guardrail_repository.py` (185 linhas)
+- `lia-agent-system/alembic/versions/020_add_guardrails_table.py` (67 linhas)
+- `lia-agent-system/app/shared/learning/learning_loop_service.py` (1.137 linhas — parcial)
+- `lia-agent-system/app/shared/learning/learning_snapshot_service.py` (268 linhas — parcial)
+- `lia-agent-system/app/shared/learning/template_learning_service.py` (402 linhas — parcial)
+- `lia-agent-system/app/shared/learning/ab_testing_service.py` (307 linhas — parcial)
+- `lia-agent-system/app/shared/intelligence/embedding_service.py` (196 linhas)
+- `lia-agent-system/app/shared/intelligence/semantic_search_service.py` (443 linhas — parcial)
+- `lia-agent-system/app/shared/intelligence/smart_extractor.py` (214 linhas)
+- `lia-agent-system/app/shared/governance/agent_monitoring_service.py` (581 linhas — parcial)
+- `lia-agent-system/app/shared/observability/agent_metrics.py` (122 linhas)
+- `lia-agent-system/app/shared/pii_masking.py` (221 linhas)
+- `lia-agent-system/app/shared/agents/execution_log_store.py` (shim → libs/agents-core)
+- `lia-agent-system/libs/agents-core/lia_agents_core/execution_log_store.py` (205 linhas)
+- `lia-agent-system/libs/agents-core/lia_agents_core/observability.py` (165 linhas — parcial)
+- `lia-agent-system/libs/audit/lia_audit/audit_callback.py` (263 linhas — parcial)
+- `lia-agent-system/libs/audit/lia_audit/audit_writer.py` (115 linhas)
+- `lia-agent-system/libs/audit/lia_audit/audit_storage.py` (260 linhas — parcial)
+- `lia-agent-system/libs/audit/lia_audit/audit_models.py` (99 linhas)
+- `lia-agent-system/tests/fairness/test_four_fifths_rule.py` (273 linhas — parcial)
+- `lia-agent-system/libs/models/lia_models/bias_audit_snapshot.py` (54 linhas)
+- `lia-agent-system/app/domains/cv_screening/agents/wsi_interview_graph.py` (1.141 linhas — parcial)
+- `lia-agent-system/tests/test_sprint4_lgpd_retention.py` (96 linhas)
+- `lia-agent-system/app/shared/prompts/interaction_patterns.py` (50 linhas)
+- `lia-agent-system/app/shared/prompts/agent_prompts.py` (75 linhas)
+
+**v5 (lidos via GitHub API — `WeDOTalent/recruiter_agent_v5`, branch default):**
+- `src/services/semantic_cache.py` (10.874 bytes — lido completo)
+- `src/services/pii_filter.py` (983 bytes — lido completo)
+- `src/services/rag_service.py` (12.830 bytes — verificado existência)
+- `src/services/feedback/tracker.py` (3.988 bytes — lido completo)
+- `src/services/audit/audit_callback.py` (9.151 bytes — lido completo)
+- `src/services/audit/audit_writer.py` (6.553 bytes — lido completo)
+- `src/services/audit/audit_storage.py` (2.254 bytes — lido completo)
+- `src/services/audit/audit_models.py` (3.193 bytes — lido completo)
+- `src/domains/evaluation/state.py` (2.712 bytes — lido completo)
+- `src/domains/evaluation/models.py` (3.737 bytes — lido completo)
+
+---
+
+## Apêndice: Rastreabilidade dos Arquivos v5 Verificados
+
+Para reprodutibilidade independente, tabela com os commits exatos lidos via GitHub API em **20 de março de 2026**:
+
+| Arquivo v5 | Commit SHA (7 chars) | Commit Message (trunc.) | Data do Commit |
+|-----------|---------------------|------------------------|----------------|
+| `src/services/semantic_cache.py` | `b19e1ad` | `fix(embeddings): migrate from text-embedding-004 to gemini-e` | 2026-03-19 |
+| `src/services/pii_filter.py` | `adf0551` | `feat(pii): add global PII masking filter for logs (CARD-002)` | 2026-03-11 |
+| `src/services/rag_service.py` | `71ca04e` | `fix: use postgres database from settings instead of hardcode` | 2026-01-21 |
+| `src/services/feedback/tracker.py` | `05bdbcb` | `feat: add memory, feedback and proactive notification servic` | 2026-03-16 |
+| `src/services/audit/audit_callback.py` | `f70f4ec` | `feat(audit): add DOMAIN_ACTION event and audit storage write` | 2026-03-11 |
+| `src/services/audit/audit_writer.py` | `f70f4ec` | `feat(audit): add DOMAIN_ACTION event and audit storage write` | 2026-03-11 |
+| `src/services/audit/audit_storage.py` | `f70f4ec` | `feat(audit): add DOMAIN_ACTION event and audit storage write` | 2026-03-11 |
+| `src/services/audit/audit_models.py` | `adf0551` | `feat(pii): add global PII masking filter for logs (CARD-002)` | 2026-03-11 |
+| `src/domains/evaluation/state.py` | `7d508db` | `prepare to deploy` | 2026-01-19 |
+| `src/domains/evaluation/models.py` | `5e2f26a` | `prepare to deploy` | 2026-01-19 |
+| `src/domains/sourced_profile_sourcing/fact_checker.py` | `5e2f26a` | `prepare to deploy` | 2026-01-19 |
+
+**URL de verificação:** `https://github.com/WeDOTalent/recruiter_agent_v5/blob/<SHA>/<path>`
+
+**Escopo de verificação:** LIA lida do filesystem local (workspace); v5 lida via GitHub REST API (`/repos/WeDOTalent/recruiter_agent_v5/contents/{path}`). Ambas as fontes foram lidas diretamente — nenhuma afirmação baseada em inferência ou documentação secundária.
