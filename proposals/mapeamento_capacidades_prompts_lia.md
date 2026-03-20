@@ -1788,306 +1788,296 @@ O v5 contém um módulo `interview_ai/` separado dos domínios principais, com c
 
 ---
 
-## 9. Canal Microsoft Teams — Notificações e Interação {#teams}
+## 9. Canal Microsoft Teams — Bot e Notificações {#teams}
 
 ### 9.0 Visão Geral
 
-O canal **Microsoft Teams** é a ponte entre a LIA/v5 e o ambiente de trabalho colaborativo do recrutador. Diferente dos 4 prompts contextuais (que operam dentro da plataforma web), o canal Teams funciona como **ponto de contato externo**: a LIA alcança o recrutador onde ele já está — no Teams — sem exigir que ele navegue até a plataforma WeDOTalent.
+O canal **Microsoft Teams** permite que o recrutador interaja com a LIA **diretamente dentro do Teams**, sem precisar abrir o navegador na plataforma WeDOTalent. A LIA tem um **Teams Bot bidirecional** completo — registrado no Azure Bot Framework — que recebe mensagens do recrutador no Teams, processa com o agente LIA e responde de volta no chat.
 
-**Natureza do canal (v5 + LIA):** predominantemente de **saída** (LIA → Teams). A LIA envia proativamente alertas, notificações de pipeline, convites de entrevista, feedback de candidatos e comunicações estruturadas para o canal do recrutador no Teams.
+Adicionalmente, a LIA usa o canal Teams como **canal de notificação proativa** (outgoing webhook), enviando alertas, Adaptive Cards com ações, lembretes de entrevista e atualizações de candidatos para canais e chats do Teams.
 
-**Interação de entrada:** o recrutador pode responder/agir clicando em links diretos nas mensagens Teams que abrem a plataforma web no contexto correto (deep links). A conversação bidirecional plena (recrutador digita no Teams, LIA responde no Teams) não está implementada como bot dedicado — a arquitetura via RabbitMQ suporta esse fluxo, mas o front-end atual é a plataforma web.
+**Resumo das implementações:**
 
-**Ativação:**
-- **LIA:** domínio `communication.yaml` ativo em IN_JOB → `scope_in` inclui "Notificações Microsoft Teams"
-- **v5:** conexão OAuth com Microsoft 365 (`/users/microsoft_graph_auth`) + endpoint `send_teams_message` + sistema proativo (`ProactiveDetector` + `ProactiveNotifier`)
+| Componente | Arquivo(s) | Capacidade |
+|---|---|---|
+| **Teams Bot Framework** | `services/teams_bot.py` | Bot bidirecional completo via Bot Framework SDK |
+| **Simple Teams Bot** | `services/teams_simple.py` | Bot bidirecional via REST API (sem SDK) |
+| **Teams API Router** | `api/v1/teams.py` | 4 endpoints: messages, webhook, audit-logs, health |
+| **Teams Service (outgoing)** | `services/teams_service.py` | 6 métodos de envio via Incoming Webhook |
+| **Microsoft Graph Router** | `api/v1/microsoft_graph.py` | Criar reuniões Teams + eventos de calendário |
+| **Communication Domain** | `domains/communication/domain.py` | `send_teams_message` como action mapeada |
+| **Communication YAML** | `prompts/domains/communication.yaml` | Teams no `scope_in` com intent examples |
+
+**Credenciais necessárias:**
+- `MICROSOFT_APP_ID` + `MICROSOFT_APP_PASSWORD` → Teams Bot Framework (bidirecional)
+- `TEAMS_WEBHOOK_URL` → Incoming Webhook (notificações outgoing)
+- `TEAMS_WEBHOOK_SECRET` → HMAC-SHA256 para segurança do webhook de Adaptive Cards
+- `AZURE_CLIENT_ID` + `AZURE_CLIENT_SECRET` + `AZURE_TENANT_ID` → Microsoft Graph API (calendário, reuniões Teams)
 
 ---
 
-### 9.1 Capacidades IN — O que a LIA/v5 envia para o Teams
+### 9.1 Teams Bot Bidirecional — Recrutador conversa com a LIA via Teams
 
-#### [LIA-API] Teams via communication.yaml (scope: IN_JOB)
+A LIA tem um **Teams Bot registrado no Azure** que permite conversação bidirecional: o recrutador digita no Teams e a LIA responde.
 
-O domínio `communication.yaml` lista **notificações Microsoft Teams** explicitamente no `scope_in`. Na LIA, o envio de notificações Teams está disponível no contexto **IN_JOB** (Prompt 3 — Kanban), onde o recrutador está operando dentro de uma vaga.
+**Fluxo de uma mensagem do recrutador via Teams:**
 
-| Tipo de Notificação | Trigger | Conteúdo enviado ao Teams |
+```
+Recrutador digita mensagem no Microsoft Teams
+    │
+    ▼
+Microsoft Bot Framework (Azure)
+    Valida JWT token da mensagem
+    │
+    ▼
+POST /api/v1/teams/messages (LIA FastAPI)
+    Valida JWT: bot_auth.validate_token(authorization, MICROSOFT_APP_ID)
+    Se inválido → HTTP 401
+    │
+    ▼
+simple_teams_bot.process_activity(activity)
+    activity.type == "message" → _handle_message()
+        Extrai texto do recrutador
+        → TODO: Integrar com agente LIA (em integração)
+        → Atualmente envia acknowledgment
+    activity.type == "conversationUpdate" → _handle_conversation_update()
+        Novo membro → mensagem de boas-vindas da LIA
+    activity.type == "invoke" → _handle_invoke()
+        Ação de Adaptive Card
+    │
+    ▼
+simple_teams_bot.send_message(service_url, conversation_id, text)
+    GET token OAuth2: POST login.microsoftonline.com/.../token
+        grant_type: client_credentials
+        scope: https://api.botframework.com/.default
+    POST {service_url}/v3/conversations/{id}/activities
+    Headers: Authorization: Bearer {token}
+    │
+    ▼
+Recrutador recebe resposta da LIA no Teams
+
+Armazenamento:
+    _store_conversation_reference(activity, db)
+        → TeamsConversation (PostgreSQL):
+            conversation_id, service_url, tenant_id,
+            channel_id, user_id, user_name, user_aad_object_id,
+            conversation_reference (JSON completo), last_message_at
+    _log_teams_message(activity, db)
+        → TeamsMessage (PostgreSQL): log da mensagem
+```
+
+**Mensagem de boas-vindas (quando bot adicionado ao chat):**
+
+```
+"Olá {nome}! 👋
+
+Sou a LIA, assistente de recrutamento da WedoTalent.
+
+Posso te ajudar a:
+- Criar vagas
+- Buscar candidatos
+- Agendar entrevistas
+- Organizar sua agenda de recrutamento
+
+Como posso te ajudar hoje?"
+```
+
+**Status de integração:**
+- Bot Framework SDK: ✅ Implementado (`botbuilder-core`, `botbuilder-schema`)
+- Simple Bot (REST API): ✅ Implementado
+- Recepção de mensagens: ✅ Implementado
+- Boas-vindas automáticas: ✅ Implementado
+- Processamento com agente LIA: ⚠️ Em integração (`TODO: Integrate with LIA conversation agent`)
+- Armazenamento de conversation reference: ✅ Implementado (PostgreSQL)
+- Envio de resposta: ✅ Implementado
+
+---
+
+### 9.2 Adaptive Cards — Recrutador age no Teams sem abrir a plataforma
+
+As **Adaptive Cards** são cards interativos enviados ao recrutador no Teams com botões de ação. O recrutador clica em "Aprovar" ou "Rejeitar" diretamente no Teams — sem abrir a plataforma web — e a LIA processa a ação automaticamente.
+
+**Endpoint de webhook de Adaptive Cards:**
+
+```
+POST /api/v1/teams/webhook
+Headers:
+    X-Teams-Signature: sha256={HMAC-SHA256 do body com TEAMS_WEBHOOK_SECRET}
+    X-Company-ID: {company_id} (opcional)
+```
+
+**5 ações suportadas:**
+
+| Ação (TeamsCardAction) | Trigger | O que a LIA faz |
 |---|---|---|
-| **Candidato aprovado** | Recrutador aprova candidato no kanban | "✅ [Nome] aprovado para [etapa] na vaga [Título]" + link para o perfil |
-| **Entrevista agendada** | Agendamento confirmado via `schedule_interview` | Data, hora, candidato, vaga, links de videoconferência |
-| **Convite de próxima etapa** | Movimentação para etapa de entrevista | Dados da entrevista + instruções para o candidato |
-| **Feedback de rejeição enviado** | Após `reject_candidate` + comunicação | Confirmação de que feedback foi disparado |
-| **Alerta de lote** | Envio para >10 destinatários | Relatório de entrega após envio em massa |
+| **approve** | Recrutador clica "Aprovar" no card | Dispara triagem WhatsApp para o candidato via `communication_dispatcher.send_whatsapp()` |
+| **reject** | Recrutador clica "Rejeitar" | Registra rejeição no audit log |
+| **schedule** | Recrutador agenda entrevista | Registra agendamento com data/hora |
+| **reschedule** | Recrutador reagenda | Registra novo agendamento |
+| **request_info** | Recrutador pede mais info | Registra solicitação |
 
-**Restrições de comportamento (communication.yaml):**
-- Toda comunicação enviada por IA inclui rodapé de origem ("Mensagem gerada com assistência de IA pela LIA")
-- Nunca envia sem consentimento LGPD registrado do candidato
+**Fluxo da ação "approve" (o mais complexo):**
+
+```
+Recrutador clica "Aprovar" no Adaptive Card no Teams
+    │
+    ▼
+POST /api/v1/teams/webhook
+    Payload: { action: "approve", candidate_id, candidate_name,
+               candidate_phone, vacancy_id, vacancy_title,
+               company_id, recruiter_id, recruiter_name, notes }
+    │
+    ▼
+_verify_teams_webhook_signature(body, X-Teams-Signature)
+    HMAC-SHA256 com TEAMS_WEBHOOK_SECRET
+    produção: secret obrigatório (HTTP 403 se ausente)
+    desenvolvimento: sem secret → aceita tudo (warning)
+    │
+    ▼
+_handle_approve_action(payload, db)
+    │
+    ├─► _start_whatsapp_screening()
+    │       communication_dispatcher.send_whatsapp(
+    │           to_phone=candidate_phone,
+    │           message="Olá {nome}! Você foi pré-aprovado...
+    │                    Responda SIM para iniciar triagem"
+    │       )
+    │       communication_history_service.log_communication(
+    │           type="screening_invite", channel="whatsapp",
+    │           trigger="teams_adaptive_card"
+    │       )
+    │
+    └─► _log_teams_action_audit(action="approve", result, actor, ...)
+            TeamsActionAuditLog (PostgreSQL):
+                id, action, actor_id, actor_name, candidate_id,
+                vacancy_id, company_id, result, details{}, created_at
+
+Response: { success, action, message, screening_initiated, audit_id, candidate_id, timestamp }
+```
+
+**Tipos de Adaptive Cards geradas pela LIA:**
+
+| Tipo (`notification_type`) | Trigger | Campos no card |
+|---|---|---|
+| `approval_needed` | Candidato aguarda aprovação | Mensagem + botões "Aprovar" / "Rejeitar" |
+| `interview_scheduled` | Entrevista agendada | FactSet: Candidato, Vaga, Data/Hora + botão "Ver Detalhes" |
+| Default (genérico) | Qualquer notificação | Título + mensagem |
+
+---
+
+### 9.3 Teams Service — Notificações Outgoing via Incoming Webhook
+
+A `TeamsService` usa **Incoming Webhooks do Teams** para enviar notificações de saída (LIA → Teams channel). Independente do Bot Framework — funciona sem `MICROSOFT_APP_ID`.
+
+**Configuração:** `TEAMS_WEBHOOK_URL` env var (URL do Incoming Webhook criado no canal Teams)
+
+**6 métodos de envio:**
+
+| Método | O que envia | Payload Teams |
+|---|---|---|
+| `send_message(text, title, subtitle)` | Texto simples | `MessageCard` com `@type` + `@context` |
+| `send_card(card)` | Adaptive Card | `message` com `attachments[contentType: adaptive]` |
+| `send_adaptive_card(card_payload)` | Adaptive Card (alternativo) | `message` com `attachments` |
+| `send_alert(title, message, severity, facts, actions)` | Alerta estruturado | Adaptive Card com FactSet + botões |
+| `send_candidate_notification(candidate, event, job, action_url)` | Update de candidato | Alert severity INFO + FactSet + botão "Ver Detalhes" |
+| `send_interview_reminder(candidate, job, time, interviewer, meeting_url)` | Lembrete de entrevista | Alert severity INFO + FactSet: Candidato/Vaga/Horário/Entrevistador + botão "Entrar na Reunião" |
+
+**5 níveis de severidade com cores e ícones:**
+
+| Severity | Ícone | Cor (hex) | Quando usar |
+|---|---|---|---|
+| INFO | ℹ️ | #0078D4 (azul Teams) | Atualizações informativas |
+| SUCCESS | ✅ | #107C10 (verde) | Ações concluídas com sucesso |
+| WARNING | ⚠️ | #FFB900 (amarelo) | Alertas que precisam de atenção |
+| ERROR | ❌ | #D83B01 (laranja) | Erros não críticos |
+| CRITICAL | 🚨 | #E81123 (vermelho) | Erros críticos que exigem ação imediata |
+
+**Modo desenvolvimento:** se `TEAMS_WEBHOOK_URL` não configurado → mensagens são logadas (não enviadas), retorna `{ success: true, mode: "development" }`.
+
+---
+
+### 9.4 Microsoft Graph Router — Reuniões Teams via Calendar
+
+A LIA tem um router dedicado para **criar reuniões Teams** integradas ao Microsoft Calendar, usado pelo domínio de agendamento (`interview_scheduling`).
+
+**Endpoint principal:**
+```
+POST /api/v1/microsoft/meeting
+Body: {
+    organizer_email: "recrutador@empresa.com",
+    subject: "Entrevista - João Silva - Dev Python Senior",
+    start_time: "2026-03-25T14:00:00",
+    duration_minutes: 60,
+    attendees: [{ email, name, type: "required"|"optional" }],
+    body_content: "Olá! Segue o link para a entrevista.",
+    timezone: "America/Sao_Paulo",
+    send_invites: true
+}
+Response: {
+    id, join_url, join_web_url, subject,
+    start_time, end_time, organizer_email,
+    attendees[], calendar_event_id, dial_in_url
+}
+```
+
+**Outros endpoints Microsoft Graph:**
+```
+GET  /api/v1/microsoft/status        → status da conexão + info da organização
+GET  /api/v1/microsoft/bookings      → listar Microsoft Bookings businesses
+POST /api/v1/microsoft/bookings/appointment → criar appointment no Bookings
+```
+
+**Credenciais:** `AZURE_CLIENT_ID` + `AZURE_CLIENT_SECRET` + `AZURE_TENANT_ID`
+
+---
+
+### 9.5 Communication Domain — send_teams_message como ação mapeada
+
+O domínio `communication` (`domain.py`) mapeia palavras-chave do recrutador para a ação `send_teams_message`:
+
+**Keywords mapeadas:**
+```python
+"enviar teams"    → send_teams_message
+"mensagem teams"  → send_teams_message
+"teams"           → send_teams_message
+"notificar teams" → send_teams_message
+```
+
+**Regras do communication.yaml (scope_in + behavioral_rules):**
+- `scope_in` inclui explicitamente "Notificações Microsoft Teams"
+- Intent example: *"notificar time no Teams sobre candidato aprovado"*
+- Toda mensagem gerada por IA inclui rodapé de origem ("Mensagem gerada com assistência de IA pela LIA")
+- LGPD: nunca envia sem consentimento registrado
+- Confirmação obrigatória antes de envios em massa (>10 destinatários)
 - Feedback de rejeição: profissional, encorajador, sem detalhar motivos específicos
-- Não revela comparações com outros candidatos
 
-#### [v5] Teams via Microsoft Graph Auth
+---
 
-A integração v5 usa **OAuth 2.0 via Microsoft Graph API** para enviar mensagens Teams com autenticação real da conta Microsoft do recrutador.
+### 9.6 Dados que coleta / gera
 
-**Fluxo de autenticação (frontend Nuxt 3):**
+#### Dados coletados (inputs)
 
-```
-Recrutador não conectado ao Microsoft 365
-    │
-    ▼
-useMicrosoftAuth.ts → GET /users/microsoft_graph_auth/status
-    status: "disconnected"
-    │
-    ▼
-Redirect para URL de autorização Microsoft (OAuth 2.0 PKCE)
-    │
-    ▼
-Recrutador autoriza no portal Microsoft
-    │
-    ▼
-pages/user/microsoft.vue ← Callback OAuth com code
-    middleware/microsoft-auth.ts ← valida state + PKCE
-    POST /users/microsoft_graph_auth ← troca code por access_token
-    │
-    ▼
-Conexão ativa: access_token armazenado no Rails
-    useMicrosoftAuth.ts → status: "connected"
-```
-
-**Endpoints Rails de envio via Microsoft Graph:**
-
-| Endpoint | Método | O que faz | Payload |
-|---|---|---|---|
-| `/users/microsoft_graph_auth/status` | GET | Verifica se o recrutador está conectado ao Microsoft 365 | — |
-| `/users/microsoft_graph_auth/send_email` | POST | Envia email via Microsoft 365 (usa Microsoft Graph Mail API) | `to[]`, `subject`, `body`, `attachments[]` |
-| `/users/microsoft_graph_auth/send_bulk_email` | POST | Envio em massa via Microsoft 365 | `recipients[]`, `template_id`, `variables{}` |
-| `/users/microsoft_graph_auth/send_teams_message` | POST | Envia mensagem direta no Microsoft Teams | `channel_id`/`user_id`, `message`, `cards[]` |
-
-#### [v5] Sistema Proativo — alertas automáticos ao recrutador
-
-O v5 tem um sistema de **notificações proativas** que roda verificações automáticas e envia um digest para o recrutador. Esse digest pode ser entregue via Teams através da integração Microsoft Graph.
-
-**Componentes:**
-
-| Componente | Arquivo | Responsabilidade |
+| Fonte | Dado | Onde é armazenado |
 |---|---|---|
-| `ProactiveDetector` | `src/services/proactive/detector.py` | Executa 5 verificações de estado do pipeline |
-| `ProactiveNotifier` | `src/services/proactive/notifier.py` | Formata e envia digest de alertas |
-| `run_proactive_checks()` | `src/services/proactive/runner.py` | Orquestra detector + notifier com contexto do usuário |
+| Bot Framework JWT | Autenticação do recrutador Teams | Validado, não persistido |
+| Activity payload | `conversation_id`, `service_url`, `tenant_id`, `channel_id`, `user_id`, `user_name`, `user_aad_object_id` | `TeamsConversation` (PostgreSQL) |
+| Activity payload | Texto da mensagem, timestamp, `activity_id` | `TeamsMessage` (PostgreSQL) |
+| Adaptive Card action | `action`, `candidate_id`, `candidate_name`, `candidate_phone`, `vacancy_id`, `recruiter_id`, `recruiter_name`, `notes`, `scheduled_date` | `TeamsActionAuditLog` (PostgreSQL) |
+| Incoming Webhook | `TEAMS_WEBHOOK_URL` (canal Teams de destino) | Env var, não persistido |
 
-**5 verificações do ProactiveDetector:**
+#### Dados gerados (outputs)
 
-| Check | Threshold | Severidade | Título do alerta |
-|---|---|---|---|
-| `_check_aging_applies` | >14 dias parado | warning (1-4) / critical (5+) | "⏰ N candidatos parados em '[Vaga]'" |
-| `_check_stale_jobs` | Vaga sem movimento | warning / critical | Vaga parada há X dias |
-| `_check_missing_feedback` | Candidatos sem feedback pós-rejeição | info / warning | Candidatos sem feedback |
-| `_check_expiring_evaluations` | Avaliações próximas do vencimento | warning / critical | Avaliações expirando |
-| `_check_pipeline_bottlenecks` | Etapa com alta concentração de candidatos | warning / critical | Gargalo no pipeline |
-
-**Formato do digest enviado (SEVERITY_EMOJI):**
-
-```
-📢 **Painel Proativo do Recrutador**
-
-❗ CRITICAL (2)
-  - ⏰ 8 candidatos parados em 'Dev Python Senior'
-    👉 Sugestão: Ver pipeline da vaga 7144
-  - ⏰ 6 candidatos parados em 'Dev React Pleno'
-    👉 Sugestão: Agendar entrevistas em lote
-
-⚠️ WARNING (1)
-  - Vaga 'UX Designer' sem movimento há 21 dias
-    👉 Sugestão: Verificar status da vaga
-
-ℹ️ INFO (1)
-  - 3 candidatos sem feedback pós-rejeição
-    👉 Sugestão: Enviar feedback de rejeição
-```
-
-**Delivery via Rails:**
-- `ProactiveNotifier.send_digest()` → `POST /v1/users/messages` (Rails internal)
-- Rails processa → armazena na DB + broadcast ActionCable + (se Microsoft conectado) `send_teams_message`
-
----
-
-### 9.2 Restrições OUT — O que NÃO está disponível via Teams
-
-| Capacidade | Por quê não está disponível via Teams | Alternativa |
+| Tipo | Formato | Destino |
 |---|---|---|
-| **Conversação bidirecional via Teams** | Não há bot dedicado Teams registrado; interação via RabbitMQ requer front-end ou webhook Teams | Acesso à plataforma web |
-| **Navigation actions** | Teams não pode executar ações de navegação no frontend web | Click em deep links nas mensagens Teams |
-| **Score WSI de candidatos** | Triagem exige dados de contexto do kanban (candidates[], job_context) | Prompt 3 (IN_JOB) na plataforma web |
-| **Wizard de vagas** | Criação conversacional exige múltiplos turns com contexto sequencial | Prompt 2 (JOB_TABLE) na plataforma web |
-| **Upload de CVs/arquivos** | Não suportado via canal Teams | Plataforma web ou Twilio voice |
-| **Sourcing e busca no banco** | Depende de contexto TALENT_FUNNEL + API tools | Prompt 4 (TALENT_FUNNEL) na plataforma web |
-| **Mover candidatos no pipeline** | Requer confirmação de escrita e contexto IN_JOB | Prompt 3 (IN_JOB) na plataforma web |
-
----
-
-### 9.3 Dados que coleta / gera
-
-#### Inputs (o que o Teams fornece à LIA/v5)
-
-- **Conexão OAuth**: `access_token` Microsoft Graph (escopo: `Chat.ReadWrite`, `Mail.Send`, `ChannelMessage.Send`)
-- **channel_id** ou **user_id** do destinatário no Teams
-- **Resposta do recrutador**: via webhook Teams → Rails (se configurado)
-- **Contexto de ativação**: quando o recrutador clica em link da mensagem Teams e navega para a plataforma web → frontend envia `context_page` e `entity_id` normalmente
-
-#### Outputs (o que a LIA/v5 envia ao Teams)
-
-**Notificações estruturadas (Adaptive Cards compatíveis com Teams):**
-- Cards com botões de ação (deep links para a plataforma web)
-- Digest de alertas proativos (formatado com emojis de severidade)
-- Confirmação de entrevistas agendadas com dados completos
-- Notificações de candidatos aprovados/rejeitados
-
-**Mensagens de texto:**
-- Comunicações multi-canal (email + Teams simultâneo)
-- Confirmações de envios em massa
-- Relatórios de entrega pós-campanha
-
----
-
-### 9.4 Arquitetura técnica — LIA (canal Teams via communication.yaml)
-
-```
-Recrutador aciona comunicação Teams (via Prompt 3 — IN_JOB)
-    │
-    ▼
-communication.yaml (domínio ativo em IN_JOB)
-    scope_in: "Notificações Microsoft Teams"
-    system_prompt: "Gerenciar toda comunicação... envia emails, WhatsApp e notificações Teams"
-    intent_examples: "notificar time no Teams sobre candidato aprovado"
-    │
-    ▼
-LIA identifica intenção de Teams:
-    intent: "notificar time no Teams sobre candidato aprovado"
-    │
-    ▼
-[LIA-LLM] Rascunha mensagem Teams formatada:
-    Template: [Emoji] [Evento] | [Candidato] | [Vaga]
-    Corpo: ação, próxima etapa, link para o perfil
-    Confirmação: "Enviar para [canal]? [Visualizar] [Confirmar]"
-    │
-    ▼
-[LIA-API] send_email / send_whatsapp → Rails
-    Rails detecta canal preferido do recrutador (Microsoft Graph conectado?)
-    → POST /users/microsoft_graph_auth/send_teams_message
-    → Microsoft Graph API → Teams channel/chat
-    │
-    ▼
-Log de auditoria (compliance LGPD/SOX):
-    Registrado no reasoning com: destinatário, canal, timestamp, conteúdo resumido
-
-Regras críticas (communication.yaml):
-    LGPD: nunca envia sem consentimento registrado
-    Rodapé: toda mensagem gerada por IA inclui origem
-    Massa: confirmar antes de disparar (>10 destinatários)
-    Segredo: nunca revela comparações ou motivos específicos de rejeição
-```
-
----
-
-### 9.5 Arquitetura técnica — v5 (Microsoft Graph + Proativo)
-
-```
-[CAMINHO A — Envio direto via Microsoft Graph]
-
-Autonomous domain ou DomainOrchestrator detecta intenção de notificação Teams
-    │
-    ▼
-call_api (generic.py) → POST /v1/users/microsoft_graph_auth/send_teams_message
-    Payload: { channel_id | user_id, message, cards[] }
-    │
-    ▼
-Rails: MicrosoftGraphAuthController#send_teams_message
-    Valida access_token Microsoft Graph (OAuth2)
-    Microsoft Graph API: POST /v1.0/teams/{channel_id}/messages
-    ou: POST /v1.0/chats/{chat_id}/messages
-    Response: { message_id, timestamp }
-
-[CAMINHO B — Sistema Proativo]
-
-Scheduler (cron ou trigger externo)
-    │
-    ▼
-run_proactive_checks(user_id, auth_token, workspace_id)
-    │
-    ▼
-ProactiveDetector.run_all_checks()
-    _check_aging_applies()     → GET /v1/users/jobs/pipeline_health
-                                  (aging_threshold_days=14, limit=50)
-    _check_stale_jobs()        → API check
-    _check_missing_feedback()  → API check
-    _check_expiring_evaluations() → API check
-    _check_pipeline_bottlenecks() → API check
-    │
-    ▼
-ProactiveAlert[] (ordenado por severidade: critical → warning → info)
-    │
-    ▼
-ProactiveNotifier.send_digest(user_id, alerts)
-    Formata digest com SEVERITY_EMOJI (❗⚠️ℹ️)
-    POST /v1/users/messages → Rails
-        Rails: armazena + broadcast ActionCable (plataforma web)
-                            + (se Microsoft conectado) send_teams_message
-
-[CAMINHO C — Fluxo de interação via Teams (arquitetural)]
-
-Recrutador responde à notificação Teams (webhook)
-    │
-    ▼
-Teams → webhook Rails (se configurado)
-    │
-    ▼
-Rails → RabbitMQ: publish_generic_user_message()
-    Payload: { content, user_id, session_id, hub_mode: true,
-               workspace_id, metadata: { channel: "teams" } }
-    │
-    ▼
-Python Worker (main.py worker) → MessageRouter.route()
-    hub_mode=True → HubOrchestrator.process()
-    │
-    ▼
-Resposta → send_to_rails_callback()
-Rails → POST /users/microsoft_graph_auth/send_teams_message
-    → Teams (resposta no canal)
-
-[AUTENTICAÇÃO — OAuth 2.0 PKCE]
-
-Frontend (Nuxt 3):
-    useMicrosoftAuth.ts
-    pages/user/microsoft.vue (callback OAuth)
-    middleware/microsoft-auth.ts
-
-Rails:
-    MicrosoftGraphAuthController:
-        GET  /status          → verifica access_token
-        POST /send_email      → Microsoft Graph Mail API
-        POST /send_bulk_email → Microsoft Graph Mail API (lote)
-        POST /send_teams_message → Microsoft Graph Chat/Channel API
-
-Escopos OAuth solicitados:
-    Chat.ReadWrite          → ler e escrever chats Teams
-    Mail.Send               → enviar emails via Microsoft
-    ChannelMessage.Send     → enviar em canais Teams
-    User.Read               → perfil do usuário
-```
-
----
-
-### 9.6 Tipos de mensagem Teams por contexto de ativação
-
-| Contexto de ativação | Prompt LIA ativo | Tipo de mensagem Teams | Exemplo |
-|---|---|---|---|
-| Candidato aprovado na triagem | Prompt 3 (IN_JOB) | Notificação + deep link | "✅ João aprovado para Entrevista na vaga Dev Python" |
-| Entrevista agendada | Prompt 3 (IN_JOB) | Card com detalhes da entrevista | Data, hora, link Meet/Zoom, candidato |
-| Feedback de rejeição enviado | Prompt 3 (IN_JOB) | Confirmação de entrega | "Feedback enviado para João com sucesso" |
-| Candidatos parados há 14+ dias | Proativo (automático) | Digest de alertas | "⏰ 5 candidatos parados em 'Dev React'" |
-| Vaga sem movimento | Proativo (automático) | Alerta de severidade | "⚠️ Vaga 'UX Designer' parada há 21 dias" |
-| Relatório executivo | Prompt 1 (GLOBAL) | Relatório com link para download | Métricas + link para PDF |
-| Candidato sourced aprovado | Prompt 4 (TALENT_FUNNEL) | Notificação de aprovação | "✅ Maria aprovada no sourcing — adicionada à vaga 7144" |
-| Alerta de avaliação expirando | Proativo (automático) | Alerta urgente | "❗ Avaliação de João expira em 2 dias" |
+| Resposta de chat | Texto Markdown (Bot Framework `Activity`) | Chat do recrutador no Teams |
+| Mensagem de boas-vindas | Texto formatado com Markdown | Chat do recrutador quando bot adicionado |
+| Adaptive Card | JSON Adaptive Card v1.4 (aprovação / entrevista / genérico) | Chat/canal do recrutador |
+| Notificação de candidato | Adaptive Card com FactSet + botão "Ver Detalhes" | Canal Teams (Incoming Webhook) |
+| Lembrete de entrevista | Adaptive Card com FactSet + botão "Entrar na Reunião" | Canal Teams (Incoming Webhook) |
+| Alerta de severidade | Adaptive Card com cor + ícone de severidade | Canal Teams (Incoming Webhook) |
+| Invite WhatsApp (trigger) | Mensagem WhatsApp via `communication_dispatcher` | Candidato (não Teams) |
+| Reunião Teams | `join_url`, `join_web_url`, calendar event | Calendário do organizador + attendees |
+| Audit log | `TeamsActionAuditLog`: action, result, actor, candidate, vacancy, company, details, timestamp | PostgreSQL |
 
 ---
 
@@ -2095,22 +2085,28 @@ Escopos OAuth solicitados:
 
 | Dimensão | LIA | v5 |
 |---|---|---|
-| **Teams como canal OUT** | ✅ communication.yaml (`scope_in: Notificações Microsoft Teams`) | ✅ `POST /users/microsoft_graph_auth/send_teams_message` |
-| **OAuth Microsoft 365** | ⚠️ Via Rails (não documentado em código LIA) | ✅ `useMicrosoftAuth.ts` + `pages/user/microsoft.vue` + middleware |
-| **Envio de email via Microsoft** | ✅ `send_email` (canal genérico) | ✅ `send_email` + `send_bulk_email` via Microsoft Graph |
-| **Notificações proativas** | ❌ Sem sistema proativo autônomo | ✅ ProactiveDetector (5 checks) + ProactiveNotifier |
-| **Alertas por severidade** | ❌ | ✅ critical / warning / info com SEVERITY_EMOJI |
-| **Digest automático** | ❌ | ✅ ProactiveNotifier.send_digest() |
-| **Tipos de alerta proativo** | ❌ | ✅ 5: aging_applies, stale_jobs, missing_feedback, expiring_evaluations, pipeline_bottlenecks |
-| **LGPD compliance** | ✅ communication.yaml (nunca envia sem consentimento) | ✅ Via system prompt |
-| **Rodapé de origem IA** | ✅ Obrigatório em todo email | ✅ Via system prompt |
-| **Confirmação antes de massa** | ✅ (>10 destinatários) | ✅ `needs_confirmation` no DomainResponse |
-| **Bot Teams bidirecional** | ❌ | ❌ (arquitetura suporta via RabbitMQ, não implementado como bot) |
-| **Adaptive Cards Teams** | ❌ | ⚠️ `cards[]` no payload, dependente do Rails |
-| **Deep links** | ⚠️ Implícito no conteúdo | ✅ Via NavigationAction + mensagem formatada |
-| **WhatsApp simultâneo** | ✅ `send_whatsapp` (Prompt 3 e 4) | ✅ Via autonomous domain |
-| **Log de auditoria** | ✅ Documentado no reasoning | ✅ APICallRecord em DomainContext.api_calls_history |
-| **Feedback de rejeição** | ✅ Regras no communication.yaml | ✅ `send_apply_reject_feedback` (applies domain) |
+| **Teams Bot bidirecional** | ✅ Bot Framework SDK (`botbuilder-core`) + Simple Bot REST API | ❌ Sem bot dedicado (arquitetura suporta via RabbitMQ) |
+| **Receber mensagens do Teams** | ✅ `POST /api/v1/teams/messages` com JWT validation | ❌ Não implementado |
+| **Enviar resposta no Teams** | ✅ `SimpleTeamsBot.send_message()` via Bot Framework REST API | ❌ Não implementado |
+| **Mensagem de boas-vindas** | ✅ Auto: "Olá! Sou a LIA..." quando bot adicionado | ❌ |
+| **Processamento com agente** | ⚠️ Em integração (TODO no código) | ❌ |
+| **Adaptive Cards** | ✅ `_create_adaptive_card()`: approval_needed, interview_scheduled, genérico | ⚠️ `cards[]` no payload de `send_teams_message`, dependente do Rails |
+| **Adaptive Card actions (webhook)** | ✅ `POST /api/v1/teams/webhook`: approve, reject, schedule, reschedule, request_info | ❌ Não implementado |
+| **HMAC-SHA256 no webhook** | ✅ `TEAMS_WEBHOOK_SECRET` + produção obrigatório | ❌ |
+| **WhatsApp trigger via Teams** | ✅ Approve → `communication_dispatcher.send_whatsapp()` (triagem WSI) | ❌ |
+| **Audit trail PostgreSQL** | ✅ `TeamsActionAuditLog`: action, actor, candidate, vacancy, result | ✅ `APICallRecord` em DomainContext |
+| **Conversation reference storage** | ✅ `TeamsConversation` (PostgreSQL): para proactive messaging | ❌ |
+| **Proactive messaging** | ✅ `TeamsBot.send_proactive_message()` via stored conversation reference | ✅ ProactiveDetector (5 checks) + ProactiveNotifier |
+| **Notificações outgoing (Incoming Webhook)** | ✅ `TeamsService`: 6 métodos, 5 severidades, Adaptive Cards | ✅ `POST /users/microsoft_graph_auth/send_teams_message` (via Microsoft Graph OAuth) |
+| **Microsoft Graph (calendário)** | ✅ `microsoft_graph_service.py`: criar reuniões Teams + calendar events + Bookings | ❌ Não implementado no Python (Rails tem Graph Auth OAuth) |
+| **OAuth Microsoft 365** | ✅ `AZURE_CLIENT_ID/SECRET/TENANT_ID` (Graph API) | ✅ `useMicrosoftAuth.ts` + OAuth PKCE no frontend |
+| **Communication YAML** | ✅ scope_in + intent_examples + behavioral_rules | ✅ system_prompt (context dos prompts) |
+| **Teams como canal OUT** | ✅ Incoming Webhook (`TEAMS_WEBHOOK_URL`) | ✅ Microsoft Graph Auth endpoint |
+| **Lembrete de entrevista** | ✅ `send_interview_reminder(candidate, job, time, interviewer, meeting_url)` | ❌ |
+| **Notificação de candidato** | ✅ `send_candidate_notification(candidate, event, job, action_url)` | ❌ |
+| **Feedback de rejeição LGPD** | ✅ Regras no communication.yaml | ✅ `send_apply_reject_feedback` (applies domain) |
+| **Proactive checks automáticos** | ❌ (sem ProactiveDetector autônomo) | ✅ 5 checks: aging, stale, feedback, evaluations, bottlenecks |
+
 
 ---
 
