@@ -1243,6 +1243,20 @@ def _ai_output_is_compliant(text: str) -> bool:
     return True
 
 
+def _encode_image_b64(img_path: str) -> tuple[str, str] | None:
+    """Codifica imagem em base64 para Vision API. Retorna (base64_data, media_type) ou None."""
+    try:
+        import base64
+        ext = Path(img_path).suffix.lower()
+        media_map = {".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                     ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif"}
+        media_type = media_map.get(ext, "image/png")
+        data = base64.b64encode(Path(img_path).read_bytes()).decode("utf-8")
+        return data, media_type
+    except Exception:
+        return None
+
+
 def _call_claude_audit(
     react_code: str,
     vue_code: str,
@@ -1251,6 +1265,7 @@ def _call_claude_audit(
     card_description: str,
     vue_files_read: list[str],
     bb_data: dict | None = None,
+    screenshots: list[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Chama Claude para gerar Issues de auditoria determinísticos.
 
@@ -1381,11 +1396,29 @@ Ao final dos Issues, liste brevemente (1 linha cada) os componentes Vuetify onde
         if api_base:
             client_kwargs["base_url"] = api_base
         client = anthropic.Anthropic(**client_kwargs)
+
+        # Vision API: inclui screenshots quando disponíveis (até 2 imagens por prompt)
+        screenshots = screenshots or []
+        img_blocks: list[dict] = []
+        for img_path in screenshots[:2]:
+            encoded = _encode_image_b64(img_path)
+            if encoded:
+                b64_data, media_type = encoded
+                img_blocks.append({
+                    "type": "image",
+                    "source": {"type": "base64", "media_type": media_type, "data": b64_data},
+                })
+        if img_blocks:
+            print(f"    📸 {len(img_blocks)} screenshot(s) enviada(s) ao Claude (vision)")
+            msg_content: list | str = img_blocks + [{"type": "text", "text": user_message}]
+        else:
+            msg_content = user_message
+
         response = client.messages.create(
             model="claude-opus-4-5",
             max_tokens=4096,
             temperature=0.1,  # Baixa temperatura = saída mais determinística
-            messages=[{"role": "user", "content": user_message}],
+            messages=[{"role": "user", "content": msg_content}],
             system=system_prompt,
         )
         result_text = response.content[0].text if response.content else ""
@@ -1575,6 +1608,7 @@ def _build_audit_template(
         card_description=description_text,
         vue_files_read=list(vue_contents.keys()),
         bb_data=bb_data,
+        screenshots=bb_screenshots if bb_screenshots else None,
     )
     if ai_issues_md.startswith("["):
         print(f"    ⚠️  {ai_issues_md}")
@@ -2008,17 +2042,33 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     elements = _detect_elements(combined_text)
 
     if screen is None:
-        print("\n⚠️  Não foi possível identificar a tela automaticamente.")
-        print("    Telas disponíveis:")
-        for k, v in SCREEN_MAP.items():
-            print(f"      • {k} — {v['nome']}")
-        print("\n    Adicione o nome da tela na descrição do card e tente novamente.")
-        print("    Ou use --screen para forçar: --screen funil-de-talentos")
+        # Tenta --screen override
         if hasattr(args, "screen") and args.screen:
             screen_key = args.screen
             screen = SCREEN_MAP.get(screen_key)
+
+        # Tenta match por URL do BetterBugs (se disponível no ADF)
+        if screen is None and bb.get("source_url"):
+            url_text = bb["source_url"].lower()
+            for k, v in SCREEN_MAP.items():
+                rota = v.get("rota", "").lower()
+                if rota and any(seg in url_text for seg in rota.split("/") if len(seg) > 3):
+                    screen_key, screen = k, v
+                    print(f"🔍  Tela identificada via URL BetterBugs: {screen['nome']}")
+                    break
+
+        # Usa funil-de-talentos como fallback genérico (tela principal da plataforma)
         if screen is None:
-            return
+            print("\n⚠️  Tela não identificada automaticamente. Usando funil-de-talentos como referência.")
+            print("    Para forçar outra tela: --screen <chave>")
+            print("    Telas disponíveis:")
+            for k, v in SCREEN_MAP.items():
+                print(f"      • {k} — {v['nome']}")
+            screen_key = "funil-de-talentos"
+            screen = SCREEN_MAP.get(screen_key)
+            if screen is None:
+                print("❌  funil-de-talentos não encontrado no SCREEN_MAP. Adicione ao mapa.")
+                return
 
     print(f"🖥️   Tela identificada: {screen['nome']} ({screen_key})")
     print(f"🔎  Elementos detectados: {', '.join(elements)}")

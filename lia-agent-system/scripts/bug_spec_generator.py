@@ -79,6 +79,16 @@ GITHUB_BRANCH = "develop"
 _GH_API       = "https://api.github.com"
 _gh_tree_cache_bug: list | None = None
 
+# Stopwords para keyword match — palavras genéricas que não ajudam a localizar arquivos
+_KEYWORD_STOPWORDS: frozenset[str] = frozenset({
+    "page", "view", "list", "modal", "card", "item", "form", "data", "comp",
+    "index", "main", "base", "core", "utils", "button", "input", "field",
+    "table", "tabs", "menu", "icon", "search", "filter", "header", "footer",
+    "sidebar", "layout", "novo", "nova", "para", "mais", "tipo", "esse",
+    "esta", "este", "quando", "como", "tela", "botao", "botão", "click",
+    "show", "hide", "open", "close", "load", "fetch", "error", "info",
+})
+
 
 def _github_token() -> str:
     """Retorna o PAT do GitHub configurado como secret no Replit."""
@@ -143,7 +153,11 @@ def _find_vue_files_for_url(page_url: str, keywords: list[str], max_results: int
         return []
     # Extrai path segments da URL para usar como keywords adicionais
     url_parts = re.findall(r"[a-zA-Z][a-zA-Z0-9_-]{2,}", page_url or "")
-    search_kw = [k.lower() for k in (keywords + url_parts)]
+    # Filtra stopwords — palavras genéricas que geram falsos positivos
+    search_kw = [
+        k.lower() for k in (keywords + url_parts)
+        if k.lower() not in _KEYWORD_STOPWORDS and len(k) >= 4
+    ]
     scored: list[tuple[int, str]] = []
     for path in all_files:
         score = sum(1 for kw in search_kw if kw in path.lower())
@@ -283,11 +297,11 @@ def _read_react_files_for_url(page_url: str, summary: str) -> tuple[str, list[st
     if not src.exists():
         return "", []
 
-    # Extrai palavras-chave da URL e do sumário para ranking
+    # Extrai palavras-chave da URL e do sumário para ranking (sem stopwords)
     keywords: set[str] = set()
     for text in [page_url.lower(), summary.lower()]:
         for word in re.split(r'[/\-_?& +=]+', text):
-            if len(word) > 3:
+            if len(word) > 3 and word not in _KEYWORD_STOPWORDS:
                 keywords.add(word)
 
     scored: list[tuple[int, Path]] = []
@@ -374,6 +388,20 @@ _BUG_ISSUE_PATTERN = re.compile(r'###?\s*Issue\s+\d+', re.IGNORECASE)
 _BUG_ANTES_DEPOIS = re.compile(r'ANTES.*DEPOIS', re.IGNORECASE | re.DOTALL)
 
 
+def _encode_image_b64(img_path: str) -> tuple[str, str] | None:
+    """Codifica imagem em base64 para Vision API. Retorna (base64_data, media_type) ou None."""
+    try:
+        import base64
+        ext = Path(img_path).suffix.lower()
+        media_map = {".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                     ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif"}
+        media_type = media_map.get(ext, "image/png")
+        data = base64.b64encode(Path(img_path).read_bytes()).decode("utf-8")
+        return data, media_type
+    except Exception:
+        return None
+
+
 def _bug_ai_output_is_compliant(text: str) -> bool:
     """Retorna True se a saída da IA está em conformidade com REGRA ABSOLUTA.
 
@@ -401,11 +429,13 @@ def _generate_claude_bug_issues(
     page_url: str = "",
     react_code: str = "",
     react_files: list[str] | None = None,
+    screenshot_paths: list[str] | None = None,
 ) -> str:
     """Chama Claude para gerar Issues de bug com Antes/Depois concretos.
 
     REGRA ABSOLUTA no prompt: React/Replit = fonte da verdade absoluta.
     react_code é sempre incluído no contexto — Vue diverge de React = BUG declarado.
+    screenshot_paths: imagens passadas via Vision API — Claude vê o bug visualmente.
     Sem '[PREENCHER]'. Sem 'verificar'. Issues numerados com código real.
     """
     try:
@@ -516,11 +546,27 @@ Inclua também Issues para defaults Vuetify omitidos que divergem do DS LIA."""
         if api_base:
             client_kwargs["base_url"] = api_base
         client = anthropic.Anthropic(**client_kwargs)
+        # Vision API: inclui screenshots quando disponíveis (até 2 imagens por prompt)
+        img_blocks: list[dict] = []
+        for img_path in (screenshot_paths or [])[:2]:
+            encoded = _encode_image_b64(img_path)
+            if encoded:
+                b64_data, media_type = encoded
+                img_blocks.append({
+                    "type": "image",
+                    "source": {"type": "base64", "media_type": media_type, "data": b64_data},
+                })
+        if img_blocks:
+            print(f"    📸 {len(img_blocks)} screenshot(s) enviada(s) ao Claude (vision)")
+            msg_content: list | str = img_blocks + [{"type": "text", "text": user_message}]
+        else:
+            msg_content = user_message
+
         response = client.messages.create(
             model="claude-opus-4-5",
             max_tokens=3000,
             temperature=0.1,  # Baixa temperatura = saída mais determinística
-            messages=[{"role": "user", "content": user_message}],
+            messages=[{"role": "user", "content": msg_content}],
             system=system_prompt,
         )
         result_text = response.content[0].text if response.content else ""
@@ -1254,10 +1300,7 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     ref_link = (
         bb["betterbugs_session"]
         or bug_info.get("ref_link")
-        or (
-            "[PREENCHER: URL do registro no Jam.dev]" if source == "Jam.dev"
-            else f"[PREENCHER: link da sessão {source}]"
-        )
+        or "—"  # Link não disponível — adicionar manualmente se necessário
     )
 
     # ── Busca arquivos Vue relevantes via GitHub ────────────────────────────
@@ -1276,17 +1319,38 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     if vue_files_found:
         print(f"🔗  Arquivos Vue encontrados: {vue_files_found}")
 
+    # ── Override manual: --vue-file e --react-file ──────────────────────────
+    forced_vue = getattr(args, "vue_file", None)
+    forced_react = getattr(args, "react_file", None)
+
+    if forced_vue:
+        vue_files_found = [forced_vue]
+        vue_code_preview = _vue_code_preview(vue_files_found)
+        vue_code_full = _vue_code_full(vue_files_found)
+        print(f"📌  Vue file forçado: {forced_vue}")
+
     # ── Lê arquivos React/Replit — FONTE DA VERDADE ABSOLUTA ────────────────
     print("📂  Lendo arquivos React/Replit (fonte da verdade)...")
-    react_code, react_files_found = _read_react_files_for_url(page_url_val, summary)
+    if forced_react:
+        react_path = REPLIT_ROOT / forced_react
+        try:
+            react_code = react_path.read_text(encoding="utf-8")[:6000]
+            react_files_found = [f"plataforma-lia/{forced_react}"]
+            print(f"📌  React file forçado: {forced_react}")
+        except Exception:
+            print(f"⚠️   React file não encontrado: {forced_react} — usando keyword match")
+            react_code, react_files_found = _read_react_files_for_url(page_url_val, summary)
+    else:
+        react_code, react_files_found = _read_react_files_for_url(page_url_val, summary)
+
     react_file_hint = (
         ", ".join(f"`{f}`" for f in react_files_found)
         if react_files_found
         else "plataforma-lia/src (arquivos React não mapeados — use DS LIA como referência)"
     )
-    if react_files_found:
+    if react_files_found and not forced_react:
         print(f"⚛️   Arquivos React encontrados: {react_files_found}")
-    else:
+    elif not react_files_found:
         print("⚠️   Nenhum arquivo React localizado — usando VUETIFY_DEFAULTS como referência")
 
     # ── Issues determinísticos: IA (Claude) ou estático (VUETIFY_DEFAULTS) ──
@@ -1294,6 +1358,10 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     desc_text_clean = _adf_to_text(adf_desc).strip() if adf_desc else summary
     # Usa vue_code_full (sem truncamento) para maximizar cobertura de detecção
     vue_for_issues = vue_code_full if vue_code_full else vue_code_preview
+    # Coleta screenshots para Vision API
+    all_screenshots = bb_screenshots or []
+    if screenshot_path and Path(screenshot_path).exists() and screenshot_path not in all_screenshots:
+        all_screenshots = [screenshot_path] + all_screenshots
     ai_issues = _generate_claude_bug_issues(
         card_key=card_key,
         summary=summary,
@@ -1303,6 +1371,7 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         page_url=page_url_val,
         react_code=react_code,
         react_files=react_files_found,
+        screenshot_paths=all_screenshots[:2] if all_screenshots else None,
     )
     n_issues = ai_issues.count("### Issue") + ai_issues.count("## Issue")
     print(f"    ✅ {n_issues} issue(s) gerado(s)")
@@ -1715,6 +1784,19 @@ def main() -> None:
         "--output-file",
         metavar="PATH",
         help="Salva o output em arquivo (além de imprimir no terminal).",
+    )
+    p_fetch.add_argument(
+        "--vue-file",
+        metavar="PATH",
+        help="Força arquivo Vue específico (ex: features/lia/FiltroAvancado.vue). "
+             "Usa este arquivo em vez da detecção automática por keyword.",
+    )
+    p_fetch.add_argument(
+        "--react-file",
+        metavar="PATH",
+        help="Força arquivo React específico relativo à raiz do Replit "
+             "(ex: src/app/funil-de-talentos/page.tsx). "
+             "Usa este arquivo como fonte da verdade em vez do match automático.",
     )
 
     p_post = sub.add_parser(
