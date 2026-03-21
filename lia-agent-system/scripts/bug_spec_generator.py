@@ -380,6 +380,141 @@ def _download_betterbugs_screenshots(adf: dict, card_key: str = "") -> list[str]
     return local_paths
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# BetterBugs REST API — busca dados completos da sessão (vídeo, prints, logs)
+# Requer: BETTERBUGS_API_KEY no ambiente
+# API base: https://butterfly-api.betterbugs.io
+# ─────────────────────────────────────────────────────────────────────────────
+
+_BB_API_BASE = "https://butterfly-api.betterbugs.io"
+_BB_CDN_BASE = "https://cdn-butterfly-new.betterbugs.io"
+
+
+def _betterbugs_api_token() -> str:
+    return os.getenv("BETTERBUGS_API_KEY", "")
+
+
+def _betterbugs_fetch_session(session_url: str) -> dict:
+    """Busca dados completos da sessão BetterBugs via REST API.
+
+    Extrai o sessionId da URL (https://app.betterbugs.io/session/<id>),
+    tenta os endpoints conhecidos com autenticação via BETTERBUGS_API_KEY.
+
+    Retorna dict com:
+        video_url       — URL do vídeo de gravação (mp4/webm)
+        screenshots     — lista de URLs de screenshots da sessão
+        console_logs    — lista de entradas do console
+        network_logs    — lista de requests de rede
+        session_id      — id da sessão
+        raw             — payload bruto da API
+    Se a chave não está configurada ou a API falha, retorna dict vazio.
+    """
+    token = _betterbugs_api_token()
+    result: dict = {
+        "video_url":    None,
+        "screenshots":  [],
+        "console_logs": [],
+        "network_logs": [],
+        "session_id":   None,
+        "raw":          {},
+    }
+
+    # Extrai sessionId da URL
+    sid_match = re.search(r"/session/([a-f0-9]{24,})", session_url or "")
+    if not sid_match:
+        return result
+    session_id = sid_match.group(1)
+    result["session_id"] = session_id
+
+    if not token:
+        return result
+
+    # Cabeçalhos de auth — BetterBugs aceita x-api-key e/ou Authorization Bearer
+    headers = {
+        "x-api-key":     token,
+        "Authorization": f"Bearer {token}",
+        "Content-Type":  "application/json",
+        "Accept":        "application/json",
+    }
+
+    # Endpoints a tentar (em ordem de probabilidade)
+    endpoints = [
+        f"{_BB_API_BASE}/recording-link/{session_id}",
+        f"{_BB_API_BASE}/sessions/{session_id}",
+        f"{_BB_API_BASE}/bugs/{session_id}",
+        f"{_BB_API_BASE}/v1/recording-link/{session_id}",
+        f"{_BB_API_BASE}/v1/sessions/{session_id}",
+    ]
+
+    data: dict = {}
+    for url in endpoints:
+        try:
+            resp = requests.get(url, headers=headers, timeout=12)
+            if resp.ok:
+                data = resp.json()
+                result["raw"] = data
+                break
+            elif resp.status_code == 401:
+                print("    ⚠️  BetterBugs API: autenticação falhou (401) — verifique BETTERBUGS_API_KEY")
+                return result
+        except Exception:
+            continue
+
+    if not data:
+        return result
+
+    # Extrai vídeo — campo screenRecording.url (caminho relativo no CDN)
+    screen_rec = data.get("screenRecording") or data.get("screen_recording") or {}
+    if isinstance(screen_rec, dict):
+        vid_path = screen_rec.get("url", "")
+        if vid_path:
+            result["video_url"] = vid_path
+
+    # Extrai screenshots adicionais
+    for field in ("screenshots", "images", "attachments"):
+        items = data.get(field, [])
+        if isinstance(items, list):
+            for item in items:
+                url = item.get("url") or item.get("src") or (item if isinstance(item, str) else "")
+                if url and url not in result["screenshots"]:
+                    result["screenshots"].append(url)
+
+    # Extrai console logs
+    for field in ("consoleLogs", "console_logs", "devLogs"):
+        logs = data.get(field, [])
+        if isinstance(logs, list):
+            result["console_logs"] = logs[:50]
+            break
+
+    # Extrai network logs
+    for field in ("networkLogs", "network_logs", "networkRequests"):
+        logs = data.get(field, [])
+        if isinstance(logs, list):
+            result["network_logs"] = logs[:30]
+            break
+
+    return result
+
+
+def _betterbugs_download_video(video_url: str, card_key: str = "") -> str | None:
+    """Baixa o vídeo BetterBugs para /tmp. Retorna o caminho local ou None."""
+    if not video_url:
+        return None
+    try:
+        r = requests.get(video_url, timeout=30, stream=True)
+        if r.ok:
+            ext = "mp4" if "mp4" in video_url else "webm"
+            slug = f"_{card_key}" if card_key else ""
+            path = f"/tmp/bb_video{slug}.{ext}"
+            with open(path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            return path
+    except Exception:
+        pass
+    return None
+
+
 def _extract_after(label: str, text: str) -> str:
     m = re.search(
         rf"{re.escape(label)}\s*[:\-]?\s*\n?\s*(.+?)(?=\n[A-Za-z\-]|\n\n|\Z)",
@@ -624,9 +759,52 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     bug_info = _parse_bug_description(adf_desc)
     source   = bug_info["source"]
 
+    # ── BetterBugs — extrai mídia e links do ADF ──────────────────────────────
+    bb = _extract_adf_media_and_links(adf_desc)
+    bb_session_data: dict = {}
+    bb_screenshots: list[str] = []
+
+    if source == "BetterBugs" or any([bb["screenshots"], bb["betterbugs_session"]]):
+        print("🐛  BetterBugs detectado no card:")
+        if bb["betterbugs_session"]:
+            print(f"    🔗 Sessão:        {bb['betterbugs_session']}")
+        if bb["source_url"]:
+            print(f"    🌐 Source URL:    {bb['source_url']}")
+        if bb["console_logs_url"]:
+            print(f"    📋 Console logs:  {bb['console_logs_url']}")
+        if bb["network_logs_url"]:
+            print(f"    🌐 Network logs:  {bb['network_logs_url']}")
+
+        # API BetterBugs (vídeo + dados completos)
+        if bb["betterbugs_session"] and _betterbugs_api_token():
+            print("    🎬 Buscando dados completos via API BetterBugs...")
+            bb_session_data = _betterbugs_fetch_session(bb["betterbugs_session"])
+            if bb_session_data.get("video_url"):
+                print(f"       ✅ Vídeo: {bb_session_data['video_url']}")
+            if bb_session_data.get("console_logs"):
+                print(f"       ✅ {len(bb_session_data['console_logs'])} entradas de console log")
+            if bb_session_data.get("network_logs"):
+                print(f"       ✅ {len(bb_session_data['network_logs'])} requests de rede")
+            if not any([bb_session_data.get("video_url"), bb_session_data.get("screenshots")]):
+                print("       ⚠️  API respondeu mas sem dados de mídia — verifique os endpoints")
+        elif bb["betterbugs_session"] and not _betterbugs_api_token():
+            print("    💡 Configure BETTERBUGS_API_KEY para acessar vídeo e dados completos")
+
+        # Screenshots do CDN (embedadas no ADF)
+        if bb["screenshots"]:
+            print(f"    📸 Baixando {len(bb['screenshots'])} screenshot(s) do CDN...")
+            bb_screenshots = _download_betterbugs_screenshots(adf_desc, card_key)
+            for i, path in enumerate(bb_screenshots, 1):
+                size = Path(path).stat().st_size
+                print(f"       ✅ Screenshot {i}: {path} ({size:,} bytes)")
+            if not bb_screenshots:
+                print("       ⚠️  Nenhuma screenshot baixada (CDN inacessível?)")
+
     screenshot_path = ""
     image_attachments = [a for a in attachments if (a.get("mimeType") or "").startswith("image/")]
-    if image_attachments:
+    if bb_screenshots:
+        screenshot_path = bb_screenshots[0]
+    elif image_attachments:
         att = image_attachments[0]
         screenshot_path = f"/tmp/jam_screenshot_{card_key}.png"
         dl_resp = requests.get(
@@ -635,11 +813,17 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         if dl_resp.ok:
             Path(screenshot_path).write_bytes(dl_resp.content)
 
-    record_type = "Screenshot" if image_attachments else "Bug Report (sem imagem)"
+    record_type = "Screenshot" if (bb_screenshots or image_attachments) else "Bug Report (sem imagem)"
+    if bb_session_data.get("video_url"):
+        record_type = "Vídeo de Sessão + Screenshots"
 
-    ref_link = bug_info.get("ref_link") or (
-        "[PREENCHER: URL do registro no Jam.dev]" if source == "Jam.dev"
-        else f"[PREENCHER: link da sessão {source}]"
+    ref_link = (
+        bb["betterbugs_session"]
+        or bug_info.get("ref_link")
+        or (
+            "[PREENCHER: URL do registro no Jam.dev]" if source == "Jam.dev"
+            else f"[PREENCHER: link da sessão {source}]"
+        )
     )
 
     # ── Busca arquivos Vue relevantes via GitHub ────────────────────────────
@@ -658,6 +842,18 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     if vue_files_found:
         print(f"🔗  Arquivos Vue encontrados: {vue_files_found}")
 
+    # Merge console/network logs: API BetterBugs tem prioridade sobre texto parseado
+    _console_logs = bug_info["console_logs"]
+    _network_requests = bug_info["network_requests"]
+    if bb_session_data.get("console_logs"):
+        _console_logs = "\n".join(
+            str(e) for e in bb_session_data["console_logs"]
+        )
+    if bb_session_data.get("network_logs"):
+        _network_requests = "\n".join(
+            str(e) for e in bb_session_data["network_logs"]
+        )
+
     template = _TEMPLATE.format(
         date=TODAY,
         priority=priority,
@@ -669,8 +865,8 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         ref_link=ref_link,
         page_url=page_url_val or "[não registrado]",
         device_info=bug_info["device_info"] or "[não registrado]",
-        console_logs=bug_info["console_logs"],
-        network_requests=bug_info["network_requests"],
+        console_logs=_console_logs,
+        network_requests=_network_requests,
         react_file_hint=react_file_hint,
         vue_file_hint=vue_file_hint,
         vue_code_preview=vue_code_preview,
@@ -691,6 +887,11 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         header += f"📸 Screenshot: {screenshot_path}\n"
     else:
         header += "📸 Screenshot: não encontrada nos anexos do card\n"
+
+    if bb_session_data.get("video_url"):
+        header += f"🎬 Vídeo BetterBugs: {bb_session_data['video_url']}\n"
+    if bb["betterbugs_session"]:
+        header += f"🐛 Sessão BetterBugs: {bb['betterbugs_session']}\n"
 
     header += (
         f"\n{'─' * 60}\n"
