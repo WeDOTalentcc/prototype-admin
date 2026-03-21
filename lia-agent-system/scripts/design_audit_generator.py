@@ -488,6 +488,94 @@ def _adf_to_text(node: dict) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# BetterBugs — extração de mídia e links embutidos no ADF do card Jira
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _extract_adf_media_and_links(node: dict, _acc: dict | None = None) -> dict:
+    """Percorre o ADF recursivamente e coleta:
+    - screenshots embedadas como `mediaSingle` / `media` external (CDN BetterBugs)
+    - links de texto (marks do tipo "link") — classifica sessão, console, rede, source
+    - inlineCards (smart links Jira)
+    Retorna dict com chaves: screenshots, links, betterbugs_session,
+    source_url, console_logs_url, network_logs_url, inline_cards.
+    """
+    if _acc is None:
+        _acc = {
+            "screenshots":       [],
+            "links":             [],
+            "inline_cards":      [],
+            "betterbugs_session": None,
+            "source_url":         None,
+            "console_logs_url":   None,
+            "network_logs_url":   None,
+        }
+    if not node:
+        return _acc
+
+    ntype = node.get("type", "")
+
+    # Screenshot embarcada como nó media external (CDN BetterBugs / Jira)
+    if ntype == "media":
+        attrs = node.get("attrs", {})
+        if attrs.get("type") == "external":
+            url = attrs.get("url", "")
+            if url and url not in _acc["screenshots"]:
+                _acc["screenshots"].append(url)
+
+    # Smart link / inline card
+    if ntype == "inlineCard":
+        url = node.get("attrs", {}).get("url", "")
+        if url and url not in _acc["inline_cards"]:
+            _acc["inline_cards"].append(url)
+
+    # Links em marks de texto — classifica por padrão de URL
+    for mark in node.get("marks", []):
+        if mark.get("type") == "link":
+            href = mark.get("attrs", {}).get("href", "")
+            text = node.get("text", "")
+            if href and not href.startswith("mailto:"):
+                entry = {"text": text, "href": href}
+                if entry not in _acc["links"]:
+                    _acc["links"].append(entry)
+                # Classifica o link
+                if re.search(r"betterbugs\.io/session/[^?]+$", href):
+                    _acc["betterbugs_session"] = href
+                elif "openedDevTab=console" in href:
+                    _acc["console_logs_url"] = href
+                elif "openedDevTab=network" in href:
+                    _acc["network_logs_url"] = href
+                elif ("wedotalent" in href or "replit" in href) and not _acc["source_url"]:
+                    _acc["source_url"] = href
+
+    for child in node.get("content", []):
+        _extract_adf_media_and_links(child, _acc)
+
+    return _acc
+
+
+def _download_betterbugs_screenshots(adf: dict, card_key: str = "") -> list[str]:
+    """Baixa as screenshots BetterBugs embedadas no ADF para /tmp.
+    Retorna lista de caminhos locais salvos."""
+    extracted = _extract_adf_media_and_links(adf)
+    local_paths: list[str] = []
+
+    for i, url in enumerate(extracted["screenshots"]):
+        try:
+            r = requests.get(url, timeout=15)
+            if r.ok:
+                ext = url.split(".")[-1].split("?")[0] or "png"
+                ext = ext[:4]  # segurança
+                slug = f"_{card_key}" if card_key else ""
+                path = f"/tmp/bb_screenshot{slug}_{i+1}.{ext}"
+                Path(path).write_bytes(r.content)
+                local_paths.append(path)
+        except Exception:
+            pass
+
+    return local_paths
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Screen detection — identifica a tela a partir da descrição do card
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -600,8 +688,12 @@ def _build_audit_template(
     screen_key: str,
     screen: dict,
     elements_detected: list[str],
+    bb_data: dict | None = None,
+    bb_screenshots: list[str] | None = None,
 ) -> str:
     lines: list[str] = []
+    bb_data = bb_data or {}
+    bb_screenshots = bb_screenshots or []
 
     # ── Leitura antecipada do código Vue real (GitHub) ─────────────────────
     vue_files = screen.get("vue_files", [])
@@ -630,6 +722,25 @@ def _build_audit_template(
         f"**Elementos solicitados:** {', '.join(elements_detected)}  ",
         "",
     ]
+
+    # ── BetterBugs context (se houver) ────────────────────────────────────
+    bb_lines: list[str] = []
+    if bb_data.get("betterbugs_session"):
+        bb_lines.append(f"**Sessão BetterBugs:** {bb_data['betterbugs_session']}  ")
+    if bb_data.get("source_url"):
+        bb_lines.append(f"**URL reportada:** {bb_data['source_url']}  ")
+    if bb_data.get("console_logs_url"):
+        bb_lines.append(f"**Console logs:** {bb_data['console_logs_url']}  ")
+    if bb_data.get("network_logs_url"):
+        bb_lines.append(f"**Network logs:** {bb_data['network_logs_url']}  ")
+    if bb_screenshots:
+        bb_lines.append(
+            f"**Screenshots BetterBugs ({len(bb_screenshots)}):** "
+            + " · ".join(bb_screenshots)
+            + "  "
+        )
+    if bb_lines:
+        lines += ["### Contexto BetterBugs", ""] + bb_lines + [""]
 
     # ── Arquivos de Referência ─────────────────────────────────────────────
     react_files_exist = [f for f in screen["react_files"] if (REPLIT_ROOT / f).exists()]
@@ -1034,13 +1145,44 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     key = args.key.upper()
     print(f"🔍  Buscando card {key}...")
 
-    data        = _get(f"/issue/{key}", {"fields": "summary,description,labels"})
+    data        = _get(f"/issue/{key}", {"fields": "summary,description,labels,attachment"})
     fields      = data.get("fields", {})
     title       = fields.get("summary", "")
     adf         = fields.get("description") or {}
     desc_text   = _adf_to_text(adf).strip()
 
     print(f"📋  Título: {title}")
+
+    # ── BetterBugs — extrai mídia e links do ADF ──────────────────────────────
+    bb = _extract_adf_media_and_links(adf)
+    bb_screenshots: list[str] = []
+
+    if any([bb["screenshots"], bb["betterbugs_session"], bb["source_url"]]):
+        print("🐛  BetterBugs detectado no card:")
+        if bb["betterbugs_session"]:
+            print(f"    🔗 Sessão:        {bb['betterbugs_session']}")
+        if bb["source_url"]:
+            print(f"    🌐 Source URL:    {bb['source_url']}")
+        if bb["console_logs_url"]:
+            print(f"    📋 Console logs:  {bb['console_logs_url']}")
+        if bb["network_logs_url"]:
+            print(f"    🌐 Network logs:  {bb['network_logs_url']}")
+        if bb["screenshots"]:
+            print(f"    📸 Baixando {len(bb['screenshots'])} screenshot(s) do CDN...")
+            bb_screenshots = _download_betterbugs_screenshots(adf, key)
+            for i, path in enumerate(bb_screenshots, 1):
+                size = Path(path).stat().st_size
+                print(f"       ✅ Screenshot {i}: {path} ({size:,} bytes)")
+            if not bb_screenshots:
+                print("       ⚠️  Nenhuma screenshot baixada (CDN inacessível?)")
+    else:
+        # Verifica anexos Jira convencionais
+        attachments = fields.get("attachment", []) or []
+        imgs = [a for a in attachments if a.get("mimeType", "").startswith("image/")]
+        if imgs:
+            print(f"📎  {len(imgs)} imagem(ns) anexada(s) ao card (sem BetterBugs inline):")
+            for img in imgs:
+                print(f"    → {img.get('filename')} — {img.get('content')}")
 
     # Detecta tela e elementos solicitados
     combined_text = f"{title} {desc_text}".lower()
@@ -1067,7 +1209,8 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     found = sum(1 for f in screen["react_files"] if (REPLIT_ROOT / f).exists())
     print(f"    ✅ {found}/{len(screen['react_files'])} arquivo(s) encontrado(s)")
 
-    template = _build_audit_template(key, title, desc_text, screen_key, screen, elements)
+    template = _build_audit_template(key, title, desc_text, screen_key, screen, elements,
+                                     bb_data=bb, bb_screenshots=bb_screenshots)
 
     output_file = getattr(args, "output_file", None)
     if output_file:

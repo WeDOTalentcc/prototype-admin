@@ -295,6 +295,91 @@ def _adf_to_text(node: dict) -> str:
     return "".join(parts)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# BetterBugs — extração de mídia e links embutidos no ADF do card Jira
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _extract_adf_media_and_links(node: dict, _acc: dict | None = None) -> dict:
+    """Percorre o ADF recursivamente e coleta:
+    - screenshots embedadas como `mediaSingle` / `media` external (CDN BetterBugs)
+    - links de texto (marks do tipo "link") — classifica sessão, console, rede, source
+    - inlineCards (smart links Jira)
+    Retorna dict com chaves: screenshots, links, betterbugs_session,
+    source_url, console_logs_url, network_logs_url, inline_cards.
+    """
+    if _acc is None:
+        _acc = {
+            "screenshots":        [],
+            "links":              [],
+            "inline_cards":       [],
+            "betterbugs_session": None,
+            "source_url":         None,
+            "console_logs_url":   None,
+            "network_logs_url":   None,
+        }
+    if not node:
+        return _acc
+
+    ntype = node.get("type", "")
+
+    # Screenshot embarcada como nó media external (CDN BetterBugs / Jira)
+    if ntype == "media":
+        attrs = node.get("attrs", {})
+        if attrs.get("type") == "external":
+            url = attrs.get("url", "")
+            if url and url not in _acc["screenshots"]:
+                _acc["screenshots"].append(url)
+
+    # Smart link / inline card
+    if ntype == "inlineCard":
+        url = node.get("attrs", {}).get("url", "")
+        if url and url not in _acc["inline_cards"]:
+            _acc["inline_cards"].append(url)
+
+    # Links em marks de texto — classifica por padrão de URL
+    for mark in node.get("marks", []):
+        if mark.get("type") == "link":
+            href = mark.get("attrs", {}).get("href", "")
+            text = node.get("text", "")
+            if href and not href.startswith("mailto:"):
+                entry = {"text": text, "href": href}
+                if entry not in _acc["links"]:
+                    _acc["links"].append(entry)
+                if re.search(r"betterbugs\.io/session/[^?]+$", href):
+                    _acc["betterbugs_session"] = href
+                elif "openedDevTab=console" in href:
+                    _acc["console_logs_url"] = href
+                elif "openedDevTab=network" in href:
+                    _acc["network_logs_url"] = href
+                elif ("wedotalent" in href or "replit" in href) and not _acc["source_url"]:
+                    _acc["source_url"] = href
+
+    for child in node.get("content", []):
+        _extract_adf_media_and_links(child, _acc)
+
+    return _acc
+
+
+def _download_betterbugs_screenshots(adf: dict, card_key: str = "") -> list[str]:
+    """Baixa as screenshots BetterBugs embedadas no ADF para /tmp.
+    Retorna lista de caminhos locais salvos."""
+    extracted = _extract_adf_media_and_links(adf)
+    local_paths: list[str] = []
+    for i, url in enumerate(extracted["screenshots"]):
+        try:
+            r = requests.get(url, timeout=15)
+            if r.ok:
+                ext = url.split(".")[-1].split("?")[0] or "png"
+                ext = ext[:4]
+                slug = f"_{card_key}" if card_key else ""
+                path = f"/tmp/bb_screenshot{slug}_{i+1}.{ext}"
+                Path(path).write_bytes(r.content)
+                local_paths.append(path)
+        except Exception:
+            pass
+    return local_paths
+
+
 def _extract_after(label: str, text: str) -> str:
     m = re.search(
         rf"{re.escape(label)}\s*[:\-]?\s*\n?\s*(.+?)(?=\n[A-Za-z\-]|\n\n|\Z)",
