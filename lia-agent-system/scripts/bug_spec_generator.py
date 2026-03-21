@@ -1,9 +1,15 @@
 """
-Bug Spec Generator — Jam → Jira I/O
+Bug Spec Generator — Jira I/O (Jam · Userback · BetterBugs · manual)
 
-Dois comandos simples para enriquecer cards criados pelo Jam.dev no Jira.
-A geração de conteúdo (spec técnica + complemento estruturado) acontece
-no chat com o agente LIA — este script faz apenas o I/O com o Jira.
+Dois comandos simples para enriquecer cards do Jira com spec técnica.
+A geração de conteúdo (complemento + spec técnica) acontece no chat com
+o agente LIA — este script faz apenas o I/O com o Jira.
+
+Detecta automaticamente a origem do card:
+  • Jam.dev       — separador "---..." + link jam.dev
+  • Userback      — bloco "--- Metadata ---" + Session Link
+  • BetterBugs    — link betterbugs.io na descrição
+  • Manual        — sem padrão reconhecível
 
 Configuração (adicione ao .env ou exporte no shell):
     JIRA_EMAIL       = email da conta Atlassian (ex: admin@wedotalent.com)
@@ -47,8 +53,11 @@ except ImportError:
 
 CLOUD_ID   = os.getenv("JIRA_CLOUD_ID", "8cf762f8-6a44-47de-8915-6b3dc0cd2715")
 JIRA_BASE  = f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3"
-JAM_SEPARATOR = "-------------------------------------"
 TODAY = datetime.now(timezone.utc).strftime("%d/%m/%Y")
+
+# Separadores por ferramenta
+JAM_SEPARATOR        = "-------------------------------------"
+USERBACK_SEPARATOR   = "--- Metadata ---"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -112,7 +121,7 @@ def _put_json(path: str, body: dict) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Jam description parser
+# Description parser — multi-tool (Jam · Userback · BetterBugs · manual)
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _adf_to_text(node: dict) -> str:
@@ -130,48 +139,118 @@ def _adf_to_text(node: dict) -> str:
     return "".join(parts)
 
 
-def _parse_jam_description(adf: dict) -> dict[str, str]:
+def _extract_after(label: str, text: str) -> str:
+    m = re.search(
+        rf"{re.escape(label)}\s*[:\-]?\s*\n?\s*(.+?)(?=\n[A-Za-z\-]|\n\n|\Z)",
+        text,
+        re.DOTALL | re.IGNORECASE,
+    )
+    return m.group(1).strip() if m else ""
+
+
+def _detect_source(raw: str) -> str:
+    """Identifica a ferramenta que criou o card com base no conteúdo da descrição."""
+    if JAM_SEPARATOR in raw and re.search(r"jam\.dev", raw, re.IGNORECASE):
+        return "Jam.dev"
+    if USERBACK_SEPARATOR in raw or re.search(r"userback\.io", raw, re.IGNORECASE):
+        return "Userback"
+    if re.search(r"betterbugs\.io", raw, re.IGNORECASE):
+        return "BetterBugs"
+    return "Manual"
+
+
+def _parse_bug_description(adf: dict) -> dict[str, str]:
+    """Parseia a descrição do card e extrai metadados independentemente da ferramenta."""
     raw = _adf_to_text(adf).strip()
 
     result: dict[str, str] = {
+        "source": "Manual",
         "user_notes": raw,
         "page_url": "",
         "device_info": "",
-        "date_jam": "",
+        "date_reported": "",
         "console_logs": "Não registrado",
         "network_requests": "Não registrado",
-        "jam_dev_link": "",
+        "ref_link": "",
     }
 
-    if JAM_SEPARATOR not in raw:
-        return result
+    source = _detect_source(raw)
+    result["source"] = source
 
-    parts = raw.split(JAM_SEPARATOR, 1)
-    result["user_notes"] = parts[0].strip()
-    meta_block = parts[1]
+    # ── Jam.dev ──────────────────────────────────────────────────────────────
+    if source == "Jam.dev":
+        parts = raw.split(JAM_SEPARATOR, 1)
+        result["user_notes"] = parts[0].strip()
+        meta = parts[1]
 
-    def _extract_after(label: str, text: str) -> str:
-        m = re.search(
-            rf"{re.escape(label)}\s*[:\-]?\s*\n?\s*(.+?)(?=\n[A-Za-z]|\n\n|\Z)",
-            text,
-            re.DOTALL | re.IGNORECASE,
+        result["page_url"]      = _extract_after("Website URL", meta)
+        result["device_info"]   = _extract_after("Device and browser info", meta)
+        result["date_reported"] = _extract_after("Date and time", meta)
+
+        dev_link_m = re.search(
+            r"developer information.*?\n(jam\.dev/\S+|https://jam\.dev/\S+)", meta
         )
-        return m.group(1).strip() if m else ""
+        if dev_link_m:
+            link = dev_link_m.group(1).strip()
+            if not link.startswith("http"):
+                link = "https://" + link
+            result["ref_link"]           = link
+            result["console_logs"]       = f"Ver {link}"
+            result["network_requests"]   = f"Ver {link}"
 
-    result["page_url"]   = _extract_after("Website URL", meta_block)
-    result["device_info"] = _extract_after("Device and browser info", meta_block)
-    result["date_jam"]   = _extract_after("Date and time", meta_block)
+    # ── Userback ─────────────────────────────────────────────────────────────
+    elif source == "Userback":
+        if USERBACK_SEPARATOR in raw:
+            parts = raw.split(USERBACK_SEPARATOR, 1)
+            result["user_notes"] = parts[0].strip()
+            meta = parts[1]
+        else:
+            meta = raw
 
-    dev_link_m = re.search(r"developer information.*?\n(jam\.dev/\S+|https://jam\.dev/\S+)", meta_block)
-    if dev_link_m:
-        link = dev_link_m.group(1).strip()
-        if not link.startswith("http"):
-            link = "https://" + link
-        result["jam_dev_link"]      = link
-        result["console_logs"]      = f"Ver {link}"
-        result["network_requests"]  = f"Ver {link}"
+        result["device_info"]   = _extract_after("Browser", meta)
+        result["page_url"]      = _extract_after("URL", meta)
+
+        screen_m = re.search(r"Screen[:\s]+(\d+x\d+)", meta, re.IGNORECASE)
+        if screen_m:
+            result["device_info"] += f" | Resolução: {screen_m.group(1)}"
+
+        session_m = re.search(
+            r"Session Link[:\s]+(https://\S+userback\S*)", meta, re.IGNORECASE
+        )
+        if session_m:
+            result["ref_link"] = session_m.group(1)
+
+        feedback_m = re.search(r"Feedback ID[:\s]+(\S+)", meta, re.IGNORECASE)
+        if feedback_m:
+            result["date_reported"] = f"ID {feedback_m.group(1)}"
+
+        console_m = re.search(
+            r"Console Logs[:\s]+(https://\S+)", meta, re.IGNORECASE
+        )
+        if console_m:
+            result["console_logs"] = f"Ver {console_m.group(1)}"
+
+    # ── BetterBugs ────────────────────────────────────────────────────────────
+    elif source == "BetterBugs":
+        bb_m = re.search(r"(https://app\.betterbugs\.io/\S+)", raw, re.IGNORECASE)
+        if bb_m:
+            result["ref_link"] = bb_m.group(1)
+            result["console_logs"]     = f"Ver {bb_m.group(1)}"
+            result["network_requests"] = f"Ver {bb_m.group(1)}"
+
+        device_m = re.search(r"(Browser|Device)[:\s]+([^\n]+)", raw, re.IGNORECASE)
+        if device_m:
+            result["device_info"] = device_m.group(2).strip()
 
     return result
+
+
+# Manter compatibilidade retroativa com código legado
+def _parse_jam_description(adf: dict) -> dict[str, str]:
+    parsed = _parse_bug_description(adf)
+    parsed["jam_dev_link"] = parsed.get("ref_link", "")
+    parsed["date_jam"]     = parsed.get("date_reported", "")
+    return parsed
 
 
 def _format_date(iso: str) -> str:
@@ -198,14 +277,14 @@ _TEMPLATE = """\
 - Sprint: A definir
 - Tags: [PREENCHER: lista separada por vírgula — ex: bug, ux, email, ds, jam]
 
-**🔗 Referência Jam**
-- Link: {jam_link}
-- Tipo de Registro: {jam_record_type}
+**🔗 Referência ({source})**
+- Link: {ref_link}
+- Tipo de Registro: {record_type}
 - Criado por: {reporter} em {created}
 - Título Original: "{summary}"
 
 **Descrição do Problema (Estruturada)**
-[PREENCHER — baseado nos pontos do Jam acima, numerados e objetivos]
+[PREENCHER — baseado nos pontos acima, numerados e objetivos]
 
 **Comportamento Esperado (Proposto)**
 [PREENCHER — o que deveria acontecer após a correção]
@@ -213,7 +292,7 @@ _TEMPLATE = """\
 **Regras de Negócio Impactadas**
 [PREENCHER — ex: nomenclatura LIA, design system, legalidade, fluxo do candidato]
 
-**Informações Técnicas (Via Jam)**
+**Informações Técnicas**
 - Console Logs: {console_logs}
 - Network Requests: {network_requests}
 - Page URL: {page_url}
@@ -247,31 +326,35 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     data = _get(f"/issue/{card_key}", {"fields": fields})
     f = data["fields"]
 
-    summary   = f.get("summary", "")
-    priority  = f.get("priority", {}).get("name", "Não definida")
-    reporter  = (f.get("reporter") or {}).get("displayName", "Não informado")
-    created   = _format_date(f.get("created", ""))
-    labels    = f.get("labels", [])
+    summary     = f.get("summary", "")
+    priority    = f.get("priority", {}).get("name", "Não definida")
+    reporter    = (f.get("reporter") or {}).get("displayName", "Não informado")
+    created     = _format_date(f.get("created", ""))
+    labels      = f.get("labels", [])
     attachments = f.get("attachment", [])
-    status    = (f.get("status") or {}).get("name", "")
-    adf_desc  = f.get("description") or {}
+    status      = (f.get("status") or {}).get("name", "")
+    adf_desc    = f.get("description") or {}
 
-    jam_info = _parse_jam_description(adf_desc)
+    bug_info = _parse_bug_description(adf_desc)
+    source   = bug_info["source"]
 
     screenshot_path = ""
     image_attachments = [a for a in attachments if (a.get("mimeType") or "").startswith("image/")]
     if image_attachments:
         att = image_attachments[0]
-        screenshot_path = f"/tmp/jam_screenshot_{card_key}.png"
+        screenshot_path = f"/tmp/bug_screenshot_{card_key}.png"
         dl_resp = requests.get(
             att["content"], headers=_build_headers(), timeout=30, stream=True
         )
         if dl_resp.ok:
             Path(screenshot_path).write_bytes(dl_resp.content)
 
-    jam_record_type = "Screenshot" if image_attachments else "Bug Report (sem imagem)"
+    record_type = "Screenshot" if image_attachments else "Bug Report (sem imagem)"
 
-    jam_link = jam_info.get("jam_dev_link") or "[PREENCHER: URL do registro no Jam.dev]"
+    ref_link = bug_info.get("ref_link") or (
+        "[PREENCHER: URL do registro no Jam.dev]" if source == "Jam.dev"
+        else f"[PREENCHER: link da sessão {source}]"
+    )
 
     template = _TEMPLATE.format(
         date=TODAY,
@@ -279,18 +362,20 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         reporter=reporter,
         created=created,
         summary=summary,
-        jam_record_type=jam_record_type,
-        jam_link=jam_link,
-        page_url=jam_info["page_url"] or "[não registrado]",
-        device_info=jam_info["device_info"] or "[não registrado]",
-        console_logs=jam_info["console_logs"],
-        network_requests=jam_info["network_requests"],
+        source=source,
+        record_type=record_type,
+        ref_link=ref_link,
+        page_url=bug_info["page_url"] or "[não registrado]",
+        device_info=bug_info["device_info"] or "[não registrado]",
+        console_logs=bug_info["console_logs"],
+        network_requests=bug_info["network_requests"],
     )
 
     header = (
         f"{'━' * 60}\n"
         f"📋  {card_key} — {summary}\n"
         f"{'━' * 60}\n"
+        f"Origem    : {source}\n"
         f"Reporter  : {reporter}\n"
         f"Criado em : {created}\n"
         f"Status    : {status}  |  Prioridade: {priority}\n"
@@ -304,19 +389,20 @@ def cmd_fetch(args: argparse.Namespace) -> None:
 
     header += (
         f"\n{'─' * 60}\n"
-        f"DESCRIÇÃO BRUTA (Jam)\n"
+        f"DESCRIÇÃO BRUTA\n"
         f"{'─' * 60}\n"
         f"{_adf_to_text(adf_desc).strip()}\n"
     )
 
-    if jam_info["page_url"]:
+    if bug_info["page_url"] or bug_info["ref_link"] or bug_info["device_info"]:
         header += (
             f"\n{'─' * 60}\n"
-            f"METADADOS EXTRAÍDOS\n"
+            f"METADADOS EXTRAÍDOS ({source})\n"
             f"{'─' * 60}\n"
-            f"Page URL    : {jam_info['page_url']}\n"
-            f"Device      : {jam_info['device_info']}\n"
-            f"Data Jam    : {jam_info['date_jam']}\n"
+            f"Page URL    : {bug_info['page_url'] or '—'}\n"
+            f"Device      : {bug_info['device_info'] or '—'}\n"
+            f"Data/ID     : {bug_info['date_reported'] or '—'}\n"
+            f"Link Ref    : {bug_info['ref_link'] or '—'}\n"
         )
 
     header += (
