@@ -997,7 +997,9 @@
       "Bash(git -C /home/runner/workspace log --oneline)",
       "Bash(GH_TOKEN=\"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\" curl -s -H \"Authorization: token $GH_TOKEN\" \"https://api.github.com/user/repos?per_page=50&type=all\")",
       "Bash(curl:*)",
-      "Bash(env)"
+      "Bash(env)",
+      "Bash(2)",
+      "Bash(git -C /home/runner/workspace/lia-agent-system log --oneline -5 pytest.ini)"
     ]
   }
 }
