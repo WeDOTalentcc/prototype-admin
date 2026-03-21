@@ -331,7 +331,7 @@ _TEMPLATE = """\
 - Pontos de Esforço: [PREENCHER: 1-2-3-5-8-13]
 - Prioridade: {priority}
 - Sprint: A definir
-- Tags: [PREENCHER: lista separada por vírgula — ex: bug, ux, email, ds, jam]
+- Tags: [PREENCHER: lista separada por vírgula — ex: bug, ux, ds, vuetify, betterbugs]
 
 **🔗 Referência ({source})**
 - Link: {ref_link}
@@ -340,13 +340,13 @@ _TEMPLATE = """\
 - Título Original: "{summary}"
 
 **Descrição do Problema (Estruturada)**
-[PREENCHER — baseado nos pontos acima, numerados e objetivos]
+[PREENCHER — numerado, objetivo, baseado na descrição original]
 
 **Comportamento Esperado (Proposto)**
-[PREENCHER — o que deveria acontecer após a correção]
+[PREENCHER — o que deve acontecer após a correção]
 
 **Regras de Negócio Impactadas**
-[PREENCHER — ex: nomenclatura LIA, design system, legalidade, fluxo do candidato]
+[PREENCHER — ex: Design System LIA v4.2.1, nomenclatura LIA, fluxo do candidato]
 
 **Informações Técnicas**
 - Console Logs: {console_logs}
@@ -354,23 +354,70 @@ _TEMPLATE = """\
 - Page URL: {page_url}
 - Metadados: {device_info}
 
+---
+🔧 **Spec Técnica — LIA Design System v4.2.1**
+
+**📁 Arquivos a Localizar**
+- Produto React (referência): `[PREENCHER: ex: src/app/funil-de-talentos/page.tsx]`
+- Produto Vue (real):         `[PREENCHER: ex: src/views/talent-funnel/TalentFunnel.vue]`
+- Buscar por:                 `[PREENCHER: ex: TalentFunnel, FunnelHeader, funil-de-talentos]`
+
+**Tabela de Tokens — Referência Completa**
+
+| Propriedade | Atual (ERRADO) | Correto | CSS Var | Hex | Tailwind | Vuetify |
+|---|---|---|---|---|---|---|
+| [PREENCHER] | [ERRADO] | [CORRETO] | `--` | `#` | `class=""` | `class=""` |
+
+**Componentes Afetados — Antes / Depois**
+
+[Para CADA componente envolvido no fix (título, botão, ícone, badge, modal, input, lista...),
+ especificar o bloco de código antes e depois nas duas stacks:]
+
+**[COMPONENTE 1 — ex: Título da Página]**
+
+Antes (ERRADO):
+
+```vue
+<!-- Vue/Vuetify -->
+[PREENCHER]
+```
+
+```tsx
+<!-- React/Tailwind (referência) -->
+[PREENCHER]
+```
+
+Depois (CORRETO):
+
+```vue
+<!-- Vue/Vuetify -->
+[PREENCHER]
+```
+
+```tsx
+<!-- React/Tailwind (referência) -->
+[PREENCHER]
+```
+
+[Repetir este bloco para cada componente afetado:
+ botões, ícones, badges, tabs, modais, inputs, listas, chips, paginação, etc.]
+
+**⚠️ Regra 90/10 — Checklist Obrigatório**
+- [ ] Cyan (#60BED1) SOMENTE em ícones/ações LIA/IA — não em bordas, bg ou outros botões
+- [ ] 90% dos elementos: escala gray-50 → gray-950 (monocromático)
+- [ ] Todos os botões: `rounded-md` (8px), `font-medium` (500), 11px / `text-caption`
+- [ ] Source Serif eliminado — buscar `serif` e `Source Serif` no arquivo e remover
+- [ ] `mdi-brain` = ícone exclusivo LIA — não usar sparkles, stars, wand ou similares
+- [ ] Botão primário: `bg-gray-900` (#111827) / `bg-grey-darken-4` (Vuetify)
+
 **Definition of Done (DoD)**
 - [ ] [PREENCHER]
-- [ ] Testes visuais aprovados no Figma/produto
-- [ ] Revisão de acessibilidade (contraste, foco, aria-label)
+- [ ] Testes visuais aprovados — screenshot comparativo antes/depois
+- [ ] Revisão de acessibilidade (contraste WCAG AA, foco, aria-label)
 - [ ] PR aprovado e merge na branch de desenvolvimento
 
 **Critérios de Aceitação**
 - [PREENCHER]
-
----
-🔧 **Spec Técnica — LIA Design System v4.2.1**
-[PREENCHER — após análise da screenshot e do DS:
-  • Tokens incorretos vs tokens corretos (cores, tipografia, espaçamento)
-  • Equivalência Vue + Vuetify (v-btn, v-card, etc.)
-  • Componente(s) afetado(s) no produto real
-  • Regra 90/10 monocromático aplicada?
-  • Cyan = uso exclusivo LIA — aplicado corretamente?]
 -------------------------------------"""
 
 
@@ -519,8 +566,82 @@ def _md_to_adf(text: str) -> dict:
         line = lines[i]
         stripped = line.strip()
 
+        # ── Horizontal rule ────────────────────────────────────────────────────
         if stripped == "---" or stripped == "-------------------------------------":
             content.append({"type": "rule"})
+            i += 1
+            continue
+
+        # ── Code blocks (``` lang ... ```) ─────────────────────────────────────
+        if stripped.startswith("```"):
+            lang = stripped[3:].strip() or "plain"
+            # Normalise language identifiers Jira understands
+            _lang_map = {
+                "tsx": "javascript", "jsx": "javascript",
+                "ts": "javascript",  "vue": "xml",
+                "css": "css",        "python": "python",
+                "py": "python",      "sh": "bash",
+                "shell": "bash",
+            }
+            lang = _lang_map.get(lang, lang)
+            i += 1
+            code_lines: list[str] = []
+            while i < len(lines):
+                if lines[i].strip() == "```":
+                    i += 1
+                    break
+                code_lines.append(lines[i])
+                i += 1
+            code_text = "\n".join(code_lines)
+            content.append({
+                "type": "codeBlock",
+                "attrs": {"language": lang},
+                "content": [{"type": "text", "text": code_text}],
+            })
+            continue
+
+        # ── Markdown tables (| col | col |) ────────────────────────────────────
+        if stripped.startswith("|") and stripped.endswith("|"):
+            table_rows: list[dict] = []
+            is_header_row = True
+            while i < len(lines):
+                s = lines[i].strip()
+                if not (s.startswith("|") and s.endswith("|")):
+                    break
+                # Skip separator rows (|---|---|)
+                if re.match(r"^\|[\s\-|:]+\|$", s):
+                    i += 1
+                    is_header_row = False
+                    continue
+                cells = [c.strip() for c in s[1:-1].split("|")]
+                cell_type = "tableHeader" if is_header_row else "tableCell"
+                row_cells = [
+                    {
+                        "type": cell_type,
+                        "attrs": {},
+                        "content": [{"type": "paragraph", "content": _parse_inline(c)}],
+                    }
+                    for c in cells
+                ]
+                table_rows.append({"type": "tableRow", "content": row_cells})
+                i += 1
+                if is_header_row:
+                    is_header_row = False
+            if table_rows:
+                content.append({
+                    "type": "table",
+                    "attrs": {"isNumberColumnEnabled": False, "layout": "default"},
+                    "content": table_rows,
+                })
+            continue
+
+        # ── Headings ───────────────────────────────────────────────────────────
+        if stripped.startswith("### "):
+            content.append({
+                "type": "heading",
+                "attrs": {"level": 3},
+                "content": _parse_inline(stripped[4:]),
+            })
             i += 1
             continue
 
@@ -542,6 +663,7 @@ def _md_to_adf(text: str) -> dict:
             i += 1
             continue
 
+        # ── Task lists (- [ ] / - [x] ) ────────────────────────────────────────
         if stripped.startswith("- [ ] ") or stripped.startswith("- [x] "):
             task_nodes: list[dict] = []
             while i < len(lines):
@@ -556,7 +678,7 @@ def _md_to_adf(text: str) -> dict:
                         "localId": str(uuid.uuid4()),
                         "state": "DONE" if done else "TODO",
                     },
-                    "content": [{"type": "paragraph", "content": _parse_inline(item_text)}],
+                    "content": _parse_inline(item_text),
                 })
                 i += 1
             content.append({
@@ -566,6 +688,7 @@ def _md_to_adf(text: str) -> dict:
             })
             continue
 
+        # ── Bullet lists ───────────────────────────────────────────────────────
         if stripped.startswith("- "):
             bullet_nodes: list[dict] = []
             while i < len(lines):
@@ -581,6 +704,7 @@ def _md_to_adf(text: str) -> dict:
             content.append({"type": "bulletList", "content": bullet_nodes})
             continue
 
+        # ── Ordered lists ──────────────────────────────────────────────────────
         if re.match(r"^\d+\.\s", stripped):
             ordered_nodes: list[dict] = []
             while i < len(lines):
@@ -596,11 +720,13 @@ def _md_to_adf(text: str) -> dict:
             content.append({"type": "orderedList", "content": ordered_nodes})
             continue
 
+        # ── Empty line ─────────────────────────────────────────────────────────
         if stripped == "":
             content.append({"type": "paragraph", "content": []})
             i += 1
             continue
 
+        # ── Default paragraph ──────────────────────────────────────────────────
         content.append({"type": "paragraph", "content": _parse_inline(stripped)})
         i += 1
 
@@ -645,25 +771,39 @@ def cmd_post(args: argparse.Namespace) -> None:
     tags = _extract_tags(spec_text)
     adf_body = _md_to_adf(spec_text)
 
+    # ── Busca descrição atual e faz append ──────────────────────────────────
+    print(f"\n🔍  Buscando descrição atual de {card_key}...")
+    current_data = _get(f"/issue/{card_key}", {"fields": "description"})
+    current_desc = current_data["fields"].get("description") or {}
+    existing_nodes: list[dict] = []
+    if current_desc.get("type") == "doc":
+        existing_nodes = current_desc.get("content", [])
+
+    # Separator + new spec nodes
+    separator = {"type": "rule"}
+    new_nodes  = adf_body.get("content", [])
+    merged_doc = {
+        "type": "doc",
+        "version": 1,
+        "content": existing_nodes + ([separator] if existing_nodes else []) + new_nodes,
+    }
+
     if args.dry_run:
         print(f"\n{'━' * 60}")
         print(f"DRY RUN — {card_key}")
         print(f"{'━' * 60}")
-        print(f"\nTags a aplicar: {tags or '(nenhuma)'}\n")
-        print("Corpo ADF (resumo):")
-        print(json.dumps(adf_body, ensure_ascii=False, indent=2)[:2000])
+        print(f"\nTags a aplicar: {tags or '(nenhuma)'}")
+        print(f"Nós existentes na descrição: {len(existing_nodes)}")
+        print(f"Nós a adicionar: {len(new_nodes)}")
+        print("\nPrimeiros 2000 chars do doc final:")
+        print(json.dumps(merged_doc, ensure_ascii=False, indent=2)[:2000])
         print(f"\n{'─' * 60}")
-        print("✅  Dry run concluído. Rode sem --dry-run para postar.")
+        print("✅  Dry run concluído. Rode sem --dry-run para atualizar.")
         return
 
-    print(f"\n📤  Postando comentário em {card_key}...")
-    comment_payload = {"body": adf_body}
-    result = _post_json(f"/issue/{card_key}/comment", comment_payload)
-    comment_url = (
-        f"https://wedotalent.atlassian.net/browse/{card_key}"
-        f"?focusedCommentId={result.get('id', '')}"
-    )
-    print(f"✅  Comentário postado: {comment_url}")
+    print(f"📝  Atualizando descrição de {card_key} (append abaixo do conteúdo existente)...")
+    _put_json(f"/issue/{card_key}", {"fields": {"description": merged_doc}})
+    print(f"✅  Descrição atualizada: https://wedotalent.atlassian.net/browse/{card_key}")
 
     if tags:
         print(f"\n🏷️   Aplicando tags: {tags}")
