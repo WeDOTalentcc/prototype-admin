@@ -59,6 +59,106 @@ TODAY = datetime.now(timezone.utc).strftime("%d/%m/%Y")
 JAM_SEPARATOR        = "-------------------------------------"
 USERBACK_SEPARATOR   = "--- Metadata ---"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# GitHub — leitura do código Vue real (WeDOTalent/ats_front)
+# Fonte da verdade: branch develop do repositório de produção Vue/Vuetify
+# ─────────────────────────────────────────────────────────────────────────────
+
+GITHUB_REPO   = "WeDOTalent/ats_front"
+GITHUB_BRANCH = "develop"
+_GH_API       = "https://api.github.com"
+_gh_tree_cache_bug: list | None = None
+
+
+def _github_token() -> str:
+    """Retorna o PAT do GitHub configurado como secret no Replit."""
+    return os.getenv("GITHUB_PAT_WEDOTALENT", "")
+
+
+def _github_file(path: str, ref: str = GITHUB_BRANCH) -> str:
+    """Lê um arquivo do repositório Vue via GitHub API. Retorna '' se não encontrado."""
+    token = _github_token()
+    if not token:
+        return ""
+    try:
+        import base64 as _b64
+        resp = requests.get(
+            f"{_GH_API}/repos/{GITHUB_REPO}/contents/{path}",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.v3+json"},
+            params={"ref": ref},
+            timeout=15,
+        )
+        if resp.ok:
+            data = resp.json()
+            if isinstance(data, dict) and data.get("content"):
+                return _b64.b64decode(data["content"]).decode("utf-8", errors="replace")
+    except Exception:
+        pass
+    return ""
+
+
+def _github_tree(ref: str = GITHUB_BRANCH) -> list[str]:
+    """Lista todos os arquivos Vue + TS do repositório (com cache)."""
+    global _gh_tree_cache_bug
+    if _gh_tree_cache_bug is not None:
+        return _gh_tree_cache_bug
+    token = _github_token()
+    if not token:
+        return []
+    try:
+        resp = requests.get(
+            f"{_GH_API}/repos/{GITHUB_REPO}/git/trees/{ref}",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.v3+json"},
+            params={"recursive": "1"},
+            timeout=20,
+        )
+        if resp.ok:
+            files = [
+                f["path"] for f in resp.json().get("tree", [])
+                if f.get("type") == "blob"
+                and (f["path"].endswith(".vue") or f["path"].endswith(".ts"))
+            ]
+            _gh_tree_cache_bug = files
+            return files
+    except Exception:
+        pass
+    _gh_tree_cache_bug = []
+    return []
+
+
+def _find_vue_files_for_url(page_url: str, keywords: list[str], max_results: int = 4) -> list[str]:
+    """Encontra arquivos Vue relevantes dado uma URL e keywords do card."""
+    all_files = _github_tree()
+    if not all_files:
+        return []
+    # Extrai path segments da URL para usar como keywords adicionais
+    url_parts = re.findall(r"[a-zA-Z][a-zA-Z0-9_-]{2,}", page_url or "")
+    search_kw = [k.lower() for k in (keywords + url_parts)]
+    scored: list[tuple[int, str]] = []
+    for path in all_files:
+        score = sum(1 for kw in search_kw if kw in path.lower())
+        if score > 0:
+            scored.append((score, path))
+    scored.sort(key=lambda x: -x[0])
+    return [p for _, p in scored[:max_results]]
+
+
+def _vue_code_preview(vue_files: list[str], max_lines_per_file: int = 40) -> str:
+    """Lê arquivos Vue e retorna preview do código prod atual para o template."""
+    if not vue_files or not _github_token():
+        return "[GITHUB_PAT_WEDOTALENT nao configurado — adicionar manualmente]"
+    parts: list[str] = []
+    for path in vue_files[:3]:
+        content = _github_file(path)
+        if not content:
+            continue
+        lines = content.splitlines()
+        # Pega primeiras linhas do <template> block — mais revelador do UI
+        template_start = next((i for i, l in enumerate(lines) if "<template>" in l), 0)
+        snippet = lines[template_start: template_start + max_lines_per_file]
+        parts.append(f"// {GITHUB_REPO}/{path}\n" + "\n".join(snippet))
+    return "\n\n".join(parts) if parts else "[arquivo nao encontrado no GitHub]"
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Auth — ordem de prioridade:
@@ -323,7 +423,7 @@ def _format_date(iso: str) -> str:
 
 _TEMPLATE = """\
 -------------------------------------
-📋 Complemento — Revisão de Produto ({date})
+Complemento — Revisão de Produto ({date})
 
 **Metadados do Card**
 - Tipo: [PREENCHER: Bug | Melhoria UX | Task | Spike]
@@ -333,7 +433,7 @@ _TEMPLATE = """\
 - Sprint: A definir
 - Tags: [PREENCHER: lista separada por vírgula — ex: bug, ux, ds, vuetify, betterbugs]
 
-**🔗 Referência ({source})**
+**Referência ({source})**
 - Link: {ref_link}
 - Tipo de Registro: {record_type}
 - Criado por: {reporter} em {created}
@@ -355,18 +455,23 @@ _TEMPLATE = """\
 - Metadados: {device_info}
 
 ---
-🔧 **Spec Técnica — LIA Design System v4.2.1**
+**Spec Técnica — LIA Design System v4.2.1**
 
-**📁 Arquivos a Localizar**
-- Produto React (referência): `[PREENCHER: ex: src/app/funil-de-talentos/page.tsx]`
-- Produto Vue (real):         `[PREENCHER: ex: src/views/talent-funnel/TalentFunnel.vue]`
-- Buscar por:                 `[PREENCHER: ex: TalentFunnel, FunnelHeader, funil-de-talentos]`
+**Arquivos a Localizar**
+- Produto React (referência): `{react_file_hint}`
+- Produto Vue (branch develop): `{vue_file_hint}`
+
+**Código Vue Atual — Prod (WeDOTalent/ats_front / branch develop)**
+
+```vue
+{vue_code_preview}
+```
 
 **Tabela de Tokens — Referência Completa**
 
-| Propriedade | Atual (ERRADO) | Correto | CSS Var | Hex | Tailwind | Vuetify |
-|---|---|---|---|---|---|---|
-| [PREENCHER] | [ERRADO] | [CORRETO] | `--` | `#` | `class=""` | `class=""` |
+| Propriedade | Atual (ERRADO) | Correto | Hex | Tailwind | Vuetify |
+|---|---|---|---|---|---|
+| [PREENCHER] | [ERRADO] | [CORRETO] | `#` | `class=""` | `class=""` |
 
 **Componentes Afetados — Antes / Depois**
 
@@ -378,43 +483,36 @@ _TEMPLATE = """\
 Antes (ERRADO):
 
 ```vue
-<!-- Vue/Vuetify -->
-[PREENCHER]
+<!-- Vue/Vuetify — estado atual -->
+[PREENCHER com trecho do codigo Vue real acima]
 ```
 
 ```tsx
-<!-- React/Tailwind (referência) -->
+<!-- React/Tailwind — referencia -->
 [PREENCHER]
 ```
 
 Depois (CORRETO):
 
 ```vue
-<!-- Vue/Vuetify -->
+<!-- Vue/Vuetify — corrigido -->
 [PREENCHER]
 ```
 
-```tsx
-<!-- React/Tailwind (referência) -->
-[PREENCHER]
-```
+**Regra 90/10 — Checklist Obrigatório**
+- [ ] Cyan (#60BED1) SOMENTE em ícones/ações LIA/IA
+- [ ] 90% elementos: escala gray-50 a gray-950 (monocromático)
+- [ ] Todos os botões: rounded-md (8px), font-medium (500)
+- [ ] Source Serif eliminado — buscar "serif" e "Source Serif" no arquivo
+- [ ] mdi-brain = ícone exclusivo LIA — não usar sparkles, stars, wand
+- [ ] Botão primário: bg-gray-900 (#111827) / variant="primary" no BaseButton
+- [ ] Componente Button (DEPRECADO) migrado para BaseButton
 
-[Repetir este bloco para cada componente afetado:
- botões, ícones, badges, tabs, modais, inputs, listas, chips, paginação, etc.]
-
-**⚠️ Regra 90/10 — Checklist Obrigatório**
-- [ ] Cyan (#60BED1) SOMENTE em ícones/ações LIA/IA — não em bordas, bg ou outros botões
-- [ ] 90% dos elementos: escala gray-50 → gray-950 (monocromático)
-- [ ] Todos os botões: `rounded-md` (8px), `font-medium` (500), 11px / `text-caption`
-- [ ] Source Serif eliminado — buscar `serif` e `Source Serif` no arquivo e remover
-- [ ] `mdi-brain` = ícone exclusivo LIA — não usar sparkles, stars, wand ou similares
-- [ ] Botão primário: `bg-gray-900` (#111827) / `bg-grey-darken-4` (Vuetify)
-
-**Definition of Done (DoD)**
+**Definition of Done**
 - [ ] [PREENCHER]
-- [ ] Testes visuais aprovados — screenshot comparativo antes/depois
+- [ ] Screenshot comparativo antes/depois
 - [ ] Revisão de acessibilidade (contraste WCAG AA, foco, aria-label)
-- [ ] PR aprovado e merge na branch de desenvolvimento
+- [ ] PR aprovado e merge na branch develop
 
 **Critérios de Aceitação**
 - [PREENCHER]
@@ -459,6 +557,22 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         else f"[PREENCHER: link da sessão {source}]"
     )
 
+    # ── Busca arquivos Vue relevantes via GitHub ────────────────────────────
+    page_url_val = bug_info["page_url"] or ""
+    # Extrai keywords do sumário + URL para localizar arquivos Vue
+    kw_from_summary = re.findall(r"[a-zA-ZÀ-ÿ]{4,}", summary)
+    vue_files_found = _find_vue_files_for_url(page_url_val, kw_from_summary, max_results=3)
+    vue_code_preview = _vue_code_preview(vue_files_found)
+
+    react_file_hint = "[PREENCHER: ex: src/app/funil-de-talentos/page.tsx]"
+    vue_file_hint   = (
+        ", ".join(f"`{f}`" for f in vue_files_found)
+        if vue_files_found
+        else "[PREENCHER: ex: features/lia/candidates/index.vue]"
+    )
+    if vue_files_found:
+        print(f"🔗  Arquivos Vue encontrados: {vue_files_found}")
+
     template = _TEMPLATE.format(
         date=TODAY,
         priority=priority,
@@ -468,10 +582,13 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         source=source,
         record_type=record_type,
         ref_link=ref_link,
-        page_url=bug_info["page_url"] or "[não registrado]",
+        page_url=page_url_val or "[não registrado]",
         device_info=bug_info["device_info"] or "[não registrado]",
         console_logs=bug_info["console_logs"],
         network_requests=bug_info["network_requests"],
+        react_file_hint=react_file_hint,
+        vue_file_hint=vue_file_hint,
+        vue_code_preview=vue_code_preview,
     )
 
     header = (

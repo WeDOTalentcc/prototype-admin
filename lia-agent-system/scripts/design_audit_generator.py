@@ -45,6 +45,106 @@ _JIRA_BASE     = f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3"
 TODAY          = datetime.now(timezone.utc).strftime("%d/%m/%Y")
 REPLIT_ROOT    = Path(__file__).parent.parent.parent / "plataforma-lia"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# GitHub — leitura do código Vue real (WeDOTalent/ats_front)
+# ─────────────────────────────────────────────────────────────────────────────
+
+GITHUB_REPO   = "WeDOTalent/ats_front"
+GITHUB_BRANCH = "develop"
+_GH_API       = "https://api.github.com"
+_gh_tree_cache: dict | None = None
+
+
+def _github_token() -> str:
+    return os.getenv("GITHUB_PAT_WEDOTALENT", "")
+
+
+def _github_file(path: str, ref: str = GITHUB_BRANCH) -> str:
+    """Lê um arquivo do repositório Vue via GitHub API. Retorna string vazia se não encontrado."""
+    token = _github_token()
+    if not token:
+        return ""
+    try:
+        resp = requests.get(
+            f"{_GH_API}/repos/{GITHUB_REPO}/contents/{path}",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.v3+json"},
+            params={"ref": ref},
+            timeout=15,
+        )
+        if not resp.ok:
+            return ""
+        data = resp.json()
+        if isinstance(data, dict) and data.get("content"):
+            import base64 as _b64
+            return _b64.b64decode(data["content"]).decode("utf-8", errors="replace")
+    except Exception:
+        pass
+    return ""
+
+
+def _github_tree(ref: str = GITHUB_BRANCH) -> list[str]:
+    """Retorna a lista de todos os arquivos .vue do repositório (com cache)."""
+    global _gh_tree_cache
+    if _gh_tree_cache is not None:
+        return _gh_tree_cache
+    token = _github_token()
+    if not token:
+        return []
+    try:
+        resp = requests.get(
+            f"{_GH_API}/repos/{GITHUB_REPO}/git/trees/{ref}",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.v3+json"},
+            params={"recursive": "1"},
+            timeout=20,
+        )
+        if resp.ok:
+            files = [
+                f["path"] for f in resp.json().get("tree", [])
+                if f.get("type") == "blob" and f["path"].endswith(".vue")
+            ]
+            _gh_tree_cache = files
+            return files
+    except Exception:
+        pass
+    _gh_tree_cache = []
+    return []
+
+
+def _find_vue_files(keywords: list[str], max_results: int = 8) -> list[str]:
+    """Encontra arquivos Vue no repositório que correspondem às keywords."""
+    all_files = _github_tree()
+    low_kw = [k.lower() for k in keywords]
+    scored: list[tuple[int, str]] = []
+    for path in all_files:
+        score = sum(1 for kw in low_kw if kw in path.lower())
+        if score > 0:
+            scored.append((score, path))
+    scored.sort(key=lambda x: -x[0])
+    return [p for _, p in scored[:max_results]]
+
+
+def _github_snippets(vue_files: list[str], keywords: list[str], max_lines: int = 60) -> str:
+    """Lê arquivos Vue do GitHub e retorna trechos relevantes."""
+    if not vue_files or not _github_token():
+        return ""
+    parts: list[str] = []
+    low_kw = [k.lower() for k in keywords]
+    for path in vue_files[:4]:
+        content = _github_file(path)
+        if not content:
+            continue
+        lines = content.splitlines()
+        # Coleta linhas relevantes por keyword
+        relevant: list[tuple[int, str]] = []
+        for i, line in enumerate(lines):
+            if any(kw in line.lower() for kw in low_kw + ["class=", "color=", "variant=", "v-icon", "Icon ", "BaseButton", "Button "]):
+                relevant.append((i, line))
+        # Pega até max_lines das linhas mais relevantes
+        snippet_lines = [l for _, l in relevant[:max_lines]]
+        if snippet_lines:
+            parts.append(f"// {path}\n" + "\n".join(snippet_lines))
+    return "\n\n".join(parts)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DS LIA v4.2.1 — Tokens de referência
@@ -124,7 +224,16 @@ SCREEN_MAP: dict[str, dict] = {
             "src/components/search/smart-search-input.tsx",
             "src/components/modals/share-search-modal.tsx",
         ],
-        "vue_hint":     "Buscar: TalentFunnel, FunnelView, funil-de-talentos",
+        "vue_files":    [
+            "features/lia/candidates/index.vue",
+            "features/lia/candidates/SearchSourceButtons.vue",
+            "features/lia/candidates/search/similar.vue",
+            "features/lia/candidates/search/description.vue",
+            "features/lia/candidates/search/archetypes.vue",
+            "features/lia/candidates/search/boolean.vue",
+            "features/lia/search/side-panel.vue",
+        ],
+        "vue_hint":     "features/lia/candidates/index.vue + SearchSourceButtons.vue",
         "regioes":      [
             "Header (título, caption, botão compartilhar)",
             "Tabs (Todos / Favoritos / Listas / Buscas Salvas)",
@@ -146,7 +255,11 @@ SCREEN_MAP: dict[str, dict] = {
             "src/components/pages/job-kanban/KanbanCard.tsx",
             "src/components/pages/job-kanban/MoveConfirmationModal.tsx",
         ],
-        "vue_hint":     "Buscar: KanbanView, FunnelKanban, JobPipeline, pipeline",
+        "vue_files":    [
+            "features/applies/kanban_filters.vue",
+            "components/ui/table/actions/candidates.vue",
+        ],
+        "vue_hint":     "features/applies/kanban_filters.vue",
         "regioes":      [
             "Header (seletor de vaga, ações)",
             "Colunas Kanban (títulos de etapa, contagem)",
@@ -165,7 +278,11 @@ SCREEN_MAP: dict[str, dict] = {
             "src/components/modals/create-job-modal.tsx",
             "src/components/modals/edit-job-modal.tsx",
         ],
-        "vue_hint":     "Buscar: JobsView, JobsList, VagasView, jobs",
+        "vue_files":    [
+            "features/lia/jobs/search.vue",
+            "composables/useCreateJobModal.ts",
+        ],
+        "vue_hint":     "features/lia/jobs/search.vue",
         "regioes":      [
             "Header (título, botão criar vaga)",
             "Tabela/Lista de Vagas (colunas, status badge, ações)",
@@ -182,7 +299,12 @@ SCREEN_MAP: dict[str, dict] = {
         "react_files":  [
             "src/app/chat/page.tsx",
         ],
-        "vue_hint":     "Buscar: ChatView, LIAChat, ChatPage",
+        "vue_files":    [
+            "features/lia/ConversationList.vue",
+            "pages/user/lia/index.vue",
+            "pages/user/sourcing/[id]/chat.vue",
+        ],
+        "vue_hint":     "features/lia/ConversationList.vue + pages/user/lia/index.vue",
         "regioes":      [
             "Área de conversa (mensagens, timestamps)",
             "Input de mensagem (textarea, botão enviar, ícone LIA)",
@@ -200,7 +322,8 @@ SCREEN_MAP: dict[str, dict] = {
             "src/app/configuracoes/integracoes/page.tsx",
             "src/app/configuracoes/ai-credits/page.tsx",
         ],
-        "vue_hint":     "Buscar: SettingsView, ConfiguracoesView, settings",
+        "vue_files":    [],
+        "vue_hint":     "Buscar: settings, configuracoes nas pages/",
         "regioes":      [
             "Sidebar de navegação de configurações",
             "Seção de Perfil",
@@ -219,7 +342,8 @@ SCREEN_MAP: dict[str, dict] = {
             "src/app/register/page.tsx",
             "src/app/forgot-password/page.tsx",
         ],
-        "vue_hint":     "Buscar: LoginView, AuthView, login, auth",
+        "vue_files":    [],
+        "vue_hint":     "Buscar: pages/login, auth nas pages/",
         "regioes":      [
             "Logo / Marca",
             "Card de login (container, sombra, padding)",
@@ -228,6 +352,33 @@ SCREEN_MAP: dict[str, dict] = {
             "Botão Entrar (primário)",
             "Link 'Esqueci minha senha'",
             "Mensagem de erro",
+        ],
+    },
+    "modal-candidato": {
+        "nome":         "Modal Cadastro de Candidato",
+        "rota":         "/funil-de-talentos",
+        "keywords":     ["cadastro de candidato", "novo candidato", "modal candidato",
+                         "cadastrar candidato", "new candidate", "add candidate",
+                         "cv tab", "linkedin tab", "manual tab", "upload cv",
+                         "cadastrar com cv", "cadastrar via linkedin"],
+        "react_files":  [
+            "src/components/modals/new-candidate-unified-modal.tsx",
+            "src/components/modals/add-candidate-modal.tsx",
+        ],
+        "vue_files":    [
+            "features/candidates/new_candidate_dialog.vue",
+            "components/ui/base/BaseButton.vue",
+            "components/ui/button/button.vue",
+            "config/vuetify.config.ts",
+        ],
+        "vue_hint":     "features/candidates/new_candidate_dialog.vue",
+        "regioes":      [
+            "Header do Modal (título, subtítulo, dimensões)",
+            "Tabs de Navegação (CV / LinkedIn / Manual)",
+            "Tab CV (drop zone, botão Cadastrar com CV)",
+            "Tab LinkedIn (ícone header, hint LIA, botão LinkedIn)",
+            "Tab Manual (campos, botão Cadastrar Candidato)",
+            "Estado de Processamento (Brain animate-pulse)",
         ],
     },
 }
@@ -452,11 +603,25 @@ def _build_audit_template(
 ) -> str:
     lines: list[str] = []
 
+    # ── Leitura antecipada do código Vue real (GitHub) ─────────────────────
+    vue_files = screen.get("vue_files", [])
+    vue_contents: dict[str, str] = {}
+    has_github = bool(_github_token())
+    if has_github and vue_files:
+        print(f"🔗  Lendo {len(vue_files)} arquivo(s) Vue do GitHub ({GITHUB_REPO}/{GITHUB_BRANCH})...")
+        for vf in vue_files:
+            content = _github_file(vf)
+            if content:
+                vue_contents[vf] = content
+                print(f"    ✅ {vf} ({len(content.splitlines())} linhas)")
+            else:
+                print(f"    ⚠️  {vf} — não encontrado")
+
     # ── Cabeçalho ─────────────────────────────────────────────────────────
     lines += [
         "---",
         "",
-        f"## 🔍 AUDITORIA DE DESIGN — LIA Design System v4.2.1",
+        f"## AUDITORIA DE DESIGN — LIA Design System v4.2.1",
         "",
         f"**Card:** {card_key}  ",
         f"**Tela:** {screen['nome']}  ",
@@ -471,21 +636,23 @@ def _build_audit_template(
     react_files_missing = [f for f in screen["react_files"] if not (REPLIT_ROOT / f).exists()]
 
     lines += [
-        "### 📁 Arquivos de Referência",
+        "### Arquivos de Referência",
         "",
-        "**React/Next.js — CORRETO (use como especificação):**",
+        "**React/Next.js — CORRETO (referência de spec):**",
     ]
     for f in react_files_exist:
         lines.append(f"- `plataforma-lia/{f}`")
     for f in react_files_missing:
-        lines.append(f"- `plataforma-lia/{f}` ⚠️ *não encontrado — verificar nome*")
+        lines.append(f"- `plataforma-lia/{f}` — verificar nome")
 
-    lines += [
-        "",
-        f"**Vue/Vuetify — A CORRIGIR:**",
-        f"- {screen['vue_hint']}",
-        "",
-    ]
+    lines += ["", "**Vue/Vuetify — Prod atual (branch: develop):**"]
+    if vue_contents:
+        for vf in vue_files:
+            status = "lido" if vf in vue_contents else "nao encontrado"
+            lines.append(f"- `{GITHUB_REPO}/{vf}` ({status})")
+    else:
+        lines.append(f"- {screen['vue_hint']}")
+    lines.append("")
 
     # ── Leitura dos arquivos React ─────────────────────────────────────────
     all_content = "\n".join(_read_react_file(f) for f in screen["react_files"])
@@ -590,25 +757,75 @@ def _build_audit_template(
     ]
 
     # Gera seções por região da tela
+    # Prepara snippets Vue por arquivo para uso nos blocos Antes/Depois
+    def _vue_snippet_for_region(regiao: str) -> str:
+        """Extrai trecho do código Vue relacionado à região."""
+        # Keywords para buscar no código Vue
+        region_lower = regiao.lower()
+        kw_map = {
+            "header":       ["header", "title", "h2", "caption", "breadcrumb", "pa-6", "v-card-title"],
+            "tab":          ["v-tab", "v-tabs", "tab-btn", "searchType", "search-tab"],
+            "busca":        ["search", "input", "v-text-field", "FormInput", "placeholder"],
+            "modo":         ["searchType", "searchMode", "natural", "similar", "description", "archetype", "boolean"],
+            "botão":        ["BaseButton", "v-btn", "Button", "custom_color", "@click"],
+            "ícone":        ["v-icon", "Icon ", "mdi-", "lucide-", "brain", "linkedin"],
+            "cv":           ["cv", "upload", "file", "drag", "drop", "mdi-file"],
+            "linkedin":     ["linkedin", "0A66C2", "mdi-linkedin"],
+            "manual":       ["manual", "manualForm", "mdi-account"],
+            "processament": ["isEnriching", "loading", "animate-pulse", "mdi-brain", "progress"],
+            "modal":        ["v-dialog", "v-card", "v-card-title", "max-width"],
+            "chip":         ["v-chip", "FilterChip", "chip", "filter"],
+            "tabela":       ["v-data-table", "v-table", "table", "column"],
+        }
+        relevant_kw: list[str] = []
+        for key, kws in kw_map.items():
+            if key in region_lower or any(k in region_lower for k in kws[:2]):
+                relevant_kw.extend(kws)
+
+        if not relevant_kw or not vue_contents:
+            return f"<!-- Buscar em: {screen['vue_hint']} -->"
+
+        best_lines: list[str] = []
+        for vf, content in list(vue_contents.items())[:2]:
+            lines_list = content.splitlines()
+            matched: list[str] = []
+            for i, line in enumerate(lines_list):
+                if any(kw.lower() in line.lower() for kw in relevant_kw):
+                    # Include context: 1 line before + matched + 1 after
+                    start = max(0, i - 1)
+                    end = min(len(lines_list), i + 3)
+                    matched.extend(lines_list[start:end])
+                    matched.append("")
+                if len(matched) >= 30:
+                    break
+            if matched:
+                best_lines.append(f"// {vf}")
+                best_lines.extend(matched[:30])
+
+        return "\n".join(best_lines) if best_lines else f"<!-- Buscar em: {screen['vue_hint']} -->"
+
     for regiao in screen["regioes"]:
+        vue_snippet = _vue_snippet_for_region(regiao)
+        react_file_hint = screen["react_files"][0] if screen["react_files"] else "page.tsx"
+        region_tag = regiao.split("(")[0].strip().replace(" ", "")
+
         lines += [
             f"#### {regiao}",
             "",
             "**Referência React (CORRETO):**",
             "```tsx",
-            f"// TODO: extrair trecho de {screen['react_files'][0] if screen['react_files'] else 'page.tsx'}",
-            f"// Buscar por: <{regiao.split('(')[0].strip().replace(' ', '')} ...>",
+            f"// {react_file_hint}",
+            f"// Buscar por: <{region_tag}",
             "```",
             "",
-            "**Vue/Vuetify (ANTES — estado atual no produto):**",
+            "**Vue/Vuetify — ANTES (estado atual no prod):**",
             "```vue",
-            "<!-- TODO: capturar o código atual do produto Vue -->",
-            "<!-- Buscar em: " + screen["vue_hint"] + " -->",
+            vue_snippet,
             "```",
             "",
-            "**Vue/Vuetify (DEPOIS — corrigido conforme DS v4.2.1):**",
+            "**Vue/Vuetify — DEPOIS (corrigido conforme DS v4.2.1):**",
             "```vue",
-            "<!-- TODO: escrever o código corrigido conforme tokens da tabela acima -->",
+            "<!-- Preencher com o codigo corrigido conforme tokens da tabela acima -->",
             "```",
             "",
         ]
@@ -904,8 +1121,47 @@ def cmd_post(args: argparse.Namespace) -> None:
     new_adf = {"version": 1, "type": "doc", "content": merged}
 
     print(f"📤  Atualizando descrição de {key} (append de auditoria)...")
-    _put_json(f"/issue/{key}", {"fields": {"description": new_adf}})
-    print(f"✅  Auditoria adicionada: https://wedotalent.atlassian.net/browse/{key}")
+
+    # ── Tenta PUT na descrição; fallback p/ comentário se CONTENT_LIMIT_EXCEEDED ──
+    headers, jira_base = _get_auth()
+    resp = requests.put(
+        f"{jira_base}/issue/{key}",
+        headers=headers,
+        json={"fields": {"description": new_adf}},
+        timeout=30,
+    )
+    if resp.ok or resp.status_code == 204:
+        print(f"✅  Auditoria adicionada à descrição: https://wedotalent.atlassian.net/browse/{key}")
+    elif resp.status_code == 400 and "CONTENT_LIMIT_EXCEEDED" in resp.text:
+        print("⚠️  CONTENT_LIMIT_EXCEEDED — a descrição já está cheia.")
+        print("📝  Tentando SUBSTITUIR a descrição com apenas a auditoria nova...")
+        # Tenta substituir (sem os nós antigos) — mantém apenas separador + auditoria
+        replace_adf = {"version": 1, "type": "doc", "content": new_nodes}
+        resp2 = requests.put(
+            f"{jira_base}/issue/{key}",
+            headers=headers,
+            json={"fields": {"description": replace_adf}},
+            timeout=30,
+        )
+        if resp2.ok or resp2.status_code == 204:
+            print(f"✅  Descrição substituída com auditoria: https://wedotalent.atlassian.net/browse/{key}")
+        elif resp2.status_code == 400 and "CONTENT_LIMIT_EXCEEDED" in resp2.text:
+            print("⚠️  Auditoria completa ainda é muito grande. Postando em comentário...")
+            comment_adf = {"version": 1, "type": "doc", "content": new_nodes}
+            resp3 = requests.post(
+                f"{jira_base}/issue/{key}/comment",
+                headers=headers,
+                json={"body": comment_adf},
+                timeout=30,
+            )
+            if resp3.ok:
+                print(f"✅  Auditoria postada como COMENTÁRIO: https://wedotalent.atlassian.net/browse/{key}")
+            else:
+                print(f"❌  Falha ao postar comentário ({resp3.status_code}): {resp3.text[:300]}")
+        else:
+            print(f"❌  Falha ao substituir descrição ({resp2.status_code}): {resp2.text[:300]}")
+    else:
+        sys.exit(f"❌  Jira API {resp.status_code}: {resp.text[:300]}")
 
     # Labels
     labels_to_add = {"design-audit", "ds", "vuetify", "lia-v4"}
