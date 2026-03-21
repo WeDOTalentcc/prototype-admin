@@ -342,7 +342,7 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     image_attachments = [a for a in attachments if (a.get("mimeType") or "").startswith("image/")]
     if image_attachments:
         att = image_attachments[0]
-        screenshot_path = f"/tmp/bug_screenshot_{card_key}.png"
+        screenshot_path = f"/tmp/jam_screenshot_{card_key}.png"
         dl_resp = requests.get(
             att["content"], headers=_build_headers(), timeout=30, stream=True
         )
