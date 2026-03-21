@@ -531,6 +531,45 @@ SCREEN_MAP: dict[str, dict] = {
             "Estado de Processamento (Brain animate-pulse)",
         ],
     },
+    "menu-lateral": {
+        "nome":         "Menu Lateral Esquerdo (Sidebar)",
+        "rota":         "/",
+        "keywords":     ["menu lateral", "sidebar", "side menu", "menu esquerdo",
+                         "navegação lateral", "nav lateral", "painel lateral",
+                         "menu principal", "main menu", "left menu", "left nav",
+                         "WT-1637", "menu-lateral", "menu navigation",
+                         "vagas menu", "funil menu", "painel controle menu",
+                         "logo menu", "tema menu", "dark mode menu"],
+        "react_files":  [
+            "src/components/sidebar.tsx",
+            "src/components/dashboard-app.tsx",
+            "src/components/theme-toggle.tsx",
+            "src/components/ui/button.tsx",
+            "src/lib/design-tokens.ts",
+        ],
+        "vue_files":    [
+            "components/ui/menu/sidebar.vue",
+            "components/ui/menu/menu.vue",
+            "layouts/user.vue",
+            "config/vuetify.config.ts",
+        ],
+        "vue_hint":     "components/ui/menu/sidebar.vue + layouts/user.vue",
+        "regioes":      [
+            "Logo / Marca (topo do menu)",
+            "Itens de Navegação Principal (Painel de Controle, Vagas, Funil de Talentos)",
+            "Filtros de Vagas (expandido: Todas, Ativas, Paralisadas, Concluídas, Canceladas, Por Estágio)",
+            "Botão Recolher/Expandir Sidebar (ChevronLeft/Right)",
+            "Área Inferior (ThemeToggle dark/light, ícone ajuda)",
+            "Estados de lock/premium (Crown icon, módulos bloqueados)",
+            "Modo Colapsado vs Expandido (largura, ícones vs labels)",
+        ],
+        # Histórico de recentes NÃO está implementado no Vue/prod — excluir da auditoria
+        "audit_exclusions": [
+            "RecentItems / Histórico de Recentes: NÃO implementado no produto Vue/produção. "
+            "Ignorar completamente qualquer divergência relacionada a histórico de recentes, "
+            "RecentItemRow, use-recent-items, onRecentItemClick — estes existem APENAS no React prototype.",
+        ],
+    },
 }
 
 # Palavras-chave de elementos UI para extração do card Jira
@@ -1452,6 +1491,15 @@ def _call_claude_audit(
     if bb_data.get("source_url"):
         bb_context += f"\nURL do produto reportada: {bb_data['source_url']}"
 
+    # Exclusões específicas da tela (funcionalidades não implementadas no Vue/prod)
+    exclusions = screen.get("audit_exclusions", [])
+    exclusions_block = ""
+    if exclusions:
+        exclusions_block = "\n\n## ⛔ EXCLUIR DA AUDITORIA — Não implementado no Vue/prod:\n"
+        for exc in exclusions:
+            exclusions_block += f"- {exc}\n"
+        exclusions_block += "\nNão gere Issues para os itens acima — eles existem apenas no React prototype."
+
     system_prompt = f"""Você é um auditor de design especialista em DS LIA v4.2.1.
 
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -1480,7 +1528,7 @@ def _call_claude_audit(
 - Tela: {screen['nome']} ({screen['rota']})
 - Regiões: {', '.join(screen['regioes'])}
 - Arquivos Vue lidos: {', '.join(vue_files_read)}
-{bb_context}
+{bb_context}{exclusions_block}
 
 ## Formato de saída obrigatório para cada Issue:
 ### Issue NN — [Nome do Componente]: [problema conciso]
