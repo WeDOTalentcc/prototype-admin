@@ -1,6 +1,13 @@
 """
 Bug Spec Generator — Jira I/O (Jam · Userback · BetterBugs · manual)
 
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  REGRA ABSOLUTA — FONTE DA VERDADE                                         ║
+║  React/Replit = FONTE DA VERDADE ABSOLUTA de design.                        ║
+║  Vue/GitHub = código de produção que DEVE seguir o React.                  ║
+║  Qualquer divergência React ≠ Vue é um BUG — sem exceção, sem hesitação.   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
 Dois comandos simples para enriquecer cards do Jira com spec técnica.
 A geração de conteúdo (complemento + spec técnica) acontece no chat com
 o agente LIA — este script faz apenas o I/O com o Jira.
@@ -158,6 +165,64 @@ def _vue_code_preview(vue_files: list[str], max_lines_per_file: int = 40) -> str
         snippet = lines[template_start: template_start + max_lines_per_file]
         parts.append(f"// {GITHUB_REPO}/{path}\n" + "\n".join(snippet))
     return "\n\n".join(parts) if parts else "[arquivo nao encontrado no GitHub]"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VUETIFY_DEFAULTS — defaults implícitos do Vuetify que divergem do DS LIA.
+# React/Replit = fonte da verdade. Omissão de atributo Vuetify = BUG.
+# Incluir ⚠️ ALERTA VUETIFY DEFAULTS em specs de bugs causados por omissão.
+# ─────────────────────────────────────────────────────────────────────────────
+
+VUETIFY_DEFAULTS: dict[str, dict] = {
+    "v-icon": {
+        "prop": "size", "vuetify_default": "24px",
+        "react_equiv": "w-4 h-4 = 16px",
+        "correct_vuetify": 'size="16"',
+        "vuetify_config_fix": "defaults: { VIcon: { size: '16' } }",
+    },
+    "v-text-field": {
+        "prop": "density", "vuetify_default": "default (~56px)",
+        "react_equiv": "compact (~32px)",
+        "correct_vuetify": 'density="compact" variant="outlined"',
+        "vuetify_config_fix": "defaults: { VTextField: { density: 'compact', variant: 'outlined' } }",
+    },
+    "v-btn": {
+        "prop": "variant", "vuetify_default": "elevated (com sombra)",
+        "react_equiv": "flat (sem sombra)",
+        "correct_vuetify": 'variant="flat"',
+        "vuetify_config_fix": "defaults: { VBtn: { variant: 'flat', size: 'small' } }",
+    },
+    "v-btn-size": {
+        "prop": "size", "vuetify_default": "default (~36px)",
+        "react_equiv": "small (~32px)",
+        "correct_vuetify": 'size="small"',
+        "vuetify_config_fix": "defaults: { VBtn: { size: 'small' } }",
+    },
+    "v-card": {
+        "prop": "elevation", "vuetify_default": "1 (sombra)",
+        "react_equiv": "0 (flat, apenas borda)",
+        "correct_vuetify": 'elevation="0"',
+        "vuetify_config_fix": "defaults: { VCard: { elevation: 0 } }",
+    },
+    "v-tabs": {
+        "prop": "density", "vuetify_default": "default",
+        "react_equiv": "compact",
+        "correct_vuetify": 'density="compact"',
+        "vuetify_config_fix": "defaults: { VTabs: { density: 'compact' } }",
+    },
+    "v-chip": {
+        "prop": "variant", "vuetify_default": "tonal",
+        "react_equiv": "flat ou outlined",
+        "correct_vuetify": 'variant="flat" (ativo) | variant="outlined" (inativo)',
+        "vuetify_config_fix": "N/A — definir individualmente",
+    },
+    "v-select": {
+        "prop": "density", "vuetify_default": "default (~56px)",
+        "react_equiv": "compact",
+        "correct_vuetify": 'density="compact" variant="outlined"',
+        "vuetify_config_fix": "defaults: { VSelect: { density: 'compact', variant: 'outlined' } }",
+    },
+}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -713,9 +778,12 @@ Complemento — Revisão de Produto ({date})
 ---
 **Spec Técnica — LIA Design System v4.2.1**
 
-**Arquivos a Localizar**
-- Produto React (referência): `{react_file_hint}`
-- Produto Vue (branch develop): `{vue_file_hint}`
+> **REGRA ABSOLUTA:** React/Replit = FONTE DA VERDADE ABSOLUTA de design.
+> Vue/prod diverge do React = BUG. Sem exceção. Sem "verificar". Decida.
+
+**Arquivos de Referência**
+- React/Replit (CORRETO — fonte da verdade): `{react_file_hint}`
+- Vue/Prod (INCORRETO — o que precisa ser corrigido): `{vue_file_hint}`
 
 **Código Vue Atual — Prod (WeDOTalent/ats_front / branch develop)**
 
@@ -725,9 +793,12 @@ Complemento — Revisão de Produto ({date})
 
 **Tabela de Tokens — Referência Completa**
 
-| Propriedade | Atual (ERRADO) | Correto | Hex | Tailwind | Vuetify |
+| Propriedade | Vue atual (ERRADO) | React/CORRETO | Hex | Tailwind | Vuetify |
 |---|---|---|---|---|---|
 | [PREENCHER] | [ERRADO] | [CORRETO] | `#` | `class=""` | `class=""` |
+
+> **Atenção Vuetify Defaults:** Se o campo "Vue atual" for ausente (não declarado),
+> o Vuetify aplica seu default — que diverge do DS LIA. Ver tabela VUETIFY_DEFAULTS abaixo.
 
 **Componentes Afetados — Antes / Depois**
 
@@ -736,7 +807,7 @@ Complemento — Revisão de Produto ({date})
 
 **[COMPONENTE 1 — ex: Título da Página]**
 
-Antes (ERRADO):
+Antes (ERRADO — Vue/prod atual):
 
 ```vue
 <!-- Vue/Vuetify — estado atual -->
@@ -744,16 +815,33 @@ Antes (ERRADO):
 ```
 
 ```tsx
-<!-- React/Tailwind — referencia -->
+<!-- React/Tailwind — como DEVE ser (fonte da verdade) -->
 [PREENCHER]
 ```
 
-Depois (CORRETO):
+Depois (CORRETO — Vue corrigido para espelhar o React):
 
 ```vue
-<!-- Vue/Vuetify — corrigido -->
+<!-- Vue/Vuetify — corrigido conforme React/DS LIA -->
 [PREENCHER]
 ```
+
+---
+**⚠️ ALERTA VUETIFY DEFAULTS — Para dev / ClaudeCode / Cursor**
+
+> Defaults implícitos do Vuetify que causam bugs por omissão de atributo.
+> Corrija localmente E atualize `vuetify.ts` para evitar reincidência em features futuras.
+
+| Componente | Prop omitida | Default Vuetify (ERRADO) | DS LIA React (CORRETO) | Fix vuetify.ts |
+|---|---|---|---|---|
+| `v-icon` | `size` | 24px | w-4 h-4 = 16px | `VIcon: {{ size: '16' }}` |
+| `v-text-field` | `density` | default (~56px) | compact (~32px) | `VTextField: {{ density: 'compact' }}` |
+| `v-btn` | `variant` | elevated (sombra) | flat (sem sombra) | `VBtn: {{ variant: 'flat' }}` |
+| `v-btn` | `size` | default (~36px) | small (~32px) | `VBtn: {{ size: 'small' }}` |
+| `v-card` | `elevation` | 1 (sombra) | 0 (flat) | `VCard: {{ elevation: 0 }}` |
+| `v-tabs` | `density` | default | compact | `VTabs: {{ density: 'compact' }}` |
+| `v-chip` | `variant` | tonal | flat/outlined | Definir individualmente |
+| `v-select` | `density` | default (~56px) | compact | `VSelect: {{ density: 'compact' }}` |
 
 **Regra 90/10 — Checklist Obrigatório**
 - [ ] Cyan (#60BED1) SOMENTE em ícones/ações LIA/IA

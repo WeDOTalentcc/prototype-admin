@@ -1,13 +1,21 @@
 """
 Design Audit Generator — Jira I/O para Auditoria de Design completa de tela.
 
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  REGRA ABSOLUTA — FONTE DA VERDADE                                         ║
+║  React/Replit = FONTE DA VERDADE ABSOLUTA de design.                        ║
+║  Vue/GitHub = código de produção que DEVE seguir o React.                  ║
+║  Qualquer divergência React ≠ Vue é um BUG — sem exceção, sem hesitação.   ║
+║  NUNCA gerar "[VER NO PROD]". NUNCA gerar "verificar". DECIDA.             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
 Fluxo:
   1. Usuário grava vídeo comparando telas (produto Vue vs. protótipo React/Replit)
      e cria card Jira mencionando tela + elementos a auditar.
   2. `fetch` lê a descrição do card, identifica a tela e os elementos solicitados,
-     lê os arquivos React correspondentes, e gera um template de auditoria pré-preenchido.
-  3. Agente ou dev preenche a coluna "Vue/Prod (VER)" e os blocos Antes/Depois.
-  4. `post` faz append do template preenchido na descrição do card.
+     lê os arquivos React (Replit — fonte da verdade) + Vue (GitHub — prod),
+     compara via IA e gera Issues numerados determinísticos com Antes/Depois.
+  3. `post` faz append do resultado na descrição ou posta como comentário (--as-comment).
 
 Configuração (mesma do bug_spec_generator):
     JIRA_EMAIL       = email da conta Atlassian
@@ -199,6 +207,148 @@ DS_TOKENS = {
         "tabs_trigger":      ("rounded-md text-xs", "Vuetify: VTab text-style='caption'"),
         "dialog_header":     ("px-6 pt-5 pb-3 border-b border-gray-100", "Vuetify: VCardTitle + VDivider"),
         "dialog_footer":     ("px-6 py-4 border-t border-gray-100 flex justify-end gap-2", "Vuetify: VCardActions"),
+    },
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VUETIFY_DEFAULTS — Mapa de defaults implícitos do Vuetify que conflitam
+# com o DS LIA v4.2.1 (React/Replit como fonte da verdade).
+#
+# REGRA: quando o Vue omite um atributo listado aqui, o Vuetify aplica seu
+# próprio default — que DIVERGE do que o React/Replit especifica.
+# Toda omissão = BUG. Todo Issue deve incluir ⚠️ ALERTA VUETIFY DEFAULTS
+# orientando o dev a corrigir também o vuetify.ts global para não perpetuar
+# o erro em features futuras.
+# ─────────────────────────────────────────────────────────────────────────────
+
+VUETIFY_DEFAULTS: dict[str, dict] = {
+    "v-icon": {
+        "prop":               "size",
+        "vuetify_default":    "24px (padrão Material Design)",
+        "react_equiv":        "w-4 h-4 = 16px (padrão DS LIA)",
+        "correct_vuetify":    'size="16"',
+        "px_diff":            "8px a mais no produto",
+        "description":        (
+            "v-icon sem 'size' → Vuetify aplica 24px. "
+            "DS LIA usa ícones de 16px (w-4 h-4). Ícone 50% maior no produto."
+        ),
+        "local_fix":          '<v-icon size="16">mdi-*</v-icon>',
+        "vuetify_config_fix": "defaults: { VIcon: { size: '16' } }  // em vuetify.ts",
+    },
+    "v-text-field": {
+        "prop":               "density",
+        "vuetify_default":    "default (height ~56px)",
+        "react_equiv":        "compact (height ~36px)",
+        "correct_vuetify":    'density="compact" variant="outlined"',
+        "px_diff":            "~20px de altura a mais no produto",
+        "description":        (
+            "v-text-field sem 'density' → Vuetify 'default' (~56px altura). "
+            "React usa input text-xs h-8 (~32px). Campo visivelmente mais alto no produto."
+        ),
+        "local_fix":          '<v-text-field density="compact" variant="outlined">',
+        "vuetify_config_fix": "defaults: { VTextField: { density: 'compact', variant: 'outlined' } }  // em vuetify.ts",
+    },
+    "v-btn": {
+        "prop":               "variant",
+        "vuetify_default":    "elevated (box-shadow visível)",
+        "react_equiv":        "flat ou outlined (sem sombra)",
+        "correct_vuetify":    'variant="flat" (primário) | variant="outlined" (secundário)',
+        "px_diff":            "sombra indevida + altura maior",
+        "description":        (
+            "v-btn sem 'variant' → Vuetify 'elevated' com box-shadow. "
+            "DS LIA proíbe sombras em botões — usa flat/outlined apenas."
+        ),
+        "local_fix":          'Primário: <BaseButton color="grey-darken-4" variant="flat"> | Outline: variant="outlined"',
+        "vuetify_config_fix": "defaults: { VBtn: { variant: 'flat', size: 'small' } }  // em vuetify.ts",
+    },
+    "v-btn-size": {
+        "prop":               "size",
+        "vuetify_default":    "default (h ~36px)",
+        "react_equiv":        "small (h ~32px = h-8)",
+        "correct_vuetify":    'size="small"',
+        "px_diff":            "~4px de altura a mais no produto",
+        "description":        (
+            "v-btn sem 'size' → altura padrão Vuetify ~36px. "
+            "React usa h-8 (32px). Botão visivelmente mais alto no produto."
+        ),
+        "local_fix":          '<v-btn size="small">',
+        "vuetify_config_fix": "defaults: { VBtn: { size: 'small' } }  // em vuetify.ts",
+    },
+    "v-card": {
+        "prop":               "elevation",
+        "vuetify_default":    "1 (sombra sutil box-shadow)",
+        "react_equiv":        "0 (flat — borda apenas, sem sombra)",
+        "correct_vuetify":    'elevation="0" + border',
+        "px_diff":            "sombra indevida",
+        "description":        (
+            "v-card sem 'elevation' → sombra sutil padrão Vuetify. "
+            "DS LIA usa cards flat (border-gray-200, sem sombra)."
+        ),
+        "local_fix":          '<v-card elevation="0" class="border border-grey-lighten-3">',
+        "vuetify_config_fix": "defaults: { VCard: { elevation: 0 } }  // em vuetify.ts",
+    },
+    "v-tabs": {
+        "prop":               "density",
+        "vuetify_default":    "default (altura padrão)",
+        "react_equiv":        "compact (text-xs rounded-md)",
+        "correct_vuetify":    'density="compact" elevation="0"',
+        "px_diff":            "tabs mais altos que o React",
+        "description":        (
+            "VTabs sem density → altura padrão Vuetify. "
+            "React usa tabs com rounded-md text-xs (menores e mais discretos)."
+        ),
+        "local_fix":          '<v-tabs density="compact" elevation="0">',
+        "vuetify_config_fix": "defaults: { VTabs: { density: 'compact' } }  // em vuetify.ts",
+    },
+    "v-chip": {
+        "prop":               "variant",
+        "vuetify_default":    "tonal (fundo colorido sutil)",
+        "react_equiv":        "outlined (borda + bg branco) ou flat (bg cinza escuro)",
+        "correct_vuetify":    'Ativo: variant="flat" color="grey-darken-4" | Inativo: variant="outlined"',
+        "px_diff":            "fundo tonal em vez de outlined/flat",
+        "description":        (
+            "v-chip sem variant → tonal (fundo com cor 10% opacidade). "
+            "DS LIA usa chip ativo: bg-gray-900 branco; inativo: outlined border-gray-200."
+        ),
+        "local_fix":          'Ativo: <v-chip variant="flat" color="grey-darken-4"> | Inativo: <v-chip variant="outlined" color="grey-darken-2">',
+        "vuetify_config_fix": "N/A — chips têm contextos diferentes, definir individualmente",
+    },
+    "v-select": {
+        "prop":               "density",
+        "vuetify_default":    "default (height ~56px)",
+        "react_equiv":        "compact (height ~36px)",
+        "correct_vuetify":    'density="compact" variant="outlined"',
+        "px_diff":            "~20px de altura a mais no produto",
+        "description":        (
+            "v-select sem density → mesmo problema do v-text-field. "
+            "Selects muito altos comparado ao React compact."
+        ),
+        "local_fix":          '<v-select density="compact" variant="outlined">',
+        "vuetify_config_fix": "defaults: { VSelect: { density: 'compact', variant: 'outlined' } }  // em vuetify.ts",
+    },
+    "v-autocomplete": {
+        "prop":               "density",
+        "vuetify_default":    "default (height ~56px)",
+        "react_equiv":        "compact",
+        "correct_vuetify":    'density="compact" variant="outlined"',
+        "px_diff":            "~20px de altura a mais no produto",
+        "description":        "v-autocomplete sem density → mesmo problema do v-text-field.",
+        "local_fix":          '<v-autocomplete density="compact" variant="outlined">',
+        "vuetify_config_fix": "defaults: { VAutocomplete: { density: 'compact', variant: 'outlined' } }  // em vuetify.ts",
+    },
+    "v-dialog": {
+        "prop":               "max-width",
+        "vuetify_default":    "auto (estica até o conteúdo)",
+        "react_equiv":        "max-w-lg = 512px",
+        "correct_vuetify":    'max-width="512"',
+        "px_diff":            "modal pode ser muito largo ou estreito",
+        "description":        (
+            "v-dialog sem max-width → se estica ou colapsa dependendo do conteúdo. "
+            "React modais usam max-w-lg (512px) como padrão."
+        ),
+        "local_fix":          '<v-dialog max-width="512">',
+        "vuetify_config_fix": "N/A — definir max-width individualmente por dialog",
     },
 }
 
@@ -853,6 +1003,291 @@ def _extract_search_modes(content: str) -> list[dict[str, str]]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Vue value extractor — extrai valores reais dos arquivos Vue do GitHub
+# Substitui [VER NO PROD] por valores concretos ou alerta de default Vuetify
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _extract_vue_attr(
+    vue_contents: dict[str, str],
+    component: str,
+    attr: str,
+) -> str:
+    """Extrai o valor real de um atributo em um componente Vue (GitHub prod).
+
+    Retorna:
+      - Valor encontrado explicitamente (ex: 'compact (index.vue)')
+      - '❌ AUSENTE → Vuetify default: Xpx' quando atributo está omitido
+      - '[não encontrado]' se componente não aparece nos arquivos lidos
+
+    React/Replit = fonte da verdade. Ausência de atributo Vuetify = BUG.
+    """
+    # Padrões de busca: valor entre aspas, binding dinâmico, atributo sem valor
+    patterns_with_value = [
+        rf'<{re.escape(component)}[^>]*\s{re.escape(attr)}=["\']([^"\']+)["\']',
+        rf'<{re.escape(component)}[^>]*\s:{re.escape(attr)}=["\']([^"\']+)["\']',
+        rf'<{re.escape(component)}[^>]*\s:{re.escape(attr)}="([^"]+)"',
+    ]
+    component_present_pattern = rf'<{re.escape(component)}\b'
+
+    found_component = False
+    for filename, content in vue_contents.items():
+        short_name = filename.split("/")[-1]
+        # Busca valor explícito
+        for pat in patterns_with_value:
+            m = re.search(pat, content, re.IGNORECASE | re.DOTALL)
+            if m:
+                return f"`{m.group(1)}` ({short_name})"
+        # Componente existe mas atributo ausente → default Vuetify
+        if re.search(component_present_pattern, content, re.IGNORECASE):
+            found_component = True
+            default_info = VUETIFY_DEFAULTS.get(component, {})
+            if default_info:
+                return (
+                    f"❌ AUSENTE → Vuetify default: **{default_info['vuetify_default']}** "
+                    f"({short_name}) — React usa {default_info['react_equiv']}"
+                )
+    if found_component:
+        return f"[atributo '{attr}' não encontrado — verificar manualmente]"
+    return "[componente não encontrado nos arquivos Vue lidos]"
+
+
+def _format_vuetify_defaults_alert(detected_components: list[str]) -> str:
+    """Gera o bloco ⚠️ ALERTA VUETIFY DEFAULTS para Issues causados por omissão.
+
+    Inclui: qual default está errado, fix local, fix global em vuetify.ts.
+    Este alerta é destinado ao dev/ClaudeCode/Cursor para prevenir reincidência.
+    """
+    if not detected_components:
+        return ""
+
+    lines = [
+        "",
+        "---",
+        "",
+        "## ⚠️ ALERTA VUETIFY DEFAULTS — Para dev / ClaudeCode / Cursor",
+        "",
+        "> **Causa raiz sistêmica:** Os Issues abaixo não são erros isolados — são causados por",
+        "> defaults implícitos do Vuetify que divergem do DS LIA (React/Replit = fonte da verdade).",
+        "> Corrija localmente **E** atualize o arquivo `vuetify.ts` (global defaults) para",
+        "> **evitar que os mesmos erros apareçam em features futuras**.",
+        "",
+        "### Defaults identificados nesta auditoria",
+        "",
+    ]
+
+    for comp in detected_components:
+        info = VUETIFY_DEFAULTS.get(comp)
+        if not info:
+            continue
+        lines += [
+            f"#### `{comp}` — `{info['prop']}` ausente",
+            "",
+            f"- **Vuetify default implícito:** {info['vuetify_default']}",
+            f"- **React/Replit (correto):** {info['react_equiv']}",
+            f"- **Impacto visual:** {info.get('px_diff', 'divergência visual')}",
+            f"- **Fix local:** `{info['local_fix']}`",
+            f"- **Fix global (vuetify.ts):** `{info['vuetify_config_fix']}`",
+            "",
+        ]
+
+    lines += [
+        "### Como atualizar o vuetify.ts",
+        "",
+        "```typescript",
+        "// ats_front/plugins/vuetify.ts (ou config/vuetify.config.ts)",
+        "createVuetify({",
+        "  defaults: {",
+        "    VIcon:         { size: '16' },",
+        "    VTextField:    { density: 'compact', variant: 'outlined' },",
+        "    VSelect:       { density: 'compact', variant: 'outlined' },",
+        "    VAutocomplete: { density: 'compact', variant: 'outlined' },",
+        "    VBtn:          { variant: 'flat',    size: 'small' },",
+        "    VCard:         { elevation: 0 },",
+        "    VTabs:         { density: 'compact' },",
+        "  },",
+        "})",
+        "```",
+        "",
+        "> **Referência:** React/Replit é sempre a fonte da verdade de design.",
+        "> Qualquer componente Vue que diverge do React = bug a corrigir.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Claude AI — comparação determinística React vs Vue
+# React/Replit = fonte da verdade absoluta
+# Gera Issues numerados com Antes/Depois concretos, sem hesitação
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _call_claude_audit(
+    react_code: str,
+    vue_code: str,
+    screen: dict,
+    card_key: str,
+    card_description: str,
+    vue_files_read: list[str],
+    bb_data: dict | None = None,
+) -> tuple[str, list[str]]:
+    """Chama Claude para gerar Issues de auditoria determinísticos.
+
+    Retorna:
+        (markdown_issues, detected_vuetify_default_components)
+
+    REGRA ABSOLUTA no prompt:
+      React/Replit = fonte da verdade. Vue diverge = BUG. Sem [VER NO PROD].
+      Sem 'verificar'. Decida e gere o Issue completo.
+    """
+    try:
+        import anthropic
+    except ImportError:
+        return ("[anthropic não disponível — pip install anthropic]", [])
+
+    api_key = (
+        os.getenv("ANTHROPIC_API_KEY")
+        or os.getenv("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+        or ""
+    )
+    api_base = (
+        os.getenv("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+        or None
+    )
+    if not api_key:
+        return ("[ANTHROPIC_API_KEY não configurada — Issues gerados apenas via extração estática]", [])
+
+    bb_data = bb_data or {}
+
+    # Constrói o contexto de defaults Vuetify para o prompt
+    vuetify_defaults_context = "\n".join(
+        f"  - {comp}: sem '{info['prop']}' → Vuetify default {info['vuetify_default']} "
+        f"(React usa {info['react_equiv']})"
+        for comp, info in VUETIFY_DEFAULTS.items()
+    )
+
+    bb_context = ""
+    if bb_data.get("betterbugs_session"):
+        bb_context = f"\nSessão BetterBugs (evidência visual): {bb_data['betterbugs_session']}"
+    if bb_data.get("source_url"):
+        bb_context += f"\nURL do produto reportada: {bb_data['source_url']}"
+
+    system_prompt = f"""Você é um auditor de design especialista em DS LIA v4.2.1.
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  REGRA ABSOLUTA — FONTE DA VERDADE                                         ║
+║  React/Replit = FONTE DA VERDADE ABSOLUTA de design.                        ║
+║  Vue/GitHub = código de produção que DEVE seguir o React.                  ║
+║  Qualquer divergência React ≠ Vue é um BUG — sem exceção, sem hesitação.   ║
+║  NUNCA gere "[VER NO PROD]". NUNCA gere "verificar". DECIDA.              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+## Defaults implícitos do Vuetify que causam bugs por omissão:
+{vuetify_defaults_context}
+
+## DS LIA v4.2.1 — Regras absolutas:
+- Fonte tipográfica: Open Sans (nunca Source Serif, nunca font-serif)
+- Botão primário: sempre preto (gray-900/grey-darken-4), nunca colorido
+- Border radius: sempre 8px (rounded-md) — nunca rounded-lg, rounded-full
+- Ícones padrão: 16px (w-4 h-4) → Vuetify: size="16"
+- Cores proibidas em UI: #ffa726 (orange-lighten-1), #2196F3 (blue padrão)
+- cyan #60BED1 = EXCLUSIVO ícone LIA (Brain/mdi-brain) — nada mais
+- BaseButton OBRIGATÓRIO (Button DEPRECADO)
+- verde #5da47a: apenas em estado ativo de filtros email/phone
+
+## Tela em auditoria:
+- Card Jira: {card_key}
+- Tela: {screen['nome']} ({screen['rota']})
+- Regiões: {', '.join(screen['regioes'])}
+- Arquivos Vue lidos: {', '.join(vue_files_read)}
+{bb_context}
+
+## Formato de saída obrigatório para cada Issue:
+### Issue NN — [Nome do Componente]: [problema conciso]
+
+**Arquivo Vue:** `caminho/do/arquivo.vue`
+**Regra DS LIA:** [qual regra está sendo violada]
+
+**ANTES (Vue atual — INCORRETO):**
+```vue
+[código atual do produto]
+```
+
+**DEPOIS (deve ficar assim — React/DS LIA):**
+```vue
+[código corrigido]
+```
+
+[Se o bug vier de default Vuetify omitido, adicionar:]
+> ⚠️ DEFAULT VUETIFY: Este erro ocorre porque `v-componente` sem o atributo `X`
+> aplica o default do Vuetify (Y) em vez do DS LIA (Z).
+> Corrigir localmente E atualizar `vuetify.ts` (veja seção ALERTA ao final).
+"""
+
+    user_message = f"""## Descrição do card Jira ({card_key})
+{card_description[:2000]}
+
+---
+
+## Código React (FONTE DA VERDADE — como DEVE ser):
+```tsx
+{react_code[:6000]}
+```
+
+---
+
+## Código Vue (PRODUÇÃO ATUAL — o que ESTÁ implementado):
+```vue
+{vue_code[:6000]}
+```
+
+---
+
+## Tarefa
+
+Compare o código React vs Vue linha a linha.
+Para CADA divergência encontrada, gere um Issue numerado no formato especificado.
+Seja preciso e determinístico — sem "[VER NO PROD]", sem "verificar", sem "talvez".
+Se React tem `w-4 h-4` (16px) e Vue tem `v-icon` sem `size` (Vuetify default 24px) → é um Issue.
+Se React usa `BaseButton` e Vue usa `<button>` ou `<v-btn>` sem as propriedades corretas → é um Issue.
+Se React tem `variant="outline"` e Vue não tem `variant` → é um Issue.
+
+Ao final dos Issues, liste brevemente (1 linha cada) os componentes Vuetify onde defaults foram omitidos."""
+
+    try:
+        client_kwargs: dict = {"api_key": api_key}
+        if api_base:
+            client_kwargs["base_url"] = api_base
+        client = anthropic.Anthropic(**client_kwargs)
+        response = client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=4096,
+            messages=[{"role": "user", "content": user_message}],
+            system=system_prompt,
+        )
+        result_text = response.content[0].text if response.content else ""
+
+        # Detecta quais componentes Vuetify tiveram defaults omitidos
+        detected: list[str] = []
+        for comp in VUETIFY_DEFAULTS:
+            if comp in result_text or comp.replace("-", "_") in result_text:
+                detected.append(comp)
+        # Também verifica via regex direto no Vue code
+        for comp, info in VUETIFY_DEFAULTS.items():
+            prop = info["prop"]
+            comp_pat = rf'<{re.escape(comp)}\b'
+            attr_pat = rf'\b{re.escape(prop)}='
+            if re.search(comp_pat, vue_code, re.IGNORECASE):
+                if not re.search(attr_pat, vue_code, re.IGNORECASE):
+                    if comp not in detected:
+                        detected.append(comp)
+
+        return result_text, detected
+
+    except Exception as exc:
+        return (f"[Erro na chamada Claude: {exc}]", [])
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Template builder — gera o markdown de auditoria pré-preenchido
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -998,13 +1433,62 @@ def _build_audit_template(
             lines.append(f"| `{m['key']}` | {m['label']} | `{m['icon']}` | `{vuetify_icon}` |")
         lines.append("")
 
+    # ── Issues IA — comparação determinística React vs Vue ────────────────
+    print("🤖  Chamando Claude para análise determinística React vs Vue...")
+    all_vue_code = "\n\n".join(
+        f"// === {vf} ===\n{content}"
+        for vf, content in vue_contents.items()
+    ) if vue_contents else "(nenhum arquivo Vue disponível)"
+
+    ai_issues_md, detected_vuetify_comps = _call_claude_audit(
+        react_code=all_content,
+        vue_code=all_vue_code,
+        screen=screen,
+        card_key=card_key,
+        card_description=description_text,
+        vue_files_read=list(vue_contents.keys()),
+        bb_data=bb_data,
+    )
+    if ai_issues_md.startswith("["):
+        print(f"    ⚠️  {ai_issues_md}")
+    else:
+        # Conta Issues tanto em h2 (## Issue) quanto em h3 (### Issue)
+        n_issues = ai_issues_md.count("## Issue") + ai_issues_md.count("### Issue")
+        print(f"    ✅ IA gerou {n_issues} issue(s) determinístico(s)")
+        print(f"    📦 Defaults Vuetify detectados: {detected_vuetify_comps or 'nenhum'}")
+
+    lines += [
+        "---",
+        "",
+        "## 🔍 Issues de Auditoria — React vs Vue (gerados por IA)",
+        "",
+        "> **Metodologia:** React/Replit = fonte da verdade absoluta.",
+        "> Cada Issue abaixo é um bug confirmado — Vue diverge do React.",
+        "> Sem '[VER NO PROD]'. Sem 'verificar'. Cada Issue tem Antes/Depois concreto.",
+        "",
+        ai_issues_md,
+        "",
+    ]
+
+    # ── Alerta Vuetify Defaults (se aplicável) ─────────────────────────────
+    if detected_vuetify_comps:
+        vuetify_alert = _format_vuetify_defaults_alert(detected_vuetify_comps)
+        lines.append(vuetify_alert)
+
     # ── Tabela de Tokens ───────────────────────────────────────────────────
+    # Usa _extract_vue_attr() para substituir [VER NO PROD] por valores reais
+    def _vue_val(component: str, attr: str, fallback: str = "") -> str:
+        """Retorna valor real do Vue ou alerta de default Vuetify."""
+        if not vue_contents:
+            return fallback or "[Vue não lido]"
+        return _extract_vue_attr(vue_contents, component, attr)
+
     lines += [
         "---",
         "",
         "### 📋 Tabela de Tokens — Auditoria Completa",
         "",
-        "| Componente | Propriedade | React/CORRETO | Vue/Prod (VER) | CSS Var | Hex | Tailwind | Vuetify |",
+        "| Componente | Propriedade | React/CORRETO | Vue/Prod (REAL) | CSS Var | Hex | Tailwind | Vuetify |",
         "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
 
@@ -1012,23 +1496,35 @@ def _build_audit_template(
     titulo_cls = _extract_class_for_pattern(all_content, "<h1")
     if titulo_cls == "[extrair manualmente]":
         titulo_cls = "textStyles.title + text-xl font-semibold"
+
+    # Extrai valores reais do Vue para componentes-chave
+    vue_input_density    = _vue_val("v-text-field", "density")
+    vue_input_variant    = _vue_val("v-text-field", "variant")
+    vue_icon_size        = _vue_val("v-icon", "size")
+    vue_btn_variant      = _vue_val("v-btn", "variant")
+    vue_btn_size         = _vue_val("v-btn", "size")
+    vue_card_elevation   = _vue_val("v-card", "elevation")
+    vue_tabs_density     = _vue_val("v-tabs", "density")
+    vue_chip_active_var  = _vue_val("v-chip", "variant")
+    vue_dialog_width     = _vue_val("v-dialog", "max-width")
+
     lines += [
-        f"| Header — Título h1 | font, size, weight, color | `{titulo_cls}` | [VER NO PROD] | `--color-gray-900` | #111827 | `text-xl font-semibold text-gray-900` | `class=\"text-h6 font-weight-semibold\"` |",
-        "| Header — Caption | font, size, color | `textStyles.secondary text-xs mt-0.5` | [VER NO PROD] | `--color-gray-500` | #6B7280 | `text-xs text-gray-500` | `class=\"text-caption text-grey-lighten-1\"` |",
-        "| Botão Compartilhar | variant, border, font | `variant='outline' rounded-md border-gray-300` | [VER NO PROD] | — | — | `rounded-md border-gray-300` | `variant='outlined' color='grey-darken-4'` |",
-        "| Botão Primário | bg, text, hover | `bg-gray-900 text-white hover:bg-gray-800` | [VER NO PROD] | — | #111827 | `bg-gray-900` | `color='grey-darken-4' variant='flat'` |",
-        "| Tabs — Lista | bg, border, radius | `bg-white border border-gray-200 rounded-md` | [VER NO PROD] | `--color-gray-200` | #E5E7EB | `border-gray-200 rounded-md` | `VTabs elevation='0'` |",
-        "| Tabs — Trigger | font, size, radius | `rounded-md text-xs font-medium` | [VER NO PROD] | — | — | `text-xs rounded-md` | `text-style='caption'` |",
-        "| Badge Contagem | bg, text, size | `bg-gray-900 text-white h-4 px-1.5 text-[10px]` | [VER NO PROD] | — | #111827 | `bg-gray-900 text-[10px]` | `bg-color='grey-darken-4' rounded='pill'` |",
-        "| Input Busca | pl, font, border, radius | `pl-9 text-xs rounded-md border-gray-200 bg-transparent` | [VER NO PROD] | `--color-gray-200` | #E5E7EB | `pl-9 text-xs rounded-md` | `variant='outlined' density='compact'` |",
-        "| Search Ícone | icon, size, color | `Search h-4 w-4 text-gray-400` | [VER NO PROD] | `--color-gray-400` | #9CA3AF | — | `mdi-magnify color='grey-lighten-1'` |",
-        "| Chip Status — Ativo | bg, text, border | `bg-gray-900 text-white border-gray-900` | [VER NO PROD] | — | #111827 | `bg-gray-900` | `color='grey-darken-4' variant='flat'` |",
-        "| Chip Status — Inativo | bg, text, border | `bg-white text-gray-600 border-gray-200` | [VER NO PROD] | — | #4B5563 | `text-gray-600 border-gray-200` | `color='grey-darken-2' variant='outlined'` |",
-        "| Ícone Brain LIA | icon, size, color | `Brain w-4 h-4 text-wedo-cyan` | [VER NO PROD] | `--color-wedo-cyan` | #60BED1 | — | `mdi-brain color='#60BED1'` |",
-        "| Modal — Header | padding, border-b | `px-6 pt-5 pb-3 border-b border-gray-100` | [VER NO PROD] | `--color-gray-100` | #F3F4F6 | `border-gray-100` | `VCardTitle + VDivider` |",
-        "| Modal — Título | font, size, weight | `textStyles.title flex items-center gap-2` | [VER NO PROD] | — | — | `text-gray-900 font-semibold` | `class=\"text-h6\"` |",
-        "| Fundo Página | bg | `bg-gray-50 dark:bg-gray-950` | [VER NO PROD] | `--color-gray-50` | #F9FAFB | `bg-gray-50` | `bg-color='grey-lighten-5'` |",
-        "| Fundo Card/Painel | bg, border, radius | `bg-white border border-gray-200 rounded-md` | [VER NO PROD] | — | #FFFFFF | `bg-white` | `VCard elevation='0'` |",
+        f"| Header — Título h1 | font, size, weight, color | `{titulo_cls}` | {_vue_val('div', 'class')} | `--color-gray-900` | #111827 | `text-xl font-semibold text-gray-900` | `class=\"text-h6 font-weight-semibold\"` |",
+        f"| Header — Caption | font, size, color | `textStyles.secondary text-xs mt-0.5` | {_vue_val('span', 'class')} | `--color-gray-500` | #6B7280 | `text-xs text-gray-500` | `class=\"text-caption text-grey-lighten-1\"` |",
+        f"| Botão Compartilhar | variant, border, font | `variant='outline' rounded-md border-gray-300` | {vue_btn_variant} | — | — | `rounded-md border-gray-300` | `variant='outlined' color='grey-darken-4'` |",
+        f"| Botão Primário | bg, text, hover | `bg-gray-900 text-white hover:bg-gray-800` | {vue_btn_variant} | — | #111827 | `bg-gray-900` | `color='grey-darken-4' variant='flat'` |",
+        f"| v-btn size | altura do botão | `h-8 = 32px (small)` | {vue_btn_size} | — | — | `h-8` | `size='small'` |",
+        f"| Tabs — Lista | bg, border, radius | `bg-white border border-gray-200 rounded-md` | {vue_tabs_density} | `--color-gray-200` | #E5E7EB | `border-gray-200 rounded-md` | `VTabs elevation='0'` |",
+        f"| Badge Contagem | bg, text, size | `bg-gray-900 text-white h-4 px-1.5 text-[10px]` | {_vue_val('v-chip', 'color')} | — | #111827 | `bg-gray-900 text-[10px]` | `bg-color='grey-darken-4' rounded='pill'` |",
+        f"| Input Busca density | height do campo | `text-xs h-8 (compact)` | {vue_input_density} | `--color-gray-200` | #E5E7EB | `pl-9 text-xs rounded-md` | `density='compact'` |",
+        f"| Input Busca variant | estilo da borda | `border-gray-200 (outlined)` | {vue_input_variant} | `--color-gray-200` | #E5E7EB | `border rounded-md` | `variant='outlined'` |",
+        f"| Search Ícone size | tamanho do ícone | `Search h-4 w-4 = 16px` | {vue_icon_size} | `--color-gray-400` | #9CA3AF | — | `mdi-magnify size='16'` |",
+        f"| Chip Status — Ativo | bg, text, border | `bg-gray-900 text-white border-gray-900` | {vue_chip_active_var} | — | #111827 | `bg-gray-900` | `color='grey-darken-4' variant='flat'` |",
+        f"| Chip Status — Inativo | bg, text, border | `bg-white text-gray-600 border-gray-200` | {vue_chip_active_var} | — | #4B5563 | `text-gray-600 border-gray-200` | `color='grey-darken-2' variant='outlined'` |",
+        f"| Ícone Brain LIA | icon, size, color | `Brain w-4 h-4 text-wedo-cyan` | {vue_icon_size} | `--color-wedo-cyan` | #60BED1 | — | `mdi-brain color='#60BED1' size='16'` |",
+        f"| Modal — Header | padding, border-b | `px-6 pt-5 pb-3 border-b border-gray-100` | {_vue_val('v-card', 'class')} | `--color-gray-100` | #F3F4F6 | `border-gray-100` | `VCardTitle + VDivider` |",
+        f"| Fundo Card/Painel | elevation, border | `bg-white border border-gray-200 rounded-md` | {vue_card_elevation} | — | #FFFFFF | `bg-white` | `elevation='0'` |",
+        f"| Modal max-width | largura do dialog | `max-w-lg = 512px` | {vue_dialog_width} | — | — | `max-w-lg` | `max-width='512'` |",
     ]
     lines.append("")
 
@@ -1038,7 +1534,8 @@ def _build_audit_template(
         "",
         "### 🔄 Specs Antes / Depois — por Componente",
         "",
-        "> **Instruções para o dev:** Para cada bloco abaixo, copie o código React como referência visual e ajuste o código Vue conforme as especificações da tabela acima.",
+        "> **React/Replit = fonte da verdade.** Os snippets Vue abaixo mostram o estado atual do produto.",
+        "> Corrija cada região para que o Vue espelhe o React exatamente.",
         "",
     ]
 
@@ -1420,6 +1917,84 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     print(f"\n🔗  Card: https://wedotalent.atlassian.net/browse/{key}")
 
 
+def _extract_issues_section(full_markdown: str) -> str:
+    """Extrai apenas as seções acionáveis para comentário Jira:
+      1. Cabeçalho da auditoria (primeiras linhas até primeira '---')
+      2. Issues de Auditoria (gerados por IA)
+      3. ALERTA VUETIFY DEFAULTS (se presente)
+
+    Remove: Tabela de Tokens, Specs Antes/Depois, Ícones detectados, Mapa de Componentes.
+    Isso garante que o comentário fique dentro do limite ADF do Jira.
+    """
+    lines = full_markdown.split("\n")
+
+    # Seções a incluir (por marcador de início)
+    INCLUDE_MARKERS = [
+        "## 🔍 Issues de Auditoria",
+        "## Issues Identificados",
+        "## ⚠️ ALERTA VUETIFY DEFAULTS",
+        "⚠️ ALERTA VUETIFY DEFAULTS",
+    ]
+    # Seções a parar (exclusão das seções grandes)
+    STOP_MARKERS = [
+        "### 📋 Tabela de Tokens",
+        "### 🔄 Specs Antes / Depois",
+        "### ⚠️ Regra 90/10",
+        "### ✅ Definition of Done",
+        "#### Ícones detectados",
+        "#### Modos de Busca",
+        "### 📊 Mapa de Componentes",
+        "### Arquivos de Referência",
+    ]
+
+    # Coleta: header até primeiro "---", depois Issues section até stop markers
+    result_lines: list[str] = []
+    in_header = True
+    in_issues = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Header: até o primeiro marcador de seção principal ou "---"
+        if in_header:
+            # Inclui até encontrar um STOP_MARKER ou a linha "### Arquivos de Referência"
+            if any(stripped.startswith(m.strip()) for m in STOP_MARKERS):
+                in_header = False
+            elif any(stripped.startswith(m.strip()) for m in INCLUDE_MARKERS):
+                in_header = False
+                in_issues = True
+                result_lines.append(line)
+            else:
+                # Incluir linha de header apenas se for o cabeçalho compacto
+                if stripped.startswith("## AUDITORIA") or stripped.startswith("**Card:") or stripped.startswith("**Tela:") or stripped.startswith("**Rota:") or stripped.startswith("**Gerado") or stripped == "---":
+                    result_lines.append(line)
+            continue
+
+        if in_issues:
+            # Para ao encontrar seção grande
+            if any(stripped.startswith(m.strip()) for m in STOP_MARKERS):
+                break
+            result_lines.append(line)
+        else:
+            # Verifica se estamos entrando em uma seção de Issues
+            if any(stripped.startswith(m.strip()) for m in INCLUDE_MARKERS):
+                in_issues = True
+                result_lines.append(line)
+
+    extracted = "\n".join(result_lines).strip()
+
+    # Se não encontrou Issues section, retorna apenas os primeiros 150 nós equivalentes
+    if not extracted or len(extracted) < 100:
+        # Fallback: retorna o conteúdo completo até a Tabela de Tokens
+        cutoff = full_markdown.find("### 📋 Tabela de Tokens")
+        if cutoff > 0:
+            extracted = full_markdown[:cutoff].strip()
+        else:
+            extracted = full_markdown[:8000]  # ~200 nós
+
+    return extracted
+
+
 def cmd_post(args: argparse.Namespace) -> None:
     key = args.key.upper()
 
@@ -1446,10 +2021,16 @@ def cmd_post(args: argparse.Namespace) -> None:
 
     headers, jira_base = _get_auth()
 
-    # ── Modo --as-comment: posta diretamente como comentário, ignora descrição ──
+    # ── Modo --as-comment: extrai apenas Issues + Vuetify Defaults para o comentário ──
     if getattr(args, "as_comment", False):
+        # Jira comments têm limite menor que descrições (~200 nós ADF).
+        # Extrai apenas as seções mais acionáveis: Issues de Auditoria + ALERTA VUETIFY.
+        comment_content = _extract_issues_section(content)
+        comment_nodes = _md_to_adf(comment_content).get("content", [])
+        print(f"    → {len(comment_nodes)} nó(s) para comentário (apenas Issues + Vuetify Defaults).")
+
         print(f"💬  Postando auditoria como COMENTÁRIO em {key}...")
-        comment_adf = {"version": 1, "type": "doc", "content": new_nodes}
+        comment_adf = {"version": 1, "type": "doc", "content": comment_nodes}
         resp = requests.post(
             f"{jira_base}/issue/{key}/comment",
             headers=headers,
@@ -1458,6 +2039,20 @@ def cmd_post(args: argparse.Namespace) -> None:
         )
         if resp.ok:
             print(f"✅  Auditoria postada como comentário: https://wedotalent.atlassian.net/browse/{key}")
+        elif resp.status_code == 400 and "CONTENT_LIMIT_EXCEEDED" in resp.text:
+            # Fallback: só o header dos Issues (primeiros 120 nós)
+            print("⚠️  Ainda muito grande. Truncando para primeiros 120 nós...")
+            trunc_adf = {"version": 1, "type": "doc", "content": comment_nodes[:120]}
+            resp2 = requests.post(
+                f"{jira_base}/issue/{key}/comment",
+                headers=headers,
+                json={"body": trunc_adf},
+                timeout=30,
+            )
+            if resp2.ok:
+                print(f"✅  Auditoria postada como comentário (truncada): https://wedotalent.atlassian.net/browse/{key}")
+            else:
+                print(f"❌  Falha ao postar comentário truncado ({resp2.status_code}): {resp2.text[:300]}")
         else:
             print(f"❌  Falha ao postar comentário ({resp.status_code}): {resp.text[:300]}")
         return
