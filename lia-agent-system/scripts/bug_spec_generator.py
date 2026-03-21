@@ -104,8 +104,8 @@ def _get_auth() -> tuple[dict[str, str], str]:
                             "Content-Type":  "application/json",
                         }
                         return headers, _JIRA_BASE_DEFAULT
-            except Exception:
-                pass  # cai para o próximo método
+            except Exception as exc:
+                print(f"⚠️  Conector Replit Jira falhou ({exc}), tentando fallback de auth...", file=sys.stderr)
 
     # ── 2. Bearer token manual ───────────────────────────────────────────────
     token = os.getenv("JIRA_TOKEN", "")
@@ -164,6 +164,9 @@ def _put_json(path: str, body: dict) -> dict:
     resp = requests.put(f"{jira_base}{path}", headers=headers, json=body, timeout=15)
     if not resp.ok:
         sys.exit(f"❌  Jira API erro {resp.status_code}: {resp.text[:400]}")
+    # PUT /issue retorna 204 No Content — corpo vazio é esperado
+    if resp.status_code == 204 or not resp.content:
+        return {}
     return resp.json()
 
 
@@ -609,7 +612,8 @@ def _md_to_adf(text: str) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _extract_tags(text: str) -> list[str]:
-    m = re.search(r"- Tags:\s*(.+)", text)
+    # Aceita "- Tags:" (template) ou "Tags:" (sem traço)
+    m = re.search(r"^-?\s*Tags:\s*(.+)", text, re.MULTILINE | re.IGNORECASE)
     if not m:
         return []
     raw = m.group(1)
