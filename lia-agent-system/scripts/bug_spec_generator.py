@@ -345,8 +345,8 @@ def _extract_adf_media_and_links(node: dict, _acc: dict | None = None) -> dict:
                 entry = {"text": text, "href": href}
                 if entry not in _acc["links"]:
                     _acc["links"].append(entry)
-                if re.search(r"betterbugs\.io/session/[^?]+$", href):
-                    _acc["betterbugs_session"] = href
+                if re.search(r"betterbugs\.io/session/", href):
+                    _acc["betterbugs_session"] = href  # preserva query params completos
                 elif "openedDevTab=console" in href:
                     _acc["console_logs_url"] = href
                 elif "openedDevTab=network" in href:
@@ -394,11 +394,24 @@ def _betterbugs_api_token() -> str:
     return os.getenv("BETTERBUGS_API_KEY", "")
 
 
+def _betterbugs_session_cookie() -> str:
+    """Cookie de sessão do browser BetterBugs.
+    Configure BETTERBUGS_SESSION_COOKIE com o valor copiado do DevTools:
+    Application → Cookies → app.betterbugs.io → copie todos como string 'nome=valor; ...'
+    """
+    return os.getenv("BETTERBUGS_SESSION_COOKIE", "")
+
+
 def _betterbugs_fetch_session(session_url: str) -> dict:
     """Busca dados completos da sessão BetterBugs via REST API.
 
-    Extrai o sessionId da URL (https://app.betterbugs.io/session/<id>),
-    tenta os endpoints conhecidos com autenticação via BETTERBUGS_API_KEY.
+    Estratégias de autenticação (em ordem de tentativa):
+      1. Sem auth — links de sessão compartilhados podem ser públicos
+      2. BETTERBUGS_SESSION_COOKIE — cookie de sessão copiado do browser
+      3. BETTERBUGS_API_KEY — chave de API da conta BetterBugs
+
+    Extrai o sessionId da URL https://app.betterbugs.io/session/<id>,
+    preservando quaisquer query params que possam conter tokens.
 
     Retorna dict com:
         video_url       — URL do vídeo de gravação (mp4/webm)
@@ -407,9 +420,7 @@ def _betterbugs_fetch_session(session_url: str) -> dict:
         network_logs    — lista de requests de rede
         session_id      — id da sessão
         raw             — payload bruto da API
-    Se a chave não está configurada ou a API falha, retorna dict vazio.
     """
-    token = _betterbugs_api_token()
     result: dict = {
         "video_url":    None,
         "screenshots":  [],
@@ -419,23 +430,15 @@ def _betterbugs_fetch_session(session_url: str) -> dict:
         "raw":          {},
     }
 
-    # Extrai sessionId da URL
-    sid_match = re.search(r"/session/([a-f0-9]{24,})", session_url or "")
+    # Extrai sessionId da URL (preserva o resto da URL para query params)
+    sid_match = re.search(r"/session/([a-f0-9]{20,})", session_url or "")
     if not sid_match:
         return result
     session_id = sid_match.group(1)
     result["session_id"] = session_id
 
-    if not token:
-        return result
-
-    # Cabeçalhos de auth — BetterBugs aceita x-api-key e/ou Authorization Bearer
-    headers = {
-        "x-api-key":     token,
-        "Authorization": f"Bearer {token}",
-        "Content-Type":  "application/json",
-        "Accept":        "application/json",
-    }
+    token = _betterbugs_api_token()
+    cookie = _betterbugs_session_cookie()
 
     # Endpoints a tentar (em ordem de probabilidade)
     endpoints = [
@@ -446,19 +449,52 @@ def _betterbugs_fetch_session(session_url: str) -> dict:
         f"{_BB_API_BASE}/v1/sessions/{session_id}",
     ]
 
+    # Monta lista de conjuntos de headers para tentar (sem auth → cookie → api key)
+    auth_variants: list[dict] = [
+        # 1. Sem autenticação — links públicos/compartilhados
+        {"Accept": "application/json"},
+    ]
+    if cookie:
+        auth_variants.append({
+            "Accept": "application/json",
+            "Cookie": cookie,
+        })
+    if token:
+        auth_variants.append({
+            "Accept":        "application/json",
+            "x-api-key":     token,
+            "Authorization": f"Bearer {token}",
+        })
+
+    if len(auth_variants) == 1:
+        # Nenhuma credencial configurada — avisa e tenta mesmo assim (pode ser público)
+        print("    💡 Nenhuma credencial BetterBugs configurada.")
+        print("       Configure BETTERBUGS_SESSION_COOKIE (cookie do browser) ou BETTERBUGS_API_KEY")
+
     data: dict = {}
-    for url in endpoints:
-        try:
-            resp = requests.get(url, headers=headers, timeout=12)
-            if resp.ok:
-                data = resp.json()
-                result["raw"] = data
-                break
-            elif resp.status_code == 401:
-                print("    ⚠️  BetterBugs API: autenticação falhou (401) — verifique BETTERBUGS_API_KEY")
-                return result
-        except Exception:
-            continue
+    for headers in auth_variants:
+        for url in endpoints:
+            try:
+                resp = requests.get(url, headers=headers, timeout=12)
+                if resp.ok:
+                    try:
+                        data = resp.json()
+                    except Exception:
+                        continue
+                    result["raw"] = data
+                    auth_desc = (
+                        "sem auth" if len(headers) == 1
+                        else "cookie" if "Cookie" in headers
+                        else "API key"
+                    )
+                    print(f"       ✅ API respondeu via {auth_desc}: {url}")
+                    break
+                elif resp.status_code == 401:
+                    break  # Tenta próximo conjunto de headers
+            except Exception:
+                continue
+        if data:
+            break
 
     if not data:
         return result
@@ -775,8 +811,9 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         if bb["network_logs_url"]:
             print(f"    🌐 Network logs:  {bb['network_logs_url']}")
 
-        # API BetterBugs (vídeo + dados completos)
-        if bb["betterbugs_session"] and _betterbugs_api_token():
+        # API BetterBugs (vídeo + dados completos) — tenta sem auth primeiro (link público),
+        # depois cookie de sessão e por último API key
+        if bb["betterbugs_session"]:
             print("    🎬 Buscando dados completos via API BetterBugs...")
             bb_session_data = _betterbugs_fetch_session(bb["betterbugs_session"])
             if bb_session_data.get("video_url"):
@@ -785,10 +822,10 @@ def cmd_fetch(args: argparse.Namespace) -> None:
                 print(f"       ✅ {len(bb_session_data['console_logs'])} entradas de console log")
             if bb_session_data.get("network_logs"):
                 print(f"       ✅ {len(bb_session_data['network_logs'])} requests de rede")
-            if not any([bb_session_data.get("video_url"), bb_session_data.get("screenshots")]):
-                print("       ⚠️  API respondeu mas sem dados de mídia — verifique os endpoints")
-        elif bb["betterbugs_session"] and not _betterbugs_api_token():
-            print("    💡 Configure BETTERBUGS_API_KEY para acessar vídeo e dados completos")
+            if bb_session_data.get("session_id") and not any([
+                bb_session_data.get("video_url"), bb_session_data.get("raw")
+            ]):
+                print("       ⚠️  API inacessível — configure BETTERBUGS_SESSION_COOKIE ou BETTERBUGS_API_KEY")
 
         # Screenshots do CDN (embedadas no ADF)
         if bb["screenshots"]:
