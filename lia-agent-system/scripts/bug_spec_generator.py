@@ -52,7 +52,7 @@ except ImportError:
 
 
 CLOUD_ID   = os.getenv("JIRA_CLOUD_ID", "8cf762f8-6a44-47de-8915-6b3dc0cd2715")
-JIRA_BASE  = f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3"
+_JIRA_BASE_DEFAULT = f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3"
 TODAY = datetime.now(timezone.utc).strftime("%d/%m/%Y")
 
 # Separadores por ferramenta
@@ -61,63 +61,116 @@ USERBACK_SEPARATOR   = "--- Metadata ---"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Auth
+# Auth — ordem de prioridade:
+#   1. Replit connector OAuth2 (REPLIT_CONNECTORS_HOSTNAME + REPL_IDENTITY)
+#   2. Bearer token manual   (JIRA_TOKEN)
+#   3. Basic auth            (JIRA_EMAIL + JIRA_API_TOKEN)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _build_headers() -> dict[str, str]:
+def _get_auth() -> tuple[dict[str, str], str]:
+    """Retorna (headers, jira_base_url) resolvendo credenciais pela ordem de prioridade."""
+
+    # ── 1. Replit connector OAuth2 ───────────────────────────────────────────
+    connector_host = os.getenv("REPLIT_CONNECTORS_HOSTNAME", "")
+    repl_identity  = os.getenv("REPL_IDENTITY", "")
+    web_renewal    = os.getenv("WEB_REPL_RENEWAL", "")
+
+    if connector_host:
+        x_replit_token = (
+            f"repl {repl_identity}" if repl_identity
+            else f"depl {web_renewal}" if web_renewal
+            else ""
+        )
+        if x_replit_token:
+            try:
+                resp = requests.get(
+                    f"https://{connector_host}/api/v2/connection",
+                    params={"include_secrets": "true", "connector_names": "jira"},
+                    headers={"Accept": "application/json", "X-Replit-Token": x_replit_token},
+                    timeout=10,
+                )
+                if resp.ok:
+                    item     = (resp.json().get("items") or [{}])[0]
+                    settings = item.get("settings", {})
+                    token    = (
+                        settings.get("access_token")
+                        or (settings.get("oauth") or {}).get("credentials", {}).get("access_token")
+                    )
+                    if token:
+                        # O token OAuth do conector funciona via api.atlassian.com (não via site_url direto)
+                        headers = {
+                            "Authorization": f"Bearer {token}",
+                            "Accept":        "application/json",
+                            "Content-Type":  "application/json",
+                        }
+                        return headers, _JIRA_BASE_DEFAULT
+            except Exception:
+                pass  # cai para o próximo método
+
+    # ── 2. Bearer token manual ───────────────────────────────────────────────
     token = os.getenv("JIRA_TOKEN", "")
     if token:
-        return {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
+        return (
+            {
+                "Authorization": f"Bearer {token}",
+                "Accept":        "application/json",
+                "Content-Type":  "application/json",
+            },
+            _JIRA_BASE_DEFAULT,
+        )
 
-    email = os.getenv("JIRA_EMAIL", "")
+    # ── 3. Basic auth ────────────────────────────────────────────────────────
+    email     = os.getenv("JIRA_EMAIL", "")
     api_token = os.getenv("JIRA_API_TOKEN", "")
     if email and api_token:
         creds = base64.b64encode(f"{email}:{api_token}".encode()).decode()
-        return {
-            "Authorization": f"Basic {creds}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
+        return (
+            {
+                "Authorization": f"Basic {creds}",
+                "Accept":        "application/json",
+                "Content-Type":  "application/json",
+            },
+            _JIRA_BASE_DEFAULT,
+        )
 
     sys.exit(
         "❌  Credenciais Jira não encontradas.\n"
-        "    Configure no .env (ou exporte no shell):\n"
-        "      JIRA_EMAIL=seu@email.com\n"
-        "      JIRA_API_TOKEN=<token de https://id.atlassian.com/manage-api-tokens>\n"
-        "    Ou use Bearer token:\n"
-        "      JIRA_TOKEN=<oauth_token>"
+        "    Opções (em ordem de prioridade):\n"
+        "      1. Conector Replit OAuth2 — configure REPLIT_CONNECTORS_HOSTNAME no ambiente\n"
+        "      2. JIRA_TOKEN=<oauth_bearer_token>\n"
+        "      3. JIRA_EMAIL=seu@email.com + JIRA_API_TOKEN=<api_token>\n"
+        "         (token em https://id.atlassian.com/manage-api-tokens)"
     )
 
 
 def _get(path: str, params: dict | None = None) -> dict:
-    resp = requests.get(
-        f"{JIRA_BASE}{path}", headers=_build_headers(), params=params, timeout=15
-    )
+    headers, jira_base = _get_auth()
+    resp = requests.get(f"{jira_base}{path}", headers=headers, params=params, timeout=15)
     if not resp.ok:
         sys.exit(f"❌  Jira API erro {resp.status_code}: {resp.text[:300]}")
     return resp.json()
 
 
 def _post_json(path: str, body: dict) -> dict:
-    resp = requests.post(
-        f"{JIRA_BASE}{path}", headers=_build_headers(), json=body, timeout=15
-    )
+    headers, jira_base = _get_auth()
+    resp = requests.post(f"{jira_base}{path}", headers=headers, json=body, timeout=15)
     if not resp.ok:
         sys.exit(f"❌  Jira API erro {resp.status_code}: {resp.text[:400]}")
     return resp.json()
 
 
 def _put_json(path: str, body: dict) -> dict:
-    resp = requests.put(
-        f"{JIRA_BASE}{path}", headers=_build_headers(), json=body, timeout=15
-    )
+    headers, jira_base = _get_auth()
+    resp = requests.put(f"{jira_base}{path}", headers=headers, json=body, timeout=15)
     if not resp.ok:
         sys.exit(f"❌  Jira API erro {resp.status_code}: {resp.text[:400]}")
     return resp.json()
+
+
+def _build_headers() -> dict[str, str]:
+    """Retrocompatibilidade — retorna apenas os headers (sem base_url)."""
+    headers, _ = _get_auth()
+    return headers
 
 
 # ─────────────────────────────────────────────────────────────────────────────
