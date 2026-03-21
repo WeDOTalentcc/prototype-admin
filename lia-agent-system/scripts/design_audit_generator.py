@@ -549,7 +549,150 @@ ELEMENT_KEYWORDS = {
     "kanban":      ["kanban", "coluna", "card", "arrastar", "drag", "etapa", "stage"],
     "comportamento": ["comportamento", "hover", "estado", "state", "animação", "transition",
                       "loading", "vazio", "empty", "erro", "error"],
+    "candidato":   ["candidato", "candidate", "perfil", "profile", "cv", "currículo"],
+    "vaga":        ["vaga", "job", "requisição", "requisicao", "position"],
+    "avatar":      ["avatar", "foto", "imagem", "photo", "initials"],
+    "dropdown":    ["dropdown", "select", "menu", "popover", "listbox"],
+    "sidebar":     ["sidebar", "painel lateral", "side panel", "lateral"],
+    "empty":       ["estado vazio", "empty state", "nenhum", "sem resultado", "no results"],
 }
+
+# Mapeamento elemento → arquivos React que implementam o componente.
+# Usado por _extra_react_for_elements() para enriquecer o contexto de auditoria
+# com os componentes exatos mencionados no card — não apenas os arquivos da tela.
+ELEMENT_TO_REACT_FILES: dict[str, list[str]] = {
+    "botões": [
+        "src/components/ui/button.tsx",
+        "src/components/ui/button.stories.tsx",
+    ],
+    "inputs": [
+        "src/components/ui/input.tsx",
+        "src/components/search/smart-search-input.tsx",
+        "src/components/ui/input.stories.tsx",
+    ],
+    "chips": [
+        "src/components/ui/context-pill.tsx",
+        "src/components/ui/badge.tsx",
+        "src/components/filters/robust-filters.tsx",
+    ],
+    "modal": [
+        "src/components/ui/dialog.tsx",
+        "src/components/modals/new-candidate-unified-modal.tsx",
+        "src/components/candidate-modal.tsx",
+        "src/components/ui/dialog.stories.tsx",
+    ],
+    "tabs": [
+        "src/components/pages/candidates/CandidateTabs.tsx",
+    ],
+    "tabela": [
+        "src/components/pages/candidates/CandidatesTable.tsx",
+        "src/components/pages/jobs/JobsTable.tsx",
+    ],
+    "kanban": [
+        "src/components/pages/job-kanban/KanbanCard.tsx",
+        "src/components/pages/job-kanban/KanbanColumn.tsx",
+        "src/components/pages/job-kanban/MoveConfirmationModal.tsx",
+    ],
+    "ícones": [
+        "src/components/ui/lia-icon.tsx",
+    ],
+    "tipografia": [],  # tipografia é transversal — coberta pelos arquivos da tela
+    "cores": [],       # idem
+    "comportamento": [
+        "src/components/ui/loading.tsx",
+        "src/components/ui/empty-state.tsx",
+    ],
+    "candidato": [
+        "src/components/candidate-modal.tsx",
+        "src/components/candidate-preview.tsx",
+        "src/components/pages/candidates/CandidatesTable.tsx",
+        "src/components/ui/candidate-card.tsx",
+    ],
+    "vaga": [
+        "src/components/pages/jobs/JobsHeader.tsx",
+        "src/components/pages/jobs/JobsTable.tsx",
+    ],
+    "avatar": [
+        "src/components/ui/avatar.tsx",
+    ],
+    "dropdown": [
+        "src/components/ui/dropdown-menu.tsx",
+        "src/components/ui/command.tsx",
+    ],
+    "sidebar": [
+        "src/components/ui/lia-expanded-panel.tsx",
+    ],
+    "empty": [
+        "src/components/ui/empty-state.tsx",
+    ],
+    "paginação": [],  # paginação geralmente inline na tabela
+}
+
+
+def _extra_react_for_elements(
+    card_text: str,
+    detected_elements: list[str],
+    screen_files: list[str],
+) -> list[str]:
+    """Retorna arquivos React adicionais para os elementos detectados no card.
+
+    Combina:
+    1. Mapeamento direto por categoria (ELEMENT_TO_REACT_FILES)
+    2. Busca por nome de componente mencionado explicitamente no texto
+       (ex: 'SmartSearchInput', 'CandidateTabs', 'KanbanCard')
+
+    Exclui arquivos já incluídos nos react_files da tela para evitar duplicação.
+    """
+    extra: list[str] = []
+    screen_set = set(screen_files)
+
+    # 1. Por categoria detectada
+    for cat in detected_elements:
+        for f in ELEMENT_TO_REACT_FILES.get(cat, []):
+            if f not in screen_set and f not in extra:
+                extra.append(f)
+
+    # 2. Por nome de componente/arquivo mencionado no texto do card
+    # Busca padrões como 'SmartSearchInput', 'CandidateTabs', 'KanbanCard'
+    card_lower = card_text.lower()
+    component_keyword_map: dict[str, list[str]] = {
+        "smartsearch":    ["src/components/search/smart-search-input.tsx"],
+        "smart search":   ["src/components/search/smart-search-input.tsx"],
+        "candidatetabs":  ["src/components/pages/candidates/CandidateTabs.tsx"],
+        "kanbancard":     ["src/components/pages/job-kanban/KanbanCard.tsx"],
+        "candidatecard":  ["src/components/ui/candidate-card.tsx"],
+        "novo candidato": ["src/components/modals/new-candidate-unified-modal.tsx"],
+        "share search":   ["src/components/modals/share-search-modal.tsx"],
+        "compartilhar busca": ["src/components/modals/share-search-modal.tsx"],
+        "bulk":           ["src/components/ui/bulk-selection-bar.tsx"],
+        "seleção em massa": ["src/components/ui/bulk-selection-bar.tsx"],
+        "filtro avançado": ["src/components/filters/robust-filters.tsx",
+                            "src/components/pages/candidates/CandidatesFilterPanel.tsx"],
+        "advanced filter": ["src/components/filters/robust-filters.tsx"],
+        "paginação":      [],
+        "date range":     ["src/components/ui/date-range-picker.tsx"],
+        "data range":     ["src/components/ui/date-range-picker.tsx"],
+        "badge":          ["src/components/ui/badge.tsx",
+                           "src/components/kanban/components/CandidateBadges.tsx"],
+        "avatar":         ["src/components/ui/avatar.tsx"],
+        "empty state":    ["src/components/ui/empty-state.tsx"],
+        "estado vazio":   ["src/components/ui/empty-state.tsx"],
+        "loading":        ["src/components/ui/loading.tsx"],
+        "toast":          [],  # shadcn/ui toast — inline
+        "tooltip":        [],  # shadcn/ui tooltip — inline
+        "checkbox":       ["src/components/ui/checkbox.tsx"],
+        "accordion":      ["src/components/ui/accordion.tsx"],
+        "command palette": ["src/components/ui/command-palette.tsx"],
+        "global search":  ["src/components/global-search-modal.tsx"],
+        "busca global":   ["src/components/global-search-modal.tsx"],
+    }
+    for keyword, files in component_keyword_map.items():
+        if keyword in card_lower:
+            for f in files:
+                if f and f not in screen_set and f not in extra:
+                    extra.append(f)
+
+    return extra
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1380,16 +1523,70 @@ def _call_claude_audit(
 
 ---
 
-## Tarefa
+## Tarefa — Auditoria Exaustiva Obrigatória
 
-Compare o código React vs Vue linha a linha.
-Para CADA divergência encontrada, gere um Issue numerado no formato especificado.
-Seja preciso e determinístico — sem "[VER NO PROD]", sem "verificar", sem "talvez".
-Se React tem `w-4 h-4` (16px) e Vue tem `v-icon` sem `size` (Vuetify default 24px) → é um Issue.
-Se React usa `BaseButton` e Vue usa `<button>` ou `<v-btn>` sem as propriedades corretas → é um Issue.
-Se React tem `variant="outline"` e Vue não tem `variant` → é um Issue.
+Compare React vs Vue **componente a componente, propriedade a propriedade**.
+Para CADA divergência, gere um Issue numerado.
+Sem "[VER NO PROD]", sem "verificar", sem "talvez". DECIDA e gere o Issue completo.
 
-Ao final dos Issues, liste brevemente (1 linha cada) os componentes Vuetify onde defaults foram omitidos."""
+### Checklist mandatório — aplique a CADA elemento presente no código:
+
+**1. CORES**
+- Background: valor hex/token correto? Cores proibidas (#ffa726, #2196F3)?
+- Text color: corresponde ao React?
+- Border color: presente e correto?
+- Hover/active/focus/disabled: todos os estados têm cor correta?
+
+**2. TIPOGRAFIA**
+- font-family: Open Sans? Nunca Source Serif / font-serif
+- font-size: px/rem correto vs React?
+- font-weight: semibold=600, bold=700 — corresponde?
+- line-height e letter-spacing: corretos?
+
+**3. ESPAÇAMENTO**
+- padding: top/right/bottom/left — valores corretos?
+- margin: correto?
+- gap (flex/grid): correto?
+- Tokens Tailwind (p-2, px-4, etc.) vs Vuetify (class="pa-2"):
+
+**4. SHAPE / BORDER**
+- border-radius: SEMPRE 8px (rounded-md) — nunca rounded-lg, rounded-full
+- border-width e border-color: corretos?
+
+**5. ÍCONES**
+- Ícone correto (nome/família)?
+- Tamanho: SEMPRE 16px (w-4 h-4 / size="16") — Vuetify default é 24px!
+- Cor do ícone: correta?
+- Ícone LIA: Brain/mdi-brain com #60BED1 — exclusivo para LIA
+
+**6. VARIANTES DE COMPONENTE**
+- variant prop: "outline", "ghost", "filled" — presente e correto?
+- size prop: sm/md/lg — correto?
+- color prop: Vuetify usa color= (default "primary" = azul #2196F3 PROIBIDO)
+
+**7. ESTADOS VISUAIS**
+- hover: estilos corretos?
+- focus: ring/outline correto?
+- disabled: opacity e cursor corretos?
+- loading: spinner/skeleton presente se React tiver?
+- empty state: mensagem e ícone corretos?
+- error state: cor e mensagem corretos?
+
+**8. SOMBRAS E ELEVAÇÃO**
+- shadow: token correto vs React?
+- Vuetify elevation vs Tailwind shadow-*
+
+**9. COMPONENTES DEPRECADOS**
+- Button → BaseButton (React)? Vue usa v-btn correto?
+- Todo componente Vuetify sem variant/size/color explícito aplica default Vuetify!
+
+**10. ACESSIBILIDADE**
+- aria-label presente onde React tem?
+- role correto?
+- focus-visible ring visível?
+
+Para cada Item do checklist que revelar divergência → gere um Issue numerado.
+Ao final dos Issues, liste (1 linha) os componentes Vuetify onde defaults foram omitidos."""
 
     try:
         client_kwargs: dict = {"api_key": api_key}
@@ -1460,6 +1657,7 @@ def _build_audit_template(
     elements_detected: list[str],
     bb_data: dict | None = None,
     bb_screenshots: list[str] | None = None,
+    extra_react_files: list[str] | None = None,
 ) -> str:
     lines: list[str] = []
     bb_data = bb_data or {}
@@ -1512,9 +1710,19 @@ def _build_audit_template(
     if bb_lines:
         lines += ["### Contexto BetterBugs", ""] + bb_lines + [""]
 
-    # ── Arquivos de Referência ─────────────────────────────────────────────
-    react_files_exist = [f for f in screen["react_files"] if (REPLIT_ROOT / f).exists()]
-    react_files_missing = [f for f in screen["react_files"] if not (REPLIT_ROOT / f).exists()]
+    # ── Arquivos de Referência — tela + componentes específicos detectados ──
+    # Combina arquivos da tela com arquivos de componente dos elementos mencionados
+    extra_react_files = extra_react_files or []
+    all_react_files_ordered = list(screen["react_files"])
+    screen_set = set(all_react_files_ordered)
+    for ef in extra_react_files:
+        if ef not in screen_set:
+            all_react_files_ordered.append(ef)
+            screen_set.add(ef)
+
+    react_files_exist  = [f for f in all_react_files_ordered if (REPLIT_ROOT / f).exists()]
+    react_files_missing = [f for f in all_react_files_ordered if not (REPLIT_ROOT / f).exists()]
+    extra_files_found  = [f for f in extra_react_files if (REPLIT_ROOT / f).exists()]
 
     lines += [
         "### Arquivos de Referência",
@@ -1522,9 +1730,13 @@ def _build_audit_template(
         "**React/Next.js — CORRETO (referência de spec):**",
     ]
     for f in react_files_exist:
-        lines.append(f"- `plataforma-lia/{f}`")
+        marker = " 🔍 _componente detectado no card_" if f in extra_react_files else ""
+        lines.append(f"- `plataforma-lia/{f}`{marker}")
     for f in react_files_missing:
         lines.append(f"- `plataforma-lia/{f}` — ❌ arquivo não encontrado no Replit (caminho pode ter mudado)")
+
+    if extra_files_found:
+        print(f"    🔍 {len(extra_files_found)} arquivo(s) de componente adicionado(s) ao contexto: {extra_files_found}")
 
     lines += ["", "**Vue/Vuetify — Prod atual (branch: develop):**"]
     if vue_contents:
@@ -1535,8 +1747,8 @@ def _build_audit_template(
         lines.append(f"- {screen['vue_hint']}")
     lines.append("")
 
-    # ── Leitura dos arquivos React ─────────────────────────────────────────
-    all_content = "\n".join(_read_react_file(f) for f in screen["react_files"])
+    # ── Leitura dos arquivos React — tela + componentes específicos ─────────
+    all_content = "\n".join(_read_react_file(f) for f in all_react_files_ordered)
 
     # ── Mapa de Componentes ────────────────────────────────────────────────
     lines += [
@@ -2072,13 +2284,22 @@ def cmd_fetch(args: argparse.Namespace) -> None:
 
     print(f"🖥️   Tela identificada: {screen['nome']} ({screen_key})")
     print(f"🔎  Elementos detectados: {', '.join(elements)}")
-    print(f"📂  Lendo {len(screen['react_files'])} arquivo(s) React...")
 
-    found = sum(1 for f in screen["react_files"] if (REPLIT_ROOT / f).exists())
-    print(f"    ✅ {found}/{len(screen['react_files'])} arquivo(s) encontrado(s)")
+    # Enriquece com arquivos de componentes dos elementos mencionados no card
+    combined_card_text = f"{title} {desc_text}"
+    extra_files = _extra_react_for_elements(combined_card_text, elements, screen["react_files"])
+    if extra_files:
+        existing = sum(1 for f in extra_files if (REPLIT_ROOT / f).exists())
+        print(f"🔍  Componentes detectados no card → +{existing} arquivo(s) React de componente adicionado(s)")
+    all_react = screen["react_files"] + [f for f in extra_files if f not in screen["react_files"]]
+    print(f"📂  Lendo {len(all_react)} arquivo(s) React (tela + componentes)...")
+
+    found = sum(1 for f in all_react if (REPLIT_ROOT / f).exists())
+    print(f"    ✅ {found}/{len(all_react)} arquivo(s) encontrado(s)")
 
     template = _build_audit_template(key, title, desc_text, screen_key, screen, elements,
-                                     bb_data=bb, bb_screenshots=bb_screenshots)
+                                     bb_data=bb, bb_screenshots=bb_screenshots,
+                                     extra_react_files=extra_files)
 
     output_file = getattr(args, "output_file", None)
     if output_file:

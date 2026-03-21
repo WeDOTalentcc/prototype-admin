@@ -90,6 +90,75 @@ _KEYWORD_STOPWORDS: frozenset[str] = frozenset({
 })
 
 
+# Mapeamento elemento-categoria → arquivos React do componente correspondente.
+# Quando o card menciona um elemento, os arquivos do componente são lidos e
+# incluídos no contexto do Claude para uma comparação mais precisa.
+_ELEMENT_TO_REACT_FILES: dict[str, list[str]] = {
+    "botão":   ["src/components/ui/button.tsx"],
+    "button":  ["src/components/ui/button.tsx"],
+    "btn":     ["src/components/ui/button.tsx"],
+    "input":   ["src/components/ui/input.tsx", "src/components/search/smart-search-input.tsx"],
+    "campo":   ["src/components/ui/input.tsx"],
+    "search":  ["src/components/search/smart-search-input.tsx"],
+    "busca":   ["src/components/search/smart-search-input.tsx"],
+    "chip":    ["src/components/ui/context-pill.tsx", "src/components/ui/badge.tsx"],
+    "filtro":  ["src/components/filters/robust-filters.tsx",
+                "src/components/pages/candidates/CandidatesFilterPanel.tsx"],
+    "filtros": ["src/components/filters/robust-filters.tsx",
+                "src/components/pages/candidates/CandidatesFilterPanel.tsx"],
+    "badge":   ["src/components/ui/badge.tsx",
+                "src/components/kanban/components/CandidateBadges.tsx"],
+    "modal":   ["src/components/ui/dialog.tsx"],
+    "dialog":  ["src/components/ui/dialog.tsx"],
+    "candidato modal": ["src/components/candidate-modal.tsx"],
+    "novo candidato": ["src/components/modals/new-candidate-unified-modal.tsx"],
+    "tab":     ["src/components/pages/candidates/CandidateTabs.tsx"],
+    "tabs":    ["src/components/pages/candidates/CandidateTabs.tsx"],
+    "tabela":  ["src/components/pages/candidates/CandidatesTable.tsx"],
+    "table":   ["src/components/pages/candidates/CandidatesTable.tsx"],
+    "kanban":  ["src/components/pages/job-kanban/KanbanCard.tsx",
+                "src/components/pages/job-kanban/KanbanColumn.tsx"],
+    "avatar":  ["src/components/ui/avatar.tsx"],
+    "icon":    ["src/components/ui/lia-icon.tsx"],
+    "ícone":   ["src/components/ui/lia-icon.tsx"],
+    "icone":   ["src/components/ui/lia-icon.tsx"],
+    "loading": ["src/components/ui/loading.tsx"],
+    "empty":   ["src/components/ui/empty-state.tsx"],
+    "vazio":   ["src/components/ui/empty-state.tsx"],
+    "dropdown": ["src/components/ui/dropdown-menu.tsx"],
+    "select":  ["src/components/ui/dropdown-menu.tsx"],
+    "checkbox": ["src/components/ui/checkbox.tsx"],
+    "global search": ["src/components/global-search-modal.tsx"],
+    "busca global":  ["src/components/global-search-modal.tsx"],
+    "date range":    ["src/components/ui/date-range-picker.tsx"],
+    "bulk":          ["src/components/ui/bulk-selection-bar.tsx"],
+    "seleção em massa": ["src/components/ui/bulk-selection-bar.tsx"],
+}
+
+
+def _extra_react_for_bug(
+    card_text: str,
+    current_react_files: list[str],
+) -> list[str]:
+    """Retorna arquivos React adicionais baseados em elementos mencionados no card.
+
+    Busca por keywords do card e mapeia para arquivos de componente específicos,
+    complementando os arquivos já encontrados via keyword match da URL.
+    """
+    card_lower = card_text.lower()
+    extra: list[str] = []
+    seen = set(current_react_files)
+    for keyword, files in _ELEMENT_TO_REACT_FILES.items():
+        if keyword in card_lower:
+            for f in files:
+                if f not in seen and f not in extra:
+                    # Verifica existência antes de adicionar
+                    if (REPLIT_ROOT / f).exists():
+                        extra.append(f)
+                        seen.add(f)
+    return extra
+
+
 def _github_token() -> str:
     """Retorna o PAT do GitHub configurado como secret no Replit."""
     return os.getenv("GITHUB_PAT_WEDOTALENT", "")
@@ -534,12 +603,27 @@ def _generate_claude_bug_issues(
 
 {react_section}---
 
-## Tarefa
+## Tarefa — Auditoria Exaustiva Obrigatória
 
-Compare o código Vue com o React (fonte da verdade) e a descrição do bug.
-Para CADA divergência Vue ≠ React, declare um Issue com código Antes/Depois concreto.
-Sem '[PREENCHER]'. Sem 'verificar'. Cada Issue = 1 divergência = 1 fix definitivo.
-Inclua também Issues para defaults Vuetify omitidos que divergem do DS LIA."""
+Compare Vue vs React componente a componente, propriedade a propriedade.
+Para CADA divergência, gere um Issue numerado com ANTES/DEPOIS concreto.
+Sem '[PREENCHER]'. Sem 'verificar'. DECIDA.
+
+### Checklist mandatório — aplique a CADA elemento encontrado no código:
+
+**1. CORES** — background, text, border, hover, active, focus, disabled. Proibidas: #ffa726, #2196F3
+**2. TIPOGRAFIA** — font-family (Open Sans obrigatório), font-size, font-weight, line-height
+**3. ESPAÇAMENTO** — padding, margin, gap (Tailwind tokens vs Vuetify pa-/ma-)
+**4. SHAPE/BORDER** — border-radius SEMPRE 8px (rounded-md). Nunca rounded-lg/full
+**5. ÍCONES** — nome correto, tamanho SEMPRE 16px (size="16"), cor, LIA=mdi-brain/#60BED1
+**6. VARIANTES** — variant=, size=, color= (Vuetify default color="primary" = #2196F3 PROIBIDO)
+**7. ESTADOS** — hover, focus, disabled, loading, empty state, error state
+**8. SOMBRAS** — elevation Vuetify vs Tailwind shadow-*
+**9. COMPONENTES DEPRECADOS** — Button→BaseButton; v-btn sem props explícitas=bug
+**10. ACESSIBILIDADE** — aria-label, role, focus-visible ring
+
+Cada item do checklist que revelar divergência = 1 Issue numerado.
+Ao final, liste componentes Vuetify com defaults omitidos."""
 
     try:
         client_kwargs: dict = {"api_key": api_key}
@@ -1352,6 +1436,24 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         print(f"⚛️   Arquivos React encontrados: {react_files_found}")
     elif not react_files_found:
         print("⚠️   Nenhum arquivo React localizado — usando VUETIFY_DEFAULTS como referência")
+
+    # Enriquece com arquivos React de componentes específicos mencionados no card
+    # Usa summary + adf_desc (text bruto) para keyword match de elementos
+    _adf_text_for_elements = _adf_to_text(adf_desc).strip() if adf_desc else ""
+    card_full_text = f"{summary} {_adf_text_for_elements}"
+    extra_component_files = _extra_react_for_bug(card_full_text, react_files_found)
+    if extra_component_files:
+        print(f"🔍  Componentes detectados no card → +{len(extra_component_files)} arquivo(s) React adicionado(s): {extra_component_files}")
+        combined_react_files = react_files_found + extra_component_files
+        try:
+            extra_content = "\n".join(
+                (REPLIT_ROOT / f).read_text(encoding="utf-8")[:3000]
+                for f in extra_component_files
+            )
+            react_code = (react_code + "\n\n// === COMPONENTES ESPECÍFICOS DO CARD ===\n" + extra_content)[:9000]
+        except Exception:
+            pass
+        react_files_found = combined_react_files
 
     # ── Issues determinísticos: IA (Claude) ou estático (VUETIFY_DEFAULTS) ──
     print("🤖  Gerando Issues determinísticos (React/Replit = fonte da verdade)...")
