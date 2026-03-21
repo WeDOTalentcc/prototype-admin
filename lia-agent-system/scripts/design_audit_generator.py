@@ -1122,6 +1122,25 @@ def _format_vuetify_defaults_alert(detected_components: list[str]) -> str:
 # Gera Issues numerados com Antes/Depois concretos, sem hesitação
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _component_missing_attr(vue_code: str, component: str, attr: str) -> bool:
+    """Retorna True se alguma tag `component` no Vue não tem `attr` declarado.
+
+    Faz matching POR TAG — não busca global — evitando falso negativo quando outro
+    componente tem o mesmo atributo (ex: v-text-field com density não mascara ausência
+    de density em v-select). Retorna False se o componente não é usado.
+    """
+    tag_pattern = rf'<{re.escape(component)}(\s[^<>]*?)?(?:/>|>)'
+    attr_pattern = rf'\b{re.escape(attr)}\s*='
+
+    found_any = False
+    for tag_match in re.finditer(tag_pattern, vue_code, re.IGNORECASE | re.DOTALL):
+        found_any = True
+        if not re.search(attr_pattern, tag_match.group(0), re.IGNORECASE):
+            return True  # Esta tag específica não tem o atributo → BUG
+
+    return False  # Não encontrou componente, ou todas as tags têm o atributo
+
+
 def _generate_static_issues(vue_code: str, vue_files_read: list[str]) -> tuple[str, list[str]]:
     """Gera Issues determinísticos sem IA, baseados em inspeção do VUETIFY_DEFAULTS.
 
@@ -1136,14 +1155,9 @@ def _generate_static_issues(vue_code: str, vue_files_read: list[str]) -> tuple[s
     for comp, info in VUETIFY_DEFAULTS.items():
         comp_key = comp.replace("-size", "")  # v-btn-size → v-btn
         prop = info["prop"]
-        comp_pat = rf'<{re.escape(comp_key)}\b'
-        attr_pat = rf'\b{re.escape(prop)}='
 
-        if not re.search(comp_pat, vue_code, re.IGNORECASE):
-            continue  # Componente não usado — sem Issue
-
-        if re.search(attr_pat, vue_code, re.IGNORECASE):
-            continue  # Atributo declarado explicitamente — OK
+        if not _component_missing_attr(vue_code, comp_key, prop):
+            continue  # Componente não usado OU atributo presente em todas as tags
 
         # BUG: componente presente, atributo ausente
         detected.append(comp)
@@ -1342,20 +1356,19 @@ Ao final dos Issues, liste brevemente (1 linha cada) os componentes Vuetify onde
         for comp in VUETIFY_DEFAULTS:
             if comp in result_text or comp.replace("-", "_") in result_text:
                 detected.append(comp)
-        # Também verifica via regex direto no Vue code
+        # Verifica via per-tag regex direto no Vue code (sem falso negativo cross-componente)
         for comp, info in VUETIFY_DEFAULTS.items():
+            comp_key = comp.replace("-size", "")
             prop = info["prop"]
-            comp_pat = rf'<{re.escape(comp)}\b'
-            attr_pat = rf'\b{re.escape(prop)}='
-            if re.search(comp_pat, vue_code, re.IGNORECASE):
-                if not re.search(attr_pat, vue_code, re.IGNORECASE):
-                    if comp not in detected:
-                        detected.append(comp)
+            if _component_missing_attr(vue_code, comp_key, prop):
+                if comp not in detected:
+                    detected.append(comp)
 
         return result_text, detected
 
-    except Exception as exc:
-        return (f"[Erro na chamada Claude: {exc}]", [])
+    except Exception:
+        # Fallback determinístico — sempre gera Issues, nunca retorna placeholder
+        return _generate_static_issues(vue_code, vue_files_read)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

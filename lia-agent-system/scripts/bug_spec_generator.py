@@ -62,6 +62,9 @@ CLOUD_ID   = os.getenv("JIRA_CLOUD_ID", "8cf762f8-6a44-47de-8915-6b3dc0cd2715")
 _JIRA_BASE_DEFAULT = f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3"
 TODAY = datetime.now(timezone.utc).strftime("%d/%m/%Y")
 
+# Raiz do projeto React/Replit (fonte da verdade absoluta)
+REPLIT_ROOT = Path(__file__).parent.parent.parent / "plataforma-lia"
+
 # Separadores por ferramenta
 JAM_SEPARATOR        = "-------------------------------------"
 USERBACK_SEPARATOR   = "--- Metadata ---"
@@ -230,6 +233,71 @@ VUETIFY_DEFAULTS: dict[str, dict] = {
 # React/Replit = fonte da verdade. Vue diverge = BUG declarado. Sem "verificar".
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _component_missing_attr(vue_code: str, component: str, attr: str) -> bool:
+    """Retorna True se alguma tag `component` no Vue não tem `attr` declarado.
+
+    Faz matching POR TAG — não busca global — evitando falso negativo quando outro
+    componente tem o mesmo atributo (ex: v-text-field com density não mascara ausência
+    de density em v-select). Retorna False se o componente não é usado no código.
+    """
+    tag_pattern = rf'<{re.escape(component)}(\s[^<>]*?)?(?:/>|>)'
+    attr_pattern = rf'\b{re.escape(attr)}\s*='
+
+    for tag_match in re.finditer(tag_pattern, vue_code, re.IGNORECASE | re.DOTALL):
+        if not re.search(attr_pattern, tag_match.group(0), re.IGNORECASE):
+            return True  # Esta tag não tem o atributo → BUG
+
+    return False  # Componente não encontrado OU todas as tags têm o atributo
+
+
+def _read_react_files_for_url(page_url: str, summary: str) -> tuple[str, list[str]]:
+    """Localiza e lê os arquivos React mais relevantes para a URL/summary do bug.
+
+    Busca em plataforma-lia/src/*.tsx por similaridade de palavras-chave.
+    Retorna (react_code_concatenado, lista_de_paths_relativos).
+    React/Replit é a fonte da verdade absoluta — sempre incluído no contexto de IA.
+    """
+    src = REPLIT_ROOT / "src"
+    if not src.exists():
+        return "", []
+
+    # Extrai palavras-chave da URL e do sumário para ranking
+    keywords: set[str] = set()
+    for text in [page_url.lower(), summary.lower()]:
+        for word in re.split(r'[/\-_?& +=]+', text):
+            if len(word) > 3:
+                keywords.add(word)
+
+    scored: list[tuple[int, Path]] = []
+    for tsx_file in src.rglob("*.tsx"):
+        parts = str(tsx_file).lower()
+        score = sum(1 for kw in keywords if kw in parts)
+        if score > 0:
+            scored.append((score, tsx_file))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    top_files = [p for _, p in scored[:3]]
+
+    if not top_files:
+        # Sem match por keyword — inclui arquivo de referência principal
+        fallback = REPLIT_ROOT / "src" / "app" / "funil-de-talentos" / "page.tsx"
+        if fallback.exists():
+            top_files = [fallback]
+
+    snippets: list[str] = []
+    rel_paths: list[str] = []
+    for f in top_files:
+        try:
+            content = f.read_text(encoding="utf-8")[:3000]
+            rel = str(f.relative_to(REPLIT_ROOT))
+            snippets.append(f"// === plataforma-lia/{rel} ===\n{content}")
+            rel_paths.append(f"plataforma-lia/{rel}")
+        except Exception:
+            continue
+
+    return "\n\n".join(snippets), rel_paths
+
+
 def _generate_static_bug_issues(vue_code: str, vue_files: list[str]) -> str:
     """Gera Issues determinísticos sem IA, baseados no VUETIFY_DEFAULTS.
 
@@ -244,13 +312,9 @@ def _generate_static_bug_issues(vue_code: str, vue_files: list[str]) -> str:
     for comp, info in VUETIFY_DEFAULTS.items():
         comp_key = comp.replace("-size", "")
         prop = info["prop"]
-        comp_pat = rf'<{re.escape(comp_key)}\b'
-        attr_pat = rf'\b{re.escape(prop)}='
 
-        if not re.search(comp_pat, vue_code, re.IGNORECASE):
-            continue
-        if re.search(attr_pat, vue_code, re.IGNORECASE):
-            continue
+        if not _component_missing_attr(vue_code, comp_key, prop):
+            continue  # Componente não usado OU todas as tags têm o atributo
 
         issue_num += 1
         issues.append(
@@ -287,10 +351,13 @@ def _generate_claude_bug_issues(
     vue_code: str,
     vue_files: list[str],
     page_url: str = "",
+    react_code: str = "",
+    react_files: list[str] | None = None,
 ) -> str:
     """Chama Claude para gerar Issues de bug com Antes/Depois concretos.
 
-    REGRA ABSOLUTA no prompt: React/Replit = fonte da verdade.
+    REGRA ABSOLUTA no prompt: React/Replit = fonte da verdade absoluta.
+    react_code é sempre incluído no contexto — Vue diverge de React = BUG declarado.
     Sem '[PREENCHER]'. Sem 'verificar'. Issues numerados com código real.
     """
     try:
@@ -353,6 +420,26 @@ def _generate_claude_bug_issues(
 > ⚠️ DEFAULT VUETIFY: Atualizar `vuetify.ts`: `[config fix]`
 """
 
+    react_section = ""
+    if react_code:
+        react_refs = ", ".join(react_files or []) or "plataforma-lia/src"
+        react_section = f"""---
+
+## Código React/Replit — FONTE DA VERDADE ABSOLUTA (referência correta):
+> Arquivos: {react_refs}
+```tsx
+{react_code[:5000]}
+```
+
+"""
+    else:
+        react_section = """---
+
+## React/Replit — FONTE DA VERDADE ABSOLUTA
+> Arquivos React não encontrados no Replit — use DS LIA v4.2.1 e VUETIFY_DEFAULTS como referência.
+
+"""
+
     user_message = f"""## Card Jira: {card_key}
 **Sumário:** {summary}
 **URL do produto:** {page_url or 'não informada'}
@@ -367,14 +454,14 @@ def _generate_claude_bug_issues(
 {vue_code[:5000]}
 ```
 
----
+{react_section}---
 
 ## Tarefa
 
-Analise o código Vue e a descrição do bug.
-Gere Issues numerados com código Antes/Depois concreto.
-Sem '[PREENCHER]'. Sem 'verificar'. Cada Issue = 1 bug = 1 fix definitivo.
-Foque nos bugs visuais/DS LIA mencionados na descrição + defaults Vuetify omitidos."""
+Compare o código Vue com o React (fonte da verdade) e a descrição do bug.
+Para CADA divergência Vue ≠ React, declare um Issue com código Antes/Depois concreto.
+Sem '[PREENCHER]'. Sem 'verificar'. Cada Issue = 1 divergência = 1 fix definitivo.
+Inclua também Issues para defaults Vuetify omitidos que divergem do DS LIA."""
 
     try:
         client_kwargs: dict = {"api_key": api_key}
@@ -1125,7 +1212,6 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     vue_files_found = _find_vue_files_for_url(page_url_val, kw_from_summary, max_results=3)
     vue_code_preview = _vue_code_preview(vue_files_found)
 
-    react_file_hint = "[PREENCHER: ex: src/app/funil-de-talentos/page.tsx]"
     vue_file_hint   = (
         ", ".join(f"`{f}`" for f in vue_files_found)
         if vue_files_found
@@ -1133,6 +1219,19 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     )
     if vue_files_found:
         print(f"🔗  Arquivos Vue encontrados: {vue_files_found}")
+
+    # ── Lê arquivos React/Replit — FONTE DA VERDADE ABSOLUTA ────────────────
+    print("📂  Lendo arquivos React/Replit (fonte da verdade)...")
+    react_code, react_files_found = _read_react_files_for_url(page_url_val, summary)
+    react_file_hint = (
+        ", ".join(f"`{f}`" for f in react_files_found)
+        if react_files_found
+        else "plataforma-lia/src (arquivos React não mapeados — use DS LIA como referência)"
+    )
+    if react_files_found:
+        print(f"⚛️   Arquivos React encontrados: {react_files_found}")
+    else:
+        print("⚠️   Nenhum arquivo React localizado — usando VUETIFY_DEFAULTS como referência")
 
     # ── Issues determinísticos: IA (Claude) ou estático (VUETIFY_DEFAULTS) ──
     print("🤖  Gerando Issues determinísticos (React/Replit = fonte da verdade)...")
@@ -1144,6 +1243,8 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         vue_code=vue_code_preview,
         vue_files=vue_files_found,
         page_url=page_url_val,
+        react_code=react_code,
+        react_files=react_files_found,
     )
     n_issues = ai_issues.count("### Issue") + ai_issues.count("## Issue")
     print(f"    ✅ {n_issues} issue(s) gerado(s)")
