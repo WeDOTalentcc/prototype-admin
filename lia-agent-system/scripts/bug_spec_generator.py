@@ -154,7 +154,11 @@ def _find_vue_files_for_url(page_url: str, keywords: list[str], max_results: int
 
 
 def _vue_code_preview(vue_files: list[str], max_lines_per_file: int = 40) -> str:
-    """Lê arquivos Vue e retorna preview do código prod atual para o template."""
+    """Lê arquivos Vue e retorna preview do código prod atual para o template.
+
+    Versão truncada (40 linhas a partir do <template>) — para exibição no template.
+    Para detecção de Issues (AI + estático), use _vue_code_full().
+    """
     if not vue_files or not _github_token():
         return "[GITHUB_PAT_WEDOTALENT nao configurado — adicionar manualmente]"
     parts: list[str] = []
@@ -168,6 +172,24 @@ def _vue_code_preview(vue_files: list[str], max_lines_per_file: int = 40) -> str
         snippet = lines[template_start: template_start + max_lines_per_file]
         parts.append(f"// {GITHUB_REPO}/{path}\n" + "\n".join(snippet))
     return "\n\n".join(parts) if parts else "[arquivo nao encontrado no GitHub]"
+
+
+def _vue_code_full(vue_files: list[str]) -> str:
+    """Lê arquivos Vue e retorna o conteúdo COMPLETO (sem truncamento).
+
+    Usar para detecção de Issues (IA e estático) onde truncar reduz a cobertura.
+    O conteúdo completo garante que componentes Vuetify em qualquer parte do
+    arquivo sejam detectados — evita falsos negativos por truncamento de preview.
+    """
+    if not vue_files or not _github_token():
+        return ""
+    parts: list[str] = []
+    for path in vue_files[:3]:
+        content = _github_file(path)
+        if not content:
+            continue
+        parts.append(f"// {GITHUB_REPO}/{path}\n{content}")
+    return "\n\n".join(parts)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1243,7 +1265,8 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     # Extrai keywords do sumário + URL para localizar arquivos Vue
     kw_from_summary = re.findall(r"[a-zA-ZÀ-ÿ]{4,}", summary)
     vue_files_found = _find_vue_files_for_url(page_url_val, kw_from_summary, max_results=3)
-    vue_code_preview = _vue_code_preview(vue_files_found)
+    vue_code_preview = _vue_code_preview(vue_files_found)  # Exibição no template (truncado)
+    vue_code_full = _vue_code_full(vue_files_found)        # Detecção de Issues (conteúdo completo)
 
     vue_file_hint   = (
         ", ".join(f"`{f}`" for f in vue_files_found)
@@ -1269,11 +1292,13 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     # ── Issues determinísticos: IA (Claude) ou estático (VUETIFY_DEFAULTS) ──
     print("🤖  Gerando Issues determinísticos (React/Replit = fonte da verdade)...")
     desc_text_clean = _adf_to_text(adf_desc).strip() if adf_desc else summary
+    # Usa vue_code_full (sem truncamento) para maximizar cobertura de detecção
+    vue_for_issues = vue_code_full if vue_code_full else vue_code_preview
     ai_issues = _generate_claude_bug_issues(
         card_key=card_key,
         summary=summary,
         description_text=desc_text_clean,
-        vue_code=vue_code_preview,
+        vue_code=vue_for_issues,
         vue_files=vue_files_found,
         page_url=page_url_val,
         react_code=react_code,
