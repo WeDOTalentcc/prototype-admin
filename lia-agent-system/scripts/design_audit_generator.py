@@ -1037,7 +1037,7 @@ def _extract_vue_attr(
             m = re.search(pat, content, re.IGNORECASE | re.DOTALL)
             if m:
                 return f"`{m.group(1)}` ({short_name})"
-        # Componente existe mas atributo ausente → default Vuetify
+        # Componente existe mas atributo ausente → default Vuetify = BUG
         if re.search(component_present_pattern, content, re.IGNORECASE):
             found_component = True
             default_info = VUETIFY_DEFAULTS.get(component, {})
@@ -1047,8 +1047,9 @@ def _extract_vue_attr(
                     f"({short_name}) — React usa {default_info['react_equiv']}"
                 )
     if found_component:
-        return f"[atributo '{attr}' não encontrado — verificar manualmente]"
-    return "[componente não encontrado nos arquivos Vue lidos]"
+        # Componente presente, atributo não mapeado no VUETIFY_DEFAULTS → BUG genérico
+        return f"❌ AUSENTE — atributo `{attr}` não declarado no `{component}` (BUG: Vuetify aplica default implícito)"
+    return f"[{component} não encontrado nos {len(vue_contents)} arquivo(s) Vue lido(s)]"
 
 
 def _format_vuetify_defaults_alert(detected_components: list[str]) -> str:
@@ -1121,6 +1122,75 @@ def _format_vuetify_defaults_alert(detected_components: list[str]) -> str:
 # Gera Issues numerados com Antes/Depois concretos, sem hesitação
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _generate_static_issues(vue_code: str, vue_files_read: list[str]) -> tuple[str, list[str]]:
+    """Gera Issues determinísticos sem IA, baseados em inspeção do VUETIFY_DEFAULTS.
+
+    Usado como fallback quando a API Claude não está disponível.
+    Detecta componentes Vuetify com atributos ausentes e gera Issues concretos.
+    React/Replit = fonte da verdade. Ausência de atributo = BUG declarado.
+    """
+    issues: list[str] = []
+    detected: list[str] = []
+    issue_num = 0
+
+    for comp, info in VUETIFY_DEFAULTS.items():
+        comp_key = comp.replace("-size", "")  # v-btn-size → v-btn
+        prop = info["prop"]
+        comp_pat = rf'<{re.escape(comp_key)}\b'
+        attr_pat = rf'\b{re.escape(prop)}='
+
+        if not re.search(comp_pat, vue_code, re.IGNORECASE):
+            continue  # Componente não usado — sem Issue
+
+        if re.search(attr_pat, vue_code, re.IGNORECASE):
+            continue  # Atributo declarado explicitamente — OK
+
+        # BUG: componente presente, atributo ausente
+        detected.append(comp)
+        issue_num += 1
+        file_hint = f"`{vue_files_read[0]}`" if vue_files_read else "arquivo Vue"
+
+        issues.append(
+            f"### Issue {issue_num:02d} — `{comp_key}`: `{prop}` ausente → Vuetify default diverge do DS LIA\n"
+            f"\n"
+            f"**Arquivo Vue:** {file_hint}  \n"
+            f"**Regra DS LIA:** Atributo `{prop}` obrigatório em `{comp_key}` — sem ele, Vuetify aplica "
+            f"`{info['vuetify_default']}` (incorreto). React usa `{info['react_equiv']}`.\n"
+            f"\n"
+            f"**ANTES (Vue atual — INCORRETO):**\n"
+            f"```vue\n"
+            f"<{comp_key}> <!-- sem {prop} — Vuetify default: {info['vuetify_default']} -->\n"
+            f"```\n"
+            f"\n"
+            f"**DEPOIS (deve ficar assim — React/DS LIA):**\n"
+            f"```vue\n"
+            f"<{comp_key} {info['correct_vuetify']}>\n"
+            f"```\n"
+            f"\n"
+            f"> ⚠️ DEFAULT VUETIFY: `{comp_key}` sem `{prop}` aplica `{info['vuetify_default']}` "
+            f"em vez de `{info['react_equiv']}` (DS LIA). "
+            f"Corrigir localmente E atualizar `vuetify.ts`: `{info['vuetify_config_fix']}`.\n"
+        )
+
+    if not issues:
+        # Nenhum default detectado — gera Issue de confirmação
+        return (
+            "### Inspeção de Defaults Vuetify — Sem divergências detectadas\n"
+            "\nNenhum componente Vuetify com atributo obrigatório omitido foi encontrado "
+            "nos arquivos Vue lidos. Auditoria manual recomendada para divergências visuais "
+            "não detectáveis via análise estática (espaçamentos, cores específicas de classe).\n",
+            [],
+        )
+
+    header = (
+        f"## Issues de Auditoria — Detecção Estática de Defaults Vuetify\n\n"
+        f"> Gerado por inspeção determinística do VUETIFY_DEFAULTS (sem IA — API indisponível).\n"
+        f"> React/Replit = fonte da verdade. Cada Issue é um BUG confirmado.\n\n"
+        f"---\n\n"
+    )
+    return (header + "\n---\n\n".join(issues), detected)
+
+
 def _call_claude_audit(
     react_code: str,
     vue_code: str,
@@ -1142,7 +1212,7 @@ def _call_claude_audit(
     try:
         import anthropic
     except ImportError:
-        return ("[anthropic não disponível — pip install anthropic]", [])
+        return _generate_static_issues(vue_code, vue_files_read)
 
     api_key = (
         os.getenv("ANTHROPIC_API_KEY")
@@ -1154,7 +1224,8 @@ def _call_claude_audit(
         or None
     )
     if not api_key:
-        return ("[ANTHROPIC_API_KEY não configurada — Issues gerados apenas via extração estática]", [])
+        # Fallback determinístico: gera Issues baseados no VUETIFY_DEFAULTS detectados no Vue code
+        return _generate_static_issues(vue_code, vue_files_read)
 
     bb_data = bb_data or {}
 
@@ -1364,7 +1435,7 @@ def _build_audit_template(
     for f in react_files_exist:
         lines.append(f"- `plataforma-lia/{f}`")
     for f in react_files_missing:
-        lines.append(f"- `plataforma-lia/{f}` — verificar nome")
+        lines.append(f"- `plataforma-lia/{f}` — ❌ arquivo não encontrado no Replit (caminho pode ter mudado)")
 
     lines += ["", "**Vue/Vuetify — Prod atual (branch: develop):**"]
     if vue_contents:

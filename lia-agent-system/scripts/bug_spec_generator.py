@@ -226,6 +226,173 @@ VUETIFY_DEFAULTS: dict[str, dict] = {
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Issue generation — determinístico com IA (Claude) ou estático (VUETIFY_DEFAULTS)
+# React/Replit = fonte da verdade. Vue diverge = BUG declarado. Sem "verificar".
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _generate_static_bug_issues(vue_code: str, vue_files: list[str]) -> str:
+    """Gera Issues determinísticos sem IA, baseados no VUETIFY_DEFAULTS.
+
+    Detecta componentes Vuetify com atributos obrigatórios ausentes.
+    Cada Issue é um BUG declarado — React/Replit = fonte da verdade.
+    Sem 'verificar'. Sem placeholders. Antes/Depois concreto.
+    """
+    issues: list[str] = []
+    issue_num = 0
+    file_hint = f"`{vue_files[0]}`" if vue_files else "arquivo Vue"
+
+    for comp, info in VUETIFY_DEFAULTS.items():
+        comp_key = comp.replace("-size", "")
+        prop = info["prop"]
+        comp_pat = rf'<{re.escape(comp_key)}\b'
+        attr_pat = rf'\b{re.escape(prop)}='
+
+        if not re.search(comp_pat, vue_code, re.IGNORECASE):
+            continue
+        if re.search(attr_pat, vue_code, re.IGNORECASE):
+            continue
+
+        issue_num += 1
+        issues.append(
+            f"### Issue {issue_num:02d} — `{comp_key}`: `{prop}` ausente → BUG de design confirmado\n\n"
+            f"**Arquivo:** {file_hint}  \n"
+            f"**Bug:** `{comp_key}` sem `{prop}` → Vuetify aplica `{info['vuetify_default']}`. "
+            f"React/Replit usa `{info['react_equiv']}`. Divergência visual confirmada.\n\n"
+            f"**ANTES (Vue atual — INCORRETO):**\n"
+            f"```vue\n<{comp_key}> <!-- {prop} ausente → Vuetify default: {info['vuetify_default']} -->\n```\n\n"
+            f"**DEPOIS (correto — espelhar React/DS LIA):**\n"
+            f"```vue\n<{comp_key} {info['correct_vuetify']}>\n```\n\n"
+            f"> ⚠️ DEFAULT VUETIFY: Atualizar também `vuetify.ts`: `{info['vuetify_config_fix']}`\n"
+        )
+
+    if not issues:
+        return (
+            "### Inspeção de Defaults Vuetify — Nenhuma omissão detectada estaticamente\n\n"
+            "Os componentes Vuetify nos arquivos lidos declaram os atributos obrigatórios. "
+            "Divergências visuais podem existir em outros aspectos (cores inline, classes específicas). "
+            "Preencher Tabela de Tokens com inspeção manual do produto.\n"
+        )
+
+    header = (
+        "## Issues Identificados — Detecção Estática de Defaults Vuetify\n\n"
+        "> React/Replit = fonte da verdade. Cada Issue é um BUG confirmado.\n\n---\n\n"
+    )
+    return header + "\n---\n\n".join(issues)
+
+
+def _generate_claude_bug_issues(
+    card_key: str,
+    summary: str,
+    description_text: str,
+    vue_code: str,
+    vue_files: list[str],
+    page_url: str = "",
+) -> str:
+    """Chama Claude para gerar Issues de bug com Antes/Depois concretos.
+
+    REGRA ABSOLUTA no prompt: React/Replit = fonte da verdade.
+    Sem '[PREENCHER]'. Sem 'verificar'. Issues numerados com código real.
+    """
+    try:
+        import anthropic
+    except ImportError:
+        return _generate_static_bug_issues(vue_code, vue_files)
+
+    api_key = (
+        os.getenv("ANTHROPIC_API_KEY")
+        or os.getenv("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+        or ""
+    )
+    api_base = os.getenv("AI_INTEGRATIONS_ANTHROPIC_BASE_URL") or None
+
+    if not api_key:
+        return _generate_static_bug_issues(vue_code, vue_files)
+
+    vuetify_defaults_ctx = "\n".join(
+        f"  - {comp}: sem '{info['prop']}' → default {info['vuetify_default']} (React usa {info['react_equiv']})"
+        for comp, info in VUETIFY_DEFAULTS.items()
+    )
+
+    system_prompt = f"""Você é um engenheiro de qualidade especialista em DS LIA v4.2.1.
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  REGRA ABSOLUTA — FONTE DA VERDADE                                         ║
+║  React/Replit = FONTE DA VERDADE ABSOLUTA de design.                        ║
+║  Vue/prod diverge do React = BUG. Sem exceção, sem hesitação.              ║
+║  NUNCA gere "[PREENCHER]". NUNCA gere "verificar". Decida sempre.          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+## Defaults Vuetify que causam bugs por omissão:
+{vuetify_defaults_ctx}
+
+## DS LIA v4.2.1 — Regras:
+- Open Sans obrigatório — font-serif PROIBIDO
+- Botão primário: gray-900/grey-darken-4, flat, sem sombra
+- border-radius: 8px (rounded-md) — sempre
+- Ícones: 16px padrão → v-icon size="16"
+- cyan #60BED1 exclusivo ícone LIA (mdi-brain)
+- BaseButton obrigatório (Button DEPRECADO)
+
+## Formato obrigatório para cada Issue:
+### Issue NN — [componente]: [problema]
+
+**Arquivo Vue:** `caminho/arquivo.vue`
+**Bug:** [descrição curta e definitiva do bug]
+
+**ANTES (Vue atual — INCORRETO):**
+```vue
+[código real do produto]
+```
+
+**DEPOIS (correto — React/DS LIA):**
+```vue
+[código corrigido]
+```
+
+[Se default Vuetify omitido:]
+> ⚠️ DEFAULT VUETIFY: Atualizar `vuetify.ts`: `[config fix]`
+"""
+
+    user_message = f"""## Card Jira: {card_key}
+**Sumário:** {summary}
+**URL do produto:** {page_url or 'não informada'}
+
+**Descrição do bug:**
+{description_text[:2000]}
+
+---
+
+## Código Vue atual (produção — o que está ERRADO):
+```vue
+{vue_code[:5000]}
+```
+
+---
+
+## Tarefa
+
+Analise o código Vue e a descrição do bug.
+Gere Issues numerados com código Antes/Depois concreto.
+Sem '[PREENCHER]'. Sem 'verificar'. Cada Issue = 1 bug = 1 fix definitivo.
+Foque nos bugs visuais/DS LIA mencionados na descrição + defaults Vuetify omitidos."""
+
+    try:
+        client_kwargs: dict = {"api_key": api_key}
+        if api_base:
+            client_kwargs["base_url"] = api_base
+        client = anthropic.Anthropic(**client_kwargs)
+        response = client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=3000,
+            messages=[{"role": "user", "content": user_message}],
+            system=system_prompt,
+        )
+        return response.content[0].text if response.content else _generate_static_bug_issues(vue_code, vue_files)
+    except Exception:
+        return _generate_static_bug_issues(vue_code, vue_files)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Auth — ordem de prioridade:
 #   1. Replit connector OAuth2 (REPLIT_CONNECTORS_HOSTNAME + REPL_IDENTITY)
 #   2. Bearer token manual   (JIRA_TOKEN)
@@ -967,6 +1134,20 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     if vue_files_found:
         print(f"🔗  Arquivos Vue encontrados: {vue_files_found}")
 
+    # ── Issues determinísticos: IA (Claude) ou estático (VUETIFY_DEFAULTS) ──
+    print("🤖  Gerando Issues determinísticos (React/Replit = fonte da verdade)...")
+    desc_text_clean = _adf_to_text(adf_desc).strip() if adf_desc else summary
+    ai_issues = _generate_claude_bug_issues(
+        card_key=card_key,
+        summary=summary,
+        description_text=desc_text_clean,
+        vue_code=vue_code_preview,
+        vue_files=vue_files_found,
+        page_url=page_url_val,
+    )
+    n_issues = ai_issues.count("### Issue") + ai_issues.count("## Issue")
+    print(f"    ✅ {n_issues} issue(s) gerado(s)")
+
     # Merge console/network logs: API BetterBugs tem prioridade sobre texto parseado
     _console_logs = bug_info["console_logs"]
     _network_requests = bug_info["network_requests"]
@@ -1042,12 +1223,20 @@ def cmd_fetch(args: argparse.Namespace) -> None:
         f"{'━' * 60}\n\n"
     )
 
-    output = header + template + (
+    # Inclui Issues determinísticos antes do template de spec
+    issues_section = (
+        f"\n{'━' * 60}\n"
+        f"ISSUES DETERMINÍSTICOS — React/Replit = Fonte da Verdade\n"
+        f"{'━' * 60}\n\n"
+        f"{ai_issues}\n\n"
+    )
+
+    output = header + issues_section + template + (
         f"\n\n{'─' * 60}\n"
         f"💡 Próximos passos:\n"
-        f"   1. Compartilhe este output + a screenshot no chat com o agente\n"
-        f"   2. O agente vai preencher o template completo\n"
-        f"   3. Cole a resposta num arquivo: spec-{card_key}.md\n"
+        f"   1. Issues acima têm Antes/Depois concretos — encaminhar direto para dev\n"
+        f"   2. Preencher Tabela de Tokens com inspeção visual adicional se necessário\n"
+        f"   3. Cole num arquivo: spec-{card_key}.md\n"
         f"   4. Rode: python scripts/bug_spec_generator.py post {card_key} --from-file spec-{card_key}.md\n"
         f"{'─' * 60}\n"
     )
