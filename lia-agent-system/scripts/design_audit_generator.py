@@ -1444,6 +1444,24 @@ def cmd_post(args: argparse.Namespace) -> None:
         print("  ... (dry-run — nada enviado)")
         return
 
+    headers, jira_base = _get_auth()
+
+    # ── Modo --as-comment: posta diretamente como comentário, ignora descrição ──
+    if getattr(args, "as_comment", False):
+        print(f"💬  Postando auditoria como COMENTÁRIO em {key}...")
+        comment_adf = {"version": 1, "type": "doc", "content": new_nodes}
+        resp = requests.post(
+            f"{jira_base}/issue/{key}/comment",
+            headers=headers,
+            json={"body": comment_adf},
+            timeout=30,
+        )
+        if resp.ok:
+            print(f"✅  Auditoria postada como comentário: https://wedotalent.atlassian.net/browse/{key}")
+        else:
+            print(f"❌  Falha ao postar comentário ({resp.status_code}): {resp.text[:300]}")
+        return
+
     # Busca descrição atual
     print(f"🔍  Buscando descrição atual de {key}...")
     data   = _get(f"/issue/{key}", {"fields": "description"})
@@ -1460,7 +1478,6 @@ def cmd_post(args: argparse.Namespace) -> None:
     print(f"📤  Atualizando descrição de {key} (append de auditoria)...")
 
     # ── Tenta PUT na descrição; fallback p/ comentário se CONTENT_LIMIT_EXCEEDED ──
-    headers, jira_base = _get_auth()
     resp = requests.put(
         f"{jira_base}/issue/{key}",
         headers=headers,
@@ -1540,6 +1557,8 @@ Telas disponíveis:
     p_post.add_argument("key", help="Chave do card (ex: WT-1640)")
     p_post.add_argument("--from-file", "-f", help="Arquivo markdown com auditoria preenchida")
     p_post.add_argument("--dry-run", action="store_true", help="Pré-visualiza sem enviar")
+    p_post.add_argument("--as-comment", action="store_true",
+                        help="Posta como COMENTÁRIO (em vez de atualizar a descrição)")
 
     args = parser.parse_args()
 
