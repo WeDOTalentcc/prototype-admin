@@ -1205,6 +1205,44 @@ def _generate_static_issues(vue_code: str, vue_files_read: list[str]) -> tuple[s
     return (header + "\n---\n\n".join(issues), detected)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Compliance gate — valida saída de IA antes de usar
+# ─────────────────────────────────────────────────────────────────────────────
+
+_FORBIDDEN_TOKENS = frozenset({
+    "[PREENCHER]", "[preencher]", "[VER NO PROD]", "[ver no prod]",
+    "verificar manualmente", "[verificar]", "[N/A]",
+})
+_REQUIRED_PATTERN = re.compile(r'###?\s*Issue\s+\d+', re.IGNORECASE)
+_ANTES_DEPOIS_PATTERN = re.compile(r'ANTES.*DEPOIS', re.IGNORECASE | re.DOTALL)
+
+
+def _ai_output_is_compliant(text: str) -> bool:
+    """Retorna True se a saída de IA está em conformidade com REGRA ABSOLUTA.
+
+    Critérios de aprovação:
+    - Sem tokens proibidos (placeholders, 'verificar manualmente', etc.)
+    - Pelo menos 1 Issue numerado no formato '### Issue NN'
+    - Presença de blocos Antes/Depois concretos
+
+    Saída não-conforme → fallback para _generate_static_issues() (determinístico).
+    """
+    if not text or not text.strip():
+        return False
+
+    for token in _FORBIDDEN_TOKENS:
+        if token in text:
+            return False
+
+    if not _REQUIRED_PATTERN.search(text):
+        return False
+
+    if not _ANTES_DEPOIS_PATTERN.search(text):
+        return False
+
+    return True
+
+
 def _call_claude_audit(
     react_code: str,
     vue_code: str,
@@ -1346,10 +1384,15 @@ Ao final dos Issues, liste brevemente (1 linha cada) os componentes Vuetify onde
         response = client.messages.create(
             model="claude-opus-4-5",
             max_tokens=4096,
+            temperature=0.1,  # Baixa temperatura = saída mais determinística
             messages=[{"role": "user", "content": user_message}],
             system=system_prompt,
         )
         result_text = response.content[0].text if response.content else ""
+
+        # Compliance gate: rejeita saída com placeholders ou sem Issues numerados
+        if not _ai_output_is_compliant(result_text):
+            return _generate_static_issues(vue_code, vue_files_read)
 
         # Detecta quais componentes Vuetify tiveram defaults omitidos
         detected: list[str] = []

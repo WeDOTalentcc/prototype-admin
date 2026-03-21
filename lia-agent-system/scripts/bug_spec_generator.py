@@ -344,6 +344,32 @@ def _generate_static_bug_issues(vue_code: str, vue_files: list[str]) -> str:
     return header + "\n---\n\n".join(issues)
 
 
+_BUG_FORBIDDEN_TOKENS = frozenset({
+    "[PREENCHER]", "[preencher]", "[VER NO PROD]", "[ver no prod]",
+    "verificar manualmente", "[verificar]", "[N/A]",
+})
+_BUG_ISSUE_PATTERN = re.compile(r'###?\s*Issue\s+\d+', re.IGNORECASE)
+_BUG_ANTES_DEPOIS = re.compile(r'ANTES.*DEPOIS', re.IGNORECASE | re.DOTALL)
+
+
+def _bug_ai_output_is_compliant(text: str) -> bool:
+    """Retorna True se a saída da IA está em conformidade com REGRA ABSOLUTA.
+
+    Rejeita saídas com placeholders ou sem Issues numerados com Antes/Depois.
+    Fallback automático: _generate_static_bug_issues() (100% determinístico).
+    """
+    if not text or not text.strip():
+        return False
+    for token in _BUG_FORBIDDEN_TOKENS:
+        if token in text:
+            return False
+    if not _BUG_ISSUE_PATTERN.search(text):
+        return False
+    if not _BUG_ANTES_DEPOIS.search(text):
+        return False
+    return True
+
+
 def _generate_claude_bug_issues(
     card_key: str,
     summary: str,
@@ -471,10 +497,17 @@ Inclua também Issues para defaults Vuetify omitidos que divergem do DS LIA."""
         response = client.messages.create(
             model="claude-opus-4-5",
             max_tokens=3000,
+            temperature=0.1,  # Baixa temperatura = saída mais determinística
             messages=[{"role": "user", "content": user_message}],
             system=system_prompt,
         )
-        return response.content[0].text if response.content else _generate_static_bug_issues(vue_code, vue_files)
+        result_text = response.content[0].text if response.content else ""
+
+        # Compliance gate: rejeita saída com placeholders ou sem Issues numerados
+        if not _bug_ai_output_is_compliant(result_text):
+            return _generate_static_bug_issues(vue_code, vue_files)
+
+        return result_text
     except Exception:
         return _generate_static_bug_issues(vue_code, vue_files)
 
