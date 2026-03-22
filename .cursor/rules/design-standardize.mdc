@@ -1,5 +1,5 @@
 ---
-description: Padronização visual DS v4.2.1 — use ao criar ou modificar qualquer componente de UI, tela, modal, botão ou elemento visual. Aplica regra 90/10, tipografia, tokens canônicos, dark mode e acessibilidade WCAG 2.1 AA.
+description: Padronização visual DS v4.2.1 — use ao criar ou modificar qualquer componente de UI, tela, modal, botão ou elemento visual. Para novas telas, começa com PASSO 0 (Intenção Estética). Aplica regra 90/10, tipografia, tokens canônicos, dark mode e acessibilidade WCAG 2.1 AA.
 alwaysApply: false
 ---
 
@@ -9,6 +9,32 @@ alwaysApply: false
 > Tokens TS: `plataforma-lia/src/lib/design-tokens.ts`
 
 > "90% monocromático, 10% acento WeDo. Botões são pretos. Cyan é da LIA."
+
+## PASSO 0: Intenção Estética (novas telas)
+
+> Para **refatorações**, pule para as Regras Absolutas.
+
+Antes de qualquer código, responda:
+
+1. **Problema e usuário** — Quem usa esta tela e com que frequência?
+2. **Sentimento alvo** — `confiança` / `boas-vindas` / `foco` / `descoberta`
+3. **Memorabilidade** — O que a torna inesquecível dentro do DS?
+4. **Tipo de contexto** — escolha um:
+   - **Tela de entrada / branding** (login, onboarding, landing): composição atmosférica, glassmorphism, tipografia de impacto permitidos
+   - **Interface interna** (Kanban, tabelas, modais): padronização estrita, pule para Regras Absolutas
+5. **Composição espacial** — card centralizado / dois painéis / lista-tabela / sidebar+main / full-screen
+
+### Padrões atmosféricos aprovados (telas de entrada apenas)
+
+| Padrão | Classe / Referência |
+|--------|---------------------|
+| Background em camadas | `src/components/clouds-background.tsx` (gradiente + SVG animado + Framer Motion) |
+| Card glassmorphism | `bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-2xl` |
+| Headline de impacto | `text-5xl font-light font-['Open_Sans']` |
+| Acento semântico único | Uma palavra em `text-wedo-cyan` na sequência de suporte |
+| Exceção branding LIA | Source Serif 4 bold para "LIA" — exceção intencional, não corrigir |
+
+---
 
 ## Regras Absolutas
 
@@ -112,9 +138,10 @@ grep -L "dark:" [ARQUIVOS] --include="*.tsx"
 
 ## Checklist Final
 
+- [ ] (novas telas) PASSO 0: intenção estética respondida antes de codificar
 - [ ] Botões: primary preto, cyan apenas ícones LIA
 - [ ] Inputs: labels com htmlFor, focus ring grayscale
-- [ ] Cards: rounded-md, shadow-sm, sem gradientes
+- [ ] Cards: rounded-md, shadow-sm — rounded-2xl apenas em telas de entrada
 - [ ] Tipografia: Open Sans 60%, Inter 40%
 - [ ] Dark mode: variantes `dark:` em todos os elementos
 - [ ] Acessibilidade: ARIA labels, focus rings, contraste AA
