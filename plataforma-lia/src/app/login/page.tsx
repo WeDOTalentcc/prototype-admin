@@ -100,7 +100,8 @@ export default function LoginPage() {
           </h1>
           {/* Sequência de suporte — abaixo, mais leve */}
           <p className="text-base text-gray-500 font-normal leading-relaxed font-['Open_Sans',sans-serif]">
-            Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos&nbsp;·&nbsp;Recrutamento <span className="text-wedo-cyan font-bold">simples</span>
+            Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos<br />
+            Recrutamento <span className="text-wedo-cyan font-bold">simples</span>
           </p>
         </div>
 
