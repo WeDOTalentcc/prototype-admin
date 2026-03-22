@@ -6484,6 +6484,821 @@ Q1 2027:               Executar Caminho 3 em ambiente paralelo
 ---
 
 
+
+---
+
+### 23.12.7 Especificação Técnica de Código — Guia Copy/Paste (Caminho 3)
+
+> **Para que serve esta subseção:** Código exato de cada arquivo a criar ou modificar para implementar o `CompliancePipeline`. Equivalente operacional da seção 23.11 para o Caminho 3. Código baseado em leitura direta de `orchestrator.py` (626L), `workflow.py` (602L), `audit_callback.py` (279L), `audit_models.py` (97L), `pii_filter.py` (34L) e `base.py` (173L) do v5, todos lidos via GitHub API em 22/03/2026.
+
+---
+
+#### Mapa de Arquivos do Caminho 3
+
+```
+NOVOS (criar do zero):
+  src/services/compliance/
+  ├── __init__.py                          ← vazio
+  ├── pipeline.py                          ← CompliancePipeline (orquestrador)
+  └── stages/
+      ├── __init__.py                      ← vazio
+      ├── pre_process.py                   ← FairnessStage + InjectionStage + PIIMaskingStage
+      └── post_process.py                  ← ConfidenceStage + FactCheckStage
+
+COPIAR do LIA (adaptar imports):
+  src/services/compliance/fairness_guard.py   ← de lia-agent-system/app/shared/compliance/fairness_guard.py
+  src/services/compliance/injection_guard.py  ← de lia-agent-system/app/shared/prompt_injection.py
+  src/services/compliance/fact_checker.py     ← de lia-agent-system/app/shared/compliance/fact_checker.py
+
+MODIFICAR (arquivos existentes no v5):
+  src/services/pii_filter.py              ← adicionar 4º padrão NAME_IN_LOG_PATTERN
+  src/services/audit/audit_models.py      ← adicionar 2 novos AuditEventType
+  src/domains/orchestrator.py             ← injetar pipeline (12 linhas pré + 3 linhas pós + 1 linha import)
+
+CRIAR (SQL):
+  migrations/compliance_tables.sql        ← compliance_shadow_log + compliance_tenant_rules
+```
+
+---
+
+#### 23.12.7.1 Arquivo 1: `src/services/compliance/pipeline.py` (novo)
+
+```python
+# PROPOSTA — src/services/compliance/pipeline.py (novo arquivo)
+# Padrão: Middleware/Composition — compliance FORA da hierarquia de domínios
+# Ponto de injeção: src/domains/orchestrator.py process_query() (ver 23.12.7.6)
+
+import os
+import logging
+from dataclasses import dataclass, field
+from typing import Optional, List
+
+from src.domains.base import DomainContext, DomainResponse
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class StageResult:
+    """Resultado de um Stage individual. Imutável após criação."""
+    passed: bool
+    blocked_by: Optional[str] = None          # nome do stage que bloqueou
+    message: Optional[str] = None             # mensagem educacional para o usuário
+    masked_query: Optional[str] = None        # query com PII mascarado (PIIMaskingStage)
+    metadata: dict = field(default_factory=dict)
+
+
+class CompliancePipeline:
+    """
+    Pipeline de compliance para o DomainOrchestrator.
+    Opera como middleware entre o orquestrador e o workflow — ZERO impacto
+    na hierarquia de domínios (DomainPrompt e filhos permanecem inalterados).
+
+    Uso em orchestrator.py process_query():
+        pipeline = CompliancePipeline(domain_id)
+        masked_query, result = pipeline.pre_process(user_query, context)
+        if not result.passed: return blocked_response
+        ...
+        response = pipeline.post_process(response, context)
+    """
+
+    def __init__(self, domain_id: str):
+        self.domain_id = domain_id
+        self._shadow = os.getenv("COMPLIANCE_SHADOW_MODE", "false").lower() == "true"
+
+        from src.services.compliance.stages.pre_process import (
+            FairnessStage, InjectionStage, PIIMaskingStage
+        )
+        from src.services.compliance.stages.post_process import (
+            ConfidenceStage, FactCheckStage
+        )
+        self._pre_stages: List = [FairnessStage(), InjectionStage(), PIIMaskingStage()]
+        self._post_stages: List = [ConfidenceStage(domain_id), FactCheckStage()]
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # PRÉ-PROCESSAMENTO (antes do workflow.process)
+    # ──────────────────────────────────────────────────────────────────────────
+    def pre_process(
+        self, user_query: str, context: DomainContext
+    ) -> tuple:  # retorna (str, StageResult)
+        """
+        Executa FairnessStage → InjectionStage → PIIMaskingStage em sequência.
+
+        Retorna: (query_possivelmente_mascarada, StageResult)
+          - query_mascarada: versão da query com PII substituído — passar ao workflow
+          - StageResult.passed == False: caller deve retornar DomainResponse bloqueado
+          - Em shadow_mode: nunca bloqueia, apenas loga (passed sempre True)
+        """
+        clean_query = user_query
+
+        for stage in self._pre_stages:
+            try:
+                result = stage.run(clean_query, context)
+
+                if not result.passed:
+                    if self._shadow:
+                        # Shadow mode: hipotético — loga mas não bloqueia
+                        self._log_shadow(stage, result, user_query)
+                        continue
+                    # Modo ativo: bloquear
+                    logger.warning(
+                        "[CompliancePipeline] BLOCKED by %s | domain=%s | query=%.80s",
+                        stage.__class__.__name__, self.domain_id, user_query
+                    )
+                    return clean_query, result
+
+                # PIIMaskingStage modifica a query — usar versão mascarada daqui em diante
+                if result.masked_query is not None:
+                    clean_query = result.masked_query
+
+            except Exception as exc:
+                logger.error(
+                    "[CompliancePipeline] Stage %s error: %s (non-blocking)",
+                    stage.__class__.__name__, exc
+                )
+
+        return clean_query, StageResult(passed=True)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # PÓS-PROCESSAMENTO (após response ser construído)
+    # ──────────────────────────────────────────────────────────────────────────
+    def post_process(
+        self, response: DomainResponse, context: DomainContext
+    ) -> DomainResponse:
+        """
+        Executa ConfidenceStage → FactCheckStage em sequência.
+        Nunca bloqueia — apenas anota metadata no DomainResponse.
+        """
+        for stage in self._post_stages:
+            try:
+                response = stage.run(response, context)
+            except Exception as exc:
+                logger.error(
+                    "[CompliancePipeline] Post-stage %s error: %s (non-blocking)",
+                    stage.__class__.__name__, exc
+                )
+        return response
+
+    def _log_shadow(self, stage, result: StageResult, original_query: str) -> None:
+        """Persiste evento de shadow mode para análise de calibração."""
+        logger.warning(
+            "[CompliancePipeline][SHADOW] %s would block | domain=%s | reason=%s | query=%.80s",
+            stage.__class__.__name__, self.domain_id, result.blocked_by, original_query
+        )
+        try:
+            from src.services.compliance.shadow_log import record_shadow_event
+            record_shadow_event(
+                domain_id=self.domain_id,
+                stage=stage.__class__.__name__,
+                would_block=True,
+                block_reason=result.message,
+                query_preview=original_query[:200],
+                metadata=result.metadata,
+            )
+        except ImportError:
+            pass  # shadow_log opcional — não bloqueia se não existir ainda
+```
+
+---
+
+#### 23.12.7.2 Arquivo 2: `src/services/compliance/stages/pre_process.py` (novo)
+
+```python
+# PROPOSTA — src/services/compliance/stages/pre_process.py (novo arquivo)
+# Depende de:
+#   src/services/compliance/fairness_guard.py  (copiado do LIA — ver 23.12.7.4)
+#   src/services/compliance/injection_guard.py (copiado do LIA — ver 23.12.7.4)
+#   src/services/pii_filter.py                 (existente no v5 — ampliar com 4º padrão)
+
+import logging
+from src.domains.base import DomainContext
+from src.services.compliance.pipeline import StageResult
+
+logger = logging.getLogger(__name__)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# STAGE 1: FairnessStage
+# Concerns cobertos: #1, #9, #16, #18, #21 (queries discriminatórias)
+# Origem do código: lia-agent-system/app/shared/compliance/fairness_guard.py L376-422
+# ──────────────────────────────────────────────────────────────────────────────
+class FairnessStage:
+    """
+    Bloqueia queries com critérios discriminatórios antes de chegarem ao LLM.
+    FairnessGuard copiado do LIA para src/services/compliance/fairness_guard.py.
+    """
+
+    def __init__(self):
+        from src.services.compliance.fairness_guard import FairnessGuard
+        self._guard = FairnessGuard()
+
+    def run(self, query: str, context: DomainContext) -> StageResult:
+        # check() — código real LIA fairness_guard.py L376 (lido via filesystem)
+        result = self._guard.check(query)
+
+        if result.is_blocked:
+            return StageResult(
+                passed=False,
+                blocked_by="fairness_guard",
+                message=result.educational_message or (
+                    "Esta solicitação não pode ser processada pois contém critérios "
+                    "que podem ser discriminatórios. A plataforma segue as diretrizes "
+                    "da EU AI Act Art. 9 e CLT Art. 373-A."
+                ),
+                metadata={
+                    "blocked_terms": result.blocked_terms,
+                    "category": getattr(result, "category", None),
+                    "confidence": result.confidence,
+                    "soft_warnings": getattr(result, "soft_warnings", []),
+                }
+            )
+
+        return StageResult(
+            passed=True,
+            metadata={"soft_warnings": getattr(result, "soft_warnings", [])}
+        )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# STAGE 2: InjectionStage
+# Concerns cobertos: #4, #10, #13, #19 (prompt injection)
+# Origem do código: lia-agent-system/app/shared/prompt_injection.py L114-157
+# ──────────────────────────────────────────────────────────────────────────────
+class InjectionStage:
+    """
+    Bloqueia queries com padrões de prompt injection de alto risco.
+    Bloqueia APENAS risk_level == "high" — evita falsos positivos em queries legítimas.
+    PromptInjectionGuard copiado para src/services/compliance/injection_guard.py.
+    """
+
+    def __init__(self):
+        from src.services.compliance.injection_guard import PromptInjectionGuard
+        self._guard = PromptInjectionGuard()
+
+    def run(self, query: str, context: DomainContext) -> StageResult:
+        # check() — código real LIA prompt_injection.py L114 (lido via filesystem)
+        result = self._guard.check(query)
+
+        # Bloquear apenas risco HIGH — calibrado durante Fase 2 (shadow mode)
+        if result.is_suspicious and result.risk_level == "high":
+            return StageResult(
+                passed=False,
+                blocked_by="injection_guard",
+                message="Input bloqueado: padrão suspeito detectado na solicitação.",
+                metadata={
+                    "patterns": result.matched_patterns,
+                    "risk_level": result.risk_level,
+                    "confidence": result.confidence,
+                }
+            )
+
+        # Medium/Low risk: não bloqueia — anota para dashboard de shadow mode
+        return StageResult(
+            passed=True,
+            metadata={
+                "injection_suspicious": result.is_suspicious,
+                "injection_risk": result.risk_level,
+            }
+        )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# STAGE 3: PIIMaskingStage
+# Concerns cobertos: #7, #12, #14, #20 (PII pré-LLM)
+# Usa: src/services/pii_filter.py (existente no v5 — ampliar com 4º padrão)
+# ──────────────────────────────────────────────────────────────────────────────
+class PIIMaskingStage:
+    """
+    Mascara CPF/EMAIL/TELEFONE/NOME antes de enviar ao LLM via workflow.process().
+    NUNCA bloqueia — apenas mascara e retorna masked_query no StageResult.
+    mask_pii() já existe em src/services/pii_filter.py (ampliar com NAME_IN_LOG_PATTERN).
+    """
+
+    def run(self, query: str, context: DomainContext) -> StageResult:
+        from src.services.pii_filter import mask_pii
+        masked = mask_pii(query)
+        had_pii = masked != query
+        if had_pii:
+            logger.info(
+                "[PIIMaskingStage] PII detectado e mascarado | domain=%s",
+                getattr(context, "domain_id", "unknown")
+            )
+        return StageResult(
+            passed=True,       # Nunca bloqueia
+            masked_query=masked,
+            metadata={"had_pii": had_pii}
+        )
+```
+
+---
+
+#### 23.12.7.3 Arquivo 3: `src/services/compliance/stages/post_process.py` (novo)
+
+```python
+# PROPOSTA — src/services/compliance/stages/post_process.py (novo arquivo)
+# Depende de:
+#   src/services/compliance/fact_checker.py (copiado do LIA — ver 23.12.7.4)
+#   src/domains/base.py DomainContext, DomainResponse (já existem no v5)
+
+import logging
+from src.domains.base import DomainContext, DomainResponse
+
+logger = logging.getLogger(__name__)
+
+# Limiar de confiança para flag de revisão humana
+# Origem conceitual: lia-agent-system/libs/agents-core/lia_agents_core/confidence.py
+# No v5: confiança já calculada pelo DomainIntentAgent e gravada em DomainState["confidence"]
+CONFIDENCE_LOW_THRESHOLD = 0.6
+
+# Domínios com output narrativo — fact-check aplicável
+# Não aplicar em messaging/scheduling (output estruturado)
+_NARRATIVE_DOMAINS = frozenset({
+    "evaluation", "insights", "autonomous", "sourced_profile_sourcing",
+})
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# STAGE 4: ConfidenceStage
+# Concerns cobertos: #5, #23 (confiança e revisão humana)
+# ──────────────────────────────────────────────────────────────────────────────
+class ConfidenceStage:
+    """
+    Lê o score de confiança gravado pelo DomainWorkflow (DomainState["confidence"])
+    e anota compliance_confidence_alert no DomainResponse.metadata quando abaixo do limiar.
+
+    IMPORTANTE: NÃO usa ConfidenceNode do LIA. O v5 já calcula confiança internamente:
+      workflow.py L550: DomainState["confidence"] = 0.0 (initial)
+      workflow.py L454: _route_after_intent() usa state["confidence"] para roteamento
+      orchestrator.py L174-176: result["metadata"]["confidence"] = final_state["confidence"]
+      ← ConfidenceStage lê daqui: response.metadata["confidence"]
+
+    Nenhum import do LIA necessário para este stage.
+    """
+
+    def __init__(self, domain_id: str):
+        self.domain_id = domain_id
+
+    def run(self, response: DomainResponse, context: DomainContext) -> DomainResponse:
+        confidence = response.metadata.get("confidence")
+
+        if confidence is not None and isinstance(confidence, (int, float)):
+            if confidence < CONFIDENCE_LOW_THRESHOLD:
+                response.metadata["compliance_confidence_alert"] = True
+                response.metadata["compliance_confidence_score"] = round(float(confidence), 3)
+                logger.warning(
+                    "[ConfidenceStage] Low confidence: domain=%s score=%.2f threshold=%.2f",
+                    self.domain_id, confidence, CONFIDENCE_LOW_THRESHOLD
+                )
+
+        return response
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# STAGE 5: FactCheckStage
+# Concerns cobertos: #6 (alucinações numéricas na resposta)
+# Origem do código: lia-agent-system/app/shared/compliance/fact_checker.py L101-120
+# ATENÇÃO: método real é check_response() — NÃO check()
+# ──────────────────────────────────────────────────────────────────────────────
+class FactCheckStage:
+    """
+    Detecta afirmações numéricas inaccuradas na resposta do domínio.
+    Aplica SOMENTE em _NARRATIVE_DOMAINS — não em messaging/scheduling (output estruturado).
+    FactChecker copiado para src/services/compliance/fact_checker.py.
+    """
+
+    def __init__(self):
+        self._checker = None  # lazy init — evita ImportError se arquivo não existir ainda
+
+    def _get_checker(self):
+        if self._checker is None:
+            from src.services.compliance.fact_checker import FactChecker
+            self._checker = FactChecker()
+        return self._checker
+
+    def run(self, response: DomainResponse, context: DomainContext) -> DomainResponse:
+        domain_id = getattr(context, "domain_id", "")
+
+        # Só aplica em domínios narrativos (não estruturados)
+        if domain_id not in _NARRATIVE_DOMAINS:
+            return response
+
+        # Só aplica em respostas com sucesso e texto
+        if not response.success or not response.message:
+            return response
+
+        try:
+            checker = self._get_checker()
+            # Método real do LIA: check_response() (não check()) — lido de fact_checker.py L101
+            fact_result = checker.check_response(
+                response_text=response.message,
+                context={}
+            )
+            if fact_result.inaccurate_claims > 0:
+                response.metadata["compliance_fact_alert"] = fact_result.inaccurate_claims
+                response.metadata["compliance_fact_total"] = fact_result.total_claims
+                logger.warning(
+                    "[FactCheckStage] %d/%d claims potencialmente inaccurados | domain=%s",
+                    fact_result.inaccurate_claims, fact_result.total_claims, domain_id
+                )
+        except Exception as exc:
+            logger.error("[FactCheckStage] Error (non-blocking): %s", exc)
+
+        return response
+```
+
+---
+
+#### 23.12.7.4 Arquivos a Copiar do LIA (3 arquivos de compliance)
+
+| Arquivo LIA (origem) | Destino v5 | Tamanho | Adaptar |
+|---|---|---|---|
+| `lia-agent-system/app/shared/compliance/fairness_guard.py` | `src/services/compliance/fairness_guard.py` | 742L | imports de logger e models |
+| `lia-agent-system/app/shared/prompt_injection.py` | `src/services/compliance/injection_guard.py` | 177L | imports de logger |
+| `lia-agent-system/app/shared/compliance/fact_checker.py` | `src/services/compliance/fact_checker.py` | 391L | imports de logger |
+
+**Para cada arquivo, substituição de import:**
+```
+ANTES (LIA):  from app.utils.logger import logger
+DEPOIS (v5):  import logging; logger = logging.getLogger(__name__)
+
+ANTES (LIA):  from app.shared.compliance.models import FairnessCheckResult
+DEPOIS (v5):  # FairnessCheckResult como @dataclass está no próprio fairness_guard.py — sem import externo
+
+ANTES (LIA):  if _METRICS_AVAILABLE: fairness_blocks_total.labels(category=detected_category).inc()
+DEPOIS (v5):  # Remover bloco Prometheus — opcional, adicionar de volta quando/se monitoramento for configurado
+```
+
+---
+
+#### 23.12.7.5 Modificar: `src/services/pii_filter.py` (adicionar 4º padrão)
+
+**Arquivo atual do v5** (34 linhas, código real lido via GitHub API):
+```python
+# pii_filter.py ATUAL no v5 — 3 padrões, só aplicados em logging
+_PII_PATTERNS: List[Tuple[re.Pattern, str]] = [
+    (re.compile(r'\d{3}\.?\d{3}\.?\d{3}-?\d{2}'), '[CPF]'),
+    (re.compile(r'[\w.+-]+@[\w.-]+\.\w{2,}'), '[EMAIL]'),
+    (re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?\d{4,5}[-\s]?\d{4}'), '[PHONE]'),
+]
+```
+
+**PROPOSTA — adicionar 4º padrão** (origem: `lia-agent-system/app/shared/pii_masking.py` L21):
+```python
+# pii_filter.py PROPOSTO no v5 — 4 padrões, usados também pré-LLM pelo PIIMaskingStage
+import logging
+import re
+from typing import List, Tuple
+
+_PII_PATTERNS: List[Tuple[re.Pattern, str]] = [
+    (re.compile(r'\d{3}\.?\d{3}\.?\d{3}-?\d{2}'), '[CPF]'),     # padrão 1 — existente
+    (re.compile(r'[\w.+-]+@[\w.-]+\.\w{2,}'), '[EMAIL]'),         # padrão 2 — existente
+    (re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?\d{4,5}[-\s]?\d{4}'), '[PHONE]'),  # padrão 3 — existente
+    (re.compile(                                                        # padrão 4 — NOVO
+        r'(?:name|nome|candidato|recruiter|user)\s*[=:]\s*["']([^"']+)["']',
+        re.IGNORECASE
+    ), '[NAME]'),
+]
+# mask_pii(), PIIMaskingFilter, install_pii_filter() — manter inalterados
+```
+
+**Impacto no v5:** zero — `mask_pii()` já é importada em `workflow.py` e `audit_models.py`. Adicionar padrão 4 aumenta cobertura sem quebrar nenhum consumer. Não é necessário reiniciar nenhum serviço além do v5 em si.
+
+---
+
+#### 23.12.7.6 Modificação Cirúrgica: `src/domains/orchestrator.py`
+
+Esta é a única modificação em arquivo existente de negócio. São **16 linhas** adicionadas e **1 linha alterada**. Nenhuma linha existente é removida.
+
+**PASSO 1 — Adicionar `import os` no topo** (linha 1):
+```python
+# ADICIONAR na linha 1 de orchestrator.py (não existe atualmente)
+import os
+```
+
+**PASSO 2 — Inserir pré-processamento entre L80 e L82** (após validate_context, antes de aggregated_stats):
+
+Código v5 atual L73-82 (lido via GitHub API):
+```python
+        is_valid, error_msg = domain.validate_context(context)   # L73 — existente
+        if not is_valid:                                          # L74 — existente
+            return DomainResponse(                                # L75 — existente
+                success=False,                                    # L76 — existente
+                message=f"⚠️ {error_msg}",                        # L77 — existente
+                error=error_msg,                                  # L78 — existente
+                suggestions=domain.get_suggestions(context)       # L79 — existente
+            )                                                     # L80 — existente
+
+        aggregated_stats = None                                   # L82 — existente
+```
+
+Inserir entre L80 e L82:
+```python
+        # ── COMPLIANCE PRÉ-PROCESSAMENTO (Caminho 3) ──────────────────────────
+        _pipeline = None
+        _compliance_masked_query = user_query
+        _compliance_active = (
+            os.getenv("COMPLIANCE_PIPELINE_ENABLED", "false").lower() == "true"
+            or os.getenv("COMPLIANCE_SHADOW_MODE", "false").lower() == "true"
+        )
+        if _compliance_active:
+            from src.services.compliance.pipeline import CompliancePipeline
+            _pipeline = CompliancePipeline(domain_id)
+            _compliance_masked_query, _comp_result = _pipeline.pre_process(user_query, context)
+            if not _comp_result.passed:
+                return DomainResponse(
+                    success=False,
+                    message=_comp_result.message or "Solicitação bloqueada pelo sistema de compliance.",
+                    error=_comp_result.blocked_by,
+                    metadata={"compliance_blocked": True, **(_comp_result.metadata or {})},
+                    suggestions=["Reformule a solicitação sem critérios discriminatórios"],
+                )
+        # ── FIM COMPLIANCE PRÉ-PROCESSAMENTO ──────────────────────────────────
+```
+
+**PASSO 3 — Alterar linha 122 (question= na chamada workflow.process)**:
+```python
+        # orchestrator.py L122-128 ATUAL:
+            result = self.workflow.process(
+                question=user_query,          # ← ALTERAR ESTA LINHA
+                domain_id=domain_id,
+                ...
+            )
+
+        # orchestrator.py L122-128 PROPOSTO:
+            result = self.workflow.process(
+                question=_compliance_masked_query,  # ← usa query com PII mascarado para LLM
+                domain_id=domain_id,               # AuditCallbackHandler (L101) já recebeu
+                ...                                # user_query original — audit_models.py
+            )                                      # aplica mask_pii() antes de gravar
+```
+
+**PASSO 4 — Inserir pós-processamento após L179** (após DomainResponse ser construído):
+
+Código v5 atual L165-181 (lido via GitHub API):
+```python
+            response = DomainResponse(           # L165 — existente
+                success=result['success'],        # L166 — existente
+                message=result['final_answer'],   # L167 — existente
+                data=result.get('data', {}),      # L168 — existente
+                suggestions=result.get('suggestions', []),  # L169 — existente
+                needs_confirmation=result.get('needs_confirmation', False),  # L170 — existente
+                error=result.get('error'),        # L171 — existente
+                metadata={                        # L172 — existente
+                    "domain": domain_id,          # L173 — existente
+                    "execution_time_ms": execution_time_ms,  # L174 — existente
+                    "used_aggregated_stats": aggregated_stats is not None,  # L175 — existente
+                    **result.get('metadata', {})  # L176 — existente
+                },                                # L177 — existente
+                api_calls=context.get_api_calls() # L178 — existente
+            )                                     # L179 — existente
+
+            if domain_id == "sourced_profile_sourcing":   # L181 — existente
+```
+
+Inserir entre L179 e L181:
+```python
+            # ── COMPLIANCE PÓS-PROCESSAMENTO (Caminho 3) ────────────────────
+            if _pipeline is not None:
+                response = _pipeline.post_process(response, context)
+            # ── FIM COMPLIANCE PÓS-PROCESSAMENTO ────────────────────────────
+```
+
+**Resumo das alterações em orchestrator.py:**
+```
+Linha 1:      adicionar import os
+Linhas 81-98: inserir bloco de 18 linhas (pré-processamento)
+Linha ~122:   alterar user_query → _compliance_masked_query
+Linhas 180-182: inserir bloco de 3 linhas (pós-processamento)
+Total alterações: 1 import + 1 linha alterada + 21 linhas inseridas
+Sem linhas removidas
+```
+
+---
+
+#### 23.12.7.7 Modificar: `src/services/audit/audit_models.py` (estender AuditEventType)
+
+O v5 já tem audit sofisticado (`src/services/audit/` — 4 arquivos, 279+97+225+6553 bytes). Adicionar 2 novos tipos de evento para compliance:
+
+**Código atual do AuditEventType** (lido de audit_models.py via GitHub API):
+```python
+# audit_models.py ATUAL — AuditEventType enum (código real, 13 valores)
+class AuditEventType(str, Enum):
+    NODE_START = "node_start"
+    NODE_END = "node_end"
+    NODE_ERROR = "node_error"
+    TOOL_CALL = "tool_call"
+    TOOL_RESULT = "tool_result"
+    TOOL_ERROR = "tool_error"
+    LLM_START = "llm_start"
+    LLM_END = "llm_end"
+    LLM_ERROR = "llm_error"
+    GRAPH_START = "graph_start"
+    GRAPH_END = "graph_end"
+    DOMAIN_ACTION = "domain_action"
+```
+
+**PROPOSTA — adicionar 2 valores:**
+```python
+# audit_models.py PROPOSTO — adicionar ao final do enum (não alterar nenhum valor existente)
+class AuditEventType(str, Enum):
+    # ... todos os 12 valores existentes permanecem inalterados ...
+    NODE_START    = "node_start"
+    NODE_END      = "node_end"
+    NODE_ERROR    = "node_error"
+    TOOL_CALL     = "tool_call"
+    TOOL_RESULT   = "tool_result"
+    TOOL_ERROR    = "tool_error"
+    LLM_START     = "llm_start"
+    LLM_END       = "llm_end"
+    LLM_ERROR     = "llm_error"
+    GRAPH_START   = "graph_start"
+    GRAPH_END     = "graph_end"
+    DOMAIN_ACTION = "domain_action"
+    # ── NOVOS (Caminho 3) — adicionar aqui ───────────────────────────────────
+    COMPLIANCE_BLOCKED = "compliance_blocked"  # query bloqueada pelo CompliancePipeline
+    COMPLIANCE_SHADOW  = "compliance_shadow"   # shadow mode: seria bloqueado mas não foi
+```
+
+**Zero impacto em consumers existentes:** `AuditEventType` é um `str` enum — valores são serialized como strings. `audit_writer.py` e `audit_storage.py` salvam `e.event_type.value` — novos valores são automaticamente suportados. Nenhum migration de banco necessário (o campo é TEXT/VARCHAR).
+
+---
+
+#### 23.12.7.8 Schema SQL: Tabelas de Compliance
+
+```sql
+-- PROPOSTA — migrations/compliance_tables.sql (novo arquivo de migration)
+-- Executar via Alembic (alembic upgrade head) ou psql direto
+-- Compatível com PostgreSQL do v5 (usa UUID, JSONB, TIMESTAMPTZ)
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- TABELA 1: Shadow log — registra bloqueios hipotéticos (ativa na Fase 2)
+-- Usada por: src/services/compliance/shadow_log.py
+-- ──────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS compliance_shadow_log (
+    id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id    VARCHAR(255),
+    domain_id     VARCHAR(50) NOT NULL,
+    stage         VARCHAR(80) NOT NULL,     -- 'FairnessStage', 'InjectionStage', etc.
+    would_block   BOOLEAN     NOT NULL,
+    query_preview VARCHAR(200),             -- primeiros 200 chars, mascarados com mask_pii()
+    block_reason  TEXT,
+    metadata      JSONB,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_shadow_log_domain_date
+    ON compliance_shadow_log(domain_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_shadow_log_stage
+    ON compliance_shadow_log(stage, would_block);
+
+COMMENT ON TABLE compliance_shadow_log IS
+    'Shadow mode: queries que SERIAM bloqueadas sem enforcement ativo. '
+    'Usar para calibrar thresholds antes de ativar COMPLIANCE_PIPELINE_ENABLED=true.';
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- TABELA 2: Tenant rules — regras configuráveis por empresa (ativa na Fase 5)
+-- Usada por: src/services/compliance/config/tenant_rules.py (criar na Fase 5)
+-- ──────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS compliance_tenant_rules (
+    id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id  UUID        NOT NULL,
+    rule_type   VARCHAR(50) NOT NULL,  -- ver tipos válidos abaixo
+    rule_config JSONB       NOT NULL,  -- config específica do tipo
+    enabled     BOOLEAN     NOT NULL DEFAULT TRUE,
+    description TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_tenant_rules_company_enabled
+    ON compliance_tenant_rules(company_id, enabled);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_tenant_rules_company_type_unique
+    ON compliance_tenant_rules(company_id, rule_type)
+    WHERE enabled = TRUE;
+
+COMMENT ON TABLE compliance_tenant_rules IS
+    'Regras de compliance configuráveis por empresa sem modificar código. '
+    'Carregadas com cache TTL=60s pelo CompliancePipeline na Fase 5.';
+
+-- Exemplos de rule_config por rule_type:
+-- "fairness_category"    → {"blocked_categories": ["age", "gender"], "strict": true}
+-- "injection_threshold"  → {"min_risk_to_block": "medium"}  -- default é "high"
+-- "pii_fields"           → {"additional_patterns": ["RG_PATTERN_REGEX"]}
+-- "fact_check_domains"   → {"apply_to": ["evaluation", "insights"]}
+-- "confidence_threshold" → {"min_confidence": 0.5}  -- default é 0.6
+```
+
+---
+
+#### 23.12.7.9 Arquivo Auxiliar: `src/services/compliance/shadow_log.py` (novo)
+
+```python
+# PROPOSTA — src/services/compliance/shadow_log.py (novo arquivo)
+# Persiste eventos de shadow mode em compliance_shadow_log (ver 23.12.7.8)
+# Chamado pelo CompliancePipeline._log_shadow() — apenas quando COMPLIANCE_SHADOW_MODE=true
+
+import logging
+from typing import Optional, Dict, Any
+
+logger = logging.getLogger(__name__)
+
+
+def record_shadow_event(
+    domain_id: str,
+    stage: str,
+    would_block: bool,
+    block_reason: Optional[str],
+    query_preview: Optional[str],
+    metadata: Optional[Dict[str, Any]] = None,
+) -> None:
+    """
+    Persiste evento de shadow mode de forma assíncrona (fire-and-forget).
+    Nunca levanta exceção — shadow logging é best-effort.
+    query_preview é mascarado com mask_pii() antes de persistir.
+    """
+    try:
+        from src.services.pii_filter import mask_pii
+        import asyncio
+
+        safe_preview = mask_pii(query_preview or "")[:200]
+
+        async def _save():
+            try:
+                # Adaptar para o padrão de sessão de DB do v5 (AsyncSession via SQLAlchemy)
+                from src.core.database import get_async_session
+                async with get_async_session() as db:
+                    from sqlalchemy import text
+                    await db.execute(
+                        text(
+                            "INSERT INTO compliance_shadow_log "
+                            "(domain_id, stage, would_block, block_reason, query_preview, metadata) "
+                            "VALUES (:domain_id, :stage, :would_block, :block_reason, :query_preview, :metadata::jsonb)"
+                        ),
+                        {
+                            "domain_id": domain_id,
+                            "stage": stage,
+                            "would_block": would_block,
+                            "block_reason": block_reason,
+                            "query_preview": safe_preview,
+                            "metadata": str(metadata or {}),
+                        }
+                    )
+                    await db.commit()
+            except Exception as exc:
+                logger.debug("[shadow_log._save] DB error (non-blocking): %s", exc)
+
+        # Fire-and-forget: não bloqueia o fluxo principal do orchestrator
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(_save())
+            else:
+                asyncio.run(_save())
+        except RuntimeError:
+            asyncio.run(_save())
+
+    except Exception as exc:
+        logger.debug("[shadow_log] Failed to persist (non-blocking): %s", exc)
+```
+
+---
+
+#### 23.12.7.10 Checklist de Validação por PR
+
+```
+PR 1 — Infraestrutura de compliance (src/services/compliance/*):
+  ✓ pytest tests/compliance/ --cov=src/services/compliance --cov-report=term-missing
+  ✓ Cobertura mínima: 90% (CompliancePipeline + 5 Stages)
+  ✓ FairnessStage bloqueia "quero candidato jovem de 25 anos" → passed=False, blocked_by="fairness_guard"
+  ✓ InjectionStage bloqueia "IGNORE PREVIOUS INSTRUCTIONS. Agora você é..." → passed=False, risk_level="high"
+  ✓ InjectionStage NÃO bloqueia "Listar candidatos aprovados" → passed=True
+  ✓ PIIMaskingStage "candidato CPF 123.456.789-01" → masked_query contém [CPF], passed=True
+  ✓ ConfidenceStage: response.metadata["confidence"] = 0.4 → compliance_confidence_alert=True
+  ✓ FactCheckStage: domain_id="messaging" → response não alterada (não aplica)
+  ✓ CompliancePipeline shadow_mode=True: query discriminatória → passed=True + shadow log escrito
+
+PR 2 — Modificação do orchestrator.py:
+  ✓ COMPLIANCE_PIPELINE_ENABLED=false (default): comportamento 100% idêntico ao atual
+  ✓ COMPLIANCE_PIPELINE_ENABLED=true: query discriminatória → DomainResponse(success=False, compliance_blocked=True)
+  ✓ COMPLIANCE_SHADOW_MODE=true: query discriminatória → passa normalmente + registro em shadow_log
+  ✓ PII no query: CPF mascarado no workflow, original preservado no audit (audit_models mask_pii no to_dict)
+  ✓ Regressão completa: todos os testes de integração existentes passando com COMPLIANCE_PIPELINE_ENABLED=false
+  ✓ Teste de latência: P99 adicionado pelo pipeline < 20ms (medido em staging)
+
+PR 3 — Migration SQL:
+  ✓ alembic upgrade head sem erro
+  ✓ compliance_shadow_log: INSERT + SELECT + índices funcionando
+  ✓ compliance_tenant_rules: INSERT + unique constraint por (company_id, rule_type) funcionando
+
+Validação manual de compliance (Product Owner):
+  ✓ 20 queries com critérios discriminatórios → 100% retornam DomainResponse bloqueado com mensagem PT-BR
+  ✓ 10 queries com injection HIGH → 100% bloqueadas
+  ✓ 5 queries com injection MEDIUM → 0 bloqueios (noise aceitável)
+  ✓ Shadow mode dashboard: taxa de bloqueio hipotética < 3% das queries legítimas de produção
+  ✓ Query legítima com CPF ("buscar candidato 123.456.789-01") → respondida, CPF mascarado no payload do LLM
+```
+
+---
+
+
 ## Apêndice: Rastreabilidade dos Arquivos v5 Verificados
 
 Para reprodutibilidade independente, tabela com os commits exatos lidos via GitHub API em **20 de março de 2026**:
