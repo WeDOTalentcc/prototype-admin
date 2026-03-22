@@ -55,8 +55,8 @@ export default function LoginPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-600 dark:text-gray-400" />
       </div>
     )
   }
@@ -101,7 +101,7 @@ export default function LoginPage() {
           {/* Sequência de suporte — abaixo, mais leve */}
           <p className="text-base text-gray-500 font-light leading-relaxed font-['Open_Sans',sans-serif]">
             Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos<br />
-            Recrutamento <span className="text-wedo-cyan font-bold">simples</span>
+            Recrutamento <span className="text-wedo-cyan">simples</span>
           </p>
         </div>
 
@@ -142,7 +142,7 @@ export default function LoginPage() {
       {/* Right Section - Card flutuante */}
       <div className="w-full lg:w-1/2 flex flex-col relative z-10">
         <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 lg:p-10">
+        <div className="w-full max-w-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 lg:p-10">
 
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center mb-8">
@@ -165,7 +165,7 @@ export default function LoginPage() {
 
           {/* Error */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-md flex items-start gap-2">
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-red-600">{error}</p>
             </div>
@@ -184,7 +184,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-md bg-white text-gray-950 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-950 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors"
                     placeholder="seu@email.com"
                     required
                     autoFocus
@@ -205,7 +205,7 @@ export default function LoginPage() {
           {step === "password" && (
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               {/* Email confirmado */}
-              <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-md">
+              <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 rounded-xl">
                 <div className="flex items-center gap-2 min-w-0">
                   <Mail className="w-4 h-4 text-gray-400 shrink-0" />
                   <span className="text-sm text-gray-700 truncate">{email}</span>
@@ -231,7 +231,7 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-9 pr-10 py-2.5 text-sm border border-gray-200 rounded-md bg-white text-gray-950 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-10 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-950 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors"
                     placeholder="••••••••"
                     required
                     autoFocus
