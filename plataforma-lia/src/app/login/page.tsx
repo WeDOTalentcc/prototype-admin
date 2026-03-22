@@ -95,7 +95,7 @@ export default function LoginPage() {
           </div>
           {/* Headline — primeiro, maior impacto */}
           <h1 className="text-3xl text-gray-950 font-semibold leading-snug mb-5 font-['Open_Sans',sans-serif]">
-            Entre. A <span className="font-['Source_Serif_4',serif] italic">LIA</span> já está<br />
+            Entre. A <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> já está<br />
             <span className="font-semibold text-wedo-cyan">trabalhando por você.</span>
           </h1>
           {/* Sequência de suporte — abaixo, mais leve */}
@@ -133,7 +133,7 @@ export default function LoginPage() {
               <Mail className="w-4 h-4" />
             </a>
           </div>
-          <p className="text-xs text-gray-400">© 2025 <span className="font-['Source_Serif_4',serif] italic">LIA</span> by WeDoTalent</p>
+          <p className="text-xs text-gray-400">© 2025 <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> by WeDoTalent</p>
         </div>
 
       </div>
