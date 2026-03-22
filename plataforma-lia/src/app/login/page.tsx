@@ -93,9 +93,9 @@ export default function LoginPage() {
 
         <div className="text-gray-700 text-xs space-y-1">
           <p>
-            A WeDo Talent é uma HRTech Brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
+            A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
           </p>
-          <p className="text-gray-600">© 2025 WeDo Talent. Todos os direitos reservados.</p>
+          <p className="text-gray-600">© 2025 WeDoTalent. Todos os direitos reservados.</p>
         </div>
       </div>
 
