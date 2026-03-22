@@ -9,6 +9,7 @@ import Image from "next/image"
 import {
   Eye, EyeOff, Mail, Lock, Loader2, AlertCircle, Brain
 } from "lucide-react"
+import CloudsBackground from "@/components/clouds-background"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -44,29 +45,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="min-h-screen flex font-['Open_Sans',sans-serif] relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #9ac6dc 0%, #b2d6e8 25%, #c8e4f0 55%, #daeef8 100%)' }}
-    >
-      {/* Cloud blobs - estático, sem animação */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        {/* Nuvem grande - topo direito */}
-        <div style={{ position: 'absolute', width: '720px', height: '460px', top: '-90px', right: '-120px', background: 'rgba(255,255,255,0.88)', borderRadius: '50%', filter: 'blur(72px)' }} />
-        {/* Nuvem grande - centro direito */}
-        <div style={{ position: 'absolute', width: '560px', height: '490px', top: '28%', right: '6%', background: 'rgba(255,255,255,0.82)', borderRadius: '50%', filter: 'blur(82px)' }} />
-        {/* Nuvem extra - detalhe topo direito */}
-        <div style={{ position: 'absolute', width: '320px', height: '260px', top: '8%', right: '28%', background: 'rgba(255,255,255,0.70)', borderRadius: '50%', filter: 'blur(55px)' }} />
-        {/* Nuvem grande - baixo direito */}
-        <div style={{ position: 'absolute', width: '780px', height: '390px', bottom: '-90px', right: '3%', background: 'rgba(255,255,255,0.78)', borderRadius: '50%', filter: 'blur(90px)' }} />
-        {/* Nuvem centro esquerdo */}
-        <div style={{ position: 'absolute', width: '500px', height: '330px', top: '42%', left: '-90px', background: 'rgba(255,255,255,0.68)', borderRadius: '50%', filter: 'blur(76px)' }} />
-        {/* Nuvem sutil - topo esquerdo */}
-        <div style={{ position: 'absolute', width: '360px', height: '260px', top: '4%', left: '12%', background: 'rgba(255,255,255,0.58)', borderRadius: '50%', filter: 'blur(64px)' }} />
-        {/* Nuvem baixo esquerdo */}
-        <div style={{ position: 'absolute', width: '520px', height: '310px', bottom: '4%', left: '3%', background: 'rgba(255,255,255,0.64)', borderRadius: '50%', filter: 'blur(80px)' }} />
-        {/* Nuvem central pequena */}
-        <div style={{ position: 'absolute', width: '280px', height: '200px', top: '55%', left: '35%', background: 'rgba(255,255,255,0.52)', borderRadius: '50%', filter: 'blur(60px)' }} />
-      </div>
+    <div className="min-h-screen flex font-['Open_Sans',sans-serif] relative overflow-hidden">
+      {/* Background de nuvens animadas — cobre toda a página */}
+      <CloudsBackground />
 
       {/* Left Section - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative px-12 py-10 flex-col z-10">
@@ -104,13 +85,13 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right Section - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:px-16 bg-white relative z-10">
-        <div className="w-full max-w-md">
+      {/* Right Section - Card flutuante sobre as nuvens */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative z-10">
+        <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 lg:p-10">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <Image
-              src="/logos/wedo-logo.png"
+              src="/logos/wedo-logo-transparent.png"
               alt="WeDo Talent"
               width={120}
               height={40}
