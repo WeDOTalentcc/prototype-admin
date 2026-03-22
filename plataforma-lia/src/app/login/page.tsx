@@ -86,20 +86,20 @@ export default function LoginPage() {
         </div>
 
         {/* Conteúdo centralizado na altura total do painel */}
-        <div className="flex-1 flex flex-col justify-center px-12 pr-8">
-          <div className="mb-5">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-gray-700 text-xs font-medium">
-              <span className="text-wedo-cyan text-sm leading-none">»</span>
+        <div className="flex-1 flex flex-col justify-center px-14 pr-10">
+          <div className="mb-7">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-gray-700 text-sm font-medium">
+              <span className="text-wedo-cyan text-base leading-none">»</span>
               IA Agêntica para Recrutamento
             </span>
           </div>
           {/* Headline — primeiro, maior impacto */}
-          <h1 className="text-3xl text-gray-950 font-semibold leading-snug mb-5 font-['Open_Sans',sans-serif]">
+          <h1 className="text-5xl text-gray-950 font-semibold leading-tight mb-7 font-['Open_Sans',sans-serif]">
             Entre. A <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> já está<br />
-            <span className="font-semibold text-wedo-cyan">trabalhando por você.</span>
+            <span className="font-semibold">trabalhando por você.</span>
           </h1>
           {/* Sequência de suporte — abaixo, mais leve */}
-          <p className="text-sm text-gray-500 font-light leading-relaxed font-['Open_Sans',sans-serif]">
+          <p className="text-base text-gray-500 font-normal leading-relaxed font-['Open_Sans',sans-serif]">
             Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos&nbsp;·&nbsp;Recrutamento <span className="text-wedo-cyan font-bold">simples</span>
           </p>
         </div>
