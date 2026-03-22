@@ -95,12 +95,12 @@ export default function LoginPage() {
           </div>
           {/* Headline — primeiro, maior impacto */}
           <h1 className="text-3xl text-gray-950 font-semibold leading-snug mb-5 font-['Open_Sans',sans-serif]">
-            Entre. A LIA já está<br />
+            Entre. A <span className="font-['Source_Serif_4',serif] italic">LIA</span> já está<br />
             <span className="font-semibold text-wedo-cyan">trabalhando por você.</span>
           </h1>
           {/* Sequência de suporte — abaixo, mais leve */}
           <p className="text-sm text-gray-500 font-light leading-relaxed font-['Open_Sans',sans-serif]">
-            Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos&nbsp;·&nbsp;Recrutamento simples
+            Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos&nbsp;·&nbsp;Recrutamento <span className="text-wedo-cyan">simples</span>
           </p>
         </div>
 
@@ -133,7 +133,7 @@ export default function LoginPage() {
               <Mail className="w-4 h-4" />
             </a>
           </div>
-          <p className="text-xs text-gray-400">© 2025 LIA by WeDoTalent</p>
+          <p className="text-xs text-gray-400">© 2025 <span className="font-['Source_Serif_4',serif] italic">LIA</span> by WeDoTalent</p>
         </div>
 
       </div>
@@ -318,7 +318,7 @@ export default function LoginPage() {
         {/* Footer rodapé — absoluto para não deslocar o card */}
         <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-gray-500 text-xs space-y-1 text-center">
           <p>
-            A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
+            A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro.
           </p>
           <p>© 2025 WeDoTalent. Todos os direitos reservados.</p>
         </div>
