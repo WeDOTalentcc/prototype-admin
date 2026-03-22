@@ -97,16 +97,10 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        <div className="text-gray-700 text-xs space-y-1">
-          <p>
-            A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
-          </p>
-          <p className="text-gray-600">© 2025 WeDoTalent. Todos os direitos reservados.</p>
-        </div>
       </div>
 
       {/* Right Section - Card flutuante */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative z-10">
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10">
         <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 lg:p-10">
 
           {/* Mobile Logo */}
@@ -276,6 +270,14 @@ export default function LoginPage() {
             </form>
           )}
 
+        </div>
+
+        {/* Footer abaixo do card */}
+        <div className="w-full max-w-md mt-5 text-gray-600 text-xs space-y-1">
+          <p>
+            A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
+          </p>
+          <p>© 2025 WeDoTalent. Todos os direitos reservados.</p>
         </div>
       </div>
     </div>
