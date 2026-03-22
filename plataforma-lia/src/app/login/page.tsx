@@ -66,8 +66,9 @@ export default function LoginPage() {
       <CloudsBackground />
 
       {/* Left Section - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative px-12 py-10 flex-col z-10">
-        <div style={{ width: "230px", marginLeft: "-10px" }}>
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col z-10">
+        {/* Logo — absoluto no topo, fora do fluxo */}
+        <div className="absolute top-10 left-[38px]" style={{ width: "230px" }}>
           <Image
             src="/logos/wedo-logo-transparent.png"
             alt="WeDo Talent"
@@ -84,7 +85,8 @@ export default function LoginPage() {
           </span>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center pr-8">
+        {/* Conteúdo centralizado na altura total do painel */}
+        <div className="flex-1 flex flex-col justify-center px-12 pr-8">
           <div className="mb-4">
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-gray-700 text-xs font-medium">
               <span className="text-wedo-cyan text-sm leading-none">»</span>
@@ -274,8 +276,8 @@ export default function LoginPage() {
         </div>
         </div>
 
-        {/* Footer rodapé fixo */}
-        <div className="pb-8 px-12 text-gray-500 text-xs space-y-1">
+        {/* Footer rodapé — absoluto para não deslocar o card */}
+        <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-gray-500 text-xs space-y-1">
           <p>
             A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
           </p>
