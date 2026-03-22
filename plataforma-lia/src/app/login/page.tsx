@@ -85,12 +85,6 @@ export default function LoginPage() {
         </div>
 
         <div className="flex-1 flex flex-col justify-center pr-8">
-          <div className="mb-4">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-gray-700 text-xs font-medium">
-              <span className="text-wedo-cyan text-sm leading-none">»</span>
-              Inteligência Artificial Agêntica para Recrutamento
-            </span>
-          </div>
           <h1 className="text-4xl text-gray-950 font-light mb-4 leading-tight font-['Open_Sans',sans-serif]">
             O futuro do recrutamento é inteligente e{" "}
             <span className="font-light text-wedo-cyan">simples.</span>
@@ -106,7 +100,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Section - Card flutuante */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative z-10">
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10">
         <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 lg:p-10">
 
           {/* Mobile Logo */}
@@ -276,6 +270,14 @@ export default function LoginPage() {
             </form>
           )}
 
+        </div>
+
+        {/* Badge abaixo do card */}
+        <div className="mt-auto pb-2 pt-6">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-gray-700 text-xs font-medium">
+            <span className="text-wedo-cyan text-sm leading-none">»</span>
+            Inteligência Artificial Agêntica para Recrutamento
+          </span>
         </div>
       </div>
     </div>
