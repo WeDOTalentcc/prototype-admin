@@ -66,9 +66,9 @@ export default function LoginPage() {
         {/* Main Content - Largura total com margem esquerda */}
         <div className="flex-1 flex flex-col justify-center pr-8">
           <h1 className="text-4xl text-gray-950 dark:text-gray-50 font-light mb-4 leading-tight font-['Open_Sans',sans-serif]">
-            O futuro do recrutamento é
-            <span className="block font-semibold mt-1 text-gray-600 dark:text-gray-400">
-              inteligente.
+            O futuro do recrutamento é inteligente e{" "}
+            <span className="font-light text-wedo-cyan">
+              simples.
             </span>
           </h1>
           
