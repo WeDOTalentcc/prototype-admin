@@ -4027,7 +4027,7 @@ PASSO 3: Ponto de integração em evaluation/nodes.py
 **Integração exata no v5** (após ler o código LIA acima):
 ```
 → Arquivo: src/domains/evaluation/nodes.py (ou graph.py onde o grafo é montado)
-→ Import: from lia_models.bias_audit_snapshot import BiasAuditSnapshot
+→ Import: from src.services.compliance.bias_audit_snapshot import BiasAuditSnapshot  # copiar de lia-agent-system/libs/models/
 → Após compute_score_node: await BiasAuditSnapshot.create_from_evaluation(result, context)
 → Criar o snapshot imediatamente após graph.invoke() em _execute_evaluation() [linha ~97]
 → O snapshot persiste automaticamente no banco (conforme BiasAuditSnapshot.save())
@@ -4186,7 +4186,7 @@ PASSO 3: Ponto de integração em autonomous/agent.py
 **Integração exata no v5** (após ler o código LIA acima):
 ```
 → Arquivo: src/domains/autonomous/agent.py
-→ Import: from src.services.prompt_injection import PromptInjectionGuard
+→ Import: from src.services.compliance.prompt_injection import PromptInjectionGuard
 → No __init__ de UniversalReActAgent: self._injection_guard = PromptInjectionGuard()
 → Em execute() [linha 176], antes de qualquer processamento:
      check = self._injection_guard.check(user_query)
@@ -4256,7 +4256,7 @@ PASSO 3: Ponto de integração em evaluation
 **Integração exata no v5** (após ler o código LIA acima):
 ```
 → Arquivo: src/domains/evaluation/domain.py
-→ Import: from lia_agents_core.confidence import ConfidenceNode
+→ Import: from src.services.compliance.confidence import ConfidenceNode  # copiar de lia-agent-system/libs/agents-core/
 → No __init__: self._confidence = ConfidenceNode(domain="evaluation")
 → Em _execute_evaluation() [linha 84], APÓS graph.invoke():
      state_with_confidence = self._confidence(final_state)
@@ -4485,7 +4485,7 @@ PASSO 3: Ponto de integração em evaluation/nodes.py
 **Integração exata no v5** (após ler o código LIA acima):
 ```
 → Arquivo: src/domains/evaluation/domain.py
-→ Import: from lia_audit.audit_callback import AuditCallback
+→ Import: from src.services.compliance.audit_callback import AuditCallback  # copiar de lia-agent-system/libs/audit/
 → Em execute_action() [linha 67], antes de chamar _execute_evaluation():
      audit = AuditCallback(user_id=context.user_id, company_id=context.company_id,
                            session_id=context.session_id)
@@ -4572,7 +4572,7 @@ PASSO 2: Ponto de integração em applies/react_agent.py
 **Integração exata no v5** (mesma PromptInjectionGuard do concern #4):
 ```
 → Arquivo: src/domains/applies/react_agent.py
-→ Import: from src.services.prompt_injection import PromptInjectionGuard
+→ Import: from src.services.compliance.prompt_injection import PromptInjectionGuard
 → No __init__ de AppliesReActAgent: self._injection_guard = PromptInjectionGuard()
 → Em execute() [linha 387], antes de invocar o agente ReAct:
      check = self._injection_guard.check(user_query)
@@ -4611,7 +4611,7 @@ PASSO 2: Ponto de integração em applies/domain.py
 **Integração exata no v5** (mesma BiasAuditSnapshot do concern #2):
 ```
 → Arquivo: src/domains/applies/domain.py
-→ Import: from lia_models.bias_audit_snapshot import BiasAuditSnapshot
+→ Import: from src.services.compliance.bias_audit_snapshot import BiasAuditSnapshot  # copiar de lia-agent-system/libs/models/
 → Em execute_action() [linha 361], após processar bulk_approve_applies ou bulk_reject_applies:
      await BiasAuditSnapshot.create_from_applies_decision(
          decision=result, action_id=action_id, context=context)
@@ -4688,7 +4688,7 @@ PASSO 2: Ponto de integração no processamento de sourced profiles
 → Arquivo: src/domains/autonomous/agent.py
 → Ferramenta: import_sourced_profile (definida em graph_nodes.py, linha 39)
 → Em graph_nodes.py, antes de executar import_sourced_profile:
-     from src.services.prompt_injection import PromptInjectionGuard
+     from src.services.compliance.prompt_injection import PromptInjectionGuard
      _guard = PromptInjectionGuard()
      check = _guard.check(profile_data.get("summary", ""))
      if check.is_suspicious: raise ValueError("Profile com conteúdo suspeito")
@@ -4837,7 +4837,7 @@ PASSO 2: Integração em insights domain
 **Integração exata no v5** (mesma AuditCallback do concern #8):
 ```
 → Arquivo: src/domains/insights/domain.py
-→ Import: from lia_audit.audit_callback import AuditCallback
+→ Import: from src.services.compliance.audit_callback import AuditCallback  # copiar de lia-agent-system/libs/audit/
 → Em execute_action() [linha 216]:
      audit = AuditCallback(user_id=context.user_id, company_id=context.company_id,
                            session_id=context.session_id)
@@ -4915,7 +4915,7 @@ PASSO 2: Integração em messaging domain
 **Integração exata no v5** (mesma PromptInjectionGuard dos concerns #4, #10, #13):
 ```
 → Arquivo: src/domains/messaging/domain.py
-→ Import: from src.services.prompt_injection import PromptInjectionGuard
+→ Import: from src.services.compliance.prompt_injection import PromptInjectionGuard
 → No __init__ de MessagingDomain: self._injection_guard = PromptInjectionGuard()
 → Em execute_action() [linha 187], antes de processar templates de mensagem:
      check = self._injection_guard.check(params.get("message_content", ""))
@@ -5099,7 +5099,7 @@ PASSO 2: Integração em todos os 7 domínios restantes
 **Integração exata no v5** (mesma ConfidenceNode do concern #5 — reutilizar sem código novo):
 ```
 → Arquivo: cada domain.py restante (autonomous, applies, insights, messaging, scheduling, sourcing)
-→ Import: from lia_agents_core.confidence import ConfidenceNode
+→ Import: from src.services.compliance.confidence import ConfidenceNode  # copiar de lia-agent-system/libs/agents-core/
 → No __init__ de cada Domain: self._confidence = ConfidenceNode(domain="<nome_dominio>")
 → Em execute_action(), APÓS o resultado do LLM/grafo:
      result_with_confidence = self._confidence({"final_response": result.get("response", "")})
