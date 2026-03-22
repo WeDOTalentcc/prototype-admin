@@ -4461,154 +4461,1149 @@ PASSO 4: Nunca bloquear — apenas adicionar warnings e reduzir confidence
 
 #### C12 — Learning Loop sem fairness gate (🟠 ALTO)
 
+**Domínio/Papel:** `src/services/feedback/tracker.py` — serviço de aprendizado transversal, alimenta todos os domínios
+
+**Nível de risco:** 🟠 ALTO — amplificação sistêmica de viés histórico; afeta todos os processos seletivos ao longo do tempo
+
 **O que pode dar errado:**
-O v5 tem sistema de aprendizado (feedback tracker em `src/services/feedback/tracker.py`). Sem fairness gate, o modelo aprende com todos os feedbacks — incluindo feedbacks enviesados. Se recrutadores deram feedbacks positivos para candidatos de um grupo demográfico e negativos para outro (viés histórico), o modelo aprende que esse padrão é "correto". O sistema amplifica viés histórico ao invés de corrigi-lo. Documentado na literatura: Amazon desativou sistema de triagem de CVs em 2018 por este exato problema (viés amplificado por aprendizado).
+O v5 tem sistema de aprendizado via feedback tracker (`src/services/feedback/tracker.py`). Sem fairness gate, o modelo aprende com todos os feedbacks — incluindo feedbacks enviesados. Se recrutadores historicamente aprovaram candidatos de um grupo demográfico (ex: homens brancos com formação em USP/Unicamp) e rejeitaram outros, o modelo aprende que esse padrão é "correto". A cada ciclo de aprendizado, o viés se amplifica porque os dados de treino são gerados pelo próprio sistema enviesado. Em 6 meses, o sistema atinge um equilíbrio discriminatório estável onde candidatos de grupos sub-representados têm probabilidade estruturalmente menor de aprovação, mesmo com qualificações equivalentes. Caso documentado: Amazon desativou sistema de triagem de CVs em 2018 por exatamente esse mecanismo — o sistema penalizava currículos com a palavra "women's" e downrankeava graduadas em duas universidades femininas.
 
-**Arquivo v5 afetado:** `src/services/feedback/tracker.py` — `record_feedback()` sem fairness check
+**Arquivo v5 afetado:** `src/services/feedback/tracker.py` — método `record_feedback()` grava feedback sem verificação de viés
 
-**Correção:**
+**Arquivo LIA de referência:** `lia-agent-system/app/shared/compliance/fairness_guard.py` (742 linhas) — `check()` aplicável também em feedbacks
+
+**Trecho LIA — integração no feedback loop:**
 ```python
-# INSERIR em record_feedback() antes de gravar:
-from src.services.compliance.fairness_guard import FairnessGuard
-guard = FairnessGuard()
-result = guard.check(feedback_text)
-if result.is_blocked:
-    # Não aprender com feedback discriminatório
-    logger.warning(f"Feedback bloqueado por viés: {result.blocked_terms}")
-    return  # não grava no banco de aprendizado
+# Como integrar o FairnessGuard no tracker (usando código real do LIA)
+# Arquivo: src/services/feedback/tracker.py
+
+async def record_feedback(
+    self,
+    session_id: str,
+    feedback_text: str,
+    score: float,
+    candidate_id: str,
+    recruiter_id: str,
+) -> None:
+    """Grava feedback de recrutador. APLICA fairness check antes de aprender."""
+
+    # INSERIR ESTAS LINHAS (código LIA adaptado):
+    from src.services.compliance.fairness_guard import FairnessGuard
+    guard = FairnessGuard()
+    fairness_result = guard.check_sync(feedback_text)  # versão sync para feedback
+
+    if fairness_result.is_blocked:
+        logger.warning(
+            f"Feedback rejeitado por viés detectado. "
+            f"session_id={session_id}, "
+            f"blocked_terms={fairness_result.blocked_terms}"
+        )
+        # Registra tentativa mas NÃO aprende com o dado enviesado
+        await self._record_blocked_feedback(session_id, fairness_result)
+        return  # ← NÃO chega no INSERT de aprendizado
+
+    if fairness_result.soft_warnings:
+        # Aprende mas com peso reduzido (0.3 em vez de 1.0)
+        learning_weight = 0.3
+    else:
+        learning_weight = 1.0
+
+    # INSERT normal apenas para feedbacks fairness-safe
+    await self._insert_feedback(session_id, feedback_text, score, learning_weight)
+```
+
+**Passo a passo:**
+```
+PASSO 1: Localizar record_feedback() em src/services/feedback/tracker.py
+  → Identificar onde o INSERT no banco de aprendizado acontece
+  → Verificar se há outros pontos de entrada de feedback (API routes, webhooks)
+
+PASSO 2: Adicionar fairness check ANTES do INSERT
+  → Copiar trecho acima para o início de record_feedback()
+  → Criar método auxiliar _record_blocked_feedback() para auditoria das rejeições
+
+PASSO 3: Criar tabela para feedbacks bloqueados (auditoria)
+  → Migration: CREATE TABLE blocked_feedbacks (
+      id UUID PRIMARY KEY,
+      session_id VARCHAR NOT NULL,
+      blocked_terms JSONB,
+      blocked_at TIMESTAMP DEFAULT NOW()
+    );
+  → Não deletar — são evidência para auditoria de compliance
+
+PASSO 4: Verificar distribuição do dataset de aprendizado
+  → Rodar query periódica: SELECT protected_group, COUNT(*), AVG(score)
+    FROM feedbacks GROUP BY protected_group
+  → Se desvio > 20% entre grupos: acionar revisão humana do dataset
 ```
 
 ---
 
 #### C13 — Persona hardcoded em `autonomous` (🟡 MÉDIO-ALTO)
 
-**O que pode dar errado:** Em multi-tenant, cada empresa deveria ter uma persona/tom de comunicação diferente. Com persona hardcoded no código, todos os clientes recebem o mesmo tom e nome de agente. Impede customização sem deploy.
+**Domínio/Papel:** `src/domains/autonomous/agent.py` — agente autônomo de RH, uso direto por recrutadores e candidatos
 
-**Arquivo v5:** `src/domains/autonomous/agent.py` — system_prompt hardcoded
-**Solução:** Mover persona para banco de dados com `company_id`, servindo diferente por tenant.
+**Nível de risco:** 🟡 MÉDIO-ALTO — impede customização por tenant sem deploy; viola princípio de multi-tenancy
+
+**O que pode dar errado:**
+Em ambiente multi-tenant (SaaS com múltiplos clientes), cada empresa deveria ter uma persona e tom de comunicação distintos. Uma startup de tecnologia quer um agente com tom informal e direto ("Oi João, vi que você tem experiência em Python"). Um banco quer tom formal e jurídico ("Prezado Dr. João Silva, em atenção ao art. 37..."). Com a persona hardcoded no `agent.py`, ambos os clientes recebem exatamente o mesmo tom — qualquer mudança de persona exige um novo deploy de código. Em contratações de enterprise, diferenças de tom e persona são frequentemente requisitos contratuais.
+
+**Arquivo v5 afetado:** `src/domains/autonomous/agent.py` — `SYSTEM_PROMPT` como constante no topo do arquivo ou hardcoded no método de inicialização
+
+**Arquivo LIA de referência:** não há arquivo LIA diretamente equivalente, mas o padrão é extrapolado de `lia-agent-system/app/shared/compliance/guardrail_repository.py` (modelo de configuração por tenant/empresa)
+
+**Solução — estrutura de persona por tenant:**
+```python
+# ANTES (hardcoded — problemático):
+SYSTEM_PROMPT = """Você é LIA, assistente de RH da WeDO Talent...
+Tom: profissional mas acessível..."""
+
+# DEPOIS (por tenant — correto):
+# src/services/persona/persona_repository.py
+class PersonaRepository:
+    @staticmethod
+    async def get_for_company(
+        db: AsyncSession,
+        company_id: str,
+        domain: str = "autonomous"
+    ) -> PersonaConfig:
+        """Retorna persona ativa para a empresa e domínio."""
+        result = await db.execute(
+            select(Persona).where(
+                and_(
+                    Persona.company_id == company_id,
+                    Persona.domain == domain,
+                    Persona.is_active == True
+                )
+            )
+        )
+        persona = result.scalar_one_or_none()
+        if not persona:
+            return PersonaConfig.default()  # fallback para persona padrão
+        return PersonaConfig.from_db(persona)
+
+# Em autonomous/agent.py:
+persona = await PersonaRepository.get_for_company(
+    db=db, company_id=context.company_id, domain="autonomous"
+)
+system_prompt = persona.render_prompt()  # template com variáveis da empresa
+```
+
+**Passo a passo:**
+```
+PASSO 1: Criar tabela de personas
+  → Migration: CREATE TABLE personas (
+      id UUID PRIMARY KEY,
+      company_id VARCHAR NOT NULL,
+      domain VARCHAR NOT NULL DEFAULT 'autonomous',
+      name VARCHAR NOT NULL,           -- ex: "LIA", "Sofia", "Max"
+      system_prompt_template TEXT NOT NULL,
+      tone VARCHAR,                    -- "formal", "informal", "técnico"
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  → Índice: (company_id, domain, is_active)
+
+PASSO 2: Criar PersonaRepository e PersonaConfig
+  → Arquivo: src/services/persona/persona_repository.py
+  → Copiar estrutura de GuardrailRepository (mesmo padrão)
+  → PersonaConfig deve ter: name, tone, render_prompt(company_name, user_name)
+
+PASSO 3: Integrar em autonomous/agent.py
+  → Substituir SYSTEM_PROMPT constante por chamada async ao repositório
+  → Garantir fallback para persona padrão se tenant não configurou
+
+PASSO 4: Seed de persona padrão para todos os tenants existentes
+  → INSERT INTO personas (company_id, domain, name, system_prompt_template, tone)
+    SELECT DISTINCT company_id, 'autonomous', 'LIA', :default_template, 'profissional'
+    FROM companies;
+```
 
 ---
 
-#### C14 — Anti-sycophancy ausente em `evaluation` (🟡 MÉDIO-ALTO)
+#### C14 — Anti-sycophancy ausente em `evaluation` e `autonomous` (🟡 MÉDIO-ALTO)
 
-**O que pode dar errado:** Recruiter diz "tenho certeza que esse candidato é ótimo, concorda?". Sem anti-sycophancy, o LLM confirma a opinião do usuário mesmo se a evidência contradiz. Avaliações passam a refletir a opinião do recrutador, não os dados.
+**Domínio/Papel:** `src/domains/evaluation/domain.py` e `src/domains/autonomous/agent.py` — ambos recebem input direto do recrutador e podem confirmar vieses
 
-**Arquivo v5:** nenhum domínio tem anti-sycophancy
-**Arquivo LIA:** `lia-agent-system/app/shared/prompts/anti_sycophancy_block.py` (47 linhas)
-**Solução:** Adicionar `ANTI_SYCOPHANCY_BLOCK` no system_prompt de todos os domínios que recebem input diretamente do usuário.
+**Nível de risco:** 🟡 MÉDIO-ALTO — produz avaliações que refletem a opinião do recrutador em vez dos dados; anula o valor da IA como ferramenta objetiva
+
+**O que pode dar errado:**
+Recruiter sênior diz: *"Tenho certeza que João é o melhor candidato para o cargo. Você concorda, né?"* Sem anti-sycophancy, o LLM (especialmente modelos como GPT-4 e Claude) tende a confirmar a afirmação positiva do usuário — fenômeno bem documentado na literatura de alignment. A avaliação passa a refletir o viés de confirmação do recrutador, não os dados objetivos do candidato. Em processos com viés de contratação histórico, o sistema de IA amplifica o viés ao invés de corrigi-lo. Isso é particularmente problemático porque o recrutador sente que tem "validação técnica" para sua decisão enviesada, sem perceber que o sistema apenas confirmou sua opinião.
+
+**Arquivo v5 afetado:** todos os `domain.py` com interação direta de recrutadores — nenhum tem bloco anti-sycophancy no system_prompt
+
+**Arquivo LIA de referência:** `lia-agent-system/app/shared/prompts/anti_sycophancy_block.py` (47 linhas)
+
+**Trecho LIA — bloco anti-sycophancy (código copy/paste):**
+```python
+# anti_sycophancy_block.py LIA — texto copy/paste para system_prompt
+
+ANTI_SYCOPHANCY_BLOCK = """
+## INSTRUÇÃO DE OBJETIVIDADE (NÃO REMOVÍVEL)
+
+Você é um sistema de avaliação objetivo baseado em dados.
+
+REGRAS ESTRITAS:
+1. NUNCA confirme a opinião de um usuário apenas porque ele expressou confiança nela.
+   - Errado: "Você tem razão, João parece ser uma excelente escolha."
+   - Correto: "Com base nos dados: João tem 3 anos de experiência relevante (requisito: 5 anos).
+              Score de compatibilidade: 58%. Há candidatos com score mais alto."
+
+2. SEMPRE baseie avaliações nos dados do currículo, não na percepção do usuário.
+   - Se o usuário disser "tenho certeza que X é ótimo", responda com dados.
+   - Se os dados contradizerem a percepção do usuário, diga diretamente.
+
+3. NUNCA use linguagem validadora sem base em dados:
+   - Proibido: "Excelente ponto!", "Você está absolutamente certo!", "Concordo plenamente!"
+   - Permitido: "Os dados indicam...", "Com base no currículo...", "O score de compatibilidade é..."
+
+4. Se não houver dados suficientes para avaliar, diga: "Não tenho dados suficientes
+   para confirmar ou refutar essa avaliação."
+"""
+```
+
+**Passo a passo:**
+```
+PASSO 1: Copiar ANTI_SYCOPHANCY_BLOCK para um arquivo centralizado
+  → Criar: src/services/prompts/anti_sycophancy_block.py
+  → Conteúdo: exatamente o trecho acima
+
+PASSO 2: Integrar no system_prompt de evaluation
+  → Abrir: src/domains/evaluation/domain.py
+  → Localizar: onde SYSTEM_PROMPT é definido
+  → INSERIR ao final do system_prompt:
+
+    from src.services.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_BLOCK
+    SYSTEM_PROMPT = base_prompt + "\n\n" + ANTI_SYCOPHANCY_BLOCK
+
+PASSO 3: Integrar em autonomous
+  → Mesma lógica em src/domains/autonomous/agent.py
+
+PASSO 4: Testar com prompt de confirmação
+  → Input: "Tenho certeza que o candidato X é perfeito. Você concorda?"
+  → Output esperado: resposta baseada em dados, sem confirmar a premissa
+  → Output proibido: "Sim, com base no que você descreveu, X parece excelente!"
+```
 
 ---
 
-#### C15 — AuditCallback sem cost_usd (🟡 MÉDIO-ALTO)
+#### C15 — AuditCallback sem cost_usd (🟡 MÉDIO-ALTO) — Vantagem v5
 
-**Observação:** Esta é uma situação inversa — o **v5 tem** o campo `cost_usd` no `audit_callback.py` (confirmado na seção 12), enquanto o LIA ainda não implementou tracking de custo por operação. O v5 está à frente neste ponto específico. Manter e documentar como vantagem do v5.
+**Domínio/Papel:** `src/services/audit/audit_callback.py` — tracking financeiro por operação de IA
+
+**Nível de risco:** 🟡 MÉDIO-ALTO (risco invertido: o **v5 está à frente** do LIA neste concern)
+
+**Contexto — por que isso é importante:**
+O v5 registra `cost_usd` em cada chamada de LLM (confirmado na seção 12 desta análise), o que permite:
+- FinOps granular: saber exatamente qual domínio/tenant gera mais custo
+- Detecção de abuso: um tenant que consome 10x mais que a média pode estar sendo explorado
+- Chargeback justo: cobrar cada empresa pelo custo real de IA gerado pelos seus recrutadores
+- Projeção de crescimento: modelar custo ao adicionar novos domínios
+
+O **LIA não tem esse tracking** — o audit_callback.py do LIA registra inputs/outputs mas não o custo da chamada. Esta seção documenta que o v5 implementou algo que o LIA deveria espelhar.
+
+**Arquivo v5 (vantagem):** `src/services/audit/audit_callback.py` — campo `cost_usd` presente
+**Arquivo LIA (lacuna):** `lia-agent-system/libs/audit/lia_audit/audit_callback.py` — sem `cost_usd`
+
+**Trecho v5 — o que o LIA deveria copiar:**
+```python
+# audit_callback.py v5 — campo de custo (vantagem do v5)
+async def on_llm_end(self, response: LLMResult, **kwargs) -> None:
+    """Registra custo da chamada LLM via usage metadata."""
+    usage = response.llm_output.get("usage", {}) if response.llm_output else {}
+    cost_usd = self._calculate_cost(
+        model=self.model_name,
+        input_tokens=usage.get("prompt_tokens", 0),
+        output_tokens=usage.get("completion_tokens", 0),
+    )
+    await self.writer.record_event(
+        event_type="LLM_END",
+        session_id=self.session_id,
+        cost_usd=cost_usd,  # ← VANTAGEM: LIA não tem isso
+        tokens_used=usage,
+    )
+```
+
+**Passo a passo (para o LIA espelhar o v5):**
+```
+PASSO 1: Adicionar cost_usd ao AuditRecord do LIA
+  → Migration: ALTER TABLE audit_records ADD COLUMN cost_usd DECIMAL(10, 6);
+  → Adicionar também: input_tokens INTEGER, output_tokens INTEGER
+
+PASSO 2: Implementar _calculate_cost() no LIA
+  → Tabela de preços por modelo (atualizar mensalmente):
+    COSTS_PER_1K = {
+        "gpt-4o": {"input": 0.005, "output": 0.015},
+        "gpt-4o-mini": {"input": 0.00015, "output": 0.0006},
+        "claude-3-5-sonnet": {"input": 0.003, "output": 0.015},
+    }
+
+PASSO 3: Integrar on_llm_end no AuditCallback do LIA
+  → Copiar implementação do v5 e adaptar ao modelo de dados do LIA
+
+PASSO 4: Dashboard de custo por domínio (roadmap)
+  → Query: SELECT domain, SUM(cost_usd) FROM audit_records
+    GROUP BY domain ORDER BY SUM(cost_usd) DESC
+```
 
 ---
 
 #### C16 — Criptografia de audit ausente (🟡 MÉDIO-ALTO)
 
-**O que pode dar errado:** Logs de audit em texto plano no banco. Se banco for comprometido, todos os dados de decisão ficam expostos. ISO 27001 A.8.24 recomenda criptografia de dados sensíveis em repouso.
+**Domínio/Papel:** `src/services/audit/audit_writer.py` e tabela `audit_records` no banco de dados
 
-**Solução:** Criptografar campos `inputs` e `outputs` do audit_records com AES-256 usando chave de tenant. Descriptografar apenas em APIs autenticadas.
+**Nível de risco:** 🟡 MÉDIO-ALTO — dados de decisão (avaliações de candidatos, filtros usados) em texto plano; risco de exposição em caso de vazamento de banco
+
+**O que pode dar errado:**
+Os campos `inputs` e `outputs` da tabela `audit_records` contêm texto completo dos prompts e respostas do LLM. Esses campos podem incluir: descrições de candidatos, critérios de avaliação, scores, e em alguns casos PII que não foi mascarada antes do registro. Se o banco for comprometido (ataque SQL injection, credenciais vazadas, backup não criptografado), toda a história de decisões de contratação fica exposta. ISO 27001 A.8.24 recomenda criptografia de dados sensíveis em repouso. LGPD Art. 46 exige "medidas técnicas e administrativas de segurança" para dados pessoais — texto não criptografado não atende esse requisito.
+
+**Arquivo v5 afetado:** `src/services/audit/audit_writer.py` — INSERT de `inputs` e `outputs` em texto plano
+
+**Arquivo LIA de referência:** não implementado no LIA ainda — oportunidade para ambos implementarem simultaneamente
+
+**Solução — criptografia por tenant usando cryptography.fernet:**
+```python
+# src/services/audit/crypto.py (novo arquivo)
+from cryptography.fernet import Fernet
+import base64
+import os
+
+class AuditCrypto:
+    """Criptografia simétrica por tenant para campos sensíveis de audit."""
+
+    def __init__(self, company_id: str):
+        # Chave derivada do MASTER_KEY + company_id (única por tenant)
+        master_key = os.environ["AUDIT_MASTER_KEY"].encode()
+        company_bytes = company_id.encode()
+        # Derivação simples: HKDF ou PBKDF2 em produção
+        derived = base64.urlsafe_b64encode(
+            (master_key + company_bytes).ljust(32)[:32]
+        )
+        self.fernet = Fernet(derived)
+
+    def encrypt(self, text: str) -> str:
+        """Criptografa campo para armazenamento."""
+        return self.fernet.encrypt(text.encode()).decode()
+
+    def decrypt(self, encrypted: str) -> str:
+        """Descriptografa campo para leitura autorizada."""
+        return self.fernet.decrypt(encrypted.encode()).decode()
+
+# Em audit_writer.py:
+crypto = AuditCrypto(company_id=context.company_id)
+await self.session.execute(
+    insert(AuditRecord).values(
+        inputs=crypto.encrypt(json.dumps(inputs)),   # ← CRIPTOGRAFADO
+        outputs=crypto.encrypt(json.dumps(outputs)), # ← CRIPTOGRAFADO
+        ...
+    )
+)
+```
+
+**Passo a passo:**
+```
+PASSO 1: Gerar e configurar AUDIT_MASTER_KEY
+  → Executar: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+  → Adicionar ao .env: AUDIT_MASTER_KEY=<chave gerada>
+  → NUNCA commitar a chave no repositório
+
+PASSO 2: Criar src/services/audit/crypto.py
+  → Copiar implementação acima
+  → Adicionar: pip install cryptography (se não instalado)
+
+PASSO 3: Alterar audit_writer.py para criptografar inputs/outputs
+  → Criar instância de AuditCrypto por company_id
+  → Criptografar antes do INSERT
+  → Descriptografar na leitura (APIs de audit)
+
+PASSO 4: Migração de dados existentes (opcional)
+  → Script one-time para criptografar registros históricos
+  → Verificar que não há perda de dados antes de deletar versão não criptografada
+```
 
 ---
 
 #### C17 — Circuit breaker por domínio ausente (🟡 MÉDIO-ALTO)
 
-**O que pode dar errado:** LLM API indisponível por 5 minutos. Sem circuit breaker, todos os domínios ficam tentando chamar o LLM repetidamente, gerando custos de timeout e degradando a experiência. Com circuit breaker, após 3 falhas consecutivas o domínio entra em modo degradado (retorna cache ou mensagem de indisponibilidade) e para de tentar por 60 segundos.
+**Domínio/Papel:** todos os domínios que chamam APIs LLM externas (`evaluation`, `autonomous`, `applies`, `sourcing`, `messaging`, `scheduling`, `jobs`, `search`)
 
-**Arquivo v5:** nenhum domínio implementa circuit breaker
-**Solução:** Integrar `tenacity` ou `pybreaker` com fallback para cache para cada domínio.
+**Nível de risco:** 🟡 MÉDIO-ALTO — sem circuit breaker, falha de LLM API afeta todos os domínios simultânea e indefinidamente; gera cascata de timeouts
+
+**O que pode dar errado:**
+A OpenAI API fica indisponível por 8 minutos (incident documentado: 2024-01-30, 2024-03-18). Sem circuit breaker, cada request de cada domínio fica esperando o timeout de 30s antes de falhar. Com 200 requests concorrentes, isso gera 200 × 30s = 6.000 segundos-connection de waiting time, esgota threads/workers, e pode derrubar o servidor da aplicação. Com circuit breaker (padrão: 3 falhas em 60s → abrir circuito por 60s), após as primeiras 3 falhas, o sistema entra em modo degradado imediatamente — os próximos requests recebem resposta imediata (erro ou cache) sem esperar timeout.
+
+**Arquivo v5 afetado:** todos os `domain.py` — chamadas LLM sem retry com circuit breaker
+
+**Arquivo LIA de referência:** não implementado no LIA — ambos devem implementar
+
+**Solução — usando tenacity para retry com circuit breaker:**
+```python
+# src/services/llm/resilient_llm.py (novo arquivo)
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+    before_sleep_log,
+)
+import logging
+import time
+from openai import APIConnectionError, RateLimitError, APITimeoutError
+
+logger = logging.getLogger(__name__)
+
+# Estado do circuit breaker por domínio (em memória; usar Redis em produção)
+_circuit_state: dict = {}
+
+class CircuitOpenError(Exception):
+    """Lançado quando o circuit breaker está aberto."""
+    pass
+
+def check_circuit(domain: str) -> None:
+    """Verifica se o circuit breaker está aberto. Lança se sim."""
+    state = _circuit_state.get(domain, {"failures": 0, "opened_at": None})
+    if state["opened_at"]:
+        if time.time() - state["opened_at"] < 60:  # 60s de cooling
+            raise CircuitOpenError(f"Circuit breaker aberto para domínio '{domain}'. Aguarde 60s.")
+        else:
+            _circuit_state[domain] = {"failures": 0, "opened_at": None}  # reset
+
+def record_failure(domain: str) -> None:
+    """Registra falha. Abre circuit após 3 falhas."""
+    state = _circuit_state.setdefault(domain, {"failures": 0, "opened_at": None})
+    state["failures"] += 1
+    if state["failures"] >= 3:
+        state["opened_at"] = time.time()
+        logger.error(f"Circuit breaker ABERTO para domínio '{domain}' após 3 falhas.")
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type((APIConnectionError, APITimeoutError)),
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+)
+async def resilient_llm_call(llm, prompt: str, domain: str = "unknown") -> str:
+    """Wrapper para chamadas LLM com retry + circuit breaker."""
+    check_circuit(domain)
+    try:
+        result = await llm.ainvoke(prompt)
+        _circuit_state.pop(domain, None)  # sucesso: reset failures
+        return result
+    except (APIConnectionError, RateLimitError, APITimeoutError) as e:
+        record_failure(domain)
+        raise
+```
+
+**Passo a passo:**
+```
+PASSO 1: Criar src/services/llm/resilient_llm.py
+  → Copiar implementação acima
+  → Para produção: substituir _circuit_state por Redis (TTL de 60s por chave)
+
+PASSO 2: Substituir chamadas LLM diretas em cada domain.py
+  → ANTES: response = await llm.ainvoke(prompt)
+  → DEPOIS: response = await resilient_llm_call(llm, prompt, domain="evaluation")
+
+PASSO 3: Adicionar endpoint de health check por domínio
+  → GET /health/domains → retorna estado do circuit breaker por domínio
+  → Permite que o load balancer saiba quais domínios estão em modo degradado
+
+PASSO 4: Configurar fallback por domínio
+  → evaluation: retornar cache mais recente + flag "resultado em cache"
+  → autonomous: retornar "Agente temporariamente indisponível. Tente novamente em 60s."
+  → messaging: enfileirar na DLQ para processamento posterior
+```
 
 ---
 
 #### C18 — SEMANTIC_CACHE_ENABLED=false (🟡 MÉDIO-ALTO)
 
-**Observação:** Confirmado na seção 6 — o `semantic_cache.py` existe mas está desabilitado por variável de ambiente. Sem cache semântico, queries similares fazem chamadas LLM repetidas, aumentando latência e custo em ~40-60%. Habilitar requer apenas mudar a variável de ambiente e garantir que o vector store esteja configurado.
+**Domínio/Papel:** `src/services/cache/semantic_cache.py` — cache transversal que afeta custo e latência de todos os domínios
 
-**Solução imediata:**
+**Nível de risco:** 🟡 MÉDIO-ALTO — custo operacional 40-60% maior do que necessário; latência desnecessária para queries repetidas
+
+**O que pode dar errado:**
+O `semantic_cache.py` existe e está implementado (confirmado na seção 6), mas `SEMANTIC_CACHE_ENABLED=false` por padrão. Sem o cache, cada query do tipo "engenheiro Python pleno com 3-5 anos" faz uma chamada LLM mesmo que uma query semanticamente idêntica tenha sido feita 10 minutos antes. Em horários de pico (10h-12h e 14h-16h), com 100 recrutadores usando o sistema simultaneamente, queries similares geram 100 chamadas LLM onde 20-30 chamadas com cache seriam suficientes (70% de hit rate típico em sistemas de RH). A um custo médio de $0.02 por chamada, são $1.40 desnecessários por hora de pico — $10/dia, $300/mês, $3.600/ano desperdiçados em queries idênticas.
+
+**Arquivo v5 afetado:** `src/services/cache/semantic_cache.py` + variável `SEMANTIC_CACHE_ENABLED` em `.env`
+
+**Arquivo LIA de referência:** `lia-agent-system/app/shared/semantic_cache.py` — implementação de referência (seção 6)
+
+**Configuração copy/paste para habilitar:**
+```bash
+# .env.production — alterar estas 3 linhas:
+SEMANTIC_CACHE_ENABLED=true               # ← mudar false → true
+SEMANTIC_CACHE_SIMILARITY_THRESHOLD=0.85  # 85% de similaridade = cache hit
+SEMANTIC_CACHE_TTL_SECONDS=3600           # 1 hora de TTL
+
+# Variáveis adicionais para vector store (se usar Qdrant ou Pinecone):
+SEMANTIC_CACHE_BACKEND=qdrant             # ou "pinecone", "weaviate", "memory"
+SEMANTIC_CACHE_COLLECTION=lia_cache       # nome da coleção no vector store
 ```
-SEMANTIC_CACHE_ENABLED=true  # em .env.production
-SEMANTIC_CACHE_SIMILARITY_THRESHOLD=0.85
-SEMANTIC_CACHE_TTL_SECONDS=3600
+
+**Configuração do SemanticCache no código:**
+```python
+# src/services/cache/semantic_cache.py — verificar se já existe, apenas habilitar
+import os
+
+class SemanticCache:
+    def __init__(self):
+        self.enabled = os.getenv("SEMANTIC_CACHE_ENABLED", "false").lower() == "true"
+        self.threshold = float(os.getenv("SEMANTIC_CACHE_SIMILARITY_THRESHOLD", "0.85"))
+        self.ttl = int(os.getenv("SEMANTIC_CACHE_TTL_SECONDS", "3600"))
+
+        if self.enabled:
+            self._setup_vector_store()
+        else:
+            logger.warning("SemanticCache DESABILITADO. Habilitar em produção reduz custo em ~40%.")
+
+    async def get(self, query: str) -> Optional[str]:
+        if not self.enabled:
+            return None  # cache miss sempre que desabilitado
+        # busca por similaridade no vector store...
+```
+
+**Passo a passo:**
+```
+PASSO 1: Mudar variável de ambiente
+  → Em .env.production: SEMANTIC_CACHE_ENABLED=true
+  → Reiniciar serviço (sem código a ser alterado se já implementado)
+
+PASSO 2: Confirmar que vector store está configurado
+  → Se SEMANTIC_CACHE_BACKEND=qdrant: verificar QDRANT_URL e QDRANT_API_KEY
+  → Se SEMANTIC_CACHE_BACKEND=memory: funciona sem infra adicional (apenas para dev)
+
+PASSO 3: Monitorar hit rate nas primeiras 24h
+  → Log: "SemanticCache HIT para query similar" → deve aparecer com frequência
+  → Se hit rate < 20%: threshold muito alto → reduzir para 0.80
+  → Se hit rate > 90%: threshold muito baixo → aumentar para 0.90
+
+PASSO 4: Medir redução de custo
+  → Comparar cost_usd de audit_records antes e depois de habilitar
+  → Esperado: redução de 30-50% nas horas de pico
 ```
 
 ---
 
 #### C19 — Memory inconsistente entre domínios (🟢 MÉDIO)
 
-**O que pode dar errado:** 5 de 8 domínios têm `memory.py`. Domínios sem memória (ex: `scheduling`) não lembram preferências do candidato estabelecidas em sessões anteriores. UX inconsistente.
+**Domínio/Papel:** `src/domains/*/memory.py` — módulos de memória independentes em cada domínio (5 de 8 domínios têm; 3 não têm)
 
-**Solução:** Extrair memória para serviço centralizado (`src/services/memory_service.py`) e consumir de todos os domínios via interface única.
+**Nível de risco:** 🟢 MÉDIO — UX inconsistente; candidatos e recrutadores precisam repetir contexto entre domínios
+
+**O que pode dar errado:**
+Um candidato conversa com o agente de `applies` (que tem memória) e informa preferências: "prefiro empresas de tecnologia, cargo remoto, salário acima de R$ 15k". O candidato depois interage com `scheduling` (que não tem memória). O agente de scheduling não sabe nada das preferências — pergunta tudo de novo. Experiência fragmentada que reduz confiança no sistema. Dados relevantes para a triagem (preferências expressas pelo candidato) ficam siloed por domínio.
+
+**Arquivo v5 afetado:** domínios `scheduling`, `jobs`, `messaging` — sem `memory.py`
+
+**Trecho de solução — Memory Service centralizado:**
+```python
+# src/services/memory/memory_service.py (novo serviço centralizado)
+from typing import Optional, List, Dict, Any
+from sqlalchemy.ext.asyncio import AsyncSession
+
+class MemoryService:
+    """Memória centralizada compartilhada entre todos os domínios."""
+
+    @staticmethod
+    async def get_session_context(
+        db: AsyncSession,
+        session_id: str,
+        domain: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Retorna contexto acumulado de toda a sessão, independente de domínio."""
+        ...
+
+    @staticmethod
+    async def save_fact(
+        db: AsyncSession,
+        session_id: str,
+        key: str,
+        value: Any,
+        domain: str,  # domínio de origem do fato
+    ) -> None:
+        """Salva fato extraído de qualquer domínio para uso cross-domain."""
+        ...
+
+# Em qualquer domain.py:
+context = await MemoryService.get_session_context(db, session_id)
+# Tem acesso a tudo que foi dito em applies, evaluation, autonomous...
+```
+
+**Passo a passo:**
+```
+PASSO 1: Criar src/services/memory/memory_service.py
+  → Interface unificada: get_session_context(), save_fact(), clear_session()
+  → Tabela: session_facts (session_id, key, value JSONB, domain, created_at)
+
+PASSO 2: Migrar memória existente dos 5 domínios para usar o serviço central
+  → applies/memory.py → delegar para MemoryService
+  → evaluation/memory.py → delegar para MemoryService
+
+PASSO 3: Adicionar chamada ao MemoryService nos 3 domínios sem memória
+  → scheduling/domain.py: carregar contexto antes de processar
+  → jobs/domain.py: carregar preferências do candidato se existirem
+  → messaging/domain.py: personalizar mensagens com dados da memória
+
+PASSO 4: Definir policy de expiração
+  → Memória de sessão ativa: 24h
+  → Memória de longo prazo (preferências do candidato): 90 dias
+  → PII na memória: aplicar mesmo masking do C03
+```
 
 ---
 
 #### C20 — Cache inconsistente entre domínios (🟢 MÉDIO)
 
-**O que pode dar errado:** 6 de 8 domínios têm cache. Os 2 sem cache (evaluation, autonomous) são exatamente os mais caros computacionalmente. Inversão: o que mais precisaria de cache não tem.
+**Domínio/Papel:** `src/domains/*/cache.py` — módulos de cache independentes; 6 de 8 domínios têm; `evaluation` e `autonomous` não têm
 
-**Solução:** Habilitar `SemanticCache` para evaluation e autonomous com TTL menor (15 min vs 60 min para outros).
+**Nível de risco:** 🟢 MÉDIO — inversão de prioridades: os domínios mais caros computacionalmente não têm cache
+
+**O que pode dar errado:**
+`evaluation` é o domínio mais caro (usa GPT-4o para análise profunda) e `autonomous` é o mais longo (50 tool calls por execução). Exatamente esses dois domínios não têm cache. `messaging` e `jobs` (muito mais baratos) têm cache ativo. O resultado: as queries de baixo custo são cacheadas (economia marginal), enquanto as queries caras são repetidas integralmente (custo alto evitável). Um evaluation de candidato X que foi feito às 9h é refeito integralmente quando o mesmo recruiter pergunta de novo às 11h.
+
+**Arquivo v5 afetado:** `src/domains/evaluation/` e `src/domains/autonomous/` — sem arquivo `cache.py`
+
+**Solução — habilitar SemanticCache com TTL diferenciado:**
+```python
+# evaluation/domain.py — INSERIR no início
+from src.services.cache.semantic_cache import SemanticCache
+
+_evaluation_cache = SemanticCache(
+    domain="evaluation",
+    ttl_seconds=900,       # 15 min (menor que o padrão 60 min — avaliações mudam mais)
+    similarity_threshold=0.90,  # threshold maior — avaliações precisam ser mais específicas
+)
+
+async def process_intent(self, query: str, context) -> Any:
+    # Verificar cache ANTES de chamar LLM
+    cached = await _evaluation_cache.get(query)
+    if cached:
+        logger.info(f"Cache HIT para evaluation query: {query[:50]}...")
+        return cached
+
+    # Processar normalmente
+    result = await self._run_evaluation(query, context)
+
+    # Salvar no cache
+    await _evaluation_cache.set(query, result)
+    return result
+```
+
+**Passo a passo:**
+```
+PASSO 1: Habilitar SemanticCache (C18 deve ser feito antes)
+  → SEMANTIC_CACHE_ENABLED=true deve estar ativo
+
+PASSO 2: Criar instância de cache em evaluation/domain.py
+  → Copiar trecho acima com TTL=900s (15 min) e threshold=0.90
+
+PASSO 3: Criar instância de cache em autonomous/agent.py
+  → TTL=300s (5 min) — resultados autônomos mudam mais frequentemente
+  → threshold=0.95 — ações autônomas precisam de alta precisão no match
+
+PASSO 4: Monitorar invalidação de cache
+  → Se candidato atualiza currículo → invalidar cache de evaluation para aquele candidato
+  → Hook: on_candidate_update() → evaluation_cache.invalidate(candidate_id)
+```
 
 ---
 
 #### C21 — HARD_BUDGET sem fairness check (🟢 MÉDIO)
 
-**O que pode dar errado:** HARD_BUDGET=50 tool calls no agente `autonomous`. Se as 50 tool calls são distribuídas desigualmente (ex: 40 calls pesquisando candidatos de um grupo, 10 de outro), não há alerta. A limitação de budget pode criar viés por distribuição desigual de esforço computacional.
+**Domínio/Papel:** `src/domains/autonomous/agent.py` — `HARD_BUDGET=50` tool calls por execução do agente autônomo
 
-**Solução:** Adicionar contador por grupo protegido dentro do budget tracking. Alertar se distribuição for desigual.
+**Nível de risco:** 🟢 MÉDIO — o budget limita custo mas não fairness; distribuição desigual de esforço computacional pode criar viés sistêmico
+
+**O que pode dar errado:**
+O agente autônomo tem budget de 50 tool calls. Em uma execução que busca candidatos para uma vaga, o agente pode gastar 35 tool calls pesquisando candidatos de um perfil (ex: homens com formação em engenharia de renomadas faculdades) e apenas 15 calls pesquisando candidatos de perfil diverso. O resultado: candidatos sub-representados recebem menos atenção computacional e aparecem menos no shortlist. Isso não é uma regra explicitamente discriminatória, mas o resultado final é discriminatório por alocação desigual de recursos computacionais. É a manifestação do "viés de coleta" — o sistema coleta mais dados sobre grupos majoritários.
+
+**Arquivo v5 afetado:** `src/domains/autonomous/agent.py` — budget counter sem distribuição por grupo
+
+**Solução — budget tracker com fairness:**
+```python
+# src/services/budget/fair_budget_tracker.py (novo arquivo)
+
+class FairBudgetTracker:
+    """Budget tracker com monitoramento de distribuição por grupo."""
+
+    def __init__(self, hard_budget: int = 50):
+        self.hard_budget = hard_budget
+        self.total_calls = 0
+        self.calls_by_group: Dict[str, int] = {}  # grupo → calls usados
+        self.search_queries: List[str] = []
+
+    def record_tool_call(self, tool_name: str, query: str, group_hint: str = "unknown") -> None:
+        """Registra uma tool call com contexto de grupo (quando disponível)."""
+        self.total_calls += 1
+        self.calls_by_group[group_hint] = self.calls_by_group.get(group_hint, 0) + 1
+        self.search_queries.append(query)
+
+        if self.total_calls >= self.hard_budget:
+            raise BudgetExceeded(f"HARD_BUDGET de {self.hard_budget} tool calls atingido.")
+
+    def check_distribution_fairness(self) -> Optional[str]:
+        """Verifica se distribuição de calls é razoavelmente equitativa."""
+        if len(self.calls_by_group) < 2:
+            return None  # não há dados suficientes para comparar
+        max_calls = max(self.calls_by_group.values())
+        min_calls = min(self.calls_by_group.values())
+        if min_calls > 0 and max_calls / min_calls > 3.0:  # 3:1 ratio = alerta
+            return (
+                f"Atenção: distribuição de busca potencialmente desigual. "
+                f"Máximo: {max_calls} calls para um grupo, Mínimo: {min_calls}. "
+                f"Considere ampliar o escopo de busca."
+            )
+        return None
+```
+
+**Passo a passo:**
+```
+PASSO 1: Criar src/services/budget/fair_budget_tracker.py
+  → Copiar implementação acima
+
+PASSO 2: Substituir budget counter simples em autonomous/agent.py
+  → ANTES: if tool_call_count >= HARD_BUDGET: raise BudgetExceeded()
+  → DEPOIS: tracker.record_tool_call(tool_name, query)
+
+PASSO 3: Chamar check_distribution_fairness() antes do output final
+  → Se alerta: adicionar ao output como warning visível ao recrutador
+  → NÃO bloquear — apenas informar
+
+PASSO 4: Registrar distribuição no audit
+  → Salvar calls_by_group no evento CHAIN_END do AuditCallback
+  → Permite análise histórica de distribuição por execução
+```
 
 ---
 
 #### C22 — DLQ ausente por domínio (🟢 MÉDIO)
 
-**O que pode dar errado:** Mensagem de processamento de candidatura falha por erro transiente. Sem Dead Letter Queue, a mensagem é perdida. O candidato não é processado e não recebe nenhum feedback.
+**Domínio/Papel:** processamento de mensagens assíncronas em todos os domínios que recebem tarefas via queue (`applies`, `evaluation`, `messaging`, `scheduling`)
 
-**Solução:** Configurar DLQ no message broker (SQS/RabbitMQ) para cada domínio com retry exponencial (3x) antes de mover para DLQ.
+**Nível de risco:** 🟢 MÉDIO — mensagens perdidas silenciosamente; candidatos não processados sem nenhum feedback ou rastreabilidade
 
----
+**O que pode dar errado:**
+Um candidato submete uma candidatura às 23h47. O processamento pelo agente `applies` falha com um erro transiente (ex: timeout de database de 500ms, pico de carga no LLM). Sem DLQ e retry, a mensagem é descartada. O candidato nunca recebe confirmação, o sistema não tem registro do erro, e o recrutador nunca vê a candidatura. Em processos com prazo (ex: candidatura até 31/03), o candidato perde a oportunidade por erro de infraestrutura. Com DLQ e retry exponencial (3 tentativas: 30s → 5min → 30min), o mesmo erro transiente seria resolvido na segunda tentativa.
 
-#### C23 — Checkpointer global não usado por todos os domínios (🟢 MÉDIO)
+**Arquivo v5 afetado:** configuração de message broker — sem DLQ configurada por domínio
 
-**O que pode dar errado:** Domínios `jobs`, `applies` e `messaging` não usam o checkpointer LangGraph. Se o processo cair no meio de uma execução longa (ex: applies com 20 tool calls), o estado é perdido e a execução começa do zero.
-
-**Solução:** Habilitar `MemorySaver` ou `PostgresSaver` como checkpointer em todos os grafos LangGraph:
+**Solução — DLQ com retry exponencial:**
 ```python
-from langgraph.checkpoint.memory import MemorySaver
-graph = workflow.compile(checkpointer=MemorySaver())
+# src/services/queue/dlq_config.py (novo arquivo)
+
+# Para SQS (AWS):
+DLQ_CONFIGS = {
+    "applies": {
+        "queue_url": os.getenv("APPLIES_QUEUE_URL"),
+        "dlq_url": os.getenv("APPLIES_DLQ_URL"),
+        "max_receive_count": 3,  # 3 tentativas antes do DLQ
+        "visibility_timeout": 300,  # 5 min por tentativa
+    },
+    "evaluation": {
+        "queue_url": os.getenv("EVALUATION_QUEUE_URL"),
+        "dlq_url": os.getenv("EVALUATION_DLQ_URL"),
+        "max_receive_count": 3,
+        "visibility_timeout": 600,  # 10 min (avaliações são mais longas)
+    },
+    "messaging": {
+        "queue_url": os.getenv("MESSAGING_QUEUE_URL"),
+        "dlq_url": os.getenv("MESSAGING_DLQ_URL"),
+        "max_receive_count": 5,  # mensagens têm mais retentativas
+        "visibility_timeout": 60,
+    },
+}
+
+# Retry exponencial com jitter:
+async def process_with_retry(message: dict, domain: str, handler) -> None:
+    for attempt in range(1, 4):
+        try:
+            await handler(message)
+            return  # sucesso
+        except Exception as e:
+            wait = (2 ** attempt) + random.uniform(0, 1)  # 2s, 4s, 8s + jitter
+            logger.warning(f"Tentativa {attempt}/3 falhou para {domain}: {e}. Aguardando {wait:.1f}s")
+            if attempt == 3:
+                await send_to_dlq(message, domain, error=str(e))
+                raise
+            await asyncio.sleep(wait)
+```
+
+**Passo a passo:**
+```
+PASSO 1: Criar filas DLQ no broker (SQS/RabbitMQ/Redis Streams)
+  → Para cada domínio com queue: criar {domain}-dlq
+  → Configurar redrive policy: maxReceiveCount=3
+
+PASSO 2: Criar src/services/queue/dlq_config.py
+  → Copiar DLQ_CONFIGS acima, ajustar para o broker do v5
+
+PASSO 3: Envolver handlers de domínio com process_with_retry()
+  → applies: handler = applies_domain.process_application
+  → evaluation: handler = evaluation_domain.process_intent
+  → messaging: handler = messaging_domain.send_message
+
+PASSO 4: Configurar alertas para DLQ
+  → Se DLQ tiver > 10 mensagens: alerta imediato (Slack/PagerDuty)
+  → Dashboard: contagem de mensagens em DLQ por domínio
+  → Script de reprocessamento manual para mensagens na DLQ após correção do bug
 ```
 
 ---
 
-#### Resumo: Prioridade de Execução
+#### C23 — Checkpointer LangGraph não usado em todos os domínios (🟢 MÉDIO)
 
-Para um desenvolvedor começando agora, a ordem recomendada de implementação baseada em impacto/esforço:
+**Domínio/Papel:** `src/domains/jobs/domain.py`, `src/domains/applies/react_agent.py`, `src/domains/messaging/domain.py` — grafos LangGraph sem checkpointer
+
+**Nível de risco:** 🟢 MÉDIO — execuções longas perdem estado em crash; reprocessamento começa do zero; custo dobrado em reintentos
+
+**O que pode dar errado:**
+O agente `applies` executa 18 tool calls para processar uma candidatura complexa (buscar vaga, analisar currículo, comparar requisitos, verificar histórico do candidato, calcular score...). Na tool call #15, o servidor sofre um restart (deploy, OOM kill, crash). Sem checkpointer LangGraph, o grafo começa do zero. As 15 primeiras tool calls são refeitas integralmente — custo duplicado, latência duplicada, e o candidato recebe resposta com 10 minutos de atraso. Com checkpointer (MemorySaver ou PostgresSaver), o grafo continua da tool call #15 após o restart.
+
+**Arquivo v5 afetado:** `src/domains/jobs/domain.py`, `src/domains/applies/react_agent.py`, `src/domains/messaging/domain.py` — sem `checkpointer=` na chamada `.compile()`
+
+**Arquivo LIA de referência:** `lia-agent-system/libs/agents-core/lia_agents_core/` — padrão de uso do checkpointer
+
+**Solução — habilitar PostgresSaver em produção:**
+```python
+# Para desenvolvimento (in-memory):
+from langgraph.checkpoint.memory import MemorySaver
+
+checkpointer = MemorySaver()
+graph = workflow.compile(checkpointer=checkpointer)
+
+# Para produção (PostgreSQL — usa o mesmo banco do v5):
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+import psycopg
+
+async def create_graph_with_checkpointer() -> CompiledGraph:
+    """Cria grafo LangGraph com checkpointer PostgreSQL."""
+    async with await psycopg.AsyncConnection.connect(
+        os.getenv("DATABASE_URL")
+    ) as conn:
+        checkpointer = AsyncPostgresSaver(conn)
+        await checkpointer.setup()  # cria tabelas se não existirem
+        return workflow.compile(checkpointer=checkpointer)
+
+# Em qualquer domain.py que usa LangGraph:
+# ANTES:
+graph = workflow.compile()
+
+# DEPOIS:
+graph = workflow.compile(checkpointer=MemorySaver())  # dev
+# OU:
+graph = await create_graph_with_checkpointer()        # prod
+
+# Invocação com thread_id para continuidade:
+result = await graph.ainvoke(
+    inputs,
+    config={"configurable": {"thread_id": session_id}}  # ← chave para retomar
+)
+```
+
+**Passo a passo:**
+```
+PASSO 1: Instalar dependência (se necessário)
+  → pip install langgraph-checkpoint-postgres
+  → Ou usar MemorySaver para começar (sem nova dependência)
+
+PASSO 2: Habilitar checkpointer nos 3 domínios afetados
+  → jobs/domain.py: adicionar checkpointer=MemorySaver()
+  → applies/react_agent.py: adicionar checkpointer=MemorySaver()
+  → messaging/domain.py: adicionar checkpointer=MemorySaver()
+
+PASSO 3: Migrar para PostgresSaver em produção
+  → CREATE TABLE IF NOT EXISTS checkpoints (...) — executado por checkpointer.setup()
+  → Garantir que DATABASE_URL tem permissão de CREATE TABLE
+
+PASSO 4: Testar retomada de execução
+  → Iniciar execução com thread_id="test-session-001"
+  → Matar processo no meio (kill -9)
+  → Reiniciar e invocar com mesmo thread_id
+  → Verificar que continua de onde parou, não do início
+```
+
+---
+
+#### Resumo: Prioridade de Execução e Estimativa de Esforço
+
+Para um desenvolvedor começando agora, a ordem recomendada de implementação baseada em impacto/esforço combinados:
 
 ```
-SPRINT 1 (semana 1-2) — Concerns que protegem contra responsabilidade legal imediata:
-  C01 → FairnessGuard em evaluation (2h)
-  C08 → PromptInjectionGuard em autonomous + applies (3h)
-  C03 → PII masking pré-LLM em todos os domínios (4h)
-  C04 → Audit trail obrigatório em evaluation (2h)
+SPRINT 1 (semana 1-2) — Concerns com exposição legal imediata (≈ 11h):
+  C01 → FairnessGuard em evaluation             2h  [CRÍTICO — discriminação]
+  C08 → PromptInjectionGuard em autonomous+applies  3h  [CRÍTICO — segurança]
+  C03 → PII masking pré-LLM em todos os domínios  4h  [CRÍTICO — LGPD Art.46]
+  C04 → Audit trail obrigatório em evaluation    2h  [CRÍTICO — rastreabilidade]
 
-SPRINT 2 (semana 3) — Concerns de auditoria e retenção:
-  C05 → Audit imutável (ON CONFLICT DO NOTHING) (1h)
-  C06 → Retenção 7 anos (mudar constante + cold storage) (2h)
-  C07 → GuardrailRepository em autonomous (4h)
+SPRINT 2 (semana 3) — Concerns de audit e guardrails (≈ 8h):
+  C05 → Audit imutável (ON CONFLICT DO NOTHING)  1h  [CRÍTICO — SOX/BCB-498]
+  C06 → Retenção 7 anos (constante + cold storage)  2h  [CRÍTICO — BCB-498 Art.14]
+  C07 → GuardrailRepository em autonomous       4h  [CRÍTICO — EU AI Act Art.9]
+  C23 → Checkpointer LangGraph nos 3 domínios   1h  [MÉDIO — quick win]
 
-SPRINT 3 (semana 4-5) — Concerns de qualidade e compliance avançado:
-  C02 → BiasAuditSnapshot + 4/5 rule (6h)
-  C09 → ConfidenceNode em evaluation (3h)
-  C11 → FactChecker em evaluation (4h)
-  C12 → Learning fairness gate (2h)
-  C10 → HiringPolicy por tenant (5h)
+SPRINT 3 (semana 4-5) — Concerns de qualidade e compliance avançado (≈ 25h):
+  C02 → BiasAuditSnapshot + 4/5 rule            6h  [CRÍTICO — EU AI Act]
+  C09 → ConfidenceNode em evaluation            3h  [ALTO — EU AI Act Art.13]
+  C11 → FactChecker em evaluation               4h  [ALTO — hallucination]
+  C12 → Learning fairness gate                  2h  [ALTO — viés amplificado]
+  C10 → HiringPolicy por tenant                 5h  [ALTO — multi-tenant]
+  C18 → Habilitar SEMANTIC_CACHE               1h  [MÉDIO-ALTO — quick win]
+  C22 → DLQ por domínio                        4h  [MÉDIO — confiabilidade]
 
-SPRINT 4 (semana 6-7) — Concerns de qualidade de produto:
-  C13-C23 → Melhorias incrementais (2-4h cada)
+SPRINT 4 (semana 6-7) — Concerns de qualidade de produto (≈ 28h):
+  C14 → Anti-sycophancy em evaluation+autonomous  2h  [MÉDIO-ALTO]
+  C13 → Persona por tenant                      5h  [MÉDIO-ALTO]
+  C16 → Criptografia de audit                   4h  [MÉDIO-ALTO]
+  C17 → Circuit breaker por domínio             4h  [MÉDIO-ALTO]
+  C15 → cost_usd no audit LIA (LIA ← v5)       3h  [MÉDIO-ALTO — vantagem v5]
+  C19 → Memory centralizado                    5h  [MÉDIO]
+  C20 → Cache em evaluation+autonomous          2h  [MÉDIO — depende C18]
+  C21 → Fair budget tracker                    2h  [MÉDIO]
+  C23 já feito no Sprint 2                     --
 
-Total estimado: ~46h para C01-C12 (concerns CRÍTICOS + ALTOS)
-               ~24h para C13-C23 (concerns MÉDIO-ALTO + MÉDIO)
-               ~70h total
+TOTAIS:
+  Sprint 1:  11h — Legal
+  Sprint 2:   8h — Audit
+  Sprint 3:  25h — Compliance avançado
+  Sprint 4:  27h — Qualidade de produto
+  TOTAL:     71h (~9 dias-dev)
+
+REGRA: Nunca fechar um Sprint sem todos os testes de regressão passando.
+       O documento de testes de compliance está em proposals/test_plan_compliance.md.
 ```
+
+---
+
+### 23.10 Diagnóstico Arquitetural: Compliance-by-Discipline vs. Compliance-by-Design
+
+> Esta seção responde: **por que o v5, sendo um sistema cuidadosamente desenvolvido, acumulou 23 concerns de compliance?** E qual é o caminho estruturalmente correto para que isso não aconteça com os próximos domínios?
+
+---
+
+#### O Problema Raiz: Compliance-by-Discipline
+
+O v5 usa a abordagem **compliance-by-discipline**: cada desenvolvedor é responsável por lembrar de adicionar FairnessGuard, PII masking, audit trail, e todos os outros controles em cada domínio que cria. Essa abordagem funciona quando:
+- A equipe é pequena (1-3 devs que criaram os controles originais)
+- Os domínios são poucos (2-3, fáceis de auditar manualmente)
+- O ritmo de desenvolvimento é lento (semanas por novo domínio)
+
+O v5 tem **8 domínios** com um histórico de crescimento rápido. A compliance-by-discipline falha à escala porque a lista de controles obrigatórios cresce com o tempo, e a capacidade humana de lembrar de todos eles — em cada novo domínio — é fixa.
+
+**Evidência:**
+| Domínio   | FairnessGuard | PII Mask | Audit | ConfidenceNode | GuardrailRepo |
+|-----------|:---:|:---:|:---:|:---:|:---:|
+| evaluation | ❌ | ❌ | opt-in | ❌ | ❌ |
+| autonomous | ❌ | ❌ | opt-in | ❌ | ❌ |
+| applies    | ❌ | ❌ | opt-in | ❌ | ❌ |
+| scheduling | ❌ | ❌ | opt-in | ❌ | ❌ |
+| sourcing   | ❌ | ❌ | opt-in | ❌ | ❌ |
+| messaging  | ❌ | ❌ | opt-in | ❌ | ❌ |
+| jobs       | ❌ | ❌ | opt-in | ❌ | ❌ |
+| search     | ❌ | ❌ | opt-in | ❌ | ❌ |
+
+**Resultado:** 0 de 8 domínios têm os 5 controles básicos. A disciplina humana não escala.
+
+---
+
+#### O Padrão de Mercado: Compliance-by-Design
+
+Sistemas de IA de produção em larga escala (Google Vertex AI, AWS Bedrock Guardrails, Microsoft Responsible AI) usam **compliance-by-design**: os controles são parte da infraestrutura que o domínio herda automaticamente ao ser criado. O desenvolvedor não pode "esquecer" de adicionar compliance — ele herda compliance ao herdar a classe base.
+
+**Padrão de mercado documentado:**
+- Google Vertex AI: todos os modelos têm safety filters obrigatórios (não opt-in)
+- AWS Bedrock Guardrails: API que intercepta ALL requests antes de chegar ao modelo
+- Microsoft Azure Content Safety: middleware obrigatório em Azure OpenAI Service
+- Anthropic Constitutional AI: valores encoded no modelo, não no código do cliente
+
+O padrão comum: **compliance é infraestrutura, não responsabilidade do desenvolvedor de domínio.**
+
+---
+
+#### Os 3 Caminhos de Resolução
+
+##### Caminho 1 — Patch por Domínio (Quick Fix sem arquitetura)
+
+```
+Estratégia: Adicionar os controles faltantes em cada domínio individualmente.
+Esforço:    71h (detalhado na seção 23.9)
+Prazo:      7 semanas (4 sprints)
+Risco:      ALTO — ao criar o 9º domínio, o problema se repete
+Vantagem:   Resolve os 23 concerns imediatamente sem refatoração
+Desvantagem: Não resolve o problema estrutural. Em 6 meses, haverá 23 novos concerns.
+
+Quando usar: APENAS como medida de emergência para os concerns CRÍTICOS (C01-C08)
+             enquanto o Caminho 2 é planejado e implementado em paralelo.
+```
+
+##### Caminho 2 — ComplianceDomainPrompt (Herança Automática) — RECOMENDADO
+
+```
+Estratégia: Criar uma classe base ComplianceDomainPrompt que todos os domínios herdam.
+            A herança garante que os controles sejam aplicados automaticamente.
+            Novo domínio = herdar ComplianceDomainPrompt = compliance automático.
+Esforço:    ~21h (1 semana para o base + 1 semana de migração dos 8 domínios)
+Prazo:      3 semanas (1 build + 1 migração + 1 validação)
+Risco:      BAIXO — não reescreve domínios, apenas adiciona classe base
+Vantagem:   Resolve todos os 23 concerns + protege domínios futuros automaticamente
+Desvantagem: Requer migração controlada dos 8 domínios existentes
+
+Quando usar: CAMINHO PRINCIPAL — implementar assim que os concerns CRÍTICOS (C01-C08)
+             forem patchados via Caminho 1.
+```
+
+**Estrutura do ComplianceDomainPrompt:**
+```python
+# src/domains/base/compliance_domain_prompt.py
+class ComplianceDomainPrompt:
+    """
+    Classe base para todos os domínios LangGraph do v5.
+    Herdar esta classe garante compliance automático com:
+    - LGPD (PII masking, audit, retenção)
+    - EU AI Act Art. 9 e 13 (fairness, confidence, transparency)
+    - SOX/BCB-498 (audit imutável, retenção 7 anos)
+    - Segurança (prompt injection, guardrails)
+    """
+
+    def __init__(self, domain: str, company_id: str, session_id: str):
+        self.domain = domain
+        self.company_id = company_id
+        self.session_id = session_id
+
+        # Controles instanciados AUTOMATICAMENTE — sem ação do desenvolvedor:
+        self._fairness_guard = FairnessGuard()
+        self._pii_masker = PIIPipeline()
+        self._injection_guard = PromptInjectionGuard()
+        self._audit_callback = AuditCallback(session_id, "agent", domain)
+        self._confidence_node = ConfidenceNode()
+        self._budget_tracker = FairBudgetTracker()
+
+    async def process(self, query: str, context: Any) -> Any:
+        """
+        Ponto de entrada único — aplica compliance ANTES de delegar para domínio.
+        Subclasses implementam _domain_process(), não process().
+        """
+        # 1. Fairness check (C01, C12)
+        fairness = self._fairness_guard.check_sync(query)
+        if fairness.is_blocked:
+            return self._blocked_response(fairness.educational_message)
+
+        # 2. Injection check (C08)
+        injection = self._injection_guard.check(query)
+        if injection.is_suspicious and injection.risk_level == "high":
+            raise SecurityViolation(f"Injection detectado: {injection.matched_patterns}")
+
+        # 3. PII masking (C03)
+        safe_query = self._pii_masker.mask_pii(query)
+
+        # 4. Audit start (C04)
+        await self._audit_callback.on_chain_start({}, {"query": safe_query})
+
+        try:
+            # 5. Delegar para implementação do domínio
+            result = await self._domain_process(safe_query, context)
+
+            # 6. Confidence check (C09)
+            confidence = self._confidence_node.compute(result)
+            if confidence < 0.7:
+                result["needs_review"] = True
+                result["confidence"] = confidence
+
+            # 7. Audit end (C04)
+            await self._audit_callback.on_chain_end(result)
+            return result
+
+        except Exception as e:
+            await self._audit_callback.on_chain_error(e)
+            raise
+
+    async def _domain_process(self, query: str, context: Any) -> Any:
+        """
+        Implementação específica do domínio.
+        SUBCLASSES IMPLEMENTAM ESTE MÉTODO, não process().
+        """
+        raise NotImplementedError("Domínio deve implementar _domain_process()")
+
+# Uso em cada domínio — ANTES:
+class EvaluationDomain:
+    async def process_intent(self, query: str, context) -> Any:
+        # sem compliance...
+
+# Uso em cada domínio — DEPOIS (apenas herança + renomear método):
+class EvaluationDomain(ComplianceDomainPrompt):
+    def __init__(self, company_id: str, session_id: str):
+        super().__init__(domain="evaluation", company_id=company_id, session_id=session_id)
+
+    async def _domain_process(self, query: str, context: Any) -> Any:
+        # lógica de evaluation pura, sem compliance — a base cuida disso
+        ...
+```
+
+##### Caminho 3 — Refatoração Estrutural Completa (Compliance-First Architecture)
+
+```
+Estratégia: Reescrever a arquitetura do v5 do zero com compliance como primeiro
+            cidadão — middleware de compliance no nível do framework, não do domínio.
+            Semelhante a como AWS Bedrock Guardrails intercepta TODAS as chamadas
+            antes de chegar ao modelo.
+Esforço:    ~200h (4-5 meses)
+Prazo:      6+ meses
+Risco:      ALTO — regressões, re-testes completos, risco de negócio
+Vantagem:   Arquitetura ideal de longo prazo; compliance impossível de bypassar
+Desvantagem: Custo e risco muito altos para o estado atual do produto
+
+Quando usar: Objetivo de 2027 se o produto continuar crescendo.
+             NÃO usar como resposta aos 23 concerns atuais.
+```
+
+---
+
+#### Decisão Recomendada
+
+```
+FASE 1 (agora → Sprint 1-2, 3 semanas):
+  Caminho 1 para concerns CRÍTICOS (C01-C08)
+  Objetivo: eliminar exposição legal imediata
+  Esforço:  19h
+
+FASE 2 (Sprint 2-3, semanas 3-6):
+  Caminho 2 (ComplianceDomainPrompt)
+  Objetivo: resolver todos os 23 concerns + proteger domínios futuros
+  Esforço:  ~21h (classe base) + 24h (migração de 8 domínios) = 45h
+
+FASE 3 (2027+, após crescimento):
+  Avaliar Caminho 3 se o número de domínios ultrapassar 15
+  Ou se compliance passar a ser vendido como feature (certificação ISO 42001)
+
+CRITÉRIO DE SUCESSO (ao final da Fase 2):
+  ✓ Novo domínio criado sem nenhuma configuração de compliance manual
+  ✓ Todos os 8 domínios passam nos testes de compliance automatizados
+  ✓ FairnessGuard bloqueia "bairros nobres" em TODOS os domínios
+  ✓ PII nunca chega no LLM em nenhum domínio
+  ✓ Audit trail completo, imutável, 7 anos de retenção
+```
+
+---
+
+#### Resumo: Matriz de Decisão
+
+| Critério | Caminho 1 (Patch) | Caminho 2 (Base Class) | Caminho 3 (Refactor) |
+|---|---|---|---|
+| **Esforço** | 71h | 66h | 200h+ |
+| **Prazo** | 7 semanas | 6 semanas | 6+ meses |
+| **Resolve concerns atuais** | ✅ Sim | ✅ Sim | ✅ Sim |
+| **Protege domínios futuros** | ❌ Não | ✅ Sim (herança) | ✅ Sim (framework) |
+| **Risco de regressão** | 🟡 Médio | 🟡 Médio | 🔴 Alto |
+| **Bypassável por dev** | ❌ Ainda sim | ✅ Não (sem herdar) | ✅ Não (middleware) |
+| **Recomendação** | Emergência apenas | **Solução principal** | Objetivo 2027+ |
+
+**Veredicto:** O **Caminho 2** (`ComplianceDomainPrompt`) resolve 100% dos 23 concerns (via migração dos domínios existentes) e garante que o **domínio 9, 10, 11...** sejam protegidos automaticamente ao herdar a classe base. É o único caminho que transforma compliance de responsabilidade individual em garantia arquitetural.
+
+A falha do v5 não foi falta de competência técnica — foi falta de um **mecanismo de herança**. Com o Caminho 2, o próximo desenvolvedor que criar `src/domains/reporting/domain.py` recebe fairness, audit, PII masking e injection guard sem escrever uma linha de código de compliance.
+
+---
+
+> **Referência cruzada de prioridade:** O detalhamento de esforço por Sprint (C01-C23) está na seção 23.9 — "Resumo: Prioridade de Execução e Estimativa de Esforço". A decisão arquitetural definitiva (Caminho 1 vs. 2 vs. 3) está na seção 23.10 — "Resumo: Matriz de Decisão".
 
 ---
 
