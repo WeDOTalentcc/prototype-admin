@@ -3892,7 +3892,7 @@ PASSO 3: Integrar em evaluation/domain.py
 
     from src.services.compliance.fairness_guard import FairnessGuard
     _guard = FairnessGuard()
-    _result = await _guard.check(query)  # check() é async no LIA
+    _result = _guard.check(query)  # check() é SÍNCRONO no LIA (def check, não async def)
     if _result.is_blocked:
         return {"error": _result.educational_message, "blocked": True}
     if _result.soft_warnings:
@@ -4531,14 +4531,15 @@ PASSO 2: Integrar no nó de output de evaluation
   → Após LLM gerar avaliação:
 
     from src.services.compliance.fact_checker import FactChecker
-    checker = FactChecker()
-    result = await checker.check(
-        claim=llm_evaluation,
-        source_document=candidate_resume_text
+    checker = FactChecker(data_sources={"resume": candidate_data})
+    # check_response() é SÍNCRONO no LIA (def check_response, não async def)
+    result = checker.check_response(
+        response_text=llm_evaluation,
+        context={"resume_text": candidate_resume_text}
     )
-    if result.has_hallucinations:
-        output["warnings"] = result.unverified_claims
-        output["confidence"] = min(output["confidence"], 0.5)
+    if result.inaccurate_claims > 0:
+        output["warnings"] = f"{result.inaccurate_claims} claims não verificados"
+        output["confidence"] = min(output.get("confidence", 1.0), 0.5)
 
 PASSO 3: Para claims específicas (certificações, datas, números)
   → Adicionar verificação cruzada com dados estruturados do candidato
@@ -4580,7 +4581,7 @@ async def record_feedback(
     # INSERIR ESTAS LINHAS (código LIA adaptado):
     from src.services.compliance.fairness_guard import FairnessGuard
     guard = FairnessGuard()
-    fairness_result = guard.check_sync(feedback_text)  # versão sync para feedback
+    fairness_result = guard.check(feedback_text)  # check() é SÍNCRONO no LIA — não há check_sync()
 
     if fairness_result.is_blocked:
         logger.warning(
@@ -5574,7 +5575,7 @@ class ComplianceDomainPrompt:
         Subclasses implementam _domain_process(), não process().
         """
         # 1. Fairness check (C01, C12)
-        fairness = self._fairness_guard.check_sync(query)
+        fairness = self._fairness_guard.check(query)  # check() é síncrono no LIA
         if fairness.is_blocked:
             return self._blocked_response(fairness.educational_message)
 
