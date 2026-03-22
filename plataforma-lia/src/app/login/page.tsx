@@ -85,6 +85,12 @@ export default function LoginPage() {
         </div>
 
         <div className="flex-1 flex flex-col justify-center pr-8">
+          <div className="mb-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-gray-700 text-xs font-medium">
+              <span className="text-wedo-cyan text-sm leading-none">»</span>
+              Inteligência Artificial Agêntica para Recrutamento
+            </span>
+          </div>
           <h1 className="text-4xl text-gray-950 font-light mb-4 leading-tight font-['Open_Sans',sans-serif]">
             O futuro do recrutamento é inteligente e{" "}
             <span className="font-light text-wedo-cyan">simples.</span>
