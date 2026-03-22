@@ -2882,6 +2882,188 @@ Esta seção atualiza a tabela da seção 5 com as 12 novas dimensões descobert
 
 ---
 
+### 23.0 Visão Geral Visual — Antes e Depois da Proposta de Migração
+
+> **Leia este mapa antes das subseções seguintes.** Os três diagramas abaixo condensam visualmente tudo que as seções 23.1 a 23.12.8 descrevem em detalhe: (1) o estado atual do v5, (2) a arquitetura alvo após o Caminho 3, e (3) os 6 pilares de excelência em escala.
+
+---
+
+#### Diagrama 1 — Estado Atual: v5 Autocontido (Compliance por Disciplina)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║              ARQUITETURA ATUAL — v5 (compliance-by-discipline)              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+  Recrutador
+      │
+      ▼
+  [RabbitMQ / HTTP]
+      │
+      ▼
+  [Orchestrator]  ←─ src/domains/orchestrator.py (626L, lido via GitHub API)
+      │
+      ├──▶ jobs          ┌─ fairness ✅ │ pii ❌ │ audit ❌ │ guardrails ❌ ┐
+      │                  └──────────────────────────────────────────────────┘
+      │
+      ├──▶ evaluation    ┌─ fairness ❌ │ pii ❌ │ audit ✅ │ guardrails ❌ ┐
+      │                  └──────────────────────────────────────────────────┘
+      │
+      ├──▶ autonomous    ┌─ fairness ❌ │ pii ❌ │ audit ❌ │ guardrails 🟡 ┐
+      │                  └──────────────────────────────────────────────────┘
+      │
+      ├──▶ applies       ┌─ fairness ❌ │ pii 🟡 │ audit ❌ │ guardrails ❌ ┐
+      │                  └──────────────────────────────────────────────────┘
+      │
+      ├──▶ scheduling    ┌─ fairness ❌ │ pii ❌ │ audit ❌ │ guardrails ❌ ┐
+      │                  └──────────────────────────────────────────────────┘
+      │
+      ├──▶ interview     ┌─ fairness ❌ │ pii ❌ │ audit ❌ │ guardrails ❌ ┐  ← 0/8 concerns
+      │                  └──────────────────────────────────────────────────┘
+      │
+      ├──▶ learning      ┌─ fairness ❌ │ pii ❌ │ audit ❌ │ guardrails ❌ ┐
+      │                  └──────────────────────────────────────────────────┘
+      │
+      └──▶ matching      ┌─ fairness ❌ │ pii ❌ │ audit ❌ │ guardrails ❌ ┐
+                         └──────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+                            [LLM Provider]       ← sem PII masking pré-LLM
+                                   │
+                                   ▼
+                            [Resposta Direta]    ← sem confidence, sem fact-check
+
+  Cobertura: 23 concerns × 8 domínios = 184 pontos possíveis
+             Cobertos: ~12/184 (6.5%)   ← calculado por leitura real dos arquivos
+  Observabilidade: 0 métricas Prometheus │ 0 spans OTLP │ logs texto plano
+  Feature flags:   variáveis de ambiente estáticas (restart para mudar)
+  Testes:          3/5 camadas (sem contrato, sem bias regression)
+```
+
+---
+
+#### Diagrama 2 — Estado Desejado: Caminho 3 (CompliancePipeline como Middleware)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║         ARQUITETURA ALVO — Caminho 3 (compliance-by-design)                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+  Recrutador
+      │
+      ▼
+  [RabbitMQ / HTTP]
+      │
+      ▼
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                       CompliancePipeline                                │
+  │                  src/services/compliance/pipeline.py                    │
+  │                                                                         │
+  │  ┌────────────┐  ┌────────────┐  ┌────────────┐                        │
+  │  │  Stage 1   │  │  Stage 2   │  │  Stage 3   │                        │
+  │  │ FairnessGd │─▶│ PII Mask   │─▶│ Guardrails │─▶ [Orchestrator]      │
+  │  │ (pré-LLM)  │  │ (pré-LLM)  │  │ + Policy   │                        │
+  │  │ C01, C02   │  │ C03        │  │ C07, C10   │                        │
+  │  └────────────┘  └────────────┘  └────────────┘                        │
+  │       │ BLOCKED? ──────────────────────────────────────────────────▶   │
+  │       │                        retorna imediatamente (sem chamar LLM)  │
+  │                                                                         │
+  │                         [Orchestrator]                                  │
+  │                              │                                          │
+  │          ┌───────────────────┼───────────────────┐                     │
+  │          ▼                   ▼                   ▼                     │
+  │    evaluation           autonomous           applies                    │
+  │    scheduling           interview            learning          ...      │
+  │    ──────────────────────────────────────────────────                   │
+  │    Todos iguais: domínio implementa apenas lógica de negócio            │
+  │    Compliance é responsabilidade do Pipeline — não do domínio           │
+  │                              │                                          │
+  │                        [LLM Provider]     ← query com PII mascarado    │
+  │                              │                                          │
+  │  ┌────────────┐  ┌────────────┐                                        │
+  │  │  Stage 4   │  │  Stage 5   │                                        │
+  │  │ Confidence │◀─│ FactCheck  │◀─ [LLM Response]                      │
+  │  │ BiasAudit  │  │ (pós-LLM)  │                                        │
+  │  │ C09, C02   │  │ C11        │                                        │
+  │  └────────────┘  └────────────┘                                        │
+  │       │                                                                 │
+  │  ┌────────────────────────────────┐                                     │
+  │  │  AuditLog (append-only SOX)    │ ← C04, C05, C06                    │
+  │  │  ShadowLog (calibração)        │ ← sem bloquear em shadow mode       │
+  │  │  ComplianceTenantRules         │ ← override por empresa              │
+  │  └────────────────────────────────┘                                     │
+  └─────────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    [Resposta Validada]
+
+  Ponto de injeção: orchestrator.py L80 (pré) e L179 (pós) — lidos via GitHub API
+  Cobertura: 23/23 concerns × todos domínios atuais e futuros = 100%
+  Novos domínios: compliance é automático — zero work adicional
+  Shadow mode: COMPLIANCE_SHADOW_MODE=true → loga sem bloquear (calibração 2 semanas)
+```
+
+---
+
+#### Diagrama 3 — Os 6 Pilares em Camadas (v5 alvo completo)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║              6 PILARES DE EXCELÊNCIA EM ESCALA — v5 alvo                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  PILAR 6 — Contratos Estáveis + Memória Padronizada          (~6h)       │
+  │  DomainResponse.schema_version │ ConversationMemory ABC interface        │
+  └──────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  PILAR 5 — Multi-tenancy                                     (~10h)      │
+  │  FeatureFlags por empresa │ Audit trail por company_id │ Rate limit Redis│
+  └──────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  PILAR 4 — Ciclo de Vida do LLM                              (~16h)      │
+  │  FeatureFlagService (DB, sem restart) │ ExperimentManager (A/B prompts)  │
+  └──────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  PILAR 3 — Testes em 5 Camadas                               (~12h)      │
+  │  Unitário ✅ │ Integração ✅ │ Evals LLM ✅ │ Contrato ❌ │ Bias ❌      │
+  │  → Criar: tests/contract/ + tests/bias/ (bias regression diária no CI)  │
+  └──────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  PILAR 2 — Observabilidade Production-Grade                  (~8h)       │
+  │  tracing.py (OpenTelemetry/Jaeger) │ metrics.py (15 Prometheus)          │
+  │  structured_logging.py (JSON/ELK)  │ /metrics endpoint (Grafana scrape)  │
+  └──────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  PILAR 1 — Compliance (23 concerns, 5 stages)               (~125h)      │
+  │  CompliancePipeline middleware │ FairnessGuard │ PII Mask │ Audit SOX    │
+  │  Guardrails │ PromptInjection │ Confidence │ FactCheck │ BiasAudit       │
+  └──────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  BASE — v5 atual (8 domínios, orchestrator, LangGraph, PostgreSQL)       │
+  │  orchestrator.py (626L) │ workflow.py (602L) │ audit_callback.py (279L) │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+  Roadmap:
+  ┌──────────┬──────────────────────────────┬───────┬───────────────────────┐
+  │ Sprint   │ Pilares                      │ Sem.  │ Resultado             │
+  ├──────────┼──────────────────────────────┼───────┼───────────────────────┤
+  │ S1       │ Pilar 2 + Pilar 4 + Pilar 6  │  1–2  │ Infra base no ar      │
+  │ S2       │ Pilar 1 (shadow mode)         │  3–4  │ Calibração sem risco  │
+  │ S3       │ Pilar 1 (ativo) + Pilar 3    │  5–6  │ Compliance em prod    │
+  │ S4       │ Pilar 5 (multi-tenancy)       │  7–8  │ Escala por empresa    │
+  └──────────┴──────────────────────────────┴───────┴───────────────────────┘
+  Total: 8 semanas / ~177h → v5 com arquitetura LIA-equivalente
+
+  Fonte dos dados:
+    v5 lido via GitHub API (22/03/2026): orchestrator.py, workflow.py, audit_callback.py,
+    pii_filter.py, services/ (40 arquivos), tests/ (80+ arquivos)
+    LIA lido via filesystem: tracing.py, structured_logging.py, metrics.py,
+    feature_flag_service.py, ab_testing.py, resilience/, robustness/
+```
+
+---
+
 ### 23.1 O Problema Real: Cada Domínio Reinventa a Roda
 
 O v5 foi construído com um paradigma implícito: **compliance-by-discipline** — cada equipe de domínio é responsável por adicionar fairness, PII, audit e guardrails ao seu próprio código. O resultado observado após leitura direta de 8 domínios é:
