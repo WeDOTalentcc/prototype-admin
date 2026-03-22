@@ -97,28 +97,34 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex font-open-sans">
+    <div
+      className="min-h-screen flex font-open-sans relative overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, #9ac6dc 0%, #b2d6e8 25%, #c8e4f0 55%, #daeef8 100%)' }}
+    >
+      {/* Cloud blobs - estático, sem animação */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {/* Nuvem grande - topo direito */}
+        <div style={{ position: 'absolute', width: '720px', height: '460px', top: '-90px', right: '-120px', background: 'rgba(255,255,255,0.88)', borderRadius: '50%', filter: 'blur(72px)' }} />
+        {/* Nuvem grande - centro direito */}
+        <div style={{ position: 'absolute', width: '560px', height: '490px', top: '28%', right: '6%', background: 'rgba(255,255,255,0.82)', borderRadius: '50%', filter: 'blur(82px)' }} />
+        {/* Nuvem extra - detalhe topo direito */}
+        <div style={{ position: 'absolute', width: '320px', height: '260px', top: '8%', right: '28%', background: 'rgba(255,255,255,0.70)', borderRadius: '50%', filter: 'blur(55px)' }} />
+        {/* Nuvem grande - baixo direito */}
+        <div style={{ position: 'absolute', width: '780px', height: '390px', bottom: '-90px', right: '3%', background: 'rgba(255,255,255,0.78)', borderRadius: '50%', filter: 'blur(90px)' }} />
+        {/* Nuvem centro esquerdo */}
+        <div style={{ position: 'absolute', width: '500px', height: '330px', top: '42%', left: '-90px', background: 'rgba(255,255,255,0.68)', borderRadius: '50%', filter: 'blur(76px)' }} />
+        {/* Nuvem sutil - topo esquerdo */}
+        <div style={{ position: 'absolute', width: '360px', height: '260px', top: '4%', left: '12%', background: 'rgba(255,255,255,0.58)', borderRadius: '50%', filter: 'blur(64px)' }} />
+        {/* Nuvem baixo esquerdo */}
+        <div style={{ position: 'absolute', width: '520px', height: '310px', bottom: '4%', left: '3%', background: 'rgba(255,255,255,0.64)', borderRadius: '50%', filter: 'blur(80px)' }} />
+        {/* Nuvem central pequena */}
+        <div style={{ position: 'absolute', width: '280px', height: '200px', top: '55%', left: '35%', background: 'rgba(255,255,255,0.52)', borderRadius: '50%', filter: 'blur(60px)' }} />
+      </div>
+
       {/* Left Side - Content */}
-      <div className="hidden lg:flex lg:w-3/5 bg-white flex-col justify-between p-12 relative overflow-hidden">
-        {/* Video Background */}
-        <video
-          className="absolute inset-0 w-full h-full object-cover z-0"
-          autoPlay
-          loop
-          muted
-          playsInline
-        >
-          <source src="/background-video.mp4" type="video/mp4" />
-          <source src="/background-video.webm" type="video/webm" />
-          {/* Fallback para navegadores que não suportam vídeo */}
-          Seu navegador não suporta vídeos HTML5.
-        </video>
-
-        {/* Overlay para melhorar legibilidade */}
-        <div className="absolute inset-0 bg-white/85 z-10"></div>
-
-        {/* Content - com z-index maior para ficar sobre o vídeo */}
-        <div className="relative z-20 flex flex-col justify-center h-full">
+      <div className="hidden lg:flex lg:w-3/5 flex-col justify-between p-12 relative">
+        {/* Content - z-index acima das nuvens */}
+        <div className="relative z-10 flex flex-col justify-center h-full">
           {/* Logo */}
           <div className="absolute top-0 left-0">
             <div className="flex items-center space-x-3">
@@ -140,16 +146,16 @@ export function LoginPage() {
 
             {/* Feature Points - Sem bullets */}
             <div className="space-y-3 mt-12">
-              <p className="text-lg text-gray-600 leading-relaxed">Automação inteligente, dados organizados e acessiveis,  processos como nunca vistos antes.</p>
-              <p className="text-lg text-gray-600 leading-relaxed"></p>
-              <p className="text-lg text-gray-600 leading-relaxed">IA nativa que aprende com você e acelera todo o processo de recrutamento.</p>
+              <p className="text-lg text-gray-700 leading-relaxed">Automação inteligente, dados organizados e acessiveis,  processos como nunca vistos antes.</p>
+              <p className="text-lg text-gray-700 leading-relaxed"></p>
+              <p className="text-lg text-gray-700 leading-relaxed">IA nativa que aprende com você e acelera todo o processo de recrutamento.</p>
               <p className="text-lg text-gray-800 dark:text-gray-200 leading-relaxed font-semibold">Simples. Inteligente. Revolucionário.</p>
             </div>
           </div>
         </div>
 
-        {/* Bottom Content - também com z-index maior */}
-        <div className="relative z-20">
+        {/* Bottom Content */}
+        <div className="relative z-10">
           {/* Bottom - Company Logos */}
           <div className="space-y-4">
             <p className="text-gray-800 dark:text-gray-200 text-sm">
@@ -182,7 +188,7 @@ export function LoginPage() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-2/5 bg-white flex flex-col border-l border-gray-200">
+      <div className="w-full lg:w-2/5 bg-white flex flex-col shadow-2xl relative z-10">
         {/* Demo Notice */}
         <div className="p-4 text-right">
           <div className="text-xs text-gray-800 dark:text-gray-200">

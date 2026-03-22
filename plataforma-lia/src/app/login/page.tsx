@@ -44,13 +44,36 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex font-['Open_Sans',sans-serif]">
-      {/* Left Section - Branding (Clean white design) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-white border-r border-gray-200 px-12 py-10 flex-col">
+    <div
+      className="min-h-screen flex font-['Open_Sans',sans-serif] relative overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, #9ac6dc 0%, #b2d6e8 25%, #c8e4f0 55%, #daeef8 100%)' }}
+    >
+      {/* Cloud blobs - estático, sem animação */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {/* Nuvem grande - topo direito */}
+        <div style={{ position: 'absolute', width: '720px', height: '460px', top: '-90px', right: '-120px', background: 'rgba(255,255,255,0.88)', borderRadius: '50%', filter: 'blur(72px)' }} />
+        {/* Nuvem grande - centro direito */}
+        <div style={{ position: 'absolute', width: '560px', height: '490px', top: '28%', right: '6%', background: 'rgba(255,255,255,0.82)', borderRadius: '50%', filter: 'blur(82px)' }} />
+        {/* Nuvem extra - detalhe topo direito */}
+        <div style={{ position: 'absolute', width: '320px', height: '260px', top: '8%', right: '28%', background: 'rgba(255,255,255,0.70)', borderRadius: '50%', filter: 'blur(55px)' }} />
+        {/* Nuvem grande - baixo direito */}
+        <div style={{ position: 'absolute', width: '780px', height: '390px', bottom: '-90px', right: '3%', background: 'rgba(255,255,255,0.78)', borderRadius: '50%', filter: 'blur(90px)' }} />
+        {/* Nuvem centro esquerdo */}
+        <div style={{ position: 'absolute', width: '500px', height: '330px', top: '42%', left: '-90px', background: 'rgba(255,255,255,0.68)', borderRadius: '50%', filter: 'blur(76px)' }} />
+        {/* Nuvem sutil - topo esquerdo */}
+        <div style={{ position: 'absolute', width: '360px', height: '260px', top: '4%', left: '12%', background: 'rgba(255,255,255,0.58)', borderRadius: '50%', filter: 'blur(64px)' }} />
+        {/* Nuvem baixo esquerdo */}
+        <div style={{ position: 'absolute', width: '520px', height: '310px', bottom: '4%', left: '3%', background: 'rgba(255,255,255,0.64)', borderRadius: '50%', filter: 'blur(80px)' }} />
+        {/* Nuvem central pequena */}
+        <div style={{ position: 'absolute', width: '280px', height: '200px', top: '55%', left: '35%', background: 'rgba(255,255,255,0.52)', borderRadius: '50%', filter: 'blur(60px)' }} />
+      </div>
+
+      {/* Left Section - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 relative px-12 py-10 flex-col z-10">
         {/* Logo - Alinhado à esquerda */}
         <div className="mb-auto">
           <Image
-            src="/logos/wedo-logo.png"
+            src="/logos/wedo-logo-transparent.png"
             alt="WeDo Talent"
             width={160}
             height={50}
@@ -89,7 +112,7 @@ export default function LoginPage() {
           </div>
 
           {/* LIA Card - Largura total */}
-          <div className="bg-gray-100 rounded-md p-5 w-full mt-4">
+          <div className="bg-white/75 backdrop-blur-sm rounded-md p-5 w-full mt-4">
             <div className="flex items-center gap-4 mb-3">
               <Brain className="w-12 h-12 text-wedo-cyan" />
               <div>
@@ -105,18 +128,18 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-gray-500 text-xs space-y-1 mt-auto">
+        <div className="text-gray-700 text-xs space-y-1 mt-auto">
           <p>
             A WeDo Talent é uma HRTech Brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
           </p>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             © 2025 WeDo Talent. Todos os direitos reservados.
           </p>
         </div>
       </div>
 
       {/* Right Section - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:px-16">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:px-16 bg-white relative z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.08)]">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
