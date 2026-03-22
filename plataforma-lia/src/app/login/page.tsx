@@ -94,9 +94,9 @@ export default function LoginPage() {
             </span>
           </div>
           {/* Headline — primeiro, maior impacto */}
-          <h1 className="text-5xl text-gray-950 font-semibold leading-tight mb-7 font-['Open_Sans',sans-serif]">
+          <h1 className="text-5xl text-gray-950 font-light leading-tight mb-7 font-['Open_Sans',sans-serif]">
             Entre. A <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> já está<br />
-            <span className="font-semibold">trabalhando por você.</span>
+            trabalhando por você.
           </h1>
           {/* Sequência de suporte — abaixo, mais leve */}
           <p className="text-base text-gray-500 font-normal leading-relaxed font-['Open_Sans',sans-serif]">
