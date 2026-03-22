@@ -5733,7 +5733,7 @@ from src.domains.base import DomainPrompt, DomainContext, DomainResponse
 # Imports dos 6 controles (arquivos a criar em src/services/compliance/ — ver 23.11.4)
 from src.services.compliance.fairness_guard import FairnessGuard
 from src.services.compliance.prompt_injection import PromptInjectionGuard
-from src.services.compliance.audit_callback import AuditCallback
+from src.services.audit.audit_callback import AuditCallbackHandler  # já existe no v5 — reutilizar
 from src.services.compliance.confidence import ConfidenceNode
 from src.services.compliance.fact_checker import FactChecker
 from src.services.pii_filter import mask_pii  # já existe no v5 — ampliar com 4º padrão
@@ -5813,12 +5813,14 @@ class ComplianceDomainPrompt(DomainPrompt):
         params = self._mask_params(params)
 
         # 5. Audit start — concerns #5, #8, #17
-        audit = AuditCallback(
-            user_id=context.user_id or "unknown",
-            company_id=str(context.workspace_id or ""),
+        # CORREÇÃO (verificado 22/03/2026): v5 já tem AuditCallbackHandler em
+        # src/services/audit/audit_callback.py (279L) com __init__(session_id, domain_id, user_query)
+        # Reutilizar o handler existente — não criar um segundo mecanismo paralelo
+        audit = AuditCallbackHandler(
             session_id=context.session_id or "unknown",
+            domain_id=self.domain_id,
+            user_query=action_id,
         )
-        audit.on_chain_start_manual()
 
         try:
             # 6. Delegar ao domínio (lógica de negócio — sem compliance)
@@ -5833,20 +5835,12 @@ class ComplianceDomainPrompt(DomainPrompt):
                 result.metadata["compliance_confidence_alert"] = True
                 result.metadata["confidence_score"] = conf_state.get("confidence", 0.0)
 
-            # 8. Audit end
-            audit.on_chain_end_manual({
-                "action_id": action_id,
-                "success": result.success,
-                "domain": self.domain_id,
-            })
+            # 8. Audit end — finalize() persiste via get_audit_writer() + get_audit_storage_writer()
+            audit.finalize(status="completed")
             return result
 
         except Exception as e:
-            audit.on_chain_end_manual({
-                "action_id": action_id,
-                "error": str(e),
-                "domain": self.domain_id,
-            })
+            audit.finalize(status="error", error=str(e))
             raise
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -5984,23 +5978,54 @@ def check(self, user_input: str) -> InjectionCheckResult:
 
 ---
 
-##### Arquivo 3: AuditCallback
+##### Arquivo 3: AuditCallbackHandler (já existe no v5 — reutilizar)
 
 ```
-Origem LIA:  lia-agent-system/libs/audit/lia_audit/audit_callback.py (262 linhas)
-Destino v5:  src/services/compliance/audit_callback.py (novo arquivo)
+CORREÇÃO (verificado 22/03/2026):
+  NÃO copiar do LIA — o v5 já tem sua própria implementação completa:
+  Arquivo existente: src/services/audit/audit_callback.py (279 linhas)
+  Classe:            AuditCallbackHandler(BaseCallbackHandler)
 ```
 
-**O que adaptar ao copiar para o v5:**
+**Interface real do v5** (lido via GitHub API, `__init__` em L21-36):
+```python
+# código real v5 — src/services/audit/audit_callback.py, L19-35
+class AuditCallbackHandler(BaseCallbackHandler):
+
+    def __init__(
+        self,
+        session_id: str,
+        domain_id: str = "",
+        user_query: str = "",
+    ):
+        super().__init__()
+        self.execution = AuditExecution(
+            session_id=session_id,
+            domain_id=domain_id,
+            user_query=user_query[:500],
+        )
+        # ... tracking de start times para LLM/tool/chain ...
 ```
-→ AuditCallback.__init__(user_id, company_id, session_id) — manter interface
-→ Substituir import do modelo AuditRecord:
-    LIA:  from lia_models.audit_record import AuditRecord
-    v5:   from src.models.audit_record import AuditRecord  (criar ou adaptar)
-→ Substituir import do banco:
-    LIA:  from lia_models.base import Base → from src.core.database import Base
-→ on_chain_start_manual() e on_chain_end_manual() — manter sem alteração
-→ on_chain_start() e on_chain_end() (callbacks LangChain) — manter se o v5 usa LangChain
+
+**Como usar no `ComplianceDomainPrompt.execute_action()` (já corrigido em 23.11.3):**
+```python
+# CORRETO — reutilizar o handler existente
+from src.services.audit.audit_callback import AuditCallbackHandler
+
+audit = AuditCallbackHandler(
+    session_id=context.session_id or "unknown",
+    domain_id=self.domain_id,
+    user_query=action_id,
+)
+# ... executar ... 
+audit.finalize(status="completed")  # ou finalize(status="error", error=str(e))
+```
+
+**O que NÃO fazer:**
+```
+→ NÃO copiar lia_audit/audit_callback.py para o v5 — v5 já tem o seu
+→ NÃO usar AuditCallback(user_id, company_id, session_id) — assinatura LIA, não v5
+→ NÃO chamar on_chain_start_manual() / on_chain_end_manual() — não existem no handler v5
 ```
 
 ---
@@ -6108,7 +6133,7 @@ Ação:                  Ampliar com 4º padrão + tornar mask_pii() aplicável 
 
 ---
 
-#### 23.11.5 Migração dos 7 Domínios DomainPrompt
+#### 23.11.5 Migração dos 8 Domínios DomainPrompt
 
 Cada domínio segue **3 passos idênticos**. Estimativa: 1h-2h por domínio.
 
@@ -6253,17 +6278,25 @@ confirma o valor do Caminho 2 vs. Caminho 1.
 
 ---
 
-##### Domínio 7: SourcedProfile (via SourcingDomain, se existe)
+##### Domínio 7: SourcedProfileSourcingDomain
 
 ```
-Arquivo: src/domains/sourcing/domain.py (ou equivalente)
-Verificar caminho exato: git ls-files src/domains/sourcing*
+CORREÇÃO (verificado 22/03/2026):
+  Classe real: SourcedProfileSourcingDomain  (NÃO SourcingDomain)
+  Arquivo real: src/domains/sourced_profile_sourcing/domain.py (585 linhas)
+               (NÃO src/domains/sourcing/domain.py)
 ```
 
 ```
-PASSO 1: class SourcingDomain(ComplianceDomainPrompt):
-PASSO 2: renomear process_intent → _domain_process_intent
-PASSO 3: renomear execute_action → _domain_execute_action
+Arquivo: src/domains/sourced_profile_sourcing/domain.py (585L)
+Método process_intent: linha 382
+Método execute_action: linha 474
+```
+
+```
+PASSO 1: class SourcedProfileSourcingDomain(ComplianceDomainPrompt):
+PASSO 2: def _domain_process_intent(self, user_query, context):  [linha 382]
+PASSO 3: def _domain_execute_action(self, action_id, params, context):  [linha 474]
 PASSO 4: remover patches do Caminho 1 se aplicados (concerns #13 e #14)
 PASSO 5: super().__init__()
 
@@ -6273,39 +6306,67 @@ sobre bio, summary, resume_text nos params — concerns #13 e #14 resolvidos via
 
 ---
 
-#### 23.11.6 Migração Especial: Autonomous (UniversalReActAgent)
+##### Domínio 8: AutonomousDomain
 
-O `UniversalReActAgent` (src/domains/autonomous/agent.py) **não estende DomainPrompt** — ele tem sua própria interface `execute(user_query, params, context, callbacks)`. O padrão Template Method não se aplica diretamente. Existem duas opções:
-
-**Opção A — Wrapper decorador (recomendado para Caminho 2):**
 ```
-→ Criar: src/services/compliance/compliance_wrapper.py (PROPOSTA)
-→ Decorator @compliance_wrapped que aplica os 6 controles antes/depois de execute()
-→ Aplicar sobre UniversalReActAgent.execute() e AppliesReActAgent.execute()
-→ Não requer herança — funciona como middleware ad-hoc para agentes ReAct
+ADIÇÃO (verificado 22/03/2026):
+  AutonomousDomain existia mas foi omitido na versão anterior desta seção.
+  Segue o padrão DomainPrompt idêntico aos domínios 1-7.
 ```
 
-**Passo a passo para autonomous (Opção A):**
 ```
-PASSO 1: Em autonomous/agent.py, no início de execute() [linha 176]:
-     → Adicionar: safe_query = mask_pii(user_query)
-     → Adicionar: fairness_result = _fairness.check(safe_query)
-     → Adicionar: if fairness_result.is_blocked: return DomainResponse(...)
-     → Instanciar _fairness no __init__ de UniversalReActAgent: self._fairness = FairnessGuard()
-
-PASSO 2: Injection check:
-     → injection = _injection.check(safe_query)
-     → if injection.risk_level == "high": raise SecurityError(...)
-
-PASSO 3: Audit:
-     → audit = AuditCallback(user_id, company_id, session_id)
-     → audit.on_chain_start_manual()
-     → (após execução) audit.on_chain_end_manual({...})
-
-Estimativa: 3h (mais complexo que os domínios DomainPrompt por não ter herança)
+Arquivo: src/domains/autonomous/domain.py (138L)
+Classe: AutonomousDomain(DomainPrompt)  — L13
+Método process_intent: linha 62
+Método execute_action: linha 70
 ```
 
-**Opção B — Migração para Caminho 3 (longo prazo):** O autonomous é o domínio mais complexo. Se o Caminho 3 (refatoração estrutural) for planejado para 2026-2027, o autonomous pode aguardar e ser migrado diretamente para a nova arquitetura, pulando o Caminho 2.
+```
+PASSO 1: class AutonomousDomain(ComplianceDomainPrompt):
+PASSO 2: def _domain_process_intent(self, user_query, context, aggregated_stats=None):  [L62]
+         ATENÇÃO: assinatura real tem parâmetro extra aggregated_stats=None (opcional)
+         O wrapper do parent chama _domain_process_intent(user_query, context) — funciona
+         porque aggregated_stats tem valor default, então nada quebra.
+PASSO 3: def _domain_execute_action(self, action_id, params, context):  [L70]
+         (AutonomousDomain.execute_action() chama UniversalReActAgent.execute() internamente
+         — ver 23.11.6 para o tratamento especial do ReActAgent)
+PASSO 4: remover patches do Caminho 1 se aplicados
+PASSO 5: super().__init__()
+
+Estimativa: 2h (igual aos outros domínios — o wrapper é simples; complexidade está no ReActAgent)
+```
+
+---
+
+#### 23.11.6 Arquitetura Especial: AutonomousDomain + UniversalReActAgent
+
+O domínio `autonomous` tem **dois níveis** (verificado 22/03/2026):
+
+```
+src/domains/autonomous/
+├── domain.py  (138L) → AutonomousDomain(DomainPrompt)  ← migrado no Domínio 8 acima
+│   └── execute_action() chama internamente:
+└── agent.py   (895L) → UniversalReActAgent              ← NÃO estende DomainPrompt
+    └── execute(user_query, params, context, callbacks)
+```
+
+**`AutonomousDomain` (domain.py)** — migra normalmente como Domínio 8. O wrapper do `ComplianceDomainPrompt` aplica fairness + PII + audit + confidence antes e depois de `_domain_execute_action()`.
+
+**`UniversalReActAgent` (agent.py)** — é chamado **dentro** de `AutonomousDomain.execute_action()`. Como o compliance já está no wrapper do domain, o ReActAgent não precisa de compliance adicional — os checks pré e pós-execução já aconteceram na camada do domain.
+
+**Consequência importante:** O documento anterior errava ao tentar adicionar compliance diretamente no `UniversalReActAgent.execute()`. No Caminho 2, isso é desnecessário — `AutonomousDomain` já é o ponto de entrada e já recebe os wrappers via herança.
+
+**Passo a passo correto para autonomous no Caminho 2:**
+```
+PASSO 1: Migrar AutonomousDomain(DomainPrompt) → AutonomousDomain(ComplianceDomainPrompt) [domain.py L13]
+PASSO 2: Renomear process_intent → _domain_process_intent [L62]
+PASSO 3: Renomear execute_action → _domain_execute_action [L70]
+PASSO 4: Adicionar super().__init__() se há __init__ próprio no domain.py
+         (UniversalReActAgent tem seu próprio __init__ — não afeta o domain)
+PASSO 5: Sem alteração no agent.py — UniversalReActAgent fica intacto
+
+Estimativa: 2h (domain.py simples — agent.py intacto)
+```
 
 ---
 
@@ -6321,7 +6382,7 @@ SPRINT 1 (1 semana) — Build da infraestrutura de compliance
   Critério de aceite: ComplianceDomainPrompt instanciável, testes passando
   Estimativa: 8h
 
-SPRINT 2 (1 semana) — Migração dos 7 domínios DomainPrompt
+SPRINT 2 (1 semana) — Migração dos 8 domínios DomainPrompt
 ────────────────────────────────────────────────────────────
   Tarefa: Migrar EvaluationDomain (3 passos — 1.5h)
   Tarefa: Migrar AppliesDomain (3 passos — 1h)
@@ -6329,24 +6390,26 @@ SPRINT 2 (1 semana) — Migração dos 7 domínios DomainPrompt
   Tarefa: Migrar MessagingDomain (3 passos — 1h)
   Tarefa: Migrar SchedulingDomain (3 passos — 1h)
   Tarefa: Migrar JobsDomain (3 passos — 1h)
-  Tarefa: Migrar SourcingDomain (3 passos — 1h)
-  Critério de aceite: Todos os 7 domínios herdam ComplianceDomainPrompt; testes de regressão passando
-  Estimativa: 8.5h
+  Tarefa: Migrar SourcedProfileSourcingDomain (3 passos — 1h)  ← CORRIGIDO (era SourcingDomain)
+  Tarefa: Migrar AutonomousDomain [domain.py] (3 passos — 2h) ← ADICIONADO (omitido antes)
+         (UniversalReActAgent [agent.py] fica intacto — ver 23.11.6)
+  Critério de aceite: Todos os 8 domínios herdam ComplianceDomainPrompt; testes de regressão passando
+  Estimativa: 10.5h
 
-SPRINT 3 (3 dias) — Autonomous + validação completa
-─────────────────────────────────────────────────────
-  Tarefa: Migrar UniversalReActAgent (Opção A — wrapper manual) (3h)
-  Tarefa: Migrar AppliesReActAgent (Opção A — 1h)
+SPRINT 3 (3 dias) — Validação completa + testes end-to-end
+─────────────────────────────────────────────────────────────
   Tarefa: Teste end-to-end de cada domínio com queries discriminatórias/injection/PII
-  Tarefa: Validação de audit trail (verificar que todos os registros são gerados)
-  Critério de aceite: 100% dos 8 domínios cobertos; 0 regressões; audit logs gerados
+  Tarefa: Validação de audit trail (AuditCallbackHandler.finalize() — verificar logs gerados)
+  Tarefa: Validação de confidence (result.metadata["compliance_confidence_alert"])
+  Tarefa: Testes de regressão completos (pytest tests/ + integration/)
+  Critério de aceite: 100% dos 8 domínios cobertos; 0 regressões; audit logs gerados em todos
   Estimativa: ~5h
 
 TOTAIS SPRINT:
-  Sprint 1:  8h  (infraestrutura)
-  Sprint 2:  8.5h (migração 7 domínios DomainPrompt)
-  Sprint 3:  5h  (autonomous + validação)
-  TOTAL:     ~21.5h (~3 semanas de desenvolvimento)
+  Sprint 1:  8h   (infraestrutura + ComplianceDomainPrompt)
+  Sprint 2:  10.5h (migração 8 domínios DomainPrompt)
+  Sprint 3:  5h   (validação completa)
+  TOTAL:     ~23.5h (~3 semanas de desenvolvimento)
 ```
 
 ---
@@ -6373,9 +6436,9 @@ Concern #7/#12/#14/#20 (PII masking):
            precisa ser adicionado a _TEXT_FIELDS no __init__ do domínio específico
 
 Concern #5/#8/#17 (Audit):
-  REMOVER: audit = AuditCallback(...) instanciado manualmente em execute_action
-  REMOVER: audit.on_chain_start_manual() e audit.on_chain_end_manual() chamados manualmente
-  MANTER: o parent execute_action() já faz isso
+  REMOVER: audit = AuditCallbackHandler(...) instanciado manualmente em execute_action
+  REMOVER: audit.finalize() chamado manualmente — o parent execute_action() já faz isso
+  MANTER: o parent execute_action() instancia AuditCallbackHandler e chama finalize() automaticamente
 
 Concern #5/#23 (Confidence):
   REMOVER: self._confidence = ConfidenceNode() do __init__ do domínio
