@@ -40,7 +40,7 @@ Antes de qualquer código, responda:
 
 - **Primary SEMPRE preto:** `bg-gray-900 text-white` — NUNCA cyan em botões
 - **Cyan `#60BED1`:** apenas brain icon LIA e badges LIA
-- **Border radius:** `rounded-md` (8px) padrão universal — botões/inputs/cards/modais
+- **Border radius:** `rounded-md` (8px) padrão universal — botões/inputs/cards/modais de interface interna. Exceção única: `rounded-2xl` no card principal de **telas de entrada** (login/onboarding) — proibido em qualquer componente de interface interna
 - **Sem hex hardcoded:** usar Tailwind grays ou tokens `wedo-*`
 - **Dark mode obrigatório** em todos os componentes
 - **Sem `box-shadow`** — bordas substituem sombras para separação visual
@@ -141,7 +141,8 @@ grep -L "dark:" [ARQUIVOS] --include="*.tsx"
 - [ ] (novas telas) PASSO 0: intenção estética respondida antes de codificar
 - [ ] Botões: primary preto, cyan apenas ícones LIA
 - [ ] Inputs: labels com htmlFor, focus ring grayscale
-- [ ] Cards: rounded-md, shadow-sm — rounded-2xl apenas em telas de entrada
+- [ ] Cards internos: rounded-md, shadow-sm, sem gradientes, sem glassmorphism
+- [ ] (telas de entrada apenas) Card principal: rounded-2xl, shadow-2xl, glassmorphism permitido
 - [ ] Tipografia: Open Sans 60%, Inter 40%
 - [ ] Dark mode: variantes `dark:` em todos os elementos
 - [ ] Acessibilidade: ARIA labels, focus rings, contraste AA
