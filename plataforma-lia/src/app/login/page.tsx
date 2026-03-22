@@ -67,16 +67,14 @@ export default function LoginPage() {
 
       {/* Left Section - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative px-12 py-10 flex-col z-10">
-        <div className="mb-auto">
-          <Image
-            src="/logos/wedo-logo-transparent.png"
-            alt="WeDo Talent"
-            width={160}
-            height={50}
-            style={{ width: "auto", height: "auto" }}
-            priority
-          />
-        </div>
+        <Image
+          src="/logos/wedo-logo-transparent.png"
+          alt="WeDo Talent"
+          width={120}
+          height={38}
+          style={{ width: "120px", height: "auto", maxWidth: "120px" }}
+          priority
+        />
 
         <div className="flex-1 flex flex-col justify-center pr-8">
           <h1 className="text-4xl text-gray-950 font-light mb-4 leading-tight font-['Open_Sans',sans-serif]">
@@ -85,7 +83,7 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        <div className="text-gray-700 text-xs space-y-1 mt-auto">
+        <div className="text-gray-700 text-xs space-y-1">
           <p>
             A WeDo Talent é uma HRTech Brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
           </p>
