@@ -116,7 +116,7 @@ export default function LoginPage() {
           </div>
 
           {/* Header */}
-          <div className="mb-6">
+          <div className="mb-6 text-center">
             <h2 className="text-xl font-semibold text-gray-950 mb-1">
               Entrar na plataforma
             </h2>
@@ -270,14 +270,6 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* Footer Links */}
-          <div className="mt-6 flex justify-center gap-4 text-xs text-gray-400">
-            <button className="hover:text-gray-600 transition-colors">Privacidade</button>
-            <span>•</span>
-            <button className="hover:text-gray-600 transition-colors">Termos</button>
-            <span>•</span>
-            <button className="hover:text-gray-600 transition-colors">Suporte</button>
-          </div>
         </div>
       </div>
     </div>
