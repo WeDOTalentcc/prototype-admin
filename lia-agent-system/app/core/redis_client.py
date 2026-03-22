@@ -40,7 +40,12 @@ async def get_redis_connection():
     try:
         import redis.asyncio as aioredis
         from app.core.config import settings
-        return await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+        return await aioredis.from_url(
+            settings.REDIS_URL,
+            decode_responses=True,
+            socket_connect_timeout=0.5,
+            socket_timeout=0.5,
+        )
     except Exception:
         try:
             import aioredis as _aioredis  # type: ignore[import]

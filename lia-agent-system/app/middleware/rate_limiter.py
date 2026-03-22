@@ -16,6 +16,8 @@ import time
 
 logger = logging.getLogger(__name__)
 
+_REDIS_RETRY_COOLDOWN_SECONDS = 30  # só tenta reconectar a cada 30s
+
 
 class RateLimiter:
     """
@@ -37,6 +39,7 @@ class RateLimiter:
         self._redis = None
         self._redis_available = False
         self._redis_lock = asyncio.Lock()
+        self._redis_last_attempt: float = 0.0  # timestamp da última tentativa de conexão
         # Fallback in-memory state (used only when Redis is down)
         self._fallback_user_requests: Dict[str, List[datetime]] = {}
         self._fallback_company_requests: Dict[str, List[datetime]] = {}
@@ -45,16 +48,34 @@ class RateLimiter:
         self._fallback_lock = asyncio.Lock()
 
     async def _get_redis(self):
-        """Lazily initialise Redis connection."""
+        """Lazily initialise Redis connection with cooldown to avoid hammering unavailable Redis."""
         if self._redis is not None:
             return self._redis
+
+        # Cooldown: não tenta reconectar se falhou recentemente
+        now = time.monotonic()
+        if not self._redis_available and (now - self._redis_last_attempt) < _REDIS_RETRY_COOLDOWN_SECONDS:
+            return None
+
         async with self._redis_lock:
             if self._redis is not None:
                 return self._redis
+            # Double-check cooldown dentro do lock
+            now = time.monotonic()
+            if not self._redis_available and (now - self._redis_last_attempt) < _REDIS_RETRY_COOLDOWN_SECONDS:
+                return None
+
+            self._redis_last_attempt = now
             try:
                 import redis.asyncio as aioredis
                 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-                client = aioredis.from_url(redis_url, encoding="utf-8", decode_responses=True)
+                client = aioredis.from_url(
+                    redis_url,
+                    encoding="utf-8",
+                    decode_responses=True,
+                    socket_connect_timeout=0.5,  # falha rápida se Redis indisponível
+                    socket_timeout=0.5,
+                )
                 await client.ping()
                 self._redis = client
                 self._redis_available = True
