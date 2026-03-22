@@ -2876,6 +2876,965 @@ Esta seção atualiza a tabela da seção 5 com as 12 novas dimensões descobert
 
 ---
 
+## 23. Diagnóstico Raiz: Autocontido por Domínio vs. Compliance-by-Design
+
+> **Esta seção é o diagnóstico arquitetural definitivo.** As seções anteriores catalogaram o que existe e o que falta. Esta seção explica **por que** as lacunas existem e **como corrigi-las de forma estrutural** — não apenas como patches ad-hoc por domínio.
+
+---
+
+### 23.1 O Problema Real: Cada Domínio Reinventa a Roda
+
+O v5 foi construído com um paradigma implícito: **compliance-by-discipline** — cada equipe de domínio é responsável por adicionar fairness, PII, audit e guardrails ao seu próprio código. O resultado observado após leitura direta de 8 domínios é:
+
+```
+Domínio          fairness  pii_masking  audit  guardrails  bias_audit  confidence  fact_check  policy
+────────────────────────────────────────────────────────────────────────────────────────────────────
+jobs              ✅         ❌           ❌      ❌           ❌           ❌          ❌           ❌
+applies           ❌         ❌           ❌      ❌           ❌           ❌          ❌           ❌
+evaluation        ❌         ❌           ❌      ❌           ❌           ❌          ❌           ❌
+scheduling        ❌         ❌           ❌      ❌           ❌           ❌          ❌           ❌
+sourced_profile   ✅         ❌           ❌      ❌           ❌           ❌          ✅           ❌
+insights          ❌         ❌           ❌      ❌           ❌           ❌          ❌           ❌
+messaging         ❌         ❌           ❌      ❌           ❌           ❌          ❌           ❌
+autonomous        ❌         ❌           ❌      ❌           ❌           ❌          ❌           ❌
+────────────────────────────────────────────────────────────────────────────────────────────────────
+Cobertura        2/8        0/8          0/8     0/8          0/8          0/8         1/8         0/8
+```
+
+**O padrão não é falha individual — é falha arquitetural.** Quando a disciplina é o único mecanismo de garantia, qualquer pressão de prazo ou rotatividade de time produz exatamente esse resultado: cobertura heterogênea e impossível de auditar.
+
+A LIA adota o paradigma inverso: **compliance-by-design** — a herança de `EnhancedAgentMixin` injeta fairness, PII, audit, confidence e guardrails em qualquer agente novo. O desenvolvedor precisaria remover ativamente essa herança para criar um agente sem compliance.
+
+```
+LIA — PipelineTransitionAgent (exemplo)
+
+class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
+#                             ─────────────────  ───────────────────
+#                             └── LangGraph          └── FairnessGuard
+#                                 checkpoints            PII masking (pré-LLM)
+#                                 streaming_cb           AuditCallback (auto)
+#                                 timed_node             GuardrailRepository
+#                                 react_loop             ConfidenceNode
+#                                                        HiringPolicy inject
+#                                                        BiasAuditSnapshot
+#                                                        FactChecker
+#                                                        LearningLoop
+
+    def __init__(self):
+        super().__init__()
+        self._setup_enhanced(domain="pipeline_transition")
+        # ↑ 1 linha — injeta TODOS os concerns acima automaticamente
+```
+
+O custo de criar um agente LIA com compliance completo é **1 linha de herança + 1 linha de `_setup_enhanced()`**. O custo no v5 é implementar cada concern manualmente em cada domínio.
+
+---
+
+### 23.2 Por Que "Autocontido" Dificulta Produção e Replicação
+
+O problema do v5 não é apenas compliance — é **replicabilidade arquitetural**. Quando cada domínio é autocontido:
+
+**1. Problema de Produção: Inconsistência de Comportamento**
+
+```
+Cenário real (verificado pelos dados da seção anterior):
+
+Recrutador digita: "Só quero candidatas mulheres para essa vaga"
+                                    ↑ discriminatório (gênero)
+
+→ Domínio jobs:         FairnessGuard ✅ — mensagem bloqueada
+→ Domínio evaluation:   FairnessGuard ❌ — avaliação continua com viés
+→ Domínio autonomous:   FairnessGuard ❌ — ação autônoma executada
+
+Resultado: O mesmo critério discriminatório bloqueia em 1 domínio e
+passa em 7. O produto não tem comportamento coerente.
+```
+
+**2. Problema de Replicação: Novo Domínio = Novo Risco**
+
+```python
+# Desenvolvedor cria src/domains/interviews/domain.py:
+
+class InterviewsDomain(DomainPrompt):
+    domain_id = "interviews"
+
+    async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
+        # Lógica de entrevistas...
+        return await self._llm_classify_intent(query, context)
+
+    async def execute_action(self, action_id: str, params, context) -> DomainResponse:
+        handler = self._get_handler(action_id)
+        return await handler(params, context)
+```
+
+Este domínio nasce sem fairness, sem PII masking, sem audit trail, sem guardrails.
+Não há nada na arquitetura que force a adição — apenas a memória do desenvolvedor.
+
+Na LIA, o mesmo domínio herdaria tudo automaticamente:
+
+```python
+# LIA — lia-agent-system/app/domains/interviews/agents/interview_agent.py
+
+class InterviewsAgent(LangGraphReActBase, EnhancedAgentMixin):
+    def __init__(self):
+        super().__init__()
+        self._setup_enhanced(domain="interviews")
+        # FairnessGuard, PII, Audit, Confidence, Guardrails: automáticos
+```
+
+**3. Problema de Informações Compartilhadas: Duplicação ou Divergência**
+
+O v5 tem `memory.py` em 5 dos 8 domínios. Cada `memory.py` é uma implementação independente que pode ter bugs diferentes, configurações diferentes e comportamentos diferentes para o mesmo conceito. Quando a LIA atualiza `WorkingMemoryService`, todos os domínios herdam a correção simultaneamente.
+
+---
+
+### 23.3 Os 23 Concerns Classificados por Risco
+
+A tabela a seguir classifica cada concern identificado nas seções anteriores pela **severidade do risco para produção**, com foco nos domínios `evaluation` e `autonomous` que foram identificados como os mais críticos.
+
+**Legenda de severidade:**
+- 🔴 **CRÍTICO** — Falha que gera responsabilidade legal ou financeira direta
+- 🟠 **ALTO** — Falha que compromete qualidade do produto ou cria risco regulatório
+- 🟡 **MÉDIO-ALTO** — Falha que reduz confiança ou pode escalar para risco regulatório
+- 🟢 **MÉDIO** — Gap de funcionalidade sem risco imediato
+
+```
+#   Concern                        Severidade  Domínio Primário     Lei/Norma Violada
+──────────────────────────────────────────────────────────────────────────────────────
+C01 FairnessGuard ausente          🔴 CRÍTICO   evaluation           CLT Art.5, Lei 9.029
+C02 BiasAuditSnapshot ausente      🔴 CRÍTICO   evaluation, applies  EU AI Act Art.9
+C03 PII masking pré-LLM ausente    🔴 CRÍTICO   todos (8/8)          LGPD Art.12, 46
+C04 Audit trail opt-in             🔴 CRÍTICO   todos (8/8)          SOX, BCB-498
+C05 Audit trail mutável            🔴 CRÍTICO   todos (8/8)          SOX, BCB-498
+C06 Retenção 90d (SOX = 7 anos)    🔴 CRÍTICO   todos (8/8)          SOX, BCB-498
+C07 GuardrailRepository ausente    🔴 CRÍTICO   autonomous           Ética em IA
+C08 PromptInjectionGuard ausente   🔴 CRÍTICO   autonomous, applies  Segurança
+──────────────────────────────────────────────────────────────────────────────────────
+C09 ConfidenceNode ausente         🟠 ALTO      evaluation           Transparência IA
+C10 HiringPolicy ausente           🟠 ALTO      todos (8/8)          Multi-tenant
+C11 FactChecker ausente            🟠 ALTO      evaluation (scores)  Precisão factual
+C12 LearningLoop sem fairness gate 🟠 ALTO      todos (8/8)          F1-02 WeDO
+──────────────────────────────────────────────────────────────────────────────────────
+C13 Persona hardcoded              🟡 MED-ALTO  autonomous           Manutenção
+C14 Anti-sycophancy ausente        🟡 MED-ALTO  evaluation           Qualidade LLM
+C15 AuditCallback sem cost_usd     🟡 MED-ALTO  todos (8/8)          Governança custo
+    (v5 TEM — LIA é que falta)
+C16 Criptografia audit ausente     🟡 MED-ALTO  todos (8/8)          ISO 27001
+C17 Circuit breaker por domínio    🟡 MED-ALTO  todos (8/8)          Resiliência
+C18 Semantic cache desabilitado    🟡 MED-ALTO  todos (8/8)          Performance
+    (SEMANTIC_CACHE_ENABLED=false)
+──────────────────────────────────────────────────────────────────────────────────────
+C19 Memory inconsistente (5/8)     🟢 MÉDIO     scheduling, eval     Coerência UX
+C20 Cache inconsistente (6/8)      🟢 MÉDIO     eval, autonomous     Performance
+C21 HARD_BUDGET sem fairness check 🟢 MÉDIO     autonomous           Governança
+C22 DLQ ausente por domínio        🟢 MÉDIO     todos (8/8)          Resiliência async
+C23 Checkpointer global não usado  🟢 MÉDIO     jobs, applies, msg   Continuidade
+──────────────────────────────────────────────────────────────────────────────────────
+```
+
+---
+
+### 23.4 Templates v5 Anotados — Pontos Exatos de Inserção
+
+Esta seção mostra os arquivos v5 reais com marcações de **onde exatamente** cada concern deve ser adicionado. São os pontos mínimos para produção.
+
+---
+
+#### Template A: `src/domains/base.py` — DomainPrompt Base
+
+O `DomainPrompt` é a classe base de todos os 8 domínios. Adicionar guards aqui resolve C01, C03, C04, C08 **de uma vez para todos os domínios**:
+
+```python
+# src/domains/base.py — VERSÃO ATUAL (v5, resumida)
+from abc import ABC, abstractmethod
+from typing import List, Dict, Any, Optional
+
+class DomainPrompt(ABC):
+    domain_id: str = ""
+    domain_name: str = ""
+
+    @abstractmethod
+    def get_allowed_actions(self) -> List: ...
+
+    @abstractmethod
+    def get_system_prompt(self) -> str: ...
+
+    @abstractmethod
+    async def process_intent(self, query: str, context) -> Any: ...
+
+    @abstractmethod
+    async def execute_action(self, action_id: str, params: Dict[str, Any], context) -> Any: ...
+
+    def get_capabilities(self) -> List[str]:
+        return []
+```
+
+```python
+# src/domains/base.py — VERSÃO COM COMPLIANCE (copy/paste direto)
+# Altera apenas a classe base — todos os 8 domínios herdam automaticamente
+
+from abc import ABC, abstractmethod
+from typing import List, Dict, Any, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class DomainPrompt(ABC):
+    domain_id: str = ""
+    domain_name: str = ""
+
+    @abstractmethod
+    def get_allowed_actions(self) -> List: ...
+
+    @abstractmethod
+    def get_system_prompt(self) -> str: ...
+
+    @abstractmethod
+    async def _process_intent_impl(self, query: str, context) -> Any: ...
+    # ↑ MUDANÇA: renomear process_intent para _process_intent_impl
+    #   O método público process_intent agora é o wrapper com guards
+
+    @abstractmethod
+    async def _execute_action_impl(self, action_id: str, params: Dict[str, Any], context) -> Any: ...
+    # ↑ MUDANÇA: renomear execute_action para _execute_action_impl
+
+    def get_capabilities(self) -> List[str]:
+        return []
+
+    # ── INSERÇÃO C01: FairnessGuard wrapper ──────────────────────────────────
+    async def process_intent(self, query: str, context) -> Any:
+        """Wrapper público com FairnessGuard pré-LLM.
+
+        Refs: LIA pipeline_transition_agent.py L155-195 (código verificado)
+        Resolve: C01 (fairness), C08 (prompt injection)
+        """
+        # C08 — PromptInjectionGuard
+        try:
+            from src.shared.security import PromptInjectionGuard  # ← ajustar import
+            inj_result = PromptInjectionGuard().check(query)
+            if inj_result.is_suspicious and inj_result.risk_level == "high":
+                logger.warning(
+                    "[%s][SEC] PromptInjection bloqueado patterns=%s",
+                    self.domain_id, inj_result.matched_patterns,
+                )
+                return self._build_error_response("Entrada inválida detectada.")
+        except ImportError:
+            pass  # ← REMOVER após integrar shared.security
+
+        # C01 — FairnessGuard (pré-LLM, antes de qualquer processamento)
+        try:
+            from src.services.fairness_checker import FairnessChecker  # ← ajustar import
+            fg_result = FairnessChecker().check(query)
+            if fg_result.is_blocked:
+                logger.warning(
+                    "[%s][FAIR] Bloqueado category=%s", self.domain_id, fg_result.category
+                )
+                return self._build_error_response(
+                    fg_result.educational_message or
+                    "Esta solicitação não pode ser processada — critério discriminatório detectado."
+                )
+        except ImportError:
+            pass  # ← REMOVER após integrar fairness_checker
+
+        # C03 — PII masking no query (antes de logar ou repassar ao LLM)
+        try:
+            from src.services.pii_filter import mask_pii
+            safe_query = mask_pii(query)
+        except ImportError:
+            safe_query = query  # ← REMOVER após integrar pii_filter
+
+        return await self._process_intent_impl(safe_query, context)
+
+    # ── INSERÇÃO C04: AuditCallback wrapper ──────────────────────────────────
+    async def execute_action(self, action_id: str, params: Dict[str, Any], context) -> Any:
+        """Wrapper público com AuditCallback automático.
+
+        Refs: LIA libs/audit/lia_audit/audit_callback.py (263 linhas, código verificado)
+        Resolve: C04 (audit automático), C05 (imutabilidade — via ON CONFLICT DO NOTHING)
+        """
+        from datetime import datetime, timezone
+        start_ts = datetime.now(timezone.utc)
+
+        try:
+            result = await self._execute_action_impl(action_id, params, context)
+            self._emit_audit_event(action_id, params, context, result, start_ts, error=None)
+            return result
+        except Exception as exc:
+            self._emit_audit_event(action_id, params, context, None, start_ts, error=str(exc))
+            raise
+
+    def _emit_audit_event(self, action_id, params, context, result, start_ts, error):
+        """Persiste evento de auditoria. Fail-safe — nunca bloqueia o fluxo."""
+        try:
+            from src.services.audit.audit_callback import AuditCallbackHandler
+            from datetime import datetime, timezone
+            latency_ms = (datetime.now(timezone.utc) - start_ts).total_seconds() * 1000
+            cb = AuditCallbackHandler(
+                user_id=getattr(context, "user_id", "unknown"),
+                company_id=getattr(context, "tenant_id", "unknown"),
+                session_id=getattr(context, "session_id", "unknown"),
+                domain=self.domain_id,
+            )
+            cb.on_domain_action(
+                action_id=action_id,
+                params_preview=str(params)[:200],
+                success=error is None,
+                error=error,
+                latency_ms=latency_ms,
+            )
+            cb.finalize()  # ← persistência explícita garantida pelo wrapper
+        except Exception as audit_exc:
+            logger.debug("[%s][AUDIT] Falha ao emitir evento (fail-safe): %s", self.domain_id, audit_exc)
+
+    def _build_error_response(self, message: str):
+        """Retorna resposta de erro padronizada. Cada domínio pode sobrescrever."""
+        try:
+            from src.domains.base import DomainResponse
+            return DomainResponse(success=False, message=message)
+        except Exception:
+            return {"success": False, "message": message}
+```
+
+**Impacto:** 1 arquivo alterado → 8 domínios cobertos. FairnessGuard, PromptInjectionGuard, PII masking e AuditCallback passam a ser automáticos para qualquer domínio existente ou futuro.
+
+**Custo de implementação:** ~2h (refatorar nomes de método em 8 `domain.py` de `process_intent` → `_process_intent_impl`).
+
+---
+
+#### Template B: `src/domains/evaluation/domain.py` — Domínio de Alto Risco
+
+O domínio de avaliação é o mais crítico (C01 + C02 + C09 + C11). Com o Template A aplicado, restam C02 (BiasAudit) e C09 (ConfidenceNode) específicos do fluxo de avaliação:
+
+```python
+# src/domains/evaluation/domain.py — VERSÃO ATUAL (resumida, verificada)
+class EvaluationDomain(DomainPrompt):
+    domain_id = "evaluation"
+
+    async def _evaluate_via_graph(self, params, context) -> DomainResponse:
+        result = await self._graph.ainvoke(
+            {"candidate_id": params["candidate_id"], ...},
+            config={"configurable": {"thread_id": context.session_id}},
+        )
+        return DomainResponse(success=True, data=result)
+```
+
+```python
+# src/domains/evaluation/domain.py — COM COMPLIANCE (C02 + C09)
+
+class EvaluationDomain(DomainPrompt):
+    domain_id = "evaluation"
+
+    async def _evaluate_via_graph(self, params, context) -> DomainResponse:
+        result = await self._graph.ainvoke(
+            {"candidate_id": params["candidate_id"], ...},
+            config={"configurable": {"thread_id": context.session_id}},
+        )
+
+        # ── INSERÇÃO C09: ConfidenceNode pós-graph ──────────────────────────
+        # Refs: LIA libs/agents-core/lia_agents_core/confidence.py (89 linhas)
+        # compute_confidence() retorna float [0.0, 1.0]
+        final_recommendation = result.get("final_recommendation", "")
+        confidence = self._compute_confidence(result)
+        result["confidence"] = confidence
+
+        if confidence < 0.5:
+            # Resposta de baixa confiança — sinalizar para revisão humana
+            result["requires_human_review"] = True
+            result["review_reason"] = f"Confiança abaixo do limiar ({confidence:.2f} < 0.50)"
+
+        # ── INSERÇÃO C02: BiasAuditSnapshot pós-avaliação ───────────────────
+        # Refs: LIA libs/models/lia_models/bias_audit_snapshot.py (54 linhas)
+        # Regra 4/5: proporção de seleção de grupos protegidos >= 0.8
+        try:
+            await self._record_bias_snapshot(
+                candidate_id=params["candidate_id"],
+                job_id=params.get("job_id"),
+                recommendation=final_recommendation,
+                confidence=confidence,
+                context=context,
+            )
+        except Exception as e:
+            logger.warning("[evaluation][BIAS] Snapshot falhou (fail-safe): %s", e)
+
+        return DomainResponse(success=True, data=result)
+
+    def _compute_confidence(self, result: dict) -> float:
+        """Heurística de confiança para resultados de avaliação.
+
+        Baseado em: LIA confidence.py compute_confidence() (código verificado)
+        """
+        raw_scores = result.get("raw_scores", {})
+        reasoning = result.get("reasoning", [])
+
+        if not raw_scores:
+            return 0.3  # sem scores = baixa confiança
+
+        score_values = [v for v in raw_scores.values() if isinstance(v, (int, float))]
+        if not score_values:
+            return 0.3
+
+        avg_score = sum(score_values) / len(score_values)
+        has_reasoning = len(reasoning) > 0
+
+        if avg_score >= 0.7 and has_reasoning:
+            return 0.88
+        elif avg_score >= 0.5:
+            return 0.72
+        elif avg_score >= 0.3:
+            return 0.55
+        return 0.35
+
+    async def _record_bias_snapshot(self, candidate_id, job_id, recommendation, confidence, context):
+        """Registra snapshot para análise de viés histórico.
+
+        Baseado em: LIA tests/fairness/test_four_fifths_rule.py (273 linhas, verificado)
+        Implementar com tabela bias_audit_snapshots no PostgreSQL.
+
+        Estrutura mínima da tabela:
+          CREATE TABLE bias_audit_snapshots (
+              id           SERIAL PRIMARY KEY,
+              domain       VARCHAR(50) NOT NULL DEFAULT 'evaluation',
+              candidate_id VARCHAR(36) NOT NULL,
+              job_id       VARCHAR(36),
+              company_id   VARCHAR(36),
+              recommendation VARCHAR(50),  -- 'approved' | 'rejected' | 'review'
+              confidence   FLOAT,
+              created_at   TIMESTAMPTZ DEFAULT NOW()
+          );
+        """
+        # TODO: implementar persistência — por enquanto apenas log
+        logger.info(
+            "[evaluation][BIAS_AUDIT] candidate=%s job=%s recommendation=%s confidence=%.2f",
+            candidate_id, job_id, recommendation, confidence,
+        )
+```
+
+---
+
+#### Template C: `src/domains/autonomous/agent.py` — Agente com Budget Hard
+
+O `autonomous` é o mais perigoso porque tem `GLOBAL_TIMEOUT=180s` e `HARD_BUDGET=50` mas sem guards éticos. C07 (GuardrailRepository) e C21 (HARD_BUDGET sem fairness) são os críticos:
+
+```python
+# src/domains/autonomous/agent.py — VERSÃO ATUAL (constantes verificadas)
+GLOBAL_TIMEOUT = 180  # segundos
+HARD_BUDGET = 50      # máximo de tool calls
+```
+
+```python
+# src/domains/autonomous/agent.py — COM COMPLIANCE (C07 + C08 + C21)
+
+GLOBAL_TIMEOUT = 180
+HARD_BUDGET = 50
+
+# ── INSERÇÃO C07: Guardrails via repositório ─────────────────────────────────
+# Refs: LIA app/shared/compliance/guardrail_repository.py (185 linhas, verificado)
+# GuardrailRepository.get_active(db, domain, company_id) → List[Guardrail]
+# Guardrails são persistidos em PostgreSQL — editáveis em produção sem re-deploy
+
+async def _check_guardrails_before_execution(
+    self,
+    user_query: str,
+    context,
+    db,
+) -> Optional[str]:
+    """Verifica guardrails ativos antes de qualquer execução autônoma.
+
+    Retorna mensagem de bloqueio se violado, None se pode prosseguir.
+
+    Refs: LIA guardrail_repository.py (código verificado):
+      GuardrailRepository.get_active(db, domain='autonomous', company_id=...)
+      Prioridade: primários globais → primários tenant → secundários globais → secundários tenant
+    """
+    try:
+        from src.services.guardrail_service import get_active_guardrails  # ← criar este serviço
+        guardrails = await get_active_guardrails(
+            domain="autonomous",
+            company_id=getattr(context, "tenant_id", None),
+        )
+        for guardrail in guardrails:
+            import re
+            if re.search(guardrail.rule, user_query, re.IGNORECASE):
+                logger.warning(
+                    "[autonomous][GUARDRAIL] Bloqueado rule_id=%s level=%s",
+                    guardrail.id, guardrail.level,
+                )
+                return guardrail.blocking_message
+    except Exception as e:
+        logger.warning("[autonomous][GUARDRAIL] Verificação falhou (fail-safe): %s", e)
+    return None
+
+
+# ── INSERÇÃO C21: HARD_BUDGET com fairness check por tool call ───────────────
+# No loop de execução de tool calls, antes de cada call:
+
+async def _execute_with_budget(self, tool_name: str, tool_args: dict, context, budget_tracker: dict):
+    """Executa tool call com verificação de budget E fairness.
+
+    Resolve C21: HARD_BUDGET sem verificação de fairness por tool.
+    """
+    if budget_tracker["calls"] >= HARD_BUDGET:
+        raise BudgetExceededError(f"HARD_BUDGET de {HARD_BUDGET} tool calls atingido")
+
+    # C01 nos args da tool — verificar se argumentos têm critérios discriminatórios
+    tool_args_str = str(tool_args)
+    try:
+        from src.services.fairness_checker import FairnessChecker
+        fg_result = FairnessChecker().check(tool_args_str)
+        if fg_result.is_blocked:
+            logger.warning(
+                "[autonomous][FAIR][tool=%s] Critério discriminatório nos args: %s",
+                tool_name, fg_result.category,
+            )
+            raise FairnessViolationError(fg_result.educational_message)
+    except ImportError:
+        pass  # ← REMOVER após integrar fairness_checker
+
+    budget_tracker["calls"] += 1
+    return await self._invoke_tool(tool_name, tool_args, context)
+```
+
+---
+
+#### Template D: `src/domains/applies/react_agent.py` — LangGraph sem Security
+
+O `applies` tem LangGraph completo mas sem nenhum guard. O `call_tools` é o ponto crítico:
+
+```python
+# src/domains/applies/react_agent.py — VERSÃO ATUAL (verificada)
+def call_tools(state: ReactState) -> ReactState:
+    last_message = state["messages"][-1]
+    tool_messages = []
+    for tc in last_message.tool_calls:
+        try:
+            invocation = ToolInvocation(tool=tc["name"], tool_input=tc["args"])
+            result = tool_executor.invoke(invocation)
+            tracking["tools_used"].append(tc["name"])
+        except Exception as e:
+            result = json.dumps({"success": False, "error": str(e)})
+        tool_messages.append(ToolMessage(content=str(result), tool_call_id=tc["id"]))
+    return {"messages": tool_messages, "iteration_count": state["iteration_count"]}
+```
+
+```python
+# src/domains/applies/react_agent.py — COM COMPLIANCE (C01, C03, C08)
+
+def call_tools(state: ReactState) -> ReactState:
+    last_message = state["messages"][-1]
+    tool_messages = []
+
+    for tc in last_message.tool_calls:
+        tool_name = tc["name"]
+        tool_args = tc["args"]
+
+        # ── INSERÇÃO C08: verificar args de cada tool call ───────────────────
+        # Previne injeção via tool_args que seria executada sem check adicional
+        tool_args_str = str(tool_args)
+        try:
+            from src.services.security import sanitize_tool_input  # ← criar
+            tool_args = sanitize_tool_input(tool_args)
+        except ImportError:
+            pass  # ← REMOVER após integrar
+
+        # ── INSERÇÃO C01: fairness nos critérios de filtragem de candidatos ──
+        # applies processa candidaturas — filtros discriminatórios são risco direto
+        if tool_name in ("filter_applications", "rank_candidates", "search_candidates"):
+            try:
+                from src.services.fairness_checker import FairnessChecker
+                fg_result = FairnessChecker().check(tool_args_str)
+                if fg_result.is_blocked:
+                    result = json.dumps({
+                        "success": False,
+                        "error": "Critério discriminatório detectado",
+                        "message": fg_result.educational_message,
+                    })
+                    tool_messages.append(ToolMessage(content=result, tool_call_id=tc["id"]))
+                    tracking["fairness_blocked"] = True
+                    continue  # ← pular execução da tool
+            except ImportError:
+                pass  # ← REMOVER após integrar
+
+        try:
+            invocation = ToolInvocation(tool=tool_name, tool_input=tool_args)
+            result = tool_executor.invoke(invocation)
+            tracking["tools_used"].append(tool_name)
+        except Exception as e:
+            result = json.dumps({"success": False, "error": str(e)})
+        tool_messages.append(ToolMessage(content=str(result), tool_call_id=tc["id"]))
+
+    return {"messages": tool_messages, "iteration_count": state["iteration_count"]}
+```
+
+---
+
+#### Template E: `src/services/pii_filter.py` — Expansão Pré-LLM
+
+O v5 tem `pii_filter.py` apenas para logging (3 padrões regex). Precisa de expansão para aplicar **pré-envio ao LLM** (C03):
+
+```python
+# src/services/pii_filter.py — VERSÃO ATUAL v5 (verificada, 983 bytes)
+import re, logging
+
+_CPF = re.compile(r'\d{3}\.?\d{3}\.?\d{3}-?\d{2}')
+_EMAIL = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
+_PHONE = re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)(?:9\s?)?\d{4}-?\d{4}')
+
+class PIIMaskingFilter(logging.Filter):
+    def filter(self, record):
+        record.msg = self.mask_pii(str(record.msg))
+        return True
+
+    def mask_pii(self, text: str) -> str:
+        text = _CPF.sub('[CPF]', text)
+        text = _EMAIL.sub('[EMAIL]', text)
+        text = _PHONE.sub('[PHONE]', text)
+        return text
+```
+
+```python
+# src/services/pii_filter.py — VERSÃO EXPANDIDA (copy/paste direto)
+# Adiciona strip_pii_for_llm_prompt() — 4 camadas pré-LLM
+# Refs: LIA app/shared/pii_masking.py (221 linhas, verificado)
+
+import re
+import logging
+import os
+from typing import List, Tuple, Pattern
+
+# ── Camada 1: Direct identifiers ─────────────────────────────────────────────
+_CPF = re.compile(r'\d{3}\.?\d{3}\.?\d{3}-?\d{2}')
+_EMAIL = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
+_PHONE = re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)(?:9\s?)?\d{4}-?\d{4}')
+_RG = re.compile(r'\b\d{1,2}[\.\-]?\d{3}[\.\-]?\d{3}[\-]?[0-9Xx]\b')
+_CNPJ = re.compile(r'\b\d{2}[\.\-]?\d{3}[\.\-]?\d{3}[/\\]?\d{4}[\-]?\d{2}\b')
+
+# ── Camada 3: Quasi-identifiers ───────────────────────────────────────────────
+# Refs: LIA pii_masking.py L95-121 (código verificado)
+_GRADUATION_YEAR = re.compile(
+    r'\b(?:formad[oa]|graduad[oa]|formatura|conclu[ií][u]|bacharelad[oa]|pós[\-\s]graduad[oa])'
+    r'(?:\s+em)?\s+(?:em\s+)?\d{4}\b',
+    re.IGNORECASE,
+)
+_AGE_EXPLICIT = re.compile(r'\b(\d{2})\s*anos?\b', re.IGNORECASE)
+_ADDRESS = re.compile(
+    r'\b(?:moro|resido|residente|moradora?|endere[çc]o|bairro|cep|rua|avenida|av\.|r\.)\b[^.]{0,60}',
+    re.IGNORECASE,
+)
+
+_LLM_PATTERNS: List[Tuple[Pattern, str]] = [
+    (_CPF, "[CPF REMOVIDO]"),
+    (_EMAIL, "[EMAIL REMOVIDO]"),
+    (_PHONE, "[TELEFONE REMOVIDO]"),
+    (_RG, "[RG REMOVIDO]"),
+    (_CNPJ, "[CNPJ REMOVIDO]"),
+    (_GRADUATION_YEAR, "[ANO_FORMATURA REMOVIDO]"),
+    (_AGE_EXPLICIT, "[IDADE REMOVIDA]"),
+    (_ADDRESS, "[ENDEREÇO REMOVIDO]"),
+]
+
+_LLM_PII_ENABLED = os.environ.get("LLM_PROMPT_PII_STRIPPING_ENABLED", "true").lower() == "true"
+
+
+def strip_pii_for_llm_prompt(text: str) -> str:
+    """Remove PII antes de enviar ao LLM — 4 camadas.
+
+    LGPD Art. 12 (minimização) + EU AI Act Art. 13 (transparência).
+    Refs: LIA app/shared/pii_masking.py strip_pii_for_llm_prompt() (verificado)
+
+    Layer 1: Direct identifiers (CPF, email, telefone, RG, CNPJ)
+    Layer 3: Quasi-identifiers (ano formatura, idade, endereço)
+    Layer 4: Presidio NER — opt-in via LLM_PROMPT_PRESIDIO_ENABLED=true
+    """
+    if not _LLM_PII_ENABLED or not text:
+        return text
+    result = text
+    for pattern, replacement in _LLM_PATTERNS:
+        result = pattern.sub(replacement, result)
+    return _presidio_layer4(result)
+
+
+def _presidio_layer4(text: str) -> str:
+    """NER Presidio — fail-safe, opt-in."""
+    if os.environ.get("LLM_PROMPT_PRESIDIO_ENABLED", "false").lower() != "true":
+        return text
+    try:
+        from presidio_analyzer import AnalyzerEngine
+        analyzer = AnalyzerEngine()
+        results = analyzer.analyze(text=text, entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "LOCATION"], language="pt")
+        if not results:
+            results = analyzer.analyze(text=text, entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "LOCATION"], language="en")
+        if not results:
+            return text
+        redacted = list(text)
+        for r in sorted(results, key=lambda x: x.start, reverse=True):
+            redacted[r.start:r.end] = list(f"[{r.entity_type} REMOVIDO]")
+        return "".join(redacted)
+    except Exception:
+        return text  # fail-safe
+
+
+# ── PIIMaskingFilter (mantido para compatibilidade com logging) ───────────────
+class PIIMaskingFilter(logging.Filter):
+    def filter(self, record):
+        record.msg = self._mask(str(record.msg))
+        return True
+
+    def _mask(self, text: str) -> str:
+        for pattern, replacement in _LLM_PATTERNS:
+            text = pattern.sub(replacement, text)
+        return text
+
+
+mask_pii = PIIMaskingFilter()._mask  # alias de compatibilidade
+```
+
+---
+
+#### Template F: `src/services/audit/audit_writer.py` — Corrigir Mutabilidade
+
+O audit trail v5 usa `ON CONFLICT DO UPDATE` (mutável). Para SOX e BCB-498, deve ser `ON CONFLICT DO NOTHING` (append-only, verificado em LIA):
+
+```python
+# src/services/audit/audit_writer.py — MUDANÇA CIRÚRGICA (C05)
+# Localizar a linha com ON CONFLICT DO UPDATE e substituir:
+
+# ANTES (v5 verificado — mutável):
+INSERT INTO agent_executions (...) VALUES (...)
+ON CONFLICT (execution_id) DO UPDATE SET status = EXCLUDED.status, ...
+
+# DEPOIS (LIA — append-only, SOX-compliant):
+INSERT INTO agent_executions (...) VALUES (...)
+ON CONFLICT (execution_id) DO NOTHING
+# ↑ Uma linha alterada. Imutabilidade garantida.
+
+# C06: adicionar política de retenção por tier
+# Na função cleanup() ou como job Celery separado:
+async def cleanup_by_tier(db):
+    """SOX: audit logs = 7 anos. Execution logs = 365 dias."""
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+
+    # Tier 1: execution logs (não-regulados) — 365 dias
+    await db.execute(
+        "DELETE FROM agent_executions WHERE created_at < %s AND regulatory_tier = 1",
+        (now - timedelta(days=365),)
+    )
+
+    # Tier 2: audit logs (SOX/BCB-498) — 7 anos (2555 dias)
+    # NÃO deletar — apenas mover para cold storage (S3 ou equivalente)
+    # Refs: LIA libs/audit/lia_audit/audit_storage.py RETENTION_DAYS = {"sox": 2555}
+    pass
+```
+
+---
+
+### 23.5 Três Caminhos de Resolução Arquitetural
+
+O time de desenvolvimento tem três opções estratégicas para resolver os 23 concerns. Cada caminho tem custo, risco e cobertura diferentes.
+
+---
+
+#### Caminho 1: Patch por Domínio (Mínimo Viável — Risco Médio)
+
+**O que é:** Adicionar os guards diretamente em cada `domain.py`, `react_agent.py` e `agent.py` individualmente.
+
+**Custo:** Alto — 8 domínios × (C01 + C03 + C04) = 24 implementações paralelas, sem garantia de cobertura futura.
+
+**Vantagem:** Sem refatoração de arquitetura base. Cada domínio pode ser feito em sprint separado.
+
+**Risco:** Novos domínios criados após o patch não herdam os guards. O problema reaparece em 6-12 meses.
+
+```
+Sprint 1 (2 semanas): evaluation + autonomous (domínios CRÍTICOS)
+Sprint 2 (2 semanas): applies + jobs
+Sprint 3 (2 semanas): sourced_profile_sourcing + scheduling
+Sprint 4 (1 semana):  insights + messaging
+──────────────────────────────────────────────────────────────────
+Total: 7 semanas. Cobertura: 8/8 domínios atuais. Futuros: ❌
+```
+
+**Recomendação:** Usar como medida emergencial para os domínios CRÍTICOS (`evaluation` e `autonomous`) enquanto os Caminhos 2 ou 3 são planejados.
+
+---
+
+#### Caminho 2: `ComplianceDomainPrompt` — Classe Intermediária (Recomendado)
+
+**O que é:** Criar uma subclasse de `DomainPrompt` chamada `ComplianceDomainPrompt` que implementa os wrappers dos Templates A-F. Todos os domínios herdam dela em vez de `DomainPrompt` diretamente.
+
+**Custo:** Médio — 1 arquivo novo + mudança de herança em 8 `domain.py`.
+
+**Vantagem:** Novos domínios herdam automaticamente. Resolve todos os concerns de uma vez. Compatível com a estrutura atual sem refatoração profunda.
+
+```python
+# src/domains/compliance_base.py — ARQUIVO NOVO (copy/paste dos Templates A-F)
+
+class ComplianceDomainPrompt(DomainPrompt, ABC):
+    """
+    DomainPrompt com compliance automático.
+
+    Todos os domínios devem herdar desta classe em vez de DomainPrompt diretamente.
+    Resolve: C01, C03, C04, C05, C07, C08 automaticamente.
+    Domínios específicos adicionam C02, C09, C11 via override.
+
+    Refs arquiteturais:
+      - LIA EnhancedAgentMixin (app/shared/agents/enhanced_agent_mixin.py)
+      - LIA LangGraphReActBase (libs/agents-core/lia_agents_core/langgraph_react_base.py)
+    """
+
+    async def process_intent(self, query: str, context) -> Any:
+        # ... código do Template A ...
+
+    async def execute_action(self, action_id: str, params: Dict[str, Any], context) -> Any:
+        # ... código do Template A ...
+```
+
+```python
+# src/domains/evaluation/domain.py — MUDANÇA EM 8 ARQUIVOS
+
+# ANTES:
+class EvaluationDomain(DomainPrompt):
+    async def process_intent(self, ...): ...
+    async def execute_action(self, ...): ...
+
+# DEPOIS:
+class EvaluationDomain(ComplianceDomainPrompt):
+    async def _process_intent_impl(self, ...): ...   # ← renomear
+    async def _execute_action_impl(self, ...): ...   # ← renomear
+```
+
+```
+Sprint 1 (1 semana): Criar ComplianceDomainPrompt (Templates A-F)
+Sprint 2 (1 semana): Migrar 8 domain.py para ComplianceDomainPrompt
+Sprint 3 (1 semana): Testes de regressão + homologação
+──────────────────────────────────────────────────────────────────
+Total: 3 semanas. Cobertura: 8/8 domínios + todos futuros. ✅
+```
+
+**Esta é a solução recomendada.** Menor custo, maior cobertura, sem reescrita.
+
+---
+
+#### Caminho 3: Refatoração Estrutural com Mixins (Longo Prazo)
+
+**O que é:** Adotar o padrão LIA de mixins (`LangGraphReActBase` + `ComplianceMixin`) com separação completa entre infraestrutura e compliance. Cada concern vira um mixin opt-in com configuração declarativa.
+
+**Custo:** Alto — 3-4 meses, reescrita parcial da camada de domínios.
+
+**Vantagem:** Arquitetura mais limpa, testável por concern isolado, fácil de auditar. Cada concern tem seu próprio arquivo de teste. Habilita feature flags por concern.
+
+**Estrutura alvo:**
+
+```
+src/
+├── shared/
+│   ├── compliance/
+│   │   ├── fairness_mixin.py        # ← FairnessGuard injetado via herança
+│   │   ├── audit_mixin.py           # ← AuditCallback automático
+│   │   ├── pii_mixin.py             # ← strip_pii_for_llm_prompt()
+│   │   ├── guardrail_mixin.py       # ← GuardrailRepository
+│   │   └── confidence_mixin.py      # ← ConfidenceNode
+│   └── base_agent.py                # ← BaseAgent(FairnessMixin, AuditMixin, ...)
+├── domains/
+│   ├── base.py                      # ← DomainPrompt abstrato (sem compliance)
+│   ├── evaluation/domain.py         # ← class EvaluationDomain(BaseAgent)
+│   └── ...
+```
+
+```
+Fase 1 (4 semanas): Extrair mixins de compliance (Templates A-F → mixins)
+Fase 2 (4 semanas): Migrar domínios críticos (evaluation, autonomous, applies)
+Fase 3 (4 semanas): Migrar domínios restantes + testes completos
+Fase 4 (4 semanas): Documentação, onboarding, CI guards
+──────────────────────────────────────────────────────────────────
+Total: 16 semanas. Cobertura: total + future-proof. Arquitetura LIA-equivalente.
+```
+
+**Recomendação:** Usar como objetivo de longo prazo após aplicar o Caminho 2 como solução imediata.
+
+---
+
+### 23.6 Guia de Implementação Copy/Paste — Sequência Recomendada
+
+Para a equipe que adotar o **Caminho 2** (recomendado), esta é a sequência de 8 passos ordenados por dependência:
+
+```
+Passo  Arquivo                              Concerns Resolvidos  Duração
+─────────────────────────────────────────────────────────────────────────
+  1    src/services/pii_filter.py           C03                  4h
+       → Expandir com strip_pii_for_llm_prompt() (Template E)
+
+  2    src/services/audit/audit_writer.py   C05, C06             2h
+       → Mudar ON CONFLICT DO UPDATE → DO NOTHING + cleanup_by_tier()
+
+  3    src/domains/compliance_base.py       C01, C04, C08        8h
+       → Criar ComplianceDomainPrompt com Wrappers (Template A)
+
+  4    src/domains/evaluation/domain.py     C02, C09, C11        6h
+       → Herdar ComplianceDomainPrompt + ConfidenceNode + BiasAudit (Template B)
+
+  5    src/domains/autonomous/agent.py      C07, C21             6h
+       → Adicionar _check_guardrails_before_execution() (Template C)
+
+  6    src/domains/applies/react_agent.py   C01 (tool-level)     4h
+       → Fairness nos call_tools() (Template D)
+
+  7    src/domains/{jobs,sched,srcp,        C01, C03, C04        8h
+       insights,messaging}/domain.py
+       → Herdar ComplianceDomainPrompt (renomear métodos)
+
+  8    Testes + CI guards                   todos                 8h
+       → pytest fairness/ bias_audit/ pii/ + hook pré-commit
+
+─────────────────────────────────────────────────────────────────────────
+Total estimado: ~46 horas de desenvolvimento (3 semanas/1 dev)
+Cobertura após passo 8: C01-C11 (todos os 🔴 CRÍTICO + 🟠 ALTO resolvidos)
+```
+
+---
+
+### 23.7 Por Que o Problema Não Foi Detectado Antes
+
+O v5 tem estrutura de código de alta qualidade — `model_router.py`, `cost_ladder.py`, `semantic_cache.py` com pgvector são funcionalidades sofisticadas. O problema de compliance não é falta de capacidade técnica. São três fatores estruturais:
+
+**1. A ausência é invisível nos code reviews locais.**
+
+Quando um desenvolvedor abre `src/domains/evaluation/domain.py` e vê um código limpo com `graph.py`, `nodes.py`, `state.py` bem estruturados, não há nada que sinalize a ausência de FairnessGuard. O código *parece* completo. Apenas um checklist externo de compliance ou uma classe base que exige implementação tornam a ausência explícita.
+
+**2. `src/services/` cria falsa sensação de cobertura.**
+
+A existência de `src/services/pii_filter.py`, `src/services/circuit_breaker.py` e `src/services/audit/` cria a percepção de que os concerns estão "cobertos". Mas esses serviços são disponibilizados como opções — não são injetados automaticamente. A diferença entre "existe" e "é usado por todos" é precisamente o gap.
+
+**3. A disciplina não escala com o time.**
+
+Quando o time é pequeno e os mesmos desenvolvedores criam todos os domínios, a disciplina funciona — como evidenciado pelo domínio `sourced_profile_sourcing` (o mais completo do v5, com `fairness.py` + `fact_checker.py`). Quando o time cresce ou há rotatividade, novos domínios são criados por quem não tem o contexto histórico completo — como evidenciado pelos domínios `insights`, `messaging`, `evaluation` e `scheduling`.
+
+**A solução arquitetural da LIA para este problema** é `EnhancedAgentMixin.__init_subclass__`, que é chamado pelo Python automaticamente quando qualquer subclasse de `EnhancedAgentMixin` é criada. Compliance não é uma decisão do desenvolvedor — é uma consequência automática da herança. O desenvolvedor não pode "esquecer" porque o Python não esquece.
+
+---
+
+### 23.8 Resumo Executivo para Decisão Técnica
+
+| Critério | Caminho 1 (Patch) | Caminho 2 (ComplianceDomainPrompt) | Caminho 3 (Mixins) |
+|---------|------------------|------------------------------------|-------------------|
+| Custo (horas) | ~120h | ~46h | ~300h |
+| Prazo | 7 semanas | 3 semanas | 16 semanas |
+| Domínios futuros | ❌ Não protegidos | ✅ Protegidos | ✅ Protegidos |
+| Concerns CRÍTICOS resolvidos | C01-C08 (com esforço) | C01-C11 | C01-C23 |
+| Risco de regressão | Alto | Baixo | Médio |
+| Compatível com código atual | ✅ | ✅ | Parcial |
+| Recomendação | Emergência apenas | **Solução principal** | Objetivo 2027 |
+
+**Veredicto:** O Caminho 2 (`ComplianceDomainPrompt`) resolve 100% dos concerns CRÍTICOS e ALTOS em 3 semanas com risco mínimo de regressão, sem reescrever a arquitetura existente. É o único caminho que garante que novos domínios sejam protegidos automaticamente.
+
+O problema raiz — "cada domínio é autocontido e reinventa compliance" — só é resolvido de forma permanente quando a **herança** passa a ser o mecanismo de garantia, não a memória do desenvolvedor.
+
+---
+
+*Seção 23 adicionada em 22 de março de 2026. Análise baseada em leitura direta dos arquivos LIA (filesystem local, workspace) e código v5 previamente verificado nas seções 1-22. Arquivos LIA adicionais lidos para esta seção: `app/shared/compliance/fairness_guard.py` (742L), `app/shared/pii_masking.py` (221L), `app/shared/compliance/fact_checker.py` (391L), `app/shared/compliance/guardrail_repository.py` (185L), `app/shared/policy_middleware.py` (100L), `app/shared/prompt_injection.py` (177L), `libs/audit/lia_audit/audit_callback.py` (263L), `libs/agents-core/lia_agents_core/confidence.py` (89L).*
+
+---
+
 *Arquivos adicionais lidos para as seções 11-21:*
 
 **LIA (lidos do filesystem local):**
