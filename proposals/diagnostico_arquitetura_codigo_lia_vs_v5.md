@@ -5463,6 +5463,1027 @@ A falha do v5 não foi falta de competência técnica — foi falta de um **meca
 
 ---
 
+
+---
+
+### 23.11 Guia de Implementação Completo — Caminho 2 (ComplianceDomainPrompt)
+
+> **Para que serve esta seção:** Guia operacional completo para executar o Caminho 2. Qualquer desenvolvedor deve conseguir implementar a migração lendo apenas esta seção, sem consultar outras fontes. Contém código real lido do v5 e do LIA, mais blocos PROPOSTA claramente identificados para os novos arquivos.
+
+---
+
+#### 23.11.1 Fundamento: Por que Template Method Pattern?
+
+O problema central do v5 é que cada domínio **implementa diretamente** `process_intent()` e `execute_action()` — os dois pontos de entrada de todo fluxo. Compliance seria adicionado manualmente dentro de cada implementação (Caminho 1) ou eliminado (Caminho 3). O Caminho 2 usa o padrão **Template Method**:
+
+```
+DomainPrompt (ABC)                    ← interface atual do v5 (src/domains/base.py)
+    └── ComplianceDomainPrompt        ← NOVA classe intermediária (a criar)
+            ├── process_intent()      ← implementada com fairness + injection (wrapper)
+            ├── execute_action()      ← implementada com PII + audit + confidence (wrapper)
+            ├── _domain_process_intent()  ← NOVO abstract — domínios implementam isto
+            └── _domain_execute_action()  ← NOVO abstract — domínios implementam isto
+                    ↑
+        EvaluationDomain, AppliesDomain, JobsDomain, etc.
+        (mudam parent: DomainPrompt → ComplianceDomainPrompt)
+        (renomeiam métodos: process_intent → _domain_process_intent)
+```
+
+**Vantagem central:** compliance é código da classe base, não do domínio. O desenvolvedor que criar `JobsDomain2`, `ReportsDomain`, `AnalyticsDomain` recebe os 6 controles sem escrever uma linha de compliance.
+
+---
+
+#### 23.11.2 Interface Real do v5: DomainPrompt (código lido de src/domains/base.py)
+
+```python
+# código real v5 — lido de src/domains/base.py (173 linhas)
+# Classe que ComplianceDomainPrompt vai estender
+
+class DomainPrompt(ABC):
+
+    @property
+    @abstractmethod
+    def domain_id(self) -> str: pass
+
+    @property
+    @abstractmethod
+    def domain_name(self) -> str: pass
+
+    @property
+    @abstractmethod
+    def description(self) -> str: pass
+
+    @abstractmethod
+    def get_allowed_actions(self) -> List[DomainAction]: pass
+
+    @abstractmethod
+    def get_system_prompt(self, context: DomainContext) -> str: pass
+
+    @abstractmethod
+    def process_intent(self, user_query: str, context: DomainContext) -> Dict[str, Any]: pass
+
+    @abstractmethod
+    def execute_action(self, action_id: str, params: Dict[str, Any],
+                       context: DomainContext) -> DomainResponse: pass
+
+    def get_suggestions(self, context: DomainContext) -> List[str]: return []
+
+    def validate_context(self, context: DomainContext) -> Tuple[bool, Optional[str]]:
+        return True, None
+```
+
+**Consequência para a migração:** `ComplianceDomainPrompt` implementa `process_intent()` e `execute_action()` de forma **concreta** (com compliance), e introduz dois novos métodos abstratos `_domain_process_intent()` e `_domain_execute_action()`. Cada domínio herda a compliance automaticamente e implementa apenas a lógica de negócio.
+
+---
+
+#### 23.11.3 Especificação: ComplianceDomainPrompt (arquivo a criar)
+
+```python
+# PROPOSTA — src/domains/base_compliance.py (novo arquivo, não existe ainda no v5)
+# Estende: DomainPrompt (src/domains/base.py, 173L)
+# Padrão: Template Method — compliance no parent, lógica de negócio no child
+
+from abc import abstractmethod
+from typing import Dict, Any, List, Tuple, Optional
+
+from src.domains.base import DomainPrompt, DomainContext, DomainResponse
+
+# Imports dos 6 controles (arquivos a criar em src/services/compliance/ — ver 23.11.4)
+from src.services.compliance.fairness_guard import FairnessGuard
+from src.services.compliance.prompt_injection import PromptInjectionGuard
+from src.services.compliance.audit_callback import AuditCallback
+from src.services.compliance.confidence import ConfidenceNode
+from src.services.compliance.fact_checker import FactChecker
+from src.services.pii_filter import mask_pii  # já existe no v5 — ampliar com 4º padrão
+
+
+class ComplianceDomainPrompt(DomainPrompt):
+    """
+    Classe intermediária entre DomainPrompt e cada domínio v5.
+    Herdar ComplianceDomainPrompt = 6 controles de compliance automáticos.
+
+    Controles instanciados em __init__:
+        _fairness      → FairnessGuard     → bloqueia queries discriminatórias (EU AI Act Art. 9)
+        _injection     → PromptInjectionGuard → bloqueia prompt injection (OWASP LLM01)
+        _confidence    → ConfidenceNode    → flag para revisão humana quando confiança baixa
+        _fact_checker  → FactChecker       → detecta alucinações numéricas/factuais
+        mask_pii()     → função pii_filter → mascara CPF/email/telefone antes do LLM
+        AuditCallback  → audit por execute → registra toda execução (LGPD Art. 20 + SOX)
+    """
+
+    def __init__(self):
+        self._fairness = FairnessGuard()
+        self._injection = PromptInjectionGuard()
+        self._confidence = ConfidenceNode(domain=self.domain_id)
+        self._fact_checker = FactChecker()
+        # mask_pii: função importada diretamente (stateless)
+        # AuditCallback: instanciado por execute_action (precisa de context.session_id)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # WRAPPER 1: process_intent — compliance pre-routing
+    # ──────────────────────────────────────────────────────────────────────────
+    def process_intent(self, user_query: str, context: DomainContext) -> Dict[str, Any]:
+        """
+        Sobrescreve process_intent do DomainPrompt.
+        Aplica fairness + injection checks ANTES de delegar ao domínio.
+        Domínios implementam _domain_process_intent() com lógica de negócio.
+        """
+        # 1. Fairness check — concerns #1, #9, #16, #18, #21
+        fairness = self._fairness.check(user_query)
+        if fairness.is_blocked:
+            return {
+                "action_id": "__fairness_blocked__",
+                "params": {
+                    "message": fairness.educational_message,
+                    "blocked_terms": fairness.blocked_terms,
+                },
+                "confidence": 1.0,
+                "blocked_by": "fairness_guard",
+            }
+
+        # 2. Injection check — concerns #4, #10, #13, #19
+        injection = self._injection.check(user_query)
+        if injection.is_suspicious and injection.risk_level == "high":
+            return {
+                "action_id": "__injection_blocked__",
+                "params": {
+                    "message": "Input bloqueado por suspeita de prompt injection",
+                    "patterns": injection.matched_patterns,
+                },
+                "confidence": 1.0,
+                "blocked_by": "injection_guard",
+            }
+
+        # 3. Delegar ao domínio (lógica de negócio — sem compliance)
+        return self._domain_process_intent(user_query, context)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # WRAPPER 2: execute_action — compliance pre/post execution
+    # ──────────────────────────────────────────────────────────────────────────
+    def execute_action(self, action_id: str, params: Dict[str, Any],
+                       context: DomainContext) -> DomainResponse:
+        """
+        Sobrescreve execute_action do DomainPrompt.
+        Aplica PII masking + audit ANTES, confidence + audit DEPOIS da execução.
+        Domínios implementam _domain_execute_action() com lógica de negócio.
+        """
+        # 4. PII masking nos params — concerns #7, #12, #14, #20
+        params = self._mask_params(params)
+
+        # 5. Audit start — concerns #5, #8, #17
+        audit = AuditCallback(
+            user_id=context.user_id or "unknown",
+            company_id=str(context.workspace_id or ""),
+            session_id=context.session_id or "unknown",
+        )
+        audit.on_chain_start_manual()
+
+        try:
+            # 6. Delegar ao domínio (lógica de negócio — sem compliance)
+            result = self._domain_execute_action(action_id, params, context)
+
+            # 7. Confidence check — concerns #5, #23
+            conf_state = self._confidence({
+                "final_response": result.message,
+                "tool_calls_made": result.metadata.get("tool_calls", []),
+            })
+            if conf_state.get("needs_review"):
+                result.metadata["compliance_confidence_alert"] = True
+                result.metadata["confidence_score"] = conf_state.get("confidence", 0.0)
+
+            # 8. Audit end
+            audit.on_chain_end_manual({
+                "action_id": action_id,
+                "success": result.success,
+                "domain": self.domain_id,
+            })
+            return result
+
+        except Exception as e:
+            audit.on_chain_end_manual({
+                "action_id": action_id,
+                "error": str(e),
+                "domain": self.domain_id,
+            })
+            raise
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # HELPER: PII masking sobre todos os campos de texto dos params
+    # ──────────────────────────────────────────────────────────────────────────
+    _TEXT_FIELDS = frozenset({
+        "resume_text", "candidate_summary", "cover_letter",
+        "message_content", "bio", "summary", "description",
+        "user_query", "notes", "feedback",
+    })
+
+    def _mask_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        masked = dict(params)
+        for field in self._TEXT_FIELDS:
+            if field in masked and isinstance(masked[field], str):
+                masked[field] = mask_pii(masked[field])
+        return masked
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # NOVOS MÉTODOS ABSTRATOS — domínios implementam ESTES (não process_intent/execute_action)
+    # ──────────────────────────────────────────────────────────────────────────
+    @abstractmethod
+    def _domain_process_intent(self, user_query: str,
+                               context: DomainContext) -> Dict[str, Any]:
+        """Lógica de roteamento do domínio — compliance já aplicado pelo parent."""
+        pass
+
+    @abstractmethod
+    def _domain_execute_action(self, action_id: str, params: Dict[str, Any],
+                               context: DomainContext) -> DomainResponse:
+        """Lógica de execução do domínio — compliance já aplicado pelo parent."""
+        pass
+```
+
+**Importante sobre FactChecker:** O método real do LIA é `check_response(response_text, context)` (não `check()`). Usado no wrapper de `execute_action()` para validar o `result.message` após a execução. Adicionar no bloco do passo 7 se o domínio produz texto narrativo (evaluation, insights, autonomous):
+```python
+# Adição opcional ao passo 7 para domínios com output narrativo:
+fact_result = self._fact_checker.check_response(result.message, context={})
+if fact_result.inaccurate_claims > 0:
+    result.metadata["compliance_fact_alert"] = fact_result.inaccurate_claims
+```
+
+---
+
+#### 23.11.4 Arquivos de Compliance a Criar/Adaptar no v5
+
+Para cada arquivo: (a) **origem** no LIA, (b) **destino** no v5, (c) **o que adaptar**.
+
+---
+
+##### Arquivo 1: FairnessGuard
+
+```
+Origem LIA:  lia-agent-system/app/shared/compliance/fairness_guard.py (741 linhas)
+Destino v5:  src/services/compliance/fairness_guard.py (novo arquivo)
+```
+
+**Código real LIA — método principal** (lido de fairness_guard.py, linhas 376-396):
+```python
+# código real LIA — fairness_guard.py, linhas 376-396
+def check(self, query: str) -> FairnessCheckResult:
+    if not query or not query.strip():
+        return FairnessCheckResult(is_blocked=False, original_query=query)
+
+    query_lower = query.lower().strip()
+    query_normalized = _normalize_text(query_lower)
+    blocked_terms = []
+    detected_category = None
+    max_confidence = 0.0
+
+    for category, patterns in _COMPILED_PATTERNS.items():
+        for pattern in patterns:
+            match = pattern.search(query_lower)
+            if not match:
+                match = pattern.search(query_normalized)
+            if match:
+                blocked_terms.append(match.group())
+                if not detected_category:
+                    detected_category = category
+                confidence = min(0.95, 0.7 + len(match.group()) * 0.02)
+                max_confidence = max(max_confidence, confidence)
+```
+
+**O que adaptar ao copiar para o v5:**
+```
+→ Nenhuma alteração de lógica necessária
+→ Adaptar imports: substituir "from app.shared.compliance.models" por "from src.services.compliance.models"
+→ Manter _COMPILED_PATTERNS, _normalize_text, DISCRIMINATORY_CATEGORIES intactos
+→ Garantir que FairnessCheckResult.educational_message retorna texto em PT-BR
+```
+
+---
+
+##### Arquivo 2: PromptInjectionGuard
+
+```
+Origem LIA:  lia-agent-system/app/shared/prompt_injection.py (177 linhas)
+Destino v5:  src/services/compliance/prompt_injection.py (novo arquivo)
+```
+
+**Código real LIA — método principal** (lido de prompt_injection.py, linhas 114-139):
+```python
+# código real LIA — prompt_injection.py, linhas 114-139
+def check(self, user_input: str) -> InjectionCheckResult:
+    self._total_checks += 1
+    if not user_input or not user_input.strip():
+        return InjectionCheckResult(
+            is_suspicious=False,
+            original_input=user_input,
+            sanitized_input=user_input,
+        )
+    matched_patterns = []
+    max_confidence = 0.0
+    max_risk = "none"
+    risk_priority = {"none": 0, "low": 1, "medium": 2, "high": 3}
+    for category in INJECTION_PATTERNS:
+        for pattern in category["patterns"]:
+            if pattern.search(user_input):
+                matched_patterns.append(category["name"])
+                max_confidence = max(max_confidence, category["confidence"])
+                if risk_priority.get(category["risk"], 0) > risk_priority.get(max_risk, 0):
+                    max_risk = category["risk"]
+                break
+    is_suspicious = len(matched_patterns) > 0
+```
+
+**O que adaptar ao copiar para o v5:**
+```
+→ Nenhuma alteração de lógica necessária
+→ Adaptar imports de logger: "from app.shared" → "from src.utils" ou logging padrão
+→ Manter INJECTION_PATTERNS intactos (copiados junto com o arquivo)
+→ InjectionCheckResult.risk_level pode ser "none", "low", "medium", "high"
+   — No wrapper: bloquear apenas risk_level == "high" para evitar falsos positivos
+```
+
+---
+
+##### Arquivo 3: AuditCallback
+
+```
+Origem LIA:  lia-agent-system/libs/audit/lia_audit/audit_callback.py (262 linhas)
+Destino v5:  src/services/compliance/audit_callback.py (novo arquivo)
+```
+
+**O que adaptar ao copiar para o v5:**
+```
+→ AuditCallback.__init__(user_id, company_id, session_id) — manter interface
+→ Substituir import do modelo AuditRecord:
+    LIA:  from lia_models.audit_record import AuditRecord
+    v5:   from src.models.audit_record import AuditRecord  (criar ou adaptar)
+→ Substituir import do banco:
+    LIA:  from lia_models.base import Base → from src.core.database import Base
+→ on_chain_start_manual() e on_chain_end_manual() — manter sem alteração
+→ on_chain_start() e on_chain_end() (callbacks LangChain) — manter se o v5 usa LangChain
+```
+
+---
+
+##### Arquivo 4: ConfidenceNode
+
+```
+Origem LIA:  lia-agent-system/libs/agents-core/lia_agents_core/confidence.py (89 linhas)
+Destino v5:  src/services/compliance/confidence.py (novo arquivo)
+```
+
+**Código real LIA — ConfidenceNode.__call__()** (lido de confidence.py, linhas 67-86):
+```python
+# código real LIA — confidence.py, linhas 67-86
+def __call__(self, state: Dict[str, Any]) -> Dict[str, Any]:
+    """Calcula confiança e adiciona ao state."""
+    response = state.get("final_response") or state.get("response", "")
+    tool_calls = state.get("tool_calls_made", [])
+    error = state.get("error")
+    observations = state.get("observations", [])
+
+    confidence = compute_confidence(
+        response=response,
+        tool_calls_made=len(tool_calls) if isinstance(tool_calls, list) else 0,
+        error=error,
+        observations_count=len(observations) if isinstance(observations, list) else 0,
+    )
+    logger.debug(
+        "[ConfidenceNode] domain=%s confidence=%.2f tools=%s error=%s",
+        self.domain, confidence,
+        len(tool_calls) if isinstance(tool_calls, list) else 0,
+        bool(error),
+    )
+```
+
+**O que adaptar ao copiar para o v5:**
+```
+→ Copiar junto a função compute_confidence() (linhas 17-54) — dependência de ConfidenceNode
+→ Sem import de modelos externos — arquivo autossuficiente após copiar compute_confidence
+→ Retorno do __call__: {**state, "confidence": score, "needs_review": score < 0.7}
+→ O wrapper de execute_action usa: conf_state.get("needs_review") para flag
+```
+
+---
+
+##### Arquivo 5: FactChecker
+
+```
+Origem LIA:  lia-agent-system/app/shared/compliance/fact_checker.py (391 linhas)
+Destino v5:  src/services/compliance/fact_checker.py (novo arquivo)
+```
+
+**Código real LIA — FactChecker.check_response()** (lido de fact_checker.py, linhas 101-120):
+```python
+# código real LIA — fact_checker.py, linhas 101-120
+# ATENÇÃO: método é check_response(), NÃO check()
+def check_response(
+    self,
+    response_text: str,
+    context: Optional[Dict[str, Any]] = None,
+) -> FactCheckResult:
+    result = FactCheckResult(confidence_verified=False)
+    context = context or {}
+    self._check_salary_claims(response_text, context, result)
+    self._check_candidate_counts(response_text, context, result)
+    self._check_percentage_claims(response_text, context, result)
+    self._check_date_claims(response_text, context, result)
+    if result.inaccurate_claims > 0:
+        logger.warning(
+            f"FactChecker found {result.inaccurate_claims} inaccurate claims "
+            f"out of {result.total_claims} total"
+        )
+    return result
+```
+
+**O que adaptar ao copiar para o v5:**
+```
+→ Copiar arquivo inteiro (391 linhas) — autossuficiente
+→ Adaptar imports de logger: "from app.shared" → logging padrão Python
+→ No wrapper ComplianceDomainPrompt: usar check_response() (não check())
+→ Aplicar APENAS em domínios com output narrativo: evaluation, insights, autonomous
+→ Não aplicar em messaging/scheduling (output estruturado, não narrativo)
+```
+
+---
+
+##### Arquivo 6: Ampliar pii_filter.py (já existe no v5)
+
+```
+Arquivo existente v5:  src/services/pii_filter.py (34 linhas — 3 padrões, só logs)
+Ação:                  Ampliar com 4º padrão + tornar mask_pii() aplicável pré-LLM
+```
+
+**O que adicionar ao pii_filter.py do v5:**
+```
+→ Adicionar 4º padrão (referência LIA pii_masking.py, linhas 14-38):
+     NAME_IN_LOG_PATTERN = re.compile(
+         r'(?:name|nome|candidato|recruiter|user)\s*[=:]\s*["']([\^"\']+)["']',
+         re.IGNORECASE
+     )
+→ Adicionar NAME_IN_LOG_PATTERN à lista _PII_PATTERNS (4º elemento)
+→ A função mask_pii() já existe — NÃO reescrever, apenas usá-la no wrapper
+→ Garantir que mask_pii() é importável de qualquer module (já é: exporta a função)
+```
+
+---
+
+#### 23.11.5 Migração dos 7 Domínios DomainPrompt
+
+Cada domínio segue **3 passos idênticos**. Estimativa: 1h-2h por domínio.
+
+---
+
+##### Domínio 1: EvaluationDomain
+
+```
+Arquivo: src/domains/evaluation/domain.py
+Método process_intent: linha 57
+Método execute_action: linha 67
+Método _execute_evaluation: linha 84 (interno — não muda)
+```
+
+```
+PASSO 1 — Mudar herança (1 linha):
+  ANTES: class EvaluationDomain(DomainPrompt):
+  DEPOIS: class EvaluationDomain(ComplianceDomainPrompt):
+  Adicionar import: from src.domains.base_compliance import ComplianceDomainPrompt
+
+PASSO 2 — Renomear process_intent → _domain_process_intent:
+  ANTES: def process_intent(self, user_query: str, context: DomainContext) -> Dict[str, Any]:
+  DEPOIS: def _domain_process_intent(self, user_query: str, context: DomainContext) -> Dict[str, Any]:
+  (corpo do método não muda)
+
+PASSO 3 — Renomear execute_action → _domain_execute_action:
+  ANTES: def execute_action(self, action_id: str, params, context) -> DomainResponse:
+  DEPOIS: def _domain_execute_action(self, action_id: str, params, context) -> DomainResponse:
+  (corpo do método não muda — _execute_evaluation() permanece inalterado)
+
+PASSO 4 — Remover patches do Caminho 1 (se aplicados):
+  Remover do corpo de _domain_process_intent(): self._fairness.check(), injection.check()
+  (essas verificações agora estão no parent process_intent())
+  Remover do corpo de _domain_execute_action(): mask_pii(), AuditCallback(), confidence check
+  (essas verificações agora estão no parent execute_action())
+
+PASSO 5 — Adicionar super().__init__() se o domínio tem __init__ próprio:
+  def __init__(self, ...):
+      super().__init__()  # inicializa os 6 controles de compliance
+      ...
+```
+
+---
+
+##### Domínio 2: AppliesDomain
+
+```
+Arquivo: src/domains/applies/domain.py
+Método process_intent: linha 296
+Método execute_action: linha 361
+```
+
+```
+PASSO 1: class AppliesDomain(ComplianceDomainPrompt):
+PASSO 2: def _domain_process_intent(self, user_query, context):  [linha 296]
+PASSO 3: def _domain_execute_action(self, action_id, params, context):  [linha 361]
+PASSO 4: remover patches do Caminho 1 se aplicados
+PASSO 5: super().__init__() se há __init__ próprio
+
+Nota: AppliesReActAgent (react_agent.py, execute() L387) — ver 23.11.6 (autonomous pattern)
+```
+
+---
+
+##### Domínio 3: InsightsDomain
+
+```
+Arquivo: src/domains/insights/domain.py
+Método process_intent: linha 150
+Método execute_action: linha 216
+```
+
+```
+PASSO 1: class InsightsDomain(ComplianceDomainPrompt):
+PASSO 2: def _domain_process_intent(self, user_query, context):  [linha 150]
+PASSO 3: def _domain_execute_action(self, action_id, params, context):  [linha 216]
+PASSO 4: remover patches do Caminho 1 se aplicados
+PASSO 5: super().__init__()
+
+Nota insights: domínio produz output narrativo — o FactChecker será aplicado automaticamente
+pelo wrapper de execute_action() na classe base (check_response sobre result.message).
+```
+
+---
+
+##### Domínio 4: MessagingDomain
+
+```
+Arquivo: src/domains/messaging/domain.py
+Método process_intent: linha 134
+Método execute_action: linha 187
+```
+
+```
+PASSO 1: class MessagingDomain(ComplianceDomainPrompt):
+PASSO 2: def _domain_process_intent(self, user_query, context):  [linha 134]
+PASSO 3: def _domain_execute_action(self, action_id, params, context):  [linha 187]
+PASSO 4: remover patches do Caminho 1 se aplicados
+PASSO 5: super().__init__()
+
+Nota messaging: message_content está em _TEXT_FIELDS do wrapper — PII masking automático.
+```
+
+---
+
+##### Domínio 5: SchedulingDomain
+
+```
+Arquivo: src/domains/scheduling/domain.py
+Método process_intent: linha 168
+Método execute_action: linha 287
+```
+
+```
+PASSO 1: class SchedulingDomain(ComplianceDomainPrompt):
+PASSO 2: def _domain_process_intent(self, user_query, context):  [linha 168]
+PASSO 3: def _domain_execute_action(self, action_id, params, context):  [linha 287]
+PASSO 4: remover patches do Caminho 1 se aplicados
+PASSO 5: super().__init__()
+```
+
+---
+
+##### Domínio 6: JobsDomain
+
+```
+Arquivo: src/domains/jobs/domain.py (532 linhas)
+Método process_intent: linha 304
+Método execute_action: linha 382
+```
+
+```
+PASSO 1: class JobsDomain(ComplianceDomainPrompt):
+PASSO 2: def _domain_process_intent(self, user_query, context):  [linha 304]
+PASSO 3: def _domain_execute_action(self, action_id, params, context):  [linha 382]
+PASSO 4: sem patches do Caminho 1 (JobsDomain não estava na lista de concerns do 23.9)
+PASSO 5: super().__init__()
+
+Nota jobs: primeiro domínio a ganhar compliance sem nunca ter tido patches manuais —
+confirma o valor do Caminho 2 vs. Caminho 1.
+```
+
+---
+
+##### Domínio 7: SourcedProfile (via SourcingDomain, se existe)
+
+```
+Arquivo: src/domains/sourcing/domain.py (ou equivalente)
+Verificar caminho exato: git ls-files src/domains/sourcing*
+```
+
+```
+PASSO 1: class SourcingDomain(ComplianceDomainPrompt):
+PASSO 2: renomear process_intent → _domain_process_intent
+PASSO 3: renomear execute_action → _domain_execute_action
+PASSO 4: remover patches do Caminho 1 se aplicados (concerns #13 e #14)
+PASSO 5: super().__init__()
+
+Nota sourcing: a herança ComplianceDomainPrompt aplica PII masking automaticamente
+sobre bio, summary, resume_text nos params — concerns #13 e #14 resolvidos via base class.
+```
+
+---
+
+#### 23.11.6 Migração Especial: Autonomous (UniversalReActAgent)
+
+O `UniversalReActAgent` (src/domains/autonomous/agent.py) **não estende DomainPrompt** — ele tem sua própria interface `execute(user_query, params, context, callbacks)`. O padrão Template Method não se aplica diretamente. Existem duas opções:
+
+**Opção A — Wrapper decorador (recomendado para Caminho 2):**
+```
+→ Criar: src/services/compliance/compliance_wrapper.py (PROPOSTA)
+→ Decorator @compliance_wrapped que aplica os 6 controles antes/depois de execute()
+→ Aplicar sobre UniversalReActAgent.execute() e AppliesReActAgent.execute()
+→ Não requer herança — funciona como middleware ad-hoc para agentes ReAct
+```
+
+**Passo a passo para autonomous (Opção A):**
+```
+PASSO 1: Em autonomous/agent.py, no início de execute() [linha 176]:
+     → Adicionar: safe_query = mask_pii(user_query)
+     → Adicionar: fairness_result = _fairness.check(safe_query)
+     → Adicionar: if fairness_result.is_blocked: return DomainResponse(...)
+     → Instanciar _fairness no __init__ de UniversalReActAgent: self._fairness = FairnessGuard()
+
+PASSO 2: Injection check:
+     → injection = _injection.check(safe_query)
+     → if injection.risk_level == "high": raise SecurityError(...)
+
+PASSO 3: Audit:
+     → audit = AuditCallback(user_id, company_id, session_id)
+     → audit.on_chain_start_manual()
+     → (após execução) audit.on_chain_end_manual({...})
+
+Estimativa: 3h (mais complexo que os domínios DomainPrompt por não ter herança)
+```
+
+**Opção B — Migração para Caminho 3 (longo prazo):** O autonomous é o domínio mais complexo. Se o Caminho 3 (refatoração estrutural) for planejado para 2026-2027, o autonomous pode aguardar e ser migrado diretamente para a nova arquitetura, pulando o Caminho 2.
+
+---
+
+#### 23.11.7 Sprint Plan — Caminho 2
+
+```
+SPRINT 1 (1 semana) — Build da infraestrutura de compliance
+────────────────────────────────────────────────────────────
+  Tarefa: Copiar e adaptar 6 arquivos de compliance do LIA para src/services/compliance/
+  Tarefa: Criar src/domains/base_compliance.py (ComplianceDomainPrompt)
+  Tarefa: Ampliar src/services/pii_filter.py com 4º padrão
+  Tarefa: Testes unitários para ComplianceDomainPrompt (process_intent + execute_action)
+  Critério de aceite: ComplianceDomainPrompt instanciável, testes passando
+  Estimativa: 8h
+
+SPRINT 2 (1 semana) — Migração dos 7 domínios DomainPrompt
+────────────────────────────────────────────────────────────
+  Tarefa: Migrar EvaluationDomain (3 passos — 1.5h)
+  Tarefa: Migrar AppliesDomain (3 passos — 1h)
+  Tarefa: Migrar InsightsDomain (3 passos — 1h)
+  Tarefa: Migrar MessagingDomain (3 passos — 1h)
+  Tarefa: Migrar SchedulingDomain (3 passos — 1h)
+  Tarefa: Migrar JobsDomain (3 passos — 1h)
+  Tarefa: Migrar SourcingDomain (3 passos — 1h)
+  Critério de aceite: Todos os 7 domínios herdam ComplianceDomainPrompt; testes de regressão passando
+  Estimativa: 8.5h
+
+SPRINT 3 (3 dias) — Autonomous + validação completa
+─────────────────────────────────────────────────────
+  Tarefa: Migrar UniversalReActAgent (Opção A — wrapper manual) (3h)
+  Tarefa: Migrar AppliesReActAgent (Opção A — 1h)
+  Tarefa: Teste end-to-end de cada domínio com queries discriminatórias/injection/PII
+  Tarefa: Validação de audit trail (verificar que todos os registros são gerados)
+  Critério de aceite: 100% dos 8 domínios cobertos; 0 regressões; audit logs gerados
+  Estimativa: ~5h
+
+TOTAIS SPRINT:
+  Sprint 1:  8h  (infraestrutura)
+  Sprint 2:  8.5h (migração 7 domínios DomainPrompt)
+  Sprint 3:  5h  (autonomous + validação)
+  TOTAL:     ~21.5h (~3 semanas de desenvolvimento)
+```
+
+---
+
+#### 23.11.8 Guia de Anti-Duplicação (Se Caminho 1 Foi Aplicado Antes)
+
+> **Se o Caminho 1 já foi aplicado em algum domínio, a migração para Caminho 2 requer um passo extra: remover os controles adicionados manualmente, pois a classe base agora os aplica automaticamente.**
+
+**Por concern, o que remover em _domain_process_intent() se Caminho 1 foi aplicado:**
+```
+Concern #1/#9/#16/#18/#21 (Fairness):
+  REMOVER: self._fairness = FairnessGuard() do __init__ do domínio
+  REMOVER: result = self._fairness.check(user_query) de process_intent/_domain_process_intent
+  MANTER: super().__init__() que instancia self._fairness automaticamente
+
+Concern #4/#10/#13/#19 (Injection):
+  REMOVER: self._injection_guard = PromptInjectionGuard() do __init__ do domínio
+  REMOVER: check = self._injection_guard.check(user_query) de process_intent
+  MANTER: o parent process_intent() já faz isso
+
+Concern #7/#12/#14/#20 (PII masking):
+  REMOVER: mask_pii(payload[field]) chamados manualmente no início de execute_action
+  MANTER: _mask_params() do parent já cobre _TEXT_FIELDS — verificar se algum field customizado
+           precisa ser adicionado a _TEXT_FIELDS no __init__ do domínio específico
+
+Concern #5/#8/#17 (Audit):
+  REMOVER: audit = AuditCallback(...) instanciado manualmente em execute_action
+  REMOVER: audit.on_chain_start_manual() e audit.on_chain_end_manual() chamados manualmente
+  MANTER: o parent execute_action() já faz isso
+
+Concern #5/#23 (Confidence):
+  REMOVER: self._confidence = ConfidenceNode() do __init__ do domínio
+  REMOVER: conf_state = self._confidence({...}) chamado após execução
+  MANTER: o parent execute_action() já faz isso
+```
+
+**Regra geral:** Após renomear `process_intent → _domain_process_intent`, revisar o corpo do método. Qualquer linha que comece com `self._fairness`, `self._injection_guard`, `self._audit`, `self._confidence` ou `mask_pii()` no contexto de compliance é código duplicado — remover.
+
+---
+
+
+---
+
+### 23.12 Guia de Implementação Completo — Caminho 3 (Refatoração Estrutural)
+
+> **Para que serve esta seção:** Especificação técnica completa do Caminho 3 — a arquitetura alvo de longo prazo — mais o roteiro tático para construí-la em ambiente paralelo e transportar o código sem disrução de produção. A seção responde: o que construir, onde construir, como construir, e como mover para produção.
+
+---
+
+#### 23.12.1 O Que é o Caminho 3 e Quando Usar
+
+O Caminho 2 resolve os 23 concerns por **herança** — `ComplianceDomainPrompt` é um nó na hierarquia de classes que envolve os dois métodos de entrada. É uma solução robusta, mas tem limites:
+
+- A compliance é acoplada ao `DomainPrompt` — domínios que não herdam desta classe (ex: agentes ReAct, integrações externas futuras) precisam de wrappers ad-hoc
+- Atualizar a lógica de compliance exige modificar `base_compliance.py` e revalidar todos os 8 domínios
+- Não suporta compliance **configurável por tenant** (ex: empresa A quer regras de fairness mais restritivas que empresa B)
+- Não suporta **shadow mode** nativo — para testar novos controles sem enforcement
+
+O Caminho 3 resolve esses limites por **composição e middleware** — compliance é uma camada independente que intercepta TODA chamada de domínio, sem depender da hierarquia de classes.
+
+**Quando usar o Caminho 3:**
+```
+✅ Quando o v5 tiver 12+ domínios (escala que justifica o overhead)
+✅ Quando clientes enterprise exigirem regras de compliance customizadas por tenant
+✅ Quando a equipe crescer e a consistência de compliance virar risco operacional
+✅ Quando o v5 for exposto como API de terceiros (webhooks, SDKs, parceiros)
+✅ Quando o audit trail precisar ser imutável e certificável (SOC-2, ISO 27001)
+❌ NÃO usar: se o timeline é < 6 semanas (Caminho 2 é mais adequado)
+❌ NÃO usar: como primeiro passo — implementar Caminho 2 primeiro, migrar para 3 depois
+```
+
+---
+
+#### 23.12.2 Arquitetura Alvo — Compliance-as-Middleware
+
+O Caminho 3 introduz um **CompliancePipeline** que opera entre o `DomainOrchestrator` (entry point atual do v5) e cada domínio. Nenhum domínio conhece o CompliancePipeline — compliance é transparente para o código de negócio.
+
+```
+ARQUITETURA ATUAL (v5)                    ARQUITETURA ALVO (Caminho 3)
+─────────────────────────                 ──────────────────────────────
+                                          
+[HTTP Request]                            [HTTP Request]
+      │                                         │
+[DomainOrchestrator]          →         [DomainOrchestrator]
+  process_query() L37                     process_query() L37
+      │                                         │
+[DomainExecutorAgent]                   [CompliancePipeline]  ← NOVO
+  execute() L174                          .pre_process()     (fairness, injection, PII)
+      │                                         │
+[Domain.process_intent()]               [DomainExecutorAgent]
+[Domain.execute_action()]                 execute() L174
+                                                │
+                                        [Domain.process_intent()]
+                                        [Domain.execute_action()]
+                                                │
+                                        [CompliancePipeline]  ← NOVO
+                                          .post_process()    (audit, confidence, fact-check)
+```
+
+**Componentes do CompliancePipeline:**
+```
+src/services/compliance/
+├── pipeline.py          ← CompliancePipeline (orquestrador)
+├── stages/
+│   ├── pre_process.py   ← FairnessStage + InjectionStage + PIIMaskingStage
+│   └── post_process.py  ← AuditStage + ConfidenceStage + FactCheckStage
+├── config/
+│   └── tenant_rules.py  ← Regras por company_id (compliance configurável)
+└── registry.py          ← CompliancePipelineRegistry (cria pipeline por domínio)
+```
+
+**Diferença fundamental vs Caminho 2:**
+```
+Caminho 2: EvaluationDomain(ComplianceDomainPrompt) — herança, compliance no objeto
+Caminho 3: CompliancePipeline.wrap(EvaluationDomain) — composição, compliance fora do objeto
+           EvaluationDomain continua herdando DomainPrompt diretamente (sem base_compliance.py)
+```
+
+---
+
+#### 23.12.3 Estratégia de Ambiente Paralelo
+
+> O Caminho 3 é disruptivo demais para ser desenvolvido direto no branch `main` do v5. A estratégia é desenvolver em branch isolado, validar com shadow mode, e transportar via PR controlada.
+
+**Setup do ambiente paralelo:**
+```
+PASSO 1: Criar branch isolado
+  → git checkout -b feat/compliance-pipeline
+  → Este branch NUNCA mergeia para main sem passar pelos 5 gates (ver 23.12.4)
+  → CI/CD separado: testes de compliance rodam automaticamente em todo push
+
+PASSO 2: Estrutura de diretórios novos (não tocam código existente)
+  → Criar src/services/compliance/ (novo diretório — não existe no v5 atual)
+  → Criar src/services/compliance/pipeline.py
+  → Criar src/services/compliance/stages/
+  → Criar testes: tests/compliance/ (novos, não modificam testes existentes)
+
+PASSO 3: Instalar dependências do LIA no v5
+  → Verificar: as libs lia_audit, lia_agents_core, lia_models precisam ser disponibilizadas
+  → Opção A: copiar código diretamente (recomendado para simplicidade)
+  → Opção B: publicar como packages internos PyPI privado (recomendado para Caminho 3)
+  → Se Opção B: criar packages src/packages/lia_compliance/ com setup.py
+
+PASSO 4: Feature flag
+  → Criar: COMPLIANCE_PIPELINE_ENABLED env var (default: false em produção)
+  → DomainOrchestrator verifica a flag antes de usar CompliancePipeline
+  → Em shadow mode: flag COMPLIANCE_SHADOW_MODE=true (roda pipeline mas não bloqueia)
+```
+
+---
+
+#### 23.12.4 As 5 Fases Táticas
+
+**FASE 1 — Arquitetura e Build do Core (2 semanas, ~30h)**
+
+```
+Objetivo: CompliancePipeline funcional em ambiente de desenvolvimento
+Entregáveis:
+  ✓ src/services/compliance/pipeline.py com pré e pós processamento
+  ✓ Stages implementados: FairnessStage, InjectionStage, PIIMaskingStage, AuditStage, ConfidenceStage
+  ✓ Testes unitários de cada Stage com 100% de cobertura
+  ✓ CompliancePipelineRegistry: cria pipelines por domínio com stages configuráveis
+  ✓ tenant_rules.py: regras por company_id lidas do banco (schema mínimo)
+
+Gate de saída (go/no-go):
+  ✓ pipeline.pre_process(query, context) + pipeline.post_process(result, context) funcionando
+  ✓ Todos os 6 controles passando testes unitários isolados
+  ✓ Zero testes existentes do v5 quebrados (branch isolado, mas rodamos testes do main)
+```
+
+**FASE 2 — Shadow Mode (3 semanas, ~45h)**
+
+```
+Objetivo: Pipeline rodando em produção SEM bloquear, apenas logando
+Entregáveis:
+  ✓ COMPLIANCE_SHADOW_MODE=true habilitado em produção
+  ✓ DomainOrchestrator chama CompliancePipeline.pre_process() em shadow mode:
+       → fairness.check() executa mas resultado NÃO bloqueia a query
+       → injection.check() executa mas resultado NÃO levanta erro
+       → mask_pii() aplica mascaramento mas versão original também passa adiante
+  ✓ Todos os resultados do shadow mode logados em tabela compliance_shadow_log
+  ✓ Dashboard de shadow mode: taxa de bloqueio hipotética por domínio por semana
+  ✓ Calibração dos thresholds: ajustar fairness patterns e injection risk levels com dados reais
+
+Gate de saída (go/no-go):
+  ✓ Shadow mode ativo por 2 semanas sem incidente
+  ✓ Taxa de falsos positivos (fairness) < 2% nas queries reais de produção
+  ✓ Taxa de falsos positivos (injection) < 0.5%
+  ✓ P99 de latência adicionada pelo pipeline < 20ms
+  ✓ Dashboard de shadow mode revisado e aprovado pelo Product Owner
+```
+
+**FASE 3 — Canary Release (2 semanas, ~20h)**
+
+```
+Objetivo: Pipeline em blocking mode para 10% do tráfego
+Entregáveis:
+  ✓ COMPLIANCE_CANARY_PERCENT=10 em produção
+  ✓ DomainOrchestrator: 10% das requests usam pipeline blocking, 90% passam direto
+  ✓ Monitoramento em tempo real: alertas se taxa de bloqueio > 5% em qualquer domínio
+  ✓ Rollback automático: se error rate > 1%, desabilita pipeline e alerta equipe
+  ✓ Revisão de todos os bloqueios reais (human review queue no Caminho 3)
+
+Gate de saída (go/no-go):
+  ✓ 2 semanas de canary sem rollback automático
+  ✓ 0 reclamações de usuários sobre bloqueios legítimos
+  ✓ Taxa de bloqueio estável (< 3% das queries em fairness + < 0.5% em injection)
+  ✓ Latência P99 < 20ms para o percentil afetado
+```
+
+**FASE 4 — Full Rollout (1 semana, ~10h)**
+
+```
+Objetivo: Pipeline blocking mode para 100% do tráfego
+Entregáveis:
+  ✓ COMPLIANCE_PIPELINE_ENABLED=true, COMPLIANCE_CANARY_PERCENT=100
+  ✓ Audit trail completo: todos os registros imutáveis no banco
+  ✓ Documentação de compliance: relatório automático por domínio (para clientes enterprise)
+  ✓ Todos os 23 concerns do 23.9 validados como resolvidos via teste automatizado
+
+Gate de saída (go/no-go):
+  ✓ Todos os 8 domínios com pipeline ativo
+  ✓ Audit trail verificado (consulta LGPD Art. 20: empresa consegue mostrar qual prompt, qual contexto)
+  ✓ Teste de carga: throughput sem degradação com pipeline ativo
+```
+
+**FASE 5 — Compliance Configurável por Tenant (2 semanas, ~20h)**
+
+```
+Objetivo: Regras de fairness e guardrails configuráveis por company_id
+Entregáveis:
+  ✓ tenant_rules.py: tabela compliance_tenant_rules no banco
+       → company_id + rule_type + rule_config (JSON) + enabled
+  ✓ Admin UI (mínimo): endpoint para ler/escrever regras por tenant
+  ✓ Exemplos de regras: restrição geográfica, cotas de affirmative action, blocklist de funções
+  ✓ CompliancePipeline carrega regras do banco por company_id a cada request (com cache 60s)
+
+Gate de saída (go/no-go):
+  ✓ Dois clientes com regras diferentes testados em staging
+  ✓ Isolamento garantido: regra de company A não afeta company B
+  ✓ Performance: cache de regras funciona, sem overhead adicional de banco por request
+```
+
+---
+
+#### 23.12.5 Como Transportar o Código para Produção
+
+**Estratégia de merge:** nunca "big bang" — cada fase é uma PR separada, aprovada por code review.
+
+```
+PR 1 (Fase 1): src/services/compliance/* + testes
+  → Não toca DomainOrchestrator ainda
+  → Merge para main com COMPLIANCE_PIPELINE_ENABLED=false (inativo)
+  → Branch de desenvolvimento sincronizado com main após merge
+
+PR 2 (Fase 2 shadow): DomainOrchestrator com integração shadow mode
+  → Adiciona 3 linhas em process_query() para chamar pipeline em shadow mode
+  → Feature flag: COMPLIANCE_SHADOW_MODE=true ativa shadow
+  → Rollback imediato: setar COMPLIANCE_SHADOW_MODE=false
+
+PR 3 (Fase 3 canary): DomainOrchestrator com canary routing
+  → Adiciona lógica de percentual (random.random() < CANARY_PERCENT)
+  → Rollback: setar COMPLIANCE_CANARY_PERCENT=0
+
+PR 4 (Fase 4 rollout): Remover canary routing, pipeline sempre ativo
+  → Simplifica DomainOrchestrator: remove lógica de canary
+  → Sem rollback fácil neste ponto — gate de saída da Fase 3 deve ser rigoroso
+
+PR 5 (Fase 5 tenant): tenant_rules.py + tabela + admin UI
+  → Independente das outras PRs — pode ser feita em paralelo com PR 4
+```
+
+**Testing gates para cada PR:**
+```
+→ Testes unitários: 100% de cobertura dos novos arquivos (mínimo)
+→ Testes de integração: cada domínio + pipeline (5 cenários por domínio)
+→ Teste de regressão: todos os testes existentes do v5 passando
+→ Teste de carga: benchmark antes/depois (latência P99 < 20ms adicionada)
+→ Teste de security: red-team de prompt injection (10 payloads por domínio)
+→ Teste de fairness: 20 queries com critérios discriminatórios (100% bloqueadas)
+```
+
+---
+
+#### 23.12.6 Cronograma e Estimativas
+
+```
+FASE 1 — Build do Core:           2 semanas | ~30h | 1-2 devs
+FASE 2 — Shadow Mode:             3 semanas | ~45h | 1-2 devs (inclui calibração)
+FASE 3 — Canary Release:          2 semanas | ~20h | 1 dev + monitoramento
+FASE 4 — Full Rollout:            1 semana  | ~10h | 1 dev
+FASE 5 — Tenant Configuration:    2 semanas | ~20h | 1 dev + 1 product
+─────────────────────────────────────────────────────────────────────
+TOTAL:                            10 semanas | ~125h | equipe mínima: 2 devs
+                              (estimativa conservadora; 200h+ para equipe 1 dev)
+
+Comparação com outras opções:
+  Caminho 1:  41h  |  7 semanas  |  não escala para domínios futuros
+  Caminho 2:  21h  |  3 semanas  |  escala via herança (recomendado agora)
+  Caminho 3: 125h  | 10 semanas  |  escala total + configurável por tenant (2026-2027)
+```
+
+**Recomendação de sequência:**
+
+```
+AGORA (Q1 2026):       Executar Caminho 2 — 3 semanas, 21h
+                       Resolve 100% dos 23 concerns + protege domínios 9-10-11
+
+Q3 2026 (se crescer):  Planejar Caminho 3 — quando v5 tiver 12+ domínios
+                       ou quando primeiro cliente enterprise exigir tenant rules
+
+Q1 2027:               Executar Caminho 3 em ambiente paralelo
+                       Usar Caminho 2 como baseline de comparação
+                       Migrar gradualmente via shadow → canary → full rollout
+```
+
+---
+
+
 ## Apêndice: Rastreabilidade dos Arquivos v5 Verificados
 
 Para reprodutibilidade independente, tabela com os commits exatos lidos via GitHub API em **20 de março de 2026**:
