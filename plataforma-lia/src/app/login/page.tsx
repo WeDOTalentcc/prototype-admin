@@ -301,9 +301,12 @@ export default function LoginPage() {
                 }}
                 disabled={isSubmitting}
               >
-                <div className="w-4 h-4 bg-[#0078D4] rounded-sm flex items-center justify-center shrink-0">
-                  <span className="text-white text-[10px] font-bold">M</span>
-                </div>
+                <svg width="16" height="16" viewBox="0 0 21 21" className="shrink-0" aria-hidden="true">
+                  <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
+                  <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
+                  <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
+                  <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
+                </svg>
                 Continuar com Microsoft
               </Button>
             </form>
