@@ -43,7 +43,7 @@ Antes de qualquer código, responda:
 - **Border radius:** `rounded-md` (8px) padrão universal — botões/inputs/cards/modais de interface interna. Exceção única: `rounded-2xl` no card principal de **telas de entrada** (login/onboarding) — proibido em qualquer componente de interface interna
 - **Sem hex hardcoded:** usar Tailwind grays ou tokens `wedo-*`
 - **Dark mode obrigatório** em todos os componentes
-- **Sem `box-shadow`** — bordas substituem sombras para separação visual
+- **Sombras em interface interna:** `shadow-sm` apenas (bordas preferidas). Exceção documentada: `shadow-2xl` no card principal de **telas de entrada** — proibido em interface interna
 - **Fonte base 11px** (`text-xs` redefinido no tailwind.config.ts)
 
 ## Botões
