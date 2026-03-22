@@ -280,7 +280,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer rodapé — absoluto para não deslocar o card */}
-        <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-gray-500 text-xs space-y-1">
+        <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-gray-500 text-xs space-y-1 text-center">
           <p>
             A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro. Parte do TalensesGroup.
           </p>
