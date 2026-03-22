@@ -8,9 +8,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { SetupAlertBadge } from "@/components/ui/setup-alert-badge"
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
-import { LiaChatButton } from "@/components/lia-float/LiaChatButton"
-import { LiaChatPanel } from "@/components/lia-float/LiaChatPanel"
-import { LiaSuperPrompt } from "@/components/lia-float/LiaSuperPrompt"
+import { LiaFloatConditional } from "@/components/lia-float/LiaFloatConditional"
 
 
 const inter = Inter({
@@ -62,9 +60,7 @@ export default function RootLayout({
                 <SetupAlertBadge />
                 <Toaster />
                 <SonnerToaster position="top-right" />
-                <LiaChatPanel />
-                <LiaChatButton />
-                <LiaSuperPrompt />
+                <LiaFloatConditional />
               </ErrorBoundary>
             </LiaFloatProvider>
           </JWTAuthProvider>
