@@ -67,14 +67,22 @@ export default function LoginPage() {
 
       {/* Left Section - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative px-12 py-10 flex-col z-10">
-        <Image
-          src="/logos/wedo-logo-transparent.png"
-          alt="WeDo Talent"
-          width={120}
-          height={38}
-          style={{ width: "120px", height: "auto", maxWidth: "120px" }}
-          priority
-        />
+        <div style={{ width: "200px" }}>
+          <Image
+            src="/logos/wedo-logo-transparent.png"
+            alt="WeDo Talent"
+            width={200}
+            height={63}
+            style={{ width: "200px", height: "auto", maxWidth: "200px" }}
+            priority
+          />
+          <span
+            className="block text-center text-gray-950 font-semibold uppercase tracking-[0.42em] text-[9px]"
+            style={{ marginTop: "-6px" }}
+          >
+            talent
+          </span>
+        </div>
 
         <div className="flex-1 flex flex-col justify-center pr-8">
           <h1 className="text-4xl text-gray-950 font-light mb-4 leading-tight font-['Open_Sans',sans-serif]">
