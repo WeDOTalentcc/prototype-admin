@@ -91,26 +91,6 @@ export default function LoginPage() {
             </span>
           </h1>
           
-          <p className="text-gray-600 text-base leading-relaxed mb-8 max-w-md">
-            LIA revoluciona a forma como você recruta, usando IA avançada para encontrar,
-            avaliar e engajar os melhores talentos.
-          </p>
-
-          <div className="space-y-3 mb-10">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500" />
-              <span className="text-gray-800 dark:text-gray-200 text-base">Triagem automática com IA</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500" />
-              <span className="text-gray-800 dark:text-gray-200 text-base">Assistente de IA de recrutamento</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500" />
-              <span className="text-gray-800 dark:text-gray-200 text-base">Experiência personalizada do candidato</span>
-            </div>
-          </div>
-
         </div>
 
         {/* Footer */}
