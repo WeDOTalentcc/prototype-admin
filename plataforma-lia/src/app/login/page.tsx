@@ -111,20 +111,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* LIA Card - Largura total */}
-          <div className="bg-white/75 backdrop-blur-sm rounded-md p-5 w-full mt-4">
-            <div className="flex items-center gap-4 mb-3">
-              <Brain className="w-12 h-12 text-wedo-cyan" />
-              <div>
-                <h3 className="text-base font-semibold text-gray-950 dark:text-gray-50">Conheça a LIA</h3>
-                <p className="text-gray-600 text-sm">Sua assistente de IA de recrutamento</p>
-              </div>
-            </div>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              A LIA não é apenas um chatbot. É uma IA especializada que entende recrutamento,
-              aprende com seus processos e otimiza continuamente seus resultados.
-            </p>
-          </div>
         </div>
 
         {/* Footer */}
@@ -139,7 +125,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Section - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:px-16 bg-white relative z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.08)]">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:px-16 bg-white relative z-10">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
