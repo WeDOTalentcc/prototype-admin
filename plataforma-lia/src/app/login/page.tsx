@@ -7,7 +7,7 @@ import { useJWTAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 import Image from "next/image"
 import {
-  Eye, EyeOff, Mail, Lock, Loader2, AlertCircle, Pencil
+  Eye, EyeOff, Mail, Lock, Loader2, AlertCircle, Pencil, Globe, Linkedin
 } from "lucide-react"
 import CloudsBackground from "@/components/clouds-background"
 
@@ -93,14 +93,47 @@ export default function LoginPage() {
               IA Agêntica para Recrutamento
             </span>
           </div>
-          <p className="text-lg text-gray-600 font-light mb-5 leading-relaxed tracking-wide font-['Open_Sans',sans-serif]">
-            Sourcing global. Triagem inteligente.<br />
-            Agendamentos automáticos. Recrutamento simples.
-          </p>
-          <h1 className="text-3xl text-gray-950 font-semibold leading-snug font-['Open_Sans',sans-serif]">
+          {/* Headline — primeiro, maior impacto */}
+          <h1 className="text-3xl text-gray-950 font-semibold leading-snug mb-5 font-['Open_Sans',sans-serif]">
             Entre. A LIA já está<br />
             <span className="font-semibold text-wedo-cyan">trabalhando por você.</span>
           </h1>
+          {/* Sequência de suporte — abaixo, mais leve */}
+          <p className="text-sm text-gray-500 font-light leading-relaxed font-['Open_Sans',sans-serif]">
+            Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos&nbsp;·&nbsp;Recrutamento simples
+          </p>
+        </div>
+
+        {/* Footer esquerdo — ícones + copyright */}
+        <div className="absolute bottom-0 left-0 pb-8 px-12">
+          <div className="flex items-center gap-4 mb-1.5">
+            <a
+              href="https://www.wedotalent.cc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              title="Website"
+            >
+              <Globe className="w-4 h-4" />
+            </a>
+            <a
+              href="https://www.linkedin.com/company/wedotalent/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              title="LinkedIn"
+            >
+              <Linkedin className="w-4 h-4" />
+            </a>
+            <a
+              href="mailto:tech@wedotalent.cc"
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              title="Contato"
+            >
+              <Mail className="w-4 h-4" />
+            </a>
+          </div>
+          <p className="text-xs text-gray-400">© 2025 LIA by WeDoTalent</p>
         </div>
 
       </div>
