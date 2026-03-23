@@ -250,23 +250,34 @@ Cultura da empresa:
 Nível da vaga: {seniority}
 
 Sua tarefa:
-1. Extraia 5 competências TÉCNICAS mais críticas
-2. Extraia 2 competências COMPORTAMENTAIS/CULTURAIS
-3. Sugira pesos (total 100%):
-   - 70% para técnicas
-   - 30% para comportamentais/culturais
+1. Extraia as 5 competências TÉCNICAS mais críticas para a vaga (hard skills)
+2. Extraia as 5 competências COMPORTAMENTAIS mais relevantes para a vaga
+   - Pode classificar cada uma como "behavioral" (soft skill interpessoal) ou "cultural" (fit com valores/cultura)
+   - Ordene da mais crítica para a menos crítica conforme o perfil da vaga
+3. Sugira pesos (total = 1.0):
+   - 60% para técnicas (distribuir entre as 5, ex: 0.18, 0.15, 0.12, 0.10, 0.05)
+   - 40% para comportamentais/culturais (distribuir entre as 5, ex: 0.12, 0.10, 0.08, 0.06, 0.04)
+
+As 5 comportamentais garantem que tanto no modo compacto (6 perguntas) quanto no modo completo (10 perguntas)
+a metodologia possa selecionar as mais relevantes conforme o perfil específico da vaga.
 
 Responda em JSON:
 {{
   "technical_competencies": [
-    {{"name": "Python", "weight": 0.25, "is_critical": true}},
-    ...
+    {{"name": "Python", "weight": 0.20, "is_critical": true}},
+    {{"name": "Django/FastAPI", "weight": 0.15, "is_critical": true}},
+    {{"name": "PostgreSQL", "weight": 0.10, "is_critical": false}},
+    {{"name": "AWS", "weight": 0.10, "is_critical": false}},
+    {{"name": "Docker", "weight": 0.05, "is_critical": false}}
   ],
   "behavioral_competencies": [
-    {{"name": "Colaboração em Equipe", "weight": 0.15}},
-    ...
+    {{"name": "Comunicação Assertiva", "weight": 0.10}},
+    {{"name": "Colaboração em Equipe", "weight": 0.08}},
+    {{"name": "Gestão de Conflito", "weight": 0.08}},
+    {{"name": "Adaptabilidade", "weight": 0.07}},
+    {{"name": "Orientação a Resultados", "weight": 0.07}}
   ],
-  "cultural_competencies": [...],
+  "cultural_competencies": [],
   "confidence_score": 0.95
 }}"""
 
@@ -528,65 +539,103 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
     ) -> List[WSIQuestion]:
         """
         Gera todas as perguntas para as competências selecionadas.
-        
+
         Estratégia:
-        - compact: 6-8 perguntas (5-7 min WhatsApp)
-        - compact_plus: 8-10 perguntas (7-10 min WhatsApp)
-        
-        Distribuição:
-        - 60% CBI (contextuais)
-        - 20% Dreyfus (autodeclaração)
-        - 15% Bloom (microcases)
-        - 5% Big Five (situacionais)
+        - compact:      6 perguntas (5-7 min WhatsApp)
+        - compact_plus: 10 perguntas (8-12 min WhatsApp)
+
+        Ambos os modos extraem 5 técnicas + 5 comportamentais do JD.
+        A metodologia seleciona as mais relevantes por peso e is_critical.
+
+        Distribuição compact (6 perguntas):
+        - CBI técnico:        2 perguntas  (top 2 técnicas por is_critical + peso)
+        - CBI comportamental: 1 pergunta   (top 1 comportamental por peso)
+        - Dreyfus:            1 pergunta   (3ª técnica — autodeclaração)
+        - Bloom:              1 pergunta   (4ª técnica — microcase)
+        - Big Five:           1 pergunta   (2ª comportamental — fit cultural/situacional)
+
+        Distribuição compact_plus (10 perguntas):
+        - CBI técnico:        3 perguntas  (top 3 técnicas por is_critical + peso)
+        - CBI comportamental: 3 perguntas  (top 3 comportamentais por peso)
+        - Dreyfus:            2 perguntas  (4ª e 5ª técnicas — autodeclaração)
+        - Bloom:              1 pergunta   (microcase — técnica com maior bloom_level)
+        - Big Five:           1 pergunta   (4ª comportamental — fit cultural/situacional)
         """
-        # Validate minimum competencies
         if not competencies:
             raise ValueError("At least 1 competency is required to generate questions")
-        
+
         if len(competencies) < 2:
             logger.warning(f"Only {len(competencies)} competencies provided. Minimum 2 recommended for WSI screening.")
-        
-        target_count = 6 if mode == "compact" else 8
-        
-        # Separar competências por tipo
-        technical = [c for c in competencies if c.type == "technical"]
-        behavioral = [c for c in competencies if c.type == "behavioral"]
-        cultural = [c for c in competencies if c.type == "cultural"]
-        
-        # Validate we have enough competencies for distribution
+
+        # Separar e ordenar por relevância: is_critical primeiro, depois peso decrescente
+        technical = sorted(
+            [c for c in competencies if c.type == "technical"],
+            key=lambda c: (c.is_critical, c.weight),
+            reverse=True
+        )
+        behavioral = sorted(
+            [c for c in competencies if c.type in ("behavioral", "cultural")],
+            key=lambda c: c.weight,
+            reverse=True
+        )
+
         if not technical:
-            logger.warning("No technical competencies provided. Using behavioral/cultural for all questions.")
-            technical = behavioral + cultural
-        
-        # Distribuir perguntas por framework (ajustado para quantidade disponível)
+            logger.warning("No technical competencies provided. Using behavioral for all questions.")
+            technical = behavioral
+
         questions = []
-        
-        # 60% CBI (contextuais) - 4 perguntas técnicas
-        cbi_count = min(int(target_count * 0.6), len(technical))
-        for comp in technical[:cbi_count]:
-            question = await self._generate_cbi_question(comp)
-            questions.append(question)
-        
-        # 20% Dreyfus (autodeclaração) - 1-2 perguntas
-        dreyfus_count = min(max(1, int(target_count * 0.2)), len(technical) - cbi_count)
-        for comp in technical[cbi_count:cbi_count+dreyfus_count]:
-            question = await self._generate_dreyfus_question(comp)
-            questions.append(question)
-        
-        # 15% Bloom (microcase) - 1 pergunta técnica
-        if len(technical) > cbi_count + dreyfus_count:
-            question = await self._generate_bloom_question(technical[cbi_count + dreyfus_count])
-            questions.append(question)
-        
-        # 5% Big Five (situacional) - 1 pergunta comportamental
-        if behavioral or cultural:
-            question = await self._generate_bigfive_question(behavioral[0] if behavioral else cultural[0])
-            questions.append(question)
-        
-        # Se não conseguimos gerar o target_count, avisa
+
+        if mode == "compact":
+            # --- CBI técnico: top 2 técnicas ---
+            for comp in technical[:2]:
+                questions.append(await self._generate_cbi_question(comp))
+
+            # --- CBI comportamental: top 1 comportamental ---
+            if behavioral:
+                questions.append(await self._generate_cbi_question(behavioral[0]))
+
+            # --- Dreyfus: 3ª técnica (autodeclaração de proficiência) ---
+            if len(technical) > 2:
+                questions.append(await self._generate_dreyfus_question(technical[2]))
+
+            # --- Bloom: 4ª técnica (microcase situacional) ---
+            if len(technical) > 3:
+                questions.append(await self._generate_bloom_question(technical[3]))
+
+            # --- Big Five: 2ª comportamental (fit cultural / situacional OCEAN) ---
+            bigfive_comp = behavioral[1] if len(behavioral) > 1 else (behavioral[0] if behavioral else technical[0])
+            questions.append(await self._generate_bigfive_question(bigfive_comp))
+
+        else:  # compact_plus — 10 perguntas
+            # --- CBI técnico: top 3 técnicas ---
+            for comp in technical[:3]:
+                questions.append(await self._generate_cbi_question(comp))
+
+            # --- CBI comportamental: top 3 comportamentais ---
+            for comp in behavioral[:3]:
+                questions.append(await self._generate_cbi_question(comp))
+
+            # --- Dreyfus: 4ª e 5ª técnicas (autodeclaração) ---
+            for comp in technical[3:5]:
+                questions.append(await self._generate_dreyfus_question(comp))
+
+            # --- Bloom: microcase — técnica não coberta ainda ---
+            bloom_idx = min(5, len(technical) - 1)
+            if bloom_idx >= 0 and len(technical) > 5:
+                questions.append(await self._generate_bloom_question(technical[5]))
+            elif len(technical) > 0:
+                # fallback: usa a técnica mais pesada com bloom se não chegamos em 5
+                questions.append(await self._generate_bloom_question(technical[0]))
+
+            # --- Big Five: 4ª comportamental (fit cultural / situacional) ---
+            bigfive_comp = behavioral[3] if len(behavioral) > 3 else (behavioral[-1] if behavioral else technical[0])
+            questions.append(await self._generate_bigfive_question(bigfive_comp))
+
+        target_count = 6 if mode == "compact" else 10
+
         if len(questions) < target_count:
             logger.warning(f"Generated only {len(questions)}/{target_count} questions due to limited competencies")
-        
+
         return questions[:target_count]
     
     async def _generate_cbi_question(self, competency: Competency) -> WSIQuestion:
