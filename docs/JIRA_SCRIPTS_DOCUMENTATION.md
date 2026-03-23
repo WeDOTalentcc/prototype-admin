@@ -1,7 +1,7 @@
 # Scripts de Automação Jira — Documentação Completa
 
 > **Plataforma LIA / WeDOTalent** — Análise técnica automatizada de cards Jira com Claude AI  
-> Versão: 2.0 | DS LIA v4.2.1 | Spec Driven Development
+> Versão: 3.0 | DS LIA v4.2.1 | Spec Driven Development | claude-sonnet-4-6
 
 ---
 
@@ -27,9 +27,53 @@ O fluxo é em dois tempos distintos:
    - Backend Python, Agentes IA, Integrações — diretamente no Replit
 4. Monta um contexto unificado com tudo que foi coletado
 
-**Fase 2 — Claude analisa o contexto montado** (recebe tudo pronto e gera):
+**Fase 2 — Claude analisa e publica em 2 partes** (recebe tudo pronto e gera):
 5. Gera JSON estruturado com issues, ANTES/DEPOIS, spec-driven e mais
-6. O Replit publica o resultado no Jira — sobrescreve a description com o relatório em ADF (formato nativo Jira)
+6. **Parte 1:** Replit APPENDA a análise principal na description (conteúdo original preservado) → `PUT /issue/{key}`
+7. **Parte 2:** Replit posta design issues + critérios + DoD como comentário → `POST /issue/{key}/comment`
+
+---
+
+## Estratégia de 2 Partes — v3.0
+
+### Por que 2 partes?
+
+Cards com muitas issues + code blocks ANTES/DEPOIS em múltiplos layers consumiam todo o budget de 16k tokens do Claude, truncando o JSON antes de chegar em design issues, critérios de aceite e DoD. A solução é dividir o output em duas publicações Jira distintas.
+
+### Descrição do card (Parte 1 — PUT)
+
+Conteúdo que vai direto na **descrição do card**:
+
+| Script 1 (`jira-fetch-analyze.py`) | Script 2 (`jira-audit-design.py`) |
+|-------------------------------------|-----------------------------------|
+| Issues funcionais (F01–Fxx) com code blocks ANTES/DEPOIS por layer | Issues de design (01–xx) com code blocks Vue vs React |
+| Resumo + arquivos de referência + action items | Vuetify defaults + alertas |
+| Conteúdo original do card **preservado acima** via ADF | Conteúdo original do card **preservado acima** via ADF |
+
+### Comentário do card (Parte 2 — POST)
+
+Conteúdo que vai no **comentário** (área sem limite de espaço):
+
+| Script 1 | Script 2 |
+|----------|----------|
+| Issues de design (D01–Dxx) | Comportamento Esperado (DADO/QUANDO/ENTÃO) |
+| Critérios de aceite | Fora de Escopo |
+| Definition of Done | Impacto em Outros Sistemas |
+| | Definition of Done + Critérios de Aceite |
+
+### Preservação de conteúdo existente
+
+**Regra absoluta:** os scripts NUNCA apagam conteúdo do card. O fluxo é:
+
+```
+existing_nodes = card["fields"]["description"]["content"]  # ADF atual
+new_nodes = build_analysis_adf(...)["content"]            # Nova análise
+
+merged = existing_nodes + [separator_rule, separator_heading, separator_rule] + new_nodes
+PUT /issue/{key}  →  merged (todo o histórico preservado)
+```
+
+O separador visual (`──────`) deixa claro onde termina o conteúdo original e onde começa a análise gerada automaticamente.
 
 ---
 
@@ -37,7 +81,7 @@ O fluxo é em dois tempos distintos:
 
 ### Integrações necessárias (Replit)
 - **Jira** — integração Replit configurada (OAuth)
-- **Anthropic** — integração Replit configurada (Claude claude-opus-4-5)
+- **Anthropic** — integração Replit configurada (modelo: `claude-sonnet-4-6`, via proxy `AI_INTEGRATIONS_ANTHROPIC_BASE_URL`)
 - **GitHub** — secret `GITHUB_PAT_WEDOTALENT` com acesso a toda a org `WeDOTalent` (wedo-nuxt, v5, e qualquer outro repo necessário)
 
 ### Constantes principais (topo dos scripts)
@@ -92,36 +136,43 @@ python3 scripts/jira-fetch-analyze.py WT-1637 \
   --backend-file lia-agent-system/app/api/v1/jobs.py
 ```
 
-### Fluxo detalhado (6 passos)
+### Fluxo detalhado (7 passos — v3.0)
 
 ```
 ─── FASE 1: Replit lê e coleta ─────────────────────────────────────────────
 
-[1/6] Replit busca credenciais Jira (via integração OAuth configurada no Repl)
+[1/7] Replit busca credenciais Jira (via integração OAuth configurada no Repl)
 
-[2/6] Replit busca o card WT-XXXX na API do Jira:
+[2/7] Replit busca o card WT-XXXX na API do Jira:
       → lê summary + description completa (transcrição)
+      → extrai nós ADF existentes (transcrição, screenshots, BetterBugs)
+      → esses nós serão PRESERVADOS — a análise é APPENDADA, nunca sobrescrita
       → extrai keywords, caminhos de arquivo mencionados, URLs .vue
 
-[3/6] Replit lê código React diretamente no próprio ambiente:
+[3/7] Replit lê código React diretamente no próprio ambiente:
       → arquivos passados via --react-file (leitura direta do filesystem)
       → busca automática por keywords nos diretórios React do Replit
 
-[4/6] Replit lê código Backend + IA + Integrações (também no filesystem local):
+[4/7] Replit lê código Backend + IA + Integrações (também no filesystem local):
       → arquivos passados via --backend-file
       → busca automática por keywords em backend, agentes IA, integrações
 
-[5/6] Replit lê código Vue (e qualquer outro repo) via GitHub API:
+[5/7] Replit lê código Vue (e qualquer outro repo) via GitHub API:
       → arquivos passados via --vue-file (qualquer repo: wedo-nuxt, v5, etc.)
       → arquivos .vue mencionados na transcrição → buscados via GitHub API
       → busca automática por keywords no GitHub (repo padrão: wedo-nuxt)
 
-─── FASE 2: Claude analisa o contexto montado ───────────────────────────────
+─── FASE 2: Claude analisa e publica em 2 partes ────────────────────────────
 
-[6/6] Replit detecta URL BetterBugs → acessa e extrai conteúdo público
-      Replit monta prompt com: transcrição + BetterBugs + todos os códigos coletados
-      Claude recebe o contexto completo e gera o JSON estruturado
-      Replit converte JSON → ADF e publica no card Jira
+[6/7] Parte 1 — Descrição (issues de funcionalidade com código ANTES/DEPOIS):
+      Replit detecta URL BetterBugs → acessa e extrai conteúdo público
+      Claude Parte 1: gera issues funcionais (F01-Fxx) com code blocks por layer
+      Replit: existing_nodes + separator + nova análise → PUT /issue/{key}
+
+[7/7] Parte 2 — Comentário (design + critérios + DoD):
+      Claude Parte 2: gera issues de design, critérios de aceite e DoD
+      Replit: converte para ADF e posta como comentário → POST /issue/{key}/comment
+      Resultado: tudo visível no card sem exceder CONTENT_LIMIT_EXCEEDED do Jira
 ```
 
 ### Layers de código coletados pelo Replit
@@ -392,32 +443,39 @@ python3 scripts/jira-audit-design.py WT-1637 \
   --react-file plataforma-lia/src/components/ui/sidebar.tsx
 ```
 
-### Fluxo detalhado (5 passos)
+### Fluxo detalhado (6 passos — v3.0)
 
 ```
 ─── FASE 1: Replit lê e coleta ─────────────────────────────────────────────
 
-[1/5] Replit busca credenciais Jira (via integração OAuth configurada no Repl)
+[1/6] Replit busca credenciais Jira (via integração OAuth configurada no Repl)
 
-[2/5] Replit busca o card WT-XXXX na API do Jira:
+[2/6] Replit busca o card WT-XXXX na API do Jira:
       → lê transcrição completa + keywords
+      → extrai nós ADF existentes (screenshots, transcrição, links)
+      → esses nós serão PRESERVADOS — auditoria é APPENDADA, nunca sobrescrita
       → extrai arquivos .vue mencionados no texto
 
-[3/5] Replit lê código React diretamente no filesystem local:
+[3/6] Replit lê código React diretamente no filesystem local:
       → arquivos passados via --react-file
       → busca automática por keywords em plataforma-lia/src
 
-[4/5] Replit lê código Vue (e qualquer outro repo) via GitHub API:
+[4/6] Replit lê código Vue (e qualquer outro repo) via GitHub API:
       → arquivos passados via --vue-file (qualquer repo da org WeDOTalent)
       → arquivos .vue mencionados na transcrição → buscados via GitHub API
       → busca automática por keywords no GitHub (repo padrão: wedo-nuxt)
 
-─── FASE 2: Claude analisa o contexto montado ───────────────────────────────
+─── FASE 2: Claude analisa e publica em 2 partes ────────────────────────────
 
-[5/5] Replit detecta URL BetterBugs → acessa e extrai conteúdo público
-      Replit monta prompt com: transcrição + BetterBugs + React + Vue coletados
-      Claude recebe o contexto completo e gera 5–15 issues numeradas com ANTES/DEPOIS
-      Replit converte JSON → ADF e publica no card Jira
+[5/6] Descrição — Issues de design com código ANTES/DEPOIS + Vuetify defaults:
+      Replit detecta URL BetterBugs → acessa e extrai conteúdo público
+      Claude gera issues de design numeradas (01-xx) + alerts Vuetify defaults
+      Replit: existing_nodes + separator + auditoria → PUT /issue/{key}
+
+[6/6] Comentário — Comportamento Esperado, Fora de Escopo, DoD, Critérios:
+      Replit converte seções complementares para ADF
+      Posta como comentário → POST /issue/{key}/comment
+      Resultado: card completo sem exceder CONTENT_LIMIT_EXCEEDED do Jira
 ```
 
 ### Estrutura do JSON gerado pelo Claude

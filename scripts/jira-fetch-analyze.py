@@ -1531,7 +1531,16 @@ def main():
     print(f"\nPublicando no Jira...")
     status_code, text = update_card(token, issue_key, adf)
     if status_code in (200, 204):
-        print(f"  ✓ Descrição atualizada (issues funcionais)")
+        print(f"  ✓ Descrição enviada — verificando se foi salva...")
+        verify = fetch_card(token, issue_key)
+        saved_nodes = (verify["fields"].get("description") or {}).get("content", [])
+        expected_count = len(adf["content"])
+        if len(saved_nodes) >= expected_count - 5:
+            print(f"  ✓ Descrição confirmada ({len(saved_nodes)} nós no Jira)")
+        else:
+            print(f"  ⚠ ATENÇÃO: Jira retornou {len(saved_nodes)} nós, esperado {expected_count}.")
+            print(f"     O Jira pode ter revertido o conteúdo silenciosamente.")
+            print(f"     Tente reduzir o número de code blocks ou usar --dry-run para diagnóstico.")
     else:
         print(f"  ❌ Erro na descrição {status_code}: {text[:400]}")
 

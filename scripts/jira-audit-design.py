@@ -506,7 +506,19 @@ REGRAS:
     raw = response.content[0].text.strip()
     raw = re.sub(r"^```(?:json)?\n?", "", raw)
     raw = re.sub(r"\n?```$", "", raw)
-    return json.loads(raw)
+
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        lines = raw.splitlines()
+        for _ in range(min(30, len(lines))):
+            lines.pop()
+            try:
+                candidate = "\n".join(lines) + "\n}"
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+        raise ValueError(f"Resposta do Claude não é JSON válido mesmo após recovery:\n{raw[:500]}")
 
 
 def build_audit_adf(data, card_key, summary):
@@ -549,8 +561,11 @@ def build_audit_adf(data, card_key, summary):
             list_items.append({"type": "listItem", "content": content_node})
         return {"type": "bulletList", "content": list_items}
 
-    def code_block(code, language=""):
-        return {"type": "codeBlock", "attrs": {"language": language}, "content": [{"type": "text", "text": code}]}
+    def code_block(code, language="", max_chars=600):
+        text = str(code)
+        if len(text) > max_chars:
+            text = text[:max_chars] + f"\n... [truncado — {len(str(code)) - max_chars} chars omitidos]"
+        return {"type": "codeBlock", "attrs": {"language": language}, "content": [{"type": "text", "text": text}]}
 
     def rule():
         return {"type": "rule"}
@@ -570,51 +585,20 @@ def build_audit_adf(data, card_key, summary):
     for item in meta_items:
         nodes.append(paragraph(item))
 
+    if arquivo_vue:
+        nodes.append(paragraph(f"Arquivos auditados: {arquivo_vue}"))
+
     nodes.append(rule())
 
-    nodes.append(heading(2, "🔍 Issues de Auditoria — React vs Vue (gerados por IA)"))
+    nodes.append(heading(2, "🔍 Issues de Auditoria — React vs Vue"))
     nodes.append(paragraph(
         "Metodologia: React/Replit = fonte da verdade absoluta.\n"
         "Cada Issue abaixo é um bug confirmado — Vue diverge do React.\n"
-        "Sem '[VER NO PROD]'. Sem 'verificar'. Cada Issue tem Antes/Depois concreto."
+        "Sem '[VER NO PROD]'. Sem 'verificar'. Cada Issue tem Antes/Depois concreto.\n"
+        "Comportamento Esperado, Fora de Escopo, DoD e Impactos: veja o comentário abaixo."
     ))
 
-    nodes.append(heading(1, f"Auditoria DS LIA v4.2.1 — {tela}"))
-    nodes.append(paragraph(f"Card Jira: {card_key}"))
-    nodes.append(paragraph(f"Tela: {tela}"))
-    if arquivo_vue:
-        nodes.append(paragraph(f"Arquivos auditados: {arquivo_vue}"))
     nodes.append(rule())
-
-    # ── Comportamento Esperado (DADO/QUANDO/ENTÃO) ──
-    comportamentos = data.get("comportamento_esperado", [])
-    if comportamentos:
-        nodes.append(heading(2, "🎯 Comportamento Esperado (Spec Driven)"))
-        nodes.append(paragraph(
-            "Spec formal do comportamento visual correto — usada como contexto para Cursor/Claude Code. "
-            "Se o componente Vue satisfaz todos os ENTÃO abaixo, a auditoria está resolvida."
-        ))
-        for c in comportamentos:
-            dado = c.get("dado", "")
-            quando = c.get("quando", "")
-            entao = c.get("entao", "")
-            e_extra = c.get("e", "")
-            bloco = f"DADO {dado}\nQUANDO {quando}\nENTÃO {entao}"
-            if e_extra:
-                bloco += f"\nE {e_extra}"
-            nodes.append(code_block(bloco, "gherkin"))
-        nodes.append(rule())
-
-    # ── Fora de Escopo ──
-    fora = data.get("fora_de_escopo", [])
-    if fora:
-        nodes.append(heading(2, "🚫 Fora de Escopo"))
-        nodes.append(paragraph(
-            "O que NÃO será corrigido nesta auditoria. "
-            "Impede que o dev ou AI coder resolva coisas além do design."
-        ))
-        nodes.append(bullet_list_mixed(fora))
-        nodes.append(rule())
 
     nodes.append(heading(2, "Issues Identificadas"))
 
@@ -693,14 +677,80 @@ def build_audit_adf(data, card_key, summary):
 
     nodes.append(rule())
 
-    # ── Impacto em Outros Sistemas ──
+    nodes.append(paragraph(
+        "Referência: React/Replit é sempre a fonte da verdade de design.\n"
+        "Qualquer componente Vue que diverge do React = bug a corrigir.\n"
+        "Comportamento Esperado, Fora de Escopo, DoD e Impactos estão no comentário abaixo."
+    ))
+
+    return {"version": 1, "type": "doc", "content": nodes}
+
+
+def build_audit_comment_adf(data, card_key, summary):
+    """Constrói ADF do comentário: comportamento esperado, fora de escopo, impacto e DoD."""
+    nodes = []
+    from datetime import date
+    today = date.today().strftime("%d/%m/%Y")
+
+    def heading(level, text):
+        return {"type": "heading", "attrs": {"level": level}, "content": [{"type": "text", "text": text}]}
+
+    def paragraph(text, bold=False):
+        if bold:
+            return {"type": "paragraph", "content": [{"type": "text", "text": text, "marks": [{"type": "strong"}]}]}
+        return {"type": "paragraph", "content": [{"type": "text", "text": text}]}
+
+    def bullet_list_mixed(items):
+        list_items = []
+        for item in items:
+            if isinstance(item, str):
+                content_node = [{"type": "paragraph", "content": [{"type": "text", "text": item}]}]
+            elif isinstance(item, dict):
+                content_node = [item]
+            else:
+                content_node = [item]
+            list_items.append({"type": "listItem", "content": content_node})
+        return {"type": "bulletList", "content": list_items}
+
+    def code_block(code, language=""):
+        text = str(code)[:600]
+        return {"type": "codeBlock", "attrs": {"language": language}, "content": [{"type": "text", "text": text}]}
+
+    def rule():
+        return {"type": "rule"}
+
+    nodes.append(heading(1, f"Análise Complementar — {summary}"))
+    nodes.append(paragraph(f"Card: {card_key} | Gerado em: {today}"))
+    nodes.append(rule())
+
+    comportamentos = data.get("comportamento_esperado", [])
+    if comportamentos:
+        nodes.append(heading(2, "🎯 Comportamento Esperado (Spec Driven)"))
+        nodes.append(paragraph(
+            "Spec formal do comportamento visual correto — usada como contexto para Cursor/Claude Code."
+        ))
+        for c in comportamentos:
+            dado = c.get("dado", "")
+            quando = c.get("quando", "")
+            entao = c.get("entao", "")
+            e_extra = c.get("e", "")
+            bloco = f"DADO {dado}\nQUANDO {quando}\nENTÃO {entao}"
+            if e_extra:
+                bloco += f"\nE {e_extra}"
+            nodes.append(code_block(bloco, "gherkin"))
+        nodes.append(rule())
+
+    fora = data.get("fora_de_escopo", [])
+    if fora:
+        nodes.append(heading(2, "🚫 Fora de Escopo"))
+        nodes.append(paragraph("O que NÃO será corrigido nesta auditoria."))
+        nodes.append(bullet_list_mixed(fora))
+        nodes.append(rule())
+
     impactos = data.get("impacto_outros_sistemas", [])
     if impactos:
         nodes.append(heading(2, "💥 Impacto em Outros Sistemas"))
-        nodes.append(paragraph(
-            "Componentes ou telas que podem ser afetados pelas correções propostas. "
-            "Revise visualmente antes de fechar o PR."
-        ))
+        nodes.append(paragraph("Componentes ou telas que podem ser afetados pelas correções."))
         items_imp = []
         for imp in impactos:
             if isinstance(imp, dict):
@@ -712,7 +762,6 @@ def build_audit_adf(data, card_key, summary):
         nodes.append(bullet_list_mixed(items_imp))
         nodes.append(rule())
 
-    # ── Definition of Done ──
     dod = data.get("definition_of_done", [])
     if dod:
         nodes.append(heading(2, "🏁 Definition of Done"))
@@ -723,10 +772,12 @@ def build_audit_adf(data, card_key, summary):
         nodes.append(bullet_list_mixed(dod))
         nodes.append(rule())
 
-    nodes.append(paragraph(
-        "Referência: React/Replit é sempre a fonte da verdade de design.\n"
-        "Qualquer componente Vue que diverge do React = bug a corrigir."
-    ))
+    criterios = data.get("criterios_aceite", [])
+    if criterios:
+        nodes.append(heading(2, "✅ Critérios de Aceite"))
+        nodes.append(paragraph("Condições que devem ser verdadeiras para o card ser aceito."))
+        nodes.append(bullet_list_mixed(criterios))
+        nodes.append(rule())
 
     return {"version": 1, "type": "doc", "content": nodes}
 
@@ -737,6 +788,17 @@ def update_card(token, issue_key, adf_description):
         url,
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"},
         json={"fields": {"description": adf_description}},
+    )
+    return resp.status_code, resp.text
+
+
+def add_comment(token, issue_key, adf_body):
+    """Adiciona um comentário ADF ao card Jira."""
+    url = f"{BASE_URL}/issue/{issue_key}/comment"
+    resp = requests.post(
+        url,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"},
+        json={"body": adf_body},
     )
     return resp.status_code, resp.text
 
@@ -755,16 +817,19 @@ def main():
     print(f"JIRA AUDIT DESIGN — DS LIA v4.2.1 — {issue_key}")
     print("=" * 70)
 
-    print("\n[1/5] Buscando credenciais Jira...")
+    print("\n[1/6] Buscando credenciais Jira...")
     token = get_jira_token()
     print("✓ Token obtido")
 
-    print(f"\n[2/5] Buscando card {issue_key}...")
+    print(f"\n[2/6] Buscando card {issue_key}...")
     card = fetch_card(token, issue_key)
     summary = card["fields"].get("summary", "")
-    description_text = adf_to_text(card["fields"].get("description") or {}).strip()
+    existing_desc_adf = card["fields"].get("description") or {}
+    existing_nodes = existing_desc_adf.get("content", []) if isinstance(existing_desc_adf, dict) else []
+    description_text = adf_to_text(existing_desc_adf).strip()
     print(f"✓ Card: {summary}")
     print(f"  Transcrição: {len(description_text)} caracteres")
+    print(f"  Nós ADF existentes: {len(existing_nodes)} (serão preservados)")
 
     mentioned_vue = extract_vue_mentions(description_text)
 
@@ -780,7 +845,7 @@ def main():
     if mentioned_vue:
         print(f"  Arquivos Vue mencionados: {', '.join(mentioned_vue)}")
 
-    print(f"\n[3/5] Coletando código React (Replit — fonte da verdade)...")
+    print(f"\n[3/6] Coletando código React (Replit — fonte da verdade)...")
     react_files = {}
 
     for rf in args.react_file:
@@ -802,7 +867,7 @@ def main():
     if not react_files:
         print("  ⚠ Nenhum arquivo React encontrado — auditoria baseada na transcrição + regras DS")
 
-    print(f"\n[4/5] Coletando código Vue (GitHub WeDOTalent/{GITHUB_VUE_REPO})...")
+    print(f"\n[4/6] Coletando código Vue (GitHub WeDOTalent/{GITHUB_VUE_REPO})...")
     vue_files = {}
 
     specific_vue = list(args.vue_file)
@@ -833,7 +898,7 @@ def main():
     if not vue_files:
         print("  ⚠ Nenhum arquivo Vue encontrado — auditoria baseada na transcrição + regras DS")
 
-    print(f"\n[5/5] Auditando com Claude (DS LIA v4.2.1)...")
+    print(f"\n[5/6] Auditando com Claude (DS LIA v4.2.1)...")
     print(f"  Buscando conteúdo BetterBugs...")
     betterbugs_url = extract_betterbugs_url(description_text)
     betterbugs_content = None
@@ -855,7 +920,30 @@ def main():
     for iss in issues:
         print(f"  → Issue {iss.get('numero', '?')}: {iss.get('titulo', '')}")
 
-    adf = build_audit_adf(audit_data, issue_key, summary)
+    audit_adf_nodes = build_audit_adf(audit_data, issue_key, summary).get("content", [])
+
+    separator_rule = {"type": "rule"}
+    separator_heading = {
+        "type": "heading",
+        "attrs": {"level": 2},
+        "content": [{"type": "text", "text": "── Auditoria DS LIA v4.2.1 (gerada automaticamente) ──"}],
+    }
+    if existing_nodes:
+        merged_nodes = existing_nodes + [separator_rule, separator_heading, separator_rule] + audit_adf_nodes
+    else:
+        merged_nodes = audit_adf_nodes
+
+    final_adf = {"version": 1, "type": "doc", "content": merged_nodes}
+
+    comment_adf = build_audit_comment_adf(audit_data, issue_key, summary)
+
+    has_comment_content = any([
+        audit_data.get("comportamento_esperado"),
+        audit_data.get("fora_de_escopo"),
+        audit_data.get("impacto_outros_sistemas"),
+        audit_data.get("definition_of_done"),
+        audit_data.get("criterios_aceite"),
+    ])
 
     if args.dry_run:
         print("\n[DRY RUN] Preview das issues (não enviado ao Jira):")
@@ -863,16 +951,41 @@ def main():
             print(f"\n  Issue {iss.get('numero')}: {iss.get('titulo')}")
             print(f"    Arquivo: {iss.get('arquivo_vue', '-')}")
             print(f"    Regra: {iss.get('regra_ds', '-')[:80]}")
+        dod = audit_data.get("definition_of_done", [])
+        if dod:
+            print(f"\n  DoD ({len(dod)} itens) — iria para comentário")
         print(f"\n✅ DRY RUN concluído. Remova --dry-run para publicar no Jira.")
         return
 
-    print(f"\nPublicando auditoria no Jira...")
-    status_code, text = update_card(token, issue_key, adf)
+    print(f"\n[6/6] Publicando no Jira...")
+    status_code, text = update_card(token, issue_key, final_adf)
+    if status_code in (200, 204):
+        print(f"  ✓ Descrição enviada — verificando se foi salva...")
+        verify = fetch_card(token, issue_key)
+        saved_nodes = (verify["fields"].get("description") or {}).get("content", [])
+        expected_count = len(final_adf["content"])
+        if len(saved_nodes) >= expected_count - 5:
+            print(f"  ✓ Descrição confirmada ({len(saved_nodes)} nós no Jira)")
+        else:
+            print(f"  ⚠ ATENÇÃO: Jira retornou {len(saved_nodes)} nós, esperado {expected_count}.")
+            print(f"     O Jira pode ter revertido o conteúdo silenciosamente.")
+    else:
+        print(f"  ❌ Erro na descrição — {status_code}: {text[:300]}")
+
+    if has_comment_content:
+        c_status, c_text = add_comment(token, issue_key, comment_adf)
+        if c_status in (200, 201):
+            dod_count = len(audit_data.get("definition_of_done", []))
+            comport_count = len(audit_data.get("comportamento_esperado", []))
+            print(f"  ✓ Comentário adicionado ({comport_count} comportamentos esperados + {dod_count} itens DoD)")
+        else:
+            print(f"  ❌ Erro no comentário — {c_status}: {c_text[:300]}")
+
     if status_code in (200, 204):
         print(f"\n✅ Card {issue_key} atualizado com auditoria de design!")
         print(f"   URL: https://wedotalent.atlassian.net/browse/{issue_key}")
     else:
-        print(f"\n❌ Erro {status_code}: {text[:400]}")
+        print(f"\n❌ Erro ao atualizar card: {status_code}")
 
 
 if __name__ == "__main__":
