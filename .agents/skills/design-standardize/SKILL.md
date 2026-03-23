@@ -699,7 +699,7 @@ Antes de capturar tela para conversão Figma:
 - [ ] Cards: rounded-md, shadow-sm, sem gradientes
 - [ ] Tabelas: Inter para números, tabular-nums, header uppercase
 - [ ] Badges: rounded-full (pill), ícone+cor+texto
-- [ ] Tipografia: Open Sans 60%, Inter 40%
+- [ ] Tipografia: Open Sans 85% (UI geral), Inter 10% (dados numéricos), JetBrains Mono 5% (código)
 - [ ] Espaçamento: base 4px, grid 12-col
 - [ ] Dark mode: variantes dark: em todos elementos
 - [ ] Acessibilidade: ARIA labels, focus rings, contraste AA, keyboard nav
