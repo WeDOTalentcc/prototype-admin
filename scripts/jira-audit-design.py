@@ -372,7 +372,12 @@ def search_github_file(query, repo=None):
 def run_audit_with_claude(card_key, summary, description_text, react_files, vue_files, betterbugs_content=None):
     try:
         import anthropic
-        client = anthropic.Anthropic()
+        api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+        kwargs = {"api_key": api_key}
+        if base_url:
+            kwargs["base_url"] = base_url
+        client = anthropic.Anthropic(**kwargs)
     except Exception as e:
         raise ValueError(f"Erro ao inicializar Anthropic: {e}")
 
@@ -493,8 +498,8 @@ REGRAS:
 - Responda APENAS o JSON, sem markdown, sem explicação"""
 
     response = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=10000,
+        model="claude-sonnet-4-6",
+        max_tokens=16000,
         messages=[{"role": "user", "content": prompt}],
     )
 

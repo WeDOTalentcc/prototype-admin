@@ -293,7 +293,7 @@ def fetch_betterbugs_content(url, timeout=20):
 
 # ── Local file reading ────────────────────────────────────────────────────────
 
-def read_local_file(rel_path, max_lines=250):
+def read_local_file(rel_path, max_lines=120):
     full_path = os.path.join(WORKSPACE_ROOT, rel_path)
     if not os.path.exists(full_path):
         return None, f"Não encontrado: {rel_path}"
@@ -433,7 +433,12 @@ DS_LIA_DESIGN_RULES = """
 def analyze_with_claude(card_key, summary, description_text, code_by_layer, vue_files, betterbugs_content=None):
     try:
         import anthropic
-        client = anthropic.Anthropic()
+        api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+        kwargs = {"api_key": api_key}
+        if base_url:
+            kwargs["base_url"] = base_url
+        client = anthropic.Anthropic(**kwargs)
     except Exception as e:
         raise ValueError(f"Erro ao inicializar Anthropic: {e}")
 
@@ -645,15 +650,41 @@ REGRAS OBRIGATÓRIAS:
 - Responda APENAS o JSON puro, sem markdown, sem explicação fora do JSON"""
 
     response = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=10000,
+        model="claude-sonnet-4-6",
+        max_tokens=16000,
         messages=[{"role": "user", "content": prompt}],
     )
 
     raw = response.content[0].text.strip()
     raw = re.sub(r"^```(?:json)?\n?", "", raw)
     raw = re.sub(r"\n?```$", "", raw)
-    return json.loads(raw)
+
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # Tentativa de recuperar JSON truncado: fechar estruturas abertas
+        # Encontra a última vírgula ou fechamento válido e tenta parsear até lá
+        import re as _re
+        # Remove último item incompleto (linha que não termina em ," ou ]" ou }")
+        truncated = raw.rstrip()
+        # Remove trailing incomplete line
+        lines = truncated.split("\n")
+        while lines:
+            candidate = "\n".join(lines)
+            # Fechar estruturas abertas de forma mínima
+            closes = ""
+            depth_brace = candidate.count("{") - candidate.count("}")
+            depth_bracket = candidate.count("[") - candidate.count("]")
+            for _ in range(depth_bracket):
+                closes += "]"
+            for _ in range(depth_brace):
+                closes += "}"
+            try:
+                return json.loads(candidate + closes)
+            except json.JSONDecodeError:
+                lines.pop()
+                continue
+        raise ValueError("Não foi possível recuperar o JSON truncado da resposta do Claude")
 
 
 # ── ADF Builder ───────────────────────────────────────────────────────────────
@@ -692,8 +723,11 @@ def build_adf(data, card_key, summary):
             ],
         }
 
-    def code_block(code, lang=""):
-        return {"type": "codeBlock", "attrs": {"language": lang}, "content": [{"type": "text", "text": str(code)}]}
+    def code_block(code, lang="", max_chars=600):
+        text = str(code)
+        if len(text) > max_chars:
+            text = text[:max_chars] + f"\n... [truncado — {len(str(code)) - max_chars} chars omitidos]"
+        return {"type": "codeBlock", "attrs": {"language": lang}, "content": [{"type": "text", "text": text}]}
 
     def rule():
         return {"type": "rule"}
@@ -1201,10 +1235,33 @@ def main():
     print(f"  {len(analysis.get('issues_design', []))} issues de design")
     print(f"  {len(analysis.get('criterios_de_aceite', []))} critérios de aceite")
 
-    adf = build_adf(analysis, issue_key, summary)
+    adf_new = build_adf(analysis, issue_key, summary)
+
+    # ── Preservar conteúdo existente do card ──────────────────────────────
+    # O card pode ter transcrições, imagens, links e itens que NÃO devem ser apagados.
+    # A análise gerada é ACRESCENTADA abaixo do conteúdo original, separada por uma linha.
+    existing_description = card["fields"].get("description") or {}
+    existing_nodes = existing_description.get("content", [])
+
+    if existing_nodes:
+        separator_heading = {
+            "type": "heading",
+            "attrs": {"level": 2},
+            "content": [{"type": "text", "text": "─────── Análise Complementar (jira-fetch-analyze.py) ───────"}],
+        }
+        separator_rule = {"type": "rule"}
+        adf = {
+            "version": 1,
+            "type": "doc",
+            "content": existing_nodes + [separator_rule, separator_heading, separator_rule] + adf_new["content"],
+        }
+        print(f"  Conteúdo existente preservado ({len(existing_nodes)} nós ADF)")
+    else:
+        adf = adf_new
+        print(f"  Card sem conteúdo anterior — criando do zero")
 
     if args.dry_run:
-        print("\n[DRY RUN] Preview (não enviado ao Jira):")
+        print("\n[DRY RUN] Preview da análise (não enviado ao Jira):")
         print(json.dumps(analysis, indent=2, ensure_ascii=False)[:3000])
         print(f"\n✅ DRY RUN concluído. Remova --dry-run para publicar.")
         return
