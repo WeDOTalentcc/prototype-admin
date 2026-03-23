@@ -331,37 +331,85 @@ Data: {date.today().strftime('%d/%m/%Y')}
 
 ## INSTRUÇÕES
 Gere um JSON com a estrutura EXATA abaixo. Seja específico e concreto — nunca genérico.
-Código ANTES/DEPOIS deve ser real, não placeholder.
+Código ANTES/DEPOIS deve ser real, extraído do código fornecido. Nunca use placeholders.
 
 {{
   "titulo_auditoria": "Título descritivo do que foi analisado",
   "resumo": "2-3 parágrafos descrevendo o problema, o que foi analisado e o que precisa ser feito",
   "betterbugs_link": "URL do BetterBugs se encontrada na transcrição, senão null",
   "arquivos_de_referencia": [
-    {{"path": "caminho/real/do/arquivo.tsx", "layer": "Frontend React", "descricao": "O que este arquivo faz"}}
+    {{"path": "caminho/real/do/arquivo", "layer": "Frontend React|Backend|Agente IA|Integração|Vue|Banco de Dados", "descricao": "O que este arquivo faz"}}
   ],
   "issues_funcionalidade": [
     {{
       "numero": "F01",
       "titulo": "Título do problema funcional",
-      "tipo": "bug|incompleto|ux|integracao|ia",
-      "descricao": "O que está errado e por quê — específico",
-      "layer": "Frontend|Backend|IA|Integração",
-      "arquivo_react": "caminho/do/arquivo.tsx",
-      "arquivo_vue": "components/caminho/do/arquivo.vue",
-      "codigo_atual_react": "trecho React atual com o problema",
-      "codigo_sugerido_react": "trecho React corrigido",
-      "codigo_atual_vue": "trecho Vue atual com o problema equivalente",
-      "codigo_sugerido_vue": "trecho Vue corrigido conforme DS LIA",
-      "linguagem_react": "tsx|typescript|python",
-      "linguagem_vue": "vue"
+      "tipo": "bug|incompleto|ux|integracao|ia|banco",
+      "descricao": "O que está errado e por quê — detalhado e específico",
+      "layers_afetados": ["Frontend React", "Vue", "Backend Python", "Agente IA", "Integração", "Banco de Dados"],
+      "blocos_de_codigo": [
+        {{
+          "layer": "Backend Python",
+          "arquivo": "lia-agent-system/app/domains/screening/service.py",
+          "linguagem": "python",
+          "antes_label": "Código atual — INCORRETO",
+          "antes": "trecho python atual com o bug",
+          "depois_label": "deve ficar assim",
+          "depois": "trecho python corrigido"
+        }},
+        {{
+          "layer": "Agente IA",
+          "arquivo": "lia-agent-system/app/domains/cv_screening/agents/wsi_graph.py",
+          "linguagem": "python",
+          "antes_label": "Lógica de IA atual — INCORRETA",
+          "antes": "trecho do agente com o problema",
+          "depois_label": "lógica corrigida",
+          "depois": "trecho corrigido do agente"
+        }},
+        {{
+          "layer": "Banco de Dados",
+          "arquivo": "migrations/schema.sql ou model",
+          "linguagem": "sql",
+          "antes_label": "Schema/query atual",
+          "antes": "CREATE TABLE ou SELECT atual",
+          "depois_label": "schema/query corrigido",
+          "depois": "CREATE TABLE ou SELECT corrigido"
+        }},
+        {{
+          "layer": "Integração",
+          "arquivo": "plataforma-lia/src/lib/api/jobs.ts",
+          "linguagem": "typescript",
+          "antes_label": "Chamada de API atual — INCORRETA",
+          "antes": "fetch ou axios atual com o problema",
+          "depois_label": "chamada corrigida",
+          "depois": "fetch ou axios corrigido"
+        }},
+        {{
+          "layer": "Frontend React",
+          "arquivo": "plataforma-lia/src/components/jobs/job-card.tsx",
+          "linguagem": "tsx",
+          "antes_label": "React atual — INCORRETO",
+          "antes": "trecho tsx atual",
+          "depois_label": "React corrigido",
+          "depois": "trecho tsx corrigido"
+        }},
+        {{
+          "layer": "Vue",
+          "arquivo": "components/jobs/job-card.vue",
+          "linguagem": "vue",
+          "antes_label": "Vue atual — INCORRETO",
+          "antes": "trecho vue atual com o problema equivalente",
+          "depois_label": "Vue corrigido",
+          "depois": "trecho vue corrigido conforme DS LIA"
+        }}
+      ]
     }}
   ],
   "issues_design": [
     {{
       "numero": "D01",
       "titulo": "Título do problema de design",
-      "descricao": "O que está visualmente errado — referência à regra DS LIA",
+      "descricao": "O que está visualmente errado — referência à regra DS LIA violada",
       "arquivo_react": "caminho/do/arquivo.tsx",
       "arquivo_vue": "components/caminho/do/arquivo.vue",
       "antes_label": "Vue atual — INCORRETO",
@@ -391,13 +439,18 @@ Código ANTES/DEPOIS deve ser real, não placeholder.
     "[Área] Critério verificável e concreto"
   ],
   "arquivos_para_modificar": [
-    {{"path": "caminho/arquivo.tsx", "layer": "Frontend React|Vue|Backend|IA", "motivo": "Por que precisa ser modificado"}}
+    {{"path": "caminho/arquivo", "layer": "Frontend React|Vue|Backend|Agente IA|Integração|Banco de Dados", "motivo": "Por que precisa ser modificado"}}
   ]
 }}
 
 REGRAS OBRIGATÓRIAS:
 - Extraia ABSOLUTAMENTE TODOS os elementos da transcrição — nenhum ponto pode ficar de fora
-- issues_funcionalidade: SEMPRE incluir codigo_atual_vue + codigo_sugerido_vue quando aplicável
+- issues_funcionalidade.blocos_de_codigo: inclua APENAS os layers REALMENTE afetados por aquela issue
+  • Issue de backend: blocos Backend + (Integração se há chamada) + (Vue se afeta a exibição)
+  • Issue de IA: blocos Agente IA + (Backend se há endpoint) + (Frontend React + Vue se afeta resultado exibido)
+  • Issue de banco: blocos Banco de Dados + Backend que usa a query
+  • Issue puramente de frontend: blocos Frontend React + Vue
+  • NÃO crie blocos vazios ou genéricos — só o que foi realmente encontrado no código
 - issues_design: SEMPRE com ANTES (Vue incorreto) e DEPOIS (Vue corrigido conforme DS LIA)
 - vuetify_defaults: inclua TODOS os defaults Vuetify relevantes para esta tela
 - vuetify_ts_code: bloco completo e pronto para colar no vuetify.ts
@@ -498,52 +551,100 @@ def build_adf(data, card_key, summary):
         nodes.append(h(2, "⚙️ Issues de Funcionalidade"))
         nodes.append(p(
             "Problemas funcionais identificados na transcrição: erros, comportamentos incorretos, "
-            "features incompletas, integrações e lógica de IA. Cada issue inclui código React "
-            "(Replit) e Vue (GitHub) com ANTES e DEPOIS concretos."
+            "features incompletas, integrações, lógica de IA e banco de dados. "
+            "Cada issue detalha TODOS os layers afetados (Backend Python 🐍, Agente IA 🤖, "
+            "Integração 🔌, Banco de Dados 🗄️, Frontend React ⚛️, Vue 🟢) "
+            "com código ANTES/DEPOIS específico por layer."
         ))
+
+        # Layer badges for the heading
+        LAYER_EMOJI = {
+            "backend python": "🐍",
+            "backend": "🐍",
+            "agente ia": "🤖",
+            "ia": "🤖",
+            "integração": "🔌",
+            "integracao": "🔌",
+            "banco de dados": "🗄️",
+            "banco": "🗄️",
+            "frontend react": "⚛️",
+            "react": "⚛️",
+            "vue": "🟢",
+        }
 
         for issue in issues_func:
             num = issue.get("numero", "F?")
             titulo = issue.get("titulo", "")
             tipo = issue.get("tipo", "")
-            layer = issue.get("layer", "")
             descricao = issue.get("descricao", "")
-            arq_react = issue.get("arquivo_react", issue.get("arquivo", ""))
-            arq_vue = issue.get("arquivo_vue", "")
-            cod_react_antes = issue.get("codigo_atual_react", issue.get("codigo_atual", ""))
-            cod_react_depois = issue.get("codigo_sugerido_react", issue.get("codigo_sugerido", ""))
-            cod_vue_antes = issue.get("codigo_atual_vue", "")
-            cod_vue_depois = issue.get("codigo_sugerido_vue", "")
-            lang_react = issue.get("linguagem_react", issue.get("linguagem", "tsx"))
-            lang_vue = issue.get("linguagem_vue", "vue")
+            layers = issue.get("layers_afetados", [issue.get("layer", "")])
+            blocos = issue.get("blocos_de_codigo", [])
 
-            badge = f"[{tipo.upper()}]" if tipo else ""
-            layer_badge = f"[{layer}]" if layer else ""
-            nodes.append(h(3, f"Issue {num} — {titulo} {badge} {layer_badge}".strip()))
+            # Fallback: se vier no formato antigo (sem blocos_de_codigo)
+            if not blocos:
+                arq_react = issue.get("arquivo_react", issue.get("arquivo", ""))
+                arq_vue = issue.get("arquivo_vue", "")
+                if issue.get("codigo_atual_react") or issue.get("codigo_atual"):
+                    blocos.append({
+                        "layer": "Frontend React",
+                        "arquivo": arq_react,
+                        "linguagem": issue.get("linguagem_react", "tsx"),
+                        "antes_label": "React atual — INCORRETO",
+                        "antes": issue.get("codigo_atual_react", issue.get("codigo_atual", "")),
+                        "depois_label": "React corrigido",
+                        "depois": issue.get("codigo_sugerido_react", issue.get("codigo_sugerido", "")),
+                    })
+                if issue.get("codigo_atual_vue"):
+                    blocos.append({
+                        "layer": "Vue",
+                        "arquivo": arq_vue,
+                        "linguagem": "vue",
+                        "antes_label": "Vue — ANTES (incorreto)",
+                        "antes": issue.get("codigo_atual_vue", ""),
+                        "depois_label": "Vue — DEPOIS (corrigido)",
+                        "depois": issue.get("codigo_sugerido_vue", ""),
+                    })
+
+            tipo_badge = f" [{tipo.upper()}]" if tipo else ""
+            layers_str = ", ".join(layers) if isinstance(layers, list) else str(layers)
+            nodes.append(h(3, f"Issue {num} — {titulo}{tipo_badge}"))
+
+            if layers_str:
+                nodes.append(p_mixed(
+                    ("Layers afetados: ", False, False),
+                    (layers_str, True, False),
+                ))
 
             if descricao:
                 nodes.append(p(descricao))
 
-            # React block
-            if arq_react:
-                nodes.append(p_mixed(("Arquivo React: ", False, False), (arq_react, False, True)))
-            if cod_react_antes and cod_react_antes.strip():
-                nodes.append(p("Código React atual:", bold=True))
-                nodes.append(code_block(cod_react_antes, lang_react))
-            if cod_react_depois and cod_react_depois.strip():
-                nodes.append(p("Sugestão React:", bold=True))
-                nodes.append(code_block(cod_react_depois, lang_react))
+            # Renderiza cada bloco de código por layer
+            for bloco in blocos:
+                bloco_layer = bloco.get("layer", "")
+                bloco_arquivo = bloco.get("arquivo", "")
+                bloco_lang = bloco.get("linguagem", "")
+                bloco_antes_label = bloco.get("antes_label", "Código atual — INCORRETO")
+                bloco_antes = bloco.get("antes", "")
+                bloco_depois_label = bloco.get("depois_label", "deve ficar assim")
+                bloco_depois = bloco.get("depois", "")
 
-            # Vue block
-            if arq_vue or cod_vue_antes or cod_vue_depois:
-                if arq_vue:
-                    nodes.append(p_mixed(("Arquivo Vue: ", False, False), (arq_vue, False, True)))
-                if cod_vue_antes and cod_vue_antes.strip():
-                    nodes.append(p("Vue — ANTES (incorreto):", bold=True))
-                    nodes.append(code_block(cod_vue_antes, lang_vue))
-                if cod_vue_depois and cod_vue_depois.strip():
-                    nodes.append(p("Vue — DEPOIS (corrigido):", bold=True))
-                    nodes.append(code_block(cod_vue_depois, lang_vue))
+                emoji = LAYER_EMOJI.get(bloco_layer.lower(), "")
+                layer_title = f"{emoji} {bloco_layer}".strip()
+
+                nodes.append(h(4, layer_title))
+                if bloco_arquivo:
+                    nodes.append(p_mixed(
+                        ("Arquivo: ", False, False),
+                        (bloco_arquivo, False, True),
+                    ))
+
+                if bloco_antes and bloco_antes.strip():
+                    nodes.append(p(f"{bloco_antes_label}:", bold=True))
+                    nodes.append(code_block(bloco_antes, bloco_lang))
+
+                if bloco_depois and bloco_depois.strip():
+                    nodes.append(p(f"{bloco_depois_label}:", bold=True))
+                    nodes.append(code_block(bloco_depois, bloco_lang))
 
             nodes.append(rule())
 
