@@ -825,11 +825,10 @@ def main():
     card = fetch_card(token, issue_key)
     summary = card["fields"].get("summary", "")
     existing_desc_adf = card["fields"].get("description") or {}
-    existing_nodes = existing_desc_adf.get("content", []) if isinstance(existing_desc_adf, dict) else []
     description_text = adf_to_text(existing_desc_adf).strip()
     print(f"✓ Card: {summary}")
     print(f"  Transcrição: {len(description_text)} caracteres")
-    print(f"  Nós ADF existentes: {len(existing_nodes)} (serão preservados)")
+    print(f"  Descrição original: NÃO será modificada — auditoria vai como comentários")
 
     mentioned_vue = extract_vue_mentions(description_text)
 
@@ -920,24 +919,10 @@ def main():
     for iss in issues:
         print(f"  → Issue {iss.get('numero', '?')}: {iss.get('titulo', '')}")
 
-    audit_adf_nodes = build_audit_adf(audit_data, issue_key, summary).get("content", [])
+    audit_comment_adf = build_audit_adf(audit_data, issue_key, summary)
+    supplement_adf = build_audit_comment_adf(audit_data, issue_key, summary)
 
-    separator_rule = {"type": "rule"}
-    separator_heading = {
-        "type": "heading",
-        "attrs": {"level": 2},
-        "content": [{"type": "text", "text": "── Auditoria DS LIA v4.2.1 (gerada automaticamente) ──"}],
-    }
-    if existing_nodes:
-        merged_nodes = existing_nodes + [separator_rule, separator_heading, separator_rule] + audit_adf_nodes
-    else:
-        merged_nodes = audit_adf_nodes
-
-    final_adf = {"version": 1, "type": "doc", "content": merged_nodes}
-
-    comment_adf = build_audit_comment_adf(audit_data, issue_key, summary)
-
-    has_comment_content = any([
+    has_supplement = any([
         audit_data.get("comportamento_esperado"),
         audit_data.get("fora_de_escopo"),
         audit_data.get("impacto_outros_sistemas"),
@@ -953,39 +938,39 @@ def main():
             print(f"    Regra: {iss.get('regra_ds', '-')[:80]}")
         dod = audit_data.get("definition_of_done", [])
         if dod:
-            print(f"\n  DoD ({len(dod)} itens) — iria para comentário")
+            print(f"\n  DoD ({len(dod)} itens) — iria para comentário 2")
         print(f"\n✅ DRY RUN concluído. Remova --dry-run para publicar no Jira.")
         return
 
     print(f"\n[6/6] Publicando no Jira...")
-    status_code, text = update_card(token, issue_key, final_adf)
-    if status_code in (200, 204):
-        print(f"  ✓ Descrição enviada — verificando se foi salva...")
-        verify = fetch_card(token, issue_key)
-        saved_nodes = (verify["fields"].get("description") or {}).get("content", [])
-        expected_count = len(final_adf["content"])
-        if len(saved_nodes) >= expected_count - 5:
-            print(f"  ✓ Descrição confirmada ({len(saved_nodes)} nós no Jira)")
-        else:
-            print(f"  ⚠ ATENÇÃO: Jira retornou {len(saved_nodes)} nós, esperado {expected_count}.")
-            print(f"     O Jira pode ter revertido o conteúdo silenciosamente.")
-    else:
-        print(f"  ❌ Erro na descrição — {status_code}: {text[:300]}")
+    print(f"  NOTA: A descrição original do card NÃO será modificada.")
+    print(f"  Toda a auditoria vai para comentários (mais estável que o PUT /description).")
 
-    if has_comment_content:
-        c_status, c_text = add_comment(token, issue_key, comment_adf)
-        if c_status in (200, 201):
+    print(f"  [Comentário 1/2] Postando issues de design ({len(issues)} issues + {len(defaults)} Vuetify defaults)...")
+    c1_status, c1_text = add_comment(token, issue_key, audit_comment_adf)
+    if c1_status in (200, 201):
+        print(f"  ✓ Comentário 1 adicionado ({len(issues)} issues de design + Vuetify defaults)")
+    else:
+        print(f"  ❌ Erro no comentário 1 — {c1_status}: {c1_text[:400]}")
+
+    if has_supplement:
+        print(f"  [Comentário 2/2] Postando comportamento esperado + DoD + critérios...")
+        c2_status, c2_text = add_comment(token, issue_key, supplement_adf)
+        if c2_status in (200, 201):
             dod_count = len(audit_data.get("definition_of_done", []))
             comport_count = len(audit_data.get("comportamento_esperado", []))
-            print(f"  ✓ Comentário adicionado ({comport_count} comportamentos esperados + {dod_count} itens DoD)")
+            print(f"  ✓ Comentário 2 adicionado ({comport_count} comportamentos + {dod_count} DoD)")
         else:
-            print(f"  ❌ Erro no comentário — {c_status}: {c_text[:300]}")
+            print(f"  ❌ Erro no comentário 2 — {c2_status}: {c2_text[:300]}")
+        c_ok = c1_status in (200, 201) and c2_status in (200, 201)
+    else:
+        c_ok = c1_status in (200, 201)
 
-    if status_code in (200, 204):
+    if c_ok:
         print(f"\n✅ Card {issue_key} atualizado com auditoria de design!")
         print(f"   URL: https://wedotalent.atlassian.net/browse/{issue_key}")
     else:
-        print(f"\n❌ Erro ao atualizar card: {status_code}")
+        print(f"\n❌ Erro ao publicar auditoria no Jira")
 
 
 if __name__ == "__main__":

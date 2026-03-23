@@ -1475,32 +1475,9 @@ def main():
     print(f"  {len(func_issues)} issues de funcionalidade")
     print(f"  {len(analysis.get('criterios_de_aceite', []))} critérios de aceite (parte 1)")
 
-    adf_new = build_adf(analysis, issue_key, summary)
+    adf_comment_part1 = build_adf(analysis, issue_key, summary)
 
-    # ── Preservar conteúdo existente do card ──────────────────────────────
-    # O card pode ter transcrições, imagens, links e itens que NÃO devem ser apagados.
-    # A análise gerada é ACRESCENTADA abaixo do conteúdo original, separada por uma linha.
-    existing_description = card["fields"].get("description") or {}
-    existing_nodes = existing_description.get("content", [])
-
-    if existing_nodes:
-        separator_heading = {
-            "type": "heading",
-            "attrs": {"level": 2},
-            "content": [{"type": "text", "text": "─────── Análise Complementar (jira-fetch-analyze.py) ───────"}],
-        }
-        separator_rule = {"type": "rule"}
-        adf = {
-            "version": 1,
-            "type": "doc",
-            "content": existing_nodes + [separator_rule, separator_heading, separator_rule] + adf_new["content"],
-        }
-        print(f"  Conteúdo existente preservado ({len(existing_nodes)} nós ADF)")
-    else:
-        adf = adf_new
-        print(f"  Card sem conteúdo anterior — criando do zero")
-
-    # ── Parte 2: Design + Critérios + DoD (vai para comentário) ───────────
+    # ── Parte 2: Design + Critérios + DoD (segundo comentário) ────────────
     print(f"\n[7/7] Analisando com LLM — Parte 2: Design + Critérios de Aceite + DoD...")
     func_titles = [
         f"{iss.get('numero','?')} — {iss.get('titulo','')}" for iss in func_issues
@@ -1518,40 +1495,38 @@ def main():
     print(f"  {len(analysis2.get('criterios_de_aceite', []))} critérios de aceite")
     print(f"  {len(analysis2.get('definition_of_done', []))} itens DoD")
 
-    adf_comment = build_adf_comment(analysis2, issue_key)
+    adf_comment_part2 = build_adf_comment(analysis2, issue_key)
 
     if args.dry_run:
-        print("\n[DRY RUN] Preview — Parte 1 (descrição):")
+        print("\n[DRY RUN] Preview — Parte 1 (comentário 1 — issues funcionais):")
         print(json.dumps(analysis, indent=2, ensure_ascii=False)[:2000])
-        print("\n[DRY RUN] Preview — Parte 2 (comentário):")
+        print("\n[DRY RUN] Preview — Parte 2 (comentário 2 — design + critérios + DoD):")
         print(json.dumps(analysis2, indent=2, ensure_ascii=False)[:2000])
         print(f"\n✅ DRY RUN concluído. Remova --dry-run para publicar.")
         return
 
     print(f"\nPublicando no Jira...")
-    status_code, text = update_card(token, issue_key, adf)
-    if status_code in (200, 204):
-        print(f"  ✓ Descrição enviada — verificando se foi salva...")
-        verify = fetch_card(token, issue_key)
-        saved_nodes = (verify["fields"].get("description") or {}).get("content", [])
-        expected_count = len(adf["content"])
-        if len(saved_nodes) >= expected_count - 5:
-            print(f"  ✓ Descrição confirmada ({len(saved_nodes)} nós no Jira)")
-        else:
-            print(f"  ⚠ ATENÇÃO: Jira retornou {len(saved_nodes)} nós, esperado {expected_count}.")
-            print(f"     O Jira pode ter revertido o conteúdo silenciosamente.")
-            print(f"     Tente reduzir o número de code blocks ou usar --dry-run para diagnóstico.")
-    else:
-        print(f"  ❌ Erro na descrição {status_code}: {text[:400]}")
+    print(f"  NOTA: A descrição original do card NÃO será modificada.")
+    print(f"  Toda a análise vai para comentários (mais estável que o PUT /description).")
 
-    print(f"  Adicionando comentário (design + critérios + DoD)...")
-    c_status, c_text = add_comment(token, issue_key, adf_comment)
-    if c_status in (200, 201):
-        print(f"  ✓ Comentário adicionado com sucesso")
+    print(f"  [Comentário 1/2] Postando issues funcionais (F01–Fxx)...")
+    c1_status, c1_text = add_comment(token, issue_key, adf_comment_part1)
+    if c1_status in (200, 201):
+        print(f"  ✓ Comentário 1 adicionado ({len(func_issues)} issues funcionais)")
     else:
-        print(f"  ❌ Erro no comentário {c_status}: {c_text[:400]}")
+        print(f"  ❌ Erro no comentário 1 — {c1_status}: {c1_text[:400]}")
 
-    if status_code in (200, 204):
+    print(f"  [Comentário 2/2] Postando design + critérios + DoD...")
+    c2_status, c2_text = add_comment(token, issue_key, adf_comment_part2)
+    if c2_status in (200, 201):
+        n_design = len(analysis2.get('issues_design', []))
+        n_crit = len(analysis2.get('criterios_de_aceite', []))
+        n_dod = len(analysis2.get('definition_of_done', []))
+        print(f"  ✓ Comentário 2 adicionado ({n_design} design issues, {n_crit} critérios, {n_dod} DoD)")
+    else:
+        print(f"  ❌ Erro no comentário 2 — {c2_status}: {c2_text[:400]}")
+
+    if c1_status in (200, 201) and c2_status in (200, 201):
         print(f"\n✅ Card {issue_key} atualizado com sucesso!")
         print(f"   URL: https://wedotalent.atlassian.net/browse/{issue_key}")
     else:
