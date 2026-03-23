@@ -2,11 +2,12 @@
 
 ## Referencia Tecnica para Implementacao
 
-**Versao:** 1.1  
-**Data:** Janeiro 2026  
+**Versao:** 1.2  
+**Data:** Marco 2026  
 **Status:** Documento oficial consolidado  
 **Fonte:** Consolidacao de WSI_METHODOLOGY_REFERENCE.md + LIA_METHODOLOGY.md  
-**Atualizacao:** Adicionada secao 4.11 (Saturacao Inteligente)
+**Atualizacao 1.1:** Adicionada secao 4.11 (Saturacao Inteligente)  
+**Atualizacao 1.2:** Secao 4.6 corrigida (blocos reais do pipeline), secao 4.13 reescrita com dados reais do codigo, adicionado Pipeline WSI End-to-End completo (Fase 1 e Fase 2) como secao 4.14
 
 ---
 
@@ -195,38 +196,73 @@ O WSI e um sistema de triagem conversacional (chat ou voz) que valida competenci
 | A - Amabilidade | Empatia e colaboracao | Trabalho em equipe |
 | N - Estabilidade Emocional | Controle sob pressao | Tomada de decisao e resiliencia |
 
-### 4.6 Estrutura de 7 Blocos
+### 4.6 Estrutura de 6 Blocos do Pipeline WSI
 
-| Bloco | Objetivo | Duracao |
-|-------|----------|---------|
-| Bloco 0 | Abertura e contexto | 0:30 min |
-| Bloco 1 | Elegibilidade (disponibilidade, salario) | 1:00 min |
-| Bloco 2 | Competencias Tecnicas (3-6 perguntas) | 3-4 min |
-| Bloco 3 | Competencias Comportamentais (2-4 perguntas) | 2-3 min |
-| Bloco 4 | Cultural Fit | 1:00 min |
-| Bloco 5 | Fechamento e score | 0:30 min |
-| Resultado | Apresentacao do WSI | - |
+O pipeline WSI e estruturado em 6 blocos sequenciais, identificados por `block_id` de 0 a 5. Cada bloco tem tipo de gerenciamento distinto:
+
+| Bloco | Nome | Tipo | Editavel | Origem |
+|-------|------|------|----------|--------|
+| **0** | Abordagem Inicial | `template` | Nao | Template WhatsApp pre-aprovado enviado automaticamente |
+| **1** | Apresentacao da Oportunidade | `presentation` | Nao | Pitch gerado automaticamente a partir dos dados da vaga |
+| **2** | Perguntas Padrao da Empresa | `company` | Sim | Configurado pelo recrutador (elegibilidade + empresa + acao afirmativa) |
+| **3** | Competencias Tecnicas | `technical` | Sim | Gerado pelo WSI pipeline — CBI + Bloom + Dreyfus por skill |
+| **4** | Competencias Comportamentais e Fit | `situational` | Sim | Gerado pelo WSI pipeline — Big Five + CBI cultural |
+| **5** | Resultado e Encerramento | `result` | Nao | Score WSI calculado automaticamente + feedback ao candidato |
+
+**Blocos automaticos (0, 1, 5):** conteudo fixo gerenciado pelo sistema, o recrutador nao pode editar.  
+**Blocos editaveis (2, 3, 4):** o recrutador visualiza, aceita, rejeita ou edita as perguntas na aba "Perguntas de Triagem" antes de salvar.
+
+**Duracao estimada por bloco:**
+
+| Bloco | Duracao |
+|-------|---------|
+| 0 — Abordagem | menos de 1 min |
+| 1 — Apresentacao | 3 min |
+| 2 — Empresa | 3 min |
+| 3 — Tecnico | 5 min |
+| 4 — Comportamental | 4 min |
+| 5 — Resultado | 3 min |
+| **Total estimado** | **~18 min (full) / ~13 min (compact)** |
 
 ### 4.7 Formula do WSI
 
+**Pontuacao por resposta (escala 0–10):**
+
 ```
-Score_skill = (0.6 × Autodeclaracao) + (0.4 × Contexto)
-WSI_final = Σ(Peso_skill × Score_skill) / 100
+normalized = (score_bruto / max_score) × 10.0
 
-Distribuicao de Pesos Recomendada:
-- Competencias Tecnicas: 70%
-- Competencias Comportamentais: 30%
+Se bloco tecnico:
+    technical_score = (technical_score_acumulado + normalized) / 2
+
+Se bloco comportamental ou situacional:
+    behavioral_score = (behavioral_score_acumulado + normalized) / 2
 ```
 
-### 4.8 Faixas de WSI
+**Score final (generate_feedback):**
 
-| Faixa | Interpretacao | Descricao |
-|-------|---------------|-----------|
-| 4.5 - 5.0 | Excelente | Especialista |
-| 4.0 - 4.4 | Alto | Profissional autonomo |
-| 3.0 - 3.9 | Medio | Profissional competente |
-| 2.0 - 2.9 | Regular | Iniciante tecnico |
-| < 2.0 | Baixo | Gap critico |
+```python
+wsi_final_score = calculate_final_wsi_score(
+    technical_scores  = [("technical",   technical_score,  1.0)],
+    behavioral_scores = [("behavioral",  behavioral_score, 0.6),
+                         ("situational", situational_score, 0.4)],
+)
+```
+
+O scorer determinístico (`wsi_deterministic_scorer.py`) calcula cada resposta com base em:
+- `expected_bloom` (1–6) — nivel cognitivo esperado na resposta
+- `expected_dreyfus` (1–5) — proficiencia esperada na resposta
+- `competency` — nome da competencia avaliada
+- `max_score = 10.0` (padrao)
+
+### 4.8 Faixas de Classificacao WSI
+
+| Score Final | Classificacao | Acao Automatica |
+|-------------|---------------|-----------------|
+| >= 7.0 | **aprovado** | Avanca no pipeline |
+| 5.0 – 6.9 | **aguardando** | Revisao manual recomendada |
+| < 5.0 | **reprovado** | Email de feedback (nao bloqueante) |
+
+> Nota: A escala operacional do scorer e 0–10 por pergunta. O `wsi_final_score` consolidado herda esta escala e e comparado aos thresholds acima.
 
 ### 4.9 Penalidades e Bonus
 
@@ -313,77 +349,497 @@ O recrutador pode desbloquear o pipeline a qualquer momento:
 
 ### 4.13 Geracao de Perguntas WSI por Competencia
 
+> Esta secao descreve como o pipeline gera perguntas para os Blocos 3 e 4, com dados extraidos diretamente do codigo (`wsi_question_generator.py` e `wsi_screening_pipeline.py`). O Bloco 2 (empresa/elegibilidade) e gerenciado separadamente — veja secao 4.14.
+
 #### Etapa 1 — Extracao de Competencias do Job Description
 
-Antes de gerar qualquer pergunta, a LIA analisa o JD com LLM (Claude) e extrai um conjunto de competencias com pesos atribuidos. O resultado e um objeto `CompetencySuggestion` com tres tipos de competencias:
+O recrutador cola o JD na aba "Descricao". O backend (Claude Sonnet via `wsi.py` linhas 189–330) extrai:
 
-| Tipo | Quantidade extraida | Peso Total |
-|------|---------------------|------------|
-| `technical` | 5 competencias tecnicas (hard skills) | 70% |
-| `behavioral` | 2 competencias comportamentais/culturais — o LLM decide a divisao entre os dois tipos | 30% |
-| `cultural` | (incluido no grupo acima — pode ser 0, 1 ou 2 conforme o JD e a cultura da empresa) | parte dos 30% |
+| Campo extraido | Descricao | Onde usado |
+|----------------|-----------|-----------|
+| Titulo + senioridade | Cargo e nivel (junior/pleno/senior/lead/executive) | Calibra Bloom e Dreyfus |
+| Hard skills tecnicas | Ate 5 skills priorizadas das responsabilidades | Bloco 3 — 1 pergunta por skill |
+| Soft skills comportamentais | Traits esperados pelo JD | Informa o perfil Big Five |
+| Requisitos eliminatorios | Disponibilidade, localizacao, elegibilidade | Bloco 2 |
 
-> **Nota:** o prompt instrui o LLM a extrair "2 competencias COMPORTAMENTAIS/CULTURAIS" com 30% de peso total, mas o JSON de resposta tem arrays separados para `behavioral_competencies` e `cultural_competencies`. O LLM distribui entre os dois conforme o conteudo do JD e a cultura da empresa fornecida.
+O resultado e salvo no objeto `job` no frontend (`job.technicalRequirements`, `job.behavioralCompetencies`) e alimenta a geracao de perguntas.
 
-Cada competencia recebe um peso individual que soma 100% dentro do seu tipo. Exemplo para vaga de Desenvolvedor Python Senior:
+#### Etapa 2 — Modos de Geracao e Distribuicao
 
-```
-Tecnicas (70%):
-  Python          → peso 0.25  critical: true
-  Django/FastAPI  → peso 0.20  critical: true
-  PostgreSQL      → peso 0.10
-  AWS             → peso 0.10
-  Docker          → peso 0.05
+**Definicao no codigo (`MODEL_DISTRIBUTIONS` em `wsi_screening_pipeline.py`):**
 
-Comportamentais/Culturais (30%):
-  Colaboracao em Equipe  → tipo behavioral  → peso 0.15
-  Inovacao Continua      → tipo cultural    → peso 0.15
+```python
+MODEL_DISTRIBUTIONS = {
+    "compact": {"technical": 3, "behavioral": 3, "total": 6},
+    "full":    {"technical": 5, "behavioral": 5, "total": 10},
+}
 ```
 
-O campo `is_critical = true` indica que a competencia e eliminatoria — candidatos com score < 3.0 nessa competencia podem ter a decisao rebaixada independente do WSI geral. Este campo e exclusivo de competencias tecnicas (`is_critical` e sempre `false` para behavioral e cultural).
+| Modo | Bloco 3 (Tecnico) | Bloco 4 (Comportamental) | Total |
+|------|-------------------|--------------------------|-------|
+| **compact** | 3 perguntas | 3 perguntas | **6 perguntas** |
+| **full** | 5 perguntas | 5 perguntas | **10 perguntas** |
 
-> **Nota sobre responsabilidades:** o sistema extrai apenas competencias (capacidades avaliadas durante a triagem). Responsabilidades do cargo descritas no JD sao usadas como contexto para o LLM inferir o nivel de senioridade e as competencias criticas, mas nao sao criadas como entidade avaliavel separada.
+#### Etapa 3 — Bloco 3: Geracao de Perguntas Tecnicas
 
-#### Etapa 2 — Geracao de Perguntas por Competencia
+**Arquivo:** `wsi_question_generator.py` → `_generate_technical_questions()`  
+**Arquivo de destino:** `block_id = 3`, `category = "technical"`, `weight = 0.9`
 
-Para cada competencia extraida, o `WSIQuestionGenerator` cria perguntas usando os 4 frameworks em proporcoes fixas:
+O gerador pega ate 5 skills do JD e aplica templates STAR por senioridade, rotacionando entre os disponiveis:
 
-| Framework | Proporcao | Tipo de Pergunta |
-|-----------|-----------|-----------------|
-| CBI (Competency-Based Interviewing) | 60% | Situacionais STAR — "Conte sobre uma situacao onde voce usou X..." |
-| Dreyfus | 20% | Autodeclaracao — "De 1 a 5, quanto voce domina X? Cite um projeto recente." |
-| Bloom | 15% | Microcase — "Como voce implementaria/diagnosticaria [cenario]?" |
-| Big Five | 5% | Situacional comportamental — "Como voce reage quando [situacao de pressao]?" |
-
-**Volume de perguntas por modo:**
-
-| Modo | Target interno (codigo) | Duracao Estimada | Canal |
-|------|------------------------|-----------------|-------|
-| `compact` | **6 perguntas** (fixo — `target_count = 6`) | 5 a 7 minutos | WhatsApp |
-| `compact_plus` | **8 perguntas** (fixo — `target_count = 8`) | 7 a 10 minutos | WhatsApp |
-
-> **Nota:** os docstrings do codigo descrevem "6-8" e "8-10" como faixas, mas o target e fixo em 6 ou 8. O retorno e sempre cortado em `questions[:target_count]`. Se o LLM gerar menos perguntas que o target (por falta de competencias suficientes), um warning e emitido mas sem fallback automatico.
-
-> **Modo com 10-12 perguntas:** nao existe hoje no codigo. Para suportar triagens mais longas com mais competencias comportamentais/culturais seria necessario um terceiro modo (`full` ou `extended`) com `target_count >= 10`. Com target=8, o slot de Big Five comportamental ja e apenas 1 pergunta (5% de 8), o que limita a cobertura comportamental independente de quantas competencias comportamentais forem extraidas do JD.
-
-#### Vinculo Pergunta → Competencia → Score
-
-Cada pergunta gerada carrega internamente a competencia a que pertence. Quando o candidato responde, o scorer determinístico calcula o score usando **o nome da competencia como contexto**. Isso garante que o resultado final saiba exatamente qual competencia cada score representa:
-
-```
-Pergunta: "De 1 a 5, quanto voce domina Python? Cite um projeto."
-  └─ competency: "Python"
-  └─ framework: "Dreyfus"
-  └─ bloom_level: 4 (Analisar — nivel pleno/senior)
-
-Resposta do candidato avaliada:
-  └─ autodeclaracao_score: 4.0
-  └─ context_score: 4.2
-  └─ final_score: 4.1 (formula deterministica)
-  └─ registrado como: ResponseAnalysis(competency="Python", score=4.1)
+```python
+skills = context.skills[:5]
+for i, skill in enumerate(skills):
+    template_data = templates[i % len(templates)]  # rotaciona templates
+    texto = template_data["template"].format(skill=skill)
 ```
 
-O `WSI Final = (0.70 × média_técnica_ponderada) + (0.30 × média_comportamental_ponderada)` usa os pesos definidos na Etapa 1 para ponderar cada competencia no calculo final.
+O campo `framework` de cada template indica qual referencial cientifico guiou sua formulacao:
+
+| Senioridade | Templates disponiveis | % CBI | % Bloom | % Dreyfus |
+|-------------|----------------------|-------|---------|-----------|
+| junior | 2 | 100% | 0% | 0% |
+| pleno | 3 | ~67% | ~33% | 0% |
+| senior | 3 | ~33% | ~33% | ~33% |
+| lead | 2 | 50% | 50% | 0% |
+| executive | 2 | 50% | 50% | 0% |
+
+> Importante: independente do `framework` que gerou a pergunta, **todas** as perguntas tecnicas recebem `bloom_level` (nivel cognitivo da pergunta) e `dreyfus_stage` (proficiencia esperada na resposta). Estes valores sao usados pelo scorer na Fase 2.
+
+**Exemplos de perguntas geradas por senioridade:**
+
+| Senioridade | Pergunta gerada (template) | Bloom | Framework |
+|-------------|---------------------------|-------|-----------|
+| Junior | "Voce ja utilizou {skill}? Descreva sua experiencia" | 2 — Compreender | CBI |
+| Pleno | "Descreva um projeto onde voce utilizou {skill}. Contexto, acao, resultado" | 4 — Analisar | CBI |
+| Pleno | "Compare diferentes abordagens relacionadas a {skill}. Quando usaria cada uma?" | 5 — Avaliar | Bloom |
+| Senior | "Descreva uma arquitetura usando {skill}. Quais trade-offs considerou?" | 5 — Avaliar | CBI |
+| Senior | "Como avalia a melhor abordagem ao usar {skill}? Exemplo de decisao dificil" | 5 — Avaliar | Bloom |
+| Senior | "Conte sobre uma vez em que voce mentorou alguem em {skill}" | 6 — Criar | Dreyfus |
+| Lead/Exec | "Como definiu padroes tecnicos relacionados a {skill} para sua equipe?" | 6 — Criar | CBI |
+
+#### Etapa 4 — Bloco 4: Geracao de Perguntas Comportamentais
+
+**Arquivo:** `wsi_question_generator.py` → `_generate_behavioral_questions()` + `_generate_cultural_questions()`  
+**Arquivo de destino:** `block_id = 4`, `category = "behavioral"` (Big Five) ou `"cultural"` (CBI fit)
+
+O Bloco 4 e montado em dois passos e concatenado:
+
+```python
+behavioral_raw = _generate_behavioral_questions(ctx)  # Big Five — ate 3 perguntas
+cultural_raw   = _generate_cultural_questions(ctx)    # CBI cultural fit — 2 perguntas fixas
+combined       = behavioral_raw + cultural_raw
+questions      = combined[:target_count]              # corta no target do modo
+```
+
+**Parte 4a — Big Five (top-3 traits por score):**
+
+O gerador ordena os 5 traits do perfil Big Five por score decrescente e seleciona **1 pergunta por cada um dos top-3 traits**:
+
+```python
+sorted_traits = sorted(trait_scores.items(), key=lambda x: x[1], reverse=True)
+for trait, score in sorted_traits[:3]:
+    for q_data in BIG_FIVE_QUESTIONS[trait]:
+        if score >= q_data["threshold"]:  # threshold varia por pergunta
+            # seleciona esta pergunta e avanca para o proximo trait
+            break
+```
+
+Cada trait tem 3 perguntas pre-definidas no banco `BIG_FIVE_QUESTIONS`. A selecao e determinada pelo threshold de score:
+
+| Trait | Threshold baixo | Threshold medio | Threshold alto | Peso da pergunta |
+|-------|----------------|-----------------|----------------|-----------------|
+| Openness (abertura) | 50 | 60 | 70 | 0.6 a 0.8 |
+| Conscientiousness (organizacao) | 50 | 60 | 70 | 0.6 a 0.8 |
+| Extraversion (assertividade) | 50 | 60 | 70 | 0.6 a 0.8 |
+| Agreeableness (empatia) | 40 | 60 | — | 0.6 a 0.8 |
+| Stability (resiliencia emocional) | 50 | 60 | 70 | 0.6 a 0.8 |
+
+> Peso: `0.8` se score do trait >= 70 (trait dominante), `0.6` se score < 70.
+
+**Parte 4b — CBI Cultural Fit (2 perguntas fixas):**
+
+O gerador tem 3 templates culturais pre-definidos e sempre usa os primeiros 2:
+
+1. "O que voce busca em uma cultura de empresa? Quais valores sao importantes para voce?"
+2. "Descreva o ambiente de trabalho ideal para voce. Como voce contribui para criar esse ambiente?"
+
+`framework = "CBI"`, `category = "cultural"`, peso calibrado por senioridade.
+
+#### Distribuicao Final por Modo
+
+| Modo | Bloco 3 (Tecnico) | Bloco 4 (Comportamental) | Detalhe do Bloco 4 |
+|------|-------------------|--------------------------|-------------------|
+| **compact (6q)** | 3 perguntas | 3 perguntas | **3 Big Five (100%)** — CBI cultural nao e incluido |
+| **full (10q)** | 5 perguntas | 5 perguntas | **3 Big Five (60%) + 2 CBI cultural (40%)** |
+
+> No modo compact, `combined[:3]` retorna apenas as 3 perguntas Big Five — as 2 CBI culturais ficam de fora.  
+> No modo full, `combined[:5]` inclui as 3 Big Five + 2 CBI culturais = 5 comportamentais.
+
+#### Papel dos Frameworks no Pipeline — Resumo
+
+| Framework | Bloco | Categoria DB | Papel na geracao | Papel no scoring |
+|-----------|-------|-------------|------------------|-----------------|
+| CBI (STAR) | 3 | `technical` | Estrutura STAR aplicada a hard skills | Detector de evidencias STAR na resposta |
+| Bloom | 3 | `technical` | Define profundidade cognitiva da pergunta | Compara bloom esperado vs. demonstrado |
+| Dreyfus | 3 e 4 | ambos | Calibra nivel de proficiencia exigido | Avalia proficiencia demonstrada na resposta |
+| Big Five | 4 | `behavioral` | Seleciona trait prioritario e pergunta adequada | Nao entra no scorer deterministico |
+| CBI cultural | 4 | `cultural` | Perguntas fixas de fit/motivacao | Detector de evidencias STAR na resposta |
+
+> Bloom e Dreyfus sao atribuidos a **todas** as perguntas (tecnicos E comportamentais) no momento da geracao. Na Fase 2, o scorer usa `expected_bloom` e `expected_dreyfus` de cada pergunta para calcular o score da resposta.
+
+#### Vinculo Pergunta → Skill → Score
+
+Cada pergunta tecnica carrega a skill a que pertence. Quando o candidato responde, o scorer usa o nome da competencia como contexto:
+
+```
+Pergunta: "Descreva um projeto onde voce utilizou React de forma significativa."
+  ├── skill:         "React"
+  ├── framework:     "CBI"
+  ├── bloom_level:   4 (Analisar)
+  ├── dreyfus_stage: 3 (Competente — pleno)
+  └── weight:        0.9
+
+Resposta avaliada:
+  ├── score:           7.5 / 10.0
+  ├── bloom_achieved:  4
+  ├── dreyfus_achieved: 3
+  └── reasoning:       "Candidato descreveu projeto real com contexto claro..."
+```
+
+### 4.14 Pipeline WSI End-to-End — Fluxo Completo
+
+O pipeline WSI tem **2 fases distintas**: configuracao (feita uma vez pelo recrutador) e triagem (executada em tempo real por candidato). A fonte unica de verdade e a tabela `job_screening_questions`.
+
+---
+
+#### FASE 1 — Configuracao da Vaga (Recrutador)
+
+##### Passo 1 — Criacao do Job Description
+
+**Interface:** `ScreeningConfigManager.tsx` → aba "Descricao" (componente `JDEvaluationPanel`)  
+**Endpoint:** `POST /api/v1/wsi/generate-questions`  
+**Arquivo:** `lia-agent-system/app/api/v1/wsi.py` (linhas 189–330)
+
+O recrutador cola o texto do cargo. O backend chama Claude Sonnet com prompt que extrai:
+- Cargo + senioridade
+- Competencias tecnicas (hard skills)
+- Competencias comportamentais (soft skills / traits)
+- Requisitos eliminatorios (elegibilidade)
+
+O resultado e salvo no objeto `job` no frontend e alimenta o Passo 2.
+
+##### Passo 2 — Geracao das Perguntas de Triagem
+
+**Interface:** aba "Perguntas de Triagem" — botao "Gerar WSI Compacto" ou "Gerar WSI Completo"  
+**Endpoint frontend:** `POST /api/backend-proxy/wsi/generate-batch` (proxy Next.js)  
+**Endpoint backend:** `POST /api/v1/wsi/screening-pipeline`  
+**Arquivo proxy:** `route.ts` (generate-batch) — normaliza senioridade antes de repassar
+
+```
+"sr"     → "senior"
+"jr"     → "junior"
+"pl"     → "pleno"
+```
+
+**Passo 2a — Resolucao de Senioridade**  
+`wsi_screening_pipeline.py` (linhas 101–157) — Servico: `SeniorityResolver`
+
+| Modo | Fonte |
+|------|-------|
+| Explicito | Usa o informado pelo recrutador, valida com cross-check |
+| Inferido | `multi_signal` — cruza titulo do cargo + texto do JD |
+| Padrao | `pleno` (se nada disponivel) |
+
+O resultado (`effective_seniority`) calibra os niveis Bloom e Dreyfus para toda a geracao.
+
+**Passo 2b — Distribuicao por Modo**  
+`wsi_screening_pipeline.py` (linhas 65–68)
+
+```python
+MODEL_DISTRIBUTIONS = {
+    "compact": {"technical": 3, "behavioral": 3, "total": 6},
+    "full":    {"technical": 5, "behavioral": 5, "total": 10},
+}
+```
+
+**Passo 2c — Bloco 2: Empresa + Elegibilidade + Acao Afirmativa**  
+`wsi_screening_pipeline.py` (linhas 188–223)
+
+- Perguntas da empresa — carregadas do banco (`company_questions_raw`). Peso: `0.9` se eliminatoria, `0.7` se nao. `block_id = 2`
+- Acao afirmativa — se `is_affirmative = true`, pergunta pre-definida injetada (PCD, racial, genero, 50+, LGBTQIA+). Resposta nao elimina o candidato
+
+**Passo 2d — Bloco 3: Perguntas Tecnicas**  
+`wsi_screening_pipeline.py` → `_build_technical_block()`  
+`wsi_question_generator.py` → `_generate_technical_questions()`
+
+- 1 pergunta CBI-STAR por skill (ate 5 skills)
+- Templates rotacionam por senioridade (veja tabela em 4.13)
+- Bloom level + Dreyfus stage atribuidos a cada pergunta
+- `block_id = 3`, `source = "wsi_generated"`
+
+```
+Bloco 3 por senioridade — proporcao de frameworks:
+  junior:    100% CBI
+  pleno:     ~67% CBI + ~33% Bloom
+  senior:    ~33% CBI + ~33% Bloom + ~33% Dreyfus
+  lead/exec: 50% CBI + 50% Bloom
+```
+
+**Passo 2e — Bloco 4: Perguntas Comportamentais**  
+`wsi_screening_pipeline.py` → `_build_behavioral_block()`  
+`wsi_question_generator.py` → `_generate_behavioral_questions()` + `_generate_cultural_questions()`
+
+```
+compact (3q): 3 Big Five (top-3 traits por score do perfil)
+full    (5q): 3 Big Five + 2 CBI cultural fit
+```
+
+- Big Five: 1 pergunta por trait, selecionada por threshold de score (veja tabela em 4.13)
+- CBI cultural: 2 perguntas fixas de fit/motivacao
+- `block_id = 4`, `source = "wsi_generated"`
+
+**Passo 2f — Deduplicacao**  
+`wsi_screening_pipeline.py` (linhas 79–87)
+
+`SequenceMatcher` com threshold `0.65`. Perguntas com similaridade >= 65% sao descartadas. Se houver deficit apos deduplicacao, o pipeline gera extras e rebalanceia.
+
+##### Passo 3 — Revisao e Salvamento pelo Recrutador
+
+**Interface:** aba "Perguntas de Triagem" — accordion com 6 blocos  
+**Endpoint:** `POST /api/backend-proxy/wsi/questions/save` → `POST /api/v1/wsi/questions/save`
+
+O recrutador pode:
+- Aceitar ou rejeitar perguntas individuais
+- Reordenar perguntas
+- Adicionar perguntas manuais
+- Marcar como eliminatoria
+
+Apos validacao, o frontend persiste em `job_screening_questions`:
+
+```sql
+INSERT INTO job_screening_questions (
+  job_vacancy_id, question_text, category, question_type,
+  weight, skill_targeted, block_id, is_active, created_at
+)
+```
+
+**Este e o momento em que a fonte unica de verdade e criada.** A partir daqui, qualquer sessao de triagem para essa vaga le exatamente essas perguntas — sem geracao on-the-fly.
+
+```
+RECRUTADOR
+    │
+    ├─[1] Cola JD → extrai competencias tecnicas + comportamentais
+    │
+    ├─[2] Clica "Gerar WSI Compacto (6q) ou Completo (10q)"
+    │       │
+    │       └─→ screening-pipeline
+    │               ├── resolve senioridade (multi-signal)
+    │               ├── Bloco 2: elegibilidade + empresa + acao afirmativa
+    │               │
+    │               ├── Bloco 3 — Tecnico (3q compact / 5q full)
+    │               │     ├── 1 pergunta CBI-STAR por skill (ate 5 skills)
+    │               │     ├── template rotaciona por seniority:
+    │               │     │     junior:    100% CBI
+    │               │     │     pleno:    ~67% CBI + ~33% Bloom
+    │               │     │     senior:   ~33% CBI + ~33% Bloom + ~33% Dreyfus
+    │               │     │     lead/exec: 50% CBI + 50% Bloom
+    │               │     └── Bloom level + Dreyfus stage atribuidos a cada pergunta
+    │               │
+    │               ├── Bloco 4 — Comportamental (3q compact / 5q full)
+    │               │     ├── compact: 3 Big Five (top-3 traits por score)
+    │               │     └── full:    3 Big Five + 2 CBI cultural fit
+    │               │           Big Five: 1 pergunta por trait, selecionada por threshold
+    │               │           CBI cultural: 2 perguntas fixas de fit/motivacao
+    │               │
+    │               └── deduplicacao SequenceMatcher >= 65%
+    │
+    └─[3] Revisa perguntas → salva em job_screening_questions
+              (fonte unica de verdade criada aqui)
+```
+
+---
+
+#### FASE 2 — Triagem do Candidato (Execucao em Tempo Real)
+
+##### Passo 4 — Inicio da Sessao WSI
+
+**Arquivo:** `wsi_interview_graph.py`  
+**Tecnologia:** LangGraph (grafo de estado deterministico)
+
+Quando um candidato inicia a triagem (via `/pub/triagem` ou link enviado), o sistema cria um `WSIInterviewState`:
+
+```python
+@dataclass
+class WSIInterviewState:
+    session_id: str         # UUID unico por sessao
+    company_id: str
+    candidate_id: str
+    job_id: str             # Chave para buscar as perguntas salvas
+    interview_level: str    # "quick" | "standard" | "full"
+    question_blocks: List[WSIQuestionBlock]  # preenchido no load_context
+    current_question_index: int
+    responses: List[WSIResponseRecord]
+    technical_score: float
+    behavioral_score: float
+    wsi_final_score: Optional[float]
+```
+
+O estado e serializado em JSON e persistido via `PostgresSaver` do LangGraph a cada no, garantindo retomada em caso de falha.
+
+##### Passo 5 — No load_context: Carregamento das Perguntas
+
+**Arquivo:** `wsi_interview_graph.py` → `load_context()` (linhas 276–432)
+
+Dois gates de seguranca sao executados antes de qualquer pergunta:
+
+**SEG-4 — Gate de Consentimento LGPD:**
+
+```python
+consent = await ConsentCheckerService.check_candidate_consent(
+    candidate_id, company_id, purpose="ai_screening"
+)
+if not consent.allowed:
+    state.error = "LGPD_CONSENT_REVOKED"
+    state.stage = ERROR
+    return state  # sessao abortada
+```
+
+**Hierarquia de carregamento das perguntas:**
+
+```
+1. saved_db          ← FONTE UNICA DE VERDADE (caminho normal)
+   SELECT * FROM job_screening_questions
+   WHERE job_vacancy_id = :job_id AND is_active = true
+   ORDER BY created_at ASC
+
+2. fallback_pipeline ← WARNING no log (recrutador nao configurou)
+   WSIScreeningPipeline.build_pipeline() on-the-fly
+
+3. hardcoded_fallback ← 2 perguntas genericas de emergencia
+```
+
+O `source` e logado em `state.execution_log` para auditoria:
+
+```json
+{"node": "load_context", "source": "saved_db", "questions_loaded": 10}
+```
+
+##### Passo 6 — Loop de Perguntas
+
+```
+load_context
+    ↓
+generate_question ──→ (apresenta pergunta N ao candidato)
+    ↓
+[candidato responde no chat]
+    ↓
+validate_response
+    ├── skip/vazio → score=0, avanca
+    ├── SEG-1: PromptInjectionGuard → bloqueia se risco "high"
+    └── valida → score_response
+                     ↓
+                  advance
+                     ├── mais perguntas → generate_question
+                     └── fim → generate_feedback
+```
+
+**SEG-1 — Injecao de Prompt:**
+
+```python
+result = PromptInjectionGuard().check(response_clean)
+if result.risk_level == "high":
+    score = 0.0, reasoning = "bloqueada por seguranca"
+```
+
+##### Passo 7 — No score_response: Pontuacao de cada Resposta
+
+**Arquivo:** `wsi_interview_graph.py` → `score_response()` (linhas 528–607)  
+**Servico:** `wsi_deterministic_scorer.py`
+
+```python
+score_result = await calculate_wsi_deterministic(
+    candidate_response=response_text,
+    expected_bloom=block.bloom_level,    # 1–6
+    expected_dreyfus=block.dreyfus_level, # 1–5
+    competency=block.competency,
+    max_score=block.max_score,            # 10.0 padrao
+)
+```
+
+O resultado retorna: `score`, `bloom_achieved`, `dreyfus_achieved`, `reasoning`.
+
+**Acumulacao de score por dimensao:**
+
+```python
+normalized = (score / max_score) * 10.0
+if block_type == "technical":
+    state.technical_score = (state.technical_score + normalized) / 2
+elif block_type in ("behavioral", "situational"):
+    state.behavioral_score = (state.behavioral_score + normalized) / 2
+```
+
+**Audit trail automatico (BCB 498 / SOX):**
+
+```python
+await audit_service.log_decision(
+    domain="cv_screening",
+    decision_type="wsi_score",
+    decision=f"block_{block.block_id}_scored",
+    metadata={"score": ..., "bloom_achieved": ..., "competency": ...}
+)
+```
+
+##### Passo 8 — No generate_feedback: Score Final e Recomendacao
+
+**Arquivo:** `wsi_interview_graph.py` → `generate_feedback()` (linhas 623–721)
+
+```python
+wsi_final_score = calculate_final_wsi_score(
+    technical_scores  = [("technical",   technical_score,  1.0)],
+    behavioral_scores = [("behavioral",  behavioral_score, 0.6),
+                         ("situational", situational_score, 0.4)],
+)
+```
+
+**Classificacao automatica:**
+
+| Score Final | Classificacao | Acao Automatica |
+|-------------|---------------|-----------------|
+| >= 7.0 | aprovado | Avanca no pipeline |
+| 5.0 – 6.9 | aguardando | Revisao manual |
+| < 5.0 | reprovado | Email de feedback (nao bloqueante) |
+
+**Acoes automaticas ao finalizar:**
+- Audit log final com metadados completos
+- Metrica Prometheus: `record_confidence(domain="cv_screening", confidence=score/10)`
+- Email de feedback: se `recommendation == "reprovado"` e candidato tem email, `candidate_feedback_service.send_gate_feedback()` (asyncio.ensure_future)
+
+---
+
+#### Tabelas de Banco Envolvidas
+
+| Tabela | Papel |
+|--------|-------|
+| `job_vacancies` | Dados da vaga (titulo, senioridade, departamento) |
+| `job_screening_questions` | Fonte unica de verdade — perguntas salvas pelo recrutador |
+| `wsi_sessions` | Estado serializado de cada sessao (LangGraph PostgresSaver) |
+| `audit_log` | Trail de cada decisao de score e avaliacao final |
+| `candidate_consents` | Verificacao LGPD antes de iniciar entrevista |
+
+#### Mapa de Arquivos por Responsabilidade
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `ScreeningConfigManager.tsx` | UI do recrutador — JD, geracao, selecao e salvamento |
+| `route.ts` (generate-batch) | Proxy Next.js → normaliza senioridade → screening-pipeline |
+| `route.ts` (questions/save) | Proxy Next.js → persiste perguntas selecionadas no DB |
+| `wsi.py` | Router FastAPI — endpoints `/generate-questions`, `/screening-pipeline`, `/questions/save` |
+| `wsi_screening_pipeline.py` | Orquestrador — resolve senioridade, gera Blocos 3 e 4, deduplica |
+| `wsi_question_generator.py` | Gerador de perguntas tecnicas/comportamentais/culturais por skill |
+| `wsi_service.py` | Analise de JD, extracao de competencias, schemas Bloom/Dreyfus/Big Five |
+| `wsi_interview_graph.py` | Grafo LangGraph — conduz a entrevista, pontua, gera recomendacao |
+| `wsi_deterministic_scorer.py` | Calculo deterministico de score por resposta |
 
 ---
 
@@ -1059,6 +1515,7 @@ SE candidato.feedback_negativo > candidato.feedback_positivo
 |--------|------|------------|
 | 1.0 | Janeiro 2026 | Consolidacao de WSI + Rubricas + Pre-requisitos + Calibration. Remocao de Similar Search (metodologia arquivada). |
 | 1.1 | Janeiro 2026 | Adicionadas metodologias: Comparacao de Candidatos, Parecer Automatico, Ranking LIA. |
+| 1.2 | Marco 2026 | Secao 4.6 corrigida para refletir a estrutura real de 6 blocos (0–5) com tipos e origens de cada bloco. Secao 4.7 e 4.8 atualizadas com formula real do codigo e escala 0–10 por resposta. Secao 4.13 reescrita com dados extraidos diretamente do codigo: MODEL_DISTRIBUTIONS (compact=6q / full=10q), proporcao de frameworks CBI/Bloom/Dreyfus por senioridade no Bloco 3, logica Big Five top-3 traits + threshold por pergunta no Bloco 4, distribuicao por modo (compact = 3 Big Five 100%; full = 3 Big Five + 2 CBI cultural). Adicionada secao 4.14 com Pipeline WSI End-to-End completo (Fase 1: passos 1-3 de configuracao; Fase 2: passos 4-8 de triagem), incluindo diagrama de fluxo, tabelas de banco e mapa de arquivos por responsabilidade. |
 
 ---
 
