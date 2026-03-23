@@ -156,7 +156,7 @@ Verifica se as mudanças são VISÍVEIS, ACESSÍVEIS e CONFORMES ao Design Syste
 3. **Consistência entre visões**: A feature funciona igual em TODAS as visões?
    - Kanban (drag-drop) e Tabela (dropdown) devem ter o mesmo resultado
    - Mobile/responsive: a feature funciona em telas menores?
-   - Breakpoints: xs(0), sm(600), md(960), lg(1264), xl(1904) — DS §1.6
+   - Breakpoints: xs(< 640px), sm(640px), md(768px), lg(1024px), xl(1280px), 2xl(1536px) — conforme `tailwind.config.ts`
 
 4. **Regra 90/10 Monocromática** (DS §1.1, §1.2):
    - **90% grayscale** — usar tokens canônicos:
@@ -272,21 +272,19 @@ Verifica se o backend suporta corretamente a feature e segue os padrões de qual
 
 6. **Boas práticas de código backend** (padrões arquiteturais obrigatórios da plataforma):
 
-   | Regra | O que verificar | Anti-padrão a evitar |
-   |-------|----------------|----------------------|
-   | **Routers finos** | Router apenas declara rota + chama service. Sem lógica de negócio em `@router.*` | Querysets SQL, decisões de negócio ou chamadas LLM dentro do router |
-   | **Services stateless** | Service não guarda estado entre chamadas — recebe parâmetros, processa, retorna | Atributo de instância que acumula dados entre requisições |
-   | **Funções curtas** | Funções e métodos com ≤ 50 linhas de lógica real (excluindo docstrings/comentários) | Funções de 100+ linhas que fazem parse + validação + DB + log + resposta |
-   | **Pydantic obrigatório** | Todo input de endpoint e output de service tem schema Pydantic explícito | `dict`, `Any`, `**kwargs` sem tipagem em contratos de API |
-   | **`company_id` universal** | Toda query ao banco filtra por `company_id` (multi-tenant). Nenhuma query retorna dados de outra empresa | `SELECT * FROM candidates` sem `WHERE company_id = :cid` |
-   | **Structured logging** | `logger.info/warning/error(msg, extra={...})` — nunca `print()` em produção | `print(f"DEBUG: {data}")` em qualquer arquivo de produção |
-   | **Secrets fora do código** | Credenciais vêm de `settings.*` (Pydantic Settings / env vars). Nenhum secret no código | `api_key = "sk-abc123"` hardcoded, `.env` commitado no git |
-   | **`company_id` no token** | `company_id` é extraído do JWT/token autenticado, nunca aceito como parâmetro de query/body sem validação | `GET /candidates?company_id=123` onde 123 é fornecido pelo cliente sem verificação de autorização |
+   - [ ] **Router fino (≤ 10 linhas por handler)**: O handler `@router.*` apenas valida schema de entrada, chama um método de service e retorna o resultado. Sem lógica de negócio, querysets SQL, decisões de negócio ou chamadas LLM dentro do router.
+   - [ ] **Service stateless**: O service não guarda estado entre chamadas — recebe parâmetros, processa, retorna. Nenhum atributo de instância acumula dados entre requisições.
+   - [ ] **Funções curtas (< 50 linhas)**: Funções e métodos com menos de 50 linhas de lógica real (excluindo docstrings/comentários). Funções com 50+ linhas devem ser divididas em subfunções nomeadas.
+   - [ ] **Pydantic obrigatório em todos os contratos**: Todo input de endpoint (`RequestSchema`) e todo output de service (`ResponseSchema`) tem schema Pydantic explícito. Proibido `dict`, `Any` ou `**kwargs` sem tipagem em contratos de API.
+   - [ ] **`company_id` em todos os models, queries e respostas**: Toda model SQLAlchemy tem coluna `company_id`. Toda query ao banco filtra `WHERE company_id = :cid` como condição obrigatória. Toda resposta de API exclui dados de outras empresas. `company_id` é extraído do JWT autenticado — nunca aceito como parâmetro de query/body sem validação de autorização.
+   - [ ] **Structured logging (sem `print()`)**: Usar `logger.info/warning/error(msg, extra={...})` em todo código de produção. `print()` é proibido em qualquer arquivo fora de `test_*`. Todo log de decisão de negócio inclui `company_id`, `user_id` e contexto relevante no `extra`.
+   - [ ] **Secrets fora do código**: Credenciais vêm de `settings.*` (Pydantic BaseSettings / env vars). Nenhum secret hardcoded no código. Nenhum `.env` commitado no git.
 
-7. **Isolamento multi-tenant**: A feature nunca mistura dados entre empresas diferentes?
-   - Toda query SQL/SQLAlchemy filtra `company_id` como condição obrigatória
-   - Nenhum endpoint retorna mais dados do que a empresa do usuário autenticado pode ver
-   - Teste: autenticar como empresa A e tentar acessar dados da empresa B → deve retornar 403 ou lista vazia
+7. **Isolamento multi-tenant**: A feature NUNCA mistura dados entre empresas diferentes?
+   - [ ] Toda query SQL/SQLAlchemy filtra `company_id` como condição obrigatória
+   - [ ] Nenhum endpoint retorna dados além da empresa do usuário autenticado
+   - [ ] `company_id` vem do JWT, não do corpo da requisição
+   - [ ] Teste: autenticar como empresa A e tentar acessar dados da empresa B → deve retornar 403 ou lista vazia
 
 **Como executar:**
 ```bash
@@ -299,11 +297,11 @@ ls plataforma-lia/src/app/api/backend-proxy/nome-endpoint/
 # Verificar resposta:
 curl -s http://localhost:8000/api/v1/nome-endpoint | python3 -m json.tool | head -20
 
-# Verificar routers finos (lógica de negócio dentro de router = violação):
-grep -n "def.*:" lia-agent-system/app/api/v1/nome_endpoint.py | head -20
+# Verificar routers finos (contar linhas por handler — >10 é alerta):
+grep -n "@router\." lia-agent-system/app/api/v1/nome_endpoint.py
 
 # Verificar Pydantic em todos os endpoints (sem dict cru):
-grep -n "Dict\|dict\|Any" lia-agent-system/app/api/v1/nome_endpoint.py | grep -v "import\|#"
+grep -n ": dict\|: Any\|\*\*kwargs" lia-agent-system/app/api/v1/nome_endpoint.py | grep -v "import\|#"
 
 # Verificar company_id em queries (multi-tenant obrigatório):
 grep -n "company_id" lia-agent-system/app/services/nome_service.py
@@ -311,8 +309,8 @@ grep -n "company_id" lia-agent-system/app/services/nome_service.py
 # Verificar print statements proibidos:
 grep -rn "print(" lia-agent-system/app/ --include="*.py" | grep -v "test_\|#"
 
-# Verificar funções longas (> 50 linhas é alerta):
-awk '/^    def /{start=NR} start && NR-start>50{print FILENAME ":" NR " — função longa"; start=0}' \
+# Verificar funções longas (≥ 50 linhas é alerta):
+awk '/^    def /{start=NR} start && NR-start>=50{print FILENAME ":" NR " — função longa"; start=0}' \
   lia-agent-system/app/services/nome_service.py
 ```
 

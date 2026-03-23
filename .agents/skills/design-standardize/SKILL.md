@@ -577,17 +577,17 @@ Os seguintes componentes existem no DS v4.2.1 mas são usados com menor frequên
 
 ### Sombras
 
-| Classe | Uso | Interface interna | Tela de entrada |
-|--------|-----|:-----------------:|:---------------:|
-| `shadow-sm` | Cards padrão, cards sutis | ✅ Permitido | ✅ Permitido |
-| `shadow-md` | Cards elevados/hover, dropdowns | ✅ Permitido | ✅ Permitido |
-| `shadow-lg` | Modais, dialogs, overlays | ✅ Permitido | ✅ Permitido |
-| `shadow-xl` | Drawers, sidebars flutuantes | ⚠️ Usar com moderação | ✅ Permitido |
-| `shadow-2xl` | Glassmorphism, cards de destaque absoluto | ❌ PROIBIDO | ✅ Permitido |
+| Classe | Interface interna | Tela de entrada | Uso |
+|--------|:-----------------:|:---------------:|-----|
+| `shadow-sm` | ✅ Padrão obrigatório | ✅ Permitido | Cards de interface interna (Kanban, tabelas, settings) |
+| `shadow-md` | ⚠️ Somente dropdowns | ✅ Permitido | Dropdown menus, popovers, elementos flutuantes |
+| `shadow-lg` | ⚠️ Somente modais | ✅ Permitido | Modais, dialogs — ficam acima do plano de conteúdo |
+| `shadow-xl` | ❌ PROIBIDO | ✅ Permitido | Reservado para telas de entrada/branding |
+| `shadow-2xl` | ❌ PROIBIDO | ✅ Permitido | Glassmorphism, telas imersivas |
 
-> **Regra `shadow-sm`:** É o nível padrão de elevação para cards em interfaces internas (Kanban, tabelas, settings). O produto usa `shadow-sm` extensamente — ele é permitido e esperado em cards internos. A proibição é apenas para `shadow-xl` e `shadow-2xl` em interfaces internas.
-> 
-> **Exceção documentada:** `shadow-xl` é permitido em modais (`bg-white rounded-md shadow-xl`) pois modais ficam acima do plano principal de conteúdo.
+> **Regra principal:** Em interfaces internas (Kanban, tabelas, modais de formulário, settings), o único nível de sombra padrão para cards é `shadow-sm`. O produto usa `shadow-sm` extensamente — ele é o esperado. `shadow-md` e `shadow-lg` são aceitos apenas como exceção contextual (dropdowns e modais overlay). `shadow-xl` e `shadow-2xl` são proibidos em qualquer interface interna.
+>
+> **Exceção modais:** `shadow-xl` em `bg-white rounded-md shadow-xl` para o container do modal é comum no codebase mas deve ser migrado para `shadow-lg` em refatorações futuras.
 
 ### Motion
 
