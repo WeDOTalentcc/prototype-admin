@@ -105,6 +105,17 @@ def update_card(token, issue_key, adf_description):
     return resp.status_code, resp.text
 
 
+def add_comment(token, issue_key, adf_body):
+    """Adiciona um comentário ADF ao card Jira."""
+    url = f"{BASE_URL}/issue/{issue_key}/comment"
+    resp = requests.post(
+        url,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"},
+        json={"body": adf_body},
+    )
+    return resp.status_code, resp.text
+
+
 # ── Text helpers ─────────────────────────────────────────────────────────────
 
 def adf_to_text(node):
@@ -687,6 +698,235 @@ REGRAS OBRIGATÓRIAS:
         raise ValueError("Não foi possível recuperar o JSON truncado da resposta do Claude")
 
 
+# ── Segunda chamada LLM: design + critérios + DoD (postado como comentário) ──
+
+def analyze_part2_with_claude(card_key, summary, description_text, func_issues_titles, react_files, vue_files):
+    """Segunda passagem do LLM: gera design issues, critérios de aceite e DoD.
+    O resultado é postado como comentário no card, não na descrição.
+    """
+    try:
+        import anthropic
+        api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+        kwargs = {"api_key": api_key}
+        if base_url:
+            kwargs["base_url"] = base_url
+        client = anthropic.Anthropic(**kwargs)
+    except Exception as e:
+        raise ValueError(f"Erro ao inicializar Anthropic (part2): {e}")
+
+    react_section = "\n".join(
+        f"--- REACT: {p} ---\n{c[:1500]}"
+        for p, c in (react_files or {}).items()
+    )
+    vue_section = "\n".join(
+        f"--- VUE: {p} ---\n{c[:1500]}"
+        for p, c in (vue_files or {}).items()
+    )
+    issues_ctx = "\n".join(f"- {t}" for t in func_issues_titles) if func_issues_titles else "(nenhum)"
+
+    prompt = f"""Você é um especialista em QA e Design System para a Plataforma LIA (WeDOTalent).
+
+CARD: {card_key}
+TÍTULO: {summary}
+
+TRANSCRIÇÃO DO CARD:
+{description_text}
+
+ISSUES FUNCIONAIS JÁ DOCUMENTADOS (não repita, use como contexto):
+{issues_ctx}
+
+CÓDIGO REACT (fonte da verdade de design):
+{react_section or '[não disponível]'}
+
+CÓDIGO VUE (o que será auditado):
+{vue_section or '[não disponível]'}
+
+DS LIA v4.2.1 — Regras de Design:
+- Cor de background telas finais: DEVE ser gray-50 (light) / gray-900 (dark) — NUNCA vermelho ou verde
+- Botões de estado: success → green-500/700, error → red-500/700, MAS a tela em si deve ser neutra
+- rounded-md em botões de ação (NUNCA rounded-full)
+- shadow-sm em cards internos, shadow-md APENAS dropdowns
+- Ícones Lucide 16px (w-4 h-4) obrigatório
+
+Gere APENAS um JSON com este schema:
+
+{{
+  "issues_design": [
+    {{
+      "numero": "D01",
+      "titulo": "Título conciso do problema visual",
+      "descricao": "O que está errado e por que viola o DS LIA",
+      "arquivo_react": "caminho/componente.tsx (referência correta)",
+      "arquivo_vue": "caminho/componente.vue (o que precisa corrigir)",
+      "antes_label": "Vue atual — INCORRETO",
+      "antes_codigo": "código Vue incorreto curto (máx 8 linhas)",
+      "depois_label": "Vue corrigido conforme DS LIA",
+      "depois_codigo": "código Vue corrigido curto (máx 8 linhas)",
+      "linguagem": "vue"
+    }}
+  ],
+  "criterios_de_aceite": [
+    "[Área] Critério objetivo e verificável — pode ser fechado como checkbox"
+  ],
+  "definition_of_done": [
+    "[ ] Item obrigatório antes do PR ser aprovado"
+  ]
+}}
+
+REGRAS:
+- issues_design: extraia TODOS os problemas visuais mencionados na transcrição (cores erradas, layout, tipografia, espaçamento, ícones)
+- Se não há código Vue disponível, indique o arquivo provável e descreva o fix em prosa
+- criterios_de_aceite: mínimo 8 itens cobrindo cada issue funcional + cada issue de design
+- definition_of_done: mínimo 6 itens (spec, PR review, testes, staging, docs, sem console.log)
+- Responda APENAS o JSON puro, sem markdown"""
+
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=8000,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    raw = response.content[0].text.strip()
+    raw = re.sub(r"^```(?:json)?\n?", "", raw)
+    raw = re.sub(r"\n?```$", "", raw)
+
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # Recovery de JSON truncado
+        lines = raw.rstrip().split("\n")
+        while lines:
+            candidate = "\n".join(lines)
+            closes = ""
+            depth_brace = candidate.count("{") - candidate.count("}")
+            depth_bracket = candidate.count("[") - candidate.count("]")
+            for _ in range(depth_bracket):
+                closes += "]"
+            for _ in range(depth_brace):
+                closes += "}"
+            try:
+                return json.loads(candidate + closes)
+            except json.JSONDecodeError:
+                lines.pop()
+                continue
+        return {}
+
+
+def build_adf_comment(data, card_key):
+    """Constrói o ADF do comentário com design issues, critérios e DoD."""
+    from datetime import date
+
+    nodes = []
+
+    def h(level, text):
+        return {"type": "heading", "attrs": {"level": level}, "content": [{"type": "text", "text": text}]}
+
+    def p(text, bold=False):
+        if bold:
+            return {"type": "paragraph", "content": [{"type": "text", "text": text, "marks": [{"type": "strong"}]}]}
+        return {"type": "paragraph", "content": [{"type": "text", "text": text}]}
+
+    def p_mixed(*parts):
+        content = []
+        for text, bold, code in parts:
+            node = {"type": "text", "text": text}
+            marks = []
+            if bold:
+                marks.append({"type": "strong"})
+            if code:
+                marks.append({"type": "code"})
+            if marks:
+                node["marks"] = marks
+            content.append(node)
+        return {"type": "paragraph", "content": content}
+
+    def blist(items):
+        return {
+            "type": "bulletList",
+            "content": [
+                {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": str(i)}]}]}
+                for i in items
+            ],
+        }
+
+    def code_block(code, lang="", max_chars=500):
+        text = str(code)
+        if len(text) > max_chars:
+            text = text[:max_chars] + f"\n... [truncado]"
+        return {"type": "codeBlock", "attrs": {"language": lang}, "content": [{"type": "text", "text": text}]}
+
+    def rule():
+        return {"type": "rule"}
+
+    today = date.today().strftime("%d/%m/%Y")
+    nodes.append(h(2, f"🎨 Complemento de Análise — Design + Critérios de Aceite"))
+    nodes.append(p(f"Card: {card_key}  |  Gerado em: {today}  |  jira-fetch-analyze.py (parte 2)"))
+    nodes.append(rule())
+
+    # ── Issues de Design ──
+    issues_design = data.get("issues_design", [])
+    if issues_design:
+        nodes.append(h(2, "🎨 Issues de Design (DS LIA v4.2.1)"))
+        nodes.append(p(
+            "Problemas visuais identificados na transcrição. "
+            "Cada issue: ANTES (Vue incorreto) → DEPOIS (Vue corrigido conforme DS LIA). "
+            "React/Replit = fonte da verdade absoluta."
+        ))
+        for issue in issues_design:
+            num = issue.get("numero", "D?")
+            titulo = issue.get("titulo", "")
+            descricao = issue.get("descricao", "")
+            arq_react = issue.get("arquivo_react", "")
+            arq_vue = issue.get("arquivo_vue", issue.get("arquivo", ""))
+            antes_label = issue.get("antes_label", "Vue atual — INCORRETO")
+            antes_cod = issue.get("antes_codigo", issue.get("codigo_atual", ""))
+            depois_label = issue.get("depois_label", "deve ficar assim — DS LIA")
+            depois_cod = issue.get("depois_codigo", issue.get("codigo_sugerido", ""))
+            lang = issue.get("linguagem", "vue")
+
+            nodes.append(h(3, f"Issue {num} — {titulo}"))
+            if descricao:
+                nodes.append(p(descricao))
+            if arq_react:
+                nodes.append(p_mixed(("Ref React: ", False, False), (arq_react, False, True)))
+            if arq_vue:
+                nodes.append(p_mixed(("Arquivo Vue: ", False, False), (arq_vue, False, True)))
+            if antes_cod and antes_cod.strip():
+                nodes.append(p(f"{antes_label}:", bold=True))
+                nodes.append(code_block(antes_cod, lang))
+            if depois_cod and depois_cod.strip():
+                nodes.append(p(f"{depois_label}:", bold=True))
+                nodes.append(code_block(depois_cod, lang))
+            nodes.append(rule())
+
+    # ── Critérios de Aceite ──
+    criterios = data.get("criterios_de_aceite", [])
+    if criterios:
+        nodes.append(h(2, "✅ Critérios de Aceite"))
+        nodes.append(p(
+            "Cada item deve ser verificável e fechável como checkbox. "
+            "Se precisar de interpretação para saber se passou, reescreva o critério."
+        ))
+        nodes.append(blist(criterios))
+        nodes.append(rule())
+
+    # ── Definition of Done ──
+    dod = data.get("definition_of_done", [])
+    if dod:
+        nodes.append(h(2, "🏁 Definition of Done"))
+        nodes.append(p("Checklist obrigatório antes do PR ser aprovado. Sem todos esses itens, o card não fecha."))
+        nodes.append(blist(dod))
+        nodes.append(rule())
+
+    nodes.append(p(
+        "React/Replit = fonte da verdade de design. "
+        "Para auditoria de design exclusiva e mais completa, usar jira-audit-design.py."
+    ))
+
+    return {"version": 1, "type": "doc", "content": nodes}
+
+
 # ── ADF Builder ───────────────────────────────────────────────────────────────
 
 def build_adf(data, card_key, summary):
@@ -1216,7 +1456,7 @@ def main():
     if integration_files:
         code_by_layer["Integrações"] = integration_files
 
-    print(f"\n[6/6] Analisando com Claude (funcionalidade + design)...")
+    print(f"\n[6/7] Analisando com LLM — Parte 1: Issues de Funcionalidade...")
     print(f"  Buscando conteúdo BetterBugs...")
     betterbugs_url = extract_betterbugs_url(description_text)
     betterbugs_content = None
@@ -1230,10 +1470,10 @@ def main():
     else:
         print(f"  — BetterBugs URL não encontrado na transcrição")
     analysis = analyze_with_claude(issue_key, summary, description_text, code_by_layer, vue_files, betterbugs_content)
-    print(f"✓ Análise gerada")
-    print(f"  {len(analysis.get('issues_funcionalidade', []))} issues de funcionalidade")
-    print(f"  {len(analysis.get('issues_design', []))} issues de design")
-    print(f"  {len(analysis.get('criterios_de_aceite', []))} critérios de aceite")
+    func_issues = analysis.get("issues_funcionalidade", [])
+    print(f"✓ Parte 1 concluída")
+    print(f"  {len(func_issues)} issues de funcionalidade")
+    print(f"  {len(analysis.get('criterios_de_aceite', []))} critérios de aceite (parte 1)")
 
     adf_new = build_adf(analysis, issue_key, summary)
 
@@ -1260,19 +1500,53 @@ def main():
         adf = adf_new
         print(f"  Card sem conteúdo anterior — criando do zero")
 
+    # ── Parte 2: Design + Critérios + DoD (vai para comentário) ───────────
+    print(f"\n[7/7] Analisando com LLM — Parte 2: Design + Critérios de Aceite + DoD...")
+    func_titles = [
+        f"{iss.get('numero','?')} — {iss.get('titulo','')}" for iss in func_issues
+    ]
+    analysis2 = analyze_part2_with_claude(
+        card_key=issue_key,
+        summary=summary,
+        description_text=description_text,
+        func_issues_titles=func_titles,
+        react_files=react_files,
+        vue_files=vue_files,
+    )
+    print(f"✓ Parte 2 concluída")
+    print(f"  {len(analysis2.get('issues_design', []))} issues de design")
+    print(f"  {len(analysis2.get('criterios_de_aceite', []))} critérios de aceite")
+    print(f"  {len(analysis2.get('definition_of_done', []))} itens DoD")
+
+    adf_comment = build_adf_comment(analysis2, issue_key)
+
     if args.dry_run:
-        print("\n[DRY RUN] Preview da análise (não enviado ao Jira):")
-        print(json.dumps(analysis, indent=2, ensure_ascii=False)[:3000])
+        print("\n[DRY RUN] Preview — Parte 1 (descrição):")
+        print(json.dumps(analysis, indent=2, ensure_ascii=False)[:2000])
+        print("\n[DRY RUN] Preview — Parte 2 (comentário):")
+        print(json.dumps(analysis2, indent=2, ensure_ascii=False)[:2000])
         print(f"\n✅ DRY RUN concluído. Remova --dry-run para publicar.")
         return
 
     print(f"\nPublicando no Jira...")
     status_code, text = update_card(token, issue_key, adf)
     if status_code in (200, 204):
+        print(f"  ✓ Descrição atualizada (issues funcionais)")
+    else:
+        print(f"  ❌ Erro na descrição {status_code}: {text[:400]}")
+
+    print(f"  Adicionando comentário (design + critérios + DoD)...")
+    c_status, c_text = add_comment(token, issue_key, adf_comment)
+    if c_status in (200, 201):
+        print(f"  ✓ Comentário adicionado com sucesso")
+    else:
+        print(f"  ❌ Erro no comentário {c_status}: {c_text[:400]}")
+
+    if status_code in (200, 204):
         print(f"\n✅ Card {issue_key} atualizado com sucesso!")
         print(f"   URL: https://wedotalent.atlassian.net/browse/{issue_key}")
     else:
-        print(f"\n❌ Erro {status_code}: {text[:400]}")
+        print(f"\n❌ Falha ao atualizar {issue_key}")
 
 
 if __name__ == "__main__":
