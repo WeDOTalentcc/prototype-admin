@@ -238,6 +238,57 @@ def search_github_file(query, repo=None):
 
 # ── Claude Analysis ───────────────────────────────────────────────────────────
 
+DS_LIA_DESIGN_RULES = """
+## DS LIA v4.2.1 — Regras de Design (React = Fonte da Verdade)
+
+### Paleta (Regra 90/10)
+- 90% monocromático: gray-900 primary, gray-100 backgrounds, gray-400 textos secundários
+- 10% acento: #60BED1 (wedo-cyan) — APENAS ícone brain LIA, badges LIA, links hover
+- Cyan NUNCA em botões de ação primária, backgrounds de seção ou textos de corpo
+
+### Tipografia
+- Open Sans 85%: corpo, labels, navegação, dados
+- Inter 10%: dados numéricos, métricas, tabelas
+- JetBrains Mono 5%: código, IDs técnicos
+- Menu items: 13px, line-height 1.25
+
+### Bordas e Formas
+- Border radius SEMPRE 8px (rounded-md / rounded-lg)
+- NUNCA rounded-12px, rounded-full em botões de ação, ou valores custom
+- Inputs: rounded-xl (12px) — única exceção aprovada
+
+### Ícones
+- Tamanho padrão: SEMPRE 16px (w-4 h-4)
+- Lucide icons como padrão
+- NUNCA 14px, 18px, 24px (default Vuetify) sem override
+
+### Botões
+- Primary: bg-gray-900 text-white, variant="flat" no Vuetify
+- Secondary: border border-gray-200, variant="outlined"
+- NUNCA variant="elevated" (sombra indevida)
+- Altura: 40px ação principal, 32px secundário
+
+### Sidebar/Menu
+- Largura expandido: 240px — NUNCA 256px (default Vuetify)
+- Largura colapsado: 64px
+- Comportamento: SEMPRE permanent — NUNCA expand-on-hover
+- Toggle: botão chevron explícito, não hover automático
+- Estado ativo: bg-gray-100 (light) / bg-gray-800 (dark) + font-semibold
+- Itens: min-height 40px
+
+### Cards e Superfícies
+- elevation="0" (flat) — NUNCA elevation padrão Vuetify (sombra)
+- Borda: border border-gray-200 (light) / border-gray-700 (dark)
+
+### Defaults Vuetify a Corrigir (vuetify.ts)
+- VIcon: { size: '16' }
+- VBtn: { variant: 'flat', size: 'small' }
+- VCard: { elevation: 0 }
+- VTextField: { density: 'compact', variant: 'outlined' }
+- VNavigationDrawer: { width: 240 }
+"""
+
+
 def analyze_with_claude(card_key, summary, description_text, code_by_layer, vue_files):
     try:
         import anthropic
@@ -254,30 +305,33 @@ def analyze_with_claude(card_key, summary, description_text, code_by_layer, vue_
     for path, content in vue_files.items():
         vue_section += f"\n{'='*60}\n[Vue/GitHub] {path}\n{'='*60}\n{content}\n"
 
-    prompt = f"""Você é um engenheiro senior full-stack da Plataforma LIA (WeDOTalent).
+    prompt = f"""Você é um engenheiro senior full-stack + design system expert da Plataforma LIA (WeDOTalent).
 
 Analise o card Jira abaixo. Mapeie TODOS os pontos levantados na transcrição:
 funcionalidades incompletas, erros, comportamentos incorretos, problemas de design,
-UX ruim, integrações quebradas, lógica de IA incorreta, etc.
-
-Para cada ponto, consulte o código fornecido e gere sugestões concretas com código real.
+UX ruim, integrações quebradas, lógica de IA incorreta, problemas visuais, etc.
+Não deixe NENHUM ponto da transcrição de fora.
 
 ## CARD JIRA
 Chave: {card_key}
 Título: {summary}
 Data: {date.today().strftime('%d/%m/%Y')}
 
-## TRANSCRIÇÃO / DESCRIÇÃO DO CARD (fonte primária de análise):
+## TRANSCRIÇÃO / DESCRIÇÃO DO CARD (fonte primária — extraia TUDO):
 {description_text}
 
 ## CÓDIGO DOS LAYERS (React Replit + Backend Python + IA + Integrações):
 {code_sections if code_sections else "(arquivos não encontrados automaticamente — analise pela transcrição)"}
 
-## CÓDIGO VUE (GitHub WeDOTalent — referência de design):
-{vue_section if vue_section else "(não fornecido)"}
+## CÓDIGO VUE (GitHub WeDOTalent — a ser auditado):
+{vue_section if vue_section else "(não fornecido — gere código Vue correto baseado nas regras DS LIA)"}
+
+## REGRAS DS LIA v4.2.1:
+{DS_LIA_DESIGN_RULES}
 
 ## INSTRUÇÕES
-Gere um JSON com a estrutura abaixo. Seja específico e concreto — nunca genérico.
+Gere um JSON com a estrutura EXATA abaixo. Seja específico e concreto — nunca genérico.
+Código ANTES/DEPOIS deve ser real, não placeholder.
 
 {{
   "titulo_auditoria": "Título descritivo do que foi analisado",
@@ -291,44 +345,65 @@ Gere um JSON com a estrutura abaixo. Seja específico e concreto — nunca gené
       "numero": "F01",
       "titulo": "Título do problema funcional",
       "tipo": "bug|incompleto|ux|integracao|ia",
-      "descricao": "O que está errado e por quê",
+      "descricao": "O que está errado e por quê — específico",
       "layer": "Frontend|Backend|IA|Integração",
-      "arquivo": "caminho/do/arquivo.tsx",
-      "codigo_atual": "trecho do código atual com o problema (se encontrado)",
-      "codigo_sugerido": "trecho corrigido com a sugestão",
-      "linguagem": "tsx|python|typescript"
+      "arquivo_react": "caminho/do/arquivo.tsx",
+      "arquivo_vue": "components/caminho/do/arquivo.vue",
+      "codigo_atual_react": "trecho React atual com o problema",
+      "codigo_sugerido_react": "trecho React corrigido",
+      "codigo_atual_vue": "trecho Vue atual com o problema equivalente",
+      "codigo_sugerido_vue": "trecho Vue corrigido conforme DS LIA",
+      "linguagem_react": "tsx|typescript|python",
+      "linguagem_vue": "vue"
     }}
   ],
   "issues_design": [
     {{
       "numero": "D01",
       "titulo": "Título do problema de design",
-      "descricao": "O que está visualmente errado",
-      "arquivo": "caminho/do/arquivo.tsx",
-      "codigo_atual": "código css/tsx atual",
-      "codigo_sugerido": "código corrigido seguindo DS LIA v4.2.1",
-      "linguagem": "tsx"
+      "descricao": "O que está visualmente errado — referência à regra DS LIA",
+      "arquivo_react": "caminho/do/arquivo.tsx",
+      "arquivo_vue": "components/caminho/do/arquivo.vue",
+      "antes_label": "Vue atual — INCORRETO",
+      "antes_codigo": "código vue atual com o problema",
+      "depois_label": "deve ficar assim — React/DS LIA",
+      "depois_codigo": "código vue corrigido",
+      "linguagem": "vue",
+      "warning": "⚠️ Impacto visual deste bug"
     }}
   ],
+  "vuetify_defaults": [
+    {{
+      "componente": "v-icon",
+      "titulo": "v-icon — size ausente",
+      "default_vuetify": "24px (Material Design default)",
+      "react_correto": "w-4 h-4 = 16px",
+      "impacto": "Impacto visual concreto",
+      "fix_local": "<v-icon size=\\"16\\">mdi-*</v-icon>",
+      "fix_global": "VIcon: {{ size: '16' }}"
+    }}
+  ],
+  "vuetify_ts_code": "createVuetify({{\\n  defaults: {{\\n    VIcon: {{ size: '16' }},\\n  }}\\n}})",
   "action_items": [
-    "[ ] Ação concreta com responsável se possível (ex: [Frontend] Corrigir comportamento do sidebar)"
+    "[ ] [Layer] Ação concreta e verificável"
   ],
   "criterios_de_aceite": [
     "[Área] Critério verificável e concreto"
   ],
   "arquivos_para_modificar": [
-    {{"path": "caminho/arquivo.tsx", "layer": "Frontend", "motivo": "Por que precisa ser modificado"}}
+    {{"path": "caminho/arquivo.tsx", "layer": "Frontend React|Vue|Backend|IA", "motivo": "Por que precisa ser modificado"}}
   ]
 }}
 
-REGRAS:
-- Extraia TODOS os elementos da transcrição: não deixe nenhum ponto de fora
-- issues_funcionalidade: foco em erros, comportamentos errados, features incompletas
-- issues_design: foco em bordas, ícones, tipografia, cores, espaçamento, comportamento visual
-- Código sugerido deve ser REAL e baseado no código encontrado — não genérico
-- Mínimo 3 issues_funcionalidade e 3 issues_design se a transcrição mencionar
-- Mínimo 8 critérios de aceite
-- Responda APENAS o JSON, sem markdown"""
+REGRAS OBRIGATÓRIAS:
+- Extraia ABSOLUTAMENTE TODOS os elementos da transcrição — nenhum ponto pode ficar de fora
+- issues_funcionalidade: SEMPRE incluir codigo_atual_vue + codigo_sugerido_vue quando aplicável
+- issues_design: SEMPRE com ANTES (Vue incorreto) e DEPOIS (Vue corrigido conforme DS LIA)
+- vuetify_defaults: inclua TODOS os defaults Vuetify relevantes para esta tela
+- vuetify_ts_code: bloco completo e pronto para colar no vuetify.ts
+- Mínimo 3 issues_funcionalidade e 5 issues_design se mencionados na transcrição
+- Mínimo 10 critérios de aceite
+- Responda APENAS o JSON puro, sem markdown, sem explicação fora do JSON"""
 
     response = client.messages.create(
         model="claude-opus-4-5",
@@ -423,7 +498,8 @@ def build_adf(data, card_key, summary):
         nodes.append(h(2, "⚙️ Issues de Funcionalidade"))
         nodes.append(p(
             "Problemas funcionais identificados na transcrição: erros, comportamentos incorretos, "
-            "features incompletas, integrações e lógica de IA."
+            "features incompletas, integrações e lógica de IA. Cada issue inclui código React "
+            "(Replit) e Vue (GitHub) com ANTES e DEPOIS concretos."
         ))
 
         for issue in issues_func:
@@ -432,10 +508,14 @@ def build_adf(data, card_key, summary):
             tipo = issue.get("tipo", "")
             layer = issue.get("layer", "")
             descricao = issue.get("descricao", "")
-            arquivo = issue.get("arquivo", "")
-            cod_atual = issue.get("codigo_atual", "")
-            cod_sug = issue.get("codigo_sugerido", "")
-            lang = issue.get("linguagem", "")
+            arq_react = issue.get("arquivo_react", issue.get("arquivo", ""))
+            arq_vue = issue.get("arquivo_vue", "")
+            cod_react_antes = issue.get("codigo_atual_react", issue.get("codigo_atual", ""))
+            cod_react_depois = issue.get("codigo_sugerido_react", issue.get("codigo_sugerido", ""))
+            cod_vue_antes = issue.get("codigo_atual_vue", "")
+            cod_vue_depois = issue.get("codigo_sugerido_vue", "")
+            lang_react = issue.get("linguagem_react", issue.get("linguagem", "tsx"))
+            lang_vue = issue.get("linguagem_vue", "vue")
 
             badge = f"[{tipo.upper()}]" if tipo else ""
             layer_badge = f"[{layer}]" if layer else ""
@@ -443,16 +523,27 @@ def build_adf(data, card_key, summary):
 
             if descricao:
                 nodes.append(p(descricao))
-            if arquivo:
-                nodes.append(p_mixed(("Arquivo: ", False, False), (arquivo, False, True)))
 
-            if cod_atual and cod_atual.strip():
-                nodes.append(p("Código atual:", bold=True))
-                nodes.append(code_block(cod_atual, lang))
+            # React block
+            if arq_react:
+                nodes.append(p_mixed(("Arquivo React: ", False, False), (arq_react, False, True)))
+            if cod_react_antes and cod_react_antes.strip():
+                nodes.append(p("Código React atual:", bold=True))
+                nodes.append(code_block(cod_react_antes, lang_react))
+            if cod_react_depois and cod_react_depois.strip():
+                nodes.append(p("Sugestão React:", bold=True))
+                nodes.append(code_block(cod_react_depois, lang_react))
 
-            if cod_sug and cod_sug.strip():
-                nodes.append(p("Sugestão de correção:", bold=True))
-                nodes.append(code_block(cod_sug, lang))
+            # Vue block
+            if arq_vue or cod_vue_antes or cod_vue_depois:
+                if arq_vue:
+                    nodes.append(p_mixed(("Arquivo Vue: ", False, False), (arq_vue, False, True)))
+                if cod_vue_antes and cod_vue_antes.strip():
+                    nodes.append(p("Vue — ANTES (incorreto):", bold=True))
+                    nodes.append(code_block(cod_vue_antes, lang_vue))
+                if cod_vue_depois and cod_vue_depois.strip():
+                    nodes.append(p("Vue — DEPOIS (corrigido):", bold=True))
+                    nodes.append(code_block(cod_vue_depois, lang_vue))
 
             nodes.append(rule())
 
@@ -461,35 +552,77 @@ def build_adf(data, card_key, summary):
     if issues_design:
         nodes.append(h(2, "🎨 Issues de Design (DS LIA v4.2.1)"))
         nodes.append(p(
-            "Problemas visuais e de design system identificados nas funcionalidades mencionadas. "
-            "React/Replit = fonte da verdade. Para auditoria de design completa e aprofundada, "
-            "usar jira-audit-design.py."
+            "Problemas visuais identificados nos elementos mencionados na transcrição. "
+            "Cada issue mapeia ANTES (Vue atual incorreto) → DEPOIS (Vue corrigido conforme DS LIA). "
+            "React/Replit = fonte da verdade absoluta. "
+            "Para auditoria de design ainda mais aprofundada, usar jira-audit-design.py."
         ))
 
         for issue in issues_design:
             num = issue.get("numero", "D?")
             titulo = issue.get("titulo", "")
             descricao = issue.get("descricao", "")
-            arquivo = issue.get("arquivo", "")
-            cod_atual = issue.get("codigo_atual", "")
-            cod_sug = issue.get("codigo_sugerido", "")
-            lang = issue.get("linguagem", "tsx")
+            arq_react = issue.get("arquivo_react", "")
+            arq_vue = issue.get("arquivo_vue", issue.get("arquivo", ""))
+            antes_label = issue.get("antes_label", "Vue atual — INCORRETO")
+            antes_cod = issue.get("antes_codigo", issue.get("codigo_atual", ""))
+            depois_label = issue.get("depois_label", "deve ficar assim — React/DS LIA")
+            depois_cod = issue.get("depois_codigo", issue.get("codigo_sugerido", ""))
+            lang = issue.get("linguagem", "vue")
+            warning = issue.get("warning", "")
 
             nodes.append(h(3, f"Issue {num} — {titulo}"))
             if descricao:
                 nodes.append(p(descricao))
-            if arquivo:
-                nodes.append(p_mixed(("Arquivo: ", False, False), (arquivo, False, True)))
+            if arq_react:
+                nodes.append(p_mixed(("Ref React: ", False, False), (arq_react, False, True)))
+            if arq_vue:
+                nodes.append(p_mixed(("Arquivo Vue: ", False, False), (arq_vue, False, True)))
 
-            if cod_atual and cod_atual.strip():
-                nodes.append(p("Código atual:", bold=True))
-                nodes.append(code_block(cod_atual, lang))
-
-            if cod_sug and cod_sug.strip():
-                nodes.append(p("Sugestão DS LIA v4.2.1:", bold=True))
-                nodes.append(code_block(cod_sug, lang))
+            if antes_cod and antes_cod.strip():
+                nodes.append(p(f"{antes_label}:", bold=True))
+                nodes.append(code_block(antes_cod, lang))
+            if depois_cod and depois_cod.strip():
+                nodes.append(p(f"{depois_label}:", bold=True))
+                nodes.append(code_block(depois_cod, lang))
+            if warning:
+                nodes.append(p(warning))
 
             nodes.append(rule())
+
+    # ── Vuetify Defaults ──
+    vuetify_defaults = data.get("vuetify_defaults", [])
+    vuetify_ts = data.get("vuetify_ts_code", "")
+    if vuetify_defaults or vuetify_ts:
+        nodes.append(h(2, "⚠️ ALERTA VUETIFY DEFAULTS — Para dev / ClaudeCode / Cursor"))
+        nodes.append(p(
+            "Causa raiz sistêmica: os problemas abaixo não são erros isolados — são causados por "
+            "defaults implícitos do Vuetify que divergem do DS LIA (React/Replit = fonte da verdade). "
+            "Corrija localmente E atualize o vuetify.ts (global defaults) para evitar reincidência."
+        ))
+
+        for d in vuetify_defaults:
+            titulo_d = d.get("titulo", d.get("componente", ""))
+            nodes.append(h(3, titulo_d))
+            items_d = []
+            if d.get("default_vuetify"):
+                items_d.append(f"Vuetify default implícito: {d['default_vuetify']}")
+            if d.get("react_correto"):
+                items_d.append(f"React/Replit (correto): {d['react_correto']}")
+            if d.get("impacto"):
+                items_d.append(f"Impacto visual: {d['impacto']}")
+            if d.get("fix_local"):
+                items_d.append(f"Fix local: {d['fix_local']}")
+            if d.get("fix_global"):
+                items_d.append(f"Fix global (vuetify.ts): {d['fix_global']}")
+            if items_d:
+                nodes.append(blist(items_d))
+
+        if vuetify_ts:
+            nodes.append(h(3, "Como atualizar o vuetify.ts"))
+            nodes.append(code_block(vuetify_ts, "typescript"))
+
+        nodes.append(rule())
 
     # ── Arquivos a modificar ──
     mod_files = data.get("arquivos_para_modificar", [])
@@ -518,6 +651,12 @@ def build_adf(data, card_key, summary):
     if criterios:
         nodes.append(h(2, "✅ Critérios de Aceite"))
         nodes.append(blist(criterios))
+
+    nodes.append(rule())
+    nodes.append(p(
+        "Referência: React/Replit é sempre a fonte da verdade de design e funcionalidade. "
+        "Para auditoria de design exclusiva e mais completa, usar jira-audit-design.py."
+    ))
 
     return {"version": 1, "type": "doc", "content": nodes}
 
