@@ -1377,57 +1377,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
               description={job.description}
               hasQuestions={(job.screeningQuestions?.length || 0) > 0}
               onGenerateQuestions={async () => {
-                if (!job) return
-                toast.success('Gerando perguntas WSI com base na Descrição do Cargo...')
-                try {
-                  const res = await fetch('/api/backend-proxy/wsi/generate-questions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      company_id: (job as any).companyId || 'default',
-                      job_title: job.title,
-                      technical_skills: (job.technicalRequirements || []).map((r: any) => r.technology || r.skill || r).filter(Boolean),
-                      behavioral_competencies: (job.behavioralCompetencies || []).map((c: any) => c.competency || c.name || c).filter(Boolean),
-                      responsibilities: job.requirements || [],
-                      seniority: job.level || (job as any).seniority || null,
-                      department: job.department || null,
-                      max_questions: 8
-                    })
-                  })
-                  const data = await res.json()
-                  if (data.questions && data.questions.length > 0) {
-                    const mappedQuestions = data.questions.map((q: any) => ({
-                      id: q.id,
-                      question: q.text || q.question,
-                      text: q.text || q.question,
-                      category: q.category || (q.question_type === 'technical' ? 'technical' : 'behavioral'),
-                      block_id: q.block_id || 3,
-                      type: q.is_eliminatory ? 'eliminatory' : (q.question_type || 'open'),
-                      required: q.is_eliminatory ?? false,
-                      weight: 0.75,
-                      skill_targeted: q.skill_targeted,
-                      competency_validated: q.skill_targeted,
-                      skill_type: q.question_type
-                    }))
-                    onJobUpdate?.({ ...job, screeningQuestions: mappedQuestions })
-                    toast.success('Perguntas WSI geradas com sucesso! ' + data.questions.length + ' perguntas criadas.')
-                    try {
-                      await fetch('/api/backend-proxy/wsi/questions/save', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          job_id: job.backendId || job.jobId || String(job.id),
-                          questions: mappedQuestions.map((q: any) => ({ id: q.id, text: q.question, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id })),
-                          source: 'wsi_generation'
-                        })
-                      })
-                    } catch {}
-                  } else {
-                    toast.error('Erro ao gerar perguntas WSI. Tente novamente.')
-                  }
-                } catch {
-                  toast.error('Erro ao gerar perguntas WSI. Tente novamente.')
-                }
+                setActiveSection('perguntas')
+                toast.success('Acesse "Perguntas de Triagem" para gerar as perguntas WSI e escolher o modo (Compacto ou Completo).')
               }}
               enrichedJd={job.enrichedJd}
               onSaveEnrichedJD={async (enrichedData) => {
@@ -1643,7 +1594,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       ) : (
                         <>
                           <span className="text-[11px] font-semibold">Gerar WSI Completo</span>
-                          <span className={`text-[10px] ${wsiGenerationMode === 'full' ? 'text-gray-400' : 'text-gray-500'}`}>~12 perguntas · 25 min</span>
+                          <span className={`text-[10px] ${wsiGenerationMode === 'full' ? 'text-gray-400' : 'text-gray-500'}`}>~10 perguntas · 22 min</span>
                         </>
                       )}
                     </button>

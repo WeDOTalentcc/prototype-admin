@@ -332,21 +332,21 @@ Responda em JSON:
     async def generate_screening_questions(
         self,
         competencies: List[Competency],
-        mode: Literal["compact", "compact_plus"] = "compact"
+        mode: Literal["compact", "full"] = "compact"
     ) -> List[WSIQuestion]:
         """
         ETAPA 2: Gera perguntas científicas baseadas em competências.
-        
+
         Aplica frameworks:
-        - CBI para perguntas contextuais
-        - Dreyfus para autodeclaração
-        - Bloom para microcases
-        - Big Five para fit comportamental
-        
+        - CBI para perguntas contextuais (técnico E comportamental)
+        - Dreyfus para autodeclaração de proficiência técnica
+        - Bloom para microcases situacionais
+        - Big Five para fit comportamental/cultural
+
         Args:
             competencies: Lista de competências a avaliar
-            mode: "compact" (6-8 perguntas) ou "compact_plus" (8-10)
-            
+            mode: "compact" (6 perguntas) ou "full" (10 perguntas)
+
         Returns:
             Lista de perguntas WSI estruturadas
         """
@@ -535,17 +535,18 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
     async def generate_all(
         self,
         competencies: List[Competency],
-        mode: Literal["compact", "compact_plus"] = "compact"
+        mode: Literal["compact", "full"] = "compact"
     ) -> List[WSIQuestion]:
         """
         Gera todas as perguntas para as competências selecionadas.
 
         Estratégia:
-        - compact:      6 perguntas (5-7 min WhatsApp)
-        - compact_plus: 10 perguntas (8-12 min WhatsApp)
+        - compact: 6 perguntas  (~12 min WhatsApp)
+        - full:    10 perguntas (~22 min WhatsApp)
 
         Ambos os modos extraem 5 técnicas + 5 comportamentais do JD.
         A metodologia seleciona as mais relevantes por peso e is_critical.
+        CBI cobre técnico E comportamental em ambos os modos.
 
         Distribuição compact (6 perguntas):
         - CBI técnico:        2 perguntas  (top 2 técnicas por is_critical + peso)
@@ -554,7 +555,7 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
         - Bloom:              1 pergunta   (4ª técnica — microcase)
         - Big Five:           1 pergunta   (2ª comportamental — fit cultural/situacional)
 
-        Distribuição compact_plus (10 perguntas):
+        Distribuição full (10 perguntas):
         - CBI técnico:        3 perguntas  (top 3 técnicas por is_critical + peso)
         - CBI comportamental: 3 perguntas  (top 3 comportamentais por peso)
         - Dreyfus:            2 perguntas  (4ª e 5ª técnicas — autodeclaração)
@@ -606,7 +607,7 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
             bigfive_comp = behavioral[1] if len(behavioral) > 1 else (behavioral[0] if behavioral else technical[0])
             questions.append(await self._generate_bigfive_question(bigfive_comp))
 
-        else:  # compact_plus — 10 perguntas
+        else:  # full — 10 perguntas
             # --- CBI técnico: top 3 técnicas ---
             for comp in technical[:3]:
                 questions.append(await self._generate_cbi_question(comp))

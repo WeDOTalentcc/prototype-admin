@@ -323,49 +323,105 @@ class WSIInterviewNodes:
                 )
 
         try:
-            if state.job_requirements and state.candidate_profile:
-                # Contexto pré-carregado pelo endpoint — usa pipeline para gerar questões
-                from app.domains.cv_screening.services.wsi_screening_pipeline import (
-                    WSIScreeningPipeline,
-                    WSIScreeningPipelineRequest,
-                )
+            question_source = "unknown"
 
-                req = WSIScreeningPipelineRequest(
-                    job_title=state.job_requirements.get("title", ""),
-                    job_description=state.job_requirements.get("description", ""),
-                    seniority=state.job_requirements.get("seniority"),
-                    company_id=state.company_id,
-                    include_company_questions=False,
-                )
-                pipeline = WSIScreeningPipeline()
-                result = pipeline.build_pipeline(req, [])
+            # FONTE ÚNICA DE VERDADE: perguntas salvas pelo recrutador em Configurações da Vaga.
+            # Lê de job_screening_questions antes de qualquer geração on-the-fly.
+            if state.job_id:
+                try:
+                    from app.core.database import AsyncSessionLocal
+                    from sqlalchemy import text as _sql_text
+                    async with AsyncSessionLocal() as _db:
+                        rows = (await _db.execute(
+                            _sql_text(
+                                "SELECT id, question_text, category, question_type, weight, "
+                                "skill_targeted, block_id "
+                                "FROM job_screening_questions "
+                                "WHERE job_vacancy_id = :job_id AND is_active = true "
+                                "ORDER BY created_at ASC"
+                            ),
+                            {"job_id": state.job_id},
+                        )).fetchall()
 
-                state.question_blocks = [
-                    WSIQuestionBlock(
-                        block_id=q.get("id", str(uuid4())),
-                        block_type=q.get("block_type", "technical"),
-                        question=q["question"],
-                        competency=q.get("competency", ""),
-                        bloom_level=q.get("bloom_level", 3),
-                        dreyfus_level=q.get("dreyfus_level", 3),
-                        big_five_trait=q.get("big_five_trait"),
-                        max_score=q.get("max_score", 10.0),
+                    if rows:
+                        state.question_blocks = [
+                            WSIQuestionBlock(
+                                block_id=str(row[0]),
+                                block_type=(
+                                    "technical"
+                                    if (row[3] or row[2] or "").lower() in ("technical", "tecnico", "tech")
+                                    else "behavioral"
+                                ),
+                                question=row[1],
+                                competency=row[5] or "",
+                                bloom_level=3,
+                                dreyfus_level=3,
+                                big_five_trait=None,
+                                max_score=float(row[4] or 1.0) * 10 if float(row[4] or 1.0) <= 1.0 else float(row[4] or 10.0),
+                            )
+                            for row in rows
+                        ]
+                        question_source = "saved_db"
+                        logger.info(
+                            "[WSIInterviewGraph] Loaded %d saved questions from DB for job_id=%s",
+                            len(state.question_blocks), state.job_id,
+                        )
+                except Exception as db_exc:
+                    logger.warning(
+                        "[WSIInterviewGraph] Could not load saved questions from DB: %s — will attempt pipeline fallback",
+                        db_exc,
                     )
-                    for q in (result.questions if hasattr(result, "questions") else [])
-                ]
+
+            # FALLBACK: recrutador ainda não configurou perguntas — gera via pipeline com aviso.
+            if not state.question_blocks:
+                logger.warning(
+                    "[WSIInterviewGraph] AVISO: nenhuma pergunta salva encontrada para job_id=%s. "
+                    "Usando pipeline como fallback — o recrutador deve configurar perguntas em "
+                    "Configurações da Vaga > Perguntas de Triagem.",
+                    state.job_id,
+                )
+                if state.job_requirements and state.candidate_profile:
+                    from app.domains.cv_screening.services.wsi_screening_pipeline import (
+                        WSIScreeningPipeline,
+                        WSIScreeningPipelineRequest,
+                    )
+                    req = WSIScreeningPipelineRequest(
+                        job_title=state.job_requirements.get("title", ""),
+                        job_description=state.job_requirements.get("description", ""),
+                        seniority=state.job_requirements.get("seniority"),
+                        company_id=state.company_id,
+                        include_company_questions=False,
+                    )
+                    pipeline = WSIScreeningPipeline()
+                    result = pipeline.build_pipeline(req, [])
+                    state.question_blocks = [
+                        WSIQuestionBlock(
+                            block_id=q.get("id", str(uuid4())),
+                            block_type=q.get("block_type", "technical"),
+                            question=q["question"],
+                            competency=q.get("competency", ""),
+                            bloom_level=q.get("bloom_level", 3),
+                            dreyfus_level=q.get("dreyfus_level", 3),
+                            big_five_trait=q.get("big_five_trait"),
+                            max_score=q.get("max_score", 10.0),
+                        )
+                        for q in (result.questions if hasattr(result, "questions") else [])
+                    ]
+                    question_source = "fallback_pipeline"
 
             if not state.question_blocks:
                 state.question_blocks = self._build_fallback_questions()
+                question_source = "hardcoded_fallback"
 
             state.log_step("load_context", {
                 "status": "success",
                 "questions_loaded": len(state.question_blocks),
                 "interview_level": state.interview_level,
-                "source": "pipeline" if state.job_requirements else "fallback",
+                "source": question_source,
             })
             logger.info(
-                f"[WSIInterviewGraph] Context loaded: session={state.session_id} "
-                f"questions={len(state.question_blocks)}"
+                "[WSIInterviewGraph] Context loaded: session=%s questions=%d source=%s",
+                state.session_id, len(state.question_blocks), question_source,
             )
 
         except Exception as exc:

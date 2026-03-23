@@ -63,8 +63,8 @@ def _build_pipeline_calibration_context(request, seniority: str) -> CalibrationC
 BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4)}
 
 MODEL_DISTRIBUTIONS = {
-    "compact": {"technical": 4, "behavioral": 4, "total": 8},
-    "full": {"technical": 6, "behavioral": 6, "total": 12},
+    "compact": {"technical": 3, "behavioral": 3, "total": 6},
+    "full": {"technical": 5, "behavioral": 5, "total": 10},
 }
 
 AFFIRMATIVE_QUESTIONS = {
