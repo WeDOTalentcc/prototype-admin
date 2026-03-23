@@ -16,16 +16,20 @@ Dois scripts Python que transformam cards Jira com texto livre em análises téc
 
 ### O que os scripts fazem
 
-1. **Leem o card Jira** — transcrição completa, resumo, link BetterBugs
-2. **Buscam o conteúdo BetterBugs** — acessa a URL pública e extrai screenshots, logs, vídeo, info do browser
-3. **Coletam código real** de todos os layers:
-   - Frontend React (Replit — fonte da verdade DS LIA)
-   - Frontend Vue (GitHub `WeDOTalent/wedo-nuxt`)
-   - Backend Python (Replit)
-   - Agentes IA (Replit)
-   - Integrações (Replit)
-4. **Analisam com Claude** — gera JSON estruturado com issues, ANTES/DEPOIS, spec-driven e mais
-5. **Publicam no Jira** — sobrescrevem a description do card com o relatório em ADF (formato nativo Jira)
+O fluxo é em dois tempos distintos:
+
+**Fase 1 — Replit lê e coleta tudo** (os scripts Python fazem isso):
+1. Lê o card Jira — transcrição completa, resumo, link BetterBugs
+2. Acessa a URL pública do BetterBugs e extrai screenshots, logs, vídeo, info do browser
+3. Lê arquivos de código real de todos os layers:
+   - Frontend React diretamente no Replit (fonte da verdade DS LIA)
+   - Frontend Vue, v5 e qualquer outro repo necessário via GitHub API (`WeDOTalent/*`)
+   - Backend Python, Agentes IA, Integrações — diretamente no Replit
+4. Monta um contexto unificado com tudo que foi coletado
+
+**Fase 2 — Claude analisa o contexto montado** (recebe tudo pronto e gera):
+5. Gera JSON estruturado com issues, ANTES/DEPOIS, spec-driven e mais
+6. O Replit publica o resultado no Jira — sobrescreve a description com o relatório em ADF (formato nativo Jira)
 
 ---
 
@@ -34,16 +38,21 @@ Dois scripts Python que transformam cards Jira com texto livre em análises téc
 ### Integrações necessárias (Replit)
 - **Jira** — integração Replit configurada (OAuth)
 - **Anthropic** — integração Replit configurada (Claude claude-opus-4-5)
-- **GitHub** — secret `GITHUB_PAT_WEDOTALENT` com acesso a `WeDOTalent/wedo-nuxt`
+- **GitHub** — secret `GITHUB_PAT_WEDOTALENT` com acesso a toda a org `WeDOTalent` (wedo-nuxt, v5, e qualquer outro repo necessário)
 
 ### Constantes principais (topo dos scripts)
 ```python
 CLOUD_ID = "8cf762f8-6a44-47de-8915-6b3dc0cd2715"  # ID da workspace Jira WeDOTalent
-GITHUB_ORG = "WeDOTalent"
-GITHUB_VUE_REPO = "wedo-nuxt"
+GITHUB_ORG = "WeDOTalent"          # Organização GitHub — todos os repos acessíveis
+GITHUB_VUE_REPO = "wedo-nuxt"      # Repo Vue padrão (pode ser sobrescrito por repo)
 GITHUB_BRANCH = "main"
 WORKSPACE_ROOT = "/home/runner/workspace"
 ```
+
+> **Nota sobre GitHub:** O PAT `GITHUB_PAT_WEDOTALENT` tem acesso a toda a organização `WeDOTalent`.
+> O Replit pode ler arquivos de qualquer repo — `wedo-nuxt`, `v5`, ou qualquer outro —
+> passando o parâmetro `repo="WeDOTalent/nome-do-repo"` na função `fetch_github_file()`.
+> O `wedo-nuxt` é apenas o repo padrão para Vue; o código Python pode buscar em qualquer repo da org.
 
 ---
 
@@ -86,36 +95,54 @@ python3 scripts/jira-fetch-analyze.py WT-1637 \
 ### Fluxo detalhado (6 passos)
 
 ```
-[1/6] Busca credenciais Jira (via Replit integration OAuth)
-[2/6] Busca card WT-XXXX:
-      → summary, description (transcrição)
-      → extrai keywords, arquivos mencionados, URLs Vue
-[3/6] Coleta código React (Replit frontend):
-      → arquivos passados via --react-file
-      → busca automática por keywords nos diretórios React
-[4/6] Coleta código Backend + IA + Integrações (Replit):
+─── FASE 1: Replit lê e coleta ─────────────────────────────────────────────
+
+[1/6] Replit busca credenciais Jira (via integração OAuth configurada no Repl)
+
+[2/6] Replit busca o card WT-XXXX na API do Jira:
+      → lê summary + description completa (transcrição)
+      → extrai keywords, caminhos de arquivo mencionados, URLs .vue
+
+[3/6] Replit lê código React diretamente no próprio ambiente:
+      → arquivos passados via --react-file (leitura direta do filesystem)
+      → busca automática por keywords nos diretórios React do Replit
+
+[4/6] Replit lê código Backend + IA + Integrações (também no filesystem local):
       → arquivos passados via --backend-file
-      → busca automática por keywords em backend, IA, integrações, DB
-[5/6] Coleta código Vue (GitHub WeDOTalent/wedo-nuxt):
-      → arquivos passados via --vue-file
-      → arquivos .vue mencionados na transcrição
-      → busca automática por keywords no GitHub
-[6/6] Analisa com Claude:
-      → Busca BetterBugs URL na transcrição
-      → Acessa URL pública do BetterBugs (screenshots, logs, vídeo)
-      → Passa tudo para Claude claude-opus-4-5
-      → Publica ADF no card Jira
+      → busca automática por keywords em backend, agentes IA, integrações
+
+[5/6] Replit lê código Vue (e qualquer outro repo) via GitHub API:
+      → arquivos passados via --vue-file (qualquer repo: wedo-nuxt, v5, etc.)
+      → arquivos .vue mencionados na transcrição → buscados via GitHub API
+      → busca automática por keywords no GitHub (repo padrão: wedo-nuxt)
+
+─── FASE 2: Claude analisa o contexto montado ───────────────────────────────
+
+[6/6] Replit detecta URL BetterBugs → acessa e extrai conteúdo público
+      Replit monta prompt com: transcrição + BetterBugs + todos os códigos coletados
+      Claude recebe o contexto completo e gera o JSON estruturado
+      Replit converte JSON → ADF e publica no card Jira
 ```
 
-### Layers de código coletados
+### Layers de código coletados pelo Replit
 
-| Layer | Label Claude | Diretórios Replit | Extensões |
-|-------|-------------|-------------------|-----------|
-| Frontend React | `⚛️ Frontend React` | `plataforma-lia/src` | `.tsx .ts .css` |
-| Backend Python | `🐍 Backend Python` | `lia-agent-system/app/api` `app/domains` `app/services` | `.py` |
-| Agentes IA | `🤖 Agente IA` | `lia-agent-system/app/domains` `app/graph` | `.py` |
-| Integrações | `🔌 Integração` | `plataforma-lia/src/lib` `app/api` `lia-agent-system/app/integrations` | `.ts .py` |
-| Vue (GitHub) | `🟢 Vue` | `WeDOTalent/wedo-nuxt` (branch main) | `.vue` |
+O Replit (scripts Python) busca e lê os arquivos de cada layer antes de enviar para o Claude.
+
+| Layer | Label no Card | Onde o Replit busca | Extensões |
+|-------|--------------|---------------------|-----------|
+| Frontend React | `⚛️ Frontend React` | Replit: `plataforma-lia/src` | `.tsx .ts .css` |
+| Backend Python | `🐍 Backend Python` | Replit: `lia-agent-system/app/api` `app/domains` `app/services` | `.py` |
+| Agentes IA | `🤖 Agente IA` | Replit: `lia-agent-system/app/domains` `app/graph` | `.py` |
+| Integrações | `🔌 Integração` | Replit: `plataforma-lia/src/lib` `app/api` `lia-agent-system/app/integrations` | `.ts .py` |
+| Vue / qualquer repo | `🟢 Vue` | GitHub API: `WeDOTalent/wedo-nuxt`, `WeDOTalent/v5`, ou qualquer outro repo da org | `.vue` |
+
+> **GitHub:** O Replit acessa via GitHub API qualquer repo da org `WeDOTalent`.
+> O padrão é `wedo-nuxt`, mas via `--vue-file` você pode apontar para qualquer repo:
+> ```bash
+> # Arquivo do repo v5
+> python3 scripts/jira-fetch-analyze.py WT-1637 --vue-file pages/pipeline/index.vue
+> ```
+> A função `fetch_github_file(path, repo="WeDOTalent/v5")` aceita qualquer repo da org.
 
 ### Estrutura do JSON gerado pelo Claude
 
@@ -368,21 +395,29 @@ python3 scripts/jira-audit-design.py WT-1637 \
 ### Fluxo detalhado (5 passos)
 
 ```
-[1/5] Busca credenciais Jira
-[2/5] Busca card WT-XXXX:
-      → extrai transcrição, keywords, arquivos .vue mencionados
-[3/5] Coleta código React (Replit — fonte da verdade):
+─── FASE 1: Replit lê e coleta ─────────────────────────────────────────────
+
+[1/5] Replit busca credenciais Jira (via integração OAuth configurada no Repl)
+
+[2/5] Replit busca o card WT-XXXX na API do Jira:
+      → lê transcrição completa + keywords
+      → extrai arquivos .vue mencionados no texto
+
+[3/5] Replit lê código React diretamente no filesystem local:
       → arquivos passados via --react-file
       → busca automática por keywords em plataforma-lia/src
-[4/5] Coleta código Vue (GitHub WeDOTalent/wedo-nuxt):
-      → arquivos passados via --vue-file
-      → arquivos .vue mencionados na transcrição
-      → busca por keywords no GitHub
-[5/5] Audita com Claude:
-      → Busca BetterBugs URL na transcrição
-      → Acessa URL pública do BetterBugs (screenshots, logs, vídeo)
-      → Gera 5–15 issues numeradas com ANTES/DEPOIS
-      → Publica ADF no card Jira
+
+[4/5] Replit lê código Vue (e qualquer outro repo) via GitHub API:
+      → arquivos passados via --vue-file (qualquer repo da org WeDOTalent)
+      → arquivos .vue mencionados na transcrição → buscados via GitHub API
+      → busca automática por keywords no GitHub (repo padrão: wedo-nuxt)
+
+─── FASE 2: Claude analisa o contexto montado ───────────────────────────────
+
+[5/5] Replit detecta URL BetterBugs → acessa e extrai conteúdo público
+      Replit monta prompt com: transcrição + BetterBugs + React + Vue coletados
+      Claude recebe o contexto completo e gera 5–15 issues numeradas com ANTES/DEPOIS
+      Replit converte JSON → ADF e publica no card Jira
 ```
 
 ### Estrutura do JSON gerado pelo Claude
