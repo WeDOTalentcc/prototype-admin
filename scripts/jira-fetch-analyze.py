@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """
-jira-fetch-analyze.py — Lê card Jira, analisa transcrição + código (React/Replit + Vue/GitHub)
-e gera documentação técnica estruturada de volta no card.
+jira-fetch-analyze.py — Análise completa de card Jira: funcionalidade + design.
+
+Lê a transcrição do card (erros reportados, comportamentos incorretos, pontos levantados),
+visita o código em TODOS os layers (frontend React/Replit, frontend Vue/GitHub, backend Python,
+agentes IA, integrações) e gera um card estruturado com:
+  - Issues de funcionalidade (incompleta, mal funcionando, erros)
+  - Issues de design das funcionalidades mencionadas
+  - Sugestões de código por layer (front, back, IA, integrações)
+  - Action items e critérios de aceite
+
+Script 1 de 2: Escopo COMPLETO (funcionalidade + design).
+Script 2 (jira-audit-design.py): Escopo DESIGN ONLY, mais profundo e detalhado.
 
 Uso:
     python3 scripts/jira-fetch-analyze.py WT-1234
     python3 scripts/jira-fetch-analyze.py WT-1234 --dry-run
-    python3 scripts/jira-fetch-analyze.py WT-1234 --react-file src/components/sidebar.tsx
+    python3 scripts/jira-fetch-analyze.py WT-1234 --react-file plataforma-lia/src/components/sidebar.tsx
     python3 scripts/jira-fetch-analyze.py WT-1234 --vue-file components/ui/menu/sidebar.vue
-
-Fluxo:
-    1. Busca card no Jira (transcrição + pontos + BetterBugs link)
-    2. Extrai menções de componentes, funcionalidades, arquivos
-    3. Lê código React no Replit (local)
-    4. Lê código Vue no GitHub (WeDOTalent)
-    5. Envia para Claude → gera documentação estruturada
-    6. Atualiza card no Jira com ADF formatado
+    python3 scripts/jira-fetch-analyze.py WT-1234 --backend-file lia-agent-system/app/api/v1/jobs.py
 """
 
 import os
@@ -25,7 +28,7 @@ import re
 import base64
 import requests
 import argparse
-from pathlib import Path
+from datetime import date
 
 CLOUD_ID = "8cf762f8-6a44-47de-8915-6b3dc0cd2715"
 BASE_URL = f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3"
@@ -34,6 +37,32 @@ GITHUB_ORG = "WeDOTalent"
 GITHUB_VUE_REPO = "wedo-nuxt"
 GITHUB_BRANCH = "main"
 
+# Layers a pesquisar no Replit
+SEARCH_LAYERS = {
+    "frontend_react": {
+        "dirs": ["plataforma-lia/src"],
+        "extensions": (".tsx", ".ts", ".css"),
+        "label": "Frontend React (Replit)",
+    },
+    "backend": {
+        "dirs": ["lia-agent-system/app/api", "lia-agent-system/app/domains", "lia-agent-system/app/services"],
+        "extensions": (".py",),
+        "label": "Backend Python",
+    },
+    "ai_agents": {
+        "dirs": ["lia-agent-system/app/domains"],
+        "extensions": (".py",),
+        "label": "Agentes IA",
+    },
+    "integrations": {
+        "dirs": ["plataforma-lia/src/lib", "plataforma-lia/src/app/api", "lia-agent-system/app/integrations"],
+        "extensions": (".ts", ".py"),
+        "label": "Integrações",
+    },
+}
+
+
+# ── Jira Auth ───────────────────────────────────────────────────────────────
 
 def get_jira_token():
     hostname = os.environ.get("REPLIT_CONNECTORS_HOSTNAME")
@@ -59,15 +88,26 @@ def get_jira_token():
 
 
 def fetch_card(token, issue_key):
-    url = f"{BASE_URL}/issue/{issue_key}?fields=summary,description,status,labels,comment"
+    url = f"{BASE_URL}/issue/{issue_key}?fields=summary,description,status,labels"
     resp = requests.get(url, headers={"Authorization": f"Bearer {token}", "Accept": "application/json"})
     if resp.status_code != 200:
-        raise ValueError(f"Erro ao buscar card {issue_key}: {resp.status_code} {resp.text[:300]}")
+        raise ValueError(f"Erro ao buscar {issue_key}: {resp.status_code} {resp.text[:300]}")
     return resp.json()
 
 
+def update_card(token, issue_key, adf_description):
+    url = f"{BASE_URL}/issue/{issue_key}"
+    resp = requests.put(
+        url,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"},
+        json={"fields": {"description": adf_description}},
+    )
+    return resp.status_code, resp.text
+
+
+# ── Text helpers ─────────────────────────────────────────────────────────────
+
 def adf_to_text(node):
-    """Converte ADF (Atlassian Document Format) para texto plano."""
     if not node:
         return ""
     if isinstance(node, str):
@@ -82,88 +122,86 @@ def adf_to_text(node):
     return text
 
 
-def extract_description_text(card):
-    """Extrai texto da descrição do card (ADF → texto plano)."""
-    fields = card.get("fields", {})
-    desc = fields.get("description")
-    if not desc:
-        return ""
-    return adf_to_text(desc).strip()
+def extract_keywords(text, max_kw=10):
+    stopwords = {
+        "that", "this", "with", "from", "have", "para", "como", "deve", "pelo", "pela",
+        "está", "menu", "logo", "card", "jira", "side", "left", "right", "when", "only",
+        "mais", "item", "list", "show", "hide", "view", "open", "issue", "only", "appears",
+        "button", "pass", "mouse", "also", "common", "which", "there", "missing", "parts",
+        "look", "product", "correct", "these", "relation", "dynamic", "expansion", "incorrect",
+        "correction", "corrections", "error", "errors", "click", "hover", "tela", "arquivo",
+        "codigo", "code", "file", "func", "page", "route", "data", "user", "type", "name",
+    }
+    words = re.findall(r"\b[a-z][a-z0-9]{3,}\b", text.lower())
+    return list(dict.fromkeys([w for w in words if w not in stopwords]))[:max_kw]
 
 
 def extract_file_mentions(text):
-    """Extrai caminhos de arquivo mencionados no texto do card."""
-    patterns = [
-        r"plataforma-lia/[^\s\n,]+\.(tsx|ts|css|py)",
-        r"src/[^\s\n,]+\.(tsx|ts|css)",
-        r"app/[^\s\n,]+\.(tsx|ts|py)",
-        r"components/[^\s\n,]+\.(tsx|ts|vue)",
-        r"pages/[^\s\n,]+\.(tsx|ts|vue)",
-        r"hooks/[^\s\n,]+\.(tsx|ts)",
-    ]
-    files = set()
-    for pattern in patterns:
-        for match in re.findall(pattern, text):
-            pass
-        for match in re.finditer(r"(?:plataforma-lia/|src/|app/|components/|hooks/|pages/)[\w./\-]+\.(?:tsx|ts|css|py|vue)", text):
-            files.add(match.group(0))
-    return list(files)
+    paths = set()
+    for match in re.finditer(
+        r"(?:plataforma-lia/|src/|app/|components/|hooks/|pages/|lia-agent-system/)[\w./\-]+\.(?:tsx|ts|css|py|vue)",
+        text
+    ):
+        paths.add(match.group(0))
+    return list(paths)
 
 
 def extract_vue_mentions(text):
-    """Extrai menções de arquivos Vue no texto."""
-    matches = re.findall(r"components/[\w./\-]+\.vue", text)
-    return list(set(matches))
+    return list(set(re.findall(r"[\w./\-]+\.vue", text)))
 
 
-def find_local_files_by_keyword(keywords, base_dir=WORKSPACE_ROOT, max_files=6):
-    """Busca arquivos locais por palavras-chave no nome."""
-    found = []
-    search_dirs = [
-        os.path.join(base_dir, "plataforma-lia/src"),
-        os.path.join(base_dir, "lia-agent-system/app"),
-    ]
-    for search_dir in search_dirs:
-        if not os.path.exists(search_dir):
-            continue
-        for root, dirs, files in os.walk(search_dir):
-            dirs[:] = [d for d in dirs if d not in ("node_modules", ".next", "__pycache__", ".git")]
-            for fname in files:
-                if not fname.endswith((".tsx", ".ts", ".py", ".css")):
-                    continue
-                fname_lower = fname.lower()
-                for kw in keywords:
-                    if kw.lower() in fname_lower:
-                        full_path = os.path.join(root, fname)
-                        rel_path = os.path.relpath(full_path, base_dir)
-                        found.append(rel_path)
-                        break
-            if len(found) >= max_files:
-                break
-        if len(found) >= max_files:
-            break
-    return found[:max_files]
+# ── Local file reading ────────────────────────────────────────────────────────
 
-
-def read_local_file(rel_path, max_lines=200):
-    """Lê arquivo local do workspace."""
+def read_local_file(rel_path, max_lines=250):
     full_path = os.path.join(WORKSPACE_ROOT, rel_path)
     if not os.path.exists(full_path):
-        return None, f"Arquivo não encontrado: {rel_path}"
+        return None, f"Não encontrado: {rel_path}"
     try:
         with open(full_path, "r", encoding="utf-8", errors="replace") as f:
             lines = f.readlines()
+        content = "".join(lines[:max_lines])
         if len(lines) > max_lines:
-            content = "".join(lines[:max_lines]) + f"\n... [{len(lines) - max_lines} linhas omitidas]"
-        else:
-            content = "".join(lines)
+            content += f"\n... [{len(lines) - max_lines} linhas omitidas]"
         return content, None
     except Exception as e:
         return None, str(e)
 
 
+def find_files_in_layer(layer_key, keywords, max_files=3):
+    """Busca arquivos por keywords em um layer específico."""
+    layer = SEARCH_LAYERS.get(layer_key, {})
+    dirs = layer.get("dirs", [])
+    exts = layer.get("extensions", ())
+    found = []
+
+    for rel_dir in dirs:
+        full_dir = os.path.join(WORKSPACE_ROOT, rel_dir)
+        if not os.path.exists(full_dir):
+            continue
+        for root, subdirs, files in os.walk(full_dir):
+            subdirs[:] = [d for d in subdirs if d not in ("node_modules", ".next", "__pycache__", ".git")]
+            for fname in files:
+                if not fname.endswith(exts):
+                    continue
+                fname_lower = fname.lower()
+                for kw in keywords:
+                    if kw.lower() in fname_lower:
+                        full_path = os.path.join(root, fname)
+                        rel = os.path.relpath(full_path, WORKSPACE_ROOT)
+                        if rel not in found:
+                            found.append(rel)
+                        break
+            if len(found) >= max_files:
+                break
+        if len(found) >= max_files:
+            break
+
+    return found[:max_files]
+
+
+# ── GitHub ────────────────────────────────────────────────────────────────────
+
 def fetch_github_file(file_path, repo=None, branch=GITHUB_BRANCH):
-    """Busca arquivo do GitHub (WeDOTalent)."""
     token = os.environ.get("GITHUB_PAT_WEDOTALENT")
     if not token:
         return None, "GITHUB_PAT_WEDOTALENT não configurado"
@@ -175,101 +213,126 @@ def fetch_github_file(file_path, repo=None, branch=GITHUB_BRANCH):
         "Accept": "application/vnd.github.v3+json",
     })
     if resp.status_code == 404:
-        return None, f"Arquivo não encontrado no GitHub: {file_path}"
+        return None, f"Não encontrado no GitHub: {file_path}"
     if resp.status_code != 200:
-        return None, f"Erro GitHub {resp.status_code}: {resp.text[:200]}"
-    data = resp.json()
-    content_b64 = data.get("content", "")
-    content = base64.b64decode(content_b64).decode("utf-8", errors="replace")
+        return None, f"GitHub {resp.status_code}: {resp.text[:200]}"
+    content = base64.b64decode(resp.json().get("content", "")).decode("utf-8", errors="replace")
     return content, None
 
 
-def search_github_file(filename_pattern, repo=None):
-    """Busca arquivo por padrão de nome no GitHub."""
+def search_github_file(query, repo=None):
     token = os.environ.get("GITHUB_PAT_WEDOTALENT")
     if not token:
         return []
     if not repo:
         repo = f"{GITHUB_ORG}/{GITHUB_VUE_REPO}"
-    url = f"https://api.github.com/search/code?q={filename_pattern}+repo:{repo}&per_page=5"
+    url = f"https://api.github.com/search/code?q={query}+repo:{repo}&per_page=5"
     resp = requests.get(url, headers={
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
     })
     if resp.status_code != 200:
         return []
-    items = resp.json().get("items", [])
-    return [item["path"] for item in items]
+    return [item["path"] for item in resp.json().get("items", [])]
 
 
-def analyze_with_claude(card_key, summary, description_text, react_files_content, vue_files_content):
-    """Envia dados para Claude e recebe documentação estruturada."""
+# ── Claude Analysis ───────────────────────────────────────────────────────────
+
+def analyze_with_claude(card_key, summary, description_text, code_by_layer, vue_files):
     try:
         import anthropic
         client = anthropic.Anthropic()
     except Exception as e:
         raise ValueError(f"Erro ao inicializar Anthropic: {e}")
 
-    react_section = ""
-    for path, content in react_files_content.items():
-        react_section += f"\n--- ARQUIVO: {path} ---\n{content}\n"
+    code_sections = ""
+    for layer_label, files in code_by_layer.items():
+        for path, content in files.items():
+            code_sections += f"\n{'='*60}\n[{layer_label}] {path}\n{'='*60}\n{content}\n"
 
     vue_section = ""
-    for path, content in vue_files_content.items():
-        vue_section += f"\n--- ARQUIVO VUE: {path} ---\n{content}\n"
+    for path, content in vue_files.items():
+        vue_section += f"\n{'='*60}\n[Vue/GitHub] {path}\n{'='*60}\n{content}\n"
 
-    prompt = f"""Você é um engenheiro senior da Plataforma LIA (WeDOTalent).
+    prompt = f"""Você é um engenheiro senior full-stack da Plataforma LIA (WeDOTalent).
 
-Analise o card Jira abaixo e o código relacionado. Gere documentação técnica estruturada completa.
+Analise o card Jira abaixo. Mapeie TODOS os pontos levantados na transcrição:
+funcionalidades incompletas, erros, comportamentos incorretos, problemas de design,
+UX ruim, integrações quebradas, lógica de IA incorreta, etc.
+
+Para cada ponto, consulte o código fornecido e gere sugestões concretas com código real.
 
 ## CARD JIRA
 Chave: {card_key}
 Título: {summary}
+Data: {date.today().strftime('%d/%m/%Y')}
 
-## TRANSCRIÇÃO / DESCRIÇÃO DO CARD:
+## TRANSCRIÇÃO / DESCRIÇÃO DO CARD (fonte primária de análise):
 {description_text}
 
-## CÓDIGO REACT (Replit — fonte da verdade):
-{react_section if react_section else "(nenhum arquivo React encontrado)"}
+## CÓDIGO DOS LAYERS (React Replit + Backend Python + IA + Integrações):
+{code_sections if code_sections else "(arquivos não encontrados automaticamente — analise pela transcrição)"}
 
-## CÓDIGO VUE (GitHub WeDOTalent):
-{vue_section if vue_section else "(nenhum arquivo Vue encontrado)"}
+## CÓDIGO VUE (GitHub WeDOTalent — referência de design):
+{vue_section if vue_section else "(não fornecido)"}
 
 ## INSTRUÇÕES
-A partir da transcrição e do código, gere um JSON com a estrutura exata abaixo:
+Gere um JSON com a estrutura abaixo. Seja específico e concreto — nunca genérico.
 
 {{
-  "titulo_auditoria": "Título descritivo da auditoria/feature",
-  "resumo": "Parágrafo descrevendo o que a feature/bug envolve e o que foi implementado/analisado",
+  "titulo_auditoria": "Título descritivo do que foi analisado",
+  "resumo": "2-3 parágrafos descrevendo o problema, o que foi analisado e o que precisa ser feito",
+  "betterbugs_link": "URL do BetterBugs se encontrada na transcrição, senão null",
   "arquivos_de_referencia": [
-    {{"path": "caminho/do/arquivo.tsx", "descricao": "O que este arquivo faz"}}
+    {{"path": "caminho/real/do/arquivo.tsx", "layer": "Frontend React", "descricao": "O que este arquivo faz"}}
   ],
-  "secoes_tecnicas": [
+  "issues_funcionalidade": [
     {{
-      "titulo": "🔧 Nome da Seção (ex: Layout Geral, Comportamento, Integração)",
-      "items": ["item 1 com detalhe técnico", "item 2", "..."]
+      "numero": "F01",
+      "titulo": "Título do problema funcional",
+      "tipo": "bug|incompleto|ux|integracao|ia",
+      "descricao": "O que está errado e por quê",
+      "layer": "Frontend|Backend|IA|Integração",
+      "arquivo": "caminho/do/arquivo.tsx",
+      "codigo_atual": "trecho do código atual com o problema (se encontrado)",
+      "codigo_sugerido": "trecho corrigido com a sugestão",
+      "linguagem": "tsx|python|typescript"
+    }}
+  ],
+  "issues_design": [
+    {{
+      "numero": "D01",
+      "titulo": "Título do problema de design",
+      "descricao": "O que está visualmente errado",
+      "arquivo": "caminho/do/arquivo.tsx",
+      "codigo_atual": "código css/tsx atual",
+      "codigo_sugerido": "código corrigido seguindo DS LIA v4.2.1",
+      "linguagem": "tsx"
     }}
   ],
   "action_items": [
-    "[ ] Ação concreta a ser feita",
-    "[ ] Outra ação"
+    "[ ] Ação concreta com responsável se possível (ex: [Frontend] Corrigir comportamento do sidebar)"
   ],
   "criterios_de_aceite": [
-    "[Area] Critério verificável e concreto",
-    "[Area] Outro critério"
+    "[Área] Critério verificável e concreto"
+  ],
+  "arquivos_para_modificar": [
+    {{"path": "caminho/arquivo.tsx", "layer": "Frontend", "motivo": "Por que precisa ser modificado"}}
   ]
 }}
 
 REGRAS:
-- Extraia TODOS os elementos mencionados na transcrição: botões, bordas, ícones, comportamentos, estados, tipografia
-- Os arquivos de referência devem ser os arquivos REAIS encontrados no código
-- Critérios de aceite: mínimo 10, concretos e verificáveis
-- Seções técnicas: mínimo 3, baseadas no que a transcrição descreve
-- Responda APENAS o JSON, sem markdown, sem explicação adicional"""
+- Extraia TODOS os elementos da transcrição: não deixe nenhum ponto de fora
+- issues_funcionalidade: foco em erros, comportamentos errados, features incompletas
+- issues_design: foco em bordas, ícones, tipografia, cores, espaçamento, comportamento visual
+- Código sugerido deve ser REAL e baseado no código encontrado — não genérico
+- Mínimo 3 issues_funcionalidade e 3 issues_design se a transcrição mencionar
+- Mínimo 8 critérios de aceite
+- Responda APENAS o JSON, sem markdown"""
 
     response = client.messages.create(
         model="claude-opus-4-5",
-        max_tokens=8000,
+        max_tokens=10000,
         messages=[{"role": "user", "content": prompt}],
     )
 
@@ -279,185 +342,340 @@ REGRAS:
     return json.loads(raw)
 
 
+# ── ADF Builder ───────────────────────────────────────────────────────────────
+
 def build_adf(data, card_key, summary):
-    """Constrói ADF (Atlassian Document Format) a partir dos dados da análise."""
     nodes = []
 
-    def heading(level, text):
+    def h(level, text):
         return {"type": "heading", "attrs": {"level": level}, "content": [{"type": "text", "text": text}]}
 
-    def paragraph(text, bold=False):
+    def p(text, bold=False):
         if bold:
             return {"type": "paragraph", "content": [{"type": "text", "text": text, "marks": [{"type": "strong"}]}]}
         return {"type": "paragraph", "content": [{"type": "text", "text": text}]}
 
-    def bullet_list(items):
-        list_items = []
-        for item in items:
-            if isinstance(item, str):
-                content = [{"type": "paragraph", "content": [{"type": "text", "text": item}]}]
-            else:
-                content = [item]
-            list_items.append({"type": "listItem", "content": content})
-        return {"type": "bulletList", "content": list_items}
+    def p_mixed(*parts):
+        content = []
+        for text, bold, code in parts:
+            node = {"type": "text", "text": text}
+            marks = []
+            if bold:
+                marks.append({"type": "strong"})
+            if code:
+                marks.append({"type": "code"})
+            if marks:
+                node["marks"] = marks
+            content.append(node)
+        return {"type": "paragraph", "content": content}
+
+    def blist(items):
+        return {
+            "type": "bulletList",
+            "content": [
+                {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": str(i)}]}]}
+                for i in items
+            ],
+        }
+
+    def code_block(code, lang=""):
+        return {"type": "codeBlock", "attrs": {"language": lang}, "content": [{"type": "text", "text": str(code)}]}
 
     def rule():
         return {"type": "rule"}
 
-    def code_block(code, language=""):
-        return {"type": "codeBlock", "attrs": {"language": language}, "content": [{"type": "text", "text": code}]}
+    today = date.today().strftime("%d/%m/%Y")
 
-    titulo = data.get("titulo_auditoria", summary)
-    nodes.append(heading(1, titulo))
-    nodes.append(paragraph(data.get("resumo", "")))
+    # ── Header ──
+    nodes.append(h(1, data.get("titulo_auditoria", summary)))
+    nodes.append(p(f"Card: {card_key}  |  Gerado em: {today}"))
+
+    resumo = data.get("resumo", "")
+    if resumo:
+        for para in resumo.split("\n"):
+            if para.strip():
+                nodes.append(p(para.strip()))
+
+    betterbugs = data.get("betterbugs_link")
+    if betterbugs:
+        nodes.append(p_mixed(("🐛 BetterBugs: ", True, False), (betterbugs, False, False)))
+
     nodes.append(rule())
 
+    # ── Arquivos de Referência ──
     arquivos = data.get("arquivos_de_referencia", [])
     if arquivos:
-        nodes.append(heading(2, "📁 Arquivos de Referência (Protótipo Replit)"))
+        nodes.append(h(2, "📁 Arquivos de Referência"))
         items = []
-        for arq in arquivos:
-            if isinstance(arq, dict):
-                items.append(f"{arq['path']}: {arq.get('descricao', '')}")
+        for a in arquivos:
+            if isinstance(a, dict):
+                layer = a.get("layer", "")
+                prefix = f"[{layer}] " if layer else ""
+                items.append(f"{prefix}{a.get('path', '')} — {a.get('descricao', '')}")
             else:
-                items.append(str(arq))
-        nodes.append(bullet_list(items))
+                items.append(str(a))
+        nodes.append(blist(items))
         nodes.append(rule())
 
-    for secao in data.get("secoes_tecnicas", []):
-        nodes.append(heading(2, secao.get("titulo", "Seção")))
-        items = secao.get("items", [])
-        if items:
-            nodes.append(bullet_list(items))
+    # ── Issues de Funcionalidade ──
+    issues_func = data.get("issues_funcionalidade", [])
+    if issues_func:
+        nodes.append(h(2, "⚙️ Issues de Funcionalidade"))
+        nodes.append(p(
+            "Problemas funcionais identificados na transcrição: erros, comportamentos incorretos, "
+            "features incompletas, integrações e lógica de IA."
+        ))
+
+        for issue in issues_func:
+            num = issue.get("numero", "F?")
+            titulo = issue.get("titulo", "")
+            tipo = issue.get("tipo", "")
+            layer = issue.get("layer", "")
+            descricao = issue.get("descricao", "")
+            arquivo = issue.get("arquivo", "")
+            cod_atual = issue.get("codigo_atual", "")
+            cod_sug = issue.get("codigo_sugerido", "")
+            lang = issue.get("linguagem", "")
+
+            badge = f"[{tipo.upper()}]" if tipo else ""
+            layer_badge = f"[{layer}]" if layer else ""
+            nodes.append(h(3, f"Issue {num} — {titulo} {badge} {layer_badge}".strip()))
+
+            if descricao:
+                nodes.append(p(descricao))
+            if arquivo:
+                nodes.append(p_mixed(("Arquivo: ", False, False), (arquivo, False, True)))
+
+            if cod_atual and cod_atual.strip():
+                nodes.append(p("Código atual:", bold=True))
+                nodes.append(code_block(cod_atual, lang))
+
+            if cod_sug and cod_sug.strip():
+                nodes.append(p("Sugestão de correção:", bold=True))
+                nodes.append(code_block(cod_sug, lang))
+
+            nodes.append(rule())
+
+    # ── Issues de Design ──
+    issues_design = data.get("issues_design", [])
+    if issues_design:
+        nodes.append(h(2, "🎨 Issues de Design (DS LIA v4.2.1)"))
+        nodes.append(p(
+            "Problemas visuais e de design system identificados nas funcionalidades mencionadas. "
+            "React/Replit = fonte da verdade. Para auditoria de design completa e aprofundada, "
+            "usar jira-audit-design.py."
+        ))
+
+        for issue in issues_design:
+            num = issue.get("numero", "D?")
+            titulo = issue.get("titulo", "")
+            descricao = issue.get("descricao", "")
+            arquivo = issue.get("arquivo", "")
+            cod_atual = issue.get("codigo_atual", "")
+            cod_sug = issue.get("codigo_sugerido", "")
+            lang = issue.get("linguagem", "tsx")
+
+            nodes.append(h(3, f"Issue {num} — {titulo}"))
+            if descricao:
+                nodes.append(p(descricao))
+            if arquivo:
+                nodes.append(p_mixed(("Arquivo: ", False, False), (arquivo, False, True)))
+
+            if cod_atual and cod_atual.strip():
+                nodes.append(p("Código atual:", bold=True))
+                nodes.append(code_block(cod_atual, lang))
+
+            if cod_sug and cod_sug.strip():
+                nodes.append(p("Sugestão DS LIA v4.2.1:", bold=True))
+                nodes.append(code_block(cod_sug, lang))
+
+            nodes.append(rule())
+
+    # ── Arquivos a modificar ──
+    mod_files = data.get("arquivos_para_modificar", [])
+    if mod_files:
+        nodes.append(h(2, "🗂️ Arquivos a Modificar"))
+        items_mod = []
+        for f in mod_files:
+            if isinstance(f, dict):
+                layer = f.get("layer", "")
+                prefix = f"[{layer}] " if layer else ""
+                items_mod.append(f"{prefix}{f.get('path', '')} — {f.get('motivo', '')}")
+            else:
+                items_mod.append(str(f))
+        nodes.append(blist(items_mod))
         nodes.append(rule())
 
+    # ── Action Items ──
     action_items = data.get("action_items", [])
     if action_items:
-        nodes.append(heading(2, "📋 Action Items"))
-        nodes.append(bullet_list(action_items))
+        nodes.append(h(2, "📋 Action Items"))
+        nodes.append(blist(action_items))
         nodes.append(rule())
 
+    # ── Critérios de Aceite ──
     criterios = data.get("criterios_de_aceite", [])
     if criterios:
-        nodes.append(heading(2, "✅ Critérios de Aceite"))
-        nodes.append(bullet_list(criterios))
+        nodes.append(h(2, "✅ Critérios de Aceite"))
+        nodes.append(blist(criterios))
 
     return {"version": 1, "type": "doc", "content": nodes}
 
 
-def update_card(token, issue_key, adf_description):
-    url = f"{BASE_URL}/issue/{issue_key}"
-    resp = requests.put(
-        url,
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"},
-        json={"fields": {"description": adf_description}},
-    )
-    return resp.status_code, resp.text
-
+# ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="Analisa card Jira e gera documentação técnica")
-    parser.add_argument("issue_key", help="Chave do card Jira (ex: WT-1637)")
-    parser.add_argument("--dry-run", action="store_true", help="Mostra resultado mas não atualiza o Jira")
-    parser.add_argument("--react-file", action="append", default=[], help="Arquivo React específico (path relativo ao workspace)")
-    parser.add_argument("--vue-file", action="append", default=[], help="Arquivo Vue específico no GitHub (ex: components/ui/menu/sidebar.vue)")
+    parser = argparse.ArgumentParser(description="Análise completa de card Jira (funcionalidade + design)")
+    parser.add_argument("issue_key", help="Chave do card (ex: WT-1637)")
+    parser.add_argument("--dry-run", action="store_true", help="Mostra resultado sem atualizar o Jira")
+    parser.add_argument("--react-file", action="append", default=[], metavar="PATH",
+                        help="Arquivo React específico (path relativo ao workspace)")
+    parser.add_argument("--vue-file", action="append", default=[], metavar="PATH",
+                        help="Arquivo Vue no GitHub (ex: components/ui/menu/sidebar.vue)")
+    parser.add_argument("--backend-file", action="append", default=[], metavar="PATH",
+                        help="Arquivo backend Python específico")
     args = parser.parse_args()
 
     issue_key = args.issue_key.upper()
 
     print("=" * 70)
     print(f"JIRA FETCH ANALYZE — {issue_key}")
+    print("Escopo: Funcionalidade + Design (todos os layers)")
     print("=" * 70)
 
-    print("\n[1/5] Buscando credenciais Jira...")
+    print("\n[1/6] Buscando credenciais Jira...")
     token = get_jira_token()
     print("✓ Token obtido")
 
-    print(f"\n[2/5] Buscando card {issue_key}...")
+    print(f"\n[2/6] Buscando card {issue_key}...")
     card = fetch_card(token, issue_key)
     summary = card["fields"].get("summary", "")
-    description_text = extract_description_text(card)
+    description_text = adf_to_text(card["fields"].get("description") or {}).strip()
     print(f"✓ Card: {summary}")
-    print(f"  Descrição: {len(description_text)} caracteres")
+    print(f"  Transcrição: {len(description_text)} caracteres")
 
     mentioned_files = extract_file_mentions(description_text)
     mentioned_vue = extract_vue_mentions(description_text)
+    keywords = extract_keywords(summary + " " + description_text)
+    print(f"  Keywords: {', '.join(keywords[:6])}")
 
-    words = re.findall(r"\b[a-z][a-z0-9\-]{3,}\b", summary.lower() + " " + description_text.lower())
-    keywords = list(set([w for w in words if w not in ("that", "this", "with", "from", "have", "para", "como", "deve", "pelo", "pela", "está", "menu", "logo", "card", "jira", "side", "left", "right", "when", "only", "mais", "item", "list", "show", "hide", "view", "open")]))[:8]
+    print(f"\n[3/6] Coletando código React (Replit frontend)...")
+    react_files = {}
+    for rf in args.react_file:
+        content, err = read_local_file(rf)
+        if content:
+            react_files[rf] = content
+            print(f"  ✓ {rf}")
+        else:
+            print(f"  ✗ {rf}: {err}")
 
-    print(f"\n[3/5] Coletando código React (Replit)...")
-    react_files_content = {}
-
-    specific_react = list(args.react_file)
-    if not specific_react:
-        specific_react = [f for f in mentioned_files if f.endswith((".tsx", ".ts", ".py")) and not f.endswith(".vue")]
-
-    if specific_react:
-        for f in specific_react[:4]:
-            content, err = read_local_file(f)
+    if not react_files:
+        for rf in [f for f in mentioned_files if f.endswith((".tsx", ".ts"))]:
+            content, err = read_local_file(rf)
             if content:
-                react_files_content[f] = content
-                print(f"  ✓ {f} ({len(content)} chars)")
-            else:
-                print(f"  ✗ {f}: {err}")
+                react_files[rf] = content
+                print(f"  ✓ {rf} (mencionado no card)")
 
-    if not react_files_content:
-        found = find_local_files_by_keyword(keywords[:5])
-        for f in found[:4]:
-            content, err = read_local_file(f)
+    if not react_files:
+        for rf in find_files_in_layer("frontend_react", keywords, max_files=3):
+            content, err = read_local_file(rf)
             if content:
-                react_files_content[f] = content
-                print(f"  ✓ {f} (auto-detectado, {len(content)} chars)")
+                react_files[rf] = content
+                print(f"  ✓ {rf} (auto-detectado)")
 
-    if not react_files_content:
-        print("  ⚠ Nenhum arquivo React encontrado automaticamente")
+    print(f"  Total React: {len(react_files)} arquivo(s)")
 
-    print(f"\n[4/5] Coletando código Vue (GitHub WeDOTalent)...")
-    vue_files_content = {}
+    print(f"\n[4/6] Coletando código Backend + IA + Integrações (Replit)...")
+    backend_files = {}
+    ai_files = {}
+    integration_files = {}
 
-    specific_vue = list(args.vue_file)
-    if not specific_vue and mentioned_vue:
-        specific_vue = mentioned_vue[:2]
+    for bf in args.backend_file:
+        content, err = read_local_file(bf)
+        if content:
+            backend_files[bf] = content
+            print(f"  ✓ [backend] {bf}")
 
-    if specific_vue:
-        for vf in specific_vue:
-            content, err = fetch_github_file(vf)
+    if not backend_files:
+        for bf in [f for f in mentioned_files if f.endswith(".py")]:
+            content, err = read_local_file(bf)
             if content:
-                vue_files_content[vf] = content
-                print(f"  ✓ {vf} ({len(content)} chars)")
-            else:
-                print(f"  ✗ {vf}: {err}")
+                backend_files[bf] = content
+                print(f"  ✓ [backend] {bf} (mencionado)")
 
-    if not vue_files_content:
+    if not backend_files:
+        for bf in find_files_in_layer("backend", keywords, max_files=2):
+            content, err = read_local_file(bf)
+            if content:
+                backend_files[bf] = content
+                print(f"  ✓ [backend] {bf} (auto)")
+
+    for af in find_files_in_layer("ai_agents", keywords, max_files=2):
+        if af not in backend_files:
+            content, err = read_local_file(af)
+            if content:
+                ai_files[af] = content
+                print(f"  ✓ [IA] {af} (auto)")
+
+    for inf in find_files_in_layer("integrations", keywords, max_files=2):
+        if inf not in backend_files and inf not in react_files:
+            content, err = read_local_file(inf)
+            if content:
+                integration_files[inf] = content
+                print(f"  ✓ [integração] {inf} (auto)")
+
+    total_local = len(react_files) + len(backend_files) + len(ai_files) + len(integration_files)
+    print(f"  Total local: {total_local} arquivo(s)")
+
+    print(f"\n[5/6] Coletando código Vue (GitHub WeDOTalent/{GITHUB_VUE_REPO})...")
+    vue_files = {}
+
+    specific_vue = list(args.vue_file) or mentioned_vue[:2]
+    for vf in specific_vue:
+        content, err = fetch_github_file(vf)
+        if content:
+            vue_files[vf] = content
+            print(f"  ✓ {vf} ({len(content)} chars)")
+        else:
+            print(f"  ✗ {vf}: {err}")
+
+    if not vue_files:
         for kw in keywords[:3]:
-            results = search_github_file(kw)
-            for path in results:
-                if path.endswith(".vue") and path not in vue_files_content:
+            for path in search_github_file(kw):
+                if path.endswith(".vue") and path not in vue_files:
                     content, err = fetch_github_file(path)
                     if content:
-                        vue_files_content[path] = content
-                        print(f"  ✓ {path} (auto-detectado, {len(content)} chars)")
-                        break
-            if vue_files_content:
+                        vue_files[path] = content
+                        print(f"  ✓ {path} (auto)")
+                    break
+            if vue_files:
                 break
 
-    if not vue_files_content:
-        print("  ⚠ Nenhum arquivo Vue encontrado automaticamente")
+    print(f"  Total Vue: {len(vue_files)} arquivo(s)")
 
-    print(f"\n[5/5] Analisando com Claude...")
-    analysis = analyze_with_claude(issue_key, summary, description_text, react_files_content, vue_files_content)
+    code_by_layer = {}
+    if react_files:
+        code_by_layer["Frontend React"] = react_files
+    if backend_files:
+        code_by_layer["Backend Python"] = backend_files
+    if ai_files:
+        code_by_layer["Agentes IA"] = ai_files
+    if integration_files:
+        code_by_layer["Integrações"] = integration_files
+
+    print(f"\n[6/6] Analisando com Claude (funcionalidade + design)...")
+    analysis = analyze_with_claude(issue_key, summary, description_text, code_by_layer, vue_files)
     print(f"✓ Análise gerada")
-    print(f"  {len(analysis.get('secoes_tecnicas', []))} seções técnicas")
+    print(f"  {len(analysis.get('issues_funcionalidade', []))} issues de funcionalidade")
+    print(f"  {len(analysis.get('issues_design', []))} issues de design")
     print(f"  {len(analysis.get('criterios_de_aceite', []))} critérios de aceite")
-    print(f"  {len(analysis.get('action_items', []))} action items")
 
     adf = build_adf(analysis, issue_key, summary)
 
     if args.dry_run:
-        print("\n[DRY RUN] Descrição gerada (não enviada ao Jira):")
-        print(json.dumps(analysis, indent=2, ensure_ascii=False)[:2000])
-        print(f"\n✅ DRY RUN concluído. Remova --dry-run para publicar no Jira.")
+        print("\n[DRY RUN] Preview (não enviado ao Jira):")
+        print(json.dumps(analysis, indent=2, ensure_ascii=False)[:3000])
+        print(f"\n✅ DRY RUN concluído. Remova --dry-run para publicar.")
         return
 
     print(f"\nPublicando no Jira...")
