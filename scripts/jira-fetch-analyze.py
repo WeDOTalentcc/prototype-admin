@@ -432,11 +432,48 @@ Código ANTES/DEPOIS deve ser real, extraído do código fornecido. Nunca use pl
     }}
   ],
   "vuetify_ts_code": "createVuetify({{\\n  defaults: {{\\n    VIcon: {{ size: '16' }},\\n  }}\\n}})",
+  "comportamento_esperado": [
+    {{
+      "dado": "que o recrutador está na tela de pipeline",
+      "quando": "seleciona um filtro de status",
+      "entao": "a lista atualiza sem recarregar a página",
+      "e": "os filtros persistem ao navegar entre abas"
+    }}
+  ],
+  "fora_de_escopo": [
+    "O que explicitamente NÃO será resolvido neste card (evita escopo creep com AI coding)"
+  ],
+  "impacto_outros_sistemas": [
+    {{
+      "sistema": "Nome do sistema/tela/componente impactado",
+      "descricao": "Como essa mudança o afeta — o que pode regredir ou precisar de ajuste"
+    }}
+  ],
+  "criterios_qualidade_ia": [
+    {{
+      "agente": "Nome do agente (ex: WSIInterviewGraph)",
+      "comportamento_esperado": "O que o agente deve fazer neste fluxo específico",
+      "nunca_deve": "O que o agente NUNCA deve fazer neste contexto",
+      "como_validar": "Caso de teste concreto para validar o comportamento correto",
+      "modelo": "claude-sonnet-4 ou equivalente",
+      "temperatura": "0.2",
+      "metricas": "Taxa de assertividade > X%, tempo < Ys"
+    }}
+  ],
+  "definition_of_done": [
+    "[ ] Spec do card atualizada com os critérios de aceite verificados",
+    "[ ] Código revisado por outro membro do time (PR aprovado)",
+    "[ ] Testes escritos e passando (unitário + integração)",
+    "[ ] Testado em staging antes de mergear",
+    "[ ] Documentação impactada atualizada (PLATFORM_MAP, API_CONTRACTS, etc.)",
+    "[ ] Sem console.log ou código de debug",
+    "[ ] Nenhuma regressão em telas adjacentes"
+  ],
   "action_items": [
     "[ ] [Layer] Ação concreta e verificável"
   ],
   "criterios_de_aceite": [
-    "[Área] Critério verificável e concreto"
+    "[Área] Critério objetivo e verificável — pode ser fechado como checkbox"
   ],
   "arquivos_para_modificar": [
     {{"path": "caminho/arquivo", "layer": "Frontend React|Vue|Backend|Agente IA|Integração|Banco de Dados", "motivo": "Por que precisa ser modificado"}}
@@ -445,6 +482,11 @@ Código ANTES/DEPOIS deve ser real, extraído do código fornecido. Nunca use pl
 
 REGRAS OBRIGATÓRIAS:
 - Extraia ABSOLUTAMENTE TODOS os elementos da transcrição — nenhum ponto pode ficar de fora
+- comportamento_esperado: DADO/QUANDO/ENTÃO formal para cada comportamento mencionado no card
+- fora_de_escopo: liste o que foi mencionado mas que NÃO será tratado neste card — evita escopo creep com Claude Code/Cursor
+- impacto_outros_sistemas: liste TUDO que pode regredir ou precisar de ajuste nas mudanças propostas
+- criterios_qualidade_ia: OBRIGATÓRIO para qualquer issue que envolva agentes IA (tipo "ia") — comportamento esperado, limites, como validar, modelo, temperatura
+- definition_of_done: adapte os itens fixos + adicione itens específicos deste card (ex: "[ ] wsi_report retorna labels em PT-BR")
 - issues_funcionalidade.blocos_de_codigo: inclua APENAS os layers REALMENTE afetados por aquela issue
   • Issue de backend: blocos Backend + (Integração se há chamada) + (Vue se afeta a exibição)
   • Issue de IA: blocos Agente IA + (Backend se há endpoint) + (Frontend React + Vue se afeta resultado exibido)
@@ -455,7 +497,7 @@ REGRAS OBRIGATÓRIAS:
 - vuetify_defaults: inclua TODOS os defaults Vuetify relevantes para esta tela
 - vuetify_ts_code: bloco completo e pronto para colar no vuetify.ts
 - Mínimo 3 issues_funcionalidade e 5 issues_design se mencionados na transcrição
-- Mínimo 10 critérios de aceite
+- Mínimo 10 criterios_de_aceite
 - Responda APENAS o JSON puro, sem markdown, sem explicação fora do JSON"""
 
     response = client.messages.create(
@@ -529,6 +571,36 @@ def build_adf(data, card_key, summary):
         nodes.append(p_mixed(("🐛 BetterBugs: ", True, False), (betterbugs, False, False)))
 
     nodes.append(rule())
+
+    # ── Comportamento Esperado (DADO/QUANDO/ENTÃO) ──
+    comportamentos = data.get("comportamento_esperado", [])
+    if comportamentos:
+        nodes.append(h(2, "🎯 Comportamento Esperado (Spec Driven)"))
+        nodes.append(p(
+            "Spec formal do comportamento correto — usada como contexto para Cursor/Claude Code. "
+            "Se a implementação satisfaz todos os ENTÃO abaixo, o card está pronto."
+        ))
+        for i, c in enumerate(comportamentos, 1):
+            dado = c.get("dado", "")
+            quando = c.get("quando", "")
+            entao = c.get("entao", "")
+            e_extra = c.get("e", "")
+            bloco = f"DADO {dado}\nQUANDO {quando}\nENTÃO {entao}"
+            if e_extra:
+                bloco += f"\nE {e_extra}"
+            nodes.append(code_block(bloco, "gherkin"))
+        nodes.append(rule())
+
+    # ── Fora de Escopo ──
+    fora = data.get("fora_de_escopo", [])
+    if fora:
+        nodes.append(h(2, "🚫 Fora de Escopo"))
+        nodes.append(p(
+            "O que NÃO será resolvido neste card. "
+            "Impede escopo creep quando o dev ou AI coder resolver usar o card como contexto."
+        ))
+        nodes.append(blist(fora))
+        nodes.append(rule())
 
     # ── Arquivos de Referência ──
     arquivos = data.get("arquivos_de_referencia", [])
@@ -740,6 +812,54 @@ def build_adf(data, card_key, summary):
         nodes.append(blist(items_mod))
         nodes.append(rule())
 
+    # ── Impacto em Outros Sistemas ──
+    impactos = data.get("impacto_outros_sistemas", [])
+    if impactos:
+        nodes.append(h(2, "💥 Impacto em Outros Sistemas"))
+        nodes.append(p(
+            "O que pode regredir ou precisar de ajuste em decorrência das mudanças propostas. "
+            "Valide estes pontos antes de fechar o PR."
+        ))
+        items_imp = []
+        for imp in impactos:
+            if isinstance(imp, dict):
+                sistema = imp.get("sistema", "")
+                desc = imp.get("descricao", "")
+                items_imp.append(f"{sistema} — {desc}" if sistema else desc)
+            else:
+                items_imp.append(str(imp))
+        nodes.append(blist(items_imp))
+        nodes.append(rule())
+
+    # ── Critérios de Qualidade IA ──
+    cq_ia = data.get("criterios_qualidade_ia", [])
+    if cq_ia:
+        nodes.append(h(2, "🤖 Critérios de Qualidade IA (Spec dos Agentes)"))
+        nodes.append(p(
+            "Spec comportamental dos agentes IA envolvidos neste card. "
+            "Define o que o agente deve fazer, o que nunca deve fazer e como validar. "
+            "Use como contexto ao fazer prompt engineering ou ajustar o grafo do agente."
+        ))
+        for agente in cq_ia:
+            nome = agente.get("agente", "Agente")
+            nodes.append(h(3, f"🤖 {nome}"))
+            items_ag = []
+            if agente.get("comportamento_esperado"):
+                items_ag.append(f"Comportamento esperado: {agente['comportamento_esperado']}")
+            if agente.get("nunca_deve"):
+                items_ag.append(f"NUNCA deve: {agente['nunca_deve']}")
+            if agente.get("como_validar"):
+                items_ag.append(f"Como validar: {agente['como_validar']}")
+            if agente.get("modelo"):
+                items_ag.append(f"Modelo: {agente['modelo']}")
+            if agente.get("temperatura"):
+                items_ag.append(f"Temperatura: {agente['temperatura']}")
+            if agente.get("metricas"):
+                items_ag.append(f"Métricas: {agente['metricas']}")
+            if items_ag:
+                nodes.append(blist(items_ag))
+        nodes.append(rule())
+
     # ── Action Items ──
     action_items = data.get("action_items", [])
     if action_items:
@@ -751,7 +871,22 @@ def build_adf(data, card_key, summary):
     criterios = data.get("criterios_de_aceite", [])
     if criterios:
         nodes.append(h(2, "✅ Critérios de Aceite"))
+        nodes.append(p(
+            "Cada item abaixo deve ser verificável e fechável como checkbox. "
+            "Se precisar de interpretação para saber se passou, reescreva o critério."
+        ))
         nodes.append(blist(criterios))
+        nodes.append(rule())
+
+    # ── Definition of Done ──
+    dod = data.get("definition_of_done", [])
+    if dod:
+        nodes.append(h(2, "🏁 Definition of Done"))
+        nodes.append(p(
+            "Checklist obrigatório antes do PR ser aprovado. "
+            "Sem todos esses itens marcados, o card não fecha."
+        ))
+        nodes.append(blist(dod))
 
     nodes.append(rule())
     nodes.append(p(

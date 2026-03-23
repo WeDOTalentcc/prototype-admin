@@ -319,7 +319,31 @@ Gere um JSON com a estrutura exata abaixo:
       "fix_global": "VIcon: {{ size: '16' }}"
     }}
   ],
-  "vuetify_ts_code": "createVuetify({{\\n  defaults: {{\\n    VIcon: {{ size: '16' }},\\n    VBtn: {{ variant: 'flat', size: 'small' }},\\n    VCard: {{ elevation: 0 }},\\n  }}\\n}})"
+  "vuetify_ts_code": "createVuetify({{\\n  defaults: {{\\n    VIcon: {{ size: '16' }},\\n    VBtn: {{ variant: 'flat', size: 'small' }},\\n    VCard: {{ elevation: 0 }},\\n  }}\\n}})",
+  "comportamento_esperado": [
+    {{
+      "dado": "que o designer ou dev está implementando este componente Vue",
+      "quando": "renderiza o componente na tela",
+      "entao": "o resultado visual é idêntico ao equivalente React no Replit",
+      "e": "todas as medidas (px), cores, bordas e comportamentos coincidem"
+    }}
+  ],
+  "fora_de_escopo": [
+    "O que NÃO será corrigido nesta auditoria (apenas design — lógica de negócio fora do escopo)"
+  ],
+  "impacto_outros_sistemas": [
+    {{
+      "sistema": "Nome do componente/tela impactado",
+      "descricao": "Como a correção do design pode afetar outros componentes que usam este"
+    }}
+  ],
+  "definition_of_done": [
+    "[ ] Todas as issues desta auditoria corrigidas e verificadas visualmente",
+    "[ ] vuetify.ts atualizado com defaults DS LIA (se aplicável)",
+    "[ ] Componente revisado por outro dev ou designer",
+    "[ ] Sem regressão visual em telas que usam os componentes corrigidos",
+    "[ ] PR linkado a este card com checklist preenchido"
+  ]
 }}
 
 REGRAS:
@@ -328,6 +352,10 @@ REGRAS:
 - Código ANTES/DEPOIS deve ser real e específico (não genérico)
 - Se não tiver código Vue, gere o DEPOIS correto baseado nas regras DS LIA e no React
 - vuetify_defaults: inclua apenas os que aparecem nesta tela especificamente
+- comportamento_esperado: um cenário DADO/QUANDO/ENTÃO por comportamento visual que o card menciona
+- fora_de_escopo: liste explicitamente o que não será corrigido (lógica de negócio, APIs, etc.)
+- impacto_outros_sistemas: componentes que herdam ou reutilizam o que está sendo corrigido
+- definition_of_done: adapte com itens específicos desta auditoria
 - Responda APENAS o JSON, sem markdown, sem explicação"""
 
     response = client.messages.create(
@@ -419,6 +447,36 @@ def build_audit_adf(data, card_key, summary):
         nodes.append(paragraph(f"Arquivos auditados: {arquivo_vue}"))
     nodes.append(rule())
 
+    # ── Comportamento Esperado (DADO/QUANDO/ENTÃO) ──
+    comportamentos = data.get("comportamento_esperado", [])
+    if comportamentos:
+        nodes.append(heading(2, "🎯 Comportamento Esperado (Spec Driven)"))
+        nodes.append(paragraph(
+            "Spec formal do comportamento visual correto — usada como contexto para Cursor/Claude Code. "
+            "Se o componente Vue satisfaz todos os ENTÃO abaixo, a auditoria está resolvida."
+        ))
+        for c in comportamentos:
+            dado = c.get("dado", "")
+            quando = c.get("quando", "")
+            entao = c.get("entao", "")
+            e_extra = c.get("e", "")
+            bloco = f"DADO {dado}\nQUANDO {quando}\nENTÃO {entao}"
+            if e_extra:
+                bloco += f"\nE {e_extra}"
+            nodes.append(code_block(bloco, "gherkin"))
+        nodes.append(rule())
+
+    # ── Fora de Escopo ──
+    fora = data.get("fora_de_escopo", [])
+    if fora:
+        nodes.append(heading(2, "🚫 Fora de Escopo"))
+        nodes.append(paragraph(
+            "O que NÃO será corrigido nesta auditoria. "
+            "Impede que o dev ou AI coder resolva coisas além do design."
+        ))
+        nodes.append(bullet_list_mixed(fora))
+        nodes.append(rule())
+
     nodes.append(heading(2, "Issues Identificadas"))
 
     for issue in data.get("issues", []):
@@ -495,6 +553,37 @@ def build_audit_adf(data, card_key, summary):
         nodes.append(code_block(vuetify_ts, "typescript"))
 
     nodes.append(rule())
+
+    # ── Impacto em Outros Sistemas ──
+    impactos = data.get("impacto_outros_sistemas", [])
+    if impactos:
+        nodes.append(heading(2, "💥 Impacto em Outros Sistemas"))
+        nodes.append(paragraph(
+            "Componentes ou telas que podem ser afetados pelas correções propostas. "
+            "Revise visualmente antes de fechar o PR."
+        ))
+        items_imp = []
+        for imp in impactos:
+            if isinstance(imp, dict):
+                sistema = imp.get("sistema", "")
+                desc = imp.get("descricao", "")
+                items_imp.append(f"{sistema} — {desc}" if sistema else desc)
+            else:
+                items_imp.append(str(imp))
+        nodes.append(bullet_list_mixed(items_imp))
+        nodes.append(rule())
+
+    # ── Definition of Done ──
+    dod = data.get("definition_of_done", [])
+    if dod:
+        nodes.append(heading(2, "🏁 Definition of Done"))
+        nodes.append(paragraph(
+            "Checklist obrigatório antes do PR de design ser aprovado. "
+            "Sem todos esses itens marcados, o card não fecha."
+        ))
+        nodes.append(bullet_list_mixed(dod))
+        nodes.append(rule())
+
     nodes.append(paragraph(
         "Referência: React/Replit é sempre a fonte da verdade de design.\n"
         "Qualquer componente Vue que diverge do React = bug a corrigir."
