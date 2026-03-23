@@ -266,32 +266,36 @@ O scorer determinístico (`wsi_deterministic_scorer.py`) calcula cada resposta c
 
 ### 4.9 Penalidades e Bonus
 
+> Nota: Esta secao descreve ajustes conceituais aplicados pelo scorer deterministico (`wsi_deterministic_scorer.py`) na escala 0–10 por resposta. Os valores abaixo sao ranges de impacto na pontuacao individual.
+
 **Penalidades:**
 
-| Situacao | Penalidade |
-|----------|------------|
-| Inflacao de score (autodeclara alto, contexto pobre) | -0.5 a -1.5 |
-| Resposta generica | -0.5 |
-| Falta de contexto | -0.3 |
-| Resposta aparenta ser copiada | -1.0 |
+| Situacao | Impacto na Pontuacao (escala 0–10) |
+|----------|-----------------------------------|
+| Inflacao de score (autodeclara alto, contexto pobre) | -1.0 a -3.0 |
+| Resposta generica sem evidencias concretas | -1.0 |
+| Falta de contexto situacional (formato STAR incompleto) | -0.6 |
+| Resposta bloqueada por PromptInjectionGuard (SEG-1) | score = 0.0 (zero absoluto) |
 
 **Bonus:**
 
-| Situacao | Bonus |
-|----------|-------|
-| Humildade (autodeclara baixo, contexto alto) | +0.5 |
-| Evidencias excepcionais | +0.3 |
+| Situacao | Impacto na Pontuacao (escala 0–10) |
+|----------|-----------------------------------|
+| Humildade calibrada (autodeclara moderado, contexto detalhado) | +1.0 |
+| Evidencias excepcionais com impacto mensuravel | +0.6 |
 
 ### 4.10 Regras de Aprovacao Automatica
 
+> Nota: As faixas abaixo descrevem a camada de calibracao dinamica (ranking dentro de uma vaga com historico de triagens). Sao complementares aos thresholds operacionais de 0–10 documentados na secao 4.8, que determinam aprovado/aguardando/reprovado no nivel individual. As duas camadas coexistem.
+
 **Corte Inicial (Sem Historico)** - Aplicado quando vaga tem menos de 30-50 triagens:
 
-| Faixa WSI | Decisao |
-|-----------|---------|
-| >= 4.2 | Aprovado automatico |
-| 3.8 - 4.1 | Revisao manual |
-| 3.0 - 3.7 | Aguardando comparacao |
-| < 3.0 | Nao aprovado |
+| Faixa WSI (0–10) | Decisao |
+|------------------|---------|
+| >= 8.4 | Aprovado automatico |
+| 7.6 – 8.3 | Revisao manual |
+| 6.0 – 7.5 | Aguardando comparacao |
+| < 6.0 | Nao aprovado |
 
 **Corte Dinamico (Com Historico)** - Apos 30-50 triagens por funcao:
 
@@ -908,8 +912,8 @@ SE pos_contratacao.sucesso = TRUE E lia.score era baixo
 │  ETAPA 3: TRIAGEM WSI (Opcional)                                            │
 │  ─────────────────────────────────                                          │
 │  Input: Candidato + Competencias da vaga                                    │
-│  Output: Score WSI 0-5 + Perfil Big Five                                    │
-│  Se < 3.0 → Revisar com explicacao                                          │
+│  Output: Score WSI 0-10 + Classificacao + Perfil Big Five                   │
+│  Se < 5.0 → Reprovado | 5.0-6.9 → Aguardando | >= 7.0 → Aprovado           │
 │                                                                              │
 │        ↓                                                                    │
 │                                                                              │
@@ -1116,7 +1120,7 @@ A comparacao de candidatos utiliza metodologias adaptativas baseadas nos dados d
   "winner": {
     "candidate_id": "uuid",
     "confidence": 0.85,
-    "reasoning": "Candidato 1 supera em competencias tecnicas (WSI 4.2 vs 3.8) e alinhamento cultural"
+    "reasoning": "Candidato 1 supera em competencias tecnicas (WSI 7.8 vs 6.9) e alinhamento cultural"
   },
   "dimension_comparison": {
     "technical": { "candidate_1": 85, "candidate_2": 72, "winner": "candidate_1" },
@@ -1220,19 +1224,19 @@ SECOES GERADAS:
       "available": true,
       "source": "cv+wsi",
       "skills": [
-        { "name": "Python", "level": "expert", "wsi_score": 4.5 },
-        { "name": "Django", "level": "advanced", "wsi_score": 4.2 }
+        { "name": "Python", "level": "expert", "wsi_score": 8.5 },
+        { "name": "Django", "level": "advanced", "wsi_score": 8.0 }
       ]
     },
     "behavioral_competencies": {
       "available": true,
       "source": "wsi+big_five",
-      "big_five": { "O": 72, "C": 85, "E": 65, "A": 78, "N": 30 },
+      "big_five": { "O": 72, "C": 85, "E": 65, "A": 78, "stability": 70 },
       "highlights": ["Alta conscienciosidade", "Colaborativo"]
     },
     "screening_results": {
       "available": true,
-      "wsi_score": 4.2,
+      "wsi_score": 7.8,
       "responses_summary": "Respostas consistentes e detalhadas..."
     },
     "strengths_attention": {
@@ -1269,11 +1273,11 @@ Cada competencia tecnica extraida do JD na Etapa 1 (secao 4.13) recebe um score 
 "technical_competencies": {
   "source": "wsi",
   "pontos_fortes": [
-    "Python (4.5/5)",
-    "Django/FastAPI (4.2/5)"
+    "Python (8.5/10)",
+    "Django/FastAPI (8.0/10)"
   ],
   "gaps": [
-    "AWS (2.1/5)"
+    "AWS (4.2/10)"
   ],
   "evidencias": [
     "Candidato mencionou deploy em producao com 50k usuarios",
@@ -1282,10 +1286,10 @@ Cada competencia tecnica extraida do JD na Etapa 1 (secao 4.13) recebe um score 
 }
 ```
 
-O criterio de classificacao no parecer e:
-- `pontos_fortes`: competencias com score >= 4.0
-- `gaps`: competencias com score < 3.0
-- Competencias entre 3.0 e 3.9 nao aparecem em nenhum dos dois grupos (faixa media)
+O criterio de classificacao no parecer e (escala 0–10):
+- `pontos_fortes`: competencias com score >= 7.0
+- `gaps`: competencias com score < 5.0
+- Competencias entre 5.0 e 6.9 nao aparecem em nenhum dos dois grupos (faixa media)
 
 #### Competencias Comportamentais — mapeamento para 4 dimensoes fixas
 
@@ -1306,13 +1310,13 @@ Avaliado separadamente com score geral e lista de valores alinhados/pontos de at
 
 ```json
 "cultural_fit": {
-  "score": 4.1,
+  "score": 7.8,
   "valores_alinhados": ["Colaboracao", "Inovacao continua"],
   "atencoes": ["Preferencia por trabalho individual em contextos colaborativos"]
 }
 ```
 
-O campo `atencoes` e obrigatorio quando WSI geral < 4.0.
+O campo `atencoes` e obrigatorio quando WSI geral < 5.0 (threshold de reprovado).
 
 ### 10.7 Feedback ao Candidato (PersonalizedFeedbackService)
 
@@ -1419,7 +1423,7 @@ Onde:
 - Normalizado para escala 0-100
 
 #### WSI Score (0-100)
-- Convertido de escala 0-5 para 0-100: `WSI_100 = WSI_5 × 20`
+- Convertido de escala 0–10 para 0–100: `WSI_100 = WSI_10 × 10`
 - Se nao disponivel, redistribui peso para Rubricas
 
 #### Prerequisites Score (0-100)
