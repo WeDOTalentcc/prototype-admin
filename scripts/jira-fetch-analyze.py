@@ -150,6 +150,147 @@ def extract_vue_mentions(text):
     return list(set(re.findall(r"[\w./\-]+\.vue", text)))
 
 
+# ── BetterBugs ────────────────────────────────────────────────────────────────
+
+def extract_betterbugs_url(text):
+    """Extrai URL pública do BetterBugs da transcrição do card."""
+    for pattern in [
+        r'https?://(?:app\.)?betterbugs\.io/[^\s\'"<>\)]+',
+        r'https?://betterbugs\.io/[^\s\'"<>\)]+',
+    ]:
+        m = re.search(pattern, text)
+        if m:
+            return m.group(0).rstrip(".,;)")
+    return None
+
+
+def fetch_betterbugs_content(url, timeout=20):
+    """Busca e extrai conteúdo público de um link BetterBugs.
+
+    Tenta extrair: título, descrição, logs de console, logs de rede,
+    info do browser, device info e qualquer JSON de estado inicial.
+    Retorna string formatada para ser injetada no prompt do Claude.
+    """
+    if not url or not url.startswith("http"):
+        return None
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+    }
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=timeout)
+        if resp.status_code != 200:
+            return f"[BetterBugs] Erro HTTP {resp.status_code} ao acessar {url}"
+
+        html = resp.text
+        extracted = []
+
+        # ── Tenta JSON embarcado (Next.js __NEXT_DATA__) ──
+        next_match = re.search(
+            r'<script[^>]+id=["\']__NEXT_DATA__["\'][^>]*>(.*?)</script>',
+            html, re.DOTALL
+        )
+        if next_match:
+            try:
+                nd = json.loads(next_match.group(1))
+                # Navega até props.pageProps para pegar dados da sessão
+                page_props = nd.get("props", {}).get("pageProps", nd)
+                extracted.append(("📋 Dados da sessão BetterBugs (Next.js)",
+                                   json.dumps(page_props, ensure_ascii=False, indent=2)[:6000]))
+            except Exception:
+                pass
+
+        # ── Tenta JSON em script tags (React hydration, Nuxt, etc.) ──
+        for var_pat in [
+            r'window\.__INITIAL_STATE__\s*=\s*(\{.*?\});',
+            r'window\.__data__\s*=\s*(\{.*?\});',
+            r'window\.session\s*=\s*(\{.*?\});',
+            r'"session"\s*:\s*(\{[^}]{20,}?\})',
+        ]:
+            m = re.search(var_pat, html, re.DOTALL)
+            if m:
+                try:
+                    d = json.loads(m.group(1))
+                    extracted.append(("📋 Dados de sessão (variável window)",
+                                       json.dumps(d, ensure_ascii=False, indent=2)[:4000]))
+                    break
+                except Exception:
+                    pass
+
+        # ── Tenta API JSON direta (/api/session/{id} pattern) ──
+        session_id_match = re.search(
+            r'/(?:session|report|bug|s)/([a-zA-Z0-9_\-]{8,})',
+            url
+        )
+        if session_id_match:
+            session_id = session_id_match.group(1)
+            for api_url in [
+                f"https://app.betterbugs.io/api/session/{session_id}",
+                f"https://api.betterbugs.io/session/{session_id}",
+                f"https://app.betterbugs.io/api/sessions/{session_id}",
+            ]:
+                try:
+                    api_resp = requests.get(api_url, headers={
+                        **headers, "Accept": "application/json"
+                    }, timeout=10)
+                    if api_resp.status_code == 200 and api_resp.headers.get("content-type", "").startswith("application/json"):
+                        extracted.append(("📡 API BetterBugs (JSON)",
+                                           json.dumps(api_resp.json(), ensure_ascii=False, indent=2)[:6000]))
+                        break
+                except Exception:
+                    pass
+
+        # ── Extrai meta tags (Open Graph, Twitter Card) ──
+        meta_parts = []
+        for label, pat in [
+            ("Título", r'<title[^>]*>(.*?)</title>'),
+            ("OG Title", r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']'),
+            ("OG Desc",  r'<meta[^>]+property=["\']og:description["\'][^>]+content=["\']([^"\']+)["\']'),
+            ("OG Image", r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']'),
+            ("Type",     r'<meta[^>]+property=["\']og:type["\'][^>]+content=["\']([^"\']+)["\']'),
+        ]:
+            m = re.search(pat, html, re.DOTALL | re.IGNORECASE)
+            if m:
+                meta_parts.append(f"{label}: {m.group(1).strip()}")
+        if meta_parts:
+            extracted.append(("🔗 Meta informações da página", "\n".join(meta_parts)))
+
+        # ── Extrai texto visível da página (remove scripts/styles) ──
+        clean = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL)
+        clean = re.sub(r'<style[^>]*>.*?</style>', '', clean, flags=re.DOTALL)
+        clean = re.sub(r'<[^>]+>', ' ', clean)
+        clean = re.sub(r'\s+', ' ', clean).strip()
+        # Filtra texto curto (SPA vazia) ou puro boilerplate
+        if clean and len(clean) > 200:
+            extracted.append(("📄 Texto visível da página", clean[:4000]))
+
+        if not extracted:
+            return (
+                f"[BetterBugs] Página acessível mas sem conteúdo extraível (SPA pura sem SSR). "
+                f"URL: {url}\n"
+                "NOTA: os screenshots e o vídeo estão disponíveis no link acima — "
+                "analise a transcrição descrevendo o que está visível."
+            )
+
+        result = f"[BetterBugs] Conteúdo extraído de: {url}\n\n"
+        for label, content in extracted:
+            result += f"### {label}\n{content}\n\n"
+        return result.strip()
+
+    except requests.exceptions.Timeout:
+        return f"[BetterBugs] Timeout ({timeout}s) ao acessar {url}"
+    except requests.exceptions.ConnectionError as e:
+        return f"[BetterBugs] Erro de conexão ao acessar {url}: {e}"
+    except Exception as e:
+        return f"[BetterBugs] Erro inesperado ao buscar conteúdo: {e}"
+
+
 # ── Local file reading ────────────────────────────────────────────────────────
 
 def read_local_file(rel_path, max_lines=250):
@@ -289,7 +430,7 @@ DS_LIA_DESIGN_RULES = """
 """
 
 
-def analyze_with_claude(card_key, summary, description_text, code_by_layer, vue_files):
+def analyze_with_claude(card_key, summary, description_text, code_by_layer, vue_files, betterbugs_content=None):
     try:
         import anthropic
         client = anthropic.Anthropic()
@@ -319,6 +460,9 @@ Data: {date.today().strftime('%d/%m/%Y')}
 
 ## TRANSCRIÇÃO / DESCRIÇÃO DO CARD (fonte primária — extraia TUDO):
 {description_text}
+
+## EVIDÊNCIAS BETTERBUGS (screenshots, vídeo, console logs, network logs — contexto visual real):
+{betterbugs_content if betterbugs_content else "(link BetterBugs não encontrado na transcrição — analise apenas pelo texto)"}
 
 ## CÓDIGO DOS LAYERS (React Replit + Backend Python + IA + Integrações):
 {code_sections if code_sections else "(arquivos não encontrados automaticamente — analise pela transcrição)"}
@@ -1039,7 +1183,19 @@ def main():
         code_by_layer["Integrações"] = integration_files
 
     print(f"\n[6/6] Analisando com Claude (funcionalidade + design)...")
-    analysis = analyze_with_claude(issue_key, summary, description_text, code_by_layer, vue_files)
+    print(f"  Buscando conteúdo BetterBugs...")
+    betterbugs_url = extract_betterbugs_url(description_text)
+    betterbugs_content = None
+    if betterbugs_url:
+        print(f"  ✓ BetterBugs URL encontrado: {betterbugs_url[:80]}...")
+        betterbugs_content = fetch_betterbugs_content(betterbugs_url)
+        if betterbugs_content and not betterbugs_content.startswith("[BetterBugs] Erro"):
+            print(f"  ✓ Conteúdo BetterBugs extraído ({len(betterbugs_content)} chars)")
+        else:
+            print(f"  ⚠ BetterBugs: {betterbugs_content[:100] if betterbugs_content else 'sem conteúdo'}")
+    else:
+        print(f"  — BetterBugs URL não encontrado na transcrição")
+    analysis = analyze_with_claude(issue_key, summary, description_text, code_by_layer, vue_files, betterbugs_content)
     print(f"✓ Análise gerada")
     print(f"  {len(analysis.get('issues_funcionalidade', []))} issues de funcionalidade")
     print(f"  {len(analysis.get('issues_design', []))} issues de design")
