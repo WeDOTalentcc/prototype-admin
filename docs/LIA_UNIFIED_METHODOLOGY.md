@@ -311,6 +311,71 @@ O recrutador pode desbloquear o pipeline a qualquer momento:
 | Override do recrutador | Registrar justificativa para calibration |
 | Discordancia sistematica | Alertar coordenador de RH |
 
+### 4.13 Geracao de Perguntas WSI por Competencia
+
+#### Etapa 1 — Extracao de Competencias do Job Description
+
+Antes de gerar qualquer pergunta, a LIA analisa o JD com LLM (Claude) e extrai um conjunto de competencias com pesos atribuidos. O resultado e um objeto `CompetencySuggestion` com a seguinte distribuicao padrao:
+
+| Tipo | Quantidade | Peso Total |
+|------|------------|------------|
+| Tecnicas | 5 competencias | 70% |
+| Comportamentais | 2 competencias | 30% |
+
+Cada competencia recebe um peso individual que soma 100% dentro do seu tipo. Exemplo para vaga de Desenvolvedor Python Senior:
+
+```
+Tecnicas (70%):
+  Python          → peso 0.25  critical: true
+  Django/FastAPI  → peso 0.20  critical: true
+  PostgreSQL      → peso 0.10
+  AWS             → peso 0.10
+  Docker          → peso 0.05
+
+Comportamentais (30%):
+  Colaboracao em Equipe → peso 0.15
+  Comunicacao Assertiva → peso 0.15
+```
+
+O campo `is_critical = true` indica que a competencia e eliminatoria — candidatos com score < 3.0 nessa competencia podem ter a decisao rebaixada independente do WSI geral.
+
+#### Etapa 2 — Geracao de Perguntas por Competencia
+
+Para cada competencia extraida, o `WSIQuestionGenerator` cria perguntas usando os 4 frameworks em proporcoes fixas:
+
+| Framework | Proporcao | Tipo de Pergunta |
+|-----------|-----------|-----------------|
+| CBI (Competency-Based Interviewing) | 60% | Situacionais STAR — "Conte sobre uma situacao onde voce usou X..." |
+| Dreyfus | 20% | Autodeclaracao — "De 1 a 5, quanto voce domina X? Cite um projeto recente." |
+| Bloom | 15% | Microcase — "Como voce implementaria/diagnosticaria [cenario]?" |
+| Big Five | 5% | Situacional comportamental — "Como voce reage quando [situacao de pressao]?" |
+
+**Volume de perguntas por modo:**
+
+| Modo | Perguntas | Duracao Estimada | Canal |
+|------|-----------|-----------------|-------|
+| `compact` | 6 a 8 perguntas | 5 a 7 minutos | WhatsApp |
+| `compact_plus` | 8 a 10 perguntas | 7 a 10 minutos | WhatsApp |
+
+#### Vinculo Pergunta → Competencia → Score
+
+Cada pergunta gerada carrega internamente a competencia a que pertence. Quando o candidato responde, o scorer determinístico calcula o score usando **o nome da competencia como contexto**. Isso garante que o resultado final saiba exatamente qual competencia cada score representa:
+
+```
+Pergunta: "De 1 a 5, quanto voce domina Python? Cite um projeto."
+  └─ competency: "Python"
+  └─ framework: "Dreyfus"
+  └─ bloom_level: 4 (Analisar — nivel pleno/senior)
+
+Resposta do candidato avaliada:
+  └─ autodeclaracao_score: 4.0
+  └─ context_score: 4.2
+  └─ final_score: 4.1 (formula deterministica)
+  └─ registrado como: ResponseAnalysis(competency="Python", score=4.1)
+```
+
+O `WSI Final = (0.70 × média_técnica_ponderada) + (0.30 × média_comportamental_ponderada)` usa os pesos definidos na Etapa 1 para ponderar cada competencia no calculo final.
+
 ---
 
 ## 5. Camada 4: Calibration Loop
@@ -728,6 +793,131 @@ SECOES GERADAS:
 | **POTENTIAL** | Score 55-69%, gaps a avaliar | Avaliar gaps em entrevista |
 | **NOT_RECOMMENDED** | Score < 55% ou gap critico | Nao prosseguir |
 | **INCOMPLETE** | Dados insuficientes | Solicitar mais informacoes |
+
+### 10.6 Score por Competencia no Parecer
+
+#### Competencias Tecnicas — score individual por competencia do JD
+
+Cada competencia tecnica extraida do JD na Etapa 1 (secao 4.13) recebe um score individual calculado deterministicamente. O parecer cita cada competencia pelo nome original com seu score:
+
+```json
+"technical_competencies": {
+  "source": "wsi",
+  "pontos_fortes": [
+    "Python (4.5/5)",
+    "Django/FastAPI (4.2/5)"
+  ],
+  "gaps": [
+    "AWS (2.1/5)"
+  ],
+  "evidencias": [
+    "Candidato mencionou deploy em producao com 50k usuarios",
+    "Descreveu migracao de banco com zero downtime"
+  ]
+}
+```
+
+O criterio de classificacao no parecer e:
+- `pontos_fortes`: competencias com score >= 4.0
+- `gaps`: competencias com score < 3.0
+- Competencias entre 3.0 e 3.9 nao aparecem em nenhum dos dois grupos (faixa media)
+
+#### Competencias Comportamentais — mapeamento para 4 dimensoes fixas
+
+As competencias comportamentais extraidas do JD (ex: "Lideranca", "Comunicacao Assertiva") sao avaliadas durante a triagem e alimentam o `behavioral_wsi` geral. No entanto, o bloco `behavioral_analysis` do parecer nao exibe as competencias comportamentais especificas do JD — ele exibe **4 dimensoes fixas** inferidas pelo LLM a partir das respostas comportamentais:
+
+| Dimensao Fixa | Score | Origem |
+|---------------|-------|--------|
+| `colaboracao` | 0–5.0 | Inferida pelo LLM das respostas comportamentais |
+| `inovacao` | 0–5.0 | Inferida pelo LLM das respostas comportamentais |
+| `organizacao` | 0–5.0 | Inferida pelo LLM das respostas comportamentais |
+| `resiliencia` | 0–5.0 | Inferida pelo LLM das respostas comportamentais |
+
+> **Nota arquitetural:** O cruzamento JD ↔ avaliacao e completo no lado tecnico (competencias nomeadas com score) e parcial no lado comportamental (score WSI comportamental geral existe, mas o parecer exibe dimensoes fixas, nao as competencias especificas da vaga).
+
+#### Fit Cultural
+
+Avaliado separadamente com score geral e lista de valores alinhados/pontos de atencao:
+
+```json
+"cultural_fit": {
+  "score": 4.1,
+  "valores_alinhados": ["Colaboracao", "Inovacao continua"],
+  "atencoes": ["Preferencia por trabalho individual em contextos colaborativos"]
+}
+```
+
+O campo `atencoes` e obrigatorio quando WSI geral < 4.0.
+
+### 10.7 Feedback ao Candidato (PersonalizedFeedbackService)
+
+Apos a decisao final da triagem WSI, a LIA gera um feedback estruturado e personalizado para o candidato. Este feedback **nao e enviado automaticamente** — passa por um fluxo de aprovacao do recrutador.
+
+#### Fluxo de Geracao e Envio
+
+```
+[Decisao WSI] → [LLM gera rascunho] → [FairnessGuard verifica conteudo]
+      → [Salvo como DRAFT para aprovacao] → [Recrutador aprova ou edita]
+      → [Enviado via email e/ou WhatsApp]
+```
+
+Se o FairnessGuard detectar conteudo discriminatorio no rascunho, o texto e substituido por aviso de revisao de compliance antes de ser apresentado ao recrutador.
+
+#### Canais Suportados
+
+| Canal | Formato |
+|-------|---------|
+| Email | Assunto personalizado + corpo HTML + corpo texto puro |
+| WhatsApp | Mensagem compacta (limite de caracteres para o canal) |
+| Ambos | Envio simultaneo nos dois canais |
+
+#### Campos Gerados
+
+| Campo | Descricao |
+|-------|-----------|
+| `subject` | Linha de assunto do email (personalizada com nome da vaga) |
+| `body_text` | Corpo completo em texto puro |
+| `body_html` | Corpo completo em HTML formatado |
+| `whatsapp_message` | Versao compacta para WhatsApp |
+| `key_points` | 3-5 pontos principais do desempenho avaliado |
+| `development_suggestions` | Sugestoes especificas por competencia com gap |
+| `recommended_resources` | Cursos, projetos e referencias por area de desenvolvimento |
+| `development_plan.curto_prazo` | Acoes para os proximos 30-60 dias |
+| `development_plan.medio_prazo` | Acoes para os proximos 3-6 meses |
+
+#### Tom Configuravel
+
+| Tom | Descricao | Uso Recomendado |
+|-----|-----------|----------------|
+| `warm` | Empatico e encorajador | Candidatos com WSI medio, com potencial |
+| `professional` | Formal e objetivo | Padrao para a maioria dos casos |
+| `encouraging` | Motivacional com foco em desenvolvimento | Candidatos jovens ou com gaps identificados |
+
+#### Exemplo de Estrutura de Resposta
+
+```json
+{
+  "subject": "Feedback da sua triagem — Vaga Desenvolvedor Python Senior",
+  "body_text": "Ola [Nome], agradecemos sua participacao...",
+  "key_points": [
+    "Forte dominio de Python com evidencias praticas solidas",
+    "AWS ainda em desenvolvimento — oportunidade de crescimento"
+  ],
+  "development_suggestions": [
+    "Aprofundar AWS com foco em servicos de compute e storage"
+  ],
+  "recommended_resources": [
+    "AWS Certified Solutions Architect — Associate (AWS Training)",
+    "Projeto pratico: deploy de aplicacao containerizada na AWS"
+  ],
+  "development_plan": {
+    "curto_prazo": ["Completar modulo basico de EC2 e S3 em 30 dias"],
+    "medio_prazo": ["Obter certificacao AWS Associate em 4 meses"]
+  }
+}
+```
+
+> O feedback e baseado nos scores reais por competencia (`ResponseAnalysis`) e na decisao final do WSI. Candidatos aprovados recebem feedback de reforco; candidatos em aguardo ou nao aprovados recebem plano de desenvolvimento detalhado.
 
 ---
 
