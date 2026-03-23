@@ -315,12 +315,15 @@ O recrutador pode desbloquear o pipeline a qualquer momento:
 
 #### Etapa 1 — Extracao de Competencias do Job Description
 
-Antes de gerar qualquer pergunta, a LIA analisa o JD com LLM (Claude) e extrai um conjunto de competencias com pesos atribuidos. O resultado e um objeto `CompetencySuggestion` com a seguinte distribuicao padrao:
+Antes de gerar qualquer pergunta, a LIA analisa o JD com LLM (Claude) e extrai um conjunto de competencias com pesos atribuidos. O resultado e um objeto `CompetencySuggestion` com tres tipos de competencias:
 
-| Tipo | Quantidade | Peso Total |
-|------|------------|------------|
-| Tecnicas | 5 competencias | 70% |
-| Comportamentais | 2 competencias | 30% |
+| Tipo | Quantidade extraida | Peso Total |
+|------|---------------------|------------|
+| `technical` | 5 competencias tecnicas (hard skills) | 70% |
+| `behavioral` | 2 competencias comportamentais/culturais — o LLM decide a divisao entre os dois tipos | 30% |
+| `cultural` | (incluido no grupo acima — pode ser 0, 1 ou 2 conforme o JD e a cultura da empresa) | parte dos 30% |
+
+> **Nota:** o prompt instrui o LLM a extrair "2 competencias COMPORTAMENTAIS/CULTURAIS" com 30% de peso total, mas o JSON de resposta tem arrays separados para `behavioral_competencies` e `cultural_competencies`. O LLM distribui entre os dois conforme o conteudo do JD e a cultura da empresa fornecida.
 
 Cada competencia recebe um peso individual que soma 100% dentro do seu tipo. Exemplo para vaga de Desenvolvedor Python Senior:
 
@@ -332,12 +335,14 @@ Tecnicas (70%):
   AWS             → peso 0.10
   Docker          → peso 0.05
 
-Comportamentais (30%):
-  Colaboracao em Equipe → peso 0.15
-  Comunicacao Assertiva → peso 0.15
+Comportamentais/Culturais (30%):
+  Colaboracao em Equipe  → tipo behavioral  → peso 0.15
+  Inovacao Continua      → tipo cultural    → peso 0.15
 ```
 
-O campo `is_critical = true` indica que a competencia e eliminatoria — candidatos com score < 3.0 nessa competencia podem ter a decisao rebaixada independente do WSI geral.
+O campo `is_critical = true` indica que a competencia e eliminatoria — candidatos com score < 3.0 nessa competencia podem ter a decisao rebaixada independente do WSI geral. Este campo e exclusivo de competencias tecnicas (`is_critical` e sempre `false` para behavioral e cultural).
+
+> **Nota sobre responsabilidades:** o sistema extrai apenas competencias (capacidades avaliadas durante a triagem). Responsabilidades do cargo descritas no JD sao usadas como contexto para o LLM inferir o nivel de senioridade e as competencias criticas, mas nao sao criadas como entidade avaliavel separada.
 
 #### Etapa 2 — Geracao de Perguntas por Competencia
 
@@ -352,10 +357,14 @@ Para cada competencia extraida, o `WSIQuestionGenerator` cria perguntas usando o
 
 **Volume de perguntas por modo:**
 
-| Modo | Perguntas | Duracao Estimada | Canal |
-|------|-----------|-----------------|-------|
-| `compact` | 6 a 8 perguntas | 5 a 7 minutos | WhatsApp |
-| `compact_plus` | 8 a 10 perguntas | 7 a 10 minutos | WhatsApp |
+| Modo | Target interno (codigo) | Duracao Estimada | Canal |
+|------|------------------------|-----------------|-------|
+| `compact` | **6 perguntas** (fixo — `target_count = 6`) | 5 a 7 minutos | WhatsApp |
+| `compact_plus` | **8 perguntas** (fixo — `target_count = 8`) | 7 a 10 minutos | WhatsApp |
+
+> **Nota:** os docstrings do codigo descrevem "6-8" e "8-10" como faixas, mas o target e fixo em 6 ou 8. O retorno e sempre cortado em `questions[:target_count]`. Se o LLM gerar menos perguntas que o target (por falta de competencias suficientes), um warning e emitido mas sem fallback automatico.
+
+> **Modo com 10-12 perguntas:** nao existe hoje no codigo. Para suportar triagens mais longas com mais competencias comportamentais/culturais seria necessario um terceiro modo (`full` ou `extended`) com `target_count >= 10`. Com target=8, o slot de Big Five comportamental ja e apenas 1 pergunta (5% de 8), o que limita a cobertura comportamental independente de quantas competencias comportamentais forem extraidas do JD.
 
 #### Vinculo Pergunta → Competencia → Score
 
