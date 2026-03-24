@@ -939,6 +939,64 @@ Isso garante:
 | Lead / Principal | 5 | 6 | Cria sistemas, rituais ou dinâmicas; ensina o comportamento para outros |
 | Diretor+ | 5 | 6 | Muda a cultura; influencia comportamentos em escala organizacional |
 
+---
+
+### 6.2.1 — Bloom: o que cada nível significa operacionalmente na GERAÇÃO de perguntas
+
+> Bloom define a **profundidade cognitiva** exigida pela pergunta. Na geração, o nível de Bloom determina o verbo, a estrutura e o que a pergunta deve solicitar do candidato.
+
+| Bloom | Nome | O que a pergunta SOLICITA | Estrutura típica | WSI usa para |
+|---|---|---|---|---|
+| **1** | Lembrar | Declaração de fato, reconhecimento, definição | "Você já usou X?" / "O que é X?" | Não usado (nenhuma senioridade) |
+| **2** | Compreender | Descrever funcionamento, explicar, parafrasear | "Descreva como você utilizou X em um contexto recente" | Estagiário |
+| **3** | Aplicar | Executar em situação real, usar procedimento | "Descreva um script/projeto em X que você desenvolveu. Qual o problema que resolvia?" | Junior |
+| **4** | Analisar | Decompor, comparar abordagens, identificar causas | "Descreva um projeto onde você precisou escolher entre diferentes abordagens. Como avaliou as opções?" | Pleno |
+| **5** | Avaliar | Julgar, fazer trade-off, justificar com critérios | "Conte sobre uma decisão de X onde você fez trade-offs. Como chegou à solução e o que faria diferente?" | Senior |
+| **6** | Criar | Projetar sistema novo, definir padrão, criar método | "Como você definiu padrões de X para seu time? Que mecanismos criou para garantir a adoção?" | Lead / Diretor+ |
+
+**Regras para o LLM ao gerar a pergunta:**
+- **Bloom 2**: o contexto pode ser acadêmico ou guiado. Pergunta simples, 1 frase.
+- **Bloom 3**: deve pedir um episódio real com ação concreta. Introduzir STAR implicitamente.
+- **Bloom 4**: deve pedir comparação ou escolha explícita. Introduzir a ideia de "opções avaliadas".
+- **Bloom 5**: deve pedir trade-off explícito com critérios e desfecho. O candidato deve "defender" a decisão.
+- **Bloom 6**: deve pedir criação de algo que outros adotaram/seguem. O sujeito é o time, não só o candidato.
+
+---
+
+### 6.2.2 — Dreyfus: o que cada nível significa operacionalmente na GERAÇÃO de perguntas
+
+> Dreyfus define a **maturidade e autonomia** pressuposta no candidato. Na geração, Dreyfus muda o **contexto assumido pela pergunta** — o nível de supervisão, a complexidade do ambiente e quem tomou as decisões.
+
+#### Dreyfus para perguntas TÉCNICAS:
+
+| Dreyfus | Nome | Contexto pressuposto na pergunta | O que muda na formulação |
+|---|---|---|---|
+| **1** Novice | Iniciante | Ambiente guiado, tarefa simples, sem decisões autônomas | Pergunta pode aceitar contexto acadêmico; não cobra julgamento |
+| **2** Adv. Beginner | Iniciante avançado | Projeto real, mas com supervisão; situações padrão | Pergunta assume projeto real; cobra descrição, não análise |
+| **3** Competent | Competente | Autonomia parcial; múltiplas variáveis; planeja entregas | Pergunta introduz "você escolheu", "você avaliou" — agência própria |
+| **4** Proficient | Proficiente | Autonomia total; vê padrões além das regras; adapta | Pergunta cobra julgamento contextual, trade-offs, visão sistêmica |
+| **5** Expert | Especialista | Cria conhecimento novo; define padrões para outros; intuitivo | Pergunta cobra o que o candidato CRIOU para que outros seguissem |
+
+#### Dreyfus aplicado a perguntas COMPORTAMENTAIS — justificativa e mapeamento:
+
+Dreyfus foi originalmente concebido para aquisição de habilidades técnicas (Dreyfus & Dreyfus, 1986). O WSI estende o modelo para o domínio comportamental com uma adaptação semântica: em vez de medir proficiência em uma skill, Dreyfus mede a **maturidade da reflexão e agência comportamental** do candidato.
+
+A lógica de aplicação é equivalente: assim como um Novice técnico segue regras sem adaptá-las, um Novice comportamental descreve comportamentos que aprendeu de outros — sem processo próprio. E assim como um Expert técnico cria padrões, um Expert comportamental cria sistemas, rituais e dinâmicas que outros adotam.
+
+| Dreyfus Comportamental | O que define | Sinais na resposta |
+|---|---|---|
+| **1** Novice | Comportamento aprendido de outros; segue regras externas | "Meu gestor disse", "fui orientado a", "aprendi que deveria" |
+| **2** Adv. Beginner | Experiências isoladas; sem generalização; não identifica padrão próprio | "Uma vez eu...", "houve uma situação onde..." — sem processo consciente |
+| **3** Competent | Processo deliberado e próprio; analisa o que funcionou; replica intencionalmente | "Processo que desenvolvi", "percebi que funcionava melhor quando", "passei a fazer assim porque" |
+| **4** Proficient | Avalia trade-offs comportamentais; adapta abordagem ao contexto; vê quando as regras não se aplicam | "Dependendo da situação, faço X ou Y porque...", "adaptei minha abordagem quando percebi que..." |
+| **5** Expert | Cria sistemas, rituais ou dinâmicas; ensina comportamento para outros; muda cultura | "Criei um ritual de", "implementei uma dinâmica que o time adotou", "estruturei um processo que..." |
+
+**Regras para o LLM ao gerar a pergunta comportamental com Dreyfus:**
+- **Dreyfus 1–2**: a pergunta pode aceitar situações simples; não cobra processo próprio
+- **Dreyfus 3**: a pergunta deve pedir "o processo que você criou" ou "como você passou a fazer"
+- **Dreyfus 4**: a pergunta deve pedir adaptação ou escolha contextual — "como você decidiu X neste contexto específico"
+- **Dreyfus 5**: a pergunta deve pedir o que o candidato CRIOU que outros adotaram — o candidato como transmissor de comportamento
+
 ### 6.3 Framework de geração de perguntas técnicas
 
 **Estrutura da pergunta técnica:**
@@ -1263,6 +1321,42 @@ Retorne o seguinte JSON:
 
 > **Por que temperature = 0.0?** Avaliação requer máxima consistência. Dois candidatos com respostas idênticas devem receber extração idêntica.
 
+---
+
+### 7.3.1 — Guia de detecção: como o LLM identifica Bloom na resposta
+
+O campo `bloom_demonstrated` requer que o LLM classifique o nível mais alto **claramente evidenciado** na resposta — não o que o candidato alega, mas o que demonstra pelo vocabulário, raciocínio e episódios descritos. O LLM deve escolher o nível mais alto cuja evidência seja **explícita e verificável no texto**.
+
+| Bloom | O que procurar na resposta | Sinais linguísticos | Armadilha comum |
+|---|---|---|---|
+| **1** | Declarações de conhecimento sem episódio | "sei que", "conheço", "aprendi que X é assim" | Confundir com Bloom 3 quando o candidato introduz contexto vago |
+| **2** | Descrição de uso sem análise | "usei X no projeto", "implementei X conforme o tutorial" | Sem comparação, sem escolha própria — mesmo com detalhe |
+| **3** | Execução em situação real com ação própria | "desenvolvi", "implementei", "criei um script para", verbo em 1ª pessoa com contexto real | Aceitar apenas se o candidato descreve ação autônoma real — não guiada |
+| **4** | Comparação ou decomposição explícita | "comparei X e Y", "avaliando as opções, escolhi porque", "identifiquei que o problema era" | Exige que a análise seja explicitada, não apenas implícita |
+| **5** | Trade-off explícito com critérios e julgamento | "trade-off entre velocidade e qualidade", "pesando os riscos, decidi", "justifiquei para o time porque" | A avaliação deve ser explícita, não inferida |
+| **6** | Criação que outros adotaram | "defini padrão que o time passou a usar", "criei um processo de", "estruturei uma forma de trabalho" | Exige agência criadora + adoção por outros — não apenas fazer algo novo para si |
+
+**Regra crítica para o LLM:** classificar Bloom com base no **nível mais alto com evidência explícita**, não no nível mais alto plausível. Se a resposta menciona "trade-off" mas não explicita critérios ou julgamento, classificar como Bloom 4, não 5.
+
+---
+
+### 7.3.2 — Guia de detecção: como o LLM identifica Dreyfus na resposta
+
+`dreyfus_demonstrated` mede o nível de **autonomia e agência** demonstrado — tanto para respostas técnicas quanto comportamentais.
+
+| Dreyfus | O que procurar | Sinais linguísticos | Distinção-chave |
+|---|---|---|---|
+| **1** Novice | Segue regras de outros; contexto guiado | "meu líder me pediu", "segui o tutorial", "fui orientado a", "no curso aprendi" | A decisão não foi do candidato |
+| **2** Adv. Beginner | Experiência real, mas episódica e sem processo | "uma vez eu fiz isso", "quando me pediram para", sem reflexão sobre padrão | Fez algo real, mas não generalizou ou replicou intencionalmente |
+| **3** Competent | Processo próprio deliberado; replica intencionalmente | "processo que desenvolvi", "passei a fazer assim porque funcionou", "minha abordagem é" | O candidato tem um método próprio consciente |
+| **4** Proficient | Adapta ao contexto; vê padrões além das regras | "dependendo do contexto, faço X ou Y", "percebi que neste caso as regras normais não se aplicavam", "adaptei quando..." | A adaptação é explícita e baseada em leitura do contexto |
+| **5** Expert | Cria para outros; intuitivo; sistematiza | "criei uma forma de trabalho que o time adotou", "ensinei meu time a", "defini padrão que", "implementei um ritual de" | O candidato é TRANSMISSOR, não apenas praticante |
+
+**Para respostas comportamentais**, aplicar o mesmo critério adaptado:
+- Dreyfus 1 comportamental: o comportamento foi aprendido de outros ou exigido externamente
+- Dreyfus 3 comportamental: o candidato tem uma abordagem própria e consciente para situações daquele tipo
+- Dreyfus 5 comportamental: o candidato criou sistemas, rituais ou dinâmicas que outros seguem
+
 ### 7.4 Camada 3 — Fórmulas de score por tipo de pergunta
 
 #### Autodeclaração técnica — coleta e escala
@@ -1547,6 +1641,154 @@ WSI_final = (8.57 × 0.4375) + (8.256 × 0.5625)
 | 6.0 – 6.9 | Médio | 🟡 Amarelo | Em avaliação — compare com pool |
 | 4.5 – 5.9 | Abaixo da média | 🟠 Laranja | Reprovado — salvo exceções do recrutador |
 | 0.0 – 4.4 | Regular / Baixo | 🔴 Vermelho | Reprovado automático |
+
+---
+
+### 7.6 — Trace completo ponta-a-ponta: geração → avaliação → score
+
+Este exemplo mostra o ciclo completo de **uma pergunta técnica** — desde a geração até o score final, ilustrando como Bloom e Dreyfus operam em cada fase.
+
+**Contexto da vaga:**
+```
+Cargo: Engenheiro de Software Senior
+Skill avaliada: Python
+Senioridade: Senior → Bloom esperado: 5 (Avaliar), Dreyfus esperado: 4 (Proficiente)
+Modo: Compact | Pesos: técnico=56.25%, comportamental=43.75%
+```
+
+---
+
+**Passo 1 — F6: LLM gera a pergunta técnica**
+
+Inputs enviados ao LLM (temp=0.7):
+```
+Skill: Python
+Senioridade: Senior
+Dreyfus: 4 — Proficient
+Bloom: 5 — Avaliar
+Contexto empresa: startup de fintech, time de 12 engenheiros
+Responsabilidades JD: "liderança técnica de microsserviços críticos, decisões de arquitetura"
+```
+
+Pergunta gerada pelo LLM:
+> *"Conte sobre uma decisão de arquitetura em Python — microsserviços, bibliotecas ou padrões — onde você precisou fazer trade-offs entre performance, manutenibilidade e custo operacional. Como você chegou à solução e o que faria diferente hoje?"*
+
+Validação automática:
+- ✅ Situacional (verbo no passado + situação real pedida)
+- ✅ Não hipotética (sem "imagine" ou "como você faria se")
+- ✅ Não revela resposta
+- ✅ Comprimento: 43 palavras
+
+Metadados persistidos com a pergunta: `bloom_level=5, dreyfus_level=4, expected_signals=["trade-off explícito", "critérios de decisão nomeados", "resultado mensurável", "reflexão crítica"]`
+
+---
+
+**Passo 2 — Coleta da autodeclaração e resposta (F7, runtime)**
+
+O candidato informa antes de responder:
+```
+Autodeclaração Python: 4 de 5
+("Referência técnica nesta skill na minha equipe")
+```
+
+Resposta do candidato (92 palavras):
+> *"Na nossa plataforma de pagamentos, precisávamos processar 50k transações/hora. Avaliamos Celery vs. Ray para processamento assíncrono. Celery era mais maduro e com melhor suporte da equipe, mas o Ray oferecia melhor performance horizontal. Escolhi Celery porque o custo de onboarding do Ray para um time inexperiente era alto — estimei 3 meses de adaptação. Em produção, reduzimos a latência média de 800ms para 180ms. Se fizesse hoje, teria feito um PoC de 2 semanas com Ray antes de decidir, para ter dados reais de performance antes de assumir o custo de onboarding."*
+
+---
+
+**Passo 3 — Camada 1: STAR determinístico**
+
+```
+S — Situação: ✅ "plataforma de pagamentos, 50k transações/hora"
+T — Tarefa:   ✅ "precisávamos processar" (responsabilidade implícita do time)
+A — Ação:     ✅ "Avaliamos", "Escolhi Celery porque" (1ª pessoa, decisão própria)
+R — Resultado: ✅ "reduzimos a latência de 800ms para 180ms" (dado quantificado)
+
+STAR_score = (1×0.20) + (1×0.20) + (1×0.40) + (1×0.20) = 1.00
+
+Penalidades:
+  - Resposta 92 palavras: nenhuma (> 50 palavras)
+  - Verbos em 1ª pessoa: ✅ presente
+  - Resultado: ✅ com dado quantificado
+
+Bônus:
+  + 0.5 — resultado quantificado ("reduzimos de 800ms para 180ms")
+  + 0.0 — sem segundo episódio
+```
+
+---
+
+**Passo 4 — Camada 2: LLM extrator (temp=0.0)**
+
+JSON retornado:
+```json
+{
+  "star_components": {"situation": true, "task": true, "action": true, "result": true},
+  "trait_signals_detected": [
+    "trade-off explícito — trecho: 'Celery era mais maduro... mas o Ray oferecia melhor performance'",
+    "critérios de decisão nomeados — trecho: 'custo de onboarding... estimei 3 meses de adaptação'",
+    "resultado mensurável — trecho: 'reduzimos a latência média de 800ms para 180ms'",
+    "reflexão crítica — trecho: 'Se fizesse hoje, teria feito um PoC...'"
+  ],
+  "trait_signals_absent": [],
+  "bloom_demonstrated": 5,
+  "bloom_label": "Avaliar",
+  "dreyfus_demonstrated": 4,
+  "dreyfus_label": "Proficient",
+  "inflation_detected": false,
+  "specificity_score": 9,
+  "key_quote": "Escolhi Celery porque o custo de onboarding do Ray para um time inexperiente era alto — estimei 3 meses de adaptação",
+  "response_authentic": true,
+  "authenticity_concern": null
+}
+```
+
+**Aplicação dos guias de detecção:**
+- Bloom 5 confirmado: trade-off explícito com múltiplos critérios (performance × onboarding × custo) + julgamento justificado → evidência explícita, não apenas plausível
+- Dreyfus 4 confirmado: decisão autônoma, vê além da regra técnica (performance) para considerar fator organizacional (onboarding), adaptação contextual explícita
+
+---
+
+**Passo 5 — Camada 3: fórmula técnica**
+
+```python
+# Inputs
+autodeclaracao_norm  = 4 / 5.0 = 0.80
+evidencias_tecnicas  = 9 / 10.0 = 0.90
+bloom_alinhamento    = calcular_bloom_alinhamento(esperado=5, demonstrado=5)
+                     = 1.00  # atingiu exatamente o esperado
+
+score_bruto = (0.80 × 0.35) + (0.90 × 0.40) + (1.00 × 0.25) × 10.0
+            = (0.280 + 0.360 + 0.250) × 10.0
+            = 0.890 × 10.0
+            = 8.90
+
+# Ajustes
+ajustes = 0.0
+if inflation_detected: False → sem penalidade
+if dreyfus_demonstrado (4) < dreyfus_esperado (4) - 1: False → sem penalidade
+if bloom_demonstrado (5) > bloom_esperado (5): False → sem bônus Bloom
+if resultado_quantificado: True → ajustes += 0.5  (Camada 1 também registrou)
+
+score_final_pergunta = max(0.0, min(10.0, 8.90 + 0.5)) = 9.40
+```
+
+---
+
+**Passo 6 — Contribuição no WSI Final (Compact, Senior)**
+
+```
+Esta pergunta (Python) contribui para:
+  WSI_tecnico = média das 4 perguntas técnicas (esta = 9.40)
+
+Supondo:  FastAPI: 7.8, PostgreSQL: 8.2, Docker: 6.5, Python: 9.4
+  WSI_tecnico = (9.40 + 7.80 + 8.20 + 6.50) / 4 = 7.975
+
+Pesos Senior sem elegibilidade: técnico=56.25%, comportamental=43.75%
+  WSI_final = (7.975 × 0.5625) + (WSI_comportamental × 0.4375)
+```
+
+> Este trace demonstra como Bloom e Dreyfus saem de parâmetros abstratos e se tornam operadores concretos: definem a pergunta gerada, são detectados na resposta pelo LLM, e entram na fórmula via `bloom_alinhamento` e nos ajustes de Dreyfus — tudo de forma determinística e auditável.
 
 ---
 
