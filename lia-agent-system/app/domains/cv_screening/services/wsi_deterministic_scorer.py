@@ -84,7 +84,7 @@ WSI_FORMULA_WEIGHTS = {
 WSI_CUTOFFS = {
     "approved_auto": 3.75,
     "review_min":    3.00,
-    "rejected_max":  2.25,
+    "rejected_below": 3.00,
 }
 
 GATE_G3_THRESHOLD = 2.0
