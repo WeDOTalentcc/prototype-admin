@@ -3100,6 +3100,555 @@ Retorne o seguinte JSON (sem texto fora do JSON):
 
 ---
 
+### 11.6 Especificação de exibição UI — Indicadores dos 3 Tabs
+
+> Esta seção documenta **100% dos indicadores visuais** exibidos no modal "Detalhes da Triagem WSI" (3 tabs), com seus respectivos campos de origem no relatório F11, regras de exibição, labels para o recrutador e thresholds de cor/estado. É a fonte de verdade para implementação do frontend e para validação de que o relatório gerado contém todos os dados necessários.
+
+---
+
+#### 11.6.1 Header universal (presente nos 3 tabs)
+
+O header é idêntico nos 3 tabs e exibe os campos de identificação e resumo de decisão.
+
+| Indicador UI | Campo de origem (F11) | Valores possíveis | Regra de exibição |
+|---|---|---|---|
+| Nome do candidato | `candidate.name` | string | Formato: "Detalhes da Triagem WSI — {nome}" |
+| Cargo / localidade | `vacancy.title` + metadados do candidato | string | Exibido abaixo do nome |
+| Badge de status | `decision.result` | `APROVADO` / `EM_AVALIACAO` / `REPROVADO` | Ver tabela 11.6.5 |
+| Badge de confiança | `decision.confidence` | `alta` / `media` / `baixa` | Ver tabela 11.6.5 |
+| Score WSI | `scores.wsi_final` | 0.0–10.0 | Exibido como `{N}/10` |
+| Ranking | `rank_position` / `rank_total` | inteiros | Exibido como `#N de M` com ícone Trophy |
+| Classificação textual | `scores.wsi_final` | threshold | Ver tabela 11.6.5 |
+| Duração da triagem | `candidate.screening_duration_minutes` | inteiro | Exibido como `{N} min` com ícone Clock |
+| Modo de triagem | `vacancy.mode` + `candidate.response_count` | `compact` / `full` | Exibido como `Compact · {N} perguntas` ou `Full · {N} perguntas` com ícone Layers |
+
+---
+
+#### 11.6.2 Tab 1 — Respostas e Avaliação
+
+**Bloco: Scores por Dimensão**
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Score Geral | `scores.wsi_final` | Valor numérico + barra de progresso (% de 10) |
+| Score Comp. Técnicas | `scores.wsi_technical` | Valor numérico + barra de progresso |
+| Score Comp. Comportamentais | `scores.wsi_behavioral` | Valor numérico + barra de progresso |
+| Percentil do candidato | `rank_percentile` | Exibido como "↗ Top N%" quando disponível |
+| Canal da triagem | `candidate.channel` | `WhatsApp` / `Web chat` — ícone Mic para voz |
+| Data da triagem | `candidate.screening_start` | Formato `DD/MM/YYYY, HH:MM` |
+| Explicação de pesos | `scores.weight_technical` + `scores.weight_behavioral` + `vacancy.seniority` | Exibido como "Para {senioridade}: Competências Técnicas valem {N}% e Comportamentais valem {M}% do score final" |
+
+**Bloco: Respostas por Competência** (cards expandíveis por skill)
+
+Cada card exibe os seguintes indicadores:
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Nome da skill | `questions[i].skill` | string |
+| Framework de avaliação | `questions[i].framework` | `Competency-Based` / `Dreyfus Model` — exibido como pill cinza |
+| Flag Crítica | `vacancy.technical_skills[i].critical` | Se `true`: pill vermelho com ícone ShieldAlert + texto "Crítica". Máximo 2 skills críticas por vaga |
+| Score da pergunta | `questions[i].scores.overall` | Cor: `≥ 7.5` = emerald, `≥ 5.0` = amber, `< 5.0` = vermelho |
+| Texto da pergunta | `questions[i].question_text` | Exibido como bloco de citação |
+| Resposta do candidato | `questions[i].candidate_response` | Exibido como bloco de citação |
+| Pills STAR | `questions[i].star.S/T/A/R` | `true` → pill emerald com ✓; `false` → pill cinza com – |
+| Aviso STAR | `questions[i].star.R == false` | Exibido apenas quando R ausente: pill âmbar "Resultado não evidenciado" |
+| Score Autodeclaração | `questions[i].scores.self_declared` | Valor numérico — exibido em card de score |
+| Score Contexto | `questions[i].scores.context` | Valor numérico — exibido em card de score |
+| Bloom demonstrado | `questions[i].bloom_demonstrated` | Nível 1–6 + label recruiter-facing (ver 11.6.5) |
+| Dreyfus demonstrado | `questions[i].dreyfus_demonstrated` | Nível 1–5 + label recruiter-facing (ver 11.6.5) |
+| Status gap/alinhamento | `questions[i].gap_status` | `ok` / `acima` / `gap` — ver tabela 11.6.5 |
+| Bloom esperado | `questions[i].bloom_expected` | Exibido no bloco de comparação esperado × demonstrado |
+| Dreyfus esperado | `questions[i].dreyfus_expected` | Exibido no bloco de comparação esperado × demonstrado |
+| Evidências detectadas | `questions[i].signals_detected` | Lista de strings como pills com ✓ |
+| Resumo analítico | `questions[i].analysis_summary` | Texto em itálico abaixo das evidências |
+
+---
+
+#### 11.6.3 Tab 2 — Parecer e Feedback
+
+**Bloco: Sumário Executivo**
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Texto narrativo | `report_sections.executive_summary` | Parágrafo de 2–4 frases gerado pelo sistema — síntese da performance geral |
+
+**Bloco: Análise Técnica**
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Pontos Fortes | `report_sections.strengths` (lista) | Lista com ícone ✓ emerald — máximo 3–4 itens |
+| Gaps Identificados | `report_sections.gaps` (lista) | Lista com cor por severidade (ver 11.6.5) — máximo 4 gaps |
+| Evidências chave | `report_sections.key_evidence` | Lista de strings com ícone Zap |
+
+**Bloco: Perfil de Personalidade — Big Five**
+
+Cada trait do Big Five exibe:
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Nome recruiter-facing do trait | `big_five[i].trait` | Ver mapeamento 11.6.5 — nunca exibir nome técnico (openness, conscientiousness etc) |
+| Hint explicativo | `big_five[i].hint` | Tooltip expandível via botão Info (visível apenas ao clicar) |
+| Badge de relevância | `big_five[i].relevance` | `critica` → pill roxo "Crítica para esta vaga"; `moderada` → pill cinza "Moderada" |
+| Badge de status | `big_five[i].status` | `gap` → âmbar "⚠️ Diferença"; `acima` → azul "↑ Acima"; `ok` → emerald "✓ Alinhado" |
+| Barra dupla candidato vs. vaga | `big_five[i].score_candidate` + `big_five[i].score_required` | Percentual 0–100. Barra do candidato: cor por status (âmbar=gap, azul=acima, cinza=alinhado). Barra da vaga: cinza claro |
+| Valores numéricos | `big_five[i].score_candidate` + `big_five[i].score_required` | Exibidos como "Candidato: N%" e "Vaga espera: M%" |
+| DreyfusRow comportamental | `big_five[i].dreyfus_demonstrated` + `big_five[i].dreyfus_expected` | Ver regras de delta na tabela 11.6.5 |
+
+**DreyfusRow — Regras de exibição do delta comportamental:**
+
+O `delta = dreyfus_demonstrated - dreyfus_expected` determina cor e label:
+
+| Condição de delta | Cor | Label exibido |
+|---|---|---|
+| `delta ≤ −2` | Vermelho (`text-red-600`, `bg-red-50`) | "Gap crítico" |
+| `delta = −1` | Âmbar (`text-amber-600`, `bg-amber-50`) | "Atenção" |
+| `delta = 0` | Emerald (`text-emerald-600`, `bg-emerald-50`) | "Alinhado" |
+| `delta ≥ +1` | Azul (`text-blue-600`, `bg-blue-50`) | "Acima" |
+
+Texto exibido: "Maturidade comportamental · Esperada para {senioridade}: {label_esperado} · Demonstrada: {label_demonstrado} · [{badge}]"
+
+**Bloco: Recomendação**
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Nível de recomendação | `decision.result` + `scores.wsi_final` | "Fortemente Recomendado" (APROVADO, score ≥ 7.5) / "Recomendado com ressalvas" (EM_AVALIACAO) / "Não Recomendado" (REPROVADO) |
+| Justificativa narrativa | `report_sections.recommendation_rationale` | Parágrafo curto gerado pelo sistema |
+
+**Bloco: Próximos Passos**
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Lista ordenada de ações | `report_sections.next_steps` | Lista numerada de 2–4 itens — específicos ao resultado da decisão |
+
+**Bloco: Perguntas sugeridas para a entrevista**
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Texto da pergunta | `interview_questions[i].question_text` | Exibido entre aspas |
+| Foco da pergunta | `interview_questions[i].competencia_label` | Pill cinza com o nome da competência investigada |
+| Severidade do gap | `interview_questions[i].gap_severity` | Label colorido por severidade (ver 11.6.5) |
+| expected_evidence | `interview_questions[i].expected_evidence` | Visível APENAS para o recrutador — nunca para o candidato |
+| red_flags | `interview_questions[i].red_flags` | Visível APENAS para o recrutador — nunca para o candidato |
+
+**Bloco: Feedback para o Candidato**
+
+| Indicador UI | Campo de origem | Regra de exibição |
+|---|---|---|
+| Texto de abertura | `report_sections.candidate_feedback.intro` | Parágrafo positivo e neutro em linguagem LGPD-compliant |
+| Pontos Fortes Técnicos | `report_sections.candidate_feedback.strengths` | Lista com ✓ — máximo 2 itens |
+| Oportunidades de Desenvolvimento | `report_sections.candidate_feedback.development` | Lista com BookOpen — máximo 2 itens |
+| Dica personalizada | `report_sections.candidate_feedback.tip` | Card azul com destaque de 1 comportamento positivo observado |
+
+> **LGPD/Candidato:** O bloco de Feedback para o Candidato é o único conteúdo do relatório que pode ser compartilhado externamente. Todos os outros blocos (scores, gates, análise de gaps, perguntas de entrevista, expected_evidence, red_flags) são de uso exclusivo do recrutador.
+
+---
+
+#### 11.6.4 Tab 3 — Ranking e Comparativo (especificação futura)
+
+Este tab corresponde à **Seção 8 — Perfil Radar** do template F11. Ainda não implementado nos mockups.
+Campos a serem exibidos quando implementado:
+
+- Radar visual do candidato vs. média do pool da vaga (por dimensão técnica e comportamental)
+- Ranking completo dos candidatos triados para a mesma vaga
+- Comparativo de WSI técnico × WSI comportamental entre candidatos
+
+---
+
+#### 11.6.5 Tabelas de referência: labels, thresholds e mapeamentos
+
+**Tabela A — Badge de status da decisão**
+
+| `decision.result` | Label UI | Cor | Ícone |
+|---|---|---|---|
+| `APROVADO` | "Aprovado" | Emerald | CheckCircle |
+| `EM_AVALIACAO` | "Em Avaliação" | Âmbar | AlertTriangle |
+| `REPROVADO` | "Reprovado" | Vermelho | XCircle |
+
+**Tabela B — Badge de confiança**
+
+| `decision.confidence` | Label UI | Cor |
+|---|---|---|
+| `alta` | "Alta confiança" | Emerald (`text-emerald-600`, `bg-emerald-50`, `border-emerald-200`) |
+| `media` | "Revisão recomendada" | Âmbar (`text-amber-600`, `bg-amber-50`, `border-amber-200`) |
+| `baixa` | "Revisão recomendada" | Âmbar (mesmo visual de `media`) |
+
+**Tabela C — Classificação textual por score WSI**
+
+| `scores.wsi_final` | Classificação | Cor |
+|---|---|---|
+| `≥ 7.5` | "Excelente" | Emerald |
+| `6.0–7.4` | "Bom" | Azul |
+| `4.0–5.9` | "Regular" | Âmbar |
+| `< 4.0` | "Abaixo do esperado" | Vermelho |
+
+**Tabela D — Status de alinhamento por competência técnica (Tab 1)**
+
+| `gap_status` | Label UI | Cor | Ícone |
+|---|---|---|---|
+| `ok` | "Alinhado" | Emerald | CheckCircle |
+| `acima` | "Acima do esperado" | Azul | Star |
+| `gap` | "Gap identificado" | Âmbar | AlertTriangle |
+
+**Tabela E — Dreyfus: labels recruiter-facing (técnico e comportamental)**
+
+> Regra: o número Dreyfus (1–5) NUNCA é exibido isolado para o recrutador. Sempre acompanhado do label correspondente.
+
+| Nível Dreyfus | Label recruiter-facing |
+|---|---|
+| 1 | "Iniciante" |
+| 2 | "Básico" |
+| 3 | "Intermediário" |
+| 4 | "Avançado" |
+| 5 | "Especialista" |
+
+**Tabela F — Bloom: labels recruiter-facing**
+
+> Regra: o número Bloom (1–6) NUNCA é exibido isolado para o recrutador. Sempre com o label.
+
+| Nível Bloom | Label recruiter-facing |
+|---|---|
+| 1 | "Recordar" |
+| 2 | "Compreender" |
+| 3 | "Aplicar" |
+| 4 | "Analisar" |
+| 5 | "Avaliar" |
+| 6 | "Criar" |
+
+**Tabela G — Big Five: nomes recruiter-facing**
+
+> Regra: os nomes técnicos dos traits (openness, conscientiousness etc) NUNCA são exibidos ao recrutador. Usar exclusivamente os labels abaixo.
+
+| Trait técnico | Label recruiter-facing | Hint (tooltip) |
+|---|---|---|
+| `openness` / `abertura` | "Abertura a mudanças" | "Adapta-se a novidades, aprende rápido e lida bem com ambiguidade" |
+| `conscientiousness` / `conscienciosidade` | "Organização e disciplina" | "Planejamento, atenção a prazos e execução sistemática" |
+| `extraversion` / `extroversao` | "Sociabilidade" | "Facilidade para interagir, comunicar e construir relacionamentos" |
+| `agreeableness` / `amabilidade` | "Cooperação" | "Disposição para colaborar, ceder e trabalhar bem em equipe" |
+| `neuroticism` / `estabilidade` | "Estabilidade emocional" | "Mantém calma sob pressão e lida bem com críticas e frustrações" |
+
+**Tabela H — Relevância Big Five por vaga**
+
+| `big_five[i].relevance` | Label UI | Cor |
+|---|---|---|
+| `critica` | "Crítica para esta vaga" | Roxo (`text-purple-700`, `bg-purple-50`, `border-purple-200`) |
+| `moderada` | "Moderada" | Cinza (`text-gray-500`, `bg-gray-50`, `border-gray-200`) |
+
+> Regra: os 2 traits com maior peso (`weight`) na JD são classificados como `critica`. Os demais são `moderada`.
+
+**Tabela I — Severidade de gaps**
+
+| `gap.severity` | Label UI | Cor | Ponto colorido |
+|---|---|---|---|
+| `alta` | "ALTA" | Vermelho (`text-red-600`) | `bg-red-500` |
+| `media` | "MÉDIA" | Âmbar (`text-amber-600`) | `bg-amber-500` |
+| `baixa` | "BAIXA" | Cinza (`text-gray-500`) | `bg-gray-400` |
+
+**Tabela J — Coloring de score por competência (Tab 1)**
+
+| `questions[i].scores.overall` | Cor do score |
+|---|---|
+| `≥ 7.5` | Emerald (`text-emerald-600`) |
+| `≥ 5.0` | Âmbar (`text-amber-600`) |
+| `< 5.0` | Vermelho (`text-red-500`) |
+
+---
+
+#### ✅ Checklist de Validação — Seção 11.6 (Exibição UI)
+
+**Antes de renderizar o modal — verificar que o JSON de entrada contém:**
+- [ ] `decision.result` com um dos 3 valores válidos
+- [ ] `decision.confidence` com `alta`, `media` ou `baixa`
+- [ ] `scores.wsi_final`, `scores.wsi_technical`, `scores.wsi_behavioral` (0.0–10.0)
+- [ ] `scores.weight_technical` + `scores.weight_behavioral` (soma = 1.0)
+- [ ] `vacancy.mode` com `compact` ou `full`
+- [ ] `candidate.response_count` (inteiro)
+- [ ] `questions[i].star` com S, T, A, R booleanos
+- [ ] `questions[i].gap_status` com `ok`, `acima` ou `gap`
+- [ ] `questions[i].bloom_demonstrated` e `dreyfus_demonstrated` (inteiros 1–N)
+- [ ] `big_five[i].dreyfus_demonstrated` e `dreyfus_expected` para calcular delta
+- [ ] `big_five[i].relevance` com `critica` ou `moderada`
+- [ ] `report_sections.executive_summary` (string)
+- [ ] `report_sections.candidate_feedback` (objeto com intro, strengths, development, tip)
+
+**Labels e dados ocultos — verificar:**
+- [ ] Nomes técnicos Dreyfus, Bloom, Big Five NUNCA exibidos diretamente ao recrutador
+- [ ] `expected_evidence` e `red_flags` das perguntas de entrevista NUNCA exibidos ao candidato
+- [ ] Gates G1–G6 NUNCA exibidos com rótulos internos — apenas o status (✓/✗) e motivo legível
+- [ ] SHA-256 hash NUNCA exibido no modal do recrutador — apenas no export de auditoria
+- [ ] UUID do candidato NUNCA exibido na UI — apenas em logs internos
+
+---
+
+### 11.7 Prompt template — Geração do relatório F11 completo via LIA
+
+> Esta seção contém o **prompt estruturado** para geração do relatório F11 completo via LIA. É o único prompt de geração de relatório — produz todos os campos necessários para renderizar os 3 tabs do modal "Detalhes da Triagem WSI".
+>
+> **Uso duplo:** (1) Referência para o time de desenvolvimento entender o que o LLM deve produzir. (2) Inserção direta na camada LIA como system prompt de geração de relatório (F11 pipeline), ativado a partir de prompt expandido dentro de uma vaga, na tabela de vagas ou no prompt flutuante geral.
+>
+> **Parâmetros LLM:** `temperature=0.2` | `max_tokens=4000` | Modelo: Claude 3.5 Sonnet / Gemini 1.5 Pro
+
+```
+══════════════════════════════════════════════════════════════
+SYSTEM — LIA: GERAÇÃO DO RELATÓRIO F11 COMPLETO
+WeDOTalent · Metodologia WSI v2.0
+══════════════════════════════════════════════════════════════
+
+Você é LIA, o sistema de inteligência artificial da WeDOTalent.
+Sua função neste momento é gerar o RELATÓRIO COMPLETO DE TRIAGEM WSI
+para um candidato, com base nos dados estruturados fornecidos.
+
+O relatório é um documento de decisão formal — deve ser preciso,
+auditável e 100% baseado em evidências das respostas do candidato.
+Nunca infira ou invente informações não presentes nos dados fornecidos.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ESTRUTURA DO RELATÓRIO — 3 BLOCOS OBRIGATÓRIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O relatório deve ser retornado como JSON com os seguintes blocos:
+
+BLOCO 1 — report_header (campos determinísticos — apenas organize)
+  Preencha com os dados exatos do input. Não altere valores.
+
+BLOCO 2 — report_sections (campos gerados por você)
+  Gere os textos narrativos seguindo as regras abaixo.
+
+BLOCO 3 — interview_questions (2 perguntas CBI)
+  Já geradas em F11.5 — apenas inclua no relatório final.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS DE GERAÇÃO — BLOCO 2: report_sections
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[executive_summary]
+- 2 a 4 frases que sintetizem a performance geral do candidato
+- Deve mencionar: (1) resultado da triagem, (2) principal ponto forte técnico,
+  (3) principal ponto forte comportamental, (4) se há gaps críticos
+- Não repita scores numéricos — use linguagem qualitativa
+- Tom: profissional, direto, sem elogios vazios (Anti-Bajulação — Crença #11)
+- Não mencione nome, gênero, origem ou qualquer atributo pessoal
+
+[strengths] — máximo 4 itens
+- Baseados apenas em scores ≥ 7.5/10 ou Bloom/Dreyfus acima do esperado
+- Cada item: 1 frase — competência + evidência específica da resposta
+- Formato: "{competência}: {o que foi demonstrado} ({score}/10)"
+- Se não houver nenhum score ≥ 7.5: retornar lista vazia
+
+[gaps] — máximo 4 itens, ordenados por severidade (ALTO → BAIXO)
+- Baseados apenas em scores < 6.0 ou Bloom/Dreyfus abaixo do esperado
+- Cada item deve conter: texto descritivo + severidade (`alta`/`media`/`baixa`)
+- Severidade ALTA: score < 4.0 E peso_dimensao ≥ 20% OU gap crítico de skill crítica
+- Severidade MÉDIA: score 4.0–5.9 OU Bloom abaixo do esperado em ≥ 1 nível
+- Severidade BAIXA: score ≥ 6.0 mas com sinais ausentes relevantes
+- Se não houver gaps: retornar lista vazia + incluir mensagem "Nenhum gap significativo"
+
+[key_evidence] — máximo 4 itens
+- Citações ou paráfrases dos trechos chave das respostas do candidato
+- Devem ser as evidências mais fortes que fundamentam o resultado
+- Formato: string curta de 5–15 palavras por item
+
+[recommendation_rationale]
+- 2 a 3 frases justificando a recomendação final
+- Deve ser consistente com o `decision.result`
+- APROVADO: destacar o que torna o candidato adequado para a vaga
+- EM_AVALIACAO: explicar o que precisa de revisão humana e por quê
+- REPROVADO: nomear o gap mais crítico sem usar linguagem pejorativa
+
+[next_steps] — lista de 2 a 4 itens
+- Ações concretas para o recrutador executar após ler o relatório
+- APROVADO: ex. ["Agendar entrevista técnica aprofundada", "Apresentar ao gestor da área", "Preparar proposta competitiva"]
+- EM_AVALIACAO: ex. ["Revisar manualmente as respostas das perguntas N e M", "Agendar call de sondagem"]
+- REPROVADO: ex. ["Comunicar resultado ao candidato via plataforma", "Arquivar avaliação para banco de talentos"]
+
+[candidate_feedback] — conteúdo para o candidato (LGPD-compliant)
+- intro: 1 parágrafo neutro e positivo de abertura (máximo 3 frases)
+  Se APROVADO: mencionar que a performance foi positiva sem revelar o score
+  Se EM_AVALIACAO: mencionar que a candidatura está sendo analisada
+  Se REPROVADO: mensagem respeitosa de que o perfil não foi selecionado nesta etapa
+- strengths: lista de 1 a 2 pontos fortes TÉCNICOS em linguagem para o candidato
+- development: lista de 1 a 2 oportunidades de desenvolvimento (sem mencionar o gap crítico diretamente)
+- tip: 1 frase de dica personalizada baseada em algo positivo observado nas respostas
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS DE FAIRNESS (INEGOCIÁVEIS — EU AI Act + LGPD Art. 6º)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Linguagem SEMPRE sobre competências e evidências — nunca sobre a pessoa
+  ERRADO: "o candidato é desorganizado"
+  CORRETO: "a competência de organização não foi demonstrada no nível esperado"
+
+- NUNCA mencionar ou inferir: gênero, raça, idade, origem, estado civil,
+  situação financeira, deficiência, orientação sexual, religião
+
+- NUNCA usar: "nativo", "jovem", "recém-formado", "universidades de primeira linha",
+  "boa aparência", "se encaixa bem na cultura" sem critério objetivo
+
+- Para gaps de Estabilidade emocional e Cooperação: linguagem sobre
+  comportamento profissional observado — nunca sobre saúde mental ou caráter
+
+- O candidate_feedback NUNCA revela: scores numéricos, gates ativados,
+  ranking entre candidatos, nomes de outros candidatos, metodologia interna
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS DE AUDITABILIDADE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Cada afirmação nos campos de gaps e pontos fortes deve ter correspondência
+  direta com um score, sinal detectado ou evidência literal nas respostas
+- Não use hedging desnecessário ("pode ser que", "talvez") — seja direto
+- Não suavize gaps reais para parecer mais gentil (Anti-Bajulação — Crença #11)
+- Não infle pontos fortes para compensar gaps
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+USER — DADOS DA TRIAGEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Vaga:
+  Título: {vacancy.title}
+  Empresa: {vacancy.company}
+  Senioridade: {vacancy.seniority}
+  Modo de triagem: {vacancy.mode} · {candidate.response_count} perguntas
+  JD Quality Score: {vacancy.jd_quality_score}/100
+  Dreyfus técnico esperado: {vacancy.dreyfus_technical_expected} ({dreyfus_label})
+  Dreyfus comportamental esperado: {vacancy.dreyfus_behavioral_expected} ({dreyfus_label})
+  Bloom esperado: {vacancy.bloom_expected} ({bloom_label})
+  Skills técnicas: {vacancy.technical_skills} [com flag critical]
+  Big Five rankeado: {vacancy.big_five_ranked} [com rank, weight, score_required]
+
+Candidato:
+  ID: {candidate.id}
+  Duração da triagem: {candidate.screening_duration_minutes} min
+  Canal: {candidate.channel}
+  Data: {candidate.screening_start}
+
+Scores calculados:
+  WSI Final: {scores.wsi_final}/10
+  WSI Técnico: {scores.wsi_technical}/10 (peso: {scores.weight_technical*100}%)
+  WSI Comportamental: {scores.wsi_behavioral}/10 (peso: {scores.weight_behavioral*100}%)
+
+Decisão:
+  Resultado: {decision.result}
+  Confiança: {decision.confidence}
+  Revisão humana: {decision.human_review_required}
+  Motivo: {decision.reason}
+  Gate ativado: {decision.gate_triggered}
+
+Red flags: {red_flags}
+
+Perguntas e respostas avaliadas:
+{questions} [array completo com question_text, candidate_response, scores,
+             star, bloom_demonstrated, dreyfus_demonstrated, signals_detected,
+             signals_absent, gap_status, key_quote, inflation_detected]
+
+Big Five — scores do candidato vs. vaga:
+{big_five_scores} [array com trait, score_candidate, score_required, status,
+                   dreyfus_demonstrated, dreyfus_expected]
+
+Perguntas de entrevista já geradas (F11.5):
+{interview_questions} [array com question_text, area, competencia_label,
+                       gap_focus, expected_evidence, red_flags]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMATO DE SAÍDA — JSON COMPLETO (sem texto fora do JSON)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{
+  "report_header": {
+    "report_id": "{report_id}",
+    "generated_at": "{ISO 8601}",
+    "methodology_version": "2.0",
+    "vacancy": { ... },
+    "candidate": { ... },
+    "scores": { ... },
+    "decision": { ... },
+    "red_flags": [ ... ],
+    "questions": [ ... ],
+    "big_five_scores": [ ... ]
+  },
+  "report_sections": {
+    "executive_summary": "string",
+    "strengths": ["string", "string", ...],
+    "gaps": [
+      { "texto": "string", "severidade": "alta|media|baixa" },
+      ...
+    ],
+    "key_evidence": ["string", "string", ...],
+    "recommendation_rationale": "string",
+    "next_steps": ["string", "string", ...],
+    "candidate_feedback": {
+      "intro": "string",
+      "strengths": ["string", "string"],
+      "development": ["string", "string"],
+      "tip": "string"
+    }
+  },
+  "interview_questions": [
+    {
+      "question_number": 1,
+      "area": "technical|behavioral",
+      "competencia_label": "string",
+      "gap_focus": "string",
+      "question_text": "string",
+      "expected_evidence": ["string", ...],
+      "red_flags": ["string", ...]
+    },
+    { ... }
+  ],
+  "generation_metadata": {
+    "model_used": "string",
+    "temperature": 0.2,
+    "fairness_check": "string",
+    "fields_generated_by_llm": ["executive_summary", "strengths", "gaps", "key_evidence", "recommendation_rationale", "next_steps", "candidate_feedback"],
+    "fields_deterministic": ["report_header", "interview_questions"]
+  }
+}
+```
+
+#### Pontos de integração com a camada LIA
+
+| Ponto de invocação | Contexto | Ação |
+|---|---|---|
+| **Prompt expandido dentro de uma vaga** | Recrutador abre vaga e solicita relatório de um candidato | Passar `candidate_id` + `vacancy_id` → buscar dados → invocar este prompt |
+| **Prompt expandido na tabela de vagas** | Recrutador seleciona candidato diretamente da tabela | Mesmo fluxo — o candidato já triado é passado como contexto |
+| **Prompt flutuante geral (LIA chat)** | Recrutador digita "gerar relatório de {nome}" no chat LIA | Resolver nome → buscar triagem mais recente → invocar este prompt |
+
+#### Regras de ativação e fallback
+
+| Condição | Comportamento |
+|---|---|
+| Triagem ainda em andamento | Bloquear geração — retornar mensagem "Triagem não finalizada" |
+| Relatório já gerado para este candidato/vaga | Retornar o relatório existente com flag `already_generated: true` — não regerar |
+| LLM retorna JSON inválido | Regenerar (máximo 3 tentativas) → na 3ª falha, persistir os campos determinísticos e marcar `report_sections` como `needs_manual_review: true` |
+| `decision.confidence = baixa` | Sempre acionar `human_review_required: true` — sinalizar no header do modal |
+
+#### ✅ Checklist de Validação — Prompt F11.7 (Geração do Relatório Completo)
+
+**Inputs — verificar antes de invocar:**
+- [ ] `decision.result` está calculado e persistido (não invocar antes do pipeline F10)
+- [ ] `scores.wsi_final`, `wsi_technical`, `wsi_behavioral` calculados deterministicamente
+- [ ] `questions[i].star`, `bloom_demonstrated`, `dreyfus_demonstrated` presentes para todas as perguntas
+- [ ] `big_five_scores[i].dreyfus_demonstrated` e `dreyfus_expected` calculados para todos os 5 traits
+- [ ] `interview_questions` já geradas por F11.5 antes de invocar este prompt
+- [ ] `red_flags` lista está completa (pode ser vazia)
+
+**Outputs — verificar estrutura JSON retornada:**
+- [ ] `report_sections.executive_summary` entre 2 e 4 frases
+- [ ] `report_sections.strengths` com máximo 4 itens — vazia se nenhum score ≥ 7.5
+- [ ] `report_sections.gaps` ordenados ALTO → MÉDIO → BAIXO — máximo 4 itens
+- [ ] `report_sections.key_evidence` com máximo 4 itens
+- [ ] `report_sections.candidate_feedback.intro` adequado ao `decision.result`
+- [ ] `report_sections.candidate_feedback` NÃO contém scores, gates, ranking, metodologia
+- [ ] `interview_questions` com exatamente 2 elementos (passados de F11.5)
+- [ ] `generation_metadata.fairness_check` preenchido com confirmação explícita
+
+**Fairness & Auditabilidade:**
+- [ ] `executive_summary` sem atributos pessoais ou protegidos
+- [ ] `gaps` com linguagem sobre competências — nunca sobre a pessoa
+- [ ] `recommendation_rationale` consistente com `decision.result`
+- [ ] `candidate_feedback.development` não revela o gap crítico diretamente
+
+---
+
 ## APÊNDICE A — Parâmetros de Implementação
 
 ### A.1 Modelos LLM e temperaturas por função
