@@ -452,6 +452,60 @@ Retorne o seguinte JSON (sem texto fora do JSON):
 
 ---
 
+#### ✅ Checklist de Validação — Prompt F1.C (Revisão e Enriquecimento do JD)
+
+Use este checklist para verificar se a implementação deste prompt está completa e em conformidade antes de marcar a fase como pronta.
+
+**Inputs — verificar antes de invocar o LLM:**
+- [ ] `{jd_raw}` presente e não vazio
+- [ ] `{titulo}` preenchido ou marcado como `"não informado"`
+- [ ] `{senioridade}` preenchido ou marcado como `"não informado"`
+- [ ] Campos opcionais (`{departamento}`, `{setor}`, `{tamanho_empresa}`, `{lista_skills}`) com fallback explícito — nunca `null` silencioso
+- [ ] JD foi pré-contado: se < 50 palavras úteis, `ready_for_processing: false` é retornado sem invocar o LLM principal
+- [ ] PII masking aplicado antes do envio: nome completo, CPF, email, telefone removidos do `{jd_raw}` quando presentes
+
+**Fairness & DEI — verificar no output gerado:**
+- [ ] `enriched_jd` usa linguagem neutra em gênero: "a pessoa candidata", "você", sem pronomes definidos
+- [ ] Nenhum dos 8 atributos protegidos presente no output: gênero, raça, etnia, origem, religião, orientação sexual, estado civil, deficiência, nacionalidade
+- [ ] Nenhum dos 12 termos de viés implícito presente: "boa aparência", "universidades de primeira linha", "jovem e dinâmico", "nativo", "recém-formado", "escola particular", "bairros nobres", "morar próximo", "boa família", "clube social", "perfil adequado", "native speaker"
+- [ ] Elitismo acadêmico substituído por competências objetivas no `enriched_jd`
+- [ ] `compliance_flags.fairness_issues_found` preenchido honestamente (não omitir problemas encontrados)
+- [ ] `fairness_corrections` lista cada correção realizada no JD original
+
+**LGPD & Privacidade (Art. 6º — Não-Discriminação; Minimização):**
+- [ ] Output não reproduz dados sensíveis que estavam no JD original
+- [ ] `compliance_flags.fields_missing` lista campos ausentes que impactam a análise
+- [ ] `ready_for_processing: false` quando dados insuficientes — sem fallback silencioso
+
+**Governança WeDO:**
+- [ ] Crença #01 (Humano em Primeiro Lugar): `ready_for_processing` é visível ao recrutador antes de prosseguir; recrutador aprova o `enriched_jd` antes de ativar a vaga
+- [ ] Crença #02 (Justa): `compliance_flags.fairness_issues` lista todos os problemas encontrados
+- [ ] Crença #11 (Anti-Bajulação): `resumo_executivo` é honesto sobre lacunas do JD — não suavizado
+- [ ] Crença #10 (IA vs Determinismo): o `score_total` de qualidade (F1.B) é calculado deterministicamente antes de invocar este LLM; o LLM não calcula score
+
+**Output — verificar estrutura:**
+- [ ] JSON válido retornado sem texto adicional fora do JSON
+- [ ] `quality_report.score_total` entre 0 e 100
+- [ ] `quality_report.nivel` é um dos valores canônicos: `critico | insuficiente | adequado | bom | excelente`
+- [ ] `quality_report.dimensoes` com todos os campos obrigatórios: `dimensao`, `score`, `score_maximo`, `status`, `finding`
+- [ ] `enriched_jd.context_signals` com os 4 campos de nível (`nivel_autonomia`, `nivel_inovacao`, `nivel_pressao`, `nivel_colaboracao`)
+- [ ] `enriched_jd.alteracoes_realizadas` e `fairness_corrections` não vazios quando houve mudanças
+- [ ] `ready_for_processing: false` quando `score_total < 30` **ou** JD < 50 palavras úteis
+
+**Integração downstream:**
+- [ ] `enriched_jd` é o input de F2.5 (Abordagem C — Extração Big Five)
+- [ ] `context_signals` é o input do prior Big Five (F2, Abordagem B)
+- [ ] `quality_report.score_total` determina o gate de prosseguimento (≥ 50 para ativar)
+- [ ] `enriched_jd.skills_obrigatorias` alimenta a seleção de perguntas em F5
+
+**Edge cases cobertos pelo prompt:**
+- [ ] JD com < 50 palavras úteis → `ready_for_processing: false` sem análise Big Five
+- [ ] JD com campos opcionais ausentes → `compliance_flags.fields_missing` + confidence reduzida nas dimensões dependentes
+- [ ] JD com linguagem discriminatória → `fairness_issues_found: true` com lista detalhada
+- [ ] JD com boa qualidade mas em setor não informado → análise parcial com aviso
+
+---
+
 ### 1.6 Interpretação do relatório de qualidade (F1.D — apresentação ao recrutador)
 
 O recrutador vê dois painéis lado a lado:
@@ -656,6 +710,49 @@ Retorne o seguinte JSON (sem texto fora do JSON):
   }
 }
 ```
+
+---
+
+#### ✅ Checklist de Validação — Prompt F2.5 (Extração Big Five — Abordagem C)
+
+**Inputs — verificar antes de invocar o LLM:**
+- [ ] `{enriched_jd}` é o output validado de F1.C (não o JD bruto original)
+- [ ] `ready_for_processing: true` foi confirmado em F1.C antes de prosseguir para F2
+- [ ] JD enriquecido tem pelo menos 50 palavras úteis (verificado deterministicamente antes do invoke)
+- [ ] PII masking aplicado: nome da empresa pode estar presente (relevante para contexto), mas dados pessoais de pessoas físicas removidos
+
+**Fairness & DEI — verificar no output gerado:**
+- [ ] `evidence` de cada trait contém **citações literais** entre aspas duplas — nunca paráfrase
+- [ ] Nenhum trait foi inferido a partir do nome da empresa, setor, ou stack tecnológico isoladamente
+- [ ] Traits inferidos somente de responsabilidades, requisitos e contexto explícito do JD
+- [ ] Sinais contraditórios sinalizados com `[SINAL CONTRADITÓRIO]` na evidência
+
+**LGPD & Privacidade:**
+- [ ] Minimização: o JD enriquecido (não currículo do candidato) é o único dado enviado ao LLM
+- [ ] Nenhum dado pessoal de candidatos individuais está no input deste prompt
+
+**Governança WeDO:**
+- [ ] Crença #10 (IA vs Determinismo): Abordagens A e B (léxico e prior) são calculadas deterministicamente; a Abordagem C (este prompt) é apenas 40% da fórmula final — o LLM não decide o perfil sozinho
+- [ ] Crença #08 (Observável): `confidence` registrada por trait — scores com `confidence: "low"` são sinalizados ao produto para revisão
+
+**Output — verificar estrutura:**
+- [ ] JSON válido com exatamente os 5 traits: `openness`, `conscientiousness`, `extraversion`, `agreeableness`, `stability`
+- [ ] Cada trait tem os 3 campos obrigatórios: `score` (0–100), `evidence` (array), `confidence` (`high|medium|low`)
+- [ ] `score` entre 0 e 100 para todos os traits
+- [ ] Traits sem evidência: `evidence: []`, `confidence: "low"`, `score ≤ 30`
+- [ ] JD insuficiente (< 50 palavras): todos os traits com `confidence: "low"` e `evidence` contendo nota de insuficiência
+- [ ] Sinais contraditórios: `score` entre 40–55, `confidence: "medium"`, prefixo `[SINAL CONTRADITÓRIO]` na evidência
+
+**Integração downstream:**
+- [ ] Output de F2.5 é combinado com Abordagem A (léxico) e Abordagem B (prior) na fórmula de F2: `0.40 × LLM + 0.35 × Prior + 0.25 × Boost`
+- [ ] Resultado final alimenta F3 (Ranking Ponderado de Traits) para seleção dos traits avaliados
+- [ ] `confidence: "low"` em traits relevantes deve ser sinalizado no painel do recrutador antes da ativação da vaga
+
+**Edge cases cobertos:**
+- [ ] JD insuficiente → todos os traits com confidence:low, análise marcada como parcial
+- [ ] JD sem evidência de um trait específico → score ≤ 30, evidence:[], confidence:low
+- [ ] Sinais contraditórios no mesmo trait → score 40–55, confidence:medium, prefixo no evidence
+- [ ] JD em formato de lista sem contexto narrativo → confidence medium/low, nota de evidência escassa
 
 ---
 
@@ -1053,6 +1150,65 @@ na linha anterior à pergunta.
 
 **Parâmetros LLM:** `temperature=0.7` | `max_tokens=200` | `top_p=0.95`
 
+---
+
+#### ✅ Checklist de Validação — Prompt F6.5 (Geração de Perguntas Técnicas)
+
+**Inputs — verificar antes de invocar o LLM:**
+- [ ] `{skill_name}` presente e identificado como skill técnica (não comportamental)
+- [ ] `{seniority_label}` mapeado corretamente (Junior / Pleno / Senior / Lead / Staff)
+- [ ] `{dreyfus_level}` e `{dreyfus_label}` calculados por F4 e mapeados à senioridade
+- [ ] `{bloom_level}` e `{bloom_label}` calculados por F4 e mapeados à senioridade
+- [ ] `{responsibilities_excerpt}` extraído do `enriched_jd.responsabilidades` de F1.C
+- [ ] `{company_context}` preenchido ou com fallback explícito `"não informado"`
+- [ ] Verificação prévia: `{skill_name}` é skill proprietária ou rara? → flag `SKILL_APPROXIMATED` preparada
+
+**Fairness & DEI — verificar no output gerado:**
+- [ ] Pergunta usa linguagem neutra em gênero: "a pessoa", "o time", "a equipe" — sem "o candidato", "ele/ela"
+- [ ] Nenhum atributo protegido na pergunta: raça, origem, religião, orientação sexual, estado civil, deficiência, faixa etária, nacionalidade
+- [ ] Nenhum termo de viés implícito: "nativo", "jovem", "recém-formado", "universidades de primeira linha"
+- [ ] Pergunta não pressupõe background cultural específico
+- [ ] Cenário exclusivamente profissional — sem contexto pessoal ou fora do trabalho
+
+**Qualidade da pergunta gerada — verificar:**
+- [ ] Formato CBI: pede situação real passada (não hipotética)
+- [ ] Formato STAR implícito: situação → ação → resultado (não explícito na pergunta)
+- [ ] Pergunta ABERTA: sem opções A/B/C embutidas, sem múltiplas alternativas
+- [ ] Pergunta não revela rubric: ausência de "com trade-offs", "com critérios de decisão", "com resultados mensuráveis" (revelar é dar a rubric)
+- [ ] Pergunta não teórica: sem "O que é X?", "Como funciona Y?"
+- [ ] Comprimento entre 15 e 80 palavras (critério determinístico F6.8)
+- [ ] Verbo no passado + pedido de situação real (critério determinístico F6.8)
+- [ ] Nenhuma pergunta hipotética: ausência de "como você faria se", "imagine que" (critério F6.8)
+
+**Skill rara ou proprietária:**
+- [ ] Se `[SKILL_APPROXIMATED: domínio]` presente → flag `_skill_approximated: true` salva nos metadados
+- [ ] Domínio adjacente usado é relevante e verificável
+- [ ] Pergunta exibida ao candidato não contém o prefixo `[SKILL_APPROXIMATED]`
+
+**Governança WeDO:**
+- [ ] Crença #01 (Humano em Primeiro Lugar): recrutador aprova a pergunta antes de ativar (revisão em F6 obrigatória)
+- [ ] Crença #04 (Privacidade): nenhum dado do candidato enviado ao LLM nesta fase (prompt é pré-candidatura)
+- [ ] Validação automática F6.8 e F6.8.1 executadas antes de apresentar ao recrutador
+
+**Output — verificar:**
+- [ ] Texto puro retornado (sem aspas envolventes, sem prefixo de role, sem explicação)
+- [ ] Quando skill aproximada: linha `[SKILL_APPROXIMATED: ...]` na primeira linha; pergunta na segunda
+- [ ] Pergunta passa pelos critérios determinísticos de F6.8 antes de seguir para F6.8.1 (LLM)
+- [ ] Após aprovação: `reviewed_by_recruiter: true` setado nos metadados (seção 6.7)
+
+**Integração downstream:**
+- [ ] Pergunta persistida com metadados completos (seção 6.7): `bloom_level`, `dreyfus_level`, `skill`, `question_id`
+- [ ] Pergunta apresentada ao candidato em F7 (coleta de respostas)
+- [ ] Resposta avaliada em F8.3 com os mesmos `bloom_level` e `dreyfus_level` desta geração
+
+**Edge cases cobertos:**
+- [ ] Skill proprietária/rara → `[SKILL_APPROXIMATED]` + flag nos metadados
+- [ ] `company_context` ausente → pergunta mais genérica, mas ainda específica à skill
+- [ ] LLM retorna JSON inválido (falha de formato) → regeneração até 3 tentativas
+- [ ] Após 3 tentativas com falha → `needs_manual_review: true`, pergunta apresentada ao recrutador com aviso
+
+---
+
 **Exemplos de perguntas técnicas por senioridade (skill: Python):**
 
 | Senioridade | Bloom | Dreyfus | Pergunta gerada |
@@ -1152,6 +1308,68 @@ Retorne APENAS o texto da pergunta, sem aspas, sem prefixos, sem explicações.
 ```
 
 **Parâmetros LLM:** `temperature=0.75` | `max_tokens=250` | `top_p=0.95`
+
+---
+
+#### ✅ Checklist de Validação — Prompt F6.6 (Geração de Perguntas Comportamentais)
+
+**Inputs — verificar antes de invocar o LLM:**
+- [ ] `{trait_label}` é um dos 5 traits canônicos do Big Five: `Abertura`, `Conscienciosidade`, `Extroversão`, `Amabilidade`, `Estabilidade Emocional`
+- [ ] `{trait_description}` está alinhado ao glossário oficial da metodologia WSI (não paráfrase livre)
+- [ ] `{seniority_label}` mapeado corretamente (Junior / Pleno / Senior / Lead / Staff)
+- [ ] `{dreyfus_level}` e `{bloom_level}` calculados deterministicamente por F4 antes do invoke
+- [ ] `{responsibilities_excerpt}` extraído do `enriched_jd.responsabilidades` — não do JD bruto
+- [ ] `{company_context}` preenchido ou com fallback `"não informado"` — nunca `null`
+- [ ] `{jd_context}` presente: sector/área/contexto que ancora o cenário profissional
+
+**Fairness & DEI — verificar no output gerado:**
+- [ ] Pergunta usa pronome neutro: "a pessoa", "você", "o time" — sem "o candidato/a candidata", "ele/ela"
+- [ ] Nenhum dos 8 atributos protegidos: gênero, raça, etnia, origem, religião, orientação sexual, estado civil, deficiência, faixa etária
+- [ ] Nenhum dos 12 termos de viés implícito presentes
+- [ ] **Cenário exclusivamente profissional**: ausência total de referências a família, filhos, crença, saúde, relacionamentos pessoais, finanças pessoais
+- [ ] Pergunta não infere traços de personalidade a partir de nomes, sotaques, escola, bairro
+- [ ] Para `Amabilidade`: cenário foca em mediação profissional de conflitos — nunca conciliação de família/filhos/crenças
+- [ ] Para `Estabilidade Emocional`: cenário foca em pressão/mudança profissional — nunca saúde mental, perda pessoal, crise financeira
+
+**Qualidade da pergunta gerada — verificar:**
+- [ ] Formato CBI: pede situação real passada — verbo principal no passado
+- [ ] Pergunta ABERTA: sem múltiplas alternativas, opções A/B/C ou "ou"
+- [ ] Não revela o trait avaliado: ausência de `Amabilidade`, `Conscienciosidade`, etc. na pergunta apresentada ao candidato
+- [ ] Não revela a rubric: ausência de "com empatia", "com atenção aos detalhes", "com consistência"
+- [ ] Comprimento entre 15 e 80 palavras (critério determinístico F6.8)
+- [ ] Nenhuma pergunta hipotética: sem "imagine que", "como você faria se"
+
+**Regras específicas por trait:**
+- [ ] `Estabilidade Emocional` → cenário envolve pressão ou mudança organizacional; pergunta avalia resposta funcional, não colapso emocional
+- [ ] `Amabilidade` → cenário envolve conflito ou mediação entre colegas/stakeholders; sem conotação de subserviência
+- [ ] `Extroversão` → cenário envolve liderança ou influência em equipe; sem pressuposto de que introversão é déficit
+- [ ] `Abertura` → cenário envolve mudança ou inovação em contexto profissional real
+- [ ] `Conscienciosidade` → cenário envolve organização, planejamento ou qualidade de entrega
+
+**Governança WeDO:**
+- [ ] Crença #01 (Humano): recrutador revisa pergunta gerada antes de ativar para candidatos
+- [ ] Crença #02 (Justa): nenhum proxy de discriminação disfarçado no cenário
+- [ ] Crença #04 (Privacidade): nenhum dado do candidato enviado neste prompt (é pré-candidatura)
+- [ ] Crença #11 (Anti-Bajulação): pergunta não é suavizada para parecer "amigável demais" — deve ser desafiadora na medida da senioridade
+- [ ] Validação automática F6.8 e F6.8.1 executadas após geração, antes de apresentar ao recrutador
+
+**Output — verificar:**
+- [ ] Texto puro (sem aspas envolventes, sem prefixo de role, sem explicação extra)
+- [ ] Pergunta passa pelos critérios determinísticos F6.8 (comprimento, verbo passado, formato CBI, sem hipotética)
+- [ ] Após aprovação: `reviewed_by_recruiter: true`, `trait_assessed` e `bloom_level` persistidos nos metadados (seção 6.7)
+- [ ] Trait avaliado **não** está visível para o candidato — apenas nos metadados internos
+
+**Integração downstream:**
+- [ ] Pergunta persistida com metadados de F6.7: `trait_label`, `bloom_level`, `dreyfus_level`, `question_id`
+- [ ] Resposta do candidato avaliada em F8.3 com os mesmos `bloom_level`, `dreyfus_level`, `trait_label`
+- [ ] Score da pergunta agrega ao `score_trait` do Big Five do candidato em F9
+
+**Edge cases cobertos:**
+- [ ] Cenário pessoal gerado → regeneração obrigatória (não apresentar ao recrutador)
+- [ ] Trait avaliado visivelmente exposto na pergunta → regeneração
+- [ ] Após 3 tentativas com falha → `needs_manual_review: true`, aviso visual ao recrutador
+
+---
 
 **Exemplos de perguntas comportamentais geradas:**
 
@@ -1281,6 +1499,47 @@ Retorne o seguinte JSON (sem texto fora do JSON):
 > como ponto de partida para regeneração (com o prompt original mais o `suggestion` concatenado
 > ao USER block). Se após 3 tentativas `is_anchored` ainda for `false`, a pergunta é marcada
 > com `needs_manual_review: true` e apresentada ao recrutador com aviso visual.
+
+---
+
+#### ✅ Checklist de Validação — Prompt F6.8.1 (Validação de Ancoragem no JD)
+
+> Este é um meta-prompt de controle de qualidade, não um prompt de geração. Ele verifica se a pergunta gerada tem âncora real no JD.
+
+**Inputs — verificar antes de invocar:**
+- [ ] `{question_text}` é a pergunta gerada por F6.5 ou F6.6 (texto exato, sem metadados)
+- [ ] `{jd_excerpt}` é o `enriched_jd.responsabilidades` de F1.C — no mínimo 3 responsabilidades listadas
+- [ ] `{skill_or_trait}` corresponde exatamente ao skill/trait configurado para a pergunta
+- [ ] Temperature configurada para `0.0` — este prompt é determinístico
+- [ ] max_tokens configurado para `300` — resposta curta, estruturada
+- [ ] Este prompt é invocado automaticamente após cada geração de F6.5/F6.6, antes de apresentar ao recrutador
+
+**Verificação do resultado `is_anchored: true`:**
+- [ ] `anchor_evidence` contém trecho literal do JD (não paráfrase)
+- [ ] `anchor_type` é um dos valores canônicos: `responsabilidade_direta | competencia_requerida | contexto_organizacional`
+- [ ] `suggestion` está vazio ou `null` quando `is_anchored: true`
+
+**Verificação do resultado `is_anchored: false`:**
+- [ ] `anchor_evidence` explica por que a âncora não foi encontrada (não vazio)
+- [ ] `suggestion` contém reformulação concreta da pergunta — não apenas "tente algo diferente"
+- [ ] Sistema usa `suggestion` como ponto de partida para a próxima tentativa de regeneração
+- [ ] Contador de tentativas incrementado (máximo 3 antes de `needs_manual_review: true`)
+
+**Governança WeDO:**
+- [ ] Crença #08 (Observável): `anchor_type` e `anchor_evidence` são auditáveis e persistidos nos metadados
+- [ ] Crença #10 (IA vs Determinismo): temperature=0.0 garante resultado reproduzível para a mesma entrada
+- [ ] `needs_manual_review: true` após 3 tentativas — recrutador não vê a pergunta sem aviso visual
+
+**Output — verificar JSON:**
+- [ ] JSON válido sem texto fora do JSON
+- [ ] Campos obrigatórios presentes: `is_anchored` (bool), `anchor_evidence` (string), `anchor_type` (string|null), `suggestion` (string|null)
+- [ ] `anchor_type: null` apenas quando `is_anchored: false`
+- [ ] `suggestion: null` apenas quando `is_anchored: true`
+
+**Integração no ciclo de geração:**
+- [ ] Ciclo completo: F6.5/F6.6 gera → F6.8 valida (determinístico) → F6.8.1 valida ancoragem (este prompt) → recrutador revisa → F6.7 persiste
+- [ ] Se `is_anchored: false`: prompt original + `suggestion` → nova chamada F6.5/F6.6 → nova validação F6.8.1
+- [ ] Após 3 falhas: pergunta salva com `is_anchored: false` e `needs_manual_review: true`; log de auditoria criado
 
 ---
 
@@ -1527,6 +1786,74 @@ Retorne o seguinte JSON (sem texto fora do JSON):
 **Parâmetros LLM:** `temperature=0.0` | `max_tokens=800` | Modelo: Claude 3.5 Sonnet / Gemini 1.5 Pro
 
 > **Por que temperature=0.0?** Dois candidatos com respostas idênticas devem receber extração idêntica.
+
+---
+
+#### ✅ Checklist de Validação — Prompt F8.3 (Extração de Sinais — Camada 2)
+
+> Este é o prompt mais crítico de toda a pipeline: avalia a resposta do candidato. Errors aqui afetam diretamente o score final e o relatório apresentado ao recrutador.
+
+**Inputs — verificar antes de invocar:**
+- [ ] `{pergunta}` é a pergunta original exatamente como apresentada ao candidato (sem metadados internos)
+- [ ] `{resposta}` é a resposta literal do candidato — sem edição, sem correção de ortografia
+- [ ] `{competencia_avaliada}` corresponde ao `skill_name` ou `trait_label` dos metadados de F6.7
+- [ ] `{bloom_level}` e `{bloom_label}` são os mesmos da geração da pergunta (F6.5/F6.6)
+- [ ] `{dreyfus_level}` e `{dreyfus_label}` são os mesmos da geração da pergunta
+- [ ] `{seniority_label}` corresponde à senioridade configurada na vaga
+- [ ] `{rubrica_bloom}` está corretamente mapeada ao `bloom_level` (não ao bloom do candidato)
+- [ ] `{rubrica_dreyfus}` está corretamente mapeada ao `dreyfus_level` (não ao dreyfus do candidato)
+- [ ] PII masking obrigatório ANTES do envio: nome completo, CPF, e-mail, telefone, RG, endereço removidos da `{resposta}`
+- [ ] Temperature configurada para `0.0` — determinismo obrigatório
+- [ ] max_tokens configurado para `800` — resposta completa com todos os campos
+
+**Fairness & DEI — verificar no output gerado:**
+- [ ] Nenhum atributo protegido nos campos `rationale`, `trait_signals_detected`, `red_flags_detected`
+- [ ] Score baseado exclusivamente em competência demonstrada — não em estilo de escrita, sotaque (em voz), nível de vocabulário, nomes próprios
+- [ ] Nenhum dos 12 termos de viés implícito no rationale
+- [ ] `compliance_flags.bias_risk` preenchido honestamente quando sinal de viés detectado
+- [ ] FairnessGuard verifica o output completo antes de persistir
+
+**Proteção contra Prompt Injection:**
+- [ ] Sistema detectou e rejeitou as 7 tentativas de injeção: `Ignore as instruções anteriores`, `Act as`, `Você agora é`, `Responda como`, `Override`, `[INST]`, `<system>`
+- [ ] Resposta suspeita de injeção → `score: null`, `elegibilidade: null`, `injection_detected: true` nos metadados
+- [ ] Candidato não é penalizado por injeção detectada — flag sinaliza para revisão humana
+
+**Output — verificar estrutura JSON completa:**
+- [ ] JSON válido sem texto adicional fora do JSON
+- [ ] `score_raw` entre 0.0 e 10.0
+- [ ] `elegibilidade` é um dos valores canônicos: `apto | apto_com_ressalvas | inapto | inconclusivo`
+- [ ] `elegibilidade: null` quando: idioma errado, resposta vazia, injeção detectada, resposta < 10 palavras
+- [ ] `rationale` com mínimo 2 evidências literais da resposta entre aspas
+- [ ] `rationale` cita trechos literais da resposta — nunca paráfrase própria
+- [ ] `trait_signals_detected` array: vazio quando nenhum sinal identificado (não null)
+- [ ] `red_flags_detected` array: vazio quando nenhuma flag (não null)
+- [ ] `bloom_evidenciado` é um dos valores: `lembrar | entender | aplicar | analisar | avaliar | criar` ou `"nao_identificado"`
+- [ ] `dreyfus_evidenciado` é um dos valores: `iniciante | avancado_iniciante | competente | proficiente | especialista` ou `"nao_identificado"`
+- [ ] `compliance_flags.idioma_errado: true` quando resposta não está no idioma da triagem
+- [ ] `compliance_flags.resposta_vazia: true` quando resposta com < 10 palavras úteis
+
+**LGPD & Privacidade:**
+- [ ] PII masking aplicado antes do envio (confirmação técnica, não apenas instrução no prompt)
+- [ ] Log de auditoria criado com hash da resposta original (não o texto em claro)
+- [ ] `rationale` não reproduz PII da resposta original (nome, CPF, e-mail mencionados pelo candidato)
+
+**Governança WeDO:**
+- [ ] Crença #01 (Humano): `elegibilidade: inapto` não elimina automaticamente — recrutador confirma via F9
+- [ ] Crença #08 (Observável): `bloom_evidenciado`, `dreyfus_evidenciado` e `rationale` são auditáveis e persistidos
+- [ ] Crença #11 (Anti-Bajulação): score reflete evidência real — candidato com resposta vaga não recebe score ≥ 7.0
+
+**Integração downstream:**
+- [ ] `score_raw` alimenta F8 Camada 3 (normalização e cálculo do `score_final_pergunta`)
+- [ ] `trait_signals_detected` alimenta o score Big Five do candidato em F9
+- [ ] `red_flags_detected` são exibidos no relatório do recrutador (F11)
+- [ ] `bloom_evidenciado` e `dreyfus_evidenciado` são usados na Seção 7 do relatório (gaps)
+
+**Edge cases cobertos:**
+- [ ] Resposta vazia ou < 10 palavras → `score: null`, `elegibilidade: null`, `resposta_vazia: true`
+- [ ] Resposta em idioma errado → `score: null`, `elegibilidade: null`, `idioma_errado: true`
+- [ ] Prompt injection detectado → `score: null`, `elegibilidade: null`, `injection_detected: true`
+- [ ] Resposta bajulatória ("Que pergunta excelente!") → `red_flags: ["bajulacao_detectada"]`, score pela substância apenas
+- [ ] Resposta muito curta mas substancial (10–30 palavras) → score baixo justificado no rationale
 
 ---
 
@@ -1781,6 +2108,63 @@ Em caso de dúvidas sobre o processo, entre em contato pelo canal indicado no co
 > **Compliance:** O feedback é registrado em `personalized_feedback_service.py` com status
 > `pending_approval` antes de ser enviado — o FairnessGuard verifica o texto gerado pelo
 > template antes da entrega ao candidato (proteção contra edge cases de variáveis com conteúdo inesperado).
+
+---
+
+#### ✅ Checklist de Validação — Template F8.5.1 (Feedback Explicável para o Candidato)
+
+> Este é um template de variáveis, não um prompt LLM livre. A validação verifica se as variáveis estão corretas e se o texto gerado passa pelo FairnessGuard antes da entrega.
+
+**Inputs — verificar antes de montar o template:**
+- [ ] `{competencia_label}` vem do `skill_name` ou `trait_label` dos metadados de F6.7 — não gerado pelo LLM
+- [ ] `{score}` é o `score_final_pergunta` de F8 Camada 3 (normalizado, 0.0–10.0)
+- [ ] Bloco condicional selecionado corretamente pela faixa: `< 4.5` / `4.5–6.9` / `7.0–8.9` / `≥ 9.0`
+- [ ] `{sinal_label}` vem de `trait_signals_detected[*]` humanizado — não inferido
+- [ ] `{sinal em trait_signals_absent}` vem de `trait_signals_absent[*]` humanizado
+- [ ] `{bloom_demonstrado}` e `{bloom_esperado}` vem de F8 Camada 2 — não recalculados
+- [ ] `{dreyfus_demonstrado}` e `{dreyfus_esperado}` vem de F8 Camada 2
+- [ ] `{star_components}` lista os componentes STAR identificados na resposta (Situação, Tarefa, Ação, Resultado)
+- [ ] `{senioridade_label}` mapeado à senioridade da vaga
+- [ ] `{recrutador_nome}` vem do campo `recruiter_name` da vaga — nunca hardcoded
+- [ ] Nenhuma variável com valor `null` ou `undefined` no template final — fallback explícito para cada uma
+
+**Fairness & DEI — verificar no output montado:**
+- [ ] Nenhum dos 8 atributos protegidos nas frases geradas pelo template
+- [ ] Nenhum dos 12 termos de viés implícito nas variantes pré-escritas selecionadas
+- [ ] Linguagem exclusivamente sobre competências e evidências — nunca sobre características pessoais ("você é organizado", "você é tímido")
+- [ ] Candidato com score baixo recebe feedback sobre evidência insuficiente, não sobre "perfil inadequado"
+- [ ] FairnessGuard verifica o texto montado ANTES do status passar de `pending_approval` para `ready_to_send`
+
+**LGPD & Privacidade:**
+- [ ] Texto não menciona nome, CPF, e-mail, telefone, endereço do candidato
+- [ ] Conteúdo da resposta original do candidato não é reproduzido no feedback (apenas referência à competência)
+- [ ] Candidato tem direito de solicitar revisão do feedback — campo `feedback_id` persistido para rastreabilidade
+- [ ] Status `pending_approval` auditável no log antes de envio
+
+**Governança WeDO:**
+- [ ] Crença #01 (Humano em Primeiro Lugar): recrutador pode editar o feedback antes do envio final
+- [ ] Crença #06 (Transparente): feedback menciona que a avaliação foi automatizada pelo sistema LIA
+- [ ] Crença #08 (Observável): `feedback_id` persistido com versão do template, `score` e `bloom_demonstrado` para auditoria posterior
+- [ ] Crença #11 (Anti-Bajulação): variante `≥ 9.0` menciona "fortemente alinhado" — não "perfeito" ou "candidato dos sonhos"
+- [ ] Rodapé fixo sempre presente: responsabilidade do consultor, canal de dúvidas
+
+**Output — verificar texto final:**
+- [ ] Texto em português (salvo exceção configurada na vaga)
+- [ ] Nenhuma menção a Bloom, Dreyfus, Big Five, WSI, LIA ou termos internos da metodologia
+- [ ] Nenhuma nota de score numérico no texto (o score é informação interna — não aparece no feedback ao candidato)
+- [ ] Texto dentro do limite de comprimento: 80–250 palavras (sem contar o rodapé fixo)
+- [ ] Rodapé fixo presente com `{recrutador_nome}` preenchido
+
+**Integração downstream:**
+- [ ] Status `pending_approval` → FairnessGuard → `ready_to_send` → envio ao e-mail do candidato
+- [ ] `feedback_id` registrado no histórico do candidato para auditoria LGPD (Art. 20 — decisão automatizada)
+- [ ] Recrutador notificado quando feedback muda para `ready_to_send` (aprovação final humana)
+
+**Edge cases cobertos:**
+- [ ] `score = null` (elegibilidade nula) → feedback não gerado; candidato recebe mensagem padrão de revisão em andamento
+- [ ] `trait_signals_detected` vazio → bloco de sinais omitido do feedback
+- [ ] `star_components` com Resultado ausente → menção a "evidências parciais" na variante DESENVOLVIMENTO
+- [ ] Variável com caractere especial ou injection attempt → FairnessGuard rejeita; log de auditoria criado
 
 ---
 
@@ -2363,6 +2747,67 @@ introduz variabilidade que compromete a comparabilidade e a auditabilidade (EU A
 
 ---
 
+#### ✅ Checklist de Validação — Template F11.2.1 (Seção 7 — Análise de Gaps do Relatório)
+
+> Template de variáveis com variantes pré-escritas por tipo (técnico/comportamental) e severidade (ALTO/MÉDIO/BAIXO). Não usa LLM — toda geração é determinística via seleção de variante e substituição de variáveis.
+
+**Inputs — verificar antes de montar o template:**
+- [ ] `{competencia_label}` vem do `skill_name` ou `trait_label` dos metadados de F6.7 — nunca gerado pelo LLM
+- [ ] `{tipo}` é `tecnico` ou `comportamental` — determina qual conjunto de variantes usar
+- [ ] `{severidade}` é `ALTO`, `MÉDIO` ou `BAIXO` — determinado pelo `gap_score_delta` calculado em F9/F11
+- [ ] `{gap_score_delta}` calculado deterministicamente: `score_esperado - score_obtido` (nunca inferido)
+- [ ] `{bloom_esperado}` e `{dreyfus_esperado}` vem dos metadados da pergunta (F6.7) — não recalculados
+- [ ] `{bloom_demonstrado}` e `{dreyfus_demonstrado}` vem de F8 Camada 2 — não inferidos
+- [ ] `{bloom_label_esperado}` e `{bloom_label_demonstrado}` são os labels canônicos do glossário WSI
+- [ ] `{evidencia_literal}` é uma citação literal (entre aspas) da resposta do candidato — obrigatório
+- [ ] `{star_gaps}` lista os componentes STAR ausentes (ex: "Resultado")
+- [ ] Máximo de 4 gaps exibidos na Seção 7 — rankeados por `gap_score_delta` descendente
+- [ ] Máximo de 3 pontos fortes exibidos — rankeados por `score_obtido` descendente
+
+**Fairness & DEI — verificar no output montado:**
+- [ ] Linguagem exclusivamente sobre competências e evidências — nunca sobre a pessoa ("candidato é desorganizado")
+- [ ] Nenhum dos 8 atributos protegidos nas variantes selecionadas
+- [ ] Nenhum dos 12 termos de viés implícito nas variantes selecionadas
+- [ ] Gap descrito como "a competência não foi demonstrada no nível esperado" — nunca "candidato não tem capacidade"
+- [ ] Para gaps comportamentais de Estabilidade e Amabilidade: linguagem sobre comportamento profissional observado, não sobre saúde mental ou caráter
+- [ ] FairnessGuard verifica o texto montado antes de persistir no relatório
+
+**LGPD & Privacidade:**
+- [ ] `{evidencia_literal}` é trecho da resposta do candidato, já com PII masking aplicado (verificar)
+- [ ] Texto final do relatório não menciona nome completo, CPF, e-mail, telefone do candidato
+- [ ] Relatório marcado com `retention_policy` para exclusão após prazo LGPD (180 dias por default)
+- [ ] Candidato tem acesso ao relatório mediante solicitação (Art. 20 LGPD — decisão automatizada)
+
+**Governança WeDO:**
+- [ ] Crença #01 (Humano): recrutador revisa o relatório completo antes de enviar ao candidato
+- [ ] Crença #06 (Transparente): texto menciona que é uma avaliação automatizada
+- [ ] Crença #08 (Observável): `gap_score_delta` e `evidencia_literal` são auditáveis nos metadados
+- [ ] Crença #11 (Anti-Bajulação): variante BAIXO ainda é honesta — não suaviza um gap real para "área de crescimento potencial irrelevante"
+- [ ] Seção 7 mostra máximo 3 pontos fortes + 4 gaps — sem inflar pontos fortes para compensar gaps
+
+**Regras de seleção de variante — verificar:**
+- [ ] `{tipo}=tecnico` + `{severidade}=ALTO` → variante técnica crítica com Bloom e Dreyfus
+- [ ] `{tipo}=tecnico` + `{severidade}=MÉDIO` → variante técnica com gap de proficiência
+- [ ] `{tipo}=tecnico` + `{severidade}=BAIXO` → variante técnica com lacuna pontual
+- [ ] `{tipo}=comportamental` + qualquer severidade → variante comportamental sem mencionar o trait avaliado
+- [ ] `inflation_detected: true` → variante especial de "possível super-relato" — verificar que `inflation_detected` vem de F8 Camada 3
+- [ ] `bloom_delta < -1` → variante especial de Bloom abaixo do esperado ativada
+- [ ] `dreyfus_delta < -1` → variante especial de Dreyfus abaixo do esperado ativada
+
+**Output — verificar texto final:**
+- [ ] Nenhuma menção a Bloom, Dreyfus, Big Five, WSI, LIA ou termos internos
+- [ ] Nenhuma menção ao nome do trait avaliado (para perguntas comportamentais)
+- [ ] `{evidencia_literal}` presente entre aspas em todos os gaps de severidade ALTO e MÉDIO
+- [ ] Texto por gap entre 40 e 120 palavras (sem contar cabeçalho da seção)
+- [ ] Ordenação por severidade: ALTO → MÉDIO → BAIXO
+
+**Integração downstream:**
+- [ ] Seção 7 compõe o relatório completo junto com Seções 1–6 e 8 (F11 pipeline)
+- [ ] `{pergunta_cbi_calibrada}` (F11.5) inserido após o bloco de gaps na Seção 7
+- [ ] Relatório persistido com `report_version` e `generated_at` para auditoria
+
+---
+
 ### 11.3 Campos obrigatórios para geração do relatório (JSON de input)
 
 ```json
@@ -2592,6 +3037,65 @@ Retorne o seguinte JSON (sem texto fora do JSON):
 > **Fallback:** Se o WSI não identificou nenhum gap (`all_scores ≥ 7.0`), gerar 2 perguntas
 > de aprofundamento das 2 competências com menor score (não necessariamente gaps), com
 > `gap_focus` descrevendo "aprofundamento de ponto forte".
+
+---
+
+#### ✅ Checklist de Validação — Prompt F11.5 (Geração de Perguntas para Entrevista Presencial)
+
+> Único prompt LLM da Fase 11 — com uso único por candidato/vaga. Contexto rico (gaps + respostas + perguntas anteriores) justifica o LLM aqui.
+
+**Inputs — verificar antes de invocar o LLM:**
+- [ ] `{gaps_ranked}` contém os gaps rankeados por `gap_score_delta` descendente — extraídos de F9/F11 (máximo 3 gaps prioritários enviados)
+- [ ] `{top_strengths}` contém os 2 pontos fortes de maior score — para evitar perguntas redundantes
+- [ ] `{previous_questions}` contém TODAS as perguntas feitas ao candidato na triagem (F7) — para anti-repetição
+- [ ] `{job_title}` e `{seniority_label}` correspondem à vaga original
+- [ ] `{company_context}` e `{sector}` preenchidos para contextualização do cenário
+- [ ] Temperature configurada para `0.6` — criatividade controlada para geração de perguntas novas
+- [ ] max_tokens configurado para `600` — espaço para 2 perguntas completas com JSON
+- [ ] PII masking obrigatório: `{previous_questions}` e `{gaps_ranked}` não contêm nome, CPF ou dados pessoais do candidato
+- [ ] Fallback preparado: se `all_scores ≥ 7.0` → `{gaps_ranked}` substituído pelas 2 competências com menor score; `gap_focus` = "aprofundamento de ponto forte"
+
+**Fairness & DEI — verificar no output gerado:**
+- [ ] Perguntas usam linguagem neutra em gênero: "a pessoa", "você", "o time" — sem pronomes binários
+- [ ] Nenhum dos 8 atributos protegidos: gênero, raça, etnia, origem, religião, orientação sexual, estado civil, deficiência, faixa etária, nacionalidade
+- [ ] Cenários exclusivamente profissionais: sem família, filhos, saúde, crenças pessoais, situação financeira
+- [ ] Perguntas não discriminam pelo tipo de gap (técnico vs comportamental têm tratamento equivalente)
+- [ ] `expected_evidence` não cita características pessoais como evidência — apenas ações e resultados profissionais
+
+**Qualidade das perguntas geradas — verificar:**
+- [ ] Exatamente 2 perguntas geradas (não mais, não menos)
+- [ ] Os 2 `gap_focus` são de tipos alternados: técnico + comportamental — nunca 2 do mesmo tipo
+- [ ] Cada pergunta é NOVA: não repete nem parafrase nenhuma pergunta de `{previous_questions}`
+- [ ] Formato CBI: pede situação real passada — verbo principal no passado
+- [ ] Pergunta ABERTA: sem opções A/B/C, sem múltiplas alternativas
+- [ ] Comprimento entre 15 e 80 palavras (verificação determinística pós-geração)
+- [ ] `expected_evidence` é concreto: 2–4 comportamentos/ações que o consultor espera ouvir
+- [ ] `red_flags` é concreto: 2–4 respostas que sinalizariam confirmação do gap
+
+**Governança WeDO:**
+- [ ] Crença #01 (Humano): perguntas são sugestões para o consultor — não são perguntas obrigatórias; consultor pode adaptar
+- [ ] Crença #08 (Observável): `gap_focus`, `question_type` e `expected_evidence` são auditáveis no relatório
+- [ ] Crença #11 (Anti-Bajulação): `red_flags` lista cenários negativos reais — não é suavizado para "pontos de atenção menores"
+- [ ] Crença #10 (IA vs Determinismo): o ranking de gaps (que determina quais gaps são priorizados) é calculado deterministicamente ANTES de invocar este LLM
+
+**Output — verificar estrutura JSON:**
+- [ ] JSON válido sem texto adicional fora do JSON
+- [ ] Array `questions` com exatamente 2 elementos
+- [ ] Cada elemento contém: `gap_focus` (string), `question_type` (`tecnico|comportamental`), `question_text` (string), `expected_evidence` (array de 2–4 strings), `red_flags` (array de 2–4 strings)
+- [ ] `question_type` é alternado entre as 2 perguntas (técnico + comportamental ou comportamental + técnico)
+- [ ] `expected_evidence` e `red_flags` não são vazios
+
+**Integração downstream:**
+- [ ] As 2 perguntas são inseridas no campo `{pergunta_cbi_calibrada}` da Seção 7 do relatório (F11.2.1)
+- [ ] Exibidas no painel do recrutador com rótulo "Perguntas sugeridas para entrevista presencial"
+- [ ] `expected_evidence` e `red_flags` são visíveis APENAS para o recrutador — nunca para o candidato
+- [ ] `question_id` gerado e persistido para auditoria futura (comparar output real da entrevista com expected_evidence)
+
+**Edge cases cobertos:**
+- [ ] Nenhum gap identificado (`all_scores ≥ 7.0`) → fallback: 2 competências com menor score, `gap_focus = "aprofundamento de ponto forte"`
+- [ ] Apenas 1 tipo de gap disponível (todos técnicos) → 2 perguntas do mesmo tipo (com log de aviso — alternância impossível)
+- [ ] LLM retorna JSON inválido → regeneração, máximo 3 tentativas; na 3ª falha → perguntas pré-definidas baseadas no gap_focus (fallback determinístico)
+- [ ] `previous_questions` muito longa (> 10 perguntas) → truncar para as 5 mais recentes antes de enviar ao LLM
 
 ---
 
