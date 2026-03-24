@@ -745,41 +745,161 @@ Quando o campo `senioridade` não é preenchido explicitamente, o sistema infere
 
 ---
 
-## FASE 5 — Distribuição de perguntas por modo
+## FASE 5 — Distribuição de perguntas: modos e adaptação por senioridade
 
-### 5.1 Modos disponíveis
+### 5.1 Princípio de distribuição adaptativa
 
-| Modo | Total de perguntas | Bloco Técnico | Bloco Comportamental | Uso recomendado |
-|---|---|---|---|---|
-| **Compact** | 7 | 4 técnicas | 3 comportamentais (top-3 traits) | Triagem inicial, alto volume, posições júnior-pleno |
-| **Full** | 12 | 7 técnicas | 5 comportamentais (todos os 5 traits) | Triagem aprofundada, posições sênior+, roles críticos |
+> **A distribuição de perguntas entre blocos técnico e comportamental não é fixa — ela varia por senioridade, alinhando a quantidade de perguntas com os pesos de scoring.**
 
-### 5.2 Pesos do WSI Final por senioridade (sem alteração no número de perguntas)
+Manter uma distribuição fixa (ex: sempre 50/50 ou sempre 70/30) cria uma inconsistência que afeta a experiência do candidato e a validade da triagem: o candidato investe o mesmo esforço em ambos os blocos, mas um vale muito mais que o outro na nota — ou o inverso.
 
-O número de perguntas é fixo por modo. O que varia por senioridade são os **pesos** de cada bloco no score final:
+**Princípio de alinhamento quantidade ↔ peso:**
+```
+Proporção_perguntas_tecnicas ≈ Peso_scoring_tecnico (por senioridade)
+```
 
-| Senioridade | Peso Bloco Técnico | Peso Bloco Comportamental | Justificativa |
+Este princípio garante que o esforço cognitivo pedido ao candidato seja proporcional ao peso que cada bloco tem na decisão.
+
+---
+
+### 5.2 Fundamentação científica da distribuição por senioridade
+
+A variação na distribuição técnico × comportamental por senioridade é suportada por 4 frameworks combinados:
+
+#### Dreyfus — O que prediz performance muda conforme o nível
+
+| Dreyfus | Senioridade | O que mais diferencia profissionais neste nível | Implicação |
 |---|---|---|---|
-| Estagiário | 55% | 25% | Capacidade técnica inicial é o gate principal |
-| Junior | 50% | 30% | Técnica domina, comportamental começa a importar |
-| Pleno | 55% | 25% | Autonomia técnica é o diferencial nesta banda |
-| Senior | 45% | 35% | Técnica e comportamento têm peso equivalente |
-| Lead | 35% | 45% | Comportamental domina — liderança é o core |
-| Principal / Staff | 40% | 40% | Equilíbrio — profundidade técnica + influência |
-| Diretor | 25% | 55% | Gestão e comportamento dominam |
-| VP / C-Level | 20% | 60% | Comportamento estratégico é o diferencial |
+| Novice / Adv. Beginner | Estagiário / Junior | Conhecimento declarativo e aplicação técnica guiada | Mais perguntas técnicas (65–75%) |
+| Competent | Pleno | Autonomia técnica e tomada de decisão | Mais perguntas técnicas (60–70%) |
+| Proficient | Senior | Perguntas técnicas de Bloom 5–6 já capturam julgamento e liderança técnica | Equilíbrio (55–60% técnico) |
+| Expert | Lead / Principal | Competência técnica é assumida; o diferencial é comportamental e cultural | Mais comportamentais (55–65%) |
+| Expert + Gestão | Diretor / VP / C-Level | Soft skills, influência e cultura superam conhecimento técnico na predição de sucesso | Predominância comportamental (60–75%) |
 
-> Os percentuais restantes até 100% (ex: Estagiário: 55%+25%=80%) são reservados para eventual bloco de elegibilidade (Bloco 2), quando configurado pelo recrutador. Se não houver Bloco 2, os pesos são normalizados para 100%.
+#### Bloom — Perguntas técnicas de nível alto já capturam comportamento
 
-### 5.3 Distribuição de skills por modo
+Para Senior e acima, as perguntas técnicas são formuladas em Bloom 5 (Avaliar) e Bloom 6 (Criar). Nesse nível, uma pergunta técnica inevitavelmente avalia julgamento, trade-offs e liderança técnica — dimensões que seriam cobertas por perguntas comportamentais em níveis mais baixos. Fazer 50/50 nesse caso **subavaliai** o bloco técnico, que já é mais rico.
 
-**Modo Compact (4 técnicas + 3 comportamentais):**
-- Técnicas: selecionar as 4 skills com maior `importance_score` do JD (se não houver ranking, usar as 4 primeiras informadas pelo recrutador)
-- Comportamentais: top-3 traits do ranking Big Five
+> **Exemplo:** "Como você definiu padrões técnicos de Python para sua equipe e garantiu a adoção?" é formalmente técnica, mas avalia Conscienciosidade, Extraversão e maturidade de Dreyfus 5 — simultaneamente.
 
-**Modo Full (7 técnicas + 5 comportamentais):**
-- Técnicas: até 7 skills informadas pelo recrutador; se menos de 7, usar todas disponíveis
-- Comportamentais: todos os 5 traits, com pesos proporcionais ao score de cada um
+#### CBI — Retorno marginal decrescente após 3 perguntas comportamentais
+
+Schmidt & Hunter (1998) — a maior meta-análise sobre validade de instrumentos de seleção — mostrou que entrevistas CBI comportamentais com **2–3 perguntas bem formuladas** atingem coeficiente de validade de **0.51** (um dos mais altos de qualquer método de seleção). Com mais de 5 perguntas comportamentais, o retorno marginal cai significativamente: candidatos passam a repetir padrões de resposta e a diferenciar pouco uns dos outros.
+
+Isso justifica que, mesmo em níveis onde o comportamental é o preditor primário (Lead+), **4–5 perguntas comportamentais bem calibradas são suficientes** e mais eficientes que 6 ou mais.
+
+#### Big Five — 3 perguntas direcionadas são suficientes para triagem
+
+Goldberg (1992) e aplicações clínicas modernas mostram que para **triagem** (não diagnóstico clínico), **3 perguntas Big Five bem selecionadas** e direcionadas aos traits mais relevantes para a vaga são suficientes para identificar os padrões comportamentais críticos. O sistema já implementa isso no modo Compact (top-3 traits do ranking do JD). Adicionar mais perguntas além de 5 tem retorno marginal baixo na triagem.
+
+---
+
+### 5.3 Modos disponíveis
+
+| Modo | Total | Uso recomendado | Restrição de traits |
+|---|---|---|---|
+| **Compact** | 7 perguntas | Triagem inicial, alto volume, vagas operacionais | Top-N traits (varia por senioridade: 2 a 5) |
+| **Full** | 12 perguntas | Triagem aprofundada, posições críticas, sênior+ | Top-N traits (varia: 3 a 5; máximo = 5 pelo modelo Big Five) |
+
+---
+
+### 5.4 Distribuição adaptativa por senioridade — Modo Compact (7 perguntas)
+
+| Senioridade | Técnicas | Comportamentais | Top N traits | % Técnico | Racional |
+|---|---|---|---|---|---|
+| **Estagiário** | 5 | 2 | top-2 | 71% | Dreyfus Novice: competência técnica é o gate primário; candidato tem pouco histórico comportamental para avaliar |
+| **Junior** | 5 | 2 | top-2 | 71% | Dreyfus Adv. Beginner: técnico ainda diferencia fortemente; 2 comportamentais capturam os 2 traits mais críticos da vaga |
+| **Pleno** | 5 | 2 | top-2 | 71% | Dreyfus Competent: autonomia técnica é o diferencial; comportamental começa a importar mas ainda é secundário |
+| **Senior** | 4 | 3 | top-3 | 57% | Bloom 5–6 nas técnicas já captura julgamento; 3 comportamentais cobrem os traits mais relevantes do JD |
+| **Lead** | 3 | 4 | top-4 | 43% | Dreyfus Expert: técnica é assumida; 4 comportamentais avaliam liderança, influência e maturidade comportamental |
+| **Principal / Staff** | 4 | 3 | top-3 | 57% | Equilíbrio — profundidade técnica ainda importa + comportamental de liderança técnica |
+| **Diretor** | 3 | 4 | top-4 | 43% | Gestão de pessoas domina; técnica avalia visão, não execução |
+| **VP / C-Level** | 2 | 5 | top-5 (todos) | 29% | Liderança executiva: comportamental é o preditor primário de sucesso; 2 técnicas avaliam visão estratégica |
+
+### 5.5 Distribuição adaptativa por senioridade — Modo Full (12 perguntas)
+
+> **Restrição do modelo Big Five:** máximo de 5 perguntas comportamentais (1 por trait). Para Lead e acima, onde idealmente teríamos mais comportamentais, os **pesos de scoring** compensam a limitação de quantidade — um Lead tem apenas 35% do WSI Final vindo do bloco técnico, mesmo que ele tenha 7 perguntas técnicas.
+
+| Senioridade | Técnicas | Comportamentais | Top N traits | % Técnico | Racional |
+|---|---|---|---|---|---|
+| **Estagiário** | 9 | 3 | top-3 | 75% | Validação técnica aprofundada; comportamental ainda limitado por histórico |
+| **Junior** | 9 | 3 | top-3 | 75% | Alinha com peso de scoring (50% técnico) — 75% de perguntas vs. 50% de peso é aceitável |
+| **Pleno** | 8 | 4 | top-4 | 67% | Histórico comportamental suficiente para 4 perguntas CBI; técnica ainda domina |
+| **Senior** | 7 | 5 | top-5 (todos) | 58% | Equilíbrio — todas as 5 dimensões Big Five avaliadas; técnica ainda é o bloco maior |
+| **Lead** | 7 | 5 | top-5 (todos) | 58% | Limitado pelo Big Five; scoring weight (35% técnico) compensa a proporção de perguntas |
+| **Principal / Staff** | 7 | 5 | top-5 (todos) | 58% | Idem Lead; pesos de scoring equilibram (40/40) |
+| **Diretor** | 7 | 5 | top-5 (todos) | 58% | Pesos de scoring (25% técnico) dominam a interpretação — perguntas técnicas avaliam visão |
+| **VP / C-Level** | 7 | 5 | top-5 (todos) | 58% | Idem Diretor; 20% técnico no scoring torna as 7 técnicas secundárias na nota |
+
+---
+
+### 5.6 Pesos de scoring do WSI Final por senioridade
+
+Os pesos abaixo controlam quanto cada bloco contribui para o **WSI Final**, independente do número de perguntas em cada bloco:
+
+| Senioridade | Peso Técnico | Peso Comportamental | % Elegibilidade¹ | Justificativa |
+|---|---|---|---|---|
+| Estagiário | 55% | 25% | 20% | Capacidade técnica básica é o gate; comportamental tem pouco histórico |
+| Junior | 50% | 30% | 20% | Técnica domina; comportamental começa a importar |
+| Pleno | 55% | 25% | 20% | Autonomia técnica é o diferencial principal nesta banda |
+| Senior | 45% | 35% | 20% | Técnica e comportamento têm peso aproximado; julgamento importa |
+| Lead | 35% | 45% | 20% | Comportamental domina — liderança e influência são o core |
+| Principal / Staff | 40% | 40% | 20% | Equilíbrio — profundidade técnica + influência cross-equipes |
+| Diretor | 25% | 55% | 20% | Gestão de pessoas e comportamento estratégico dominam |
+| VP / C-Level | 20% | 60% | 20% | Comportamento executivo é o preditor primário de sucesso |
+
+> ¹ **Elegibilidade (20%)**: reservado para o Bloco 2 (perguntas de elegibilidade configuradas pelo recrutador). Se o Bloco 2 não estiver configurado na vaga, os 20% são redistribuídos proporcionalmente entre Técnico e Comportamental, mantendo as proporções relativas entre eles.
+
+**Normalização quando não há Bloco de Elegibilidade:**
+```python
+# Exemplo para Senior sem Bloco 2:
+# Pesos originais: Técnico=45%, Comportamental=35%, Elegibilidade=20%
+# Normalização: total sem elegibilidade = 45+35 = 80
+# Técnico normalizado: 45/80 = 56.25%
+# Comportamental normalizado: 35/80 = 43.75%
+```
+
+---
+
+### 5.7 Resolução da inconsistência histórica quantidade ↔ peso
+
+O sistema anterior tinha a seguinte inconsistência documentada:
+
+```
+ANTES (inconsistente):
+  Quantidade de perguntas: 50% técnicas / 50% comportamentais (modo full)
+  Peso de scoring:         70% técnico / 30% comportamental
+  
+  Resultado: candidato investe esforço igual em ambos os blocos,
+  mas o técnico vale mais que o dobro na nota final.
+  → Fadiga desnecessária + sinal errado para o candidato sobre o que importa.
+```
+
+O modelo adaptativo v2.0 resolve isso em duas camadas:
+
+```
+AGORA (consistente):
+  Camada 1 — Quantidade de perguntas: varia por senioridade, alinhada ao peso de scoring
+  Camada 2 — Peso de scoring: varia por senioridade (tabela 5.6)
+  
+  Resultado: para um Junior, 71% das perguntas são técnicas E 50% do score é técnico.
+             Para um Lead,   43% das perguntas são comportamentais E 45% do score é comportamental.
+             → Esforço do candidato ≈ proporcional ao impacto na nota.
+```
+
+---
+
+### 5.8 Seleção de skills e traits para cada modo
+
+**Seleção de skills técnicas:**
+- Ordenadas por `importance_score` (definido pelo recrutador no wizard, ou inferido pelo LLM no F1.C)
+- Se não houver ranking: usar as primeiras N skills informadas pelo recrutador
+- Mínimo de 3 skills; se menos de N (número necessário para o modo), gerar perguntas para todas as disponíveis
+
+**Seleção de traits comportamentais:**
+- Sempre usar o ranking do JD calculado na F3 (por score ponderado)
+- Top-2, Top-3, Top-4 ou Top-5 dependendo da distribuição por senioridade (tabelas 5.4 e 5.5)
+- Traits fora do Top-N selecionado: usados no cruzamento Big Five do relatório final, mas não geram perguntas
 
 ---
 
@@ -1145,42 +1265,67 @@ Retorne o seguinte JSON:
 
 ### 7.4 Camada 3 — Fórmulas de score por tipo de pergunta
 
+#### Autodeclaração técnica — coleta e escala
+
+Para perguntas **técnicas**, antes de responder a pergunta em texto, o candidato informa sua autopercepção de domínio da skill avaliada naquela pergunta. A coleta ocorre como parte do fluxo de triagem (chat ou interface):
+
+```
+"Em uma escala de 1 a 5, como você avalia seu domínio de {skill_name}?
+  1 = Nunca usei / conheço apenas o básico teórico
+  2 = Usei em projetos guiados ou acadêmicos
+  3 = Trabalho com isso no dia a dia de forma independente
+  4 = Referência técnica nesta skill na minha equipe
+  5 = Especialista — já ensinei ou defini padrões com esta skill"
+```
+
+Esta autodeclaração vale **35% do score bruto da pergunta técnica**. O objetivo é criar uma dimensão de calibração — candidatos que se autodeclaram 5 mas demonstram Bloom 1 na resposta recebem penalidade por `inflation_detected`. Candidatos que se autodeclaram 2 mas demonstram Bloom 5 recebem bônus.
+
+> Perguntas **comportamentais** não usam autodeclaração — a fórmula delas é baseada inteiramente no STAR + sinais do trait detectados pelo LLM.
+
+#### Função de alinhamento Bloom (usada em ambos os tipos):
+
+```python
+def calcular_bloom_alinhamento(esperado: int, demonstrado: int) -> float:
+    """
+    Retorna 0.0–1.0. Positivo quando candidato atinge ou supera o esperado.
+    A função é assimétrica intencionalmente: superar é bom, estar abaixo penaliza.
+    """
+    diff = esperado - demonstrado  # positivo = abaixo do esperado
+    if diff <= 0:   return 1.00   # atingiu ou superou: score máximo desta componente
+    if diff == 1:   return 0.70   # um nível abaixo: adequado com ressalvas
+    if diff == 2:   return 0.40   # dois níveis abaixo: insuficiente
+    return          0.15          # três ou mais níveis abaixo: muito abaixo do esperado
+```
+
 #### Para perguntas TÉCNICAS:
 
 ```python
 # Inputs normalizados 0.0–1.0
-autodeclaracao_norm   = autodeclaracao_raw / 5.0   # input 1-5 do candidato
-evidencias_tecnicas   = specificity_score / 10.0   # score 1-10 do LLM
+autodeclaracao_norm   = autodeclaracao_raw / 5.0       # 1-5 do candidato, coletado antes da resposta
+evidencias_tecnicas   = specificity_score / 10.0       # 1-10 extraído pelo LLM (specificidade das evidências)
 bloom_alinhamento     = calcular_bloom_alinhamento(bloom_esperado, bloom_demonstrado)
 
 score_bruto = (
-    autodeclaracao_norm  * 0.35 +
-    evidencias_tecnicas  * 0.40 +
-    bloom_alinhamento    * 0.25
-) * 10.0  # normaliza para 0-10
-
-def calcular_bloom_alinhamento(esperado: int, demonstrado: int) -> float:
-    diff = esperado - demonstrado
-    if diff <= 0:   return 1.00   # demonstrou igual ou mais que esperado
-    if diff == 1:   return 0.70   # um nível abaixo
-    if diff == 2:   return 0.40   # dois níveis abaixo
-    return          0.15          # três ou mais níveis abaixo
+    autodeclaracao_norm  * 0.35 +   # autodeclaração: sinaliza confiança e calibração
+    evidencias_tecnicas  * 0.40 +   # evidências concretas: preditor mais forte
+    bloom_alinhamento    * 0.25     # profundidade cognitiva demonstrada
+) * 10.0  # normaliza para 0–10
 ```
 
 #### Para perguntas COMPORTAMENTAIS (Big Five):
 
 ```python
 # Inputs normalizados 0.0–1.0
-STAR_score_norm       = STAR_score                          # já é 0.0–1.0 da Camada 1
-sinais_trait_norm     = len(sinais_detectados) / max(len(sinais_esperados), 1)
+STAR_score_norm       = STAR_score                              # 0.0–1.0 da Camada 1
+sinais_trait_norm     = len(sinais_detectados) / max(len(sinais_esperados), 1)  # cobertura dos sinais esperados
 bloom_alinhamento     = calcular_bloom_alinhamento(bloom_esperado, bloom_demonstrado)
-# dreyfus_alinhamento é capturado via bônus/penalidades abaixo
+# Dreyfus é capturado via bônus/penalidades na seção de ajustes abaixo
 
 score_bruto = (
-    STAR_score_norm    * 0.35 +
-    sinais_trait_norm  * 0.40 +
-    bloom_alinhamento  * 0.25
-) * 10.0  # normaliza para 0-10
+    STAR_score_norm    * 0.35 +   # estrutura da resposta: base de validade comportamental
+    sinais_trait_norm  * 0.40 +   # cobertura dos sinais do trait: preditor mais forte
+    bloom_alinhamento  * 0.25     # sofisticação da reflexão comportamental
+) * 10.0  # normaliza para 0–10
 ```
 
 #### Ajustes comuns (aplicados após score_bruto nos dois tipos):
@@ -1216,17 +1361,20 @@ score_final_pergunta = max(0.0, min(10.0, score_bruto + ajustes))
 
 ### 7.5 Camada 4 — Composição do WSI Final
 
-#### Score do Bloco Técnico (Bloco 3):
+#### Score do Bloco Técnico:
 
 ```python
-# Pesos iguais entre skills técnicas (no modo atual)
+# Média simples entre skills técnicas — pesos iguais independente da skill
+# num_perguntas_tecnicas varia por seniority e modo (ver tabelas 5.4 e 5.5)
 WSI_tecnico = sum(score_pergunta_tecnica) / num_perguntas_tecnicas
 ```
 
-#### Score do Bloco Comportamental (Bloco 4):
+#### Score do Bloco Comportamental:
 
 ```python
-# Pesos PROPORCIONAIS ao score do trait no ranking do JD
+# ranked_traits = apenas os top-N traits SELECIONADOS para esta vaga/seniority/modo
+# (top-2, top-3, top-4 ou top-5 conforme tabelas 5.4 e 5.5)
+# Pesos PROPORCIONAIS ao score do trait no ranking do JD (F3)
 soma_scores_traits = sum(trait["score_final"] for trait in ranked_traits)
 
 WSI_comportamental = sum(
@@ -1235,41 +1383,158 @@ WSI_comportamental = sum(
 )
 ```
 
-**Exemplo de cálculo comportamental (modo Compact, 3 traits):**
+> `ranked_traits` contém apenas os traits que geraram perguntas — nunca todos os 5 em Compact para Junior/Pleno. Isso garante que o peso de cada trait reflete apenas o contexto avaliado.
 
-| Trait | Score trait (ranking JD) | Peso normalizado | Score pergunta | Contribuição |
-|---|---|---|---|---|
-| Estabilidade (N↓) | 72.5 | 36.6% | 7.8 | 2.855 |
-| Abertura (O) | 71.5 | 36.1% | 8.2 | 2.960 |
-| Conscienciosidade (C) | 54.0 | 27.3% | 6.5 | 1.775 |
-| **Total** | **198** | **100%** | — | **7.59** |
-
-**WSI_comportamental = 7.59**
-
-#### Score WSI Final:
+#### Score do Bloco de Elegibilidade (quando configurado):
 
 ```python
-# Pesos de senioridade (ver tabela 5.2)
-peso_tecnico         = SENIORITY_WEIGHTS[seniority]["technical"]
-peso_comportamental  = SENIORITY_WEIGHTS[seniority]["behavioral"]
-peso_elegibilidade   = SENIORITY_WEIGHTS[seniority].get("eligibility", 0.0)
+# Bloco de Elegibilidade = perguntas binárias (sim/não) configuradas pelo recrutador
+# Exemplos: "Você tem disponibilidade para viagens?", "Possui CNH B?"
+# Cada pergunta de elegibilidade é obrigatória — qualquer "não" ativa gate G1 (reprovação automática)
 
-WSI_final = (
-    WSI_tecnico         * peso_tecnico +
-    WSI_comportamental  * peso_comportamental +
-    WSI_elegibilidade   * peso_elegibilidade   # 0 se Bloco 2 não configurado
-)
+# Score de elegibilidade (apenas informativo — o decisor real é o gate G1):
+perguntas_elegibilidade = [p for p in perguntas if p["category"] == "eligibility"]
+if perguntas_elegibilidade:
+    # Todas as respostas devem ser "sim" para score = 10.0
+    # Se todas sim: WSI_elegibilidade = 10.0
+    # Se qualquer não: gate G1 já reprovou antes desta linha
+    WSI_elegibilidade = 10.0 if all(r["answer"] == True for r in respostas_eligibilidade) else 0.0
+else:
+    WSI_elegibilidade = 0.0   # Bloco não configurado; peso será 0
 ```
 
-**Exemplo completo (Senior, modo Compact, sem Bloco 2):**
+#### Dict completo de pesos por senioridade (pós-normalização sem Bloco 2):
+
+```python
+# Fonte: tabela 5.6
+# Pesos já normalizados para somar 1.0 quando sem elegibilidade
+# Cálculo: peso_normalizado = peso_original / (peso_tecnico + peso_comportamental)
+
+SENIORITY_WEIGHTS = {
+    #                    técnico    comportamental   elegibilidade (quando configurado)
+    "estagiario":    {"technical": 0.6875, "behavioral": 0.3125, "eligibility": 0.20},
+    "junior":        {"technical": 0.6250, "behavioral": 0.3750, "eligibility": 0.20},
+    "pleno":         {"technical": 0.6875, "behavioral": 0.3125, "eligibility": 0.20},
+    "senior":        {"technical": 0.5625, "behavioral": 0.4375, "eligibility": 0.20},
+    "lead":          {"technical": 0.4375, "behavioral": 0.5625, "eligibility": 0.20},
+    "principal":     {"technical": 0.5000, "behavioral": 0.5000, "eligibility": 0.20},
+    "diretor":       {"technical": 0.3125, "behavioral": 0.6875, "eligibility": 0.20},
+    "vp_clevel":     {"technical": 0.2500, "behavioral": 0.7500, "eligibility": 0.20},
+}
+
+# Quando Bloco de Elegibilidade está configurado na vaga:
+# os pesos acima são multiplicados por 0.80, e 0.20 vai para elegibilidade
+# Exemplo Senior COM elegibilidade:
+#   técnico = 0.5625 × 0.80 = 0.45
+#   comportamental = 0.4375 × 0.80 = 0.35
+#   elegibilidade = 0.20
+```
+
+#### Fórmula do WSI Final:
+
+```python
+def calcular_wsi_final(
+    WSI_tecnico: float,
+    WSI_comportamental: float,
+    WSI_elegibilidade: float,
+    seniority: str,
+    tem_bloco_elegibilidade: bool
+) -> float:
+
+    weights = SENIORITY_WEIGHTS[seniority]
+
+    if tem_bloco_elegibilidade:
+        peso_tech  = weights["technical"]    * 0.80
+        peso_comp  = weights["behavioral"]   * 0.80
+        peso_elig  = weights["eligibility"]  # = 0.20
+    else:
+        peso_tech  = weights["technical"]    # já normalizado sem elig
+        peso_comp  = weights["behavioral"]   # já normalizado sem elig
+        peso_elig  = 0.0
+
+    return (
+        WSI_tecnico        * peso_tech  +
+        WSI_comportamental * peso_comp  +
+        WSI_elegibilidade  * peso_elig
+    )
+```
+
+#### Tratamento de falha do extrator LLM (Camada 2):
+
+```python
+# Se o LLM retornar JSON inválido, timeout ou resposta fora do schema:
+def handle_llm_failure(question_type: str, fallback_policy: str = "conservative") -> dict:
+    if fallback_policy == "conservative":
+        # Valores mínimos seguros — não pune candidato além do que o determinístico já capturou
+        return {
+            "star_components": None,        # usar os detectados na Camada 1
+            "trait_signals_detected": [],
+            "bloom_demonstrated": max(1, bloom_esperado - 2),  # assume 2 níveis abaixo
+            "dreyfus_demonstrated": max(1, dreyfus_esperado - 1),
+            "inflation_detected": False,
+            "specificity_score": 3,         # penaliza levemente mas não zera
+            "response_authentic": True,
+            "_llm_fallback": True,          # flag para auditoria
+            "_fallback_reason": "llm_extraction_failed"
+        }
+    # Política conservadora é o padrão — nunca descartar candidato por falha técnica do sistema
+```
+
+> **Regra**: falha do LLM nunca descarta ou reprova um candidato automaticamente. O sistema usa o fallback conservador e registra `_llm_fallback: true` para revisão humana.
+
+---
+
+#### Exemplos completos com distribuição adaptativa (nova metodologia v2)
+
+**Exemplo 1 — Junior, modo Compact (5T + 2B), sem Bloco 2:**
 
 ```
-WSI_tecnico         = 7.85 (média de 4 skills técnicas)
-WSI_comportamental  = 7.59 (3 traits ponderados pelo JD)
-Peso técnico        = 45% (Senior, normalizado sem elegibilidade)
-Peso comportamental = 55% (Senior, normalizado)
+Distribuição: 5 técnicas + 2 comportamentais (top-2 traits)
+Seniority weights: técnico=62.5%, comportamental=37.5%
 
-WSI_final = (7.85 × 0.45) + (7.59 × 0.55) = 3.53 + 4.17 = 7.70
+Scores técnicos (5 perguntas):
+  Python:        6.5
+  FastAPI:       7.2
+  PostgreSQL:    8.0
+  Git/CI:        5.8
+  Docker basics: 6.0
+  WSI_tecnico = (6.5 + 7.2 + 8.0 + 5.8 + 6.0) / 5 = 6.70
+
+Scores comportamentais (top-2 traits):
+  Conscienciosidade (score JD: 78.0, peso: 55.3%):  pergunta → 7.5
+  Estabilidade/N↓  (score JD: 63.0, peso: 44.7%):  pergunta → 6.2
+  WSI_comportamental = (7.5 × 0.553) + (6.2 × 0.447) = 4.148 + 2.771 = 6.92
+
+WSI_final = (6.70 × 0.625) + (6.92 × 0.375)
+          = 4.188 + 2.595
+          = 6.78  → Classificação: Médio (Em avaliação)
+```
+
+**Exemplo 2 — Lead, modo Compact (3T + 4B), sem Bloco 2:**
+
+```
+Distribuição: 3 técnicas + 4 comportamentais (top-4 traits)
+Seniority weights: técnico=43.75%, comportamental=56.25%
+
+Scores técnicos (3 perguntas — Bloom 6, Dreyfus 5):
+  System Design:    8.5
+  Architecture:     9.0
+  Tech Strategy:    8.2
+  WSI_tecnico = (8.5 + 9.0 + 8.2) / 3 = 8.57
+
+Scores comportamentais (top-4 traits):
+  Abertura/O       (score JD: 85.0, peso: 29.8%):  pergunta → 9.1
+  Extraversão/E    (score JD: 80.5, peso: 28.2%):  pergunta → 7.8
+  Conscienciosidade(score JD: 70.0, peso: 24.6%):  pergunta → 8.5
+  Estabilidade/N↓  (score JD: 49.5, peso: 17.4%):  pergunta → 7.2
+  soma_scores = 285.0
+  WSI_comportamental = (9.1×0.298) + (7.8×0.282) + (8.5×0.246) + (7.2×0.174)
+                     = 2.712 + 2.200 + 2.091 + 1.253
+                     = 8.256
+
+WSI_final = (8.57 × 0.4375) + (8.256 × 0.5625)
+          = 3.750 + 4.644
+          = 8.39  → Classificação: Excelente (Aprovado)
 ```
 
 #### Tabela de classificação e decisão:
@@ -1902,19 +2167,21 @@ Todo relatório deve ser gerado a partir do seguinte objeto de dados:
 | Referência | Aplicação no sistema |
 |---|---|
 | Barrick, M. R., & Mount, M. K. (1991). The Big Five personality dimensions and job performance. *Personnel Psychology, 44*, 1–26. | Prior por arquétipo de cargo; validade preditiva por tipo de função |
-| Bloom, B. S. et al. (1956). *Taxonomy of Educational Objectives.* | Calibração do nível cognitivo de perguntas e avaliação de respostas |
-| Campion, M. A., Pursell, E. D., & Brown, B. K. (1994). Structured interviewing: Raising the psychometric properties of the employment interview. *Personnel Psychology, 47*, 25–42. | Critérios de qualidade de perguntas; peso STAR |
-| Costa, P. T., & McCrae, R. R. (1992). *NEO PI-R Professional Manual.* | Definição canônica dos 5 traits e seus facets |
-| Dreyfus, H. L., & Dreyfus, S. E. (1986). *Mind over Machine.* | Calibração de proficiência técnica e maturidade comportamental |
+| Bloom, B. S. et al. (1956). *Taxonomy of Educational Objectives.* | Calibração do nível cognitivo de perguntas e avaliação de respostas; calibração de sofisticação de reflexão comportamental |
+| Campion, M. A., Pursell, E. D., & Brown, B. K. (1994). Structured interviewing: Raising the psychometric properties of the employment interview. *Personnel Psychology, 47*, 25–42. | Critérios de qualidade de perguntas; peso STAR; estrutura de entrevista padronizada |
+| Costa, P. T., & McCrae, R. R. (1992). *NEO PI-R Professional Manual.* | Definição canônica dos 5 traits e seus facets; rubric de extração Big Five do JD |
+| Dreyfus, H. L., & Dreyfus, S. E. (1986). *Mind over Machine.* | Calibração de proficiência técnica; maturidade comportamental; distribuição adaptativa de perguntas por senioridade |
 | Flanagan, J. C. (1954). The critical incident technique. *Psychological Bulletin, 51*, 327–358. | Base do formato CBI situacional |
+| Goldberg, L. R. (1992). The development of markers for the Big-Five factor structure. *Psychological Assessment, 4*, 26–42. | Fundamento para 3 perguntas direcionadas como suficientes para triagem Big Five; justificativa do modo Compact |
 | Hogan, J., & Holland, B. (2003). Using theory to evaluate personality and job-performance relations. *Journal of Applied Psychology, 88*, 100–112. | Mapeamento cargo × personalidade |
 | Huffcutt, A. I., et al. (2001). Identification and meta-analytic assessment of psychological constructs measured in employment interviews. *Journal of Applied Psychology, 86*, 897–913. | Justificativa para remoção de perguntas de fit cultural |
 | Janz, T. (1982). Initial comparisons of patterned behavior description interviews versus unstructured interviews. *Journal of Applied Psychology, 67*, 577–580. | Peso STAR; validade preditiva do CBI |
 | McClelland, D. C. (1973). Testing for competence rather than for "intelligence." *American Psychologist, 28*, 1–14. | Fundamento do modelo CBI |
-| O*NET Resource Center (2024). *O*NET Occupational Database.* onetcenter.org | Prior por arquétipo de cargo |
-| Pennebaker, J. W., Francis, M. E., & Booth, R. J. (2001). *Linguistic Inquiry and Word Count.* | Mapeamento léxico para extração Big Five |
+| O*NET Resource Center (2024). *O*NET Occupational Database.* onetcenter.org | Prior por arquétipo de cargo; perfis de personalidade por ocupação |
+| Pennebaker, J. W., Francis, M. E., & Booth, R. J. (2001). *Linguistic Inquiry and Word Count.* | Mapeamento léxico para extração Big Five; análise de categorias linguísticas no JD |
 | Rivera, L. A. (2012). Hiring as cultural matching: The case of elite professional service firms. *American Sociological Review, 77*, 999–1022. | Risco de viés em avaliações de "fit cultural" |
-| Tett, R. P., & Guterman, H. A. (2000). Situation trait relevance, trait expression, and cross-situational consistency. *Journal of Research in Personality, 34*, 397–423. | Trait Activation Theory — cenários ativadores por trait |
+| Schmidt, F. L., & Hunter, J. E. (1998). The validity and utility of selection methods in personnel psychology. *Psychological Bulletin, 124*, 262–274. | Validade preditiva de CBI (0.51); retorno marginal decrescente de perguntas comportamentais; base para distribuição adaptativa |
+| Tett, R. P., & Guterman, H. A. (2000). Situation trait relevance, trait expression, and cross-situational consistency. *Journal of Research in Personality, 34*, 397–423. | Trait Activation Theory — cenários ativadores por trait; design de perguntas comportamentais |
 | Tett, R. P., Jackson, D. N., & Rothstein, M. (1994). Personality measures as predictors of job performance: A meta-analytic review. *Personnel Psychology, 47*, 157–172. | Validade preditiva por trait em contexto organizacional |
 
 ---
