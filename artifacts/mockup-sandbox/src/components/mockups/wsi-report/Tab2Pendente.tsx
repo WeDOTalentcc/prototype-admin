@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   CheckCircle, AlertTriangle, XCircle, Target, Clock, Trophy,
-  Mic2, BookOpen, Zap, AlertCircle, Info
+  Mic2, BookOpen, Zap, AlertCircle, Info, Layers
 } from "lucide-react";
 
 const bigFive = [
@@ -10,30 +10,35 @@ const bigFive = [
     hint: "Adapta-se a novidades, aprende rápido e lida bem com ambiguidade",
     vagaRelevancia: "critica",
     vagas: 70, candidato: 20, status: "gap",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 1,
   },
   {
     trait: "Organização e disciplina",
     hint: "Planejamento, atenção a prazos e execução sistemática",
     vagaRelevancia: "critica",
     vagas: 80, candidato: 50, status: "gap",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 2,
   },
   {
     trait: "Sociabilidade",
     hint: "Facilidade para interagir, comunicar e construir relacionamentos",
     vagaRelevancia: "moderada",
     vagas: 50, candidato: 40, status: "ok",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 3,
   },
   {
     trait: "Cooperação",
     hint: "Disposição para colaborar, ceder e trabalhar bem em equipe",
     vagaRelevancia: "critica",
     vagas: 75, candidato: 20, status: "gap",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 1,
   },
   {
     trait: "Estabilidade emocional",
     hint: "Mantém calma sob pressão e lida bem com críticas e frustrações",
     vagaRelevancia: "moderada",
     vagas: 60, candidato: 50, status: "ok",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 3,
   },
 ];
 
@@ -83,6 +88,34 @@ const relevanciaConfig = {
   moderada: { label: "Moderada", color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200" },
 };
 
+const dreyfusLabel = (n: number) => ["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"][n] ?? n;
+
+function DreyfusRow({ dreyfusEsperado, dreyfusDemonstrado }: { dreyfusEsperado: number; dreyfusDemonstrado: number }) {
+  const delta = dreyfusDemonstrado - dreyfusEsperado;
+  const isGap = delta < -1;
+  const isAcima = delta > 0;
+
+  const color = isGap ? "text-red-600" : isAcima ? "text-blue-600" : "text-emerald-600";
+  const bg = isGap ? "bg-red-50 border-red-200" : isAcima ? "bg-blue-50 border-blue-200" : "bg-emerald-50 border-emerald-200";
+  const label = isGap ? "Gap crítico" : isAcima ? "Acima" : "Alinhado";
+
+  return (
+    <div className={`flex items-center justify-between text-[10px] rounded-md border px-2.5 py-1.5 mt-1 ${bg}`}>
+      <span className="text-gray-500">Maturidade comportamental</span>
+      <div className="flex items-center gap-2">
+        <span className="text-gray-400">
+          Esperada para Sênior: <span className="font-medium text-gray-600">{dreyfusLabel(dreyfusEsperado)}</span>
+        </span>
+        <span className="text-gray-300">·</span>
+        <span className="text-gray-400">
+          Demonstrada: <span className={`font-semibold ${color}`}>{dreyfusLabel(dreyfusDemonstrado)}</span>
+        </span>
+        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${bg} ${color}`}>{label}</span>
+      </div>
+    </div>
+  );
+}
+
 export function Tab2Pendente() {
   const [hintOpen, setHintOpen] = useState<string | null>(null);
 
@@ -102,15 +135,24 @@ export function Tab2Pendente() {
                 <p className="text-xs text-gray-500">Desenvolvedor Full Stack · São Paulo, SP</p>
               </div>
             </div>
-            <span className="bg-amber-100 text-amber-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" /> Revisão Necessária
-            </span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="bg-amber-100 text-amber-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" /> Revisão Necessária
+              </span>
+              <span className="text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                Revisão recomendada
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-6 text-sm flex-wrap">
             <div><p className="text-xs text-gray-400">Score WSI</p><p className="font-bold text-amber-600">2.7<span className="text-gray-400 font-normal">/5.0</span></p></div>
             <div><p className="text-xs text-gray-400">Ranking</p><p className="font-semibold text-gray-900 flex items-center gap-1"><Trophy className="w-3.5 h-3.5 text-gray-400" />#9 de 12</p></div>
             <div><p className="text-xs text-gray-400">Classificação</p><p className="font-semibold text-amber-600">Abaixo do esperado</p></div>
             <div><p className="text-xs text-gray-400">Duração</p><p className="font-semibold text-gray-900 flex items-center gap-1"><Clock className="w-3.5 h-3.5" />18 min</p></div>
+            <div>
+              <p className="text-xs text-gray-400">Modo de triagem</p>
+              <p className="font-semibold text-gray-700 flex items-center gap-1"><Layers className="w-3.5 h-3.5 text-gray-400" /> Compact · 7 perguntas</p>
+            </div>
           </div>
         </div>
 
@@ -203,7 +245,7 @@ export function Tab2Pendente() {
             <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-200 rounded-sm inline-block border border-gray-300" /> Esperado pela vaga</span>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {bigFive.map((b) => {
               const isGap = b.status === "gap";
               const rel = relevanciaConfig[b.vagaRelevancia as keyof typeof relevanciaConfig];
@@ -250,6 +292,9 @@ export function Tab2Pendente() {
                     <span>Candidato: <span className={`font-semibold ${isGap ? "text-red-500" : "text-gray-600"}`}>{b.candidato}%</span></span>
                     <span>Vaga espera: <span className="font-semibold text-gray-600">{b.vagas}%</span></span>
                   </div>
+
+                  {/* Dreyfus comportamental */}
+                  <DreyfusRow dreyfusEsperado={b.dreyfusEsperado} dreyfusDemonstrado={b.dreyfusDemonstrado} />
                 </div>
               );
             })}

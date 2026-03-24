@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   CheckCircle, AlertTriangle, XCircle, Target, Clock, Trophy,
-  Mic2, BookOpen, Star, Zap, Info
+  Mic2, BookOpen, Star, Zap, Info, Layers
 } from "lucide-react";
 
 const bigFive = [
@@ -10,30 +10,35 @@ const bigFive = [
     hint: "Adapta-se a novidades, aprende rápido e lida bem com ambiguidade",
     vagaRelevancia: "critica",
     vagas: 80, candidato: 75, status: "ok",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 4,
   },
   {
     trait: "Organização e disciplina",
     hint: "Planejamento, atenção a prazos e execução sistemática",
     vagaRelevancia: "critica",
     vagas: 70, candidato: 95, status: "acima",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 5,
   },
   {
     trait: "Sociabilidade",
     hint: "Facilidade para interagir, comunicar e construir relacionamentos",
     vagaRelevancia: "moderada",
     vagas: 50, candidato: 40, status: "ok",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 4,
   },
   {
     trait: "Cooperação",
     hint: "Disposição para colaborar, ceder e trabalhar bem em equipe",
     vagaRelevancia: "critica",
     vagas: 75, candidato: 40, status: "gap",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 2,
   },
   {
     trait: "Estabilidade emocional",
     hint: "Mantém calma sob pressão e lida bem com críticas e frustrações",
     vagaRelevancia: "moderada",
     vagas: 65, candidato: 80, status: "acima",
+    dreyfusEsperado: 4, dreyfusDemonstrado: 5,
   },
 ];
 
@@ -85,6 +90,35 @@ const relevanciaConfig = {
   moderada: { label: "Moderada", color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200" },
 };
 
+const dreyfusLabel = (n: number) => ["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"][n] ?? n;
+
+function DreyfusRow({ dreyfusEsperado, dreyfusDemonstrado }: { dreyfusEsperado: number; dreyfusDemonstrado: number }) {
+  const delta = dreyfusDemonstrado - dreyfusEsperado;
+  const isAcima = delta > 0;
+  const isGap = delta < -1;
+  const isOk = delta >= -1 && delta <= 0;
+
+  const color = isGap ? "text-amber-600" : isAcima ? "text-blue-600" : "text-emerald-600";
+  const bg = isGap ? "bg-amber-50 border-amber-200" : isAcima ? "bg-blue-50 border-blue-200" : "bg-emerald-50 border-emerald-200";
+  const label = isGap ? "Atenção" : isAcima ? "Acima" : "Alinhado";
+
+  return (
+    <div className={`flex items-center justify-between text-[10px] rounded-md border px-2.5 py-1.5 mt-1 ${bg}`}>
+      <span className="text-gray-500">Maturidade comportamental</span>
+      <div className="flex items-center gap-2">
+        <span className="text-gray-400">
+          Esperada para Sênior: <span className="font-medium text-gray-600">{dreyfusLabel(dreyfusEsperado)}</span>
+        </span>
+        <span className="text-gray-300">·</span>
+        <span className="text-gray-400">
+          Demonstrada: <span className={`font-semibold ${color}`}>{dreyfusLabel(dreyfusDemonstrado)}</span>
+        </span>
+        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${bg} ${color}`}>{label}</span>
+      </div>
+    </div>
+  );
+}
+
 export function Tab2Aprovado() {
   const [hintOpen, setHintOpen] = useState<string | null>(null);
 
@@ -104,15 +138,24 @@ export function Tab2Aprovado() {
                 <p className="text-xs text-gray-500">Desenvolvedor Full Stack · São Paulo, SP</p>
               </div>
             </div>
-            <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
-              <CheckCircle className="w-3.5 h-3.5" /> Aprovado
-            </span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
+                <CheckCircle className="w-3.5 h-3.5" /> Aprovado
+              </span>
+              <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                Alta confiança
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-6 text-sm flex-wrap">
             <div><p className="text-xs text-gray-400">Score WSI</p><p className="font-bold text-gray-900">4.8<span className="text-gray-400 font-normal">/5.0</span></p></div>
             <div><p className="text-xs text-gray-400">Ranking</p><p className="font-semibold text-gray-900 flex items-center gap-1"><Trophy className="w-3.5 h-3.5 text-amber-500" />#1 de 12</p></div>
             <div><p className="text-xs text-gray-400">Classificação</p><p className="font-semibold text-emerald-600">Excelente</p></div>
             <div><p className="text-xs text-gray-400">Duração</p><p className="font-semibold text-gray-900 flex items-center gap-1"><Clock className="w-3.5 h-3.5" />47 min</p></div>
+            <div>
+              <p className="text-xs text-gray-400">Modo de triagem</p>
+              <p className="font-semibold text-gray-700 flex items-center gap-1"><Layers className="w-3.5 h-3.5 text-gray-400" /> Compact · 7 perguntas</p>
+            </div>
           </div>
         </div>
 
@@ -191,7 +234,7 @@ export function Tab2Aprovado() {
             <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-200 rounded-sm inline-block border border-gray-300" /> Esperado pela vaga</span>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {bigFive.map((b) => {
               const isGap = b.status === "gap";
               const isAcima = b.status === "acima";
@@ -239,6 +282,9 @@ export function Tab2Aprovado() {
                     <span>Candidato: <span className="font-semibold text-gray-600">{b.candidato}%</span></span>
                     <span>Vaga espera: <span className="font-semibold text-gray-600">{b.vagas}%</span></span>
                   </div>
+
+                  {/* Dreyfus comportamental */}
+                  <DreyfusRow dreyfusEsperado={b.dreyfusEsperado} dreyfusDemonstrado={b.dreyfusDemonstrado} />
                 </div>
               );
             })}

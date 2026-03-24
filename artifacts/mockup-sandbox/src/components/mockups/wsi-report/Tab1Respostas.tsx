@@ -1,13 +1,14 @@
 import { useState } from "react";
 import {
   ChevronDown, ChevronUp, CheckCircle, AlertTriangle, XCircle,
-  Target, Mic, Clock, Trophy, BarChart3, Star
+  Target, Mic, Clock, Trophy, BarChart3, Star, ShieldAlert, Layers
 } from "lucide-react";
 
 const competencias = [
   {
     nome: "Arquitetura de Software",
     framework: "Competency-Based",
+    critica: true,
     score: 4.8,
     pergunta: "Descreva um projeto onde você teve que tomar decisões arquiteturais importantes. Qual foi o contexto, quais alternativas você considerou e qual foi o resultado?",
     resposta: "Liderei a migração de monolito para microsserviços usando DDD e strangler fig pattern. Analisei 3 alternativas, implementei event sourcing. Resultado: deploy de 2h para 15min, uptime 99.2% para 99.95%.",
@@ -18,6 +19,7 @@ const competencias = [
     dreyfusDemonstrado: 5,
     dreyfusEsperado: 5,
     gap: "ok",
+    star: { S: true, T: true, A: true, R: true },
     evidencias: [
       "Trade-off analysis entre 3 alternativas",
       "Metrics-driven decision (uptime, deploy time)",
@@ -28,6 +30,7 @@ const competencias = [
   {
     nome: "Desenvolvimento Full Stack",
     framework: "Dreyfus Model",
+    critica: false,
     score: 4.8,
     pergunta: "Você precisa implementar um sistema de notificações em tempo real que suporte 100k usuários simultâneos. Como você abordaria frontend, backend e infraestrutura?",
     resposta: "WebSocket com fallback SSE no frontend, Redis Pub/Sub + RabbitMQ no backend, sticky sessions no LB. Sistema de priorização por canal. Já suportei 150k conexões.",
@@ -38,6 +41,7 @@ const competencias = [
     dreyfusDemonstrado: 5,
     dreyfusEsperado: 4,
     gap: "acima",
+    star: { S: true, T: true, A: true, R: true },
     evidencias: [
       "Solução com WebSocket + SSE fallback",
       "Experiência comprovada com 150k conexões",
@@ -48,6 +52,7 @@ const competencias = [
   {
     nome: "Liderança Técnica",
     framework: "Competency-Based",
+    critica: false,
     score: 3.9,
     pergunta: "Conte uma situação onde você precisou influenciar uma decisão técnica importante sem ter autoridade formal sobre a equipe.",
     resposta: "Convenci o time a adotar TypeScript através de um POC comparativo. Apresentei dados de redução de bugs em produção.",
@@ -58,6 +63,7 @@ const competencias = [
     dreyfusDemonstrado: 3,
     dreyfusEsperado: 4,
     gap: "gap",
+    star: { S: true, T: true, A: true, R: false },
     evidencias: [
       "POC comparativo realizado",
       "Dados de impacto apresentados",
@@ -74,6 +80,13 @@ const gapConfig = {
 
 const dreyfusLabel = (n: number) => ["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"][n] ?? n;
 const bloomLabel = (n: number) => ["", "Recordar", "Compreender", "Aplicar", "Analisar", "Avaliar"][n] ?? n;
+
+const starComponents = [
+  { key: "S" as const, label: "Situação", desc: "Contexto descrito" },
+  { key: "T" as const, label: "Tarefa", desc: "Objetivo claro" },
+  { key: "A" as const, label: "Ação", desc: "O que foi feito" },
+  { key: "R" as const, label: "Resultado", desc: "Impacto mensurável" },
+];
 
 export function Tab1Respostas() {
   const [expanded, setExpanded] = useState<number | null>(0);
@@ -94,11 +107,16 @@ export function Tab1Respostas() {
                 <p className="text-xs text-gray-500">Desenvolvedor Full Stack · São Paulo, SP</p>
               </div>
             </div>
-            <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
-              <CheckCircle className="w-3.5 h-3.5" /> Aprovado
-            </span>
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
+                <CheckCircle className="w-3.5 h-3.5" /> Aprovado
+              </span>
+              <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                Alta confiança
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-6 text-sm flex-wrap">
             <div>
               <p className="text-xs text-gray-400">Score WSI</p>
               <p className="font-bold text-gray-900">4.8<span className="text-gray-400 font-normal">/5.0</span></p>
@@ -114,6 +132,12 @@ export function Tab1Respostas() {
             <div>
               <p className="text-xs text-gray-400">Duração</p>
               <p className="font-semibold text-gray-900 flex items-center gap-1"><Clock className="w-3.5 h-3.5" />47 min</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Modo de triagem</p>
+              <p className="font-semibold text-gray-700 flex items-center gap-1">
+                <Layers className="w-3.5 h-3.5 text-gray-400" /> Compact · 7 perguntas
+              </p>
             </div>
           </div>
         </div>
@@ -145,12 +169,22 @@ export function Tab1Respostas() {
               </div>
             ))}
           </div>
-          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-gray-100">
-            <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-              <Mic className="w-3 h-3" /> Triagem por Voz
-            </span>
-            <span className="text-xs text-gray-500">↗ Top 5%</span>
-            <span className="text-xs text-gray-400">25/01/2026, 12:00</span>
+          <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                <Mic className="w-3 h-3" /> Triagem por Voz
+              </span>
+              <span className="text-xs text-gray-500">↗ Top 5%</span>
+              <span className="text-xs text-gray-400">25/01/2026, 12:00</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+              <BarChart3 className="w-3 h-3 text-gray-400 shrink-0" />
+              <span>
+                Para <span className="font-medium text-gray-600">Sênior</span>: Competências Técnicas valem{" "}
+                <span className="font-semibold text-gray-700">56%</span> e Comportamentais valem{" "}
+                <span className="font-semibold text-gray-700">44%</span> do score final
+              </span>
+            </div>
           </div>
         </div>
 
@@ -175,9 +209,14 @@ export function Tab1Respostas() {
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left"
                     onClick={() => setExpanded(isOpen ? null : i)}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-gray-800">{c.nome}</span>
                       <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{c.framework}</span>
+                      {c.critica && (
+                        <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">
+                          <ShieldAlert className="w-2.5 h-2.5" /> Crítica
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`text-sm font-bold ${c.score >= 4.5 ? "text-emerald-600" : c.score >= 3.5 ? "text-amber-600" : "text-red-500"}`}>
@@ -201,6 +240,38 @@ export function Tab1Respostas() {
                         </div>
                       </div>
 
+                      {/* STAR completeness */}
+                      <div className="bg-white border border-gray-100 rounded-lg p-3">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">Qualidade da resposta (STAR)</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {starComponents.map(({ key, label, desc }) => {
+                            const present = c.star[key];
+                            return (
+                              <div
+                                key={key}
+                                title={desc}
+                                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                                  present
+                                    ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                    : "bg-gray-100 border-gray-200 text-gray-400"
+                                }`}
+                              >
+                                {present
+                                  ? <CheckCircle className="w-3 h-3" />
+                                  : <span className="w-3 h-3 flex items-center justify-center text-gray-300 font-bold text-[10px]">–</span>
+                                }
+                                <span>{label}</span>
+                              </div>
+                            );
+                          })}
+                          {!c.star.R && (
+                            <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+                              Resultado não evidenciado
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Scores grid */}
                       <div className="grid grid-cols-4 gap-2">
                         {[
@@ -216,7 +287,7 @@ export function Tab1Respostas() {
                         ))}
                       </div>
 
-                      {/* ✨ NOVO — Nível esperado vs. demonstrado */}
+                      {/* Nível esperado vs. demonstrado */}
                       <div className={`flex items-center justify-between rounded-lg border px-3 py-2.5 ${gap.bg} ${gap.border}`}>
                         <div className="flex items-center gap-2">
                           <GapIcon className={`w-3.5 h-3.5 ${gap.color}`} />
