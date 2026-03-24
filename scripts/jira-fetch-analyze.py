@@ -126,6 +126,14 @@ def adf_to_text(node):
     text = ""
     if node.get("type") == "text":
         text += node.get("text", "")
+        # Inclui hrefs de marks do tipo link para extração de BetterBugs URLs
+        for mark in node.get("marks", []):
+            if mark.get("type") == "link":
+                href = mark.get("attrs", {}).get("href", "")
+                if href and href not in text:
+                    text += f" {href}"
+    elif node.get("type") == "inlineCard":
+        text += node.get("attrs", {}).get("url", "")
     for child in node.get("content", []):
         text += adf_to_text(child)
     if node.get("type") in ("paragraph", "heading", "listItem"):
@@ -477,8 +485,8 @@ Data: {date.today().strftime('%d/%m/%Y')}
 ## TRANSCRIÇÃO / DESCRIÇÃO DO CARD (fonte primária — extraia TUDO):
 {description_text}
 
-## EVIDÊNCIAS BETTERBUGS (screenshots, vídeo, console logs, network logs — contexto visual real):
-{betterbugs_content if betterbugs_content else "(link BetterBugs não encontrado na transcrição — analise apenas pelo texto)"}
+## EVIDÊNCIAS BETTERBUGS (link da sessão com screenshots e console/network logs):
+{(betterbugs_content[:2000] + '...[truncado]') if betterbugs_content and len(betterbugs_content) > 2000 else (betterbugs_content or "(link BetterBugs não encontrado na transcrição — analise apenas pelo texto)")}
 
 ## CÓDIGO DOS LAYERS (React Replit + Backend Python + IA + Integrações):
 {code_sections if code_sections else "(arquivos não encontrados automaticamente — analise pela transcrição)"}
@@ -662,7 +670,7 @@ REGRAS OBRIGATÓRIAS:
 
     response = client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=16000,
+        max_tokens=8000,
         messages=[{"role": "user", "content": prompt}],
     )
 
