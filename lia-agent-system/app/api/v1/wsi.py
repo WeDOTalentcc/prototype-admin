@@ -28,7 +28,7 @@ AI_INTEGRATIONS_ANTHROPIC_BASE_URL = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_B
 
 
 BLOOM_LEVELS = {
-    1: {"name": "Remember", "name_pt": "Lembrar", "description": "Recall facts and basic concepts"},
+    1: {"name": "Remember", "name_pt": "Recordar", "description": "Recall facts and basic concepts"},
     2: {"name": "Understand", "name_pt": "Compreender", "description": "Explain ideas and concepts"},
     3: {"name": "Apply", "name_pt": "Aplicar", "description": "Use information in new situations"},
     4: {"name": "Analyze", "name_pt": "Analisar", "description": "Draw connections among ideas"},
@@ -1713,6 +1713,11 @@ Retorne JSON:
             data = json.loads(raw)
             qs = data.get("interview_questions", [])
             if len(qs) >= 2:
+                q1_area = qs[0].get("area", "technical")
+                q2_area = qs[1].get("area", "behavioral")
+                if q1_area == q2_area and attempt < 3:
+                    logger.info(f"F11 CBI attempt {attempt}: both questions are '{q1_area}', retrying for type alternation")
+                    continue
                 result = []
                 for q in qs[:2]:
                     result.append(CBIQuestion(
