@@ -51,13 +51,18 @@ const getDecisionDisplay = (decision?: string) => {
 const wsiToPercent = (score: number) => Math.round((score / 5) * 100)
 
 const bloomLabel = (n: number) =>
-  (["", "Recordar", "Compreender", "Aplicar", "Analisar", "Avaliar"] as const)[n] ?? `Nível ${n}`
+  (["", "Recordar", "Compreender", "Aplicar", "Analisar", "Avaliar", "Criar"] as const)[n] ?? `Nível ${n}`
 
 const dreyfusLabel = (n: number) =>
   (["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"] as const)[n] ?? `Nível ${n}`
 
 const getScoreColor = (score: number) =>
-  score >= 4.5 ? "text-emerald-600" : score >= 3.5 ? "text-amber-600" : "text-red-500"
+  score >= 4.5 ? "text-emerald-700" :
+  score >= 4.0 ? "text-green-600" :
+  score >= 3.5 ? "text-blue-600" :
+  score >= 3.0 ? "text-amber-600" :
+  score >= 2.25 ? "text-orange-600" :
+  "text-red-600"
 
 const gapConfig = {
   ok:    { label: "Alinhado",          color: "text-emerald-600", bg: "bg-emerald-50",  border: "border-emerald-200" },

@@ -564,6 +564,48 @@ def get_classification_display(classification: str) -> Dict[str, str]:
     return config.get(classification, config["medio"])
 
 
+def get_wsi_decision(overall_score: float, technical_avg: Optional[float] = None) -> Dict[str, Any]:
+    """
+    Aplica WSI_CUTOFFS e Gate G3 a um score para retornar decisão.
+
+    Spec Seção 9.5 — Cutoffs /5:
+        approved_auto ≥ 3.75 (= 7.5/10)
+        review_min    ≥ 3.00 (= 6.0/10)
+        rejected_max  < 3.00 (= 6.0/10)
+        Gate G3: tech_avg < 2.0 → rejected
+
+    Returns:
+        Dict com decision, interpretation, classification, classification_label
+    """
+    classification = classify_wsi_score(overall_score)
+    class_display = get_classification_display(classification)
+
+    if overall_score >= WSI_CUTOFFS["approved_auto"]:
+        decision = "approved"
+        interpretation = "Candidato aprovado automaticamente"
+    elif overall_score >= WSI_CUTOFFS["review_min"]:
+        decision = "needs_review"
+        interpretation = "Candidato requer revisão manual"
+    else:
+        decision = "rejected"
+        interpretation = "Candidato abaixo do corte mínimo"
+
+    gate_g3_triggered = False
+    if technical_avg is not None and technical_avg < GATE_G3_THRESHOLD:
+        gate_g3_triggered = True
+        decision = "rejected"
+        interpretation = "Gate G3: score técnico insuficiente"
+
+    return {
+        "decision": decision,
+        "interpretation": interpretation,
+        "classification": classification,
+        "classification_label": class_display["label"],
+        "gate_g3_triggered": gate_g3_triggered,
+        "cutoffs_applied": WSI_CUTOFFS,
+    }
+
+
 def calculate_final_wsi_score(
     technical_scores: List[Tuple[str, float, float]],
     behavioral_scores: List[Tuple[str, float, float]],
@@ -672,6 +714,7 @@ def get_wsi_scorer():
         "calculate_final_score": calculate_final_wsi_score,
         "classify_score": classify_wsi_score,
         "get_classification_display": get_classification_display,
+        "get_wsi_decision": get_wsi_decision,
         "get_seniority_weights": get_seniority_weights,
         "extract_autodeclaracao": extract_autodeclaracao_score,
         "calculate_context": calculate_context_score,
