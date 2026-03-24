@@ -21,59 +21,394 @@ Esta decisão tem implicações arquiteturais diretas:
 
 ## Sumário de fases
 
-| Fase | Nome | Quando ocorre | Quem executa |
+### Bloco A — Criação da vaga (ocorre uma vez por vaga)
+
+| Fase | Nome | Quem executa | Output |
 |---|---|---|---|
-| **F1** | Criação e qualidade do JD | Job creation | Recrutador + sistema |
-| **F2** | Extração do perfil Big Five | Job creation | LLM + fórmula determinística |
-| **F3** | Ranking de traits | Job creation | Fórmula determinística |
-| **F4** | Geração de perguntas | Job creation | LLM (por pergunta) |
-| **F5** | Revisão humana | Job creation | Recrutador |
-| **F6** | Triagem do candidato | Screening runtime | Chat/WhatsApp |
-| **F7** | Avaliação das respostas | Screening runtime | Determinístico + LLM extrator |
-| **F8** | Score WSI final | Screening runtime | Fórmula determinística |
-| **F9** | Output e explicabilidade | Screening runtime | Sistema |
+| **F1** | Criação, revisão e enriquecimento do JD | Recrutador + LLM | JD aprovado com score de qualidade |
+| **F2** | Extração do perfil Big Five do JD | LLM + fórmula determinística | JSON com score e evidências por trait |
+| **F3** | Ranking de traits | Fórmula determinística | Ranking ponderado com pesos de cada trait |
+| **F4** | Senioridade: definição e calibração | Sistema | Bloom e Dreyfus esperados por pergunta |
+| **F5** | Distribuição de perguntas por modo | Sistema | Mapa de perguntas (Compact 7q / Full 12q) |
+| **F6** | Geração de perguntas por LLM | LLM (por pergunta) + recrutador | Perguntas aprovadas e persistidas |
+
+### Bloco B — Triagem do candidato (ocorre para cada candidato)
+
+| Fase | Nome | Quem executa | Output |
+|---|---|---|---|
+| **F7** | Triagem: candidato responde | Chat / WhatsApp | Respostas brutas |
+| **F8** | Avaliação das respostas | Determinístico + LLM extrator | Score por pergunta com evidências |
+| **F9** | Score WSI final | Fórmula determinística | WSI Final (0–10) + pesos do JD |
+| **F10** | Critérios de aprovação e reprovação | Sistema | Decisão: Aprovado / Em Avaliação / Reprovado |
+| **F11** | Relatório completo do consultor | Sistema | Documento de decisão com cruzamento vaga × candidato |
+| **F12** | Fluxo integrado (visão geral) | — | Diagrama de referência completo |
 
 ---
 
-## FASE 1 — Criação e qualidade do Job Description
+## FASE 1 — Criação, revisão e enriquecimento do Job Description
+
+### 1.0 Visão geral da fase
+
+A F1 opera em **5 sub-fases sequenciais**. O recrutador inicia o processo e o LLM atua como revisor especialista — garantindo que o JD chegue na F2 (extração Big Five) com qualidade suficiente para gerar perguntas calibradas e úteis.
+
+```
+F1.A — Recrutador submete JD raw (texto do cliente ou preenchimento no wizard)
+   ↓
+F1.B — Sistema calcula score de qualidade determinístico (gates de contagem)
+   ↓ se Score_JD ≥ 30 (mínimo para o LLM trabalhar)
+F1.C — LLM analisa o JD em 8 dimensões e gera versão enriquecida
+   ↓
+F1.D — Sistema apresenta ao recrutador: relatório de qualidade + JD enriquecido lado a lado
+   ↓
+F1.E — Recrutador revisa, edita e aprova o JD final
+   ↓
+JD aprovado → input para F2 (extração Big Five)
+```
+
+> **Princípio:** o JD que chega do cliente raramente está no formato ideal para triagem baseada em dados. A F1 garante que o sistema nunca trabalhe com informação pobre — o que comprometeria todas as fases seguintes.
+
+---
 
 ### 1.1 Inputs obrigatórios e opcionais
 
 | Campo | Obrigatoriedade | Impacto se ausente |
 |---|---|---|
-| Título do cargo | Obrigatório | Sem título, senioridade e arquétipo não são inferidos |
-| Senioridade | Obrigatório | Calibração de Bloom, Dreyfus e pesos de score impossível |
-| Skills técnicas (lista) | Obrigatório (mín. 3) | Abaixo de 3, perguntas técnicas ficam genéricas |
-| Responsabilidades (texto) | Obrigatório (mín. 3) | Principal fonte para extração Big Five via LLM |
-| Competências comportamentais esperadas | Recomendado (mín. 2) | Enriquece a prior de extração Big Five |
+| Título do cargo | Obrigatório | Senioridade e arquétipo não são inferidos |
+| Senioridade | Obrigatório | Calibração de Bloom, Dreyfus e pesos impossível |
+| Skills técnicas (lista) | Obrigatório (mín. 3) | Perguntas técnicas ficam genéricas |
+| Responsabilidades (texto) | Obrigatório (mín. 3 itens) | Principal fonte para extração Big Five |
+| Competências comportamentais | Recomendado (mín. 2) | Enriquece a prior de extração Big Five |
 | Descrição completa (texto livre) | Recomendado | Aumenta qualidade da extração lexical |
 | Departamento / Área | Recomendado | Calibra arquétipo de cargo na prior |
-| Setor da empresa | Opcional | Melhora precisão do prior O*NET |
+| Setor / Indústria da empresa | Opcional | Melhora precisão do prior O*NET |
+| Tamanho da equipe | Opcional | Contextualiza escopo de liderança |
+| Estágio da empresa | Opcional | Calibra peso de Estabilidade Emocional |
 
 ### 1.2 Limites de competências processadas pelo WSI
 
-| Tipo | Mínimo | Máximo processado pelo WSI |
+| Tipo | Mínimo obrigatório | Máximo processado pelo WSI |
 |---|---|---|
-| Skills técnicas | 3 | 7 (compact) ou 7 (full) |
+| Skills técnicas | 3 | 7 (ambos os modos) |
 | Traits comportamentais | — | 3 (compact) ou 5 (full) — extraídos automaticamente |
 
 Skills além do máximo são armazenadas na vaga mas não geram perguntas WSI.
 
-### 1.3 Score de qualidade do JD (gate de aprovação)
+---
 
-Antes de prosseguir para a extração Big Five, o sistema calcula um score de qualidade:
+### 1.3 Os 10 princípios de uma JD de qualidade para triagem baseada em dados
+
+Estes são os princípios que o LLM usa para avaliar e enriquecer o JD. Também servem como guia para o recrutador ao preencher o wizard de criação de vaga.
+
+| # | Princípio | Descrição | Erro comum |
+|---|---|---|---|
+| **P1** | **Título específico e padronizado** | O título deve identificar a função com precisão, incluir a senioridade e seguir nomenclatura de mercado. | "Analista" sem especificação; "Desenvolvedor Full" sem stack; "Ninja de X" |
+| **P2** | **Coerência entre senioridade e responsabilidades** | As responsabilidades devem ser compatíveis com o nível declarado. Um Junior não deve ter responsabilidades de tomada de decisão estratégica sem supervisão. | JD de "Junior" com "liderar o time de engenharia"; JD de "Sênior" com apenas tarefas operacionais simples |
+| **P3** | **Skills técnicas específicas e verificáveis** | Cada skill deve ser uma tecnologia, ferramenta ou metodologia concreta — não um conjunto genérico. | "Bom em tecnologia", "Excel avançado" para Data Scientist Sênior, "sistemas" |
+| **P4** | **Responsabilidades com verbo de ação e escopo** | Cada responsabilidade deve começar com verbo ativo e ter escopo claro. Não deve ser lista de atributos pessoais. | "Ser proativo", "Ter boa comunicação", "Trabalhar em equipe" como responsabilidades |
+| **P5** | **Competências comportamentais contextualizadas** | Competências comportamentais devem estar ancoradas no contexto da função — não ser lista genérica de virtudes. | "Proativo, comunicativo, colaborativo" sem contexto de quando e como isso se manifesta na função |
+| **P6** | **Ausência de inconsistências internas** | Não deve haver contradições entre seções (ex: título diz Senior, requisitos pedem 1 ano de experiência; JD pede autonomia mas descreve ambiente de microgestão). | "Ambiente colaborativo" + "reporte direto ao CEO com aprovação de todas as decisões" |
+| **P7** | **Ausência de viés e linguagem inclusiva** | O JD não deve conter linguagem que discrimine por gênero, idade, origem, estado civil ou qualquer outro atributo protegido. | "Jovem dinâmico", "perfil masculino", requisitos de idade, foto exigida |
+| **P8** | **Expectativas realistas e de mercado** | Requisitos técnicos devem ser compatíveis com o mercado (ex: não exigir 5 anos de experiência em tecnologia lançada há 2 anos). Salário e benefícios compatíveis com o nível exigido. | "5 anos de experiência em Kubernetes" (2018); "30 skills obrigatórias" para cargo Junior |
+| **P9** | **Contexto suficiente para o candidato decidir** | O JD deve dar ao candidato informação suficiente para avaliar se a vaga faz sentido para ele: setor, tamanho da empresa, estágio, modelo de trabalho, cultura esperada. | JD completamente genérico sem nenhum contexto da empresa |
+| **P10** | **Riqueza suficiente para extração de dados** | Para que a IA extraia o perfil Big Five e gere perguntas calibradas, o JD precisa de densidade de informação — responsabilidades específicas, contexto do cargo, desafios esperados. | JD com 3 linhas de responsabilidades e lista de skills sem contexto |
+
+---
+
+### 1.4 Score de qualidade determinístico (F1.B)
+
+Score calculado automaticamente antes de chamar o LLM:
+
+```python
+Score_JD_basico = 0
+
+# Estrutura mínima
+if responsabilidades >= 3:       Score_JD_basico += 20
+if skills_tecnicas >= 3:         Score_JD_basico += 20
+if comp_comportamentais >= 2:    Score_JD_basico += 15
+if senioridade_definida:         Score_JD_basico += 15
+if titulo_presente:              Score_JD_basico += 10
+
+# Riqueza
+if descricao_presente:           Score_JD_basico += 10
+if departamento_presente:        Score_JD_basico += 5
+if contexto_empresa_presente:    Score_JD_basico += 5
+
+# Gates de bloqueio
+Score_JD_basico ≥ 60  → prossegue para LLM (F1.C)
+Score_JD_basico 30–59 → prossegue para LLM com flag "jd_quality = low"
+Score_JD_basico < 30  → bloqueado; sistema solicita preenchimento mínimo antes de continuar
+```
+
+---
+
+### 1.5 Prompt completo de revisão e enriquecimento do JD (F1.C)
+
+Este é o prompt de produção para o LLM que revisa e enriquece o JD do cliente.
+
+#### Parâmetros LLM para revisão de JD
+
+| Parâmetro | Valor | Justificativa |
+|---|---|---|
+| `temperature` | 0.3 | Baixo o suficiente para análise consistente; alto o suficiente para gerar texto enriquecido fluente |
+| `max_tokens` | 3000 | JD enriquecido + relatório de qualidade |
+| `top_p` | 0.95 | — |
+| Modelo preferencial | Claude 3.5 Sonnet / Gemini 1.5 Pro | Melhor compreensão de nuances de mercado de trabalho em PT-BR |
+| Tentativas em caso de falha JSON | 2 retries com `json_repair` | Robustez |
+
+#### Prompt completo
 
 ```
-Score_JD = (responsabilidades ≥ 3  → 30pts)
-         + (skills técnicas ≥ 3    → 30pts)
-         + (comp. comportamentais ≥ 2 → 25pts)
-         + (senioridade definida   → 10pts)
-         + (descrição presente     → 5pts)
+SYSTEM:
+Você é um especialista sênior em recrutamento estratégico e design de processos seletivos,
+com profundo conhecimento do mercado de trabalho brasileiro e metodologias de avaliação
+baseadas em evidências (CBI, Big Five, Bloom, Dreyfus).
 
-Score_JD ≥ 70  → prossegue normalmente
-Score_JD 50–69 → prossegue com aviso de qualidade (flag: jd_quality = "low")
-Score_JD < 50  → bloqueado; sistema solicita enriquecimento do JD
+Sua missão é dupla:
+1. AVALIAR a qualidade do Job Description recebido em 8 dimensões, identificando problemas,
+   inconsistências e oportunidades de melhoria.
+2. GERAR uma versão enriquecida do JD que seja clara, específica, inclusiva e suficientemente
+   densa para permitir extração automática de perfil comportamental (Big Five) e geração de
+   perguntas de triagem calibradas.
+
+PRINCÍPIOS QUE O JD ENRIQUECIDO DEVE SEGUIR:
+
+P1 — TÍTULO ESPECÍFICO E PADRONIZADO
+  - Deve identificar a função com precisão, incluir senioridade e seguir nomenclatura de mercado
+  - Evitar jargões internos, títulos criativos sem clareza ("Ninja", "Rockstar", "Guru")
+  - Usar terminologia reconhecida no mercado: "Engenheiro de Software Sênior", "Product Manager Pleno"
+
+P2 — COERÊNCIA SENIORIDADE × RESPONSABILIDADES
+  - Junior: executa sob orientação, aprende, entrega tarefas definidas
+  - Pleno: executa com autonomia, resolve problemas de média complexidade, contribui tecnicamente
+  - Sênior: referência técnica, faz trade-offs, pode mentorear, impacta além do próprio escopo
+  - Lead: lidera tecnicamente equipes, define padrões, influencia decisões
+  - Diretor+: gestão de função, visão estratégica, P&L ou OKRs de área
+  Sinalizar quando responsabilidades são incompatíveis com a senioridade declarada.
+
+P3 — SKILLS TÉCNICAS ESPECÍFICAS E VERIFICÁVEIS
+  - Cada skill deve ser tecnologia, ferramenta, linguagem ou metodologia concreta
+  - Distinguir obrigatórias de desejáveis quando possível
+  - Não listar genéricos: "sistemas", "tecnologia", "ferramentas de gestão"
+  - Não exigir anos de experiência superiores à existência da tecnologia no mercado
+
+P4 — RESPONSABILIDADES COM VERBO DE AÇÃO E ESCOPO
+  - Cada item deve começar com verbo no infinitivo: "Desenvolver", "Liderar", "Garantir"
+  - Cada item deve ter escopo claro: o quê + para quem + com qual impacto esperado
+  - Não listar atributos pessoais como responsabilidades: "Ser proativo", "Ter boa comunicação"
+
+P5 — COMPETÊNCIAS COMPORTAMENTAIS CONTEXTUALIZADAS
+  - Descrever em qual contexto o comportamento se manifesta na função
+  - Não: "comunicativo" | Sim: "capaz de comunicar decisões técnicas complexas para stakeholders não-técnicos"
+  - Não: "proativo" | Sim: "identifica gargalos de processo e propõe soluções antes de ser solicitado"
+
+P6 — AUSÊNCIA DE INCONSISTÊNCIAS INTERNAS
+  - Verificar contradições entre: título × senioridade, senioridade × responsabilidades,
+    cultura declarada × estrutura descrita, requisitos × contexto
+  - Sinalizar todas as inconsistências encontradas
+
+P7 — LINGUAGEM INCLUSIVA E SEM VIÉS
+  - Remover toda linguagem que discrimine por gênero, idade, origem, estado civil
+  - Usar linguagem neutra em gênero (ex: "o/a profissional", "a pessoa" ou neutro)
+  - Não incluir requisitos físicos, de aparência, estado civil, ou foto
+  - Não usar adjetivos que favoreçam um grupo demográfico específico
+
+P8 — EXPECTATIVAS REALISTAS E DE MERCADO
+  - Verificar se os requisitos são compatíveis com o mercado atual
+  - Identificar requisitos impossíveis (ex: 5 anos de experiência em tecnologia com 2 anos de existência)
+  - Identificar requisitos excessivos para a senioridade declarada
+
+P9 — CONTEXTO SUFICIENTE
+  - Incluir: setor, estágio/tamanho da empresa, modelo de trabalho (remoto/híbrido/presencial),
+    tamanho da equipe, principais desafios do cargo
+  - O candidato deve conseguir decidir se a vaga faz sentido para ele sem fazer perguntas básicas
+
+P10 — RIQUEZA PARA EXTRAÇÃO DE DADOS
+  - O JD enriquecido deve conter linguagem suficientemente específica para que uma IA consiga
+    inferir o perfil Big Five ideal (quais traits são mais relevantes para a função)
+  - Responsabilidades e contexto devem revelar implicitamente: nível de autonomia, pressão,
+    inovação requerida, colaboração esperada, rigor técnico, estabilidade emocional necessária
+
+REGRAS ABSOLUTAS PARA A VERSÃO ENRIQUECIDA:
+- Nunca inventar informações não presentes ou inferíveis do JD original
+- Quando expandir ou enriquecer, basear-se no que está implícito no JD original e no arquétipo do cargo
+- Manter o tom e a cultura da empresa quando sinais estiverem presentes
+- Preservar todas as informações corretas do JD original
+- Não remover requisitos técnicos — apenas organizá-los e torná-los mais específicos
+- Escrever em português do Brasil, tom profissional e direto
+- Linguagem neutra em gênero em todo o documento
+
+USER:
+Analise e enriqueça o seguinte Job Description.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+JD ORIGINAL DO CLIENTE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{job_description_raw}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INFORMAÇÕES COMPLEMENTARES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Título informado: {titulo_cargo}
+Senioridade informada: {senioridade}
+Departamento: {departamento}
+Setor da empresa: {setor}
+Tamanho da empresa: {tamanho_empresa}
+Modelo de trabalho: {remoto | hibrido | presencial | nao_informado}
+Skills técnicas informadas pelo recrutador: {lista_skills}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RETORNE O SEGUINTE JSON (sem markdown, sem blocos de código):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{
+  "quality_report": {
+    "overall_score": 0-100,
+    "overall_level": "excelente | bom | adequado | insuficiente | critico",
+    "summary": "resumo executivo em 2-3 frases da qualidade geral do JD",
+    "dimensions": {
+      "title": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "o que foi encontrado",
+        "suggestion": "como melhorar (null se ok)"
+      },
+      "seniority_coherence": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "análise da coerência senioridade × responsabilidades",
+        "suggestion": "null se ok"
+      },
+      "technical_skills": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "qualidade e especificidade das skills técnicas",
+        "suggestion": "null se ok",
+        "skills_added": ["skill inferida 1"],
+        "skills_problematic": ["skill genérica ou impossível"]
+      },
+      "responsibilities": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "qualidade das responsabilidades",
+        "suggestion": "null se ok"
+      },
+      "behavioral_competencies": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "contextualização das competências comportamentais",
+        "suggestion": "null se ok"
+      },
+      "internal_consistency": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "inconsistências internas identificadas",
+        "inconsistencies": ["descrição da inconsistência 1"],
+        "suggestion": "null se ok"
+      },
+      "inclusive_language": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "análise de linguagem inclusiva",
+        "biased_terms": ["termo problemático 1"],
+        "suggestion": "null se ok"
+      },
+      "market_realism": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "análise de requisitos vs. mercado",
+        "unrealistic_requirements": ["requisito problemático 1"],
+        "suggestion": "null se ok"
+      },
+      "context_richness": {
+        "score": 0-10,
+        "status": "ok | aviso | critico",
+        "finding": "nível de contexto para o candidato e para extração de dados",
+        "suggestion": "null se ok"
+      }
+    },
+    "critical_issues": ["lista de problemas críticos que precisam de correção antes de prosseguir"],
+    "warnings": ["lista de avisos — melhorias recomendadas mas não bloqueantes"],
+    "ready_for_processing": true
+  },
+  "enriched_jd": {
+    "title": "título padronizado e específico",
+    "seniority": "Junior | Pleno | Sênior | Lead | Principal | Diretor | VP | C-Level",
+    "seniority_confirmed": true,
+    "department": "string",
+    "work_model": "Remoto | Híbrido | Presencial | Não informado",
+    "about_role": "parágrafo de 3-5 frases descrevendo o papel, seu impacto e o contexto",
+    "responsibilities": [
+      "Verbo infinitivo + escopo claro + impacto esperado (item 1)",
+      "Verbo infinitivo + escopo claro + impacto esperado (item 2)"
+    ],
+    "technical_skills_required": ["skill obrigatória 1", "skill obrigatória 2"],
+    "technical_skills_desired": ["skill desejável 1"],
+    "behavioral_competencies": [
+      "Competência comportamental contextualizada 1",
+      "Competência comportamental contextualizada 2"
+    ],
+    "context_signals": {
+      "autonomy_level": "alta | média | baixa",
+      "innovation_level": "alta | média | baixa",
+      "pressure_level": "alta | média | baixa",
+      "collaboration_level": "alta | média | baixa",
+      "leadership_required": true,
+      "mentoring_required": true
+    },
+    "enrichment_notes": "o que foi adicionado, removido ou corrigido em relação ao JD original"
+  }
+}
 ```
+
+---
+
+### 1.6 Interpretação do relatório de qualidade (F1.D — apresentação ao recrutador)
+
+O recrutador vê duas coisas lado a lado:
+
+**Painel 1 — Relatório de qualidade:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ ANÁLISE DO JOB DESCRIPTION                                      │
+│ Score geral: 62/100 — ADEQUADO (melhorias recomendadas)         │
+├─────────────┬───────┬──────────────────────────────────────────┤
+│ Dimensão    │ Score │ Situação                                 │
+├─────────────┼───────┼──────────────────────────────────────────┤
+│ Título      │  9/10 │ ✅ Claro e padronizado                   │
+│ Senioridade │  5/10 │ ⚠️  Responsabilidades acima do nível     │
+│ Skills      │  7/10 │ ✅ Específicas; 2 genéricas removidas    │
+│ Responsab.  │  4/10 │ ⚠️  3 itens sem verbo de ação            │
+│ Comportam.  │  3/10 │ ⚠️  Genéricas; sem contexto              │
+│ Consistência│  8/10 │ ✅ Sem contradições identificadas        │
+│ Linguagem   │  6/10 │ ⚠️  1 termo potencialmente excludente    │
+│ Realismo    │ 10/10 │ ✅ Requisitos compatíveis com mercado    │
+│ Contexto    │  3/10 │ ⚠️  Pouco contexto para candidato e IA  │
+└─────────────┴───────┴──────────────────────────────────────────┘
+
+PROBLEMAS CRÍTICOS: nenhum
+AVISOS (4):
+• Responsabilidades incluem itens como "Ser proativo" — convertidos para comportamentos observáveis
+• Competência "boa comunicação" foi contextualizada para a função
+• Termo "jovem" removido da descrição por risco de viés etário
+• Contexto da empresa ausente — adicionado com base no setor informado
+
+A versão enriquecida está pronta para revisão. Você pode editar antes de prosseguir.
+```
+
+**Painel 2 — JD enriquecido para revisão e edição pelo recrutador**
+
+---
+
+### 1.7 Decisão pós-análise (F1.E)
+
+| Condição | Ação |
+|---|---|
+| `ready_for_processing = true` e sem problemas críticos | Recrutador pode aprovar e seguir para F2 |
+| `ready_for_processing = true` com avisos | Recrutador vê os avisos, pode corrigir ou ignorar cada um e aprovar |
+| `ready_for_processing = false` (problemas críticos) | Sistema bloqueia e exige resolução dos problemas críticos antes de prosseguir |
+| Recrutador edita o JD enriquecido | Sistema re-executa F1.B (score determinístico) para confirmar qualidade mínima |
+
+**O JD que entra na F2 é sempre a versão aprovada pelo recrutador** — nunca o JD raw do cliente nem o JD enriquecido sem revisão humana.
 
 ---
 
@@ -1517,7 +1852,7 @@ Todo relatório deve ser gerado a partir do seguinte objeto de dados:
 
 ---
 
-## FASE 9 — Fluxo completo integrado
+## FASE 12 — Fluxo completo integrado
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
