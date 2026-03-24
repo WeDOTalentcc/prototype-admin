@@ -18,7 +18,7 @@ import re
 logger = logging.getLogger(__name__)
 
 BLOOM_LEVELS = {
-    1: {"name": "Lembrar", "description": "Recordar fatos e conceitos básicos", 
+    1: {"name": "Recordar", "description": "Recordar fatos e conceitos básicos", 
         "indicators": ["lembro", "sei", "conheço", "aprendi", "estudei", "vi", "ouvi"]},
     2: {"name": "Compreender", "description": "Explicar ideias ou conceitos", 
         "indicators": ["entendo", "explico", "compreendo", "descrevo", "interpreto", "resumo"]},
