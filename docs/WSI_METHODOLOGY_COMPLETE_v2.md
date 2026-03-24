@@ -45,6 +45,7 @@
 - [Apêndice A — Parâmetros de implementação (LLM, thresholds)](#apendice-a)
 - [Apêndice B — Conformidade: EU AI Act, LGPD, DEI](#apendice-b)
 - [Apêndice C — Trace completo ponta-a-ponta](#apendice-c)
+- [Apêndice D — Dívida técnica: centralização dos blocos de compliance](#apendice-d)
 
 **[Referências bibliográficas](#referencias)**
 
@@ -3310,6 +3311,182 @@ Pesos Senior sem elegibilidade: técnico=56.25%, comportamental=43.75%
 ```
 
 > Este trace demonstra como Bloom e Dreyfus são parâmetros concretos e rastreáveis: definem a pergunta gerada (F6), são detectados na resposta pelo LLM extrator (F8 Camada 2), e entram na fórmula via `bloom_alinhamento` e ajustes de Dreyfus (F8 Camada 3) — tudo determinístico e auditável.
+
+---
+
+## APÊNDICE D — Dívida Técnica: Centralização dos Blocos de Compliance
+
+> **Tipo:** Decisão de arquitetura documentada — aviso para revisão futura
+> **Prioridade:** Média — sistema MVP está seguro na configuração atual
+> **Gatilho de revisão:** mudança legislativa, adição de novos prompts, ou escala ≥ 10.000 candidatos/mês
+
+---
+
+### D.1 Decisão de MVP: compliance embutido em cada prompt
+
+Os 9 prompts e templates desta metodologia contêm blocos de compliance **embutidos diretamente** no SYSTEM block de cada chamada ao LLM:
+
+| Bloco | Conteúdo | Onde aparece |
+|---|---|---|
+| `BLOCO_FAIRNESS` | 8 atributos protegidos, 12 termos de viés implícito, linguagem neutra, cenário profissional | F1.C, F2.5, F6.5, F6.6, F8.3, F11.5 |
+| `BLOCO_LGPD` | Base legal (Art. 6º, I, III, IX), finalidade específica, minimização, não-discriminação | F1.C, F6.5, F6.6, F8.3 |
+| `BLOCO_ANTIBAJULAÇÃO` | Instrução de honestidade, proibição de suavização, tom direto | F1.C, F2.5, F8.3 |
+| `BLOCO_AUDITABILIDADE` | Obrigação de citação literal, rationale com evidência, campos de log | F2.5, F6.5, F8.3, F11.5 |
+
+**Raciocínio da decisão MVP:**
+
+Esta escolha foi deliberada. Para o produto em fase inicial, embutir compliance diretamente em cada prompt oferece três vantagens concretas:
+
+1. **Garantia de entrega independente do orquestrador** — a instrução chega ao LLM mesmo que o agente orquestrador (recruiter_agent_v5) esteja com configuração incorreta, falhe em injetar contexto, ou seja substituído por outro agente
+2. **Transparência imediata** — qualquer desenvolvedor que leia o prompt sabe exatamente quais regras estão ativas — sem precisar consultar arquivos externos
+3. **Menor superfície de falha** — menos dependências = menos pontos de quebra em ambiente MVP onde pipelines de configuração ainda estão se consolidando
+
+A escolha é segura. O sistema está em conformidade com as regras embutidas em todos os prompts.
+
+---
+
+### D.2 Risco de manutenção conhecido: duas fontes de verdade
+
+A consequência desta decisão cria uma **dívida técnica documentada e conhecida**.
+
+O compliance está definido em dois lugares independentes sem sincronização automática:
+
+```
+Fonte 1 — Camada de agentes (regras de orquestração):
+  .agents/skills/dei-fairness/SKILL.md
+  .agents/skills/lgpd-data-protection/SKILL.md
+  .agents/skills/wedo-governance/SKILL.md
+  .agents/skills/screening-compliance/SKILL.md
+
+Fonte 2 — Camada de prompts (instrução ao LLM):
+  Os 9 blocos BLOCO_FAIRNESS / BLOCO_LGPD / etc.
+  embutidos individualmente em cada prompt deste documento
+```
+
+**O risco concreto:** se a LGPD for emendada, ou se o EU AI Act entrar em vigor com novos requisitos, a atualização dos skill documents da Fonte 1 **não propaga automaticamente** para os blocos embutidos nos prompts da Fonte 2. Um desenvolvedor que atualize apenas os skills do agente pode acreditar que o sistema está em conformidade, quando o LLM ainda está operando com as instruções antigas.
+
+O risco aumenta proporcionalmente ao número de prompts — cada novo prompt adicionado sem centralização aprofunda a dívida.
+
+---
+
+### D.3 Gatilhos recomendados para realizar a revisão
+
+Recomenda-se revisar e centralizar os blocos de compliance ao ocorrer **qualquer um** dos seguintes eventos:
+
+| Gatilho | Por quê aciona a revisão |
+|---|---|
+| Alteração legislativa (LGPD, EU AI Act, CLT, CF) | Risco legal de dois sistemas com regras divergentes |
+| Adição de mais de 3 novos prompts ao pipeline | O custo de manutenção manual de blocos separados torna-se proibitivo |
+| Escala operacional ≥ 10.000 candidatos/mês | Nesse volume, auditoria de conformidade exige rastreabilidade centralizada |
+| Auditoria formal por regulador ou cliente enterprise | Auditores esperam fonte única e versionada para regras de compliance |
+| Substituição do modelo LLM base | Mudança de modelo pode exigir ajuste de linguagem dos blocos — melhor fazer uma vez do que em 9 lugares |
+
+---
+
+### D.4 Arquitetura futura recomendada: compliance_config centralizado
+
+Quando a revisão for realizada, a arquitetura alvo é a seguinte:
+
+**Um arquivo central** — `config/compliance_blocks.py` no repositório `recruiter_agent_v5`:
+
+```python
+# config/compliance_blocks.py
+# Fonte única de verdade para todos os blocos de compliance do pipeline WSI
+# Versão: 1.0 | Última revisão: {data} | Próxima revisão: {gatilho}
+
+BLOCO_FAIRNESS = """
+REGRAS DE FAIRNESS E NÃO-DISCRIMINAÇÃO (BASE LEGAL: LGPD ART. 6º, CLT ART. 5º, CF ART. 5º):
+- Use SEMPRE linguagem neutra em gênero: "a pessoa", "você", "quem ocupa este papel"
+- NUNCA inclua referência a: gênero, raça, etnia, origem, religião, orientação sexual,
+  estado civil, deficiência, faixa etária, nacionalidade ou nível socioeconômico
+- NUNCA use termos de viés implícito: "boa aparência", "apresentação pessoal",
+  "universidades de primeira linha", "jovem e dinâmico", "nativo", "native speaker",
+  "recém-formado", "escola particular", "bairros nobres", "boa família",
+  "clube social", "perfil adequado", "morar próximo"
+- Cenário SEMPRE profissional: sem família, filhos, crenças, saúde pessoal, finanças
+"""
+
+BLOCO_LGPD = """
+PROTEÇÃO DE DADOS (LGPD ART. 6º — FINALIDADE, MINIMIZAÇÃO, NÃO-DISCRIMINAÇÃO):
+- Processe apenas dados estritamente necessários para a finalidade declarada
+- Não reproduza PII da entrada no output (nome, CPF, e-mail, telefone, endereço)
+- Fundamento legal: legítimo interesse / execução de processo seletivo com consentimento
+- Compliance EU AI Act High-Risk AI: toda decisão assistida por IA deve ser explicável
+"""
+
+BLOCO_ANTIBAJULACAO = """
+ANTI-BAJULAÇÃO E HONESTIDADE:
+- Nunca suavize avaliações para poupar desconforto — a precisão protege candidatos e recrutadores
+- Nunca inicie com elogio ao input recebido ("Que ótima pergunta!", "Excelente JD!")
+- Se o input for de baixa qualidade, diga isso diretamente no output
+"""
+
+BLOCO_AUDITABILIDADE = """
+RASTREABILIDADE E AUDITABILIDADE:
+- Toda classificação (Bloom, Dreyfus, elegibilidade) deve ter rationale com evidência literal
+- Evidências são SEMPRE citações literais entre aspas — nunca paráfrases
+- Campos de log (confidence, compliance_flags) devem ser preenchidos honestamente
+"""
+```
+
+**O agente injeta os blocos no momento de montar cada prompt:**
+
+```python
+# Em prompt_builder.py (recruiter_agent_v5)
+from config.compliance_blocks import (
+    BLOCO_FAIRNESS,
+    BLOCO_LGPD,
+    BLOCO_ANTIBAJULACAO,
+    BLOCO_AUDITABILIDADE
+)
+
+def build_f8_extraction_prompt(pergunta, resposta, competencia, bloom, dreyfus):
+    system = f"""
+    Você é um avaliador especialista em competências...
+    {base_instructions}
+
+    {BLOCO_FAIRNESS}
+    {BLOCO_LGPD}
+    {BLOCO_ANTIBAJULACAO}
+    {BLOCO_AUDITABILIDADE}
+    """
+    ...
+```
+
+**Resultado:** uma alteração em `BLOCO_LGPD` propaga para todos os 9 prompts imediatamente. Não há sincronização manual. A conformidade é verificável em um único arquivo com histórico de git.
+
+---
+
+### D.5 Mapa de refatoração: o que muda em cada prompt
+
+Quando a centralização for realizada, os seguintes blocos devem ser removidos dos prompts e substituídos por chamadas à constante central:
+
+| Prompt | Seção | Blocos a remover | Bloco substituto |
+|---|---|---|---|
+| F1.C — Revisão JD | 1.5 | `REGRAS DE FAIRNESS E NÃO-DISCRIMINAÇÃO`, `ANTI-BAJULAÇÃO` | `BLOCO_FAIRNESS`, `BLOCO_ANTIBAJULACAO` |
+| F2.5 — Big Five extração | 2.5 | Trecho de fairness e auditabilidade | `BLOCO_FAIRNESS`, `BLOCO_AUDITABILIDADE` |
+| F6.5 — Perguntas técnicas | 6.5 | Bloco de linguagem neutra e cenário profissional | `BLOCO_FAIRNESS` |
+| F6.6 — Perguntas comportamentais | 6.6 | Bloco DEI completo e cenário profissional | `BLOCO_FAIRNESS`, `BLOCO_LGPD` |
+| F6.8.1 — Validação ancoragem | 6.8.1 | Não contém blocos de compliance — manter como está |  — |
+| F8.3 — Extração Camada 2 | 8.3 | Todos os 4 blocos (fairness, LGPD, anti-bajulação, auditabilidade) | `BLOCO_FAIRNESS`, `BLOCO_LGPD`, `BLOCO_ANTIBAJULACAO`, `BLOCO_AUDITABILIDADE` |
+| F8.5.1 — Feedback candidato | 8.5 | Instrução de linguagem neutra no template | `BLOCO_FAIRNESS` (via FairnessGuard, não no template) |
+| F11.2.1 — Seção 7 gaps | 11.2 | Instrução de linguagem sobre competências | `BLOCO_FAIRNESS` (via FairnessGuard, não no template) |
+| F11.5 — Perguntas entrevista | 11.5 | Bloco de fairness e auditabilidade | `BLOCO_FAIRNESS`, `BLOCO_AUDITABILIDADE` |
+
+> **Nota sobre templates (F8.5.1 e F11.2.1):** estes são templates de variáveis, não prompts LLM. Para eles, a centralização não é via injeção no SYSTEM block, mas via FairnessGuard (já implementado) que verifica o output montado antes de persistir. A "centralização" aqui já existe — basta garantir que o FairnessGuard use a mesma lista do `BLOCO_FAIRNESS` centralizado.
+
+---
+
+### D.6 Critério de conclusão da revisão
+
+A dívida técnica estará quitada quando:
+
+- [ ] `config/compliance_blocks.py` (ou equivalente) criado em `recruiter_agent_v5` com os 4 blocos versionados
+- [ ] Os 4 blocos removidos dos 7 prompts LLM e substituídos por injeção via `prompt_builder`
+- [ ] FairnessGuard atualizado para usar a mesma constante central do `BLOCO_FAIRNESS`
+- [ ] Teste automatizado verifica que nenhum prompt é construído sem os blocos obrigatórios (para o tipo de prompt)
+- [ ] Esta seção D do documento atualizada com `status: CONCLUÍDO` e data de resolução
+- [ ] Changelog da metodologia registra a mudança como "WSI v2.1 — Centralização de compliance"
 
 ---
 
