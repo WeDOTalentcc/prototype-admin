@@ -1013,6 +1013,510 @@ Ao final de todas as respostas comportamentais, o sistema calcula o perfil Big F
 
 ---
 
+## FASE 10 — Critérios de aprovação e reprovação
+
+### 10.1 Decisão em duas camadas
+
+A decisão final sobre um candidato opera em duas camadas independentes:
+
+```
+Camada de Gates (bloqueios absolutos)
+        ↓ se nenhum gate for ativado
+Camada de Score (aprovação por nota)
+```
+
+> Um candidato pode ter WSI Final 8.5 e ainda ser **reprovado** se um gate absoluto for ativado. Gates têm precedência sobre o score.
+
+---
+
+### 10.2 Gates absolutos (reprovação imediata, independente do score)
+
+| Gate | Condição de ativação | Justificativa |
+|---|---|---|
+| **G1 — Elegibilidade** | Qualquer pergunta de elegibilidade obrigatória respondida negativamente | Ex: candidato não tem CNH exigida pela vaga |
+| **G2 — Prompt Injection** | Resposta com tentativa detectada de manipular o sistema | Segurança — score = 0.0 nessa pergunta; se reincidente, reprovação da triagem |
+| **G3 — Score técnico mínimo** | WSI_tecnico < 4.0 (qualquer modo) | Competência técnica abaixo do mínimo absoluto para a função |
+| **G4 — Skill crítica zerada** | Qualquer skill marcada como `critical = true` com score < 3.0 | Competência inegociável para a vaga com performance inaceitável |
+| **G5 — Resposta insuficiente** | ≥ 50% das perguntas com resposta < 30 palavras | Candidato não se engajou com a triagem de forma séria |
+| **G6 — Inflação sistemática** | `inflation_detected = true` em ≥ 3 perguntas | Padrão de inflação — autodeclara expertise sem evidências repetidamente |
+
+> **G4 — Como marcar skill como crítica:** no JD, o recrutador pode marcar até 2 skills como `critical`. Se não marcada, todas as skills têm peso igual e nenhuma tem gate individual.
+
+---
+
+### 10.3 Critérios de aprovação por score (após gates)
+
+#### Thresholds de decisão automática
+
+| Dimensão | Aprovado automático | Revisão manual | Reprovado automático |
+|---|---|---|---|
+| **WSI Final** | ≥ 7.5 | 6.0 – 7.4 | < 6.0 |
+| **WSI Técnico** | ≥ 7.0 | 5.5 – 6.9 | < 5.5 |
+| **WSI Comportamental** | ≥ 7.0 | 5.5 – 6.9 | < 5.5 |
+| **Gap Big Five crítico** | Nenhum gap > 20pts | Gap 15–20pts em top-1 trait | Gap > 20pts no trait de maior peso |
+
+#### Lógica de decisão completa
+
+```python
+def calcular_decisao(candidato: CandidatoWSI) -> Decisao:
+
+    # CAMADA 1: Gates absolutos
+    for gate in GATES_ABSOLUTOS:
+        if gate.ativado(candidato):
+            return Decisao(
+                resultado="REPROVADO",
+                motivo=gate.nome,
+                gate_ativado=True,
+                revisao_humana=False
+            )
+
+    # CAMADA 2: Score Final
+    wsi = candidato.wsi_final
+
+    if wsi >= 7.5 and wsi_tecnico >= 6.5 and wsi_comportamental >= 6.5:
+        return Decisao(resultado="APROVADO", confianca="alta", revisao_humana=False)
+
+    if wsi >= 7.0 and wsi_tecnico >= 5.5:
+        return Decisao(resultado="APROVADO", confianca="media", revisao_humana=True)
+
+    if wsi >= 6.0:
+        # Verificar gap em trait crítico
+        gap_critico = max(
+            trait.score_required - trait.score_demonstrated
+            for trait in candidato.big_five_ranked[:1]  # top-1 trait
+        )
+        if gap_critico > 20:
+            return Decisao(resultado="REPROVADO", motivo="gap_trait_critico", revisao_humana=True)
+        return Decisao(resultado="REVISAO", confianca="baixa", revisao_humana=True)
+
+    # wsi < 6.0
+    return Decisao(resultado="REPROVADO", confianca="alta", revisao_humana=False)
+```
+
+---
+
+### 10.4 Matriz de decisão completa (visão do consultor)
+
+| WSI Final | WSI Técnico | WSI Comportamental | Gap trait top-1 | Gate ativado | Decisão final |
+|---|---|---|---|---|---|
+| ≥ 7.5 | ≥ 6.5 | ≥ 6.5 | ≤ 15pts | Não | ✅ Aprovado (alta confiança) |
+| ≥ 7.5 | ≥ 6.5 | 5.5–6.4 | ≤ 20pts | Não | ✅ Aprovado (revisão opcional) |
+| 7.0–7.4 | ≥ 5.5 | ≥ 5.5 | ≤ 20pts | Não | ✅ Aprovado (revisão recomendada) |
+| 6.0–6.9 | ≥ 5.5 | ≥ 5.5 | ≤ 15pts | Não | ⚠️ Em avaliação (revisão obrigatória) |
+| 6.0–6.9 | ≥ 5.5 | ≥ 5.5 | > 20pts | Não | ❌ Reprovado (gap comportamental crítico) |
+| 5.5–5.9 | qualquer | qualquer | qualquer | Não | ❌ Reprovado |
+| < 5.5 | qualquer | qualquer | qualquer | Não | ❌ Reprovado |
+| qualquer | < 4.0 | qualquer | qualquer | Não | ❌ Reprovado (gate G3) |
+| qualquer | qualquer | qualquer | qualquer | Sim | ❌ Reprovado (gate ativo) |
+
+---
+
+### 10.5 Sinais de alerta (red flags) para o consultor
+
+Mesmo candidatos aprovados podem ter sinais de alerta que o consultor deve considerar. Esses sinais não reprovam automaticamente, mas são destacados no relatório:
+
+| Código | Sinal | Descrição | Nível |
+|---|---|---|---|
+| RF-01 | Inflação isolada | `inflation_detected = true` em 1–2 perguntas | Médio |
+| RF-02 | Gap de Bloom sistemático | Bloom demonstrado < esperado em ≥ 3 perguntas | Alto |
+| RF-03 | Gap de Dreyfus em técnica | Dreyfus técnico demonstrado < esperado em ≥ 2 skills | Alto |
+| RF-04 | Assimetria técnica/comportamental | Diferença > 2.0 pontos entre WSI_tecnico e WSI_comportamental | Médio |
+| RF-05 | Sem resultado em STAR | R ausente em ≥ 50% das respostas | Médio |
+| RF-06 | Respostas curtas consistentes | 30–60 palavras em ≥ 3 perguntas | Médio |
+| RF-07 | Trait crítico abaixo | Score_demonstrado < score_required − 15 no top-1 trait | Alto |
+| RF-08 | Autenticidade questionável | `response_authentic = false` em qualquer resposta | Alto |
+
+---
+
+## FASE 11 — Relatório completo do consultor (template)
+
+### 11.1 Propósito e audiência
+
+O relatório do consultor é o **documento de decisão** gerado ao final de cada triagem WSI. Ele tem dois objetivos:
+
+1. **Apoiar a decisão** de aprovação/reprovação com dados estruturados e cruzamento explícito com o perfil da vaga
+2. **Registrar rastreabilidade** para auditoria (EU AI Act, LGPD) — toda decisão tem justificativa documentada e evidências textuais
+
+**Audiência:** Consultor/recrutador WeDOTalent e, quando aplicável, o gestor da vaga do cliente.
+
+---
+
+### 11.2 Estrutura completa do relatório
+
+```
+═══════════════════════════════════════════════════════════════════
+RELATÓRIO DE TRIAGEM WSI — AVALIAÇÃO DE CANDIDATO
+WeDOTalent · Powered by LIA
+Gerado em: {data_hora} | Versão metodologia: 2.0
+═══════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 1 — CABEÇALHO: VAGA E CANDIDATO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VAGA
+  Título:            {titulo_cargo}
+  Empresa / Cliente: {nome_empresa}
+  Senioridade:       {senioridade} ({dreyfus_tecnico_esperado} Dreyfus técnico | Bloom {bloom_esperado})
+  Modo de triagem:   {Compact 7q | Full 12q}
+  JD Quality Score:  {score_qualidade_jd}/100
+
+CANDIDATO
+  Nome:             {nome_candidato}
+  Canal de triagem: {WhatsApp | Web chat}
+  Data da triagem:  {data_hora_inicio} → {data_hora_fim}
+  Tempo total:      {tempo_total_minutos} minutos
+  ID da avaliação:  {uuid}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 2 — RESULTADO E DECISÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  WSI FINAL:  {wsi_final}/10  →  [{APROVADO | EM AVALIAÇÃO | REPROVADO}]
+
+  ┌─────────────────────────────┐
+  │  DECISÃO: APROVADO          │   ← ou: EM AVALIAÇÃO / REPROVADO
+  │  Confiança: Alta            │   ← ou: Média / Baixa
+  │  Revisão humana: Não        │   ← ou: Recomendada / Obrigatória
+  └─────────────────────────────┘
+
+  Motivo da decisão (quando EM AVALIAÇÃO ou REPROVADO):
+  → {motivo legível: ex: "WSI Comportamental abaixo do threshold (5.2 < 5.5)"}
+  → {gate ativado, se houver: ex: "Gate G3: WSI Técnico = 3.8 < 4.0"}
+
+  Gates verificados:
+  G1 Elegibilidade:        ✓ Não ativado
+  G2 Prompt Injection:     ✓ Não detectado
+  G3 WSI Técnico mínimo:   ✓ {wsi_tecnico} ≥ 4.0
+  G4 Skill crítica:        ✓ Não marcada / {skill}: {score} ≥ 3.0
+  G5 Engajamento mínimo:   ✓ {N}% de respostas com ≥ 30 palavras
+  G6 Inflação sistemática: ✓ {n_inflacoes} ocorrência(s) detectada(s)
+
+  Sinais de alerta: {lista de red flags detectados, ou "Nenhum"}
+  → RF-02: Gap de Bloom sistemático (3 de 7 perguntas abaixo do esperado)
+  → RF-07: Trait Conscienciosidade: demonstrado 55 vs. requerido 82 (gap −27pts)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 3 — VISÃO GERAL DOS SCORES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Bloco Técnico       WSI: {wsi_tecnico}/10   Peso: {peso_tecnico}%
+  Bloco Comportamental WSI: {wsi_comp}/10    Peso: {peso_comp}%
+  ─────────────────────────────────────────
+  WSI FINAL                 {wsi_final}/10
+
+  Composição visual:
+  Técnico      [████████░░] {wsi_tecnico}/10
+  Comportamental [███████░░░] {wsi_comp}/10
+  FINAL        [████████░░] {wsi_final}/10
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 4 — CRUZAMENTO: COMPETÊNCIAS TÉCNICAS (vaga × candidato)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Perfil técnico exigido pela vaga | Senioridade: {senioridade}
+  Dreyfus esperado: {dreyfus_esperado} — {dreyfus_label}
+  Bloom esperado:   {bloom_esperado} — {bloom_label}
+
+  ┌──────────────────────┬──────────┬────────────┬────────────┬───────────┬────────┐
+  │ Skill                │ Crítica? │ Score vaga │ Score cand.│ Gap       │ Status │
+  ├──────────────────────┼──────────┼────────────┼────────────┼───────────┼────────┤
+  │ Python               │ ✓ Sim    │ Dreyfus 4  │ Dreyfus 4  │ 0        │ ✅ OK  │
+  │ FastAPI              │ ✓ Sim    │ Dreyfus 4  │ Dreyfus 3  │ −1 nível  │ ⚠️ Gap │
+  │ PostgreSQL           │ Não      │ Dreyfus 3  │ Dreyfus 4  │ +1 nível  │ ✅ Sup │
+  │ Docker               │ Não      │ Dreyfus 3  │ Dreyfus 2  │ −1 nível  │ ⚠️ Gap │
+  └──────────────────────┴──────────┴────────────┴────────────┴───────────┴────────┘
+
+  Bloom demonstrado por skill:
+  ┌──────────────────────┬──────────────┬──────────────────┬──────────────┐
+  │ Skill                │ Bloom esper. │ Bloom demonstrado │ Alinhamento  │
+  ├──────────────────────┼──────────────┼──────────────────┼──────────────┤
+  │ Python               │ 5 (Avaliar)  │ 5 (Avaliar)      │ ✅ Alinhado  │
+  │ FastAPI              │ 5 (Avaliar)  │ 4 (Analisar)     │ ⚠️ −1 nível  │
+  │ PostgreSQL           │ 4 (Analisar) │ 5 (Avaliar)      │ ✅ Superior  │
+  │ Docker               │ 4 (Analisar) │ 3 (Aplicar)      │ ⚠️ −1 nível  │
+  └──────────────────────┴──────────────┴──────────────────┴──────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 5 — CRUZAMENTO: PERFIL BIG FIVE (vaga × candidato)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Perfil comportamental extraído do JD (ranking por relevância):
+
+  ┌──────────────────────────┬──────────┬──────────┬────────┬──────────┬────────────┐
+  │ Trait                    │ Rank JD  │ Req. JD  │ Cand.  │ Gap      │ Status     │
+  ├──────────────────────────┼──────────┼──────────┼────────┼──────────┼────────────┤
+  │ Estabilidade Emocional   │ 1 (36.6%)│ 72       │ 70     │ −2       │ ✅ Atende  │
+  │ Abertura à Experiência   │ 2 (36.1%)│ 74       │ 78     │ +4       │ ✅ Supera  │
+  │ Conscienciosidade        │ 3 (27.3%)│ 82       │ 55     │ −27 ⚠️   │ ❌ Gap     │
+  │ Amabilidade              │ — (match)│ 50       │ 58     │ +8       │ ✅ Atende  │
+  │ Extraversão              │ — (match)│ 45       │ 42     │ −3       │ ✅ Atende  │
+  └──────────────────────────┴──────────┴──────────┴────────┴──────────┴────────────┘
+
+  Legenda: Req. JD = score do trait no ranking do JD | Cand. = score observado nas respostas
+  Gap positivo = candidato supera o requerido | Gap negativo = candidato abaixo do requerido
+
+  Dreyfus comportamental:
+  ┌──────────────────────────┬──────────────────┬──────────────────┬──────────────┐
+  │ Trait                    │ Dreyfus esperado │ Dreyfus demonstr.│ Alinhamento  │
+  ├──────────────────────────┼──────────────────┼──────────────────┼──────────────┤
+  │ Estabilidade Emocional   │ 4 (Proficiente)  │ 4 (Proficiente)  │ ✅ Alinhado  │
+  │ Abertura à Experiência   │ 4 (Proficiente)  │ 5 (Expert)       │ ✅ Superior  │
+  │ Conscienciosidade        │ 4 (Proficiente)  │ 3 (Competente)   │ ⚠️ −1 nível  │
+  └──────────────────────────┴──────────────────┴──────────────────┴──────────────┘
+
+  Bloom comportamental:
+  ┌──────────────────────────┬──────────────┬──────────────────┬──────────────┐
+  │ Trait                    │ Bloom esper. │ Bloom demonstr.  │ Alinhamento  │
+  ├──────────────────────────┼──────────────┼──────────────────┼──────────────┤
+  │ Estabilidade Emocional   │ 5 (Avaliar)  │ 5 (Avaliar)      │ ✅ Alinhado  │
+  │ Abertura à Experiência   │ 5 (Avaliar)  │ 6 (Criar)        │ ✅ Superior  │
+  │ Conscienciosidade        │ 5 (Avaliar)  │ 4 (Analisar)     │ ⚠️ −1 nível  │
+  └──────────────────────────┴──────────────┴──────────────────┴──────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 6 — ANÁLISE DETALHADA POR PERGUNTA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ─── BLOCO TÉCNICO ────────────────────────────────────────────────
+
+  [P1] Python — Score: 8.4/10
+  Pergunta: "Conte sobre uma decisão de arquitetura Python onde você fez
+             trade-offs entre performance, manutenibilidade e custo..."
+  STAR: S✓ T✓ A✓ R✓ | Bloom demonstrado: 5 (Avaliar) ✅ | Dreyfus: 4 ✅
+  Sinais detectados: "avaliou 3 opções de ORM", "mediu latência em produção"
+  Trecho chave: "Testei SQLAlchemy e Tortoise ORM e escolhi com base em benchmarks próprios"
+  Ajustes: +0.5 resultado quantificado | sem penalidades
+  ─────────────────────────────────────────────────────────────────
+
+  [P2] FastAPI — Score: 6.1/10
+  Pergunta: "Descreva um projeto FastAPI onde você garantiu performance..."
+  STAR: S✓ T✓ A✓ R✗ | Bloom demonstrado: 4 (Analisar) ⚠️ | Dreyfus: 3 ⚠️
+  Sinais detectados: "configurou middleware de autenticação"
+  Sinais ausentes: "sem menção a resultado mensurável", "sem comparação de abordagens"
+  Trecho chave: "Configurei o JWT middleware e funcionou bem"
+  Ajustes: −0.8 Dreyfus abaixo | −0.5 ausência de resultado
+  ─────────────────────────────────────────────────────────────────
+
+  [P3–P4] ... (idem para demais skills)
+
+  ─── BLOCO COMPORTAMENTAL ─────────────────────────────────────────
+
+  [P5] Estabilidade Emocional — Score: 7.8/10 (peso: 36.6%)
+  Pergunta: "Descreva uma situação em que o escopo mudou radicalmente..."
+  STAR: S✓ T✓ A✓ R✓ | Bloom: 5 ✅ | Dreyfus comportamental: 4 ✅
+  Sinais detectados: "manteve calma ao comunicar mudanças", "reestruturou sprint em 24h"
+  Trecho chave: "Quando o cliente mudou o escopo na véspera do release, reuni o time..."
+  ─────────────────────────────────────────────────────────────────
+
+  [P6] Abertura à Experiência — Score: 8.6/10 (peso: 36.1%)
+  Pergunta: "Conte sobre uma decisão técnica onde você questionou..."
+  STAR: S✓ T✓ A✓ R✓ | Bloom: 6 ✅ Superior | Dreyfus: 5 ✅ Superior
+  Sinais detectados: "questionou abordagem estabelecida", "construiu prova de conceito",
+                     "apresentou resultados e convenceu o time"
+  Trecho chave: "Propus trocar o ORM por queries raw em endpoints críticos e reduzi latência em 60%"
+  Ajustes: +0.6 Bloom superior | +0.5 dado quantificado
+  ─────────────────────────────────────────────────────────────────
+
+  [P7] Conscienciosidade — Score: 5.2/10 (peso: 27.3%)
+  Pergunta: "Conte sobre um projeto onde você garantiu qualidade técnica..."
+  STAR: S✓ T✗ A✓ R✗ | Bloom: 4 ⚠️ | Dreyfus comportamental: 3 ⚠️
+  Sinais detectados: "mencionou checklist"
+  Sinais ausentes: "sem processo documentado", "sem métrica de qualidade", "sem resultado"
+  Trecho chave: "Sempre tenho um checklist antes de fazer deploy"
+  Ajustes: −0.8 Dreyfus abaixo | −0.5 ausência de resultado | −0.5 STAR incompleto
+  ⚠️ Red Flag RF-07: gap de 27pts no trait de maior peso (C: 55 vs 82 requerido)
+  ─────────────────────────────────────────────────────────────────
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 7 — ANÁLISE DE GAPS E RECOMENDAÇÕES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  PONTOS FORTES DO CANDIDATO:
+  ✓ Abertura à Experiência acima do requerido (+4pts, Dreyfus 5, Bloom 6)
+  ✓ Estabilidade Emocional alinhada (gap −2pts, dentro da margem)
+  ✓ Python: proficiência demonstrada condizente com o nível Senior
+  ✓ Respostas longas e específicas (média {N} palavras por resposta)
+
+  GAPS IDENTIFICADOS:
+  ⚠️ [ALTO]  Conscienciosidade: gap −27pts — traço mais crítico para a vaga
+             candidato demonstra Dreyfus 3 em contexto que requer Dreyfus 4
+             Recomendação: validar com exemplos concretos na entrevista presencial
+  ⚠️ [MÉDIO] FastAPI: Dreyfus 3 vs. esperado 4 — skill marcada como crítica
+             Bloom 4 vs. esperado 5 — candidato analisa mas não avalia trade-offs
+             Recomendação: teste técnico prático ou pair programming
+  ⚠️ [BAIXO] Docker: Dreyfus 2 vs. esperado 3 — skill não-crítica, treinavél
+
+  PERGUNTAS RECOMENDADAS PARA ENTREVISTA PRESENCIAL (baseadas nos gaps):
+  1. [Conscienciosidade] "Descreva como você garante a qualidade técnica em
+     entregas de alta pressão — quais são seus critérios inegociáveis e como
+     você mede se estão sendo cumpridos?"
+  2. [FastAPI — técnica] "Como você abordaria a otimização de endpoints lentos
+     em uma API FastAPI com alto volume de requisições?"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 8 — PERFIL RADAR (resumo visual para o consultor)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  TÉCNICO por skill (score /10):
+  Python       ████████░░  8.4  ✅
+  FastAPI      ██████░░░░  6.1  ⚠️
+  PostgreSQL   █████████░  9.0  ✅
+  Docker       ████░░░░░░  4.8  ⚠️
+
+  COMPORTAMENTAL por trait (score /10 | gap vs. requerido):
+  Estabilidade ████████░░  7.8  req:72  gap:−2   ✅
+  Abertura     █████████░  8.6  req:74  gap:+4   ✅
+  Conscienc.   █████░░░░░  5.2  req:82  gap:−27  ❌
+
+  NOTA FINAL:  ████████░░  7.2  →  EM AVALIAÇÃO (revisão recomendada)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEÇÃO 9 — AUDITABILIDADE E RASTREABILIDADE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ID da triagem:          {uuid}
+  Versão metodologia:     WSI v2.0
+  Modelo LLM extração JD: {model_name} @ {model_version}
+  Modelo LLM geração Qs:  {model_name} @ {model_version}
+  Modelo LLM avaliação:   {model_name} @ {model_version}
+  Temperatura extração:   0.1
+  Temperatura avaliação:  0.0
+  Data da triagem:        {ISO 8601}
+  Hash das respostas:     {sha256 das respostas bruta — integridade}
+
+  Este relatório foi gerado automaticamente pelo sistema LIA (WeDOTalent).
+  A decisão final é responsabilidade do consultor humano.
+  Conforme EU AI Act (High-Risk AI) — rastreabilidade completa disponível.
+
+═══════════════════════════════════════════════════════════════════
+FIM DO RELATÓRIO
+═══════════════════════════════════════════════════════════════════
+```
+
+---
+
+### 11.3 Campos obrigatórios para geração do relatório
+
+Todo relatório deve ser gerado a partir do seguinte objeto de dados:
+
+```json
+{
+  "report_id": "uuid",
+  "generated_at": "ISO 8601",
+  "methodology_version": "2.0",
+
+  "vacancy": {
+    "id": "uuid",
+    "title": "string",
+    "company": "string",
+    "seniority": "string",
+    "mode": "compact | full",
+    "jd_quality_score": 0-100,
+    "bloom_expected": 1-6,
+    "dreyfus_technical_expected": 1-5,
+    "dreyfus_behavioral_expected": 1-5,
+    "technical_skills": [
+      { "name": "string", "critical": true|false, "dreyfus_required": 1-5 }
+    ],
+    "big_five_ranked": [
+      { "rank": 1, "trait": "stability", "score_required": 72, "weight": 0.366 }
+    ]
+  },
+
+  "candidate": {
+    "id": "uuid",
+    "name": "string",
+    "screening_duration_minutes": 0,
+    "response_count": 7
+  },
+
+  "scores": {
+    "wsi_final": 0.0-10.0,
+    "wsi_technical": 0.0-10.0,
+    "wsi_behavioral": 0.0-10.0,
+    "weight_technical": 0.0-1.0,
+    "weight_behavioral": 0.0-1.0
+  },
+
+  "decision": {
+    "result": "APROVADO | EM_AVALIACAO | REPROVADO",
+    "confidence": "alta | media | baixa",
+    "human_review_required": true|false,
+    "reason": "string",
+    "gate_triggered": "G1|G2|G3|G4|G5|G6 | null"
+  },
+
+  "red_flags": ["RF-01", "RF-07"],
+
+  "questions": [
+    {
+      "order": 1,
+      "block": 3,
+      "category": "technical",
+      "skill": "Python",
+      "trait": null,
+      "question_text": "string",
+      "candidate_response": "string",
+      "score": 0.0-10.0,
+      "star": { "situation": true, "task": true, "action": true, "result": true },
+      "bloom_expected": 5,
+      "bloom_demonstrated": 5,
+      "dreyfus_expected": 4,
+      "dreyfus_demonstrated": 4,
+      "signals_detected": ["string"],
+      "signals_absent": ["string"],
+      "inflation_detected": false,
+      "key_quote": "string",
+      "adjustments": ["+0.5 resultado quantificado"]
+    }
+  ],
+
+  "big_five_crossref": [
+    {
+      "trait": "stability",
+      "rank": 1,
+      "weight": 0.366,
+      "score_required": 72,
+      "score_demonstrated": 70,
+      "gap": -2,
+      "bloom_expected": 5,
+      "bloom_demonstrated": 5,
+      "dreyfus_expected": 4,
+      "dreyfus_demonstrated": 4,
+      "status": "OK | GAP | SUPERADO"
+    }
+  ],
+
+  "interview_recommendations": [
+    { "area": "conscientiousness", "question": "string" },
+    { "area": "fastapi", "question": "string" }
+  ],
+
+  "audit": {
+    "llm_jd_model": "string",
+    "llm_question_model": "string",
+    "llm_evaluation_model": "string",
+    "responses_hash": "sha256",
+    "regulation": "EU AI Act High-Risk | LGPD"
+  }
+}
+```
+
+---
+
+### 11.4 Regras de geração do relatório
+
+| Regra | Descrição |
+|---|---|
+| **Sempre gerado** | O relatório é gerado independente da decisão — aprovados e reprovados têm relatório completo |
+| **Imutável após geração** | O relatório não pode ser editado retroativamente. Ajustes do consultor geram uma versão 2 com flag `human_override = true` |
+| **Hash de integridade** | As respostas brutas do candidato são hasheadas (SHA-256) e incluídas no relatório para garantir que não foram alteradas |
+| **Prazo de retenção** | Conforme LGPD: dados do candidato são anonimizados após 2 anos se não contratado; relatório de scoring é retido por 5 anos para auditoria |
+| **Geração de perguntas para entrevista** | Sempre gerar 2 perguntas recomendadas focadas nos maiores gaps identificados — formato CBI, calibradas para aprofundamento |
+
+---
+
 ## FASE 9 — Fluxo completo integrado
 
 ```
