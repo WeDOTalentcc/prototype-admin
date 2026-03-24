@@ -81,6 +81,16 @@ const gapConfig = {
 const dreyfusLabel = (n: number) => ["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"][n] ?? n;
 const bloomLabel = (n: number) => ["", "Recordar", "Compreender", "Aplicar", "Analisar", "Avaliar"][n] ?? n;
 
+// Tabela 9.5 — Classificação por WSI Final (escala /5.0 = /10 ÷ 2)
+function getClassificacao(score: number): { label: string; color: string } {
+  if (score >= 4.5) return { label: "Excepcional", color: "text-emerald-700" };
+  if (score >= 4.0) return { label: "Excelente",   color: "text-emerald-600" };
+  if (score >= 3.5) return { label: "Alto",         color: "text-blue-600"   };
+  if (score >= 3.0) return { label: "Médio",        color: "text-amber-600"  };
+  if (score >= 2.25) return { label: "Abaixo da média", color: "text-orange-600" };
+  return              { label: "Regular / Baixo", color: "text-red-600"    };
+}
+
 const starComponents = [
   { key: "S" as const, label: "Situação", desc: "Contexto descrito" },
   { key: "T" as const, label: "Tarefa", desc: "Objetivo claro" },
@@ -90,6 +100,8 @@ const starComponents = [
 
 export function Tab1Respostas() {
   const [expanded, setExpanded] = useState<number | null>(0);
+  const wsiScore = 4.8;
+  const classificacao = getClassificacao(wsiScore);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -119,7 +131,7 @@ export function Tab1Respostas() {
           <div className="flex items-center gap-6 text-sm flex-wrap">
             <div>
               <p className="text-xs text-gray-400">Score WSI</p>
-              <p className="font-bold text-gray-900">4.8<span className="text-gray-400 font-normal">/5.0</span></p>
+              <p className="font-bold text-gray-900">{wsiScore}<span className="text-gray-400 font-normal">/5.0</span></p>
             </div>
             <div>
               <p className="text-xs text-gray-400">Ranking</p>
@@ -127,7 +139,7 @@ export function Tab1Respostas() {
             </div>
             <div>
               <p className="text-xs text-gray-400">Classificação</p>
-              <p className="font-semibold text-emerald-600">Excelente</p>
+              <p className={`font-semibold ${classificacao.color}`}>{classificacao.label}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400">Duração</p>

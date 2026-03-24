@@ -3274,12 +3274,30 @@ Campos a serem exibidos quando implementado:
 
 **Tabela C — Classificação textual por score WSI**
 
-| `scores.wsi_final` | Classificação | Cor |
-|---|---|---|
-| `≥ 7.5` | "Excelente" | Emerald |
-| `6.0–7.4` | "Bom" | Azul |
-| `4.0–5.9` | "Regular" | Âmbar |
-| `< 4.0` | "Abaixo do esperado" | Vermelho |
+> Espelha exatamente a **Seção 9.5 — Tabela de classificação e decisão automática** da metodologia WSI.
+> O score WSI é calculado em escala 0–10. A UI pode exibir em escala 0–5.0 (÷ 2) mantendo os mesmos thresholds convertidos.
+
+| `scores.wsi_final` (/10) | Equivalente UI (/5.0) | Classificação exibida | Cor |
+|---|---|---|---|
+| `9.0 – 10.0` | `4.5 – 5.0` | "Excepcional" | Emerald escuro |
+| `8.0 – 8.9` | `4.0 – 4.4` | "Excelente" | Emerald |
+| `7.0 – 7.9` | `3.5 – 3.9` | "Alto" | Azul |
+| `6.0 – 6.9` | `3.0 – 3.4` | "Médio" | Âmbar |
+| `4.5 – 5.9` | `2.25 – 2.9` | "Abaixo da média" | Laranja |
+| `0.0 – 4.4` | `0.0 – 2.24` | "Regular / Baixo" | Vermelho |
+
+**Tabela C.2 — Critérios de aprovação por score (Seção 10.3)**
+
+> Determina o `decision.result` e `decision.human_review_required` exibidos no badge de status e badge de confiança do header.
+
+| Dimensão | Aprovado automático | Revisão obrigatória | Reprovado automático |
+|---|---|---|---|
+| WSI Final | `≥ 7.5` | `6.0 – 7.4` | `< 6.0` |
+| WSI Técnico | `≥ 7.0` | `5.5 – 6.9` | `< 5.5` |
+| WSI Comportamental | `≥ 7.0` | `5.5 – 6.9` | `< 5.5` |
+| Gap Big Five — trait rank 1 | `≤ 15 pts` | `15 – 20 pts` | `> 20 pts` |
+
+Regra de precedência: **o critério mais restritivo prevalece**. Se WSI Final ≥ 7.5 mas WSI Técnico < 5.5 → Reprovado automático.
 
 **Tabela D — Status de alinhamento por competência técnica (Tab 1)**
 
