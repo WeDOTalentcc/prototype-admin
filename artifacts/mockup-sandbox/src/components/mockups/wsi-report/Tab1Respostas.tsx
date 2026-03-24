@@ -107,7 +107,7 @@ export function Tab1Respostas() {
                 <p className="text-xs text-gray-500">Desenvolvedor Full Stack · São Paulo, SP</p>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
                 <CheckCircle className="w-3.5 h-3.5" /> Aprovado
               </span>
