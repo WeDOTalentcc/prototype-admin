@@ -92,12 +92,25 @@ const dreyfusLabel = (n: number) => ["", "Iniciante", "Básico", "Intermediário
 
 function DreyfusRow({ dreyfusEsperado, dreyfusDemonstrado }: { dreyfusEsperado: number; dreyfusDemonstrado: number }) {
   const delta = dreyfusDemonstrado - dreyfusEsperado;
-  const isGap = delta < -1;
+  const isCritical = delta <= -2;
+  const isAtencao = delta === -1;
   const isAcima = delta > 0;
 
-  const color = isGap ? "text-red-600" : isAcima ? "text-blue-600" : "text-emerald-600";
-  const bg = isGap ? "bg-red-50 border-red-200" : isAcima ? "bg-blue-50 border-blue-200" : "bg-emerald-50 border-emerald-200";
-  const label = isGap ? "Gap crítico" : isAcima ? "Acima" : "Alinhado";
+  const color = isCritical
+    ? "text-red-600"
+    : isAtencao
+    ? "text-amber-600"
+    : isAcima
+    ? "text-blue-600"
+    : "text-emerald-600";
+  const bg = isCritical
+    ? "bg-red-50 border-red-200"
+    : isAtencao
+    ? "bg-amber-50 border-amber-200"
+    : isAcima
+    ? "bg-blue-50 border-blue-200"
+    : "bg-emerald-50 border-emerald-200";
+  const label = isCritical ? "Gap crítico" : isAtencao ? "Atenção" : isAcima ? "Acima" : "Alinhado";
 
   return (
     <div className={`flex items-center justify-between text-[10px] rounded-md border px-2.5 py-1.5 mt-1 ${bg}`}>
