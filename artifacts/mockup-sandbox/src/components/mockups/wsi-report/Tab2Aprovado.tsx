@@ -1,0 +1,303 @@
+import { useState } from "react";
+import {
+  CheckCircle, AlertTriangle, XCircle, Target, Clock, Trophy,
+  ChevronDown, ChevronUp, Mic2, BookOpen, Star, Zap
+} from "lucide-react";
+
+const bigFive = [
+  { trait: "Abertura a mudanças", vagas: 80, candidato: 75, status: "ok" },
+  { trait: "Organização e disciplina", vagas: 70, candidato: 95, status: "acima" },
+  { trait: "Sociabilidade", vagas: 50, candidato: 40, status: "ok" },
+  { trait: "Cooperação", vagas: 75, candidato: 40, status: "gap" },
+  { trait: "Estabilidade emocional", vagas: 65, candidato: 80, status: "acima" },
+];
+
+const gaps = [
+  { texto: "Poderia explorar mais tecnologias de edge computing", severidade: "baixa" },
+  { texto: "Aprofundar conhecimento em observabilidade e SRE practices", severidade: "baixa" },
+];
+
+const strengths = [
+  "Domínio avançado de arquitetura de microsserviços com DDD e event sourcing",
+  "Experiência comprovada com sistemas de alta escala (150k+ conexões)",
+  "Proficiência em GraphQL Federation e APIs complexas",
+  "Abordagem sistemática de debugging com prevenção via CI/CD",
+];
+
+const evidencias = [
+  "Migração monolito→microsserviços com uptime 99.95%",
+  "API GraphQL com 200+ types e federation de 8 serviços",
+  "Resolução de memory leak com post-mortem documentado",
+];
+
+const comportamental = [
+  { nome: "Inovação", score: 4.5, desc: "Proativa em propor e liderar iniciativas técnicas transformadoras" },
+  { nome: "Colaboração", score: 4.4, desc: "Excelente capacidade de resolução de conflitos com abordagem data-driven" },
+  { nome: "Organização", score: 4.6, desc: "Metodologia estruturada com foco em métricas e processos" },
+  { nome: "Resiliência", score: 4.3, desc: "Lida bem com pressão e situações críticas em produção" },
+];
+
+const proximosPassos = [
+  "Agendar entrevista técnica aprofundada",
+  "Apresentar ao gestor da área",
+  "Preparar proposta competitiva",
+];
+
+const perguntasEntrevista = [
+  {
+    pergunta: "Você já implementou estratégias de observabilidade em sistemas distribuídos? Descreva como instrumentou traces, métricas e logs de ponta a ponta.",
+    foco: "Observabilidade e SRE",
+    severidade: "baixa",
+  },
+  {
+    pergunta: "Em um projeto com edge computing, quais trade-offs você consideraria entre latência, consistência e custo operacional?",
+    foco: "Edge computing",
+    severidade: "baixa",
+  },
+];
+
+const severidadeConfig = {
+  alta: { label: "ALTA", color: "text-red-600", bg: "bg-red-50", border: "border-red-200", dot: "bg-red-500" },
+  media: { label: "MÉDIA", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500" },
+  baixa: { label: "BAIXA", color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200", dot: "bg-gray-400" },
+};
+
+export function Tab2Aprovado() {
+  const [bigFiveOpen, setBigFiveOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <div className="max-w-[820px] mx-auto p-6 space-y-4">
+
+        {/* Modal Header */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                <Target className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <h1 className="text-base font-semibold text-gray-900">Detalhes da Triagem WSI — [DEMO] Lucas Mendes Silva</h1>
+                <p className="text-xs text-gray-500">Desenvolvedor Full Stack · São Paulo, SP</p>
+              </div>
+            </div>
+            <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
+              <CheckCircle className="w-3.5 h-3.5" /> Aprovado
+            </span>
+          </div>
+          <div className="flex items-center gap-6 text-sm">
+            <div><p className="text-xs text-gray-400">Score WSI</p><p className="font-bold text-gray-900">4.8<span className="text-gray-400 font-normal">/5.0</span></p></div>
+            <div><p className="text-xs text-gray-400">Ranking</p><p className="font-semibold text-gray-900 flex items-center gap-1"><Trophy className="w-3.5 h-3.5 text-amber-500" />#1 de 12</p></div>
+            <div><p className="text-xs text-gray-400">Classificação</p><p className="font-semibold text-emerald-600">Excelente</p></div>
+            <div><p className="text-xs text-gray-400">Duração</p><p className="font-semibold text-gray-900 flex items-center gap-1"><Clock className="w-3.5 h-3.5" />47 min</p></div>
+          </div>
+        </div>
+
+        {/* Tab Bar */}
+        <div className="flex gap-1 bg-white border border-gray-200 rounded-lg p-1">
+          <button className="flex-1 py-2 text-xs font-medium rounded-md text-gray-500">Respostas e Avaliação</button>
+          <button className="flex-1 py-2 text-xs font-medium rounded-md bg-gray-900 text-white">Parecer e Feedback</button>
+          <button className="flex-1 py-2 text-xs font-medium rounded-md text-gray-500">Ranking e Comparativo</button>
+        </div>
+
+        {/* Sumário Executivo */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <Star className="w-4 h-4 text-amber-500" /> Sumário Executivo
+          </h2>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            Candidata excepcional com domínio completo de arquitetura, desenvolvimento full stack e liderança técnica. Demonstra capacidade de tomar decisões fundamentadas em métricas, resolver problemas complexos sistematicamente e liderar times com impacto mensurável. Altamente recomendada para posições de liderança técnica sênior.
+          </p>
+        </div>
+
+        {/* Análise Técnica */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700">Análise Técnica</h2>
+
+          <div>
+            <p className="text-xs font-medium text-emerald-700 mb-2 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes</p>
+            <ul className="space-y-1.5">
+              {strengths.map((s, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-gray-700">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" /> {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Gaps Identificados</p>
+            <ul className="space-y-2">
+              {gaps.map((g, i) => {
+                const sev = severidadeConfig[g.severidade as keyof typeof severidadeConfig];
+                return (
+                  <li key={i} className={`flex items-start gap-2.5 text-xs text-gray-700 rounded-lg border px-3 py-2 ${sev.bg} ${sev.border}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${sev.dot}`} />
+                    <span className="flex-1">{g.texto}</span>
+                    <span className={`text-[9px] font-bold tracking-wider shrink-0 ${sev.color}`}>{sev.label}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-2">Evidências</p>
+            <div className="space-y-1">
+              {evidencias.map((e, i) => (
+                <p key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                  <Zap className="w-3 h-3 text-gray-400 shrink-0" /> {e}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Análise Comportamental */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700">Análise Comportamental</h2>
+          <div className="space-y-3">
+            {comportamental.map((c) => (
+              <div key={c.nome}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-gray-700">{c.nome}</span>
+                  <span className="text-xs font-bold text-gray-900">{c.score}/5.0</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-1">
+                  <div className="h-full bg-gray-800 rounded-full transition-all" style={{ width: `${(c.score / 5) * 100}%` }} />
+                </div>
+                <p className="text-[11px] text-gray-500">{c.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ✨ NOVO — Big Five colapsável */}
+          <div className="border border-gray-100 rounded-lg overflow-hidden">
+            <button
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+              onClick={() => setBigFiveOpen(!bigFiveOpen)}
+            >
+              <span className="text-xs font-medium text-gray-600">Ver perfil de personalidade (vaga × candidato)</span>
+              {bigFiveOpen ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+            </button>
+            {bigFiveOpen && (
+              <div className="p-4 space-y-3 bg-white">
+                <div className="flex items-center gap-4 text-[10px] text-gray-400 mb-1">
+                  <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-800 rounded-sm inline-block" /> Candidato</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-200 rounded-sm inline-block border border-gray-300" /> Esperado pela vaga</span>
+                </div>
+                {bigFive.map((b) => {
+                  const isGap = b.status === "gap";
+                  const isAcima = b.status === "acima";
+                  return (
+                    <div key={b.trait}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[11px] text-gray-700">{b.trait}</span>
+                        {isGap && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">⚠️ Diferença</span>}
+                        {isAcima && <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200">↑ Acima</span>}
+                        {!isGap && !isAcima && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">✓ Alinhado</span>}
+                      </div>
+                      <div className="relative h-3">
+                        {/* Vaga bar (background) */}
+                        <div className="absolute inset-y-0 left-0 h-1.5 top-0.75 rounded-full bg-gray-200 border border-gray-300" style={{ width: `${b.vagas}%` }} />
+                        {/* Candidato bar */}
+                        <div className={`absolute inset-y-0 left-0 h-1.5 top-0.75 rounded-full ${isGap ? "bg-amber-400" : isAcima ? "bg-blue-400" : "bg-gray-800"}`} style={{ width: `${b.candidato}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                <p className="text-[10px] text-gray-400 pt-1">Baseado na análise comportamental da triagem</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recomendação */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Recomendação</h2>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p className="text-sm font-semibold text-emerald-700 mb-1">Fortemente Recomendado</p>
+            <p className="text-xs text-emerald-800 leading-relaxed">Perfil excepcional que combina excelência técnica com habilidades de liderança. Candidata tem potencial para elevar a qualidade técnica de toda a equipe.</p>
+          </div>
+        </div>
+
+        {/* Próximos Passos */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Próximos Passos</h2>
+          <ol className="space-y-2">
+            {proximosPassos.map((p, i) => (
+              <li key={i} className="flex items-center gap-3 text-sm text-gray-700">
+                <span className="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                {p}
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* ✨ NOVO — Perguntas para entrevista */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
+          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Mic2 className="w-4 h-4 text-gray-500" /> Perguntas sugeridas para a entrevista
+          </h2>
+          <p className="text-xs text-gray-400">Geradas com base nos gaps identificados — use na entrevista presencial</p>
+          {perguntasEntrevista.map((p, i) => {
+            const sev = severidadeConfig[p.severidade as keyof typeof severidadeConfig];
+            return (
+              <div key={i} className="border border-gray-100 rounded-lg p-4 space-y-2 bg-gray-50">
+                <p className="text-xs text-gray-800 leading-relaxed">"{p.pergunta}"</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-400">Foco:</span>
+                  <span className="text-[10px] text-gray-600 font-medium bg-white border border-gray-200 px-2 py-0.5 rounded-full">{p.foco}</span>
+                  <span className={`text-[9px] font-bold ${sev.color}`}>Gap {sev.label}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Feedback para o Candidato */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-blue-500" /> Feedback para o Candidato
+          </h2>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            Parabéns! Sua performance na triagem foi excelente e demonstrou alinhamento com as competências que buscamos para a posição de Desenvolvedor(a) Full Stack Sênior.
+          </p>
+          <div>
+            <p className="text-xs font-medium text-gray-600 mb-1.5">Pontos Fortes Técnicos:</p>
+            {["Forte domínio de arquitetura de software e padrões de design", "Experiência sólida com sistemas escaláveis e de alta disponibilidade"].map((s, i) => (
+              <p key={i} className="flex items-center gap-1.5 text-xs text-gray-600 mb-1">
+                <CheckCircle className="w-3 h-3 text-emerald-500 shrink-0" /> {s}
+              </p>
+            ))}
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-600 mb-1.5">Oportunidades de Desenvolvimento:</p>
+            {["Explorar mais sobre edge computing e arquiteturas serverless", "Aprofundar conhecimento em observabilidade e SRE practices"].map((s, i) => (
+              <p key={i} className="flex items-center gap-1.5 text-xs text-gray-600 mb-1">
+                <BookOpen className="w-3 h-3 text-blue-400 shrink-0" /> {s}
+              </p>
+            ))}
+          </div>
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+            <p className="text-[10px] text-blue-500 font-medium mb-0.5">Dica Personalizada</p>
+            <p className="text-xs text-blue-700">Sua capacidade de fundamentar decisões com dados e métricas foi um destaque. Continue usando essa abordagem nas próximas etapas.</p>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+          <span className="text-xs text-gray-500">Decisão do Recrutador</span>
+          <div className="flex gap-2">
+            <button className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium border border-red-200 text-red-600 rounded-lg hover:bg-red-50">
+              <XCircle className="w-3.5 h-3.5" /> Reprovar
+            </button>
+            <button className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-gray-900 text-white rounded-lg">
+              <CheckCircle className="w-3.5 h-3.5" /> Aprovar para Entrevista
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
