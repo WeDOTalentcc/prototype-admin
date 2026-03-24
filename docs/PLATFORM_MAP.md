@@ -121,7 +121,7 @@ PM prototipa ──► plataforma-lia (Replit)
 
 **Base URL:** `https://api.wedotalent.com/v1` (produção) | `http://localhost:8080/v1` (local)
 
-**Auth:** JWT (Devise). Header: `Authorization: Bearer <token>`
+**Auth:** JWT custom (gem `jwt`, sem Devise — implementado diretamente em `ApplicationController`). Token assinado com `Rails.application.secret_key_base`. Expiração: 24h. Header: `Authorization: Bearer <token>`
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
