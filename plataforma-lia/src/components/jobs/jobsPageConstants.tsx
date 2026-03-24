@@ -7,6 +7,35 @@ export function getBloomComplexity(bloomLevel: number): { label: string; color: 
   return { label: 'Alta', color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' }
 }
 
+const BLOOM_PT_BR: Record<number, string> = {
+  1: 'Recordar',
+  2: 'Compreender',
+  3: 'Aplicar',
+  4: 'Analisar',
+  5: 'Avaliar',
+  6: 'Criar',
+}
+
+const DREYFUS_PT_BR: Record<number, string> = {
+  1: 'Iniciante',
+  2: 'Básico',
+  3: 'Intermediário',
+  4: 'Avançado',
+  5: 'Especialista',
+}
+
+export function getBloomLabelPTBR(level: number | string | null | undefined): string {
+  if (!level) return ''
+  const n = typeof level === 'string' ? parseInt(level, 10) : level
+  return BLOOM_PT_BR[n] || BLOOM_PT_BR[Math.max(1, Math.min(6, n))] || ''
+}
+
+export function getDreyfusLabelPTBR(level: number | string | null | undefined): string {
+  if (!level) return ''
+  const n = typeof level === 'string' ? parseInt(level, 10) : level
+  return DREYFUS_PT_BR[n] || DREYFUS_PT_BR[Math.max(1, Math.min(5, n))] || ''
+}
+
 export function getEstimatedTime(questionType: string): string {
   switch (questionType) {
     case 'yes_no': return '~30s'

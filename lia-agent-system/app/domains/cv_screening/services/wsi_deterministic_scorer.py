@@ -33,11 +33,47 @@ BLOOM_LEVELS = {
 }
 
 DREYFUS_LEVELS = {
-    1: {"name": "Novato", "description": "Segue regras rígidas", "years_range": (0, 1)},
-    2: {"name": "Iniciante Avançado", "description": "Reconhece aspectos situacionais", "years_range": (1, 2)},
-    3: {"name": "Competente", "description": "Planeja e prioriza", "years_range": (2, 3)},
-    4: {"name": "Proficiente", "description": "Visão holística", "years_range": (3, 5)},
-    5: {"name": "Especialista", "description": "Intuição transcende análise", "years_range": (5, 99)}
+    1: {"name": "Iniciante",    "description": "Segue regras rígidas",           "years_range": (0, 1)},
+    2: {"name": "Básico",       "description": "Reconhece aspectos situacionais", "years_range": (1, 2)},
+    3: {"name": "Intermediário","description": "Planeja e prioriza",              "years_range": (2, 3)},
+    4: {"name": "Avançado",     "description": "Visão holística",                 "years_range": (3, 5)},
+    5: {"name": "Especialista", "description": "Intuição transcende análise",     "years_range": (5, 99)}
+}
+
+DREYFUS_RECRUITER_LABELS = {
+    1: "Iniciante",
+    2: "Básico",
+    3: "Intermediário",
+    4: "Avançado",
+    5: "Especialista",
+}
+
+BLOOM_RECRUITER_LABELS = {
+    1: "Recordar",
+    2: "Compreender",
+    3: "Aplicar",
+    4: "Analisar",
+    5: "Avaliar",
+    6: "Criar",
+}
+
+BIG_FIVE_RECRUITER_LABELS = {
+    "openness":          "Abertura a mudanças",
+    "conscientiousness": "Organização e disciplina",
+    "extraversion":      "Sociabilidade",
+    "agreeableness":     "Cooperação",
+    "neuroticism":       "Estabilidade emocional",
+}
+
+SENIORITY_WEIGHTS = {
+    "estagiario": {"technical": 0.6875, "behavioral": 0.3125},
+    "junior":     {"technical": 0.625,  "behavioral": 0.375},
+    "pleno":      {"technical": 0.6875, "behavioral": 0.3125},
+    "senior":     {"technical": 0.5625, "behavioral": 0.4375},
+    "lead":       {"technical": 0.4375, "behavioral": 0.5625},
+    "principal":  {"technical": 0.50,   "behavioral": 0.50},
+    "diretor":    {"technical": 0.3125, "behavioral": 0.6875},
+    "vp_clevel":  {"technical": 0.25,   "behavioral": 0.75},
 }
 
 WSI_FORMULA_WEIGHTS = {
@@ -46,10 +82,12 @@ WSI_FORMULA_WEIGHTS = {
 }
 
 WSI_CUTOFFS = {
-    "approved_auto": 4.2,
-    "review_min": 3.8,
-    "waiting_min": 3.0
+    "approved_auto": 3.75,
+    "review_min":    3.00,
+    "rejected_max":  2.25,
 }
+
+GATE_G3_THRESHOLD = 2.0
 
 CONTEXT_INDICATORS = {
     "high_quality": [
@@ -470,75 +508,158 @@ def calculate_wsi_deterministic(
     )
 
 
+def get_seniority_weights(seniority: Optional[str]) -> Dict[str, float]:
+    """
+    Retorna os pesos técnico/comportamental para o nível de senioridade.
+    Spec Seção 9.2 — tabela SENIORITY_WEIGHTS.
+    
+    Args:
+        seniority: Nível de senioridade (estagiario, junior, pleno, senior,
+                   lead, principal, diretor, vp_clevel)
+    Returns:
+        Dict com 'technical' e 'behavioral' (somam 1.0)
+    """
+    if not seniority:
+        return {"technical": 0.625, "behavioral": 0.375}
+    key = seniority.lower().strip()
+    return SENIORITY_WEIGHTS.get(key, {"technical": 0.625, "behavioral": 0.375})
+
+
+def classify_wsi_score(score: float) -> str:
+    """
+    Classifica o score WSI final nos 6 níveis canônicos.
+    Spec Seção 9.5 — escala /5 (= /10 ÷ 2).
+
+    /5 thresholds derived from /10 spec:
+        Excepcional   ≥ 9.0/10 → ≥ 4.5/5
+        Excelente     ≥ 8.0/10 → ≥ 4.0/5
+        Alto          ≥ 7.0/10 → ≥ 3.5/5
+        Médio         ≥ 6.0/10 → ≥ 3.0/5
+        Abaixo da média ≥ 4.5/10 → ≥ 2.25/5
+        Regular/Baixo < 4.5/10 → < 2.25/5
+    """
+    if score >= 4.5:
+        return "excepcional"
+    if score >= 4.0:
+        return "excelente"
+    if score >= 3.5:
+        return "alto"
+    if score >= 3.0:
+        return "medio"
+    if score >= 2.25:
+        return "abaixo_da_media"
+    return "regular"
+
+
+def get_classification_display(classification: str) -> Dict[str, str]:
+    """Retorna label PT-BR e cor para a classificação WSI."""
+    config = {
+        "excepcional":      {"label": "Excepcional",      "color": "emerald-700"},
+        "excelente":        {"label": "Excelente",         "color": "green-600"},
+        "alto":             {"label": "Alto",               "color": "blue-600"},
+        "medio":            {"label": "Médio",              "color": "amber-600"},
+        "abaixo_da_media":  {"label": "Abaixo da média",   "color": "orange-600"},
+        "regular":          {"label": "Regular / Baixo",   "color": "red-600"},
+    }
+    return config.get(classification, config["medio"])
+
+
 def calculate_final_wsi_score(
     technical_scores: List[Tuple[str, float, float]],
     behavioral_scores: List[Tuple[str, float, float]],
-    technical_weight: float = 0.70,
-    behavioral_weight: float = 0.30
+    seniority: Optional[str] = None,
+    technical_weight: Optional[float] = None,
+    behavioral_weight: Optional[float] = None,
+    eligibility_score: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
-    Calcula score WSI final ponderado.
-    
+    Calcula score WSI final ponderado com SENIORITY_WEIGHTS da Spec Seção 9.2.
+
     Args:
-        technical_scores: Lista de (competency_name, score, weight)
-        behavioral_scores: Lista de (competency_name, score, weight)
-        technical_weight: Peso total para competências técnicas (default 0.70)
-        behavioral_weight: Peso total para competências comportamentais (default 0.30)
-        
+        technical_scores:   Lista de (competency_name, score, weight)
+        behavioral_scores:  Lista de (competency_name, score, weight)
+        seniority:          Nível de senioridade da vaga (lookup em SENIORITY_WEIGHTS)
+        technical_weight:   Override explícito (ignorado se seniority for fornecido)
+        behavioral_weight:  Override explícito (ignorado se seniority for fornecido)
+        eligibility_score:  Score de elegibilidade 0–5 (quando presente, 20% do total)
+
     Returns:
-        Dict com score final e breakdown
+        Dict com score final, classificação 6 níveis, decisão, breakdown
     """
     def weighted_avg(scores: List[Tuple[str, float, float]]) -> float:
         if not scores:
             return 0.0
         total_weight = sum(w for _, _, w in scores)
         if total_weight == 0:
-            return 0.0
+            return sum(s for _, s, _ in scores) / len(scores)
         return sum(s * w for _, s, w in scores) / total_weight
-    
-    tech_avg = weighted_avg(technical_scores)
+
+    weights = get_seniority_weights(seniority) if seniority else None
+    if weights:
+        t_weight = weights["technical"]
+        b_weight = weights["behavioral"]
+    elif technical_weight is not None and behavioral_weight is not None:
+        t_weight = technical_weight
+        b_weight = behavioral_weight
+    else:
+        t_weight = 0.625
+        b_weight = 0.375
+
+    tech_avg  = weighted_avg(technical_scores)
     behav_avg = weighted_avg(behavioral_scores)
-    
-    final_score = (technical_weight * tech_avg) + (behavioral_weight * behav_avg)
-    final_score = round(final_score, 2)
-    
+
+    if eligibility_score is not None:
+        t_weight  = t_weight  * 0.80
+        b_weight  = b_weight  * 0.80
+        e_weight  = 0.20
+        final_score = (t_weight * tech_avg) + (b_weight * behav_avg) + (e_weight * eligibility_score)
+    else:
+        e_weight = 0.0
+        final_score = (t_weight * tech_avg) + (b_weight * behav_avg)
+
+    final_score = round(max(1.0, min(5.0, final_score)), 2)
+
     if final_score >= WSI_CUTOFFS["approved_auto"]:
         decision = "approved"
         interpretation = "Candidato aprovado automaticamente"
     elif final_score >= WSI_CUTOFFS["review_min"]:
         decision = "needs_review"
         interpretation = "Candidato requer revisão manual"
-    elif final_score >= WSI_CUTOFFS["waiting_min"]:
-        decision = "waiting"
-        interpretation = "Aguardando comparação com outros candidatos"
     else:
         decision = "rejected"
         interpretation = "Candidato abaixo do corte mínimo"
-    
-    if final_score >= 4.5:
-        classification = "Excelente"
-    elif final_score >= 4.0:
-        classification = "Alto"
-    elif final_score >= 3.0:
-        classification = "Médio"
-    elif final_score >= 2.0:
-        classification = "Regular"
-    else:
-        classification = "Baixo"
-    
+
+    classification = classify_wsi_score(final_score)
+    class_display  = get_classification_display(classification)
+
+    gate_g3_triggered = tech_avg < GATE_G3_THRESHOLD
+    if gate_g3_triggered:
+        decision = "rejected"
+        interpretation = "Gate G3: score técnico insuficiente"
+
     return {
         "final_score": final_score,
         "classification": classification,
+        "classification_label": class_display["label"],
         "decision": decision,
         "interpretation": interpretation,
+        "gate_g3_triggered": gate_g3_triggered,
         "breakdown": {
-            "technical_average": round(tech_avg, 2),
+            "technical_average":  round(tech_avg, 2),
             "behavioral_average": round(behav_avg, 2),
-            "technical_weight": technical_weight,
-            "behavioral_weight": behavioral_weight
+            "technical_weight":   round(t_weight, 4),
+            "behavioral_weight":  round(b_weight, 4),
+            "eligibility_weight": round(e_weight, 4),
+            "eligibility_score":  eligibility_score,
+            "seniority_used":     seniority,
         },
-        "formula": f"WSI = ({technical_weight} × {tech_avg:.2f}) + ({behavioral_weight} × {behav_avg:.2f}) = {final_score:.2f}",
-        "cutoffs_applied": WSI_CUTOFFS
+        "formula": (
+            f"WSI = ({t_weight:.4f} × {tech_avg:.2f})"
+            f" + ({b_weight:.4f} × {behav_avg:.2f})"
+            + (f" + ({e_weight:.2f} × {eligibility_score:.2f})" if eligibility_score else "")
+            + f" = {final_score:.2f}"
+        ),
+        "cutoffs_applied": WSI_CUTOFFS,
     }
 
 
@@ -549,10 +670,19 @@ def get_wsi_scorer():
     return {
         "calculate_wsi": calculate_wsi_deterministic,
         "calculate_final_score": calculate_final_wsi_score,
+        "classify_score": classify_wsi_score,
+        "get_classification_display": get_classification_display,
+        "get_seniority_weights": get_seniority_weights,
         "extract_autodeclaracao": extract_autodeclaracao_score,
         "calculate_context": calculate_context_score,
         "calculate_bloom": calculate_bloom_level,
         "calculate_dreyfus": calculate_dreyfus_level,
         "extract_evidences": extract_evidences,
-        "detect_red_flags": detect_red_flags
+        "detect_red_flags": detect_red_flags,
+        "dreyfus_recruiter_labels": DREYFUS_RECRUITER_LABELS,
+        "bloom_recruiter_labels": BLOOM_RECRUITER_LABELS,
+        "big_five_recruiter_labels": BIG_FIVE_RECRUITER_LABELS,
+        "seniority_weights": SENIORITY_WEIGHTS,
+        "wsi_cutoffs": WSI_CUTOFFS,
+        "gate_g3_threshold": GATE_G3_THRESHOLD,
     }

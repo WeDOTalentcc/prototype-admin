@@ -27,23 +27,30 @@ interface ScoreDisplay {
   bgColor: string
 }
 
+const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string }> = {
+  excepcional:    { label: 'Excepcional',      color: 'text-emerald-700', bgColor: 'bg-emerald-100', textColor: '#065f46' },
+  excelente:      { label: 'Excelente',         color: 'text-green-600',   bgColor: 'bg-green-100',   textColor: '#166534' },
+  alto:           { label: 'Alto',               color: 'text-blue-600',   bgColor: 'bg-blue-100',    textColor: '#1d4ed8' },
+  medio:          { label: 'Médio',              color: 'text-amber-600',  bgColor: 'bg-amber-100',   textColor: '#92400e' },
+  abaixo_da_media:{ label: 'Abaixo da média',   color: 'text-orange-600', bgColor: 'bg-orange-100',  textColor: '#9a3412' },
+  regular:        { label: 'Regular / Baixo',   color: 'text-red-600',    bgColor: 'bg-red-100',     textColor: '#991b1b' },
+}
+
+const getClassificationConfig = (classification: string) =>
+  WSI_CLASSIFICATION_CONFIG[classification] ?? WSI_CLASSIFICATION_CONFIG.medio
+
 const getScoreDisplay = (score: number): ScoreDisplay => {
-  if (score >= 4.5) return { value: score, label: 'Excelente', color: 'text-green-600', bgColor: 'bg-green-100' }
-  if (score >= 3.5) return { value: score, label: 'Alto', color: 'text-emerald-600', bgColor: 'bg-emerald-100' }
-  if (score >= 2.5) return { value: score, label: 'Médio', color: 'text-yellow-600', bgColor: 'bg-yellow-100' }
-  if (score >= 1.5) return { value: score, label: 'Regular', color: 'text-orange-600', bgColor: 'bg-orange-100' }
-  return { value: score, label: 'Baixo', color: 'text-red-600', bgColor: 'bg-red-100' }
+  if (score >= 4.5) return { value: score, label: 'Excepcional',    color: 'text-emerald-700', bgColor: 'bg-emerald-100' }
+  if (score >= 4.0) return { value: score, label: 'Excelente',      color: 'text-green-600',   bgColor: 'bg-green-100' }
+  if (score >= 3.5) return { value: score, label: 'Alto',            color: 'text-blue-600',    bgColor: 'bg-blue-100' }
+  if (score >= 3.0) return { value: score, label: 'Médio',           color: 'text-amber-600',  bgColor: 'bg-amber-100' }
+  if (score >= 2.25) return { value: score, label: 'Abaixo da média',color: 'text-orange-600', bgColor: 'bg-orange-100' }
+  return { value: score, label: 'Regular / Baixo', color: 'text-red-600', bgColor: 'bg-red-100' }
 }
 
 const getClassificationBadge = (classification: string) => {
-  const config: Record<string, { color: string; bgColor: string }> = {
-    excelente: { color: 'text-green-700', bgColor: 'bg-green-100' },
-    alto: { color: 'text-emerald-700', bgColor: 'bg-emerald-100' },
-    medio: { color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
-    regular: { color: 'text-orange-700', bgColor: 'bg-orange-100' },
-    baixo: { color: 'text-red-700', bgColor: 'bg-red-100' }
-  }
-  return config[classification] || config.medio
+  const cfg = getClassificationConfig(classification)
+  return { color: cfg.color, bgColor: cfg.bgColor }
 }
 
 export function WSIScorecard({
@@ -210,7 +217,7 @@ export function WSIScorecard({
         <div className="flex items-center justify-between pt-2 border-t">
           <Badge className={`${classificationBadge.bgColor} ${classificationBadge.color}`}>
             <Award className="w-3 h-3 mr-1" />
-            {latestResult.classification.charAt(0).toUpperCase() + latestResult.classification.slice(1)}
+            {getClassificationConfig(latestResult.classification).label}
           </Badge>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">

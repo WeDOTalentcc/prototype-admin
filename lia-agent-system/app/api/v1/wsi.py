@@ -37,20 +37,44 @@ BLOOM_LEVELS = {
 }
 
 DREYFUS_LEVELS = {
-    1: {"name": "Novice", "name_pt": "Novato", "description": "Follows rigid rules"},
-    2: {"name": "Advanced Beginner", "name_pt": "Iniciante Avançado", "description": "Recognizes situational aspects"},
-    3: {"name": "Competent", "name_pt": "Competente", "description": "Conscious planning, prioritization"},
-    4: {"name": "Proficient", "name_pt": "Proficiente", "description": "Holistic view, fluid adaptation"},
-    5: {"name": "Expert", "name_pt": "Expert", "description": "Deep intuition, transcends rules"}
+    1: {"name": "Novice",            "name_pt": "Iniciante",     "description": "Follows rigid rules"},
+    2: {"name": "Advanced Beginner", "name_pt": "Básico",        "description": "Recognizes situational aspects"},
+    3: {"name": "Competent",         "name_pt": "Intermediário", "description": "Conscious planning, prioritization"},
+    4: {"name": "Proficient",        "name_pt": "Avançado",      "description": "Holistic view, fluid adaptation"},
+    5: {"name": "Expert",            "name_pt": "Especialista",  "description": "Deep intuition, transcends rules"}
 }
 
 BIG_FIVE_TRAITS = {
-    "openness": {"name": "Openness", "name_pt": "Abertura", "high": "Curious, creative", "low": "Conventional, routine-oriented"},
-    "conscientiousness": {"name": "Conscientiousness", "name_pt": "Conscienciosidade", "high": "Organized, disciplined", "low": "Flexible, spontaneous"},
-    "extraversion": {"name": "Extraversion", "name_pt": "Extroversão", "high": "Outgoing, assertive", "low": "Reserved, reflective"},
-    "agreeableness": {"name": "Agreeableness", "name_pt": "Amabilidade", "high": "Cooperative, empathetic", "low": "Competitive, independent"},
-    "neuroticism": {"name": "Neuroticism", "name_pt": "Estabilidade Emocional", "high": "Sensitive, anxious", "low": "Calm, resilient"}
+    "openness":          {"name": "Openness",          "name_pt": "Abertura a mudanças",       "high": "Curious, creative",         "low": "Conventional, routine-oriented"},
+    "conscientiousness": {"name": "Conscientiousness", "name_pt": "Organização e disciplina",  "high": "Organized, disciplined",    "low": "Flexible, spontaneous"},
+    "extraversion":      {"name": "Extraversion",      "name_pt": "Sociabilidade",             "high": "Outgoing, assertive",       "low": "Reserved, reflective"},
+    "agreeableness":     {"name": "Agreeableness",     "name_pt": "Cooperação",                "high": "Cooperative, empathetic",   "low": "Competitive, independent"},
+    "neuroticism":       {"name": "Neuroticism",        "name_pt": "Estabilidade emocional",   "high": "Sensitive, anxious",        "low": "Calm, resilient"},
 }
+
+WSI_CLASSIFICATION_MAP = {
+    "excepcional":     {"label": "Excepcional",      "min_score": 4.5,  "color": "emerald-700"},
+    "excelente":       {"label": "Excelente",         "min_score": 4.0,  "color": "green-600"},
+    "alto":            {"label": "Alto",               "min_score": 3.5,  "color": "blue-600"},
+    "medio":           {"label": "Médio",              "min_score": 3.0,  "color": "amber-600"},
+    "abaixo_da_media": {"label": "Abaixo da média",   "min_score": 2.25, "color": "orange-600"},
+    "regular":         {"label": "Regular / Baixo",   "min_score": 0.0,  "color": "red-600"},
+}
+
+
+def classify_wsi_score(score: float) -> str:
+    """Classifica o score WSI nos 6 níveis canônicos (spec Seção 9.5, escala /5)."""
+    if score >= 4.5:
+        return "excepcional"
+    if score >= 4.0:
+        return "excelente"
+    if score >= 3.5:
+        return "alto"
+    if score >= 3.0:
+        return "medio"
+    if score >= 2.25:
+        return "abaixo_da_media"
+    return "regular"
 
 
 class WSIQuestionOutput(BaseModel):
@@ -380,82 +404,254 @@ class JDEvaluateResponse(BaseModel):
     success: bool = True
     score: int
     max_score: int = 100
+    band: str
+    band_label: str
     indicators: List[Dict[str, Any]]
     lia_suggestion: str
     can_generate: bool
     details: Dict[str, Any]
 
+
+_JD_SENIORITY_KEYWORDS = {
+    "estagiario": ["estagiário", "estagiaria", "estágio", "trainee"],
+    "junior": ["junior", "júnior", "jr"],
+    "pleno": ["pleno", "pl"],
+    "senior": ["sênior", "senior", "sr"],
+    "lead": ["lead", "líder", "tech lead"],
+    "principal": ["principal", "staff"],
+    "diretor": ["diretor", "diretora", "director"],
+    "vp": ["vp", "vice-presidente", "cxo", "cto", "cpo"],
+}
+_BIAS_TERMS = [
+    "boa aparência", "apresentação pessoal", "jovem", "recém-formado",
+    "native speaker", "universidades de primeira linha", "faculdade de ponta",
+    "perfil adequado", "escola particular", "bairros nobres", "morar próximo",
+    "boa família", "estado civil", "filho", "filha", "casado", "solteiro",
+]
+_JD_BANDS = [
+    (85, "excelente",     "Excelente"),
+    (70, "bom",           "Bom"),
+    (50, "adequado",      "Adequado"),
+    (30, "insuficiente",  "Insuficiente"),
+    (0,  "critico",       "Crítico"),
+]
+
+
+def _jd_get_band(score: int):
+    for threshold, band_key, band_label in _JD_BANDS:
+        if score >= threshold:
+            return band_key, band_label
+    return "critico", "Crítico"
+
+
 @router.post("/jd-evaluate")
 async def evaluate_jd(request: JDEvaluateRequest):
-    """Evaluate job description quality for WSI question generation."""
-    resp_count = len(request.responsibilities or [])
-    tech_count = len(request.technical_skills or [])
-    behav_count = len(request.behavioral_competencies or [])
+    """Evaluate job description quality using 9 dimensions (spec F1.B).
+    Hard block if score < 30 (band=Crítico). 5 quality bands."""
+    resp_count   = len(request.responsibilities or [])
+    tech_count   = len(request.technical_skills or [])
+    behav_count  = len(request.behavioral_competencies or [])
     has_seniority = bool(request.seniority)
-    has_description = bool(request.description and len(request.description) > 20)
-    
+    desc = (request.description or "").lower()
+    title = (request.job_title or "").lower()
+    dept = (request.department or "")
+
     score = 0
     indicators = []
-    
-    if resp_count >= 3:
-        score += 30
-        indicators.append({"label": "Responsabilidades", "count": resp_count, "status": "sufficient", "minimum": 3})
-    elif resp_count >= 1:
-        score += 15
-        indicators.append({"label": "Responsabilidades", "count": resp_count, "status": "partial", "minimum": 3})
+
+    title_has_seniority = any(
+        kw in title
+        for keywords in _JD_SENIORITY_KEYWORDS.values()
+        for kw in keywords
+    )
+    pts_1 = 10 if (title_has_seniority or has_seniority) else 0
+    score += pts_1
+    indicators.append({
+        "dimension": "D1",
+        "label": "Clareza do título",
+        "weight": 10,
+        "earned": pts_1,
+        "status": "sufficient" if pts_1 == 10 else "insufficient",
+        "detail": f"{'Indicador de senioridade detectado' if pts_1 else 'Título sem indicador de senioridade'}",
+    })
+
+    if resp_count >= 5:
+        pts_2 = 15
+        st_2 = "sufficient"
+    elif resp_count >= 2:
+        pts_2 = 7
+        st_2 = "partial"
     else:
-        indicators.append({"label": "Responsabilidades", "count": 0, "status": "insufficient", "minimum": 3})
-    
+        pts_2 = 0
+        st_2 = "insufficient"
+    score += pts_2
+    indicators.append({
+        "dimension": "D2",
+        "label": "Responsabilidades",
+        "weight": 15,
+        "earned": pts_2,
+        "count": resp_count,
+        "minimum": 5,
+        "status": st_2,
+        "detail": f"{resp_count} responsabilidade(s) — mínimo ideal: 5",
+    })
+
     if tech_count >= 3:
-        score += 30
-        indicators.append({"label": "Comp. Técnicas", "count": tech_count, "status": "sufficient", "minimum": 3})
+        pts_3 = 15
+        st_3 = "sufficient"
     elif tech_count >= 1:
-        score += 15
-        indicators.append({"label": "Comp. Técnicas", "count": tech_count, "status": "partial", "minimum": 3})
+        pts_3 = 7
+        st_3 = "partial"
     else:
-        indicators.append({"label": "Comp. Técnicas", "count": 0, "status": "insufficient", "minimum": 3})
-    
-    if behav_count >= 3:
-        score += 25
-        indicators.append({"label": "Comp. Comportamentais", "count": behav_count, "status": "sufficient", "minimum": 3})
+        pts_3 = 0
+        st_3 = "insufficient"
+    score += pts_3
+    indicators.append({
+        "dimension": "D3",
+        "label": "Skills técnicas",
+        "weight": 15,
+        "earned": pts_3,
+        "count": tech_count,
+        "minimum": 3,
+        "status": st_3,
+        "detail": f"{tech_count} skill(s) técnica(s) — mínimo ideal: 3",
+    })
+
+    if behav_count >= 2:
+        pts_4 = 10
+        st_4 = "sufficient"
     elif behav_count >= 1:
-        score += 12
-        indicators.append({"label": "Comp. Comportamentais", "count": behav_count, "status": "partial", "minimum": 3})
+        pts_4 = 5
+        st_4 = "partial"
     else:
-        indicators.append({"label": "Comp. Comportamentais", "count": 0, "status": "insufficient", "minimum": 3})
-    
-    if has_seniority:
-        score += 10
-        indicators.append({"label": "Senioridade", "count": 1, "status": "sufficient", "minimum": 1})
+        pts_4 = 0
+        st_4 = "insufficient"
+    score += pts_4
+    indicators.append({
+        "dimension": "D4",
+        "label": "Comp. comportamentais",
+        "weight": 10,
+        "earned": pts_4,
+        "count": behav_count,
+        "minimum": 2,
+        "status": st_4,
+        "detail": f"{behav_count} comportamental(is) — mínimo ideal: 2",
+    })
+
+    if has_seniority and resp_count >= 3:
+        pts_5 = 15
+        st_5 = "sufficient"
+    elif has_seniority or resp_count >= 2:
+        pts_5 = 7
+        st_5 = "partial"
     else:
-        indicators.append({"label": "Senioridade", "count": 0, "status": "insufficient", "minimum": 1})
-    
-    if has_description:
-        score += 5
-    
-    if score >= 70:
-        suggestion = f"JD bem estruturado para {request.job_title}. As perguntas WSI serão calibradas com base nas {tech_count} competências técnicas e {behav_count} comportamentais identificadas."
+        pts_5 = 0
+        st_5 = "insufficient"
+    score += pts_5
+    indicators.append({
+        "dimension": "D5",
+        "label": "Consistência senioridade",
+        "weight": 15,
+        "earned": pts_5,
+        "status": st_5,
+        "detail": "Senioridade declarada com responsabilidades compatíveis" if pts_5 == 15 else "Senioridade ou responsabilidades insuficientes para calibração",
+    })
+
+    desc_words = len(desc.split()) if desc else 0
+    has_contradiction = (
+        ("autonomia" in desc and "aprovação" in desc) or
+        ("independente" in desc and "acompanhamento diário" in desc)
+    )
+    pts_6 = 0 if has_contradiction else (10 if desc_words > 80 else 5)
+    score += pts_6
+    indicators.append({
+        "dimension": "D6",
+        "label": "Ausência de inconsistências",
+        "weight": 10,
+        "earned": pts_6,
+        "status": "insufficient" if has_contradiction else ("sufficient" if pts_6 == 10 else "partial"),
+        "detail": "Contradição detectada (autonomia vs. aprovação)" if has_contradiction else "Sem inconsistências detectadas",
+    })
+
+    has_context = bool(dept) or any(kw in desc for kw in ["empresa", "equipe", "time", "setor", "segmento", "startup", "corporati"])
+    pts_7 = 10 if has_context else 0
+    score += pts_7
+    indicators.append({
+        "dimension": "D7",
+        "label": "Contexto organizacional",
+        "weight": 10,
+        "earned": pts_7,
+        "status": "sufficient" if pts_7 == 10 else "insufficient",
+        "detail": "Contexto de empresa/time/setor presente" if pts_7 else "Sem contexto organizacional (empresa, time, setor)",
+    })
+
+    found_bias = [t for t in _BIAS_TERMS if t in desc or t in title]
+    pts_8 = 0 if found_bias else 10
+    score += pts_8
+    indicators.append({
+        "dimension": "D8",
+        "label": "Linguagem inclusiva",
+        "weight": 10,
+        "earned": pts_8,
+        "status": "insufficient" if found_bias else "sufficient",
+        "detail": f"Termo(s) de viés encontrado(s): {', '.join(found_bias[:3])}" if found_bias else "Linguagem neutra e inclusiva",
+    })
+
+    all_text = " ".join(filter(None, [
+        request.description,
+        " ".join(request.responsibilities or []),
+        " ".join(request.technical_skills or []),
+        " ".join(request.behavioral_competencies or []),
+    ]))
+    total_words = len(all_text.split())
+    pts_9 = 5 if total_words >= 150 else 0
+    score += pts_9
+    indicators.append({
+        "dimension": "D9",
+        "label": "Densidade total",
+        "weight": 5,
+        "earned": pts_9,
+        "word_count": total_words,
+        "minimum": 150,
+        "status": "sufficient" if pts_9 == 5 else "insufficient",
+        "detail": f"{total_words} palavras — mínimo ideal: 150",
+    })
+
+    band_key, band_label = _jd_get_band(score)
+
+    if score >= 85:
+        suggestion = f"JD excelente para {request.job_title}. Perguntas WSI serão altamente calibradas com {tech_count} competências técnicas e {behav_count} comportamentais."
+    elif score >= 70:
+        suggestion = f"JD bem estruturado. Perguntas WSI geradas com boa qualidade. Recomenda-se enriquecer contexto organizacional para maximizar precisão."
     elif score >= 50:
         missing = []
-        if resp_count < 3: missing.append("responsabilidades")
-        if tech_count < 3: missing.append("competências técnicas")
-        if behav_count < 3: missing.append("competências comportamentais")
-        suggestion = f"JD parcialmente completo. Para melhorar a qualidade das perguntas, adicione mais: {', '.join(missing)}."
+        if resp_count < 5: missing.append(f"responsabilidades (tem {resp_count}, ideal ≥5)")
+        if tech_count < 3: missing.append(f"skills técnicas (tem {tech_count}, ideal ≥3)")
+        if behav_count < 2: missing.append(f"comportamentais (tem {behav_count}, ideal ≥2)")
+        suggestion = f"JD adequado mas com lacunas. Melhore: {'; '.join(missing) or 'contexto e densidade'}."
+    elif score >= 30:
+        suggestion = "JD insuficiente para gerar perguntas de alta qualidade. Adicione responsabilidades detalhadas, skills técnicas específicas e senioridade."
     else:
-        suggestion = "JD precisa de mais informações para gerar perguntas de qualidade. Adicione responsabilidades, competências técnicas e comportamentais."
-    
+        suggestion = "JD crítico — perguntas WSI bloqueadas. Adicione no mínimo: título com senioridade, 2+ responsabilidades, 1+ skill técnica e senioridade definida."
+
     return JDEvaluateResponse(
         success=True,
         score=score,
+        max_score=100,
+        band=band_key,
+        band_label=band_label,
         indicators=indicators,
         lia_suggestion=suggestion,
-        can_generate=score >= 40,
+        can_generate=score >= 30,
         details={
             "responsibilities_count": resp_count,
             "technical_skills_count": tech_count,
             "behavioral_competencies_count": behav_count,
             "seniority_defined": has_seniority,
-            "has_description": has_description
+            "total_word_count": total_words,
+            "has_context": has_context,
+            "bias_terms_found": found_bias,
+            "has_inconsistency": has_contradiction,
         }
     )
 
@@ -892,16 +1088,7 @@ async def complete_screening(
         neuroticism=int(sum(a.big_five_indicators.neuroticism for a in response_analyses) / len(response_analyses)) if response_analyses else 50
     )
     
-    if avg_score >= 4.5:
-        classification = "excelente"
-    elif avg_score >= 4.0:
-        classification = "alto"
-    elif avg_score >= 3.0:
-        classification = "medio"
-    elif avg_score >= 2.0:
-        classification = "regular"
-    else:
-        classification = "baixo"
+    classification = classify_wsi_score(avg_score)
     
     archetypes = []
     o, c, e, a, n = (
@@ -955,8 +1142,9 @@ async def complete_screening(
     if not recommendations:
         recommendations.append("Candidato demonstra perfil sólido para a posição")
     
+    class_label = WSI_CLASSIFICATION_MAP.get(classification, {}).get("label", classification)
     summary = (
-        f"Candidato avaliado como {classification.upper()} (Score: {avg_score:.1f}/5.0). "
+        f"Candidato avaliado como {class_label} (Score: {avg_score:.1f}/5.0). "
         f"Demonstra nível cognitivo {bloom_level_name['name_pt']} (Bloom {round(avg_bloom)}) "
         f"e proficiência {dreyfus_level_name['name_pt']} (Dreyfus {round(avg_dreyfus)}). "
         f"Arquétipo predominante: {archetypes[0].archetype}."
@@ -1338,3 +1526,503 @@ async def get_interview_graph_session(session_id: str):
         raise HTTPException(status_code=404, detail=f"Sessão '{session_id}' não encontrada")
 
     return wsi_interview_graph.get_session_summary(state)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# F11 — RELATÓRIO COMPLETO DO CONSULTOR (spec sections 11.1–11.5)
+# ─────────────────────────────────────────────────────────────────────────────
+
+import hashlib
+from datetime import datetime
+
+
+class CBIQuestion(BaseModel):
+    question_number: int
+    area: str
+    competencia_label: str
+    gap_focus: str
+    question_text: str
+    bloom_target: int
+    bloom_label: str
+    dreyfus_target: int
+    dreyfus_label: str
+    expected_evidence: str
+    red_flags: str
+
+
+class GateStatus(BaseModel):
+    g1_elegibilidade: bool
+    g1_detail: str
+    g2_prompt_injection: bool
+    g2_detail: str
+    g3_wsi_tecnico: bool
+    g3_detail: str
+    g4_skill_critica: bool
+    g4_detail: str
+    g5_engajamento: bool
+    g5_detail: str
+    g6_inflacao: bool
+    g6_detail: str
+    all_passed: bool
+    failed_gates: List[str]
+
+
+class F11ReportResponse(BaseModel):
+    session_id: str
+    result_id: Optional[str]
+    candidate_name: str
+    candidate_id: str
+    job_title: str
+    job_vacancy_id: Optional[str]
+    seniority: Optional[str]
+    mode: str
+    screening_type: str
+    duration_minutes: Optional[float]
+    started_at: Optional[str]
+    completed_at: Optional[str]
+    overall_wsi: float
+    technical_wsi: float
+    behavioral_wsi: float
+    classification: str
+    classification_label: str
+    gates: GateStatus
+    decision_result: str
+    decision_confidence: str
+    decision_reason: Optional[str]
+    responses_hash: str
+    response_analyses: List[Dict[str, Any]]
+    interview_questions: List[CBIQuestion]
+    strengths: List[str]
+    gaps: List[Dict[str, Any]]
+    generated_at: str
+    methodology_version: str = "WSI v2.0"
+
+
+_GATE_G3_THRESHOLD = 2.0   # /5 scale (= 4.0/10)
+_GATE_G4_THRESHOLD = 1.5   # /5 scale (= 3.0/10)
+_INJECTION_KEYWORDS = ["ignore", "esquece", "esqueça", "novo prompt", "sys:", "system:", "jailbreak", "prompt injection"]
+
+
+async def _generate_cbi_questions_llm(
+    gaps: List[Dict[str, Any]],
+    strengths: List[str],
+    previous_questions: List[str],
+    seniority: str,
+    job_title: str,
+) -> List[CBIQuestion]:
+    """Gera 2 perguntas CBI via LLM (temp=0.6, max_tokens=600, retry≤3). Spec 11.5."""
+    import anthropic as _anthropic
+
+    gaps_formatted = "\n".join(
+        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/5 — sinais ausentes: {g.get('missing_signals','n/a')}"
+        for g in gaps[:3]
+    ) or "Nenhum gap crítico identificado — perguntas de aprofundamento"
+
+    strengths_formatted = "\n".join(f"✓ {s}" for s in strengths[:2]) or "N/A"
+
+    prev_qs_formatted = "\n".join(f"- {q}" for q in previous_questions[:5]) or "Nenhuma"
+
+    bloom_expected = max((g.get("bloom_target", 3) for g in gaps[:1]), default=3)
+    dreyfus_expected = max((g.get("dreyfus_target", 3) for g in gaps[:1]), default=3)
+    bloom_lbl = BLOOM_LEVELS.get(bloom_expected, BLOOM_LEVELS[3])["name_pt"]
+    dreyfus_lbl = DREYFUS_LEVELS.get(dreyfus_expected, DREYFUS_LEVELS[3])["name_pt"]
+
+    system_prompt = (
+        "Você é um especialista em entrevistas comportamentais estruturadas (CBI).\n"
+        "Gere EXATAMENTE 2 perguntas para entrevista presencial com base nos gaps identificados na triagem.\n\n"
+        "REGRAS:\n"
+        "- Pergunta 1: foco no gap de MAIOR severidade (técnico ou comportamental)\n"
+        "- Pergunta 2: foco no segundo maior gap — de tipo DIFERENTE do primeiro\n"
+        "- Formato CBI-STAR: pedir situação real passada + ação + resultado\n"
+        "- Linguagem NEUTRA em gênero: 'a pessoa candidata', 'você', 'o time' — sem pronomes binários\n"
+        "- Cenários exclusivamente profissionais\n"
+        "- Não repetir perguntas da triagem\n"
+        "- Retorne JSON válido sem texto adicional\n"
+    )
+
+    user_prompt = f"""Senioridade da vaga: {seniority or 'Não especificada'}
+Cargo: {job_title}
+Bloom esperado: {bloom_expected} — {bloom_lbl}
+Dreyfus esperado: {dreyfus_expected} — {dreyfus_lbl}
+
+Gaps identificados (ALTO→MÉDIO→BAIXO):
+{gaps_formatted}
+
+Pontos fortes (não perguntar sobre estes):
+{strengths_formatted}
+
+Perguntas JÁ feitas na triagem (não repetir):
+{prev_qs_formatted}
+
+Retorne JSON:
+{{
+  "interview_questions": [
+    {{
+      "question_number": 1,
+      "area": "technical",
+      "competencia_label": "nome da competência",
+      "gap_focus": "descrição do gap em 1 frase",
+      "question_text": "pergunta completa pronta para o consultor ler",
+      "bloom_target": 1-6,
+      "bloom_label": "label Bloom",
+      "dreyfus_target": 1-5,
+      "dreyfus_label": "label Dreyfus",
+      "expected_evidence": "2-3 comportamentos/ações esperados",
+      "red_flags": "2-3 sinais de que o gap persiste"
+    }},
+    {{
+      "question_number": 2,
+      "area": "behavioral",
+      "competencia_label": "nome da competência",
+      "gap_focus": "descrição do gap em 1 frase",
+      "question_text": "pergunta completa pronta para o consultor ler",
+      "bloom_target": 1-6,
+      "bloom_label": "label Bloom",
+      "dreyfus_target": 1-5,
+      "dreyfus_label": "label Dreyfus",
+      "expected_evidence": "2-3 comportamentos/ações esperados",
+      "red_flags": "2-3 sinais de que o gap persiste"
+    }}
+  ]
+}}"""
+
+    api_key = AI_INTEGRATIONS_ANTHROPIC_API_KEY
+    base_url = AI_INTEGRATIONS_ANTHROPIC_BASE_URL
+
+    if not api_key:
+        logger.warning("F11: No Anthropic key — returning deterministic fallback questions")
+        return _f11_fallback_questions(gaps)
+
+    client = _anthropic.AsyncAnthropic(api_key=api_key, base_url=base_url)
+    last_err = None
+
+    for attempt in range(1, 4):
+        try:
+            msg = await client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=600,
+                temperature=0.6,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_prompt}],
+            )
+            raw = msg.content[0].text.strip()
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+            data = json.loads(raw)
+            qs = data.get("interview_questions", [])
+            if len(qs) >= 2:
+                result = []
+                for q in qs[:2]:
+                    result.append(CBIQuestion(
+                        question_number=q.get("question_number", len(result) + 1),
+                        area=q.get("area", "technical"),
+                        competencia_label=q.get("competencia_label", ""),
+                        gap_focus=q.get("gap_focus", ""),
+                        question_text=q.get("question_text", ""),
+                        bloom_target=int(q.get("bloom_target", 3)),
+                        bloom_label=q.get("bloom_label", "Aplicar"),
+                        dreyfus_target=int(q.get("dreyfus_target", 3)),
+                        dreyfus_label=q.get("dreyfus_label", "Intermediário"),
+                        expected_evidence=q.get("expected_evidence", ""),
+                        red_flags=q.get("red_flags", ""),
+                    ))
+                return result
+        except Exception as e:
+            last_err = e
+            logger.warning(f"F11 CBI generation attempt {attempt}/3 failed: {e}")
+
+    logger.error(f"F11: All 3 LLM attempts failed ({last_err}) — returning deterministic fallback")
+    return _f11_fallback_questions(gaps)
+
+
+def _f11_fallback_questions(gaps: List[Dict[str, Any]]) -> List[CBIQuestion]:
+    """Fallback determinístico quando LLM falha 3x. Spec 11.5 edge case."""
+    types = ["technical", "behavioral"]
+    result = []
+    used_types: set = set()
+    for i, gap in enumerate(gaps[:3]):
+        area = gap.get("type", "technical")
+        if area in used_types:
+            area = "behavioral" if area == "technical" else "technical"
+        used_types.add(area)
+        competency = gap.get("competency", f"Competência {i+1}")
+        result.append(CBIQuestion(
+            question_number=i + 1,
+            area=area,
+            competencia_label=competency,
+            gap_focus=f"Aprofundar evidências sobre {competency}",
+            question_text=f"Descreva uma situação passada em que você precisou demonstrar {competency}. Qual foi a ação que tomou e qual foi o resultado?",
+            bloom_target=3,
+            bloom_label="Aplicar",
+            dreyfus_target=3,
+            dreyfus_label="Intermediário",
+            expected_evidence=f"Situação concreta, ação clara e resultado mensurável em {competency}",
+            red_flags=f"Resposta vaga ou hipotética sobre {competency}",
+        ))
+        if len(result) == 2:
+            break
+
+    while len(result) < 2:
+        result.append(CBIQuestion(
+            question_number=len(result) + 1,
+            area="behavioral",
+            competencia_label="Resolução de problemas",
+            gap_focus="Avaliar capacidade geral de resolução de problemas",
+            question_text="Descreva uma situação desafiadora que você enfrentou no trabalho. Qual foi a ação que tomou e qual foi o resultado?",
+            bloom_target=4,
+            bloom_label="Analisar",
+            dreyfus_target=3,
+            dreyfus_label="Intermediário",
+            expected_evidence="Situação real, raciocínio estruturado, resultado concreto",
+            red_flags="Resposta vaga, ausência de resultado ou situação hipotética",
+        ))
+    return result[:2]
+
+
+@router.get("/f11-report/{session_id}", summary="F11 — Relatório completo do consultor WSI")
+async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
+    """Gera o relatório completo F11 para uma sessão WSI concluída.
+
+    Inclui: G1-G6 gates, SHA-256 das respostas brutas, 2 perguntas CBI para
+    entrevista presencial (LLM temp=0.6, retry≤3) e decisão estruturada.
+    Spec: WSI_METHODOLOGY_COMPLETE_v2.md sections 11.1–11.5.
+    """
+    try:
+        sess_r = await db.execute(text("""
+            SELECT s.id, s.candidate_id, s.job_vacancy_id, s.screening_type, s.mode,
+                   s.status, s.started_at, s.completed_at,
+                   c.name AS candidate_name,
+                   j.title AS job_title, j.seniority_level
+            FROM wsi_sessions s
+            LEFT JOIN candidates c ON c.id = s.candidate_id
+            LEFT JOIN job_vacancies j ON j.id = s.job_vacancy_id
+            WHERE s.id = :sid
+        """), {"sid": session_id})
+        session = sess_r.fetchone()
+        if not session:
+            raise HTTPException(status_code=404, detail="Sessão WSI não encontrada")
+
+        (sid, cand_id, jv_id, screening_type, mode, status,
+         started_at, completed_at, candidate_name, job_title, seniority) = session
+
+        res_r = await db.execute(text("""
+            SELECT id, technical_wsi, behavioral_wsi, overall_wsi, classification
+            FROM wsi_results WHERE session_id = :sid ORDER BY created_at DESC LIMIT 1
+        """), {"sid": session_id})
+        result_row = res_r.fetchone()
+
+        if result_row:
+            result_id, tech_wsi, behav_wsi, overall_wsi, classification = result_row
+            result_id = str(result_id)
+            tech_wsi = float(tech_wsi)
+            behav_wsi = float(behav_wsi)
+            overall_wsi = float(overall_wsi)
+        else:
+            result_id = None
+            tech_wsi = behav_wsi = overall_wsi = 0.0
+            classification = "regular"
+
+        classification_label = WSI_CLASSIFICATION_MAP.get(classification, {}).get("label", classification)
+
+        qs_r = await db.execute(text("""
+            SELECT id, competency, framework, question_type, question_text, weight, sequence_order
+            FROM wsi_questions WHERE session_id = :sid ORDER BY sequence_order
+        """), {"sid": session_id})
+        questions = qs_r.fetchall()
+
+        ana_r = await db.execute(text("""
+            SELECT ra.id, ra.question_id, ra.competency, ra.response_text,
+                   ra.autodeclaration_score, ra.context_score, ra.bloom_level, ra.dreyfus_level,
+                   ra.evidences, ra.red_flags, ra.consistency_penalty, ra.final_score, ra.justification
+            FROM wsi_response_analyses ra
+            WHERE ra.session_id = :sid
+        """), {"sid": session_id})
+        analyses = ana_r.fetchall()
+
+        responses_hash = hashlib.sha256(
+            "".join(a[3] or "" for a in analyses).encode("utf-8")
+        ).hexdigest()
+
+        q_map = {str(q[0]): q for q in questions}
+
+        analyses_list = []
+        for a in analyses:
+            (a_id, q_id, competency, resp_text, auto_score, ctx_score,
+             bloom_lv, dreyfus_lv, evidences, red_flags, cons_pen, final_score, justification) = a
+            q = q_map.get(str(q_id), None)
+            bloom_info  = BLOOM_LEVELS.get(bloom_lv or 3, BLOOM_LEVELS[3])
+            dreyfus_info = DREYFUS_LEVELS.get(dreyfus_lv or 3, DREYFUS_LEVELS[3])
+            analyses_list.append({
+                "analysis_id": str(a_id),
+                "question_id": str(q_id),
+                "competency": competency,
+                "question_text": q[4] if q else "",
+                "question_type": q[3] if q else "technical",
+                "framework": q[2] if q else "",
+                "weight": float(q[5]) if q else 1.0,
+                "response_text": resp_text or "",
+                "response_word_count": len((resp_text or "").split()),
+                "autodeclaration_score": float(auto_score) if auto_score else 0.0,
+                "context_score": float(ctx_score) if ctx_score else 0.0,
+                "bloom_level": bloom_lv or 3,
+                "bloom_label": bloom_info["name_pt"],
+                "dreyfus_level": dreyfus_lv or 3,
+                "dreyfus_label": dreyfus_info["name_pt"],
+                "evidences": evidences or [],
+                "red_flags": red_flags or [],
+                "consistency_penalty": float(cons_pen) if cons_pen else 0.0,
+                "final_score": float(final_score) if final_score else 0.0,
+                "justification": justification or "",
+            })
+
+        g1_failed = any(
+            a["question_type"] == "eligibility" and a["final_score"] == 0.0
+            for a in analyses_list
+        )
+        injection_count = sum(
+            1 for a in analyses_list
+            if any(kw in (a.get("response_text") or "").lower() for kw in _INJECTION_KEYWORDS)
+        )
+        g2_failed = injection_count >= 2
+
+        g3_failed = tech_wsi < _GATE_G3_THRESHOLD and tech_wsi > 0.0
+
+        g4_failed = any(
+            a["final_score"] < _GATE_G4_THRESHOLD and a["final_score"] > 0.0
+            and (a.get("weight") or 0) >= 1.5
+            for a in analyses_list
+        )
+
+        short_responses = sum(1 for a in analyses_list if a["response_word_count"] < 30)
+        total_qs = len(analyses_list)
+        g5_failed = (total_qs > 0) and (short_responses / total_qs >= 0.5)
+
+        inflation_count = sum(
+            1 for a in analyses_list
+            if any("inflação" in str(rf).lower() or "inflation" in str(rf).lower() or "infla" in str(rf).lower()
+                   for rf in (a.get("red_flags") or []))
+        )
+        g6_failed = inflation_count >= 3
+
+        failed_gates = []
+        if g1_failed: failed_gates.append("G1")
+        if g2_failed: failed_gates.append("G2")
+        if g3_failed: failed_gates.append("G3")
+        if g4_failed: failed_gates.append("G4")
+        if g5_failed: failed_gates.append("G5")
+        if g6_failed: failed_gates.append("G6")
+
+        gates = GateStatus(
+            g1_elegibilidade=not g1_failed,
+            g1_detail="Elegibilidade confirmada" if not g1_failed else "Requisito de elegibilidade não atendido",
+            g2_prompt_injection=not g2_failed,
+            g2_detail=f"{injection_count} tentativa(s) de manipulação detectada(s)" if g2_failed else "Sem injeção de prompt detectada",
+            g3_wsi_tecnico=not g3_failed,
+            g3_detail=f"WSI Técnico {tech_wsi:.2f}/5 {'< limiar 2.0 — reprovado' if g3_failed else '≥ limiar 2.0 — aprovado'}",
+            g4_skill_critica=not g4_failed,
+            g4_detail="Skill crítica com score abaixo do mínimo absoluto" if g4_failed else "Nenhuma skill crítica abaixo do mínimo",
+            g5_engajamento=not g5_failed,
+            g5_detail=f"{short_responses}/{total_qs} respostas com < 30 palavras {'— engajamento insuficiente' if g5_failed else '— engajamento adequado'}",
+            g6_inflacao=not g6_failed,
+            g6_detail=f"{inflation_count} resposta(s) com inflação detectada" if g6_failed else "Sem padrão de inflação sistemática",
+            all_passed=len(failed_gates) == 0,
+            failed_gates=failed_gates,
+        )
+
+        if len(failed_gates) > 0:
+            decision_result = "REPROVADO"
+            decision_confidence = "alta"
+            gate_labels = {"G1": "elegibilidade", "G2": "injeção de prompt", "G3": "competência técnica mínima",
+                           "G4": "skill crítica", "G5": "engajamento insuficiente", "G6": "inflação sistemática"}
+            gate_reasons = [gate_labels.get(g, g) for g in failed_gates]
+            decision_reason = f"Gate(s) ativado(s): {', '.join(gate_reasons)}"
+        elif overall_wsi >= 3.75:
+            decision_result = "APROVADO"
+            decision_confidence = "alta" if overall_wsi >= 4.5 else "media"
+            decision_reason = None
+        elif overall_wsi >= 3.0:
+            decision_result = "EM_AVALIACAO"
+            decision_confidence = "media"
+            decision_reason = f"Score WSI {overall_wsi:.2f}/5 requer revisão humana (faixa 3.0–3.74)"
+        else:
+            decision_result = "REPROVADO"
+            decision_confidence = "alta"
+            decision_reason = f"Score WSI {overall_wsi:.2f}/5 abaixo do mínimo (< 3.0)"
+
+        sorted_analyses = sorted(analyses_list, key=lambda x: x["final_score"], reverse=True)
+        strengths = [
+            f"{a['competency']} — {a['final_score']:.1f}/5"
+            for a in sorted_analyses[:3]
+            if a["final_score"] >= 3.5
+        ]
+
+        gap_items = [
+            a for a in sorted_analyses if a["final_score"] < 3.0 and a["final_score"] > 0.0
+        ]
+        gap_items.sort(key=lambda x: x["final_score"])
+        gaps = []
+        for a in gap_items[:3]:
+            delta = 3.0 - a["final_score"]
+            severity = "ALTO" if delta >= 1.5 else ("MÉDIO" if delta >= 0.75 else "BAIXO")
+            gaps.append({
+                "competency": a["competency"],
+                "type": a["question_type"],
+                "score": a["final_score"],
+                "delta": round(delta, 2),
+                "severity": severity,
+                "missing_signals": ", ".join(str(rf) for rf in (a.get("red_flags") or [])[:2]) or "n/a",
+                "bloom_target": a["bloom_level"],
+                "dreyfus_target": a["dreyfus_level"],
+            })
+
+        previous_questions = [a["question_text"] for a in analyses_list if a["question_text"]]
+        interview_questions = await _generate_cbi_questions_llm(
+            gaps=gaps,
+            strengths=strengths,
+            previous_questions=previous_questions,
+            seniority=str(seniority or ""),
+            job_title=str(job_title or ""),
+        )
+
+        duration_minutes = None
+        if started_at and completed_at:
+            diff = (completed_at - started_at).total_seconds() / 60
+            duration_minutes = round(diff, 1)
+
+        return F11ReportResponse(
+            session_id=str(sid),
+            result_id=result_id,
+            candidate_name=candidate_name or "Candidato",
+            candidate_id=str(cand_id),
+            job_title=job_title or "Vaga",
+            job_vacancy_id=str(jv_id) if jv_id else None,
+            seniority=str(seniority) if seniority else None,
+            mode=mode or "compact",
+            screening_type=screening_type or "text",
+            duration_minutes=duration_minutes,
+            started_at=started_at.isoformat() if started_at else None,
+            completed_at=completed_at.isoformat() if completed_at else None,
+            overall_wsi=round(overall_wsi, 3),
+            technical_wsi=round(tech_wsi, 3),
+            behavioral_wsi=round(behav_wsi, 3),
+            classification=classification,
+            classification_label=classification_label,
+            gates=gates,
+            decision_result=decision_result,
+            decision_confidence=decision_confidence,
+            decision_reason=decision_reason,
+            responses_hash=responses_hash,
+            response_analyses=analyses_list,
+            interview_questions=interview_questions,
+            strengths=strengths,
+            gaps=gaps,
+            generated_at=datetime.utcnow().isoformat() + "Z",
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"F11 report generation failed for session {session_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar relatório F11: {str(e)}")

@@ -13,7 +13,7 @@ import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit } from
 import { CompanyBankQuestions } from './CompanyBankQuestions'
 import { CustomQuestions } from './CustomQuestions'
 import type { CustomQuestion } from './CustomQuestions'
-import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables, getBloomComplexity, getEstimatedTime } from '@/components/jobs/jobsPageConstants'
+import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables, getBloomComplexity, getEstimatedTime, getBloomLabelPTBR, getDreyfusLabelPTBR } from '@/components/jobs/jobsPageConstants'
 import { JDEvaluationPanel } from '@/components/wsi'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -2014,6 +2014,16 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                   <Badge className={`text-[10px] px-2 py-0.5 h-5 rounded-full border ${complexity.color}`}>
                                                     <Gauge className="w-3 h-3 mr-0.5" />{complexity.label}
                                                   </Badge>
+                                                  {item.bloom_level && (
+                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800">
+                                                      <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
+                                                    </Badge>
+                                                  )}
+                                                  {item.dreyfus_level && item.block_id !== 2 && (
+                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
+                                                      {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
+                                                    </Badge>
+                                                  )}
                                                   {isDeactivated ? (
                                                     <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">Inativa</Badge>
                                                   ) : (
@@ -2025,7 +2035,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                 <p className="text-xs text-gray-950 dark:text-gray-50 leading-relaxed">{item.question}</p>
                                                 <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-500 dark:text-gray-400">
                                                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{estTime}</span>
-                                                  {item.bloom_label && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
+                                                  {item.bloom_label && !item.bloom_level && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
                                                   {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
                                                   <span className="flex items-center gap-1"><Scale className="w-3 h-3" />Peso: {((item.weight || 1) * 100).toFixed(0)}%</span>
                                                 </div>
@@ -2083,6 +2093,16 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                   <Badge className={`text-[10px] px-2 py-0.5 h-5 rounded-full border ${genComplexity.color}`}>
                                                     <Gauge className="w-3 h-3 mr-0.5" />{genComplexity.label}
                                                   </Badge>
+                                                  {item.bloom_level && (
+                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800">
+                                                      <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
+                                                    </Badge>
+                                                  )}
+                                                  {item.dreyfus_level && item.block_id !== 2 && (
+                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
+                                                      {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
+                                                    </Badge>
+                                                  )}
                                                   {isAccepted && (
                                                     <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
                                                       <CheckCircle className="w-3 h-3 mr-1" />Aceita
@@ -2092,7 +2112,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                 <p className="text-xs text-gray-950 dark:text-gray-50 leading-relaxed">{item.question || item.text}</p>
                                                 <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-500 dark:text-gray-400">
                                                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{genEstTime}</span>
-                                                  {item.bloom_label && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
+                                                  {item.bloom_label && !item.bloom_level && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
                                                   {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
                                                   <span className="flex items-center gap-1"><Scale className="w-3 h-3" />Peso: {((item.weight || 1) * 100).toFixed(0)}%</span>
                                                 </div>

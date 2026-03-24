@@ -10,7 +10,8 @@ import {
   ChevronDown, ChevronUp, ThumbsUp,
   ThumbsDown, Mic, Phone,
   Code, BookOpen, Zap, Trophy, ArrowUp, ArrowDown, Minus,
-  Download, Share2, Loader2, Star
+  Download, Share2, Loader2, Star,
+  ShieldAlert, AlertTriangle, Layers, Info, Mic2, Copy
 } from "lucide-react"
 import { liaApi, WSIResultDetails, WSICandidateRanking, WSIVacancyRanking } from "@/services/lia-api"
 
@@ -23,16 +24,20 @@ interface TriagemDetailsModalProps {
   onReject?: (candidate: any) => void
 }
 
-const getClassificationColor = (classification: string) => {
-  switch (classification) {
-    case 'excelente': return { bg: 'rgba(34, 197, 94, 0.12)', text: '#166534' }
-    case 'alto': return { bg: 'rgba(16, 185, 129, 0.12)', text: '#065F46' }
-    case 'medio': return { bg: 'rgba(234, 179, 8, 0.12)', text: '#854D0E' }
-    case 'regular': return { bg: 'rgba(249, 115, 22, 0.12)', text: '#9A3412' }
-    case 'baixo': return { bg: 'rgba(239, 68, 68, 0.12)', text: '#991B1B' }
-    default: return { bg: 'rgba(96, 190, 209, 0.12)', text: '#374151' }
-  }
+const WSI_CLASSIFICATION_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  excepcional:     { bg: 'rgba(5, 150, 105, 0.12)',  text: '#065F46', label: 'Excepcional' },
+  excelente:       { bg: 'rgba(34, 197, 94, 0.12)',  text: '#166534', label: 'Excelente' },
+  alto:            { bg: 'rgba(59, 130, 246, 0.12)', text: '#1D4ED8', label: 'Alto' },
+  medio:           { bg: 'rgba(234, 179, 8, 0.12)',  text: '#854D0E', label: 'Médio' },
+  abaixo_da_media: { bg: 'rgba(249, 115, 22, 0.12)', text: '#9A3412', label: 'Abaixo da média' },
+  regular:         { bg: 'rgba(239, 68, 68, 0.12)',  text: '#991B1B', label: 'Regular / Baixo' },
 }
+
+const getClassificationColor = (classification: string) =>
+  WSI_CLASSIFICATION_COLORS[classification] ?? { bg: 'rgba(96, 190, 209, 0.12)', text: '#374151', label: classification }
+
+const getClassificationLabel = (classification: string) =>
+  WSI_CLASSIFICATION_COLORS[classification]?.label ?? classification
 
 const getDecisionDisplay = (decision?: string) => {
   switch (decision) {
@@ -44,6 +49,54 @@ const getDecisionDisplay = (decision?: string) => {
 }
 
 const wsiToPercent = (score: number) => Math.round((score / 5) * 100)
+
+const bloomLabel = (n: number) =>
+  (["", "Recordar", "Compreender", "Aplicar", "Analisar", "Avaliar"] as const)[n] ?? `Nível ${n}`
+
+const dreyfusLabel = (n: number) =>
+  (["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"] as const)[n] ?? `Nível ${n}`
+
+const getScoreColor = (score: number) =>
+  score >= 4.5 ? "text-emerald-600" : score >= 3.5 ? "text-amber-600" : "text-red-500"
+
+const gapConfig = {
+  ok:    { label: "Alinhado",          color: "text-emerald-600", bg: "bg-emerald-50",  border: "border-emerald-200" },
+  acima: { label: "Acima do esperado", color: "text-blue-600",    bg: "bg-blue-50",     border: "border-blue-200"    },
+  gap:   { label: "Gap identificado",  color: "text-amber-600",   bg: "bg-amber-50",    border: "border-amber-200"   },
+}
+
+const sevConfig = {
+  alta:  { label: "ALTA",  color: "text-red-600",   bg: "bg-red-50",   border: "border-red-200",   dot: "bg-red-500"   },
+  media: { label: "MÉDIA", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500" },
+  baixa: { label: "BAIXA", color: "text-gray-500",  bg: "bg-gray-50",  border: "border-gray-200",  dot: "bg-gray-400"  },
+}
+
+function DreyfusRow({
+  dreyfusEsperado, dreyfusDemonstrado, senioridade
+}: { dreyfusEsperado: number; dreyfusDemonstrado: number; senioridade?: string }) {
+  const delta = dreyfusDemonstrado - dreyfusEsperado
+  const isCritical = delta <= -2
+  const isAtencao  = delta === -1
+  const isAcima    = delta > 0
+  const color = isCritical ? "text-red-600" : isAtencao ? "text-amber-600" : isAcima ? "text-blue-600" : "text-emerald-600"
+  const bg    = isCritical ? "bg-red-50 border-red-200" : isAtencao ? "bg-amber-50 border-amber-200" : isAcima ? "bg-blue-50 border-blue-200" : "bg-emerald-50 border-emerald-200"
+  const lbl   = isCritical ? "Gap crítico" : isAtencao ? "Atenção" : isAcima ? "Acima" : "Alinhado"
+  return (
+    <div className={`flex items-center justify-between text-[10px] rounded-md border px-2.5 py-1.5 mt-1 ${bg}`}>
+      <span className="text-gray-500">Maturidade comportamental</span>
+      <div className="flex items-center gap-2">
+        <span className="text-gray-400">
+          Esperado{senioridade ? ` para ${senioridade}` : ""}: <span className="font-medium text-gray-600">{dreyfusLabel(dreyfusEsperado)}</span>
+        </span>
+        <span className="text-gray-300">·</span>
+        <span className="text-gray-400">
+          Demonstrado: <span className={`font-semibold ${color}`}>{dreyfusLabel(dreyfusDemonstrado)}</span>
+        </span>
+        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${bg} ${color}`}>{lbl}</span>
+      </div>
+    </div>
+  )
+}
 
 const getFrameworkLabel = (framework: string) => {
   switch (framework) {
@@ -77,6 +130,9 @@ export function TriagemDetailsModal({
   const [approving, setApproving] = useState(false)
   const [rejecting, setRejecting] = useState(false)
   const [confirmReject, setConfirmReject] = useState(false)
+  const [f11Report, setF11Report] = useState<any>(null)
+  const [bigFiveHint, setBigFiveHint] = useState<string | null>(null)
+  const [copiedFeedback, setCopiedFeedback] = useState(false)
 
   useEffect(() => {
     if (isOpen && candidate?.id) {
@@ -120,6 +176,16 @@ export function TriagemDetailsModal({
           console.warn('Ranking data not available:', e)
         }
       }
+
+      const sessionId = detailsData.session?.session_id || detailsData.session_id
+      if (sessionId) {
+        try {
+          const f11 = await fetch(`/api/backend-proxy/wsi/f11-report/${sessionId}`)
+          if (f11.ok) setF11Report(await f11.json())
+        } catch (e) {
+          console.warn('F11 report not available:', e)
+        }
+      }
     } catch (err) {
       console.error('Failed to load WSI details:', err)
       setError('Erro ao carregar dados da triagem.')
@@ -158,9 +224,7 @@ export function TriagemDetailsModal({
     }
   }
 
-  const canTriggerFeedback = details && (
-    details.scores.classification === 'regular' || details.scores.classification === 'medio'
-  )
+  const canTriggerFeedback = !!details
   const feedbackAlreadySent = feedbackStatus?.feedback_sent === true
 
   const font = { fontFamily: "'Open Sans', sans-serif" }
@@ -242,7 +306,7 @@ export function TriagemDetailsModal({
                     <div class="score-box"><div class="value">${details.scores.technical_wsi.toFixed(1)}</div><div class="label">Comp. Técnicas</div></div>
                     <div class="score-box"><div class="value">${details.scores.behavioral_wsi.toFixed(1)}</div><div class="label">Comp. Comportamentais</div></div>
                   </div>
-                  <p style="font-size:13px;"><strong>Classificação:</strong> ${details.scores.classification.charAt(0).toUpperCase() + details.scores.classification.slice(1)}
+                  <p style="font-size:13px;"><strong>Classificação:</strong> ${getClassificationLabel(details.scores.classification)}
                   ${ranking?.ranked ? ` | <strong>Ranking:</strong> #${ranking.rank} de ${ranking.total}` : ''}</p>
                   <h2>Respostas por Competência</h2>${respHtml}
                   ${details.report?.executive_summary ? '<h2>Sumário Executivo</h2><p style="font-size:13px;">' + details.report.executive_summary + '</p>' : ''}
@@ -288,7 +352,7 @@ export function TriagemDetailsModal({
                 <div>
                   <p className="text-[10px] text-gray-500" style={font}>Classificação</p>
                   <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded-full" style={{ backgroundColor: classColors.bg, color: classColors.text, ...font }}>
-                    {scores.classification.charAt(0).toUpperCase() + scores.classification.slice(1)}
+                    {getClassificationLabel(scores.classification)}
                   </span>
                 </div>
               </div>
@@ -390,12 +454,17 @@ export function TriagemDetailsModal({
                     {responses.map((resp, idx) => (
                       <div key={idx} className="p-3 rounded-lg border border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
                         <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[11px] font-semibold text-gray-950" style={font}>{resp.competency}</span>
-                            <Badge variant="outline" className="text-[9px] px-1.5">{getFrameworkLabel(resp.question.framework)}</Badge>
+                            <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{getFrameworkLabel(resp.question?.framework || '')}</span>
+                            {resp.question?.is_critical && (
+                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">
+                                <ShieldAlert className="w-2.5 h-2.5" /> Crítica
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-bold" style={{ ...font, color: resp.scores.final_score >= 4 ? '#166534' : resp.scores.final_score >= 3 ? '#854D0E' : '#991B1B' }}>
+                            <span className={`text-[11px] font-bold ${getScoreColor(resp.scores.final_score)}`} style={font}>
                               {resp.scores.final_score.toFixed(1)}/5.0
                             </span>
                           </div>
@@ -426,14 +495,16 @@ export function TriagemDetailsModal({
                           )}
                           {resp.scores.bloom_level != null && (
                             <div className="text-center p-1.5 rounded border border-gray-100">
-                              <p className="text-[9px] text-gray-500" style={font}>Bloom</p>
-                              <p className="text-[11px] font-bold text-gray-950" style={font}>Nível {resp.scores.bloom_level}</p>
+                              <p className="text-[9px] text-gray-500" style={font}>Cognição</p>
+                              <p className="text-[11px] font-bold text-gray-950" style={font}>{bloomLabel(resp.scores.bloom_level)}</p>
+                              <p className="text-[8px] text-gray-400" style={font}>Nível {resp.scores.bloom_level}</p>
                             </div>
                           )}
                           {resp.scores.dreyfus_level != null && (
                             <div className="text-center p-1.5 rounded border border-gray-100">
-                              <p className="text-[9px] text-gray-500" style={font}>Dreyfus</p>
-                              <p className="text-[11px] font-bold text-gray-950" style={font}>Nível {resp.scores.dreyfus_level}</p>
+                              <p className="text-[9px] text-gray-500" style={font}>Maturidade</p>
+                              <p className="text-[11px] font-bold text-gray-950" style={font}>{dreyfusLabel(resp.scores.dreyfus_level)}</p>
+                              <p className="text-[8px] text-gray-400" style={font}>Nível {resp.scores.dreyfus_level}</p>
                             </div>
                           )}
                         </div>
@@ -462,6 +533,25 @@ export function TriagemDetailsModal({
 
           {activeTab === 'parecer' && (
             <div className="space-y-3">
+
+              {/* Alertas — apenas para EM_AVALIACAO */}
+              {(scores.overall_wsi >= 3.0 && scores.overall_wsi < 3.75) && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertCircle className="w-4 h-4 text-amber-600" />
+                    <h3 className="text-sm font-semibold text-amber-700" style={font}>Pontos de Atenção</h3>
+                    <span className="ml-auto text-[10px] bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium border border-amber-200">Revisão humana recomendada</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {(f11Report?.attention_flags || report?.flags || ["Score WSI dentro da zona de revisão — decisão requer análise do recrutador responsável."]).map((a: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-xs text-amber-800" style={font}>
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" /> {a}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {report && (
                 <>
                   <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
@@ -480,10 +570,10 @@ export function TriagemDetailsModal({
                       </h3>
                       {report.technical_analysis.pontos_fortes && (
                         <div className="mb-2">
-                          <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Pontos Fortes:</p>
+                          <p className="text-[10px] font-medium text-emerald-700 mb-1 flex items-center gap-1" style={font}><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
                           {report.technical_analysis.pontos_fortes.map((p: string, i: number) => (
                             <div key={i} className="flex items-start gap-1.5 mb-1">
-                              <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#166534' }} />
+                              <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-emerald-500" />
                               <p className="text-[11px] text-gray-700" style={font}>{p}</p>
                             </div>
                           ))}
@@ -491,13 +581,20 @@ export function TriagemDetailsModal({
                       )}
                       {report.technical_analysis.gaps && report.technical_analysis.gaps.length > 0 && (
                         <div className="mb-2">
-                          <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Gaps Identificados:</p>
-                          {report.technical_analysis.gaps.map((g: string, i: number) => (
-                            <div key={i} className="flex items-start gap-1.5 mb-1">
-                              <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
-                              <p className="text-[11px] text-gray-700" style={font}>{g}</p>
-                            </div>
-                          ))}
+                          <p className="text-[10px] font-medium text-gray-600 mb-1 flex items-center gap-1" style={font}><AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Gaps Identificados:</p>
+                          <ul className="space-y-2">
+                            {report.technical_analysis.gaps.map((g: any, i: number) => {
+                              const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : g
+                              const sc = sevConfig[(gs.severidade as keyof typeof sevConfig) || 'baixa']
+                              return (
+                                <li key={i} className={`flex items-start gap-2.5 text-xs text-gray-700 rounded-lg border px-3 py-2 ${sc.bg} ${sc.border}`} style={font}>
+                                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${sc.dot}`} />
+                                  <span className="flex-1">{gs.texto || gs}</span>
+                                  <span className={`text-[9px] font-bold tracking-wider shrink-0 ${sc.color}`}>{sc.label}</span>
+                                </li>
+                              )
+                            })}
+                          </ul>
                         </div>
                       )}
                       {report.technical_analysis.evidencias && (
@@ -514,26 +611,110 @@ export function TriagemDetailsModal({
                     </div>
                   )}
 
-                  {report.behavioral_analysis && Object.keys(report.behavioral_analysis).length > 0 && (
-                    <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
-                      <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
-                        <User className="w-4 h-4 text-gray-700" />
-                        Análise Comportamental
-                      </h3>
-                      <div className="space-y-2">
-                        {Object.entries(report.behavioral_analysis).map(([key, val]: [string, any]) => (
-                          <div key={key}>
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="text-[11px] text-gray-800 capitalize" style={font}>{key}</span>
-                              <span className="text-[11px] font-bold" style={{ ...font }}>{val.score?.toFixed(1)}/5.0</span>
-                            </div>
-                            <Progress value={((val.score || 0) / 5) * 100} className="h-1.5 mb-1" />
-                            <p className="text-[10px] text-gray-500" style={font}>{val.descricao}</p>
+                  {/* Big Five — Perfil de Personalidade */}
+                  {report.behavioral_analysis && Object.keys(report.behavioral_analysis).length > 0 && (() => {
+                    const BIG_FIVE_MAP: Record<string, string> = {
+                      openness:          "Abertura a mudanças",
+                      conscientiousness: "Organização e disciplina",
+                      extraversion:      "Sociabilidade",
+                      agreeableness:     "Cooperação",
+                      neuroticism:       "Estabilidade emocional",
+                    }
+                    const BIG_FIVE_HINT: Record<string, string> = {
+                      openness:          "Adapta-se a novidades, aprende rápido e lida bem com ambiguidade",
+                      conscientiousness: "Planejamento, atenção a prazos e execução sistemática",
+                      extraversion:      "Facilidade para interagir, comunicar e construir relacionamentos",
+                      agreeableness:     "Disposição para colaborar, ceder e trabalhar bem em equipe",
+                      neuroticism:       "Mantém calma sob pressão e lida bem com críticas e frustrações",
+                    }
+                    const entries = Object.entries(report.behavioral_analysis)
+                    const isBigFive = entries.some(([k]) => Object.keys(BIG_FIVE_MAP).includes(k))
+                    if (!isBigFive) {
+                      return (
+                        <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                          <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
+                            <User className="w-4 h-4 text-gray-700" />
+                            Análise Comportamental
+                          </h3>
+                          <div className="space-y-2">
+                            {entries.map(([key, val]: [string, any]) => (
+                              <div key={key}>
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <span className="text-[11px] text-gray-800 capitalize" style={font}>{key}</span>
+                                  <span className="text-[11px] font-bold" style={{ ...font }}>{val.score?.toFixed(1)}/5.0</span>
+                                </div>
+                                <Progress value={((val.score || 0) / 5) * 100} className="h-1.5 mb-1" />
+                                <p className="text-[10px] text-gray-500" style={font}>{val.descricao}</p>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+                      )
+                    }
+                    const seniority = sessionInfo?.seniority_label || "Sênior"
+                    return (
+                      <div className="p-3 border border-gray-100 space-y-4" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                        <div>
+                          <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
+                            <User className="w-4 h-4 text-gray-700" />
+                            Perfil de Personalidade
+                          </h3>
+                          <p className="text-[10px] text-gray-400 mt-0.5" style={font}>
+                            Dimensões <span className="text-purple-600 font-medium">críticas</span> determinam fit de performance e cultura.
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4 text-[10px] text-gray-400">
+                          <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-800 rounded-sm inline-block" /> Candidato</span>
+                          <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-200 rounded-sm inline-block border border-gray-300" /> Esperado</span>
+                        </div>
+                        <div className="space-y-5">
+                          {entries.map(([key, val]: [string, any]) => {
+                            const traitName = BIG_FIVE_MAP[key] || key
+                            const hint = BIG_FIVE_HINT[key] || ""
+                            const candidato = Math.round((val.score || 0) / 5 * 100)
+                            const vagaEsperado = val.expected_pct ?? 70
+                            const dreyfusEsperado = val.dreyfus_esperado ?? 4
+                            const dreyfusDemonstrado = Math.round((val.score || 0) * 5 / 5)
+                            const status = candidato < vagaEsperado - 20 ? "gap" : candidato > vagaEsperado + 10 ? "acima" : "ok"
+                            const showHint = bigFiveHint === key
+                            return (
+                              <div key={key} className="space-y-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[11px] font-medium text-gray-800" style={font}>{traitName}</span>
+                                  {val.is_critical && (
+                                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full border text-purple-700 bg-purple-50 border-purple-200">Crítica para esta vaga</span>
+                                  )}
+                                  {status === "gap"   && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">⚠️ Diferença</span>}
+                                  {status === "acima" && <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200">↑ Acima</span>}
+                                  {status === "ok"    && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">✓ Alinhado</span>}
+                                  {hint && (
+                                    <button className="ml-auto" onClick={() => setBigFiveHint(showHint ? null : key)}>
+                                      <Info className="w-3 h-3 text-gray-300 hover:text-gray-500 transition-colors" />
+                                    </button>
+                                  )}
+                                </div>
+                                {showHint && hint && (
+                                  <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-100 rounded-md px-2.5 py-1.5" style={font}>{hint}</p>
+                                )}
+                                <div className="relative h-3">
+                                  <div className="absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full bg-gray-200 border border-gray-300" style={{ width: `${vagaEsperado}%` }} />
+                                  <div className={`absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full ${status === "gap" ? "bg-amber-400" : status === "acima" ? "bg-blue-400" : "bg-gray-800"}`} style={{ width: `${candidato}%` }} />
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] text-gray-400" style={font}>
+                                  <span>Candidato: <span className="font-semibold text-gray-600">{candidato}%</span></span>
+                                  <span>Vaga espera: <span className="font-semibold text-gray-600">{vagaEsperado}%</span></span>
+                                </div>
+                                <DreyfusRow dreyfusEsperado={dreyfusEsperado} dreyfusDemonstrado={dreyfusDemonstrado} senioridade={seniority} />
+                              </div>
+                            )
+                          })}
+                        </div>
+                        <p className="text-[10px] text-gray-400 pt-1 border-t border-gray-100" style={font}>
+                          Clique em <Info className="w-2.5 h-2.5 inline" /> para entender o que cada dimensão mede.
+                        </p>
                       </div>
-                    </div>
-                  )}
+                    )
+                  })()}
 
                   {report.recommendation && Object.keys(report.recommendation).length > 0 && (
                     <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
@@ -559,6 +740,33 @@ export function TriagemDetailsModal({
                     </div>
                   )}
                 </>
+              )}
+
+              {/* Perguntas sugeridas para entrevista — CBI do F11 */}
+              {f11Report?.cbi_questions && f11Report.cbi_questions.length > 0 && (
+                <div className="p-3 border border-gray-100 space-y-3" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                  <div>
+                    <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
+                      <Mic2 className="w-4 h-4 text-gray-500" /> Perguntas sugeridas para a entrevista
+                    </h3>
+                    <p className="text-[10px] text-gray-400 mt-0.5" style={font}>
+                      Geradas com base nos gaps identificados — use na entrevista presencial
+                    </p>
+                  </div>
+                  {f11Report.cbi_questions.map((q: any, i: number) => {
+                    const sev = sevConfig[(q.severity as keyof typeof sevConfig) ?? 'baixa']
+                    return (
+                      <div key={i} className={`border rounded-lg p-4 space-y-2 ${sev.bg} ${sev.border}`}>
+                        <p className="text-xs text-gray-800 leading-relaxed" style={font}>"{q.question || q.texto}"</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400" style={font}>Foco:</span>
+                          <span className="text-[10px] text-gray-600 font-medium bg-white border border-gray-200 px-2 py-0.5 rounded-full" style={font}>{q.focus || q.foco || "Competência comportamental"}</span>
+                          <span className={`text-[9px] font-bold ${sev.color}`} style={font}>Gap {sev.label}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               )}
 
               {canTriggerFeedback && (
@@ -605,10 +813,32 @@ export function TriagemDetailsModal({
 
               {feedback && (
                 <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
-                  <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
-                    <MessageSquare className="w-4 h-4 text-wedo-cyan" />
-                    Feedback para o Candidato
-                  </h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
+                      <BookOpen className="w-4 h-4 text-blue-500" />
+                      Feedback para o Candidato
+                    </h3>
+                    <button
+                      onClick={() => {
+                        const text = [
+                          feedback.main_message,
+                          ...(feedback.technical_strengths || []),
+                          ...(feedback.behavioral_strengths || []),
+                          ...(feedback.development_opportunities || []),
+                          feedback.personalized_tip || '',
+                          feedback.next_steps || '',
+                        ].filter(Boolean).join('\n')
+                        navigator.clipboard.writeText(text)
+                        setCopiedFeedback(true)
+                        setTimeout(() => setCopiedFeedback(false), 2000)
+                      }}
+                      className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                      style={font}
+                    >
+                      {copiedFeedback ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                      {copiedFeedback ? "Copiado!" : "Copiar"}
+                    </button>
+                  </div>
                   <p className="text-[11px] text-gray-700 leading-relaxed mb-3" style={font}>{feedback.main_message}</p>
 
                   {feedback.technical_strengths && feedback.technical_strengths.length > 0 && (
@@ -666,6 +896,18 @@ export function TriagemDetailsModal({
           )}
 
           {activeTab === 'comparativo' && (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <Clock className="w-6 h-6 text-gray-400" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-gray-600" style={font}>Ranking e Comparativo</p>
+                <p className="text-xs text-gray-400 mt-1" style={font}>Em breve — comparativo entre candidatos disponível na próxima versão</p>
+              </div>
+            </div>
+          )}
+
+          {false && (
             <div className="space-y-3">
               {ranking?.ranked && (
                 <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
@@ -708,7 +950,7 @@ export function TriagemDetailsModal({
                       <div className="flex items-center justify-between p-2 rounded-md border border-gray-100">
                         <span className="text-[10px] text-gray-500" style={font}>Classificação</span>
                         <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded-full" style={{ backgroundColor: classColors.bg, color: classColors.text, ...font }}>
-                          {scores.classification.charAt(0).toUpperCase() + scores.classification.slice(1)}
+                          {getClassificationLabel(scores.classification)}
                         </span>
                       </div>
                     </div>
@@ -790,7 +1032,7 @@ export function TriagemDetailsModal({
                           <div className="flex items-center gap-2">
                             <span className="text-[11px] font-bold text-gray-900" style={font}>{r.overall_wsi.toFixed(1)}</span>
                             <span className="inline-flex px-1.5 py-0.5 text-[9px] font-medium rounded-full" style={{ backgroundColor: rColors.bg, color: rColors.text, ...font }}>
-                              {r.classification}
+                              {getClassificationLabel(r.classification)}
                             </span>
                           </div>
                         </div>

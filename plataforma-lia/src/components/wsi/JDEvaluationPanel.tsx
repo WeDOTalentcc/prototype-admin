@@ -9,20 +9,26 @@ import {
   ClipboardList, Code, Heart, Briefcase,
   Loader2, Pencil, Plus,
   Check, Copy, ArrowRight, Save, X,
-  ListChecks, Users
+  ListChecks, Users, CheckCircle2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface JDIndicator {
   label: string
-  count: number
+  count?: number
   status: "sufficient" | "partial" | "insufficient"
-  minimum: number
+  minimum?: number
+  dimension?: string
+  weight?: number
+  earned?: number
+  detail?: string
 }
 
 interface JDEvaluationData {
   score: number
   max_score: number
+  band?: string
+  band_label?: string
   indicators: JDIndicator[]
   lia_suggestion: string
   can_generate: boolean
@@ -713,25 +719,102 @@ export function JDEvaluationPanel({
             </div>
           ) : evaluation ? (
             <div className="space-y-3">
-              {/* 1. COMPACT DIAGNOSTIC INDICATORS - single row strip */}
-              <div className="flex items-center gap-3 pb-2 border-b border-gray-100 dark:border-gray-700 flex-wrap">
-                {evaluation.indicators.map((indicator, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5">
-                    {getIndicatorIcon(indicator.label)}
-                    <span className="text-[10px] text-gray-600 dark:text-gray-400">{indicator.label}:</span>
-                    <span className="text-[11px] font-semibold text-gray-900 dark:text-gray-100">{indicator.count}</span>
-                    <span className={cn("w-1.5 h-1.5 rounded-full", getStatusDotColor(indicator.status))} />
+              {/* BAND BADGE + SCORE ROW */}
+              {(() => {
+                const band = evaluation.band || (evaluation.score >= 85 ? 'excelente' : evaluation.score >= 70 ? 'bom' : evaluation.score >= 50 ? 'adequado' : evaluation.score >= 30 ? 'insuficiente' : 'critico')
+                const bandLabel = evaluation.band_label || (band === 'excelente' ? 'Excelente' : band === 'bom' ? 'Bom' : band === 'adequado' ? 'Adequado' : band === 'insuficiente' ? 'Insuficiente' : 'Crítico')
+                const bandColors: Record<string, string> = {
+                  excelente: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                  bom: 'bg-green-50 text-green-700 border-green-200',
+                  adequado: 'bg-amber-50 text-amber-700 border-amber-200',
+                  insuficiente: 'bg-orange-50 text-orange-700 border-orange-200',
+                  critico: 'bg-red-50 text-red-700 border-red-300',
+                }
+                return (
+                  <div className="flex items-center gap-3 pb-2 border-b border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-semibold text-gray-900 dark:text-gray-100">{evaluation.score}</span>
+                      <span className="text-[10px] text-gray-500">/100</span>
+                    </div>
+                    <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", bandColors[band] || bandColors.adequado)}>
+                      {bandLabel}
+                    </span>
+                    {band === 'critico' && (
+                      <span className="text-[10px] text-red-600 font-medium flex items-center gap-1">
+                        <XCircle className="w-3 h-3" />
+                        JD bloqueado — geração de perguntas desabilitada
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
+                )
+              })()}
 
+              {/* 9-DIMENSION GRID */}
+              {evaluation.indicators.some(i => i.dimension) && (
+                <div className="grid grid-cols-3 gap-1.5 pb-2 border-b border-gray-100 dark:border-gray-700">
+                  {evaluation.indicators.map((indicator, idx) => (
+                    <div key={idx} className={cn(
+                      "flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-[10px]",
+                      indicator.status === 'sufficient' ? 'bg-green-50 border-green-100 dark:bg-green-900/10 dark:border-green-800' :
+                      indicator.status === 'partial' ? 'bg-amber-50 border-amber-100 dark:bg-amber-900/10 dark:border-amber-800' :
+                      'bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-800'
+                    )}>
+                      {indicator.status === 'sufficient' ? (
+                        <CheckCircle className="w-3 h-3 text-green-600 shrink-0" />
+                      ) : indicator.status === 'partial' ? (
+                        <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" />
+                      ) : (
+                        <XCircle className="w-3 h-3 text-red-500 shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-wide block">{indicator.dimension}</span>
+                        <span className={cn(
+                          "truncate block font-medium",
+                          indicator.status === 'sufficient' ? 'text-green-800 dark:text-green-300' :
+                          indicator.status === 'partial' ? 'text-amber-800 dark:text-amber-300' :
+                          'text-red-700 dark:text-red-400'
+                        )}>{indicator.label}</span>
+                      </div>
+                      <span className="text-[9px] font-semibold text-gray-600 shrink-0">
+                        {indicator.earned ?? 0}/{indicator.weight ?? 0}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* COMPACT ROW (fallback for old-format indicators without dimension) */}
+              {!evaluation.indicators.some(i => i.dimension) && (
+                <div className="flex items-center gap-3 pb-2 border-b border-gray-100 dark:border-gray-700 flex-wrap">
+                  {evaluation.indicators.map((indicator, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5">
+                      {getIndicatorIcon(indicator.label)}
+                      <span className="text-[10px] text-gray-600 dark:text-gray-400">{indicator.label}:</span>
+                      <span className="text-[11px] font-semibold text-gray-900 dark:text-gray-100">{indicator.count ?? 0}</span>
+                      <span className={cn("w-1.5 h-1.5 rounded-full", getStatusDotColor(indicator.status))} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* SUGGESTION */}
+              {evaluation.lia_suggestion && (
+                <div className={cn(
+                  "text-[10px] px-2.5 py-2 rounded-md border leading-relaxed",
+                  evaluation.can_generate
+                    ? "bg-gray-50 border-gray-100 text-gray-600 dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-400"
+                    : "bg-red-50 border-red-100 text-red-700 dark:bg-red-900/10 dark:border-red-800 dark:text-red-400"
+                )}>
+                  {evaluation.lia_suggestion}
+                </div>
+              )}
 
               {/* Generate Questions button - only when NOT editing */}
               {!isEditing && !hasQuestions && (
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
-                    className="h-8 text-[11px] px-4 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="h-8 text-[11px] px-4 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={onGenerateQuestions}
                     disabled={isGenerating || !evaluation.can_generate}
                   >
@@ -748,8 +831,8 @@ export function JDEvaluationPanel({
                     )}
                   </Button>
                   {!evaluation.can_generate && (
-                    <span className="text-[10px] text-amber-600">
-                      Score mínimo de 50 necessário para gerar perguntas
+                    <span className="text-[10px] text-red-600 font-medium">
+                      Score &lt; 30 — complete o JD antes de gerar perguntas
                     </span>
                   )}
                 </div>

@@ -96,7 +96,10 @@ class WSIEvaluationContext(BaseModel):
     overall_wsi: float = Field(ge=0, le=5)
     technical_wsi: Optional[float] = Field(default=None, ge=0, le=5)
     behavioral_wsi: Optional[float] = Field(default=None, ge=0, le=5)
-    classification: Literal["excelente", "alto", "medio", "regular", "baixo"] = "medio"
+    classification: Literal[
+        "excepcional", "excelente", "alto", "medio", "abaixo_da_media", "regular"
+    ] = "medio"
+    seniority_label: Optional[str] = None
     
     strengths: List[str] = Field(default_factory=list)
     development_areas: List[str] = Field(default_factory=list)
@@ -364,15 +367,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             should_close = True
         
         try:
-            prompt = self._build_personalization_prompt(request)
-            
-            response = await self.llm.claude.ainvoke(prompt)
-            content = response.content if isinstance(response.content, str) else str(response.content)
-            
-            feedback_data = self._parse_ai_response(content)
-            
-            body_text = self._compose_email_body(feedback_data)
-            body_html = self._compose_html_body(feedback_data, request)
+            body_text, feedback_data = self._build_f851_template_body(request)
+            body_html = self._compose_html_from_template(body_text, request)
 
             # FairnessGuard — verificar conteúdo antes de salvar para aprovação
             fairness_warnings: list[str] = []
@@ -425,7 +421,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 development_suggestions=feedback_data.get("development_suggestions", []),
                 recommended_resources=feedback_data.get("recommended_resources", []),
                 personalization_level="high",
-                ai_model_used="claude-sonnet",
+                ai_model_used="f851-template",
                 status=PersonalizedFeedbackStatus.DRAFT.value,
                 requested_by=request.requested_by,
                 extra_data={
@@ -452,7 +448,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 development_suggestions=feedback_data.get("development_suggestions", []),
                 recommended_resources=feedback_data.get("recommended_resources", []),
                 personalization_level="high",
-                ai_model_used="claude-sonnet",
+                ai_model_used="f851-template",
                 status=PersonalizedFeedbackStatus.DRAFT,
                 created_at=record.created_at
             )
@@ -464,6 +460,179 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             if should_close:
                 await db.close()
     
+    def _build_f851_template_body(
+        self, request: PersonalizedFeedbackRequest
+    ) -> tuple:
+        """Gera feedback usando template determinístico F8.5.1 (spec seção 8.5.1).
+
+        Template com variáveis — não LLM livre. Garante previsibilidade, auditabilidade
+        e equidade entre candidatos com scores equivalentes. (EU AI Act + LGPD Art. 20)
+        """
+        eval_ctx = request.evaluation
+        cand = request.candidate
+        job = request.job
+
+        score_10 = round(eval_ctx.overall_wsi * 2, 1)
+        seniority_label = getattr(eval_ctx, "seniority_label", None) or job.seniority_level or "a vaga"
+
+        _CLASS_LABEL = {
+            "excepcional":     "Excepcional",
+            "excelente":       "Excelente",
+            "alto":            "Alto",
+            "medio":           "Médio",
+            "abaixo_da_media": "Abaixo da média",
+            "regular":         "Regular / Baixo",
+        }
+        classification_label = _CLASS_LABEL.get(eval_ctx.classification, eval_ctx.classification.title())
+
+        subject = f"Retorno sobre sua candidatura — {job.title}"
+
+        lines: list[str] = []
+        lines.append(f"Olá, {cand.name.split()[0]},")
+        lines.append("")
+        lines.append(
+            f"Agradecemos o seu interesse e tempo dedicado ao processo seletivo para a vaga de {job.title}."
+        )
+        if not job.is_confidential and job.company_name:
+            lines.append(
+                f"Sua candidatura foi analisada com atenção pela equipe de {job.company_name}."
+            )
+        lines.append("")
+
+        strengths = eval_ctx.strengths or []
+        dev_areas = eval_ctx.development_areas or []
+        skill_gaps = eval_ctx.skill_gaps or []
+        comp_scores: dict = eval_ctx.competency_scores or {}
+
+        if comp_scores:
+            for competency, raw_score in comp_scores.items():
+                score_comp = round(float(raw_score) * 2, 1)
+                lines.append("─" * 60)
+                lines.append(f"Avaliação — {competency}")
+                lines.append("─" * 60)
+                lines.append("")
+                lines.append(f"Sua resposta foi avaliada em {score_comp}/10 nesta competência.")
+                lines.append("")
+
+                if float(raw_score) >= 4.5:
+                    lines.append("Pontos identificados como destaque:")
+                elif float(raw_score) >= 3.5:
+                    lines.append("Pontos identificados como fortes:")
+                elif float(raw_score) >= 2.5:
+                    lines.append("Pontos presentes na sua resposta:")
+
+                detected = [s for s in strengths if competency.lower() in s.lower()] or (
+                    strengths[:2] if float(raw_score) >= 2.5 else []
+                )
+                for sig in detected[:3]:
+                    lines.append(f"• {sig}")
+
+                if float(raw_score) < 4.0 or dev_areas:
+                    lines.append("")
+                    absent = [d for d in dev_areas if competency.lower() in d.lower()] or (
+                        dev_areas[:2] if float(raw_score) < 3.5 else []
+                    )
+                    if absent:
+                        lines.append("Pontos que poderiam enriquecer a resposta:")
+                        for sig in absent[:3]:
+                            lines.append(f"• {sig}")
+
+                lines.append("")
+                if float(raw_score) >= 3.5:
+                    lines.append(f"Nível de maturidade esperado para {seniority_label}: atingido ✓")
+                elif float(raw_score) >= 2.5:
+                    lines.append(
+                        f"Nível esperado para {seniority_label}: a resposta demonstrou boa base — "
+                        "aprofundar exemplos com processo próprio desenvolvido fortaleceria a avaliação."
+                    )
+                else:
+                    lines.append(
+                        f"Nível esperado para {seniority_label}: a resposta apresentou experiências iniciais — "
+                        "busque exemplos em que você tomou decisões de forma independente e os resultados foram mensuráveis."
+                    )
+                lines.append("")
+        else:
+            lines.append("─" * 60)
+            lines.append("Avaliação Geral")
+            lines.append("─" * 60)
+            lines.append("")
+            lines.append(f"Sua avaliação geral foi de {score_10}/10 ({classification_label}).")
+            lines.append("")
+
+            if eval_ctx.overall_wsi >= 2.5 and strengths:
+                if eval_ctx.overall_wsi >= 4.5:
+                    lines.append("Pontos identificados como destaque:")
+                elif eval_ctx.overall_wsi >= 3.5:
+                    lines.append("Pontos identificados como fortes:")
+                else:
+                    lines.append("Pontos presentes na sua candidatura:")
+                for s in strengths[:3]:
+                    lines.append(f"• {s}")
+                lines.append("")
+
+            if dev_areas or skill_gaps:
+                lines.append("Pontos que poderiam enriquecer seu perfil para esta vaga:")
+                for d in (dev_areas + skill_gaps)[:3]:
+                    lines.append(f"• {d}")
+                lines.append("")
+
+            if eval_ctx.overall_wsi >= 3.5:
+                lines.append(f"Nível de maturidade esperado para {seniority_label}: atingido ✓")
+            elif eval_ctx.overall_wsi >= 2.5:
+                lines.append(
+                    f"Nível esperado para {seniority_label}: a resposta demonstrou boa base — "
+                    "aprofundar exemplos com processo próprio desenvolvido fortaleceria a avaliação."
+                )
+            else:
+                lines.append(
+                    f"Nível esperado para {seniority_label}: a resposta apresentou experiências iniciais — "
+                    "busque exemplos em que você tomou decisões de forma independente e os resultados foram mensuráveis."
+                )
+            lines.append("")
+
+        lines.append("─" * 60)
+        lines.append(
+            "Esta avaliação foi realizada de forma automatizada pelo sistema LIA."
+        )
+        lines.append(
+            f"A decisão final é responsabilidade do consultor responsável pelo processo."
+        )
+        lines.append(
+            "Em caso de dúvidas sobre o processo, entre em contato pelo canal indicado no convite."
+        )
+        lines.append("─" * 60)
+
+        body_text = "\n".join(lines)
+
+        feedback_data = {
+            "subject": subject,
+            "key_points": strengths[:5],
+            "development_suggestions": dev_areas[:5],
+            "recommended_resources": [],
+            "template_version": "F8.5.1",
+        }
+        return body_text, feedback_data
+
+    def _compose_html_from_template(
+        self, body_text: str, request: PersonalizedFeedbackRequest
+    ) -> str:
+        """Converte texto plano do template F8.5.1 para HTML simples."""
+        lines = body_text.split("\n")
+        html_lines: list[str] = [
+            "<html><body style='font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:600px;margin:auto;padding:20px;'>"
+        ]
+        for line in lines:
+            if line.startswith("─"):
+                html_lines.append("<hr style='border:1px solid #e0e0e0;margin:12px 0;'>")
+            elif line.startswith("•"):
+                html_lines.append(f"<li style='margin:4px 0;'>{line[1:].strip()}</li>")
+            elif line.strip() == "":
+                html_lines.append("<br>")
+            else:
+                html_lines.append(f"<p style='margin:4px 0;'>{line}</p>")
+        html_lines.append("</body></html>")
+        return "\n".join(html_lines)
+
     def _build_personalization_prompt(self, request: PersonalizedFeedbackRequest) -> str:
         """Build the AI prompt for personalization."""
         

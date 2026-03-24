@@ -42,6 +42,8 @@ interface JobPublishModalProps {
     status: string
     is_published?: boolean
     published_channels?: string[]
+    has_wsi_questions?: boolean
+    wsi_question_count?: number
   }>
   onPublish: (jobIds: string[], channels: string[], options: any) => void
   onUnpublish?: (jobIds: string[], options: any) => void
@@ -83,6 +85,7 @@ export function JobPublishModal({
   const [freezeReason, setFreezeReason] = useState('')
   const [unfreezeDate, setUnfreezeDate] = useState('')
   const [notifyApplicants, setNotifyApplicants] = useState(false)
+  const [wsiWarningConfirmed, setWsiWarningConfirmed] = useState(false)
 
   const publishedCount = useMemo(() => jobs.filter(j => j.is_published).length, [jobs])
   const unpublishedCount = useMemo(() => jobs.filter(j => !j.is_published).length, [jobs])
@@ -92,6 +95,9 @@ export function JobPublishModal({
     if (unpublishedCount === jobs.length) return 'publish'
     return 'mixed'
   }, [publishedCount, unpublishedCount, jobs.length])
+
+  const jobsWithoutWSI = useMemo(() => jobs.filter(j => !j.is_published && j.has_wsi_questions === false), [jobs])
+  const needsWSIWarning = useMemo(() => jobsWithoutWSI.length > 0 && (mode === 'publish' || mode === 'mixed'), [jobsWithoutWSI, mode])
 
   const globalSearchCredits = useMemo(() => {
     return jobs.length * 50
@@ -109,6 +115,7 @@ export function JobPublishModal({
       setFreezeReason('')
       setUnfreezeDate('')
       setNotifyApplicants(false)
+      setWsiWarningConfirmed(false)
     }
   }, [isOpen])
 
@@ -387,6 +394,36 @@ export function JobPublishModal({
             </div>
 
             <div className="space-y-3">
+              {(mode === 'publish' || mode === 'mixed') && needsWSIWarning && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-[11px] font-semibold text-amber-900 mb-1">
+                        Triagem WSI não configurada
+                      </p>
+                      <p className="text-[10px] text-amber-800 leading-relaxed mb-2">
+                        {jobsWithoutWSI.length === 1
+                          ? `A vaga "${jobsWithoutWSI[0].title}" não tem perguntas WSI geradas. Candidatos serão recebidos sem triagem automática.`
+                          : `${jobsWithoutWSI.length} vagas não têm perguntas WSI geradas. Candidatos serão recebidos sem triagem automática.`
+                        }
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="wsiWarningConfirmed"
+                          checked={wsiWarningConfirmed}
+                          onCheckedChange={(checked) => setWsiWarningConfirmed(!!checked)}
+                          className="data-[state=checked]:bg-amber-700 data-[state=checked]:border-amber-700"
+                        />
+                        <Label htmlFor="wsiWarningConfirmed" className="text-[10px] font-medium text-amber-900 cursor-pointer">
+                          Entendo — publicar mesmo assim
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {(mode === 'publish' || mode === 'mixed') && (
                 <>
                   <div>
@@ -517,7 +554,7 @@ export function JobPublishModal({
           ) : (
             <Button
               onClick={handlePublish}
-              disabled={isSubmitting || (selectedChannels.size === 0 && (mode === 'publish' || mode === 'mixed'))}
+              disabled={isSubmitting || (selectedChannels.size === 0 && (mode === 'publish' || mode === 'mixed')) || (needsWSIWarning && !wsiWarningConfirmed)}
               className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
             >
               {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Share2 className="w-3.5 h-3.5 mr-1.5" />}
