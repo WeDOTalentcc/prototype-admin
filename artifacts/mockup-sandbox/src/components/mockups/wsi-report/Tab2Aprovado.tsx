@@ -1,15 +1,40 @@
 import { useState } from "react";
 import {
   CheckCircle, AlertTriangle, XCircle, Target, Clock, Trophy,
-  ChevronDown, ChevronUp, Mic2, BookOpen, Star, Zap
+  Mic2, BookOpen, Star, Zap, Info
 } from "lucide-react";
 
 const bigFive = [
-  { trait: "Abertura a mudanças", vagas: 80, candidato: 75, status: "ok" },
-  { trait: "Organização e disciplina", vagas: 70, candidato: 95, status: "acima" },
-  { trait: "Sociabilidade", vagas: 50, candidato: 40, status: "ok" },
-  { trait: "Cooperação", vagas: 75, candidato: 40, status: "gap" },
-  { trait: "Estabilidade emocional", vagas: 65, candidato: 80, status: "acima" },
+  {
+    trait: "Abertura a mudanças",
+    hint: "Adapta-se a novidades, aprende rápido e lida bem com ambiguidade",
+    vagaRelevancia: "critica",
+    vagas: 80, candidato: 75, status: "ok",
+  },
+  {
+    trait: "Organização e disciplina",
+    hint: "Planejamento, atenção a prazos e execução sistemática",
+    vagaRelevancia: "critica",
+    vagas: 70, candidato: 95, status: "acima",
+  },
+  {
+    trait: "Sociabilidade",
+    hint: "Facilidade para interagir, comunicar e construir relacionamentos",
+    vagaRelevancia: "moderada",
+    vagas: 50, candidato: 40, status: "ok",
+  },
+  {
+    trait: "Cooperação",
+    hint: "Disposição para colaborar, ceder e trabalhar bem em equipe",
+    vagaRelevancia: "critica",
+    vagas: 75, candidato: 40, status: "gap",
+  },
+  {
+    trait: "Estabilidade emocional",
+    hint: "Mantém calma sob pressão e lida bem com críticas e frustrações",
+    vagaRelevancia: "moderada",
+    vagas: 65, candidato: 80, status: "acima",
+  },
 ];
 
 const gaps = [
@@ -28,13 +53,6 @@ const evidencias = [
   "Migração monolito→microsserviços com uptime 99.95%",
   "API GraphQL com 200+ types e federation de 8 serviços",
   "Resolução de memory leak com post-mortem documentado",
-];
-
-const comportamental = [
-  { nome: "Inovação", score: 4.5, desc: "Proativa em propor e liderar iniciativas técnicas transformadoras" },
-  { nome: "Colaboração", score: 4.4, desc: "Excelente capacidade de resolução de conflitos com abordagem data-driven" },
-  { nome: "Organização", score: 4.6, desc: "Metodologia estruturada com foco em métricas e processos" },
-  { nome: "Resiliência", score: 4.3, desc: "Lida bem com pressão e situações críticas em produção" },
 ];
 
 const proximosPassos = [
@@ -62,8 +80,13 @@ const severidadeConfig = {
   baixa: { label: "BAIXA", color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200", dot: "bg-gray-400" },
 };
 
+const relevanciaConfig = {
+  critica: { label: "Crítica para esta vaga", color: "text-purple-700", bg: "bg-purple-50", border: "border-purple-200" },
+  moderada: { label: "Moderada", color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200" },
+};
+
 export function Tab2Aprovado() {
-  const [bigFiveOpen, setBigFiveOpen] = useState(false);
+  const [hintOpen, setHintOpen] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -153,63 +176,77 @@ export function Tab2Aprovado() {
           </div>
         </div>
 
-        {/* Análise Comportamental */}
+        {/* Perfil de Personalidade — Big Five */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700">Análise Comportamental</h2>
-          <div className="space-y-3">
-            {comportamental.map((c) => (
-              <div key={c.nome}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-gray-700">{c.nome}</span>
-                  <span className="text-xs font-bold text-gray-900">{c.score}/5.0</span>
-                </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-1">
-                  <div className="h-full bg-gray-800 rounded-full transition-all" style={{ width: `${(c.score / 5) * 100}%` }} />
-                </div>
-                <p className="text-[11px] text-gray-500">{c.desc}</p>
-              </div>
-            ))}
+          <div>
+            <h2 className="text-sm font-semibold text-gray-700">Perfil de Personalidade</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Para esta vaga (Dev Full Stack Sênior), as dimensões <span className="text-purple-600 font-medium">Críticas</span> determinam o fit de performance e cultura.
+            </p>
           </div>
 
-          {/* ✨ NOVO — Big Five colapsável */}
-          <div className="border border-gray-100 rounded-lg overflow-hidden">
-            <button
-              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
-              onClick={() => setBigFiveOpen(!bigFiveOpen)}
-            >
-              <span className="text-xs font-medium text-gray-600">Ver perfil de personalidade (vaga × candidato)</span>
-              {bigFiveOpen ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
-            </button>
-            {bigFiveOpen && (
-              <div className="p-4 space-y-3 bg-white">
-                <div className="flex items-center gap-4 text-[10px] text-gray-400 mb-1">
-                  <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-800 rounded-sm inline-block" /> Candidato</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-200 rounded-sm inline-block border border-gray-300" /> Esperado pela vaga</span>
-                </div>
-                {bigFive.map((b) => {
-                  const isGap = b.status === "gap";
-                  const isAcima = b.status === "acima";
-                  return (
-                    <div key={b.trait}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[11px] text-gray-700">{b.trait}</span>
-                        {isGap && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">⚠️ Diferença</span>}
-                        {isAcima && <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200">↑ Acima</span>}
-                        {!isGap && !isAcima && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">✓ Alinhado</span>}
-                      </div>
-                      <div className="relative h-3">
-                        {/* Vaga bar (background) */}
-                        <div className="absolute inset-y-0 left-0 h-1.5 top-0.75 rounded-full bg-gray-200 border border-gray-300" style={{ width: `${b.vagas}%` }} />
-                        {/* Candidato bar */}
-                        <div className={`absolute inset-y-0 left-0 h-1.5 top-0.75 rounded-full ${isGap ? "bg-amber-400" : isAcima ? "bg-blue-400" : "bg-gray-800"}`} style={{ width: `${b.candidato}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-                <p className="text-[10px] text-gray-400 pt-1">Baseado na análise comportamental da triagem</p>
-              </div>
-            )}
+          {/* Legend */}
+          <div className="flex items-center gap-4 text-[10px] text-gray-400">
+            <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-800 rounded-sm inline-block" /> Candidato</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-gray-200 rounded-sm inline-block border border-gray-300" /> Esperado pela vaga</span>
           </div>
+
+          <div className="space-y-4">
+            {bigFive.map((b) => {
+              const isGap = b.status === "gap";
+              const isAcima = b.status === "acima";
+              const rel = relevanciaConfig[b.vagaRelevancia as keyof typeof relevanciaConfig];
+              const showHint = hintOpen === b.trait;
+
+              return (
+                <div key={b.trait} className="space-y-1">
+                  {/* Row: trait name + relevância + status + hint toggle */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-medium text-gray-800">{b.trait}</span>
+                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${rel.color} ${rel.bg} ${rel.border}`}>
+                      {rel.label}
+                    </span>
+                    {isGap && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">⚠️ Diferença</span>}
+                    {isAcima && <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200">↑ Acima</span>}
+                    {!isGap && !isAcima && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">✓ Alinhado</span>}
+                    <button
+                      className="ml-auto"
+                      onClick={() => setHintOpen(showHint ? null : b.trait)}
+                      title="O que significa?"
+                    >
+                      <Info className="w-3 h-3 text-gray-300 hover:text-gray-500 transition-colors" />
+                    </button>
+                  </div>
+
+                  {/* Hint tooltip */}
+                  {showHint && (
+                    <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-100 rounded-md px-2.5 py-1.5">
+                      {b.hint}
+                    </p>
+                  )}
+
+                  {/* Dual bar */}
+                  <div className="relative h-3">
+                    <div className="absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full bg-gray-200 border border-gray-300" style={{ width: `${b.vagas}%` }} />
+                    <div
+                      className={`absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full ${isGap ? "bg-amber-400" : isAcima ? "bg-blue-400" : "bg-gray-800"}`}
+                      style={{ width: `${b.candidato}%` }}
+                    />
+                  </div>
+
+                  {/* Values */}
+                  <div className="flex items-center justify-between text-[10px] text-gray-400">
+                    <span>Candidato: <span className="font-semibold text-gray-600">{b.candidato}%</span></span>
+                    <span>Vaga espera: <span className="font-semibold text-gray-600">{b.vagas}%</span></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-[10px] text-gray-400 pt-1 border-t border-gray-100">
+            Clique em <Info className="w-2.5 h-2.5 inline" /> para entender o que cada dimensão mede. Baseado na análise comportamental da triagem WSI.
+          </p>
         </div>
 
         {/* Recomendação */}
@@ -234,7 +271,7 @@ export function Tab2Aprovado() {
           </ol>
         </div>
 
-        {/* ✨ NOVO — Perguntas para entrevista */}
+        {/* Perguntas sugeridas para a entrevista */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
           <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
             <Mic2 className="w-4 h-4 text-gray-500" /> Perguntas sugeridas para a entrevista
