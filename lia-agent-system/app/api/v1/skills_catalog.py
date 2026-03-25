@@ -28,7 +28,7 @@ from app.services.skills_catalog_service import (
     SkillsCatalogDBService,
 )
 
-router = APIRouter(tags=["skills-catalog"])
+router = APIRouter(prefix="/skills-catalog", tags=["skills-catalog"])
 logger = logging.getLogger(__name__)
 
 # ============================================================================
