@@ -102,7 +102,7 @@ class WSIScreeningPipelineRequest(BaseModel):
     responsibilities: List[str] = Field(default=[], description="Job responsibilities")
     big_five_profile: Optional[BigFiveProfile] = Field(None, description="Big Five profile")
     job_description: Optional[str] = Field(None, description="Full job description")
-    question_count: Optional[int] = Field(default=None, ge=6, le=25, description="Total target question count. Defaults to 8 for compact, 12 for full format.")
+    question_count: Optional[int] = Field(default=None, ge=7, le=25, description="Total target question count. Defaults to 7 for compact, 12 for full format (per WSI F5 spec).")
     format: Literal["compact", "full"] = Field(default="full", description="compact=fewer questions, full=complete assessment")
     include_company_questions: bool = Field(default=True, description="Include company default questions")
     company_question_categories: Optional[List[str]] = Field(None, description="Filter company questions by category")

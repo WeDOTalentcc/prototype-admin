@@ -425,7 +425,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
         throw new Error('Invalid response')
       }
     } catch {
-      const perBlock = mode === 'compact' ? 3 : 5
+      const perBlock = mode === 'compact' ? 4 : 7
       const mockTemplates: Record<number, string[]> = {
         2: [
           'Você possui experiência mínima de 3 anos na área?',
@@ -439,7 +439,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
           'Como você abordaria a resolução de um problema técnico complexo em produção?',
           'Qual foi o projeto mais desafiador tecnicamente que você liderou?',
           'Como você garante a qualidade do código em projetos de grande escala?',
-          'Descreva sua experiência com metodologias ágeis e entrega contínua.'
+          'Descreva sua experiência com metodologias ágeis e entrega contínua.',
+          'Como você avalia e decide entre diferentes abordagens técnicas para resolver um problema?',
+          'Descreva como você estrutura a documentação técnica de um projeto.',
+          'Como você realiza code review e garante padrões de qualidade no time?',
+          'Qual sua experiência com arquitetura de sistemas escaláveis?'
         ],
         4: [
           'Como você lida com conflitos em equipe?',
@@ -1594,7 +1598,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       ) : (
                         <>
                           <span className="text-[11px] font-semibold">Gerar WSI Compacto</span>
-                          <span className={`text-[10px] ${wsiGenerationMode === 'compact' ? 'text-gray-400' : 'text-gray-500'}`}>~6 perguntas · 12 min</span>
+                          <span className={`text-[10px] ${wsiGenerationMode === 'compact' ? 'text-gray-400' : 'text-gray-500'}`}>~7 perguntas · 12 min</span>
                         </>
                       )}
                     </button>
@@ -1604,7 +1608,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       ) : (
                         <>
                           <span className="text-[11px] font-semibold">Gerar WSI Completo</span>
-                          <span className={`text-[10px] ${wsiGenerationMode === 'full' ? 'text-gray-400' : 'text-gray-500'}`}>~10 perguntas · 22 min</span>
+                          <span className={`text-[10px] ${wsiGenerationMode === 'full' ? 'text-gray-400' : 'text-gray-500'}`}>~12 perguntas · 22 min</span>
                         </>
                       )}
                     </button>

@@ -63,8 +63,31 @@ def _build_pipeline_calibration_context(request, seniority: str) -> CalibrationC
 BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4)}
 
 MODEL_DISTRIBUTIONS = {
-    "compact": {"technical": 3, "behavioral": 3, "total": 6},
-    "full": {"technical": 5, "behavioral": 5, "total": 10},
+    "compact": {"technical": 4, "behavioral": 3, "total": 7},
+    "full": {"technical": 7, "behavioral": 5, "total": 12},
+}
+
+SENIORITY_DISTRIBUTIONS = {
+    "compact": {
+        "estagiario": {"technical": 5, "behavioral": 2, "total": 7},
+        "junior":     {"technical": 5, "behavioral": 2, "total": 7},
+        "pleno":      {"technical": 5, "behavioral": 2, "total": 7},
+        "senior":     {"technical": 4, "behavioral": 3, "total": 7},
+        "lead":       {"technical": 3, "behavioral": 4, "total": 7},
+        "principal":  {"technical": 4, "behavioral": 3, "total": 7},
+        "diretor":    {"technical": 3, "behavioral": 4, "total": 7},
+        "executive":  {"technical": 2, "behavioral": 5, "total": 7},
+    },
+    "full": {
+        "estagiario": {"technical": 9, "behavioral": 3, "total": 12},
+        "junior":     {"technical": 9, "behavioral": 3, "total": 12},
+        "pleno":      {"technical": 8, "behavioral": 4, "total": 12},
+        "senior":     {"technical": 7, "behavioral": 5, "total": 12},
+        "lead":       {"technical": 7, "behavioral": 5, "total": 12},
+        "principal":  {"technical": 7, "behavioral": 5, "total": 12},
+        "diretor":    {"technical": 7, "behavioral": 5, "total": 12},
+        "executive":  {"technical": 7, "behavioral": 5, "total": 12},
+    },
 }
 
 AFFIRMATIVE_QUESTIONS = {
@@ -160,7 +183,8 @@ class WSIScreeningPipeline:
         quality_warnings: List[str] = []
         company_texts: List[str] = []
 
-        model = MODEL_DISTRIBUTIONS.get(request.format, MODEL_DISTRIBUTIONS["full"])
+        seniority_dist = SENIORITY_DISTRIBUTIONS.get(request.format, SENIORITY_DISTRIBUTIONS["full"])
+        model = seniority_dist.get(effective_seniority, MODEL_DISTRIBUTIONS.get(request.format, MODEL_DISTRIBUTIONS["full"]))
         model_total = model["total"]
         total_target = request.question_count if request.question_count is not None else model_total
 
@@ -184,6 +208,10 @@ class WSIScreeningPipeline:
                 while diff > 0 and tech_target > 1:
                     tech_target -= 1
                     diff -= 1
+        self.logger.info(
+            f"Distribution for {effective_seniority}/{request.format}: "
+            f"tech={tech_target}, behav={behav_target}, total_target={total_target}"
+        )
 
         # --- Block 2: Company Questions (includes eligibility configured by recruiter) ---
         if request.include_company_questions and company_questions_raw:
