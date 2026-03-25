@@ -1,8 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { formatScorePercent } from '@/lib/design-tokens'
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import {
   X, Brain, MessageSquare, Target, TrendingUp, Award, AlertCircle,
@@ -64,11 +62,23 @@ const getScoreColor = (score: number) =>
   score >= 2.25 ? "text-orange-600" :
   "text-red-600"
 
+const getScoreColor3Tier = (score: number) =>
+  score >= 4.5 ? "text-emerald-600" :
+  score >= 3.5 ? "text-amber-600" :
+  "text-red-500"
+
 const gapConfig = {
-  ok:    { label: "Alinhado",          color: "text-emerald-600", bg: "bg-emerald-50",  border: "border-emerald-200" },
-  acima: { label: "Acima do esperado", color: "text-blue-600",    bg: "bg-blue-50",     border: "border-blue-200"    },
-  gap:   { label: "Gap identificado",  color: "text-amber-600",   bg: "bg-amber-50",    border: "border-amber-200"   },
+  ok:    { label: "Alinhado",          icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50",  border: "border-emerald-200" },
+  acima: { label: "Acima do esperado", icon: Star,        color: "text-blue-600",    bg: "bg-blue-50",     border: "border-blue-200"    },
+  gap:   { label: "Gap identificado",  icon: AlertTriangle, color: "text-amber-600",   bg: "bg-amber-50",    border: "border-amber-200"   },
 }
+
+const starComponents = [
+  { key: "S" as const, label: "Situação", desc: "Contexto descrito" },
+  { key: "T" as const, label: "Tarefa", desc: "Objetivo claro" },
+  { key: "A" as const, label: "Ação", desc: "O que foi feito" },
+  { key: "R" as const, label: "Resultado", desc: "Impacto mensurável" },
+]
 
 const sevConfig = {
   alta:  { label: "ALTA",  color: "text-red-600",   bg: "bg-red-50",   border: "border-red-200",   dot: "bg-red-500"   },
@@ -427,10 +437,11 @@ export function TriagemDetailsModal({
                     <Progress value={wsiToPercent(scores.behavioral_wsi)} className="h-1.5 mt-1.5" />
                   </div>
                 </div>
-                <div className="flex items-center gap-3 mt-3">
-                  <Badge variant="outline" className="text-[10px]">
-                    {sessionInfo.screening_type === 'voice' ? '🎤 Triagem por Voz' : '💬 Triagem por Texto'}
-                  </Badge>
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                  <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                    {sessionInfo.screening_type === 'voice' ? <Mic className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
+                    {sessionInfo.screening_type === 'voice' ? 'Triagem por Voz' : 'Triagem por Texto'}
+                  </span>
                   {scores.percentile && (
                     <span className="text-[10px] text-gray-500 flex items-center gap-1" style={font}>
                       <TrendingUp className="w-3 h-3" />
@@ -438,11 +449,31 @@ export function TriagemDetailsModal({
                     </span>
                   )}
                   {sessionInfo.started_at && (
-                    <span className="text-[10px] text-gray-500" style={font}>
+                    <span className="text-[10px] text-gray-400" style={font}>
                       {new Date(sessionInfo.started_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   )}
                 </div>
+                {f11Report?.seniority_weights && (
+                  <div className="flex items-center gap-1.5 text-[11px] text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 mt-2">
+                    <BarChart3 className="w-3 h-3 text-gray-400 shrink-0" />
+                    <span>
+                      Para <span className="font-medium text-gray-600">{f11Report.seniority || details?.session?.seniority_label || 'N/A'}</span>: Competências Técnicas valem{' '}
+                      <span className="font-semibold text-gray-700">{Math.round(f11Report.seniority_weights.technical * 100)}%</span> e Comportamentais valem{' '}
+                      <span className="font-semibold text-gray-700">{Math.round(f11Report.seniority_weights.behavioral * 100)}%</span> do score final
+                    </span>
+                  </div>
+                )}
+                {f11Report?.mode && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400" style={font}>Modo de triagem:</span>
+                    <span className="text-[10px] font-medium text-gray-700 flex items-center gap-1" style={font}>
+                      <Layers className="w-3 h-3 text-gray-400" />
+                      {f11Report.mode === 'compact' ? 'Compact' : f11Report.mode === 'full' ? 'Full' : f11Report.mode}
+                      {f11Report.question_count ? ` · ${f11Report.question_count} perguntas` : ''}
+                    </span>
+                  </div>
+                )}
               </div>
 
 
@@ -454,84 +485,150 @@ export function TriagemDetailsModal({
                   </h3>
                   {expandedSections.has('responses') ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
                 </div>
-                {expandedSections.has('responses') && (
-                  <div className="p-3 space-y-3 max-h-96 overflow-y-auto bg-gray-50">
-                    {responses.map((resp, idx) => (
-                      <div key={idx} className="p-3 rounded-lg border border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[11px] font-semibold text-gray-950" style={font}>{resp.competency}</span>
-                            <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{getFrameworkLabel(resp.question?.framework || '')}</span>
-                            {resp.question?.is_critical && (
-                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">
-                                <ShieldAlert className="w-2.5 h-2.5" /> Crítica
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-[11px] font-bold ${getScoreColor(resp.scores.final_score)}`} style={font}>
-                              {resp.scores.final_score.toFixed(1)}/5.0
-                            </span>
-                          </div>
-                        </div>
+                {expandedSections.has('responses') && (() => {
+                  const f11Analyses = f11Report?.response_analyses || []
+                  const f11Map: Record<string, any> = {}
+                  f11Analyses.forEach((a: any) => { if (a.competency) f11Map[a.competency] = a })
 
-                        <div className="mb-2 p-2 rounded bg-gray-100">
-                          <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Pergunta:</p>
-                          <p className="text-[11px] text-gray-700" style={font}>{resp.question.text}</p>
-                        </div>
-
-                        <div className="mb-2">
-                          <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Resposta do Candidato:</p>
-                          <p className="text-[11px] text-gray-800 leading-relaxed" style={font}>{resp.response_text}</p>
-                        </div>
-
-                        <div className="grid grid-cols-4 gap-2 mb-2">
-                          {resp.scores.autodeclaration != null && (
-                            <div className="text-center p-1.5 rounded border border-gray-100">
-                              <p className="text-[9px] text-gray-500" style={font}>Autodeclaração</p>
-                              <p className="text-[11px] font-bold text-gray-950" style={font}>{resp.scores.autodeclaration.toFixed(1)}</p>
-                            </div>
-                          )}
-                          {resp.scores.context != null && (
-                            <div className="text-center p-1.5 rounded border border-gray-100">
-                              <p className="text-[9px] text-gray-500" style={font}>Contexto</p>
-                              <p className="text-[11px] font-bold text-gray-950" style={font}>{resp.scores.context.toFixed(1)}</p>
-                            </div>
-                          )}
-                          {resp.scores.bloom_level != null && (
-                            <div className="text-center p-1.5 rounded border border-gray-100">
-                              <p className="text-[9px] text-gray-500" style={font}>Cognição</p>
-                              <p className="text-[11px] font-bold text-gray-950" style={font}>{bloomLabel(resp.scores.bloom_level)}</p>
-                              <p className="text-[8px] text-gray-400" style={font}>Nível {resp.scores.bloom_level}</p>
-                            </div>
-                          )}
-                          {resp.scores.dreyfus_level != null && (
-                            <div className="text-center p-1.5 rounded border border-gray-100">
-                              <p className="text-[9px] text-gray-500" style={font}>Maturidade</p>
-                              <p className="text-[11px] font-bold text-gray-950" style={font}>{dreyfusLabel(resp.scores.dreyfus_level)}</p>
-                              <p className="text-[8px] text-gray-400" style={font}>Nível {resp.scores.dreyfus_level}</p>
-                            </div>
-                          )}
-                        </div>
-
-                        {resp.evidences && resp.evidences.length > 0 && (
-                          <div className="mb-1.5">
-                            <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Evidências:</p>
-                            <div className="flex flex-wrap gap-1">
-                              {resp.evidences.map((ev, i) => (
-                                <span key={i} className="inline-flex items-center px-1.5 py-0.5 text-[9px] rounded-full" style={{ ...font }}>
-                                  <CheckCircle className="w-2.5 h-2.5 mr-0.5" /> {ev}
+                  return (
+                  <div className="divide-y divide-gray-100">
+                    {responses.map((resp, idx) => {
+                      const f11 = f11Map[resp.competency] || {}
+                      const starData = f11.star || { S: false, T: false, A: false, R: false }
+                      const gapStatus = (f11.gap_status || 'ok') as keyof typeof gapConfig
+                      const gap = gapConfig[gapStatus] || gapConfig.ok
+                      const GapIcon = gap.icon
+                      const isCritical = f11.is_critical || resp.question?.is_critical || false
+                      const bloomExpected = f11.bloom_expected || resp.scores.bloom_level || 3
+                      const bloomExpLabel = f11.bloom_expected_label || bloomLabel(bloomExpected)
+                      const dreyfusExpected = f11.dreyfus_expected || resp.scores.dreyfus_level || 3
+                      const dreyfusExpLabel = f11.dreyfus_expected_label || dreyfusLabel(dreyfusExpected)
+                      const demonstrated_bloom = f11.bloom_level || resp.scores.bloom_level || 3
+                      const demonstrated_dreyfus = f11.dreyfus_level || resp.scores.dreyfus_level || 3
+                      const finalScore = f11.final_score ?? resp.scores.final_score
+                      const isOpen = expandedSections.has(`resp-${idx}`)
+                      return (
+                        <div key={idx}>
+                          <button
+                            className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                            onClick={() => toggleSection(`resp-${idx}`)}
+                          >
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium text-gray-800" style={font}>{resp.competency}</span>
+                              <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{getFrameworkLabel(resp.question?.framework || f11.framework || '')}</span>
+                              {isCritical && (
+                                <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">
+                                  <ShieldAlert className="w-2.5 h-2.5" /> Crítica
                                 </span>
-                              ))}
+                              )}
                             </div>
-                          </div>
-                        )}
+                            <div className="flex items-center gap-3">
+                              <span className={`text-sm font-bold ${getScoreColor3Tier(finalScore)}`} style={font}>
+                                {finalScore.toFixed(1)}/5.0
+                              </span>
+                              {isOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                            </div>
+                          </button>
 
-                        <p className="text-[10px] text-gray-500 italic" style={font}>{resp.justification}</p>
-                      </div>
-                    ))}
+                          {isOpen && (
+                            <div className="px-4 pb-4 space-y-4 bg-gray-50/50">
+                              <div className="space-y-2">
+                                <div className="bg-white border border-gray-100 rounded-lg p-3">
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1" style={font}>Pergunta</p>
+                                  <p className="text-xs text-gray-700 leading-relaxed" style={font}>{resp.question?.text || f11.question_text}</p>
+                                </div>
+                                <div className="bg-white border border-gray-100 rounded-lg p-3">
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1" style={font}>Resposta do Candidato</p>
+                                  <p className="text-xs text-gray-800 leading-relaxed" style={font}>{resp.response_text}</p>
+                                </div>
+                              </div>
+
+                              <div className="bg-white border border-gray-100 rounded-lg p-3">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2" style={font}>Qualidade da resposta (STAR)</p>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {starComponents.map(({ key, label, desc }) => {
+                                    const present = starData[key]
+                                    return (
+                                      <div
+                                        key={key}
+                                        title={desc}
+                                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                                          present
+                                            ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                            : "bg-gray-100 border-gray-200 text-gray-400"
+                                        }`}
+                                      >
+                                        {present
+                                          ? <CheckCircle className="w-3 h-3" />
+                                          : <span className="w-3 h-3 flex items-center justify-center text-gray-300 font-bold text-[10px]">–</span>
+                                        }
+                                        <span>{label}</span>
+                                      </div>
+                                    )
+                                  })}
+                                  {!starData.R && (
+                                    <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+                                      Resultado não evidenciado
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-4 gap-2">
+                                {[
+                                  { label: "Autodeclaração", value: (f11.autodeclaration_score ?? resp.scores.autodeclaration)?.toFixed(1) },
+                                  { label: "Contexto", value: (f11.context_score ?? resp.scores.context)?.toFixed(1) },
+                                  { label: "Bloom", value: bloomLabel(demonstrated_bloom), sub: `Nível ${demonstrated_bloom}` },
+                                  { label: "Dreyfus", value: dreyfusLabel(demonstrated_dreyfus), sub: `Nível ${demonstrated_dreyfus}` },
+                                ].map((s) => (
+                                  <div key={s.label} className="bg-white border border-gray-100 rounded-lg p-2 text-center">
+                                    <p className="text-[9px] text-gray-400 mb-1" style={font}>{s.label}</p>
+                                    <p className="text-sm font-bold text-gray-900" style={font}>{s.value}</p>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className={`flex items-center justify-between rounded-lg border px-3 py-2.5 ${gap.bg} ${gap.border}`}>
+                                <div className="flex items-center gap-2">
+                                  <GapIcon className={`w-3.5 h-3.5 ${gap.color}`} />
+                                  <span className={`text-xs font-medium ${gap.color}`} style={font}>Esperado pela vaga</span>
+                                </div>
+                                <div className="flex items-center gap-4 text-xs">
+                                  <div className="text-right">
+                                    <p className="text-[9px] text-gray-400" style={font}>Bloom</p>
+                                    <p className={`font-semibold ${gap.color}`} style={font}>{bloomLabel(bloomExpected)}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-[9px] text-gray-400" style={font}>Dreyfus</p>
+                                    <p className={`font-semibold ${gap.color}`} style={font}>{dreyfusLabel(dreyfusExpected)}</p>
+                                  </div>
+                                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${gap.bg} ${gap.color} border ${gap.border}`}>
+                                    {gap.label}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {resp.evidences && resp.evidences.length > 0 && (
+                                <div>
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2" style={font}>Evidências</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {resp.evidences.map((ev, i) => (
+                                      <span key={i} className="flex items-center gap-1 text-[11px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                                        <CheckCircle className="w-3 h-3 text-emerald-500" /> {ev}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <p className="text-xs text-gray-500 italic mt-2" style={font}>{resp.justification || f11.justification}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
-                )}
+                  )
+                })()}
               </div>
             </div>
           )}

@@ -1609,6 +1609,9 @@ class F11ReportResponse(BaseModel):
     interview_questions: List[CBIQuestion]
     strengths: List[str]
     gaps: List[Dict[str, Any]]
+    question_count: int = 0
+    seniority_weights: Optional[Dict[str, float]] = None
+    attention_flags: List[str] = []
     generated_at: str
     methodology_version: str = "WSI v2.0"
 
@@ -1616,6 +1619,42 @@ class F11ReportResponse(BaseModel):
 _GATE_G3_THRESHOLD = 2.0   # /5 scale (= 4.0/10)
 _GATE_G4_THRESHOLD = 1.5   # /5 scale (= 3.0/10)
 _INJECTION_KEYWORDS = ["ignore", "esquece", "esqueça", "novo prompt", "sys:", "system:", "jailbreak", "prompt injection"]
+
+_SENIORITY_WEIGHTS = {
+    "estagiario": {"technical": 0.6875, "behavioral": 0.3125},
+    "junior":     {"technical": 0.625,  "behavioral": 0.375},
+    "pleno":      {"technical": 0.6875, "behavioral": 0.3125},
+    "senior":     {"technical": 0.5625, "behavioral": 0.4375},
+    "lead":       {"technical": 0.4375, "behavioral": 0.5625},
+    "principal":  {"technical": 0.50,   "behavioral": 0.50},
+    "diretor":    {"technical": 0.3125, "behavioral": 0.6875},
+    "vp_clevel":  {"technical": 0.25,   "behavioral": 0.75},
+}
+
+
+def _get_seniority_weights(seniority: Optional[str]) -> Optional[Dict[str, float]]:
+    if not seniority:
+        return None
+    key = seniority.lower().strip().replace(" ", "_")
+    return _SENIORITY_WEIGHTS.get(key)
+
+
+def _build_attention_flags(analyses: List[Dict], gates: GateStatus) -> List[str]:
+    flags = []
+    if gates.g1_eliminatory and gates.g1_eliminatory.get("passed") is False:
+        flags.append("Questão eliminatória reprovada (G1)")
+    if gates.g2_injection and gates.g2_injection.get("passed") is False:
+        flags.append("Tentativa de prompt injection detectada (G2)")
+    gap_count = sum(1 for a in analyses if a.get("gap_status") == "gap")
+    if gap_count >= 3:
+        flags.append(f"{gap_count} competências com gap identificado")
+    low_star = sum(1 for a in analyses if sum(a.get("star", {}).values()) <= 1)
+    if low_star >= 2:
+        flags.append(f"{low_star} respostas com STAR incompleto")
+    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 5) < 3.0]
+    if critical_gaps:
+        flags.append(f"{len(critical_gaps)} competência(s) crítica(s) abaixo do esperado")
+    return flags
 
 
 async def _generate_cbi_questions_llm(
@@ -1847,7 +1886,8 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         classification_label = WSI_CLASSIFICATION_MAP.get(classification, {}).get("label", classification)
 
         qs_r = await db.execute(text("""
-            SELECT id, competency, framework, question_type, question_text, weight, sequence_order
+            SELECT id, competency, framework, question_type, question_text, weight, sequence_order,
+                   scoring_criteria
             FROM wsi_questions WHERE session_id = :sid ORDER BY sequence_order
         """), {"sid": session_id})
         questions = qs_r.fetchall()
@@ -1874,6 +1914,36 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             q = q_map.get(str(q_id), None)
             bloom_info  = BLOOM_LEVELS.get(bloom_lv or 3, BLOOM_LEVELS[3])
             dreyfus_info = DREYFUS_LEVELS.get(dreyfus_lv or 3, DREYFUS_LEVELS[3])
+
+            q_scoring = (q[7] if q and q[7] else {}) or {}
+            if isinstance(q_scoring, str):
+                import json as _json
+                try:
+                    q_scoring = _json.loads(q_scoring)
+                except Exception:
+                    q_scoring = {}
+            q_bloom_expected = int(q_scoring.get("bloom_level", q_scoring.get("expected_bloom", bloom_lv or 3)))
+            q_dreyfus_expected = int(q_scoring.get("dreyfus_level", q_scoring.get("expected_dreyfus", dreyfus_lv or 3)))
+            q_is_critical = float(q[5]) >= 1.5 if q else False
+
+            bloom_exp_info = BLOOM_LEVELS.get(q_bloom_expected, BLOOM_LEVELS[3])
+            dreyfus_exp_info = DREYFUS_LEVELS.get(q_dreyfus_expected, DREYFUS_LEVELS[3])
+
+            demonstrated_bloom = bloom_lv or 3
+            demonstrated_dreyfus = dreyfus_lv or 3
+            if demonstrated_bloom > q_bloom_expected and demonstrated_dreyfus >= q_dreyfus_expected:
+                gap_status = "acima"
+            elif demonstrated_bloom < q_bloom_expected or demonstrated_dreyfus < q_dreyfus_expected:
+                gap_status = "gap"
+            else:
+                gap_status = "ok"
+
+            resp_lower = (resp_text or "").lower()
+            star_s = any(kw in resp_lower for kw in ["contexto", "situação", "cenário", "quando", "empresa", "projeto"])
+            star_t = any(kw in resp_lower for kw in ["objetivo", "tarefa", "desafio", "responsabilidade", "missão", "meta"])
+            star_a = any(kw in resp_lower for kw in ["implementei", "desenvolvi", "criei", "resolvi", "apliquei", "fiz", "liderei"])
+            star_r = any(kw in resp_lower for kw in ["resultado", "impacto", "melhoria", "redução", "aumento", "uptime", "%", "kpi"])
+
             analyses_list.append({
                 "analysis_id": str(a_id),
                 "question_id": str(q_id),
@@ -1882,14 +1952,21 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
                 "question_type": q[3] if q else "technical",
                 "framework": q[2] if q else "",
                 "weight": float(q[5]) if q else 1.0,
+                "is_critical": q_is_critical,
                 "response_text": resp_text or "",
                 "response_word_count": len((resp_text or "").split()),
                 "autodeclaration_score": float(auto_score) if auto_score else 0.0,
                 "context_score": float(ctx_score) if ctx_score else 0.0,
-                "bloom_level": bloom_lv or 3,
+                "bloom_level": demonstrated_bloom,
                 "bloom_label": bloom_info["name_pt"],
-                "dreyfus_level": dreyfus_lv or 3,
+                "bloom_expected": q_bloom_expected,
+                "bloom_expected_label": bloom_exp_info["name_pt"],
+                "dreyfus_level": demonstrated_dreyfus,
                 "dreyfus_label": dreyfus_info["name_pt"],
+                "dreyfus_expected": q_dreyfus_expected,
+                "dreyfus_expected_label": dreyfus_exp_info["name_pt"],
+                "gap_status": gap_status,
+                "star": {"S": star_s, "T": star_t, "A": star_a, "R": star_r},
                 "evidences": evidences or [],
                 "red_flags": red_flags or [],
                 "consistency_penalty": float(cons_pen) if cons_pen else 0.0,
@@ -2038,6 +2115,9 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             interview_questions=interview_questions,
             strengths=strengths,
             gaps=gaps,
+            question_count=len(questions),
+            seniority_weights=_get_seniority_weights(str(seniority) if seniority else None),
+            attention_flags=_build_attention_flags(analyses_list, gates),
             generated_at=datetime.utcnow().isoformat() + "Z",
         )
 
