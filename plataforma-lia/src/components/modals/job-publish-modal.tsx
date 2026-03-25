@@ -44,6 +44,7 @@ interface JobPublishModalProps {
     published_channels?: string[]
     has_wsi_questions?: boolean
     wsi_question_count?: number
+    screeningStatus?: string
   }>
   onPublish: (jobIds: string[], channels: string[], options: any) => void
   onUnpublish?: (jobIds: string[], options: any) => void
@@ -97,6 +98,7 @@ export function JobPublishModal({
   }, [publishedCount, unpublishedCount, jobs.length])
 
   const jobsWithoutWSI = useMemo(() => jobs.filter(j => !j.is_published && j.has_wsi_questions === false), [jobs])
+  const jobsWithoutScreening = useMemo(() => jobs.filter(j => !j.is_published && (!j.screeningStatus || j.screeningStatus === 'not_configured')), [jobs])
   const needsWSIWarning = useMemo(() => jobsWithoutWSI.length > 0 && (mode === 'publish' || mode === 'mixed'), [jobsWithoutWSI, mode])
 
   const globalSearchCredits = useMemo(() => {
@@ -394,14 +396,41 @@ export function JobPublishModal({
             </div>
 
             <div className="space-y-3">
-              {(mode === 'publish' || mode === 'mixed') && needsWSIWarning && (
-                <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-[11px] font-semibold text-amber-900 mb-1">
-                        Triagem WSI não configurada
-                      </p>
+              {(mode === 'publish' || mode === 'mixed') && (
+                <div className="rounded-md border border-gray-200 bg-gray-50 p-3 space-y-2">
+                  <h4 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide font-['Open_Sans',sans-serif]">
+                    Checklist de Publicação
+                  </h4>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-[11px]">
+                      {jobsWithoutWSI.length === 0 ? (
+                        <Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                      ) : (
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                      )}
+                      <span className={cn("font-medium", jobsWithoutWSI.length === 0 ? "text-green-800" : "text-amber-800")}>
+                        Perguntas WSI geradas
+                      </span>
+                      <span className={cn("text-[10px]", jobsWithoutWSI.length === 0 ? "text-green-600" : "text-amber-600")}>
+                        {jobsWithoutWSI.length === 0 ? '— todas as vagas' : `— ${jobsWithoutWSI.length} pendente${jobsWithoutWSI.length > 1 ? 's' : ''}`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px]">
+                      {jobsWithoutScreening.length === 0 ? (
+                        <Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                      ) : (
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                      )}
+                      <span className={cn("font-medium", jobsWithoutScreening.length === 0 ? "text-green-800" : "text-amber-800")}>
+                        Triagem WSI configurada
+                      </span>
+                      <span className={cn("text-[10px]", jobsWithoutScreening.length === 0 ? "text-green-600" : "text-amber-600")}>
+                        {jobsWithoutScreening.length === 0 ? '— todas as vagas' : `— ${jobsWithoutScreening.length} pendente${jobsWithoutScreening.length > 1 ? 's' : ''}`}
+                      </span>
+                    </div>
+                  </div>
+                  {needsWSIWarning && (
+                    <div className="mt-2 pt-2 border-t border-amber-200 bg-amber-50 -mx-3 -mb-3 px-3 pb-3 rounded-b-md">
                       <p className="text-[10px] text-amber-800 leading-relaxed mb-2">
                         {jobsWithoutWSI.length === 1
                           ? `A vaga "${jobsWithoutWSI[0].title}" não tem perguntas WSI geradas. Candidatos serão recebidos sem triagem automática.`
@@ -420,7 +449,7 @@ export function JobPublishModal({
                         </Label>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 

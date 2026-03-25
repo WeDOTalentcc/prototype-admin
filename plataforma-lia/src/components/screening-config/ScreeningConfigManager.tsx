@@ -21,6 +21,20 @@ import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { textStyles } from '@/lib/design-tokens'
 
+const BIG_FIVE_PT_BR: Record<string, string> = {
+  openness: 'Abertura a mudanças',
+  conscientiousness: 'Organização e disciplina',
+  extraversion: 'Sociabilidade',
+  agreeableness: 'Cooperação',
+  neuroticism: 'Estabilidade emocional',
+}
+
+function getBigFiveLabelPTBR(trait: string | null | undefined): string {
+  if (!trait) return ''
+  const key = trait.toLowerCase().replace(/\s+/g, '_')
+  return BIG_FIVE_PT_BR[key] || trait
+}
+
 interface ScreeningConfigManagerProps {
   job: any
   onJobUpdate?: (updatedJob: any) => void
@@ -2024,6 +2038,16 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                       {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
                                                     </Badge>
                                                   )}
+                                                  {item.big_five_trait && (
+                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800">
+                                                      {getBigFiveLabelPTBR(item.big_five_trait)}
+                                                    </Badge>
+                                                  )}
+                                                  {(item.weight || 0) >= 1.5 && (
+                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
+                                                      <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
+                                                    </Badge>
+                                                  )}
                                                   {isDeactivated ? (
                                                     <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">Inativa</Badge>
                                                   ) : (
@@ -2052,8 +2076,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                     {(item.expected_answer || (item.expected_signals && item.expected_signals.length > 0)) && (
                                                       <div><span className="text-gray-400">Resposta esperada:</span><p className="text-gray-700 dark:text-gray-300 mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>
                                                     )}
-                                                    {item.scoring_criteria && Object.keys(item.scoring_criteria).length > 0 && (
-                                                      <div><span className="text-gray-400">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria).map(([level, desc]: [string, any]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-gray-300">{desc}</span></div>))}</div></div>
+                                                    {(item.scoring_criteria || item.scoring_rubric) && Object.keys(item.scoring_criteria || item.scoring_rubric).length > 0 && (
+                                                      <div><span className="text-gray-400">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria || item.scoring_rubric).map(([level, desc]: [string, any]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-gray-300">{desc}</span></div>))}</div></div>
                                                     )}
                                                   </div>
                                                 )}
@@ -2103,6 +2127,16 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                       {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
                                                     </Badge>
                                                   )}
+                                                  {item.big_five_trait && (
+                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800">
+                                                      {getBigFiveLabelPTBR(item.big_five_trait)}
+                                                    </Badge>
+                                                  )}
+                                                  {(item.weight || 0) >= 1.5 && (
+                                                    <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
+                                                      <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
+                                                    </Badge>
+                                                  )}
                                                   {isAccepted && (
                                                     <Badge className="text-[10px] px-2 py-0.5 h-5 rounded-full bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
                                                       <CheckCircle className="w-3 h-3 mr-1" />Aceita
@@ -2129,8 +2163,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                     {(item.expected_answer || (item.expected_signals && item.expected_signals.length > 0)) && (
                                                       <div><span className="text-gray-400">Resposta esperada:</span><p className="text-gray-700 dark:text-gray-300 mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>
                                                     )}
-                                                    {item.scoring_criteria && Object.keys(item.scoring_criteria).length > 0 && (
-                                                      <div><span className="text-gray-400">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria).map(([level, desc]: [string, any]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-gray-300">{desc}</span></div>))}</div></div>
+                                                    {(item.scoring_criteria || item.scoring_rubric) && Object.keys(item.scoring_criteria || item.scoring_rubric).length > 0 && (
+                                                      <div><span className="text-gray-400">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria || item.scoring_rubric).map(([level, desc]: [string, any]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-gray-300">{desc}</span></div>))}</div></div>
                                                     )}
                                                   </div>
                                                 )}

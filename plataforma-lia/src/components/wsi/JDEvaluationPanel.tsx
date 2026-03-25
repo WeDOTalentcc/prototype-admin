@@ -471,9 +471,11 @@ export function JDEvaluationPanel({
   }
 
   const getScoreColor = (score: number) => {
+    if (score >= 90) return { text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" }
     if (score >= 70) return { text: "text-green-600", bg: "bg-green-50", border: "border-green-200" }
     if (score >= 50) return { text: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" }
-    return { text: "text-red-500", bg: "bg-red-50", border: "border-red-200" }
+    if (score >= 30) return { text: "text-orange-600", bg: "bg-orange-50", border: "border-orange-200" }
+    return { text: "text-red-600", bg: "bg-red-50", border: "border-red-200" }
   }
 
   const handleSaveRascunho = async () => {
@@ -721,7 +723,7 @@ export function JDEvaluationPanel({
             <div className="space-y-3">
               {/* BAND BADGE + SCORE ROW */}
               {(() => {
-                const band = evaluation.band || (evaluation.score >= 85 ? 'excelente' : evaluation.score >= 70 ? 'bom' : evaluation.score >= 50 ? 'adequado' : evaluation.score >= 30 ? 'insuficiente' : 'critico')
+                const band = evaluation.band || (evaluation.score >= 90 ? 'excelente' : evaluation.score >= 70 ? 'bom' : evaluation.score >= 50 ? 'adequado' : evaluation.score >= 30 ? 'insuficiente' : 'critico')
                 const bandLabel = evaluation.band_label || (band === 'excelente' ? 'Excelente' : band === 'bom' ? 'Bom' : band === 'adequado' ? 'Adequado' : band === 'insuficiente' ? 'Insuficiente' : 'Crítico')
                 const bandColors: Record<string, string> = {
                   excelente: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -832,7 +834,9 @@ export function JDEvaluationPanel({
                   </Button>
                   {!evaluation.can_generate && (
                     <span className="text-[10px] text-red-600 font-medium">
-                      Score &lt; 30 — complete o JD antes de gerar perguntas
+                      {evaluation.score < 30
+                        ? 'JD bloqueado — score crítico, complete a descrição'
+                        : 'Score insuficiente (< 50) — adicione mais informações ao JD'}
                     </span>
                   )}
                 </div>
