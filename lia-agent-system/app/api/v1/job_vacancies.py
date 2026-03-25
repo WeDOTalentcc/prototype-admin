@@ -2002,9 +2002,19 @@ async def list_job_vacancies(
                     "salary": jv.salary,
                     "screening_questions": jv.screening_questions or [],
                     "interview_stages": jv.interview_stages or [],
+                    "eligibility_questions": jv.eligibility_questions or [],
+                    "disabled_eligibility_question_ids": jv.disabled_eligibility_question_ids or [],
+                    "confidentiality_config": jv.confidentiality_config,
                     "conversation_id": str(jv.conversation_id) if jv.conversation_id else None,
                     "screening_config": jv.screening_config,
-                    "screening_status": derive_screening_status(jv.screening_config)
+                    "screening_status": derive_screening_status(jv.screening_config),
+                    "enriched_jd": jv.enriched_jd,
+                    "is_affirmative": jv.is_affirmative or False,
+                    "affirmative_criteria_primary": jv.affirmative_criteria_primary,
+                    "affirmative_criteria_secondary": jv.affirmative_criteria_secondary,
+                    "affirmative_description": jv.affirmative_description,
+                    "affirmative_document_required": jv.affirmative_document_required or False,
+                    "affirmative_document_types": jv.affirmative_document_types or [],
                 }
                 for jv in job_vacancies
             ]
