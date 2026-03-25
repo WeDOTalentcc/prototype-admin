@@ -634,6 +634,21 @@ async def evaluate_jd(request: JDEvaluateRequest):
     else:
         suggestion = "JD crítico — perguntas WSI bloqueadas. Adicione no mínimo: título com senioridade, 2+ responsabilidades, 1+ skill técnica e senioridade definida."
 
+    if score < 30:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "qualidade_insuficiente",
+                "message": suggestion,
+                "score": score,
+                "max_score": 100,
+                "band": band_key,
+                "band_label": band_label,
+                "indicators": [i.dict() if hasattr(i, 'dict') else i for i in indicators],
+                "can_generate": False,
+            }
+        )
+
     return JDEvaluateResponse(
         success=True,
         score=score,
@@ -642,7 +657,7 @@ async def evaluate_jd(request: JDEvaluateRequest):
         band_label=band_label,
         indicators=indicators,
         lia_suggestion=suggestion,
-        can_generate=score >= 30,
+        can_generate=True,
         details={
             "responsibilities_count": resp_count,
             "technical_skills_count": tech_count,
