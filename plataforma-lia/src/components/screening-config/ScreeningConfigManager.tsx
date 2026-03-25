@@ -7,7 +7,7 @@ import {
   CheckCircle, CheckCircle2, BarChart3, Clock, RotateCcw, CalendarClock,
   Shield, ShieldAlert, ShieldCheck, CalendarCheck, AlertTriangle, Save, ListChecks,
   Layers, Info, Brain, Loader2, X, Archive, Gauge, GraduationCap, Target,
-  Scale, ArrowRight, ClipboardList, FileText, Edit, Calendar, Play, Pause, AlertCircle
+  Scale, ClipboardList, FileText, Edit, Calendar, Play, Pause, AlertCircle
 } from 'lucide-react'
 import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit } from '@/hooks/useScreeningConfig'
 import { CompanyBankQuestions } from './CompanyBankQuestions'
@@ -272,10 +272,6 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
     methodologyBreakdown: Record<string, number>
     companyStandardFound: boolean
   } | null>(null)
-  const [blockPromptOpen, setBlockPromptOpen] = useState<number | null>(null)
-  const [blockPromptText, setBlockPromptText] = useState("")
-  const [isSuggestingQuestion, setIsSuggestingQuestion] = useState(false)
-  const [blockGenerationFeedback, setBlockGenerationFeedback] = useState<Record<number, string>>({})
   const [expandedBlocks, setExpandedBlocks] = useState<number[]>([0, 1, 2, 3, 4, 6])
   const [editingQuestion, setEditingQuestion] = useState<any | null>(null)
   const [suggestedQuestion, setSuggestedQuestion] = useState<any | null>(null)
@@ -1848,7 +1844,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                       As perguntas estão organizadas em ordem de prioridade, mas você pode escolher aquelas que julgar mais adequadas ao contexto da vaga.
                                     </p>
                                     <p className="text-[13px] text-gray-800 font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                                      Caso deseje perguntas mais direcionadas ou customizadas, utilize a opção &quot;Gerar mais perguntas&quot; disponível em cada bloco.
+                                      Caso deseje perguntas adicionais, utilize a opção de adicionar perguntas personalizadas manualmente em cada bloco.
                                     </p>
                                     <div className="border-t border-gray-100 pt-3">
                                       <p className="text-[13px] font-semibold text-gray-900 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>Finalização</p>
@@ -2191,69 +2187,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                     </>
                                   ) : null}
 
-                                  {blockGenerationFeedback[block.id] && (
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-[11px] text-emerald-700 dark:text-emerald-400">
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                      <span>{blockGenerationFeedback[block.id]}</span>
-                                      <button onClick={() => setBlockGenerationFeedback(prev => { const n = {...prev}; delete n[block.id]; return n })} className="ml-auto">
-                                        <X className="w-3 h-3 text-emerald-400 hover:text-emerald-600" />
-                                      </button>
-                                    </div>
-                                  )}
 
-                                  {block.editable && (
-                                    <div className="mt-3 pt-3 border-t border-gray-100">
-                                      {blockPromptOpen === block.id ? (
-                                        <div className="flex gap-2">
-                                          <div className="relative flex-1">
-                                            <textarea value={blockPromptText} onChange={(e) => setBlockPromptText(e.target.value)} placeholder={`Ex: Pergunta sobre experiência com ${block.id === 3 ? 'tecnologias específicas' : block.id === 2 ? 'disponibilidade' : 'gestão de conflitos'}...`} className="w-full h-16 text-[11px] p-2 border border-gray-200 dark:border-gray-600 rounded resize-none bg-white dark:bg-gray-800 dark:text-gray-100 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20" />
-                                            <button className="absolute right-2 bottom-2 p-1 bg-gray-900 hover:bg-gray-800 text-white rounded disabled:opacity-50" disabled={!blockPromptText || isSuggestingQuestion} onClick={async () => {
-                                              setIsSuggestingQuestion(true)
-                                              try {
-                                                const res = await fetch('/api/backend-proxy/wsi/suggest-question', {
-                                                  method: 'POST',
-                                                  headers: { 'Content-Type': 'application/json' },
-                                                  body: JSON.stringify({
-                                                    prompt: blockPromptText,
-                                                    job_title: job.title,
-                                                    block_id: block.id,
-                                                    technical_skills: (job.technicalRequirements || []).map((r: any) => r.technology || r.skill || r).filter(Boolean),
-                                                    behavioral_competencies: (job.behavioralCompetencies || []).map((c: any) => c.competency || c.name || c).filter(Boolean),
-                                                    seniority: job.level || (job as any).seniority || null,
-                                                    description: job.description || null
-                                                  })
-                                                })
-                                                const data = await res.json()
-                                                if (data.success && data.question) {
-                                                  const newQ = { id: `q_gen_${Date.now()}`, question: data.question, text: data.question, type: data.type || 'classificatory', category: data.category, block_id: block.id, skill_targeted: data.skill_targeted, generated: true }
-                                                  setGeneratedQuestions(prev => ({ ...prev, [block.id]: [...(prev[block.id] || []), newQ] }))
-                                                  setBlockPromptText("")
-                                                  setBlockPromptOpen(null)
-                                                  setBlockGenerationFeedback(prev => ({ ...prev, [block.id]: '1 nova pergunta gerada. Complete a seleção abaixo.' }))
-                                                } else {
-                                                  toast.error(data.error || 'Erro ao gerar sugestão.')
-                                                }
-                                              } catch {
-                                                toast.error('Erro ao conectar com o backend.')
-                                              } finally {
-                                                setIsSuggestingQuestion(false)
-                                              }
-                                            }}>
-                                              {isSuggestingQuestion ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowRight className="w-3 h-3" />}
-                                            </button>
-                                          </div>
-                                          <button onClick={() => { setBlockPromptOpen(null); setBlockPromptText("") }} className="self-start p-1.5 hover:bg-gray-100 rounded">
-                                            <X className="w-3.5 h-3.5 text-gray-400" />
-                                          </button>
-                                        </div>
-                                      ) : (
-                                        <button onClick={() => setBlockPromptOpen(block.id)} className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-md transition-colors font-medium">
-                                          <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                                          Gerar mais perguntas com a LIA
-                                        </button>
-                                      )}
-                                    </div>
-                                  )}
                                 </>
                               )}
                             </div>
