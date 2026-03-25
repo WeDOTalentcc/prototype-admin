@@ -7,7 +7,7 @@ import {
   CheckCircle, Clock, FileText, BarChart3, User,
   ChevronDown, ChevronUp, ThumbsUp,
   ThumbsDown, Mic, Phone,
-  Code, BookOpen, Zap, Trophy, ArrowUp, ArrowDown, Minus,
+  Code, BookOpen, Zap, Trophy,
   Download, Share2, Loader2, Star,
   ShieldAlert, AlertTriangle, Layers, Info, Mic2, Copy
 } from "lucide-react"
@@ -957,7 +957,7 @@ export function TriagemDetailsModal({
                       style={font}
                     >
                       {copiedFeedback ? <CheckCircle className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                      {copiedFeedback ? "Copiado!" : "Copiar"}
+                      {copiedFeedback ? "Copiado!" : "Copiar feedback"}
                     </button>
                   </div>
                   {feedback?.main_message && (
@@ -1040,142 +1040,6 @@ export function TriagemDetailsModal({
             </div>
           )}
 
-          {false && (
-            <div className="space-y-3">
-              {ranking?.ranked && (
-                <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
-                  <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
-                    <Trophy className="w-4 h-4 text-gray-700" />
-                    Posição no Ranking
-                  </h3>
-                  <div className="text-center py-3">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-2" style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}>
-                      <Trophy className="w-7 h-7 text-gray-700" />
-                    </div>
-                    <p className="text-2xl font-bold text-gray-950" style={font}>#{ranking.rank}</p>
-                    <p className="text-[11px] mt-1 text-gray-500" style={font}>de {ranking.total} candidatos triados</p>
-                    {scores.percentile && (
-                      <div className="mt-2 flex items-center justify-center gap-2">
-                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full" style={{ backgroundColor: classColors.bg, color: classColors.text, ...font }}>
-                          Top {100 - scores.percentile}%
-                        </span>
-                        {vacancyRanking && scores.overall_wsi > vacancyRanking.averages.overall && (
-                          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full text-gray-800" style={{ ...font }}>
-                            Acima da Média
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {vacancyRanking && (
-                    <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center justify-between p-2 rounded-md border border-gray-100">
-                        <span className="text-[10px] text-gray-500" style={font}>Melhor que</span>
-                        <span className="text-[10px] font-bold" style={{ ...font }}>{scores.percentile}% dos candidatos</span>
-                      </div>
-                      <div className="flex items-center justify-between p-2 rounded-md border border-gray-100">
-                        <span className="text-[10px] text-gray-500" style={font}>Score vs Média</span>
-                        <span className="text-[10px] font-bold" style={{ ...font, color: scores.overall_wsi > vacancyRanking.averages.overall ? '#166534' : '#991B1B' }}>
-                          {scores.overall_wsi > vacancyRanking.averages.overall ? '+' : ''}{(scores.overall_wsi - vacancyRanking.averages.overall).toFixed(2)} pontos
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between p-2 rounded-md border border-gray-100">
-                        <span className="text-[10px] text-gray-500" style={font}>Classificação</span>
-                        <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded-full" style={{ backgroundColor: classColors.bg, color: classColors.text, ...font }}>
-                          {getClassificationLabel(scores.classification)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {vacancyRanking && (
-                <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
-                  <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
-                    <BarChart3 className="w-4 h-4 text-gray-700" />
-                    Comparação com Outros Candidatos
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      { label: 'Score Geral', candidate: scores.overall_wsi, avg: vacancyRanking.averages.overall },
-                      { label: 'Comp. Técnicas', candidate: scores.technical_wsi, avg: vacancyRanking.averages.technical },
-                      { label: 'Comp. Comportamentais', candidate: scores.behavioral_wsi, avg: vacancyRanking.averages.behavioral },
-                    ].map(metric => (
-                      <div key={metric.label}>
-                        <p className="text-[11px] font-medium mb-1 text-gray-950" style={font}>{metric.label}</p>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] w-16 text-gray-500" style={font}>Candidato</span>
-                            <div className="flex-1 h-5 rounded-full relative overflow-hidden bg-gray-100">
-                              <div className="h-5 rounded-full flex items-center justify-end pr-1.5 bg-gray-900" style={{ width: `${wsiToPercent(metric.candidate)}%` }}>
-                                <span className="text-[10px] text-white font-bold" style={font}>{metric.candidate.toFixed(1)}</span>
-                              </div>
-                            </div>
-                            {metric.candidate > metric.avg ? <ArrowUp className="w-3 h-3" style={{ color: '#166534' }} /> :
-                             metric.candidate < metric.avg ? <ArrowDown className="w-3 h-3 text-gray-400" /> :
-                             <Minus className="w-3 h-3 text-gray-400" />}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] w-16 text-gray-500" style={font}>Média</span>
-                            <div className="flex-1 h-3 rounded-full relative overflow-hidden bg-gray-100">
-                              <div className="h-3 rounded-full flex items-center justify-end pr-1.5 bg-gray-400" style={{ width: `${wsiToPercent(metric.avg)}%` }}>
-                                <span className="text-[10px] text-white" style={font}>{metric.avg.toFixed(1)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {vacancyRanking && vacancyRanking.ranking.length > 0 && (
-                <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
-                  <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-gray-950" style={font}>
-                    <Award className="w-4 h-4 text-gray-700" />
-                    Ranking Completo ({vacancyRanking.total_screened} candidatos)
-                  </h3>
-                  <div className="space-y-1 max-h-60 overflow-y-auto">
-                    {vacancyRanking.ranking.map((r) => {
-                      const isCurrentCandidate = r.candidate_id === candidate.id
-                      const rColors = getClassificationColor(r.classification)
-                      return (
-                        <div
-                          key={r.result_id}
-                          className="flex items-center justify-between p-2 rounded-md transition-colors"
-                          style={{
-                            backgroundColor: isCurrentCandidate ? 'rgba(96, 190, 209, 0.08)' : '#F9FAFB',
-                            border: isCurrentCandidate ? '1px solid rgba(96, 190, 209, 0.3)' : '1px solid #F3F4F6'
-                          }}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: isCurrentCandidate ? '#1F2937' : '#F3F4F6', color: isCurrentCandidate ? '#FFFFFF' : '#6B7280' }}>
-                              {r.rank}
-                            </span>
-                            <div>
-                              <p className={`text-[11px] ${isCurrentCandidate ? 'font-bold' : 'font-medium'} text-gray-900`} style={font}>
-                                {r.candidate_name} {isCurrentCandidate && '(atual)'}
-                              </p>
-                              <p className="text-[9px] text-gray-500" style={font}>{r.candidate_title}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-bold text-gray-900" style={font}>{r.overall_wsi.toFixed(1)}</span>
-                            <span className="inline-flex px-1.5 py-0.5 text-[9px] font-medium rounded-full" style={{ backgroundColor: rColors.bg, color: rColors.text, ...font }}>
-                              {getClassificationLabel(r.classification)}
-                            </span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
