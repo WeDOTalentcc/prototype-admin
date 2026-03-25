@@ -7,12 +7,14 @@ Aplica 4 frameworks científicos:
 3. Dreyfus Model - Dreyfus & Dreyfus, 1980
 4. Big Five (OCEAN) - Goldberg, 1992
 """
-from typing import List, Dict, Optional, Literal, Any
+from typing import List, Dict, Optional, Literal, Any, Callable
 from pydantic import BaseModel, Field, ValidationError
+from dataclasses import dataclass, field as dc_field
 from datetime import datetime
 import json
 import uuid
 import logging
+import re
 
 from app.services.llm import llm_service
 from app.services.wsi_deterministic_scorer import (
@@ -20,8 +22,35 @@ from app.services.wsi_deterministic_scorer import (
     calculate_final_wsi_score,
     DeterministicWSIResult
 )
+from app.domains.cv_screening.constants.wsi_constants import SENIORITY_DISTRIBUTIONS
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# F2 Big Five Pipeline — modelos e constantes (spec WSI F2.5/F3/F5)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class OceanTraitScore:
+    """Score de relevância 0-100 de um trait OCEAN para a vaga (F2.5 NEO-PI-R rubric)."""
+    trait: str              # openness | conscientiousness | extraversion | agreeableness | stability
+    score: int              # 0-100: intensidade com que a vaga exige o trait
+    confidence: str = "medium"                          # high | medium | low
+    evidence: List[str] = dc_field(default_factory=list)  # citações literais do JD
+
+
+# Número de traits OCEAN selecionados por nível de senioridade (F5)
+SENIORITY_BIGFIVE_TOP_N: Dict[str, int] = {
+    "estagiario": 2,
+    "junior":     2,
+    "pleno":      3,
+    "senior":     3,
+    "lead":       4,
+    "principal":  4,
+    "diretor":    5,
+    "vp_clevel":  5,
+}
 
 
 # ============================================================================
@@ -108,6 +137,7 @@ class Competency(BaseModel):
     weight: float = Field(ge=0, le=1)
     seniority_level: Literal["junior", "pleno", "senior", "lead", "executive"]
     is_critical: bool = False
+    big_five_mapping: Optional[str] = None  # F6.6: trait OCEAN pré-mapeado (openness|conscientiousness|extraversion|agreeableness|stability)
 
 
 class CompetencySuggestion(BaseModel):
@@ -129,6 +159,10 @@ class WSIQuestion(BaseModel):
     weight: float
     expected_signals: List[str]
     scoring_criteria: Dict[str, str]
+    is_critical: bool = False
+    # F6.8 — validação pós-geração
+    needs_manual_review: bool = False
+    validation_flags: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ResponseAnalysis(BaseModel):
@@ -332,7 +366,10 @@ Responda em JSON:
     async def generate_screening_questions(
         self,
         competencies: List[Competency],
-        mode: Literal["compact", "full"] = "compact"
+        mode: Literal["compact", "full"] = "compact",
+        job_description: Optional[str] = None,
+        seniority: Optional[str] = None,
+        enriched_jd: Optional[Dict] = None,
     ) -> List[WSIQuestion]:
         """
         ETAPA 2: Gera perguntas científicas baseadas em competências.
@@ -341,17 +378,148 @@ Responda em JSON:
         - CBI para perguntas contextuais (técnico E comportamental)
         - Dreyfus para autodeclaração de proficiência técnica
         - Bloom para microcases situacionais
-        - Big Five para fit comportamental/cultural
+        - Big Five para fit comportamental/cultural (F6.6 via pipeline F2.5→F3→F5)
 
         Args:
             competencies: Lista de competências a avaliar
-            mode: "compact" (6 perguntas) ou "full" (10 perguntas)
+            mode: "compact" (7 perguntas) ou "full" (12 perguntas)
+            job_description: Descrição da vaga para pipeline F2.5 OCEAN scoring (opcional)
+            seniority: Nível de senioridade para seleção F5 top-N traits (opcional)
+            enriched_jd: Output serializado de JdEnrichmentService (opcional).
+                         Quando fornecido: preenche big_five_mapping das competências
+                         comportamentais e usa about_role+responsabilidades como
+                         contexto F2.5 se job_description não fornecido.
 
         Returns:
             Lista de perguntas WSI estruturadas
         """
-        return await self.question_generator.generate_all(competencies, mode)
+        # F1.C → WSI bridge: enriquecer competências com big_five_mapping do enriched_jd
+        if enriched_jd:
+            enriched_comps, jd_context = self._build_competencies_from_enriched_jd(
+                enriched_jd, seniority or "pleno"
+            )
+            competencies = self._merge_with_enriched(competencies, enriched_comps)
+            if not job_description and jd_context:
+                job_description = jd_context
+                logger.info("WSI F1.C bridge: usando jd_context do enriched_jd para F2.5")
+
+        return await self.question_generator.generate_all(
+            competencies,
+            mode,
+            job_description=job_description,
+            seniority=seniority,
+        )
     
+    @staticmethod
+    def _build_competencies_from_enriched_jd(
+        enriched_jd: dict,
+        seniority: str = "pleno",
+    ) -> tuple:
+        """F1.C → WSI bridge: converte EnrichedJobDescription em competências WSI.
+
+        Extrai de enriched_jd:
+        - skills_obrigatorias → Competency(type="technical") com is_critical nos top 3
+        - competencias_comportamentais → Competency(type="behavioral") com big_five_mapping preenchido
+        - about_role + responsabilidades → texto de contexto para F2.5
+
+        Args:
+            enriched_jd: dict output de JdEnrichmentService (EnrichedJobDescription serializado)
+            seniority: nível para seniority_level das competências geradas
+
+        Returns:
+            Tuple[List[Competency], str] — (competências com big_five_mapping, jd_context para F2.5)
+        """
+        _SENIORITY_MAP = {
+            "estagiario": "junior", "estagiário": "junior",
+            "junior": "junior", "júnior": "junior",
+            "pleno": "pleno",
+            "senior": "senior", "sênior": "senior",
+            "lead": "lead", "principal": "lead",
+            "diretor": "executive", "vp": "executive", "clevel": "executive", "c-level": "executive",
+        }
+        seniority_level = _SENIORITY_MAP.get(seniority.lower().strip(), "pleno")
+        competencies: list = []
+
+        # --- Técnicas: de skills_obrigatorias ---
+        skills_raw = enriched_jd.get("skills_obrigatorias", [])
+        n_skills = max(len(skills_raw), 1)
+        for i, skill_entry in enumerate(skills_raw):
+            if isinstance(skill_entry, str):
+                skill_name = skill_entry
+            elif isinstance(skill_entry, dict):
+                skill_name = skill_entry.get("skill") or skill_entry.get("value") or str(skill_entry)
+            else:
+                continue
+            competencies.append(Competency(
+                name=skill_name,
+                type="technical",
+                weight=round(0.6 / n_skills, 4),
+                seniority_level=seniority_level,
+                is_critical=(i < 2),  # F6-5: máximo 2 skills críticas por triagem (spec §6.5)
+            ))
+
+        # --- Comportamentais: de competencias_comportamentais com trait pré-mapeado ---
+        behavioral_raw = enriched_jd.get("competencias_comportamentais", [])
+        n_behavioral = max(len(behavioral_raw), 1)
+        for comp_entry in behavioral_raw:
+            if isinstance(comp_entry, str):
+                comp_name, trait = comp_entry, None
+            elif isinstance(comp_entry, dict):
+                comp_name = (
+                    comp_entry.get("competencia")
+                    or comp_entry.get("value")
+                    or comp_entry.get("name")
+                    or str(comp_entry)
+                )
+                # trait_big_five ou big_five_mapping — aceitar ambos
+                trait = comp_entry.get("trait_big_five") or comp_entry.get("big_five_mapping")
+            else:
+                continue
+            competencies.append(Competency(
+                name=comp_name,
+                type="behavioral",
+                weight=round(0.4 / n_behavioral, 4),
+                seniority_level=seniority_level,
+                big_five_mapping=trait,
+            ))
+
+        # --- Texto de contexto para F2.5 ---
+        about = enriched_jd.get("about_role", "")
+        resps = enriched_jd.get("responsabilidades", [])
+        if isinstance(resps, list):
+            resps_text = " ".join(resps)
+        else:
+            resps_text = str(resps)
+        jd_context = f"{about}\n\n{resps_text}".strip()
+
+        return competencies, jd_context
+
+    @staticmethod
+    def _merge_with_enriched(
+        original: List["Competency"],
+        enriched: List["Competency"],
+    ) -> List["Competency"]:
+        """Mescla lista original de competências com versão enriquecida.
+
+        Para cada competência original sem big_five_mapping, tenta encontrar
+        correspondência por nome (case-insensitive) na lista enriquecida e
+        copia o big_five_mapping. Mantém todas as competências originais.
+        """
+        enriched_by_name = {c.name.lower().strip(): c for c in enriched}
+        merged = []
+        for comp in original:
+            if comp.big_five_mapping is None and comp.type in ("behavioral", "cultural"):
+                match = enriched_by_name.get(comp.name.lower().strip())
+                if match and match.big_five_mapping:
+                    comp = comp.model_copy(update={"big_five_mapping": match.big_five_mapping})
+            merged.append(comp)
+        # Adicionar comportamentais enriquecidas sem equivalente original
+        original_names = {c.name.lower().strip() for c in original}
+        for comp in enriched:
+            if comp.name.lower().strip() not in original_names:
+                merged.append(comp)
+        return merged
+
     async def analyze_response(
         self,
         question: WSIQuestion,
@@ -532,35 +700,135 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
 - "Descreva como você trabalha em equipe..."
 """
     
+    async def _extract_ocean_scores(
+        self,
+        job_description: str,
+        behavioral_competencies: Optional[List[str]] = None,
+    ) -> List[OceanTraitScore]:
+        """F2.5 — Extrai perfil Big Five do JD com rubric NEO-PI-R (Abordagem C).
+
+        Temperatura 0.1: extração estruturada baseada em evidências — não criação.
+        Retorna lista ordenada por score decrescente (F3 — ranking).
+        """
+        _FIVE_TRAITS = ["openness", "conscientiousness", "extraversion", "agreeableness", "stability"]
+        _FALLBACK = {t: {"score": 60, "evidence": [], "confidence": "low"} for t in _FIVE_TRAITS}
+
+        behav_context = (
+            f"Competências comportamentais declaradas: {', '.join(behavioral_competencies)}"
+            if behavioral_competencies else ""
+        )
+
+        prompt = f"""Você é um psicólogo organizacional especialista em avaliação de competências e modelo Big Five (NEO-PI-R).
+Analise o Job Description fornecido e extraia o perfil de personalidade requerido pela vaga.
+Para cada um dos 5 traits do Big Five, avalie a INTENSIDADE com que o JD REQUER aquele trait.
+Baseie-se EXCLUSIVAMENTE no texto do JD — não em suposições sobre o tipo de cargo.
+
+RUBRIC DE AVALIAÇÃO:
+- 0–30: O trait não é mencionado ou relevante para este papel
+- 31–50: O trait aparece implicitamente; é útil mas não diferenciador
+- 51–70: O trait é claramente necessário; mencionado em responsabilidades ou requisitos
+- 71–85: O trait é central para o papel; mencionado múltiplas vezes com evidências fortes
+- 86–100: O trait é absolutamente crítico; a vaga seria inviável sem ele
+
+REGRAS DE EVIDÊNCIA (OBRIGATÓRIAS):
+- O campo "evidence" deve conter CITAÇÕES LITERAIS do JD — trechos exatos entre aspas duplas
+  Correto:   "evidence": ["\"lidera equipes multidisciplinares em contextos de alta ambiguidade\""]
+  PROIBIDO:  "evidence": ["menciona liderança de equipes"] — paráfrase NÃO é evidência
+- Se um trait não tem nenhum trecho literal que o suporte, "evidence" deve ser [] e
+  "confidence" deve ser "low" com score ≤ 30
+- NUNCA infira traits a partir do nome da empresa, setor, tecnologias usadas ou cargo —
+  somente do texto explícito de responsabilidades, requisitos e contexto do JD
+
+REGRAS PARA JD INSUFICIENTE:
+- Se o JD tiver menos de 50 palavras úteis disponíveis para análise:
+  definir "confidence": "low" para TODOS os traits, independentemente dos scores
+  adicionar nota em todos os "evidence": ["[JD insuficiente — análise com baixa confiança]"]
+
+REGRAS PARA SINAIS CONTRADITÓRIOS:
+- Quando o JD apresentar sinais que se contradizem para o mesmo trait,
+  registrar em "evidence" com prefixo "[SINAL CONTRADITÓRIO]" e reduzir score para 40–55,
+  definir "confidence": "medium"
+
+JD enriquecido:
+---
+{job_description[:2000]}
+---
+{behav_context}
+
+Retorne APENAS JSON válido (sem texto fora do JSON):
+{{
+  "big_five_jd": {{
+    "openness":          {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }},
+    "conscientiousness": {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }},
+    "extraversion":      {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }},
+    "agreeableness":     {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }},
+    "stability":         {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }}
+  }}
+}}"""
+        try:
+            response = await self.llm.claude.bind(temperature=0.1, max_tokens=800).ainvoke(prompt)
+            parsed = safe_json_parse(response.content, fallback={"big_five_jd": _FALLBACK})
+            data = parsed.get("big_five_jd") or _FALLBACK
+            if not isinstance(data, dict) or not any(t in data for t in _FIVE_TRAITS):
+                data = _FALLBACK
+        except Exception as e:
+            logger.error(f"F2.5 OCEAN extraction failed: {e} — using fallback")
+            data = _FALLBACK
+
+        result = []
+        for t in _FIVE_TRAITS:
+            if t not in data:
+                continue
+            entry = data[t]
+            result.append(OceanTraitScore(
+                trait=t,
+                score=max(0, min(100, int(entry.get("score", 60)))),
+                confidence=entry.get("confidence", "medium"),
+                evidence=entry.get("evidence", []),
+            ))
+        return sorted(result, key=lambda x: x.score, reverse=True)
+
+    def _select_traits_by_seniority(
+        self,
+        ranked_traits: List[OceanTraitScore],
+        seniority: str,
+    ) -> List[OceanTraitScore]:
+        """F5 — Seleciona top-N traits conforme senioridade da vaga."""
+        key = seniority.lower().strip().replace(" ", "_").replace("-", "_")
+        n = SENIORITY_BIGFIVE_TOP_N.get(key, 3)
+        return ranked_traits[:n]
+
     async def generate_all(
         self,
         competencies: List[Competency],
-        mode: Literal["compact", "full"] = "compact"
+        mode: Literal["compact", "full"] = "compact",
+        job_description: Optional[str] = None,
+        seniority: Optional[str] = None,
     ) -> List[WSIQuestion]:
         """
         Gera todas as perguntas para as competências selecionadas.
 
         Estratégia:
-        - compact: 6 perguntas  (~12 min WhatsApp)
-        - full:    10 perguntas (~22 min WhatsApp)
+        - compact: 7 perguntas  (~14 min WhatsApp)
+        - full:    12 perguntas (~25 min WhatsApp)
 
         Ambos os modos extraem 5 técnicas + 5 comportamentais do JD.
         A metodologia seleciona as mais relevantes por peso e is_critical.
         CBI cobre técnico E comportamental em ambos os modos.
 
-        Distribuição compact (6 perguntas):
+        Distribuição compact (7 perguntas):
         - CBI técnico:        2 perguntas  (top 2 técnicas por is_critical + peso)
         - CBI comportamental: 1 pergunta   (top 1 comportamental por peso)
         - Dreyfus:            1 pergunta   (3ª técnica — autodeclaração)
         - Bloom:              1 pergunta   (4ª técnica — microcase)
-        - Big Five:           1 pergunta   (2ª comportamental — fit cultural/situacional)
+        - Big Five:           2 perguntas  (2ª e 3ª comportamentais — fit cultural/situacional OCEAN)
 
-        Distribuição full (10 perguntas):
+        Distribuição full (12 perguntas):
         - CBI técnico:        3 perguntas  (top 3 técnicas por is_critical + peso)
         - CBI comportamental: 3 perguntas  (top 3 comportamentais por peso)
         - Dreyfus:            2 perguntas  (4ª e 5ª técnicas — autodeclaração)
-        - Bloom:              1 pergunta   (microcase — técnica com maior bloom_level)
-        - Big Five:           1 pergunta   (4ª comportamental — fit cultural/situacional)
+        - Bloom:              2 perguntas  (microcase — técnica de maior bloom_level + outra técnica crítica)
+        - Big Five:           2 perguntas  (4ª e 5ª comportamentais — fit cultural/situacional)
         """
         if not competencies:
             raise ValueError("At least 1 competency is required to generate questions")
@@ -584,64 +852,319 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
             logger.warning("No technical competencies provided. Using behavioral for all questions.")
             technical = behavioral
 
-        questions = []
+        # D3/D4 quality warnings: alertar quando abaixo dos mínimos ideais da spec WSI F8
+        if len(technical) < 9:
+            logger.warning(
+                f"WSI question generation: only {len(technical)} technical competencies provided "
+                f"(spec minimum: 9). Question quality may be reduced for {'compact' if mode == 'compact' else 'full'} mode."
+            )
+        if len(behavioral) < 5:
+            logger.warning(
+                f"WSI question generation: only {len(behavioral)} behavioral competencies provided "
+                f"(spec minimum: 5). Big Five questions may repeat competencies."
+            )
+
+        # F2.5 / F3 / F5 pipeline — quando job_description disponível
+        selected_traits: List[OceanTraitScore] = []
+        if job_description:
+            behav_names = [c.name for c in behavioral]
+            ranked = await self._extract_ocean_scores(job_description, behav_names)
+            selected_traits = self._select_traits_by_seniority(ranked, seniority or "pleno")
+            logger.info(f"WSI F2.5 OCEAN ranked: {[(t.trait, t.score) for t in ranked]}")
+            logger.info(f"WSI F5 selected ({len(selected_traits)} for '{seniority}'): {[t.trait for t in selected_traits]}")
+
+        # F5 — distribuição adaptativa por senioridade (WSI-8)
+        _norm_sen = (seniority or "pleno").lower().strip().replace(" ", "_").replace("-", "_")
+        _mode_dists = SENIORITY_DISTRIBUTIONS.get(mode, SENIORITY_DISTRIBUTIONS["full"])
+        _dist = _mode_dists.get(_norm_sen, _mode_dists.get("senior", list(_mode_dists.values())[0]))
+        _tech_target = _dist["technical"]
+        _behav_target = _dist["behavioral"]
 
         if mode == "compact":
-            # --- CBI técnico: top 2 técnicas ---
-            for comp in technical[:2]:
-                questions.append(await self._generate_cbi_question(comp))
+            _has_dreyfus = _tech_target >= 2
+            _has_bloom = _tech_target >= 3
+            _cbi_tech_n = max(1, _tech_target - int(_has_dreyfus) - int(_has_bloom))
+            _dreyfus_n = int(_has_dreyfus)
+            _bloom_n = int(_has_bloom)
+            _cbi_behav_n = 1
+            _bigfive_n = _behav_target - 1
+        else:  # full
+            _dreyfus_n = min(2, max(0, _tech_target - 3))
+            _bloom_n = min(2, max(0, _tech_target - 1 - _dreyfus_n))
+            _cbi_tech_n = max(1, _tech_target - _dreyfus_n - _bloom_n)
+            _cbi_behav_n = max(1, _behav_target - 2)
+            _bigfive_n = _behav_target - _cbi_behav_n
 
-            # --- CBI comportamental: top 1 comportamental ---
-            if behavioral:
-                questions.append(await self._generate_cbi_question(behavioral[0]))
+        logger.info(
+            f"WSI F5 generate_all distribution ({_norm_sen}/{mode}): "
+            f"cbi_tech={_cbi_tech_n}, dreyfus={_dreyfus_n}, bloom={_bloom_n}, "
+            f"cbi_behav={_cbi_behav_n}, bigfive={_bigfive_n}"
+        )
 
-            # --- Dreyfus: 3ª técnica (autodeclaração de proficiência) ---
-            if len(technical) > 2:
-                questions.append(await self._generate_dreyfus_question(technical[2]))
+        questions = []
+        jd = job_description  # alias curto para legibilidade
 
-            # --- Bloom: 4ª técnica (microcase situacional) ---
-            if len(technical) > 3:
-                questions.append(await self._generate_bloom_question(technical[3]))
+        # --- CBI técnico ---
+        for comp in technical[:_cbi_tech_n]:
+            questions.append(await self._generate_with_validation(
+                self._generate_cbi_question, comp,
+                jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+            ))
 
-            # --- Big Five: 2ª comportamental (fit cultural / situacional OCEAN) ---
-            bigfive_comp = behavioral[1] if len(behavioral) > 1 else (behavioral[0] if behavioral else technical[0])
-            questions.append(await self._generate_bigfive_question(bigfive_comp))
+        # --- CBI comportamental ---
+        for comp in behavioral[:_cbi_behav_n]:
+            questions.append(await self._generate_with_validation(
+                self._generate_cbi_question, comp,
+                jd_text=jd, skill_or_trait=comp.name, question_category="behavioral",
+            ))
 
-        else:  # full — 10 perguntas
-            # --- CBI técnico: top 3 técnicas ---
-            for comp in technical[:3]:
-                questions.append(await self._generate_cbi_question(comp))
+        # --- Dreyfus (autodeclaração de proficiência) ---
+        dreyfus_offset = _cbi_tech_n
+        for i in range(_dreyfus_n):
+            comp = technical[dreyfus_offset + i] if len(technical) > dreyfus_offset + i else technical[-1]
+            questions.append(await self._generate_with_validation(
+                self._generate_dreyfus_question, comp,
+                jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+            ))
 
-            # --- CBI comportamental: top 3 comportamentais ---
-            for comp in behavioral[:3]:
-                questions.append(await self._generate_cbi_question(comp))
+        # --- Bloom (microcase situacional) ---
+        bloom_offset = dreyfus_offset + _dreyfus_n
+        for i in range(_bloom_n):
+            comp = technical[bloom_offset + i] if len(technical) > bloom_offset + i else technical[0]
+            questions.append(await self._generate_with_validation(
+                self._generate_bloom_question, comp,
+                jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+            ))
 
-            # --- Dreyfus: 4ª e 5ª técnicas (autodeclaração) ---
-            for comp in technical[3:5]:
-                questions.append(await self._generate_dreyfus_question(comp))
+        # --- Big Five: F6.6 — seleção por afinidade de trait (fallback: posicional) ---
+        used_bf: set = set()
+        for i in range(_bigfive_n):
+            trait = selected_traits[i].trait if i < len(selected_traits) else None
+            if trait and behavioral:
+                bf_comp, idx = self._select_comp_by_trait(trait, behavioral, used_bf)
+                used_bf.add(idx)
+            else:
+                available = [j for j in range(len(behavioral)) if j not in used_bf]
+                idx = available[0] if available else 0
+                bf_comp = behavioral[idx] if behavioral else technical[0]
+                used_bf.add(idx)
+            questions.append(await self._generate_with_validation(
+                self._generate_bigfive_question, bf_comp,
+                jd_text=jd, skill_or_trait=trait or bf_comp.name, question_category="behavioral",
+                ocean_trait=trait,
+            ))
 
-            # --- Bloom: microcase — técnica não coberta ainda ---
-            bloom_idx = min(5, len(technical) - 1)
-            if bloom_idx >= 0 and len(technical) > 5:
-                questions.append(await self._generate_bloom_question(technical[5]))
-            elif len(technical) > 0:
-                # fallback: usa a técnica mais pesada com bloom se não chegamos em 5
-                questions.append(await self._generate_bloom_question(technical[0]))
-
-            # --- Big Five: 4ª comportamental (fit cultural / situacional) ---
-            bigfive_comp = behavioral[3] if len(behavioral) > 3 else (behavioral[-1] if behavioral else technical[0])
-            questions.append(await self._generate_bigfive_question(bigfive_comp))
-
-        target_count = 6 if mode == "compact" else 10
+        target_count = _dist["total"]
 
         if len(questions) < target_count:
             logger.warning(f"Generated only {len(questions)}/{target_count} questions due to limited competencies")
 
         return questions[:target_count]
-    
-    async def _generate_cbi_question(self, competency: Competency) -> WSIQuestion:
+
+    # -----------------------------------------------------------------------
+    # F6.8 — Validação automática pós-geração (determinística + LLM anchoring)
+    # -----------------------------------------------------------------------
+
+    _BIAS_MARKERS_RE = re.compile(
+        r"\b(homem|mulher|masculino|feminino|gênero|raça|etnia|origem|religião|"
+        r"casad[oa]|filh[oa]s?|grávid[ao]|deficiência)\b",
+        re.IGNORECASE,
+    )
+    _HYPOTHETICAL_RE = re.compile(
+        r"\b(como você faria se|imagine que|suponha que|se você fosse|"
+        r"o que você faria se|e se você)\b",
+        re.IGNORECASE,
+    )
+    _PAST_VERB_RE = re.compile(
+        r"\b(conte|descreva|fale|dê um exemplo|me diga|relat[ea]|compartilhe)\b",
+        re.IGNORECASE,
+    )
+
+    def _validate_deterministic(self, text: str) -> list[str]:
+        """F6.8 Estágio 1 — verificações determinísticas (regex, ~0 ms).
+
+        Returns:
+            Lista de flags de falha (vazia = aprovado).
+        """
+        flags: list[str] = []
+        word_count = len(text.split())
+        if word_count < 15 or word_count > 80:
+            flags.append(f"length_out_of_range:{word_count}_words")
+        if self._HYPOTHETICAL_RE.search(text):
+            flags.append("hypothetical_phrasing")
+        if self._BIAS_MARKERS_RE.search(text):
+            flags.append("bias_marker_detected")
+        if not self._PAST_VERB_RE.search(text):
+            flags.append("missing_situational_verb")
+        return flags
+
+    async def _validate_jd_anchor(
+        self,
+        question_text: str,
+        jd_text: str,
+        skill_or_trait: str,
+        question_category: str = "technical",
+    ) -> dict:
+        """F6.8.1 — Validação de ancoragem no JD via LLM (temperature=0.0).
+
+        Returns dict com campos: is_anchored, evidence_in_jd, anchor_type,
+        confidence, anchor_explanation, suggestion.
+        """
+        system_prompt = (
+            "Você é um auditor de qualidade de perguntas de triagem.\n"
+            "Sua única tarefa é verificar se a pergunta gerada é ANCORADA no Job Description fornecido.\n\n"
+            "Uma pergunta é ANCORADA quando:\n"
+            "- Refere-se a uma responsabilidade, skill, contexto ou desafio EXPLICITAMENTE mencionado no JD\n"
+            "- Não poderia ser feita com a mesma especificidade para qualquer outra vaga\n\n"
+            "Uma pergunta NÃO é ancorada quando:\n"
+            '- Poderia ser feita para qualquer cargo do mesmo nível ("Descreva um projeto desafiador...")\n'
+            "- Refere-se a skills ou contextos ausentes do JD\n"
+            "- É genérica o suficiente para ser reutilizada em vagas completamente diferentes\n\n"
+            "REGRAS:\n"
+            "- Retorne APENAS o JSON. Sem texto fora do JSON.\n"
+            '- "evidence_in_jd" deve ser uma citação LITERAL do JD entre aspas — nunca paráfrase\n'
+            '- Se a pergunta não for ancorada, "evidence_in_jd" deve ser "" (string vazia)\n'
+            '- "anchor_type" classifica o tipo de ancoragem encontrada'
+        )
+        user_prompt = (
+            f"Job Description da vaga (texto completo ou trecho relevante):\n"
+            f"---\n{jd_text[:3000]}\n---\n\n"
+            f"Skill ou trait que a pergunta avalia: {skill_or_trait}\n"
+            f"Tipo de pergunta: {question_category} (technical | behavioral)\n\n"
+            f'Pergunta gerada para validar:\n"{question_text}"\n\n'
+            "Retorne o seguinte JSON (sem texto fora do JSON):\n"
+            "{\n"
+            '  "is_anchored": true|false,\n'
+            '  "evidence_in_jd": "trecho literal exato do JD (vazio se não ancorada)",\n'
+            '  "anchor_type": "responsibility | skill | context | challenge | none",\n'
+            '  "confidence": "high | medium | low",\n'
+            '  "anchor_explanation": "em 1 frase: por que esta pergunta é ou não é específica para este JD",\n'
+            '  "suggestion": "reformulação sugerida apenas se is_anchored = false, senão string vazia"\n'
+            "}"
+        )
+        full_prompt = f"SYSTEM:\n{system_prompt}\n\nUSER:\n{user_prompt}"
+        try:
+            response = await self.llm.claude.bind(temperature=0.0, max_tokens=300).ainvoke(full_prompt)
+            result = safe_json_parse(response.content, fallback=None)
+            if result and isinstance(result, dict) and "is_anchored" in result:
+                return result
+        except Exception as e:
+            logger.warning(f"WSI F6.8.1 anchor validation failed: {e}")
+        # Fallback: assume ancorada para não bloquear indefinidamente
+        return {
+            "is_anchored": True,
+            "evidence_in_jd": "",
+            "anchor_type": "none",
+            "confidence": "low",
+            "anchor_explanation": "Validação de ancoragem indisponível — aprovado automaticamente.",
+            "suggestion": "",
+        }
+
+    async def _generate_with_validation(
+        self,
+        gen_fn: Callable,
+        competency: "Competency",
+        jd_text: Optional[str] = None,
+        skill_or_trait: Optional[str] = None,
+        question_category: str = "technical",
+        **gen_kwargs,
+    ) -> "WSIQuestion":
+        """F6.8 wrapper — gera pergunta com até 3 tentativas de validação.
+
+        Fluxo:
+        1. Gera pergunta via gen_fn(competency, **gen_kwargs)
+        2. Estágio 1: _validate_deterministic → se falhar, regenera com hint
+        3. Estágio 2: _validate_jd_anchor (se jd_text fornecido) → se falhar, regenera com suggestion
+        4. Após 3 falhas em qualquer estágio, marca needs_manual_review=True e retorna
+        """
+        MAX_RETRIES = 3
+        last_question: Optional["WSIQuestion"] = None
+        improvement_hint: Optional[str] = None
+
+        for attempt in range(1, MAX_RETRIES + 1):
+            if improvement_hint:
+                gen_kwargs["improvement_hint"] = improvement_hint
+
+            question = await gen_fn(competency, **gen_kwargs)
+            last_question = question
+
+            # Estágio 1 — determinístico
+            det_flags = self._validate_deterministic(question.question_text)
+            if det_flags:
+                logger.warning(
+                    f"WSI F6.8 det. flags (attempt {attempt}/{MAX_RETRIES}) "
+                    f"for '{competency.name}': {det_flags}"
+                )
+                improvement_hint = (
+                    f"A pergunta anterior falhou nas seguintes verificações automáticas: {det_flags}. "
+                    "Corrija: use verbo situacional no imperativo (Conte/Descreva), "
+                    "mantenha entre 15 e 80 palavras, evite linguagem hipotética e marcadores de viés."
+                )
+                if attempt == MAX_RETRIES:
+                    question.needs_manual_review = True
+                    question.validation_flags = {"deterministic": det_flags}
+                    logger.error(
+                        f"WSI F6.8 max retries reached for '{competency.name}'. "
+                        "Marking needs_manual_review=True."
+                    )
+                    return question
+                continue
+
+            # Estágio 2 — ancoragem no JD (somente se jd_text disponível)
+            if jd_text and skill_or_trait:
+                anchor = await self._validate_jd_anchor(
+                    question_text=question.question_text,
+                    jd_text=jd_text,
+                    skill_or_trait=skill_or_trait,
+                    question_category=question_category,
+                )
+                if not anchor.get("is_anchored", True):
+                    logger.warning(
+                        f"WSI F6.8.1 not anchored (attempt {attempt}/{MAX_RETRIES}) "
+                        f"for '{competency.name}': {anchor.get('anchor_explanation')}"
+                    )
+                    suggestion = anchor.get("suggestion", "")
+                    improvement_hint = (
+                        f"A pergunta anterior não está ancorada no Job Description. "
+                        f"Sugestão de reformulação: {suggestion}"
+                        if suggestion else
+                        "A pergunta anterior é genérica demais. Referencie explicitamente "
+                        "uma responsabilidade ou skill mencionada no JD."
+                    )
+                    if attempt == MAX_RETRIES:
+                        question.needs_manual_review = True
+                        question.validation_flags = {
+                            "anchor": anchor,
+                            "attempts": MAX_RETRIES,
+                        }
+                        logger.error(
+                            f"WSI F6.8.1 max retries reached for '{competency.name}'. "
+                            "Marking needs_manual_review=True."
+                        )
+                        return question
+                    continue
+                # Persiste metadados de ancoragem nos flags (auditável)
+                question.validation_flags = {
+                    "anchor_type": anchor.get("anchor_type"),
+                    "confidence": anchor.get("confidence"),
+                    "evidence_in_jd": anchor.get("evidence_in_jd", ""),
+                }
+
+            return question
+
+        # Nunca deveria chegar aqui, mas retorna last_question por segurança
+        if last_question:
+            last_question.needs_manual_review = True
+        return last_question  # type: ignore[return-value]
+
+    async def _generate_cbi_question(
+        self, competency: Competency, improvement_hint: Optional[str] = None
+    ) -> WSIQuestion:
         """Gera pergunta CBI (contextual) para competência."""
-        
+        hint_block = (
+            f"\n\nINSTRUÇÃO DE MELHORIA (baseada em validação anterior):\n{improvement_hint}\n"
+            if improvement_hint else ""
+        )
         prompt = f"""Gere UMA pergunta CBI (Competency-Based Interviewing) para avaliar: **{competency.name}**
 
 Nível da vaga: {competency.seniority_level}
@@ -653,7 +1176,7 @@ Estrutura: "Conte sobre uma situação em que [contexto específico]. O que voc�
 
 Exemplos de referência do RAG:
 {self.question_templates[:2000]}
-
+{hint_block}
 Responda APENAS em JSON:
 {{
   "framework": "CBI",
@@ -668,7 +1191,7 @@ Responda APENAS em JSON:
 }}"""
 
         try:
-            response = await self.llm.claude.ainvoke(prompt)
+            response = await self.llm.claude.bind(temperature=0.7).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "CBI",
                 "question_type": "contextual",
@@ -703,12 +1226,18 @@ Responda APENAS em JSON:
             question_text=data["question_text"],
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Contexto", "Ação", "Resultado"]),
-            scoring_criteria=data.get("scoring_criteria", {})
+            scoring_criteria=data.get("scoring_criteria", {}),
+            is_critical=competency.is_critical,
         )
     
-    async def _generate_dreyfus_question(self, competency: Competency) -> WSIQuestion:
+    async def _generate_dreyfus_question(
+        self, competency: Competency, improvement_hint: Optional[str] = None
+    ) -> WSIQuestion:
         """Gera pergunta Dreyfus (autodeclaração) para competência."""
-        
+        hint_block = (
+            f"\n\nINSTRUÇÃO DE MELHORIA:\n{improvement_hint}\n"
+            if improvement_hint else ""
+        )
         prompt = f"""Gere UMA pergunta Dreyfus (autodeclaração) para avaliar: **{competency.name}**
 
 Estrutura: "De 1 a 5, quanto você domina [tecnologia]? Pode citar um projeto recente onde aplicou?"
@@ -716,11 +1245,11 @@ Estrutura: "De 1 a 5, quanto você domina [tecnologia]? Pode citar um projeto re
 Combina:
 - Autodeclaração (score 1-5)
 - Validação contextual (projeto real)
-
+{hint_block}
 Responda APENAS em JSON com mesma estrutura anterior."""
 
         try:
-            response = await self.llm.claude.ainvoke(prompt)
+            response = await self.llm.claude.bind(temperature=0.75).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Dreyfus",
                 "question_type": "autodeclaration",
@@ -758,9 +1287,10 @@ Responda APENAS em JSON com mesma estrutura anterior."""
             scoring_criteria=data.get("scoring_criteria", {})
         )
     
-    async def _generate_bloom_question(self, competency: Competency) -> WSIQuestion:
+    async def _generate_bloom_question(
+        self, competency: Competency, improvement_hint: Optional[str] = None
+    ) -> WSIQuestion:
         """Gera microcase Bloom para competência."""
-        
         seniority_level_map = {
             "junior": 3,
             "pleno": 4,
@@ -769,7 +1299,10 @@ Responda APENAS em JSON com mesma estrutura anterior."""
             "executive": 5
         }
         bloom_level = seniority_level_map.get(competency.seniority_level, 3)
-        
+        hint_block = (
+            f"\n\nINSTRUÇÃO DE MELHORIA:\n{improvement_hint}\n"
+            if improvement_hint else ""
+        )
         prompt = f"""Gere UMA pergunta tipo microcase (Bloom Level {bloom_level}) para: **{competency.name}**
 
 Nível cognitivo esperado: {"APLICAR" if bloom_level == 3 else "ANALISAR" if bloom_level == 4 else "CRIAR"}
@@ -778,13 +1311,13 @@ Exemplos:
 - Level 3 (Aplicar): "Como você implementaria [solução]?"
 - Level 4 (Analisar): "Como diagnosticaria [problema]?"
 - Level 5 (Criar): "Projete [arquitetura/solução]"
-
+{hint_block}
 Responda APENAS em JSON."""
 
         cognitive_level = "APLICAR" if bloom_level == 3 else "ANALISAR" if bloom_level == 4 else "CRIAR"
         
         try:
-            response = await self.llm.claude.ainvoke(prompt)
+            response = await self.llm.claude.bind(temperature=0.75).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Bloom",
                 "question_type": "microcase",
@@ -822,9 +1355,72 @@ Responda APENAS em JSON."""
             scoring_criteria=data.get("scoring_criteria", {})
         )
     
-    async def _generate_bigfive_question(self, competency: Competency) -> WSIQuestion:
-        """Gera pergunta Big Five (situacional) para competência."""
-        
+    def _select_comp_by_trait(
+        self,
+        trait: str,
+        behavioral: List["Competency"],
+        used_indices: set,
+    ) -> tuple:
+        """F6.6 — Seleciona competência comportamental por afinidade de trait OCEAN.
+
+        Estratégia:
+        1. Match exato: busca competência com big_five_mapping == trait
+        2. Fallback posicional: próxima disponível não usada
+        3. Último recurso: primeira da lista
+
+        Args:
+            trait: trait OCEAN alvo (openness|conscientiousness|extraversion|agreeableness|stability)
+            behavioral: lista ordenada de competências comportamentais
+            used_indices: índices já utilizados (evita repetição)
+
+        Returns:
+            Tuple[Competency, int] — competência selecionada e seu índice
+        """
+        # 1. Match exato por big_five_mapping
+        for i, comp in enumerate(behavioral):
+            if i not in used_indices and comp.big_five_mapping == trait:
+                logger.info(f"WSI F6.6 trait-match (exact): {trait} → {comp.name} (idx={i})")
+                return comp, i
+        # 2. Fallback posicional — próxima disponível
+        for i, comp in enumerate(behavioral):
+            if i not in used_indices:
+                logger.info(f"WSI F6.6 trait-match (fallback positional): {trait} → {comp.name} (idx={i})")
+                return comp, i
+        # 3. Último recurso — reusar primeira
+        logger.warning(f"WSI F6.6 trait-match: no available competency for {trait}, reusing behavioral[0]")
+        return behavioral[0], 0
+
+    async def _generate_bigfive_question(
+        self,
+        competency: Competency,
+        ocean_trait: Optional[str] = None,
+        improvement_hint: Optional[str] = None,
+    ) -> WSIQuestion:
+        """Gera pergunta Big Five (situacional) para competência.
+
+        Args:
+            competency: Competência a avaliar
+            ocean_trait: Trait OCEAN alvo (F6.6). Quando fornecido, calibra a pergunta
+                         para revelar especificamente esse trait.
+            improvement_hint: Sugestão de melhoria da validação F6.8.1 (ancoragem no JD).
+        """
+        _TRAIT_LABELS = {
+            "openness":          "Abertura a mudanças — inovação, curiosidade, aprendizado",
+            "conscientiousness": "Organização e disciplina — entregas, rigor, método",
+            "extraversion":      "Sociabilidade — comunicação, assertividade, energia",
+            "agreeableness":     "Cooperação — empatia, colaboração, gestão de stakeholders",
+            "stability":         "Estabilidade emocional — resiliência sob pressão",
+        }
+        trait_context = (
+            f"\nTrait OCEAN alvo: {ocean_trait} ({_TRAIT_LABELS.get(ocean_trait, '')})\n"
+            "A pergunta deve revelar especificamente este trait."
+            if ocean_trait else ""
+        )
+        hint_block = (
+            f"\n\nINSTRUÇÃO DE MELHORIA:\n{improvement_hint}\n"
+            if improvement_hint else ""
+        )
+
         prompt = f"""Gere UMA pergunta Big Five (situacional) para avaliar: **{competency.name}**
 
 Tipo: Comportamental/Cultural
@@ -837,11 +1433,11 @@ Foco em traços OCEAN:
 - Extraversion: Comunicação, liderança
 - Agreeableness: Colaboração
 - Emotional Stability: Pressão
-
+{trait_context}{hint_block}
 Responda APENAS em JSON."""
 
         try:
-            response = await self.llm.claude.ainvoke(prompt)
+            response = await self.llm.claude.bind(temperature=0.8).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "BigFive",
                 "question_type": "situational",
@@ -868,6 +1464,10 @@ Responda APENAS em JSON."""
                 }
             }
         
+        scoring_criteria = data.get("scoring_criteria", {})
+        if ocean_trait:
+            scoring_criteria["ocean_trait"] = ocean_trait
+
         return WSIQuestion(
             id=str(uuid.uuid4()),  # Generate UUID instead of relying on LLM
             competency=competency.name,
@@ -876,7 +1476,7 @@ Responda APENAS em JSON."""
             question_text=data["question_text"],
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Situação", "Comportamento", "Resultado"]),
-            scoring_criteria=data.get("scoring_criteria", {})
+            scoring_criteria=scoring_criteria,
         )
 
 

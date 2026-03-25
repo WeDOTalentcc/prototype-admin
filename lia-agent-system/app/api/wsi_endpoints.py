@@ -61,6 +61,14 @@ class GenerateQuestionsRequest(BaseModel):
     job_vacancy_id: str
     competencies: List[Dict[str, Any]] = Field(..., description="List of competency dicts")
     mode: str = Field(default="compact", description="compact or compact_plus")
+    job_description: Optional[str] = None
+    seniority: Optional[str] = None
+    enriched_jd: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Output serializado de JdEnrichmentService. Quando fornecido, "
+                    "preenche big_five_mapping das competências comportamentais (F6.6 trait-affinity) "
+                    "e usa about_role+responsabilidades como contexto F2.5."
+    )
 
 
 class GenerateQuestionsResponse(BaseModel):
@@ -255,7 +263,10 @@ async def generate_questions(
             
             questions = await wsi_service.generate_screening_questions(
                 competencies=competencies_list,
-                mode=request.mode
+                mode=request.mode,
+                job_description=request.job_description,
+                seniority=request.seniority,
+                enriched_jd=request.enriched_jd,
             )
             qs_version = None
             qs_id = None
@@ -293,7 +304,7 @@ async def generate_questions(
                 "question_text": question.question_text,
                 "weight": question.weight,
                 "expected_signals": json.dumps(question.expected_signals),
-                "scoring_criteria": json.dumps(question.scoring_criteria),
+                "scoring_criteria": json.dumps({**question.scoring_criteria, "is_critical": getattr(question, "is_critical", False)}),
                 "sequence_order": idx + 1
             })
         

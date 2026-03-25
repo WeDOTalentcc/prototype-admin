@@ -62,7 +62,7 @@ BIG_FIVE_RECRUITER_LABELS = {
     "conscientiousness": "Organização e disciplina",
     "extraversion":      "Sociabilidade",
     "agreeableness":     "Cooperação",
-    "neuroticism":       "Estabilidade emocional",
+    "stability":         "Estabilidade emocional",
 }
 
 SENIORITY_WEIGHTS = {
@@ -76,9 +76,37 @@ SENIORITY_WEIGHTS = {
     "vp_clevel":  {"technical": 0.25,   "behavioral": 0.75},
 }
 
+# Spec F8 — fórmula tri-componente por tipo de pergunta (v2)
+WSI_FORMULA_WEIGHTS_TECHNICAL = {
+    "autodeclaracao":    0.35,
+    "evidencias_tecnicas": 0.40,
+    "bloom_alinhamento": 0.25,
+}
+
+WSI_FORMULA_WEIGHTS_BEHAVIORAL = {
+    "star_estrutura":    0.35,
+    "sinais_trait":      0.40,
+    "bloom_alinhamento": 0.25,
+}
+
+# Mantido para retrocompatibilidade — não usar em código novo
 WSI_FORMULA_WEIGHTS = {
     "autodeclaracao": 0.60,
-    "contexto": 0.40
+    "contexto": 0.40,
+}
+
+# Pesos S/T/A/R conforme spec F8 (A tem maior peso por ser a ação concreta)
+STAR_COMPONENT_WEIGHTS = {"S": 0.20, "T": 0.20, "A": 0.40, "R": 0.20}
+
+STAR_INDICATORS = {
+    "S": ["estava trabalhando", "naquela época", "no contexto", "situação era", "momento era",
+          "quando eu", "enquanto eu", "naquele projeto", "naquele período", "no cenário"],
+    "T": ["minha tarefa", "meu objetivo", "deveria", "precisava", "responsabilidade era",
+          "fui designado", "me pediram", "o desafio era", "precisávamos", "o requisito"],
+    "A": ["então fiz", "decidi", "implementei", "executei", "apliquei", "criei", "desenvolvi",
+          "propus", "sugeri", "atuei", "conduzi", "liderei", "corrigi", "resolvi", "refatorei"],
+    "R": ["resultado", "conseguimos", "atingimos", "reduzimos", "aumentamos", "melhoramos",
+          "entregamos", "economizamos", "impacto foi", "ficou", "passou a", "hoje está"],
 }
 
 WSI_CUTOFFS = {
@@ -149,6 +177,12 @@ class DeterministicWSIResult:
     final_score: float
     formula_applied: str
     justification: str
+    # v2 — fórmula tri-componente (spec F8)
+    formula_version: str = "v2"
+    star_components: Optional[Dict[str, bool]] = None   # S/T/A/R presentes
+    star_score: float = 0.0                             # score ponderado STAR
+    bloom_alignment: float = 1.0                        # alinhamento bloom demonstrado vs esperado
+    flags_structured: Optional[Dict[str, bool]] = None  # is_inflation/is_generic/is_short
 
 
 def extract_autodeclaracao_score(text: str) -> Optional[float]:
@@ -414,6 +448,38 @@ def extract_evidences(text: str) -> List[str]:
     return list(set(evidences))[:10]
 
 
+def calculate_star_score(text: str) -> Tuple[Dict[str, bool], float]:
+    """
+    Detecta componentes STAR na resposta e calcula score ponderado.
+    Spec F8 — pesos: S=0.20, T=0.20, A=0.40, R=0.20
+
+    Returns:
+        (components_dict, weighted_score_0_to_1)
+    """
+    text_lower = text.lower()
+    components: Dict[str, bool] = {}
+    for component, indicators in STAR_INDICATORS.items():
+        components[component] = any(ind in text_lower for ind in indicators)
+
+    score = sum(
+        STAR_COMPONENT_WEIGHTS[c] for c, present in components.items() if present
+    )
+    return components, round(score, 3)
+
+
+def calculate_bloom_alignment(bloom_demonstrated: int, bloom_expected: int) -> float:
+    """
+    Calcula alinhamento entre nível Bloom demonstrado e esperado (0.0–1.0).
+    Spec F8 — componente bloom_alinhamento.
+
+    alignment = 1.0 - |demonstrated - expected| / max_distance
+    max_distance = 5 (range 1–6)
+    """
+    max_distance = 5
+    alignment = 1.0 - abs(bloom_demonstrated - bloom_expected) / max_distance
+    return round(max(0.0, alignment), 3)
+
+
 def calculate_wsi_deterministic(
     response_text: str,
     competency_name: str = "",
@@ -422,20 +488,27 @@ def calculate_wsi_deterministic(
     contexto_override: Optional[float] = None,
     years_experience: Optional[float] = None,
     years_reference: Optional[Dict[str, Tuple[float, float]]] = None,
+    question_type: str = "technical",   # "technical" | "behavioral"
+    bloom_expected: int = 3,            # nível Bloom esperado pela pergunta
 ) -> DeterministicWSIResult:
     """
-    Calcula WSI de forma 100% determinística.
-    
-    Fórmula: Score = (0.6 × Autodec) + (0.4 × Contexto) - Penalty + Bonus
-    
+    Calcula WSI de forma 100% determinística — Spec F8 fórmula v2.
+
+    Fórmula técnica:   0.35×autodeclaracao + 0.40×evidencias_tecnicas + 0.25×bloom_alinhamento
+    Fórmula comportamental: 0.35×star_estrutura + 0.40×sinais_trait   + 0.25×bloom_alinhamento
+    Penalidades e bônus aplicados ao resultado final.
+
     Args:
-        response_text: Texto da resposta do candidato
-        competency_name: Nome da competência avaliada
-        question_framework: Framework usado (CBI, Dreyfus, etc.)
-        autodeclaracao_override: Se fornecido, usa este valor ao invés de extrair do texto
-        contexto_override: Se fornecido, usa este valor ao invés de calcular do texto
-        years_experience: Anos de experiência para cálculo Dreyfus
-        
+        response_text:           Texto da resposta do candidato
+        competency_name:         Nome da competência avaliada
+        question_framework:      Framework usado (CBI, Dreyfus, BigFive, etc.)
+        autodeclaracao_override: Override do score de autodeclaração
+        contexto_override:       Override do score de contexto
+        years_experience:        Anos de experiência para cálculo Dreyfus
+        years_reference:         Ranges de senioridade para calibração Dreyfus
+        question_type:           "technical" usa evidências; "behavioral" usa STAR
+        bloom_expected:          Nível Bloom esperado pela pergunta (1–6)
+
     Returns:
         DeterministicWSIResult com todos os componentes do cálculo
     """
@@ -443,37 +516,70 @@ def calculate_wsi_deterministic(
         autodeclaracao = autodeclaracao_override
     else:
         autodeclaracao = extract_autodeclaracao_score(response_text)
-    
+
     evidences = extract_evidences(response_text)
-    
+
     if contexto_override is not None:
         context_score = contexto_override
     else:
         context_score = calculate_context_score(response_text, evidences)
-    
+
     if autodeclaracao is None:
         autodeclaracao = context_score
-    
+
     bloom_level, bloom_name = calculate_bloom_level(response_text)
-    
+    bloom_align = calculate_bloom_alignment(bloom_level, bloom_expected)
+
     years = years_experience if years_experience is not None else extract_years_experience(response_text)
     dreyfus_level, dreyfus_name = calculate_dreyfus_level(years, context_score, years_reference=years_reference)
-    
+
     red_flags = detect_red_flags(response_text, autodeclaracao, context_score)
-    
+
+    # Flags estruturadas para G6 (spec F10)
+    flags_structured: Dict[str, bool] = {
+        "is_inflation": autodeclaracao >= 4.5 and context_score < 3.0,
+        "is_generic": sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"]
+                         if kw in response_text.lower()) >= 2,
+        "is_short": len(response_text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"],
+    }
+
     penalty = calculate_penalty(response_text, autodeclaracao, context_score)
     bonus = calculate_bonus(response_text)
-    
-    raw_score = (
-        WSI_FORMULA_WEIGHTS["autodeclaracao"] * autodeclaracao +
-        WSI_FORMULA_WEIGHTS["contexto"] * context_score
-    )
-    
+
+    # Fórmula v2 — tri-componente por tipo (Spec F8)
+    if question_type == "behavioral":
+        star_components, star_score = calculate_star_score(response_text)
+        # sinais_trait ≈ context_score (qualidade do contexto comportamental)
+        weights = WSI_FORMULA_WEIGHTS_BEHAVIORAL
+        raw_score = (
+            weights["star_estrutura"]    * (star_score * 5.0) +  # normaliza 0–1 → 0–5
+            weights["sinais_trait"]      * context_score +
+            weights["bloom_alinhamento"] * (bloom_align * 5.0)   # normaliza 0–1 → 0–5
+        )
+        formula_desc = (
+            f"behavioral: ({weights['star_estrutura']}×STAR{star_score:.2f}×5) + "
+            f"({weights['sinais_trait']}×ctx{context_score:.1f}) + "
+            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×5)"
+        )
+    else:
+        star_components, star_score = {}, 0.0
+        # evidencias_tecnicas ≈ context_score (qualidade técnica das evidências)
+        weights = WSI_FORMULA_WEIGHTS_TECHNICAL
+        raw_score = (
+            weights["autodeclaracao"]      * autodeclaracao +
+            weights["evidencias_tecnicas"] * context_score +
+            weights["bloom_alinhamento"]   * (bloom_align * 5.0)
+        )
+        formula_desc = (
+            f"technical: ({weights['autodeclaracao']}×auto{autodeclaracao:.1f}) + "
+            f"({weights['evidencias_tecnicas']}×ctx{context_score:.1f}) + "
+            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×5)"
+        )
+
     final_score = max(1.0, min(5.0, raw_score + penalty + bonus))
     final_score = round(final_score, 2)
-    
-    formula = f"({WSI_FORMULA_WEIGHTS['autodeclaracao']} × {autodeclaracao:.1f}) + ({WSI_FORMULA_WEIGHTS['contexto']} × {context_score:.1f}) + ({penalty}) + ({bonus}) = {final_score:.2f}"
-    
+    formula = f"{formula_desc} + penalty({penalty}) + bonus({bonus}) = {final_score:.2f}"
+
     justification_parts = []
     if context_score >= 4.0:
         justification_parts.append(f"Contexto forte ({context_score:.1f}/5)")
@@ -481,17 +587,17 @@ def calculate_wsi_deterministic(
         justification_parts.append(f"Contexto adequado ({context_score:.1f}/5)")
     else:
         justification_parts.append(f"Contexto fraco ({context_score:.1f}/5)")
-    
-    justification_parts.append(f"Bloom: {bloom_name}")
+
+    justification_parts.append(f"Bloom: {bloom_name} (esperado L{bloom_expected})")
     justification_parts.append(f"Dreyfus: {dreyfus_name}")
-    
+
     if red_flags:
         justification_parts.append(f"Alertas: {len(red_flags)}")
     if evidences:
         justification_parts.append(f"Evidências: {len(evidences)}")
-    
+
     justification = ". ".join(justification_parts)
-    
+
     return DeterministicWSIResult(
         autodeclaracao_score=autodeclaracao,
         context_score=context_score,
@@ -505,7 +611,12 @@ def calculate_wsi_deterministic(
         bonus=bonus,
         final_score=final_score,
         formula_applied=formula,
-        justification=justification
+        justification=justification,
+        formula_version="v2",
+        star_components=star_components,
+        star_score=star_score,
+        bloom_alignment=bloom_align,
+        flags_structured=flags_structured,
     )
 
 

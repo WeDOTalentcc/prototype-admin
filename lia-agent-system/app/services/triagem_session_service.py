@@ -249,10 +249,12 @@ def _calculate_final_score(response_scores: List[Dict[str, Any]]) -> Tuple[float
     for rs in response_scores:
         score = rs.get("score", 3.0)
         block_type = rs.get("block_type", "behavioral")
+        # F9-1 — trait_weight do ranking F3; padrão 1.0 = pesos uniformes
+        trait_weight = float(rs.get("trait_weight", 1.0))
         if block_type == "technical":
             technical_scores.append(("", score, 1.0))
         else:
-            behavioral_scores.append(("", score, 1.0))
+            behavioral_scores.append(("", score, trait_weight))
 
     try:
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (

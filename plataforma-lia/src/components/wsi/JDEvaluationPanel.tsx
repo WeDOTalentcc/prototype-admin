@@ -423,13 +423,15 @@ export function JDEvaluationPanel({
       else if (respCount >= 1) { score += 15; indicators.push({ label: "Responsabilidades", count: respCount, status: "partial", minimum: 3 }) }
       else { indicators.push({ label: "Responsabilidades", count: 0, status: "insufficient", minimum: 3 }) }
 
-      if (techCount >= 3) { score += 30; indicators.push({ label: "Comp. Técnicas", count: techCount, status: "sufficient", minimum: 3 }) }
-      else if (techCount >= 1) { score += 15; indicators.push({ label: "Comp. Técnicas", count: techCount, status: "partial", minimum: 3 }) }
-      else { indicators.push({ label: "Comp. Técnicas", count: 0, status: "insufficient", minimum: 3 }) }
+      // D3: mínimo ideal = 9 skills técnicas (spec WSI F8)
+      if (techCount >= 9) { score += 30; indicators.push({ label: "Comp. Técnicas", count: techCount, status: "sufficient", minimum: 9 }) }
+      else if (techCount >= 3) { score += 15; indicators.push({ label: "Comp. Técnicas", count: techCount, status: "partial", minimum: 9 }) }
+      else { indicators.push({ label: "Comp. Técnicas", count: 0, status: "insufficient", minimum: 9 }) }
 
-      if (behavCount >= 3) { score += 30; indicators.push({ label: "Comp. Comportamentais", count: behavCount, status: "sufficient", minimum: 3 }) }
-      else if (behavCount >= 1) { score += 15; indicators.push({ label: "Comp. Comportamentais", count: behavCount, status: "partial", minimum: 3 }) }
-      else { indicators.push({ label: "Comp. Comportamentais", count: 0, status: "insufficient", minimum: 3 }) }
+      // D4: mínimo ideal = 5 competências comportamentais (spec WSI F8)
+      if (behavCount >= 5) { score += 30; indicators.push({ label: "Comp. Comportamentais", count: behavCount, status: "sufficient", minimum: 5 }) }
+      else if (behavCount >= 2) { score += 15; indicators.push({ label: "Comp. Comportamentais", count: behavCount, status: "partial", minimum: 5 }) }
+      else { indicators.push({ label: "Comp. Comportamentais", count: 0, status: "insufficient", minimum: 5 }) }
 
       if (seniority) { score += 10; indicators.push({ label: "Senioridade", count: 1, status: "sufficient", minimum: 1 }) }
       else { indicators.push({ label: "Senioridade", count: 0, status: "insufficient", minimum: 1 }) }

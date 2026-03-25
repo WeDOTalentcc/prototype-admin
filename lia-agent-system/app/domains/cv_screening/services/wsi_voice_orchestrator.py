@@ -121,7 +121,9 @@ class WSIVoiceOrchestrator:
         candidate_name: str,
         job_title: Optional[str] = None,
         job_description: Optional[str] = None,
+        seniority: Optional[str] = None,
         mode: str = "compact",
+        enriched_jd: Optional[dict] = None,
         db: Optional[AsyncSession] = None
     ) -> VoiceScreeningResult:
         """
@@ -165,7 +167,10 @@ class WSIVoiceOrchestrator:
                 else:
                     questions = await self.wsi_service.generate_screening_questions(
                         competencies=competencies,
-                        mode=mode
+                        mode=mode,
+                        job_description=job_description,
+                        seniority=seniority,
+                        enriched_jd=enriched_jd,
                     )
                     qs_version = None
                     qs_id = None
@@ -206,7 +211,7 @@ class WSIVoiceOrchestrator:
                         "question_text": question.question_text,
                         "weight": question.weight,
                         "expected_signals": json.dumps(question.expected_signals),
-                        "scoring_criteria": json.dumps(question.scoring_criteria),
+                        "scoring_criteria": json.dumps({**question.scoring_criteria, "is_critical": getattr(question, "is_critical", False)}),
                         "sequence_order": idx + 1
                     })
                 

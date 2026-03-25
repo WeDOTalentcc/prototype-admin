@@ -34,7 +34,7 @@ from app.services.seniority_context_calibrator import (
 )
 from app.services.seniority_resolver import resolve_seniority_full, SENIORITY_RESOLVER_ENABLED
 from app.services.seniority_utils import normalize_seniority
-from app.domains.cv_screening.constants.wsi_constants import WSI_BLOCK_NAMES
+from app.domains.cv_screening.constants.wsi_constants import WSI_BLOCK_NAMES, SENIORITY_DISTRIBUTIONS
 
 logger = logging.getLogger(__name__)
 
@@ -65,29 +65,6 @@ BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4)}
 MODEL_DISTRIBUTIONS = {
     "compact": {"technical": 4, "behavioral": 3, "total": 7},
     "full": {"technical": 7, "behavioral": 5, "total": 12},
-}
-
-SENIORITY_DISTRIBUTIONS = {
-    "compact": {
-        "estagiario": {"technical": 5, "behavioral": 2, "total": 7},
-        "junior":     {"technical": 5, "behavioral": 2, "total": 7},
-        "pleno":      {"technical": 5, "behavioral": 2, "total": 7},
-        "senior":     {"technical": 4, "behavioral": 3, "total": 7},
-        "lead":       {"technical": 3, "behavioral": 4, "total": 7},
-        "principal":  {"technical": 4, "behavioral": 3, "total": 7},
-        "diretor":    {"technical": 3, "behavioral": 4, "total": 7},
-        "executive":  {"technical": 2, "behavioral": 5, "total": 7},
-    },
-    "full": {
-        "estagiario": {"technical": 9, "behavioral": 3, "total": 12},
-        "junior":     {"technical": 9, "behavioral": 3, "total": 12},
-        "pleno":      {"technical": 8, "behavioral": 4, "total": 12},
-        "senior":     {"technical": 7, "behavioral": 5, "total": 12},
-        "lead":       {"technical": 7, "behavioral": 5, "total": 12},
-        "principal":  {"technical": 7, "behavioral": 5, "total": 12},
-        "diretor":    {"technical": 7, "behavioral": 5, "total": 12},
-        "executive":  {"technical": 7, "behavioral": 5, "total": 12},
-    },
 }
 
 AFFIRMATIVE_QUESTIONS = {
@@ -127,6 +104,9 @@ class WSIScreeningPipeline:
                 explicit_seniority=request.seniority,
                 job_title=request.job_title,
                 job_description=request.job_description,
+                salary_min=getattr(request, "salary_min", None),
+                salary_max=getattr(request, "salary_max", None),
+                technical_skills=request.technical_skills or None,
             )
             if request.seniority is not None:
                 effective_seniority = normalize_seniority(request.seniority)

@@ -43,3 +43,32 @@ WSI_BLOCK_NAMES: dict[int, str] = {
     4: "Competências Comportamentais e Fit",
     5: "Resultado e Encerramento",
 }
+
+# ---------------------------------------------------------------------------
+# F5 — Distribuição adaptativa de perguntas técnicas vs. comportamentais
+# por senioridade e modo (compact=7 / full=12).
+# Fonte canônica: importar aqui em vez de definir localmente em cada módulo.
+# Referência: Guia WeDOTalent v3.4 — Metodologia WSI F5.
+# ---------------------------------------------------------------------------
+SENIORITY_DISTRIBUTIONS: dict[str, dict[str, dict[str, int]]] = {
+    "compact": {
+        "estagiario": {"technical": 5, "behavioral": 2, "total": 7},
+        "junior":     {"technical": 5, "behavioral": 2, "total": 7},
+        "pleno":      {"technical": 5, "behavioral": 2, "total": 7},
+        "senior":     {"technical": 4, "behavioral": 3, "total": 7},
+        "lead":       {"technical": 3, "behavioral": 4, "total": 7},
+        "principal":  {"technical": 4, "behavioral": 3, "total": 7},
+        "diretor":    {"technical": 3, "behavioral": 4, "total": 7},
+        "executive":  {"technical": 2, "behavioral": 5, "total": 7},
+    },
+    "full": {
+        "estagiario": {"technical": 9, "behavioral": 3, "total": 12},
+        "junior":     {"technical": 9, "behavioral": 3, "total": 12},
+        "pleno":      {"technical": 8, "behavioral": 4, "total": 12},
+        "senior":     {"technical": 7, "behavioral": 5, "total": 12},
+        "lead":       {"technical": 7, "behavioral": 5, "total": 12},
+        "principal":  {"technical": 7, "behavioral": 5, "total": 12},
+        "diretor":    {"technical": 7, "behavioral": 5, "total": 12},
+        "executive":  {"technical": 7, "behavioral": 5, "total": 12},
+    },
+}

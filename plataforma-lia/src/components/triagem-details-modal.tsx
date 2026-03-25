@@ -38,11 +38,19 @@ const getClassificationLabel = (classification: string) =>
   WSI_CLASSIFICATION_COLORS[classification]?.label ?? classification
 
 const getDecisionDisplay = (decision?: string) => {
-  switch (decision) {
-    case 'aprovado': return { label: 'Aprovado', icon: ThumbsUp, color: '#166534', bg: 'rgba(34, 197, 94, 0.12)' }
-    case 'aguardando': return { label: 'Em Avaliação', icon: Clock, color: '#854D0E', bg: 'rgba(234, 179, 8, 0.12)' }
-    case 'nao_aprovado': return { label: 'Não Aprovado', icon: ThumbsDown, color: '#991B1B', bg: 'rgba(239, 68, 68, 0.12)' }
-    default: return { label: 'Pendente', icon: Clock, bg: '#F3F4F6' }
+  // Normalizar: API retorna APROVADO/EM_AVALIACAO/REPROVADO; legado usa aprovado/aguardando/nao_aprovado
+  const normalized = (decision ?? '').toUpperCase().replace('NAO_APROVADO', 'REPROVADO').replace('AGUARDANDO', 'EM_AVALIACAO')
+  switch (normalized) {
+    case 'APROVADO':
+    case 'aprovado':
+      return { label: 'Aprovado', icon: ThumbsUp, color: '#166534', bg: 'rgba(34, 197, 94, 0.12)' }
+    case 'EM_AVALIACAO':
+    case 'aguardando':
+      return { label: 'Em Avaliação', icon: Clock, color: '#854D0E', bg: 'rgba(234, 179, 8, 0.12)' }
+    case 'REPROVADO':
+    case 'nao_aprovado':
+      return { label: 'Não Aprovado', icon: ThumbsDown, color: '#991B1B', bg: 'rgba(239, 68, 68, 0.12)' }
+    default: return { label: 'Pendente', icon: Clock, color: '#6B7280', bg: '#F3F4F6' }
   }
 }
 
@@ -240,8 +248,10 @@ export function TriagemDetailsModal({
   }
 
   const decision = details?.scores?.decision || details?.decision
-  const isPendingDecision = !decision || decision === 'aguardando'
-  const canTriggerFeedback = !!details
+  const decisionNormalized = (decision ?? '').toUpperCase()
+  const isPendingDecision = !decision || decisionNormalized === 'AGUARDANDO' || decisionNormalized === 'EM_AVALIACAO'
+  // canTriggerFeedback: disponível para todos os estados de decisão quando há dados de triagem
+  const canTriggerFeedback = !!details && !!details.scores
   const feedbackAlreadySent = feedbackStatus?.feedback_sent === true
 
   const font = { fontFamily: "'Open Sans', sans-serif" }
@@ -1029,14 +1039,98 @@ export function TriagemDetailsModal({
           )}
 
           {activeTab === 'comparativo' && (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                <Clock className="w-6 h-6 text-gray-400" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-gray-600" style={font}>Ranking e Comparativo</p>
-                <p className="text-xs text-gray-400 mt-1" style={font}>Em breve — comparativo entre candidatos disponível na próxima versão</p>
-              </div>
+            <div className="p-4 space-y-4">
+              {/* Pool averages */}
+              {vacancyRanking && vacancyRanking.total_screened > 0 ? (
+                <>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { label: 'Média Geral', value: vacancyRanking.averages.overall, icon: BarChart3 },
+                      { label: 'Média Técnica', value: vacancyRanking.averages.technical, icon: Target },
+                      { label: 'Média Comportamental', value: vacancyRanking.averages.behavioral, icon: Brain },
+                    ].map(({ label, value, icon: Icon }) => (
+                      <div key={label} className="border border-gray-200 rounded-md p-3 dark:border-gray-700">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Icon className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="text-[10px] text-gray-500 uppercase tracking-wide" style={font}>{label}</span>
+                        </div>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-gray-100" style={font}>
+                          {value.toFixed(1)}<span className="text-xs text-gray-400">/10</span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Ranking table */}
+                  <div className="border border-gray-200 rounded-md overflow-hidden dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Trophy className="w-3.5 h-3.5 text-gray-500" />
+                        <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300" style={font}>
+                          Ranking — {vacancyRanking.total_screened} candidato{vacancyRanking.total_screened !== 1 ? 's' : ''} avaliado{vacancyRanking.total_screened !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                      {vacancyRanking.ranking.map((entry) => {
+                        const isCurrent = entry.candidate_id === candidate?.id
+                        return (
+                          <div
+                            key={entry.result_id}
+                            className={`flex items-center gap-3 px-3 py-2.5 ${isCurrent ? 'bg-gray-900 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                          >
+                            {/* Rank badge */}
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+                              entry.rank === 1 ? 'bg-yellow-100 text-yellow-700' :
+                              entry.rank === 2 ? 'bg-gray-100 text-gray-600' :
+                              entry.rank === 3 ? 'bg-orange-100 text-orange-700' :
+                              isCurrent ? 'bg-white text-gray-900' : 'bg-gray-100 text-gray-500'
+                            }`} style={font}>
+                              {entry.rank}
+                            </div>
+                            {/* Name */}
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-[11px] font-medium truncate ${isCurrent ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`} style={font}>
+                                {isCurrent ? `${entry.candidate_name} (você)` : entry.candidate_name}
+                              </p>
+                              {entry.candidate_title && (
+                                <p className={`text-[10px] truncate ${isCurrent ? 'text-gray-300' : 'text-gray-400'}`} style={font}>{entry.candidate_title}</p>
+                              )}
+                            </div>
+                            {/* Scores */}
+                            <div className="flex items-center gap-3 flex-shrink-0">
+                              <div className="text-right">
+                                <p className={`text-[10px] ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>Tec</p>
+                                <p className={`text-[11px] font-semibold ${isCurrent ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`} style={font}>{entry.technical_wsi.toFixed(1)}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className={`text-[10px] ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>Comp</p>
+                                <p className={`text-[11px] font-semibold ${isCurrent ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`} style={font}>{entry.behavioral_wsi.toFixed(1)}</p>
+                              </div>
+                              <div className="text-right min-w-[36px]">
+                                <p className={`text-[10px] ${isCurrent ? 'text-gray-400' : 'text-gray-400'}`} style={font}>WSI</p>
+                                <p className={`text-[12px] font-bold ${isCurrent ? 'text-white' : 'text-gray-900 dark:text-gray-100'}`} style={font}>{entry.overall_wsi.toFixed(1)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                    <BarChart3 className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <div className="text-center max-w-xs">
+                    <p className="text-sm font-semibold text-gray-600" style={font}>Ranking e Comparativo</p>
+                    <p className="text-xs text-gray-400 mt-1" style={font}>
+                      O comparativo entre candidatos estará disponível quando houver 2 ou mais candidatos avaliados nesta vaga.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

@@ -496,10 +496,12 @@ async def evaluate_jd(request: JDEvaluateRequest):
         "detail": f"{resp_count} responsabilidade(s) — mínimo ideal: 5",
     })
 
-    if tech_count >= 3:
+    # D3 — Spec Task #43: mínimo ideal = 9 skills técnicas para cobertura Full WSI
+    _D3_MIN_IDEAL = 9
+    if tech_count >= _D3_MIN_IDEAL:
         pts_3 = 15
         st_3 = "sufficient"
-    elif tech_count >= 1:
+    elif tech_count >= 3:
         pts_3 = 7
         st_3 = "partial"
     else:
@@ -512,15 +514,17 @@ async def evaluate_jd(request: JDEvaluateRequest):
         "weight": 15,
         "earned": pts_3,
         "count": tech_count,
-        "minimum": 3,
+        "minimum": _D3_MIN_IDEAL,
         "status": st_3,
-        "detail": f"{tech_count} skill(s) técnica(s) — mínimo ideal: 3",
+        "detail": f"{tech_count} skill(s) técnica(s) — mínimo ideal: {_D3_MIN_IDEAL}",
     })
 
-    if behav_count >= 2:
+    # D4 — Spec Task #43: mínimo ideal = 5 competências comportamentais (1 por trait Big Five)
+    _D4_MIN_IDEAL = 5
+    if behav_count >= _D4_MIN_IDEAL:
         pts_4 = 10
         st_4 = "sufficient"
-    elif behav_count >= 1:
+    elif behav_count >= 2:
         pts_4 = 5
         st_4 = "partial"
     else:
@@ -533,9 +537,9 @@ async def evaluate_jd(request: JDEvaluateRequest):
         "weight": 10,
         "earned": pts_4,
         "count": behav_count,
-        "minimum": 2,
+        "minimum": _D4_MIN_IDEAL,
         "status": st_4,
-        "detail": f"{behav_count} comportamental(is) — mínimo ideal: 2",
+        "detail": f"{behav_count} comportamental(is) — mínimo ideal: {_D4_MIN_IDEAL}",
     })
 
     if has_seniority and resp_count >= 3:
@@ -1604,6 +1608,8 @@ class F11ReportResponse(BaseModel):
     decision_result: str
     decision_confidence: str
     decision_reason: Optional[str]
+    human_review_required: bool = False
+    already_generated: bool = False
     responses_hash: str
     response_analyses: List[Dict[str, Any]]
     interview_questions: List[CBIQuestion]
@@ -1655,6 +1661,55 @@ def _build_attention_flags(analyses: List[Dict], gates: GateStatus) -> List[str]
     if critical_gaps:
         flags.append(f"{len(critical_gaps)} competência(s) crítica(s) abaixo do esperado")
     return flags
+
+
+def _compute_decision_confidence(
+    overall_wsi: float,
+    failed_gates: List[str],
+    llm_fallback_count: int,
+    score_variance: float,
+) -> tuple:
+    """F10-6 — Computa decision.confidence e human_review_required de forma determinística.
+
+    Regras (ordem de precedência):
+    1. baixa: G2 (prompt injection), ou ≥2 LLM fallbacks, ou variância de scores > 2.0
+       → força human_review_required=True
+    2. alta: aprovação clara (≥4.5/5, sem gates) OU rejeição clara por G1/G3/G4
+    3. media: todo o resto (zona borderline, G5/G6 apenas, 1 fallback)
+
+    Returns: (confidence: str, human_review_required: bool)
+    """
+    # Baixa — qualidade da triagem comprometida
+    ambiguous_gates = {"G2", "G5", "G6"}
+    clear_reject_gates = {"G1", "G3", "G4"}
+    if (
+        "G2" in failed_gates
+        or llm_fallback_count >= 2
+        or score_variance > 2.0
+    ):
+        return "baixa", True
+
+    # Aprovação clara
+    if overall_wsi >= 4.5 and not failed_gates:
+        return "alta", False
+
+    # Rejeição clara por gate não-ambíguo
+    if failed_gates and clear_reject_gates.intersection(failed_gates) and not ambiguous_gates.intersection(failed_gates):
+        return "alta", False
+
+    # Zona borderline EM_AVALIACAO
+    if 3.0 <= overall_wsi < 3.75:
+        return "media", True
+
+    # Aprovação sólida mas não excepcional
+    if 3.75 <= overall_wsi < 4.5 and not failed_gates:
+        return "media", False
+
+    # Rejeição por gate ambíguo (G5/G6) — pode ser falso positivo
+    if failed_gates and ambiguous_gates.issuperset(failed_gates):
+        return "media", True
+
+    return "media", overall_wsi < 3.75
 
 
 async def _generate_cbi_questions_llm(
@@ -1849,6 +1904,27 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
     Spec: WSI_METHODOLOGY_COMPLETE_v2.md sections 11.1–11.5.
     """
     try:
+        # F11-3 — garantir que a coluna de cache existe (idempotente)
+        try:
+            await db.execute(text(
+                "ALTER TABLE wsi_results ADD COLUMN IF NOT EXISTS f11_report_json JSONB"
+            ))
+            await db.commit()
+        except Exception:
+            await db.rollback()
+
+        # F11-3 — verificar cache antes de regenerar
+        cache_r = await db.execute(text("""
+            SELECT f11_report_json FROM wsi_results
+            WHERE session_id = :sid AND f11_report_json IS NOT NULL
+            ORDER BY created_at DESC LIMIT 1
+        """), {"sid": session_id})
+        cached = cache_r.fetchone()
+        if cached and cached[0]:
+            report = F11ReportResponse(**cached[0])
+            report.already_generated = True
+            return report
+
         sess_r = await db.execute(text("""
             SELECT s.id, s.candidate_id, s.job_vacancy_id, s.screening_type, s.mode,
                    s.status, s.started_at, s.completed_at,
@@ -1924,7 +2000,12 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
                     q_scoring = {}
             q_bloom_expected = int(q_scoring.get("bloom_level", q_scoring.get("expected_bloom", bloom_lv or 3)))
             q_dreyfus_expected = int(q_scoring.get("dreyfus_level", q_scoring.get("expected_dreyfus", dreyfus_lv or 3)))
-            q_is_critical = float(q[5]) >= 1.5 if q else False
+            # G4: usar campo estruturado is_critical de scoring_criteria (spec WSI F8);
+            # fallback para weight >= 1.5 em sessões antigas sem o campo.
+            if q and q_scoring.get("is_critical") is not None:
+                q_is_critical = bool(q_scoring["is_critical"])
+            else:
+                q_is_critical = float(q[5]) >= 1.5 if q else False
 
             bloom_exp_info = BLOOM_LEVELS.get(q_bloom_expected, BLOOM_LEVELS[3])
             dreyfus_exp_info = DREYFUS_LEVELS.get(q_dreyfus_expected, DREYFUS_LEVELS[3])
@@ -1982,13 +2063,15 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             1 for a in analyses_list
             if any(kw in (a.get("response_text") or "").lower() for kw in _INJECTION_KEYWORDS)
         )
-        g2_failed = injection_count >= 2
+        # G2: spec WSI — 1 tentativa de injeção já é suficiente para reprovar (era 2)
+        g2_failed = injection_count >= 1
 
         g3_failed = tech_wsi < _GATE_G3_THRESHOLD and tech_wsi > 0.0
 
+        # G4: verificar campo estruturado is_critical (lido de scoring_criteria["is_critical"])
         g4_failed = any(
             a["final_score"] < _GATE_G4_THRESHOLD and a["final_score"] > 0.0
-            and (a.get("weight") or 0) >= 1.5
+            and a.get("is_critical", False)
             for a in analyses_list
         )
 
@@ -1996,10 +2079,17 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         total_qs = len(analyses_list)
         g5_failed = (total_qs > 0) and (short_responses / total_qs >= 0.5)
 
+        # G6 — usa flags_structured["is_inflation"] (campo estruturado) quando disponível;
+        # fallback para busca em string para retrocompatibilidade com sessões antigas.
         inflation_count = sum(
             1 for a in analyses_list
-            if any("inflação" in str(rf).lower() or "inflation" in str(rf).lower() or "infla" in str(rf).lower()
-                   for rf in (a.get("red_flags") or []))
+            if (
+                (a.get("flags_structured") or {}).get("is_inflation", False)
+                or any(
+                    "inflação" in str(rf).lower() or "inflation" in str(rf).lower()
+                    for rf in (a.get("red_flags") or [])
+                )
+            )
         )
         g6_failed = inflation_count >= 3
 
@@ -2028,25 +2118,40 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             failed_gates=failed_gates,
         )
 
+        # F10-6 — variância de scores (input para confidence)
+        all_scores = [a["final_score"] for a in analyses_list if a["final_score"] > 0]
+        score_variance = (max(all_scores) - min(all_scores)) if len(all_scores) >= 2 else 0.0
+        llm_fallback_count = sum(
+            1 for a in analyses_list
+            if (a.get("flags_structured") or {}).get("_llm_fallback", False)
+        )
+
+        gate_labels = {
+            "G1": "elegibilidade", "G2": "injeção de prompt",
+            "G3": "competência técnica mínima", "G4": "skill crítica",
+            "G5": "engajamento insuficiente", "G6": "inflação sistemática",
+        }
         if len(failed_gates) > 0:
             decision_result = "REPROVADO"
-            decision_confidence = "alta"
-            gate_labels = {"G1": "elegibilidade", "G2": "injeção de prompt", "G3": "competência técnica mínima",
-                           "G4": "skill crítica", "G5": "engajamento insuficiente", "G6": "inflação sistemática"}
             gate_reasons = [gate_labels.get(g, g) for g in failed_gates]
             decision_reason = f"Gate(s) ativado(s): {', '.join(gate_reasons)}"
         elif overall_wsi >= 3.75:
             decision_result = "APROVADO"
-            decision_confidence = "alta" if overall_wsi >= 4.5 else "media"
             decision_reason = None
         elif overall_wsi >= 3.0:
             decision_result = "EM_AVALIACAO"
-            decision_confidence = "media"
             decision_reason = f"Score WSI {overall_wsi:.2f}/5 requer revisão humana (faixa 3.0–3.74)"
         else:
             decision_result = "REPROVADO"
-            decision_confidence = "alta"
             decision_reason = f"Score WSI {overall_wsi:.2f}/5 abaixo do mínimo (< 3.0)"
+
+        # F10-6 — confidence determinística (substitui hardcoded "alta")
+        decision_confidence, human_review_required = _compute_decision_confidence(
+            overall_wsi=overall_wsi,
+            failed_gates=failed_gates,
+            llm_fallback_count=llm_fallback_count,
+            score_variance=score_variance,
+        )
 
         sorted_analyses = sorted(analyses_list, key=lambda x: x["final_score"], reverse=True)
         strengths = [
@@ -2088,7 +2193,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             diff = (completed_at - started_at).total_seconds() / 60
             duration_minutes = round(diff, 1)
 
-        return F11ReportResponse(
+        report = F11ReportResponse(
             session_id=str(sid),
             result_id=result_id,
             candidate_name=candidate_name or "Candidato",
@@ -2110,6 +2215,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             decision_result=decision_result,
             decision_confidence=decision_confidence,
             decision_reason=decision_reason,
+            human_review_required=human_review_required,
             responses_hash=responses_hash,
             response_analyses=analyses_list,
             interview_questions=interview_questions,
@@ -2121,8 +2227,158 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             generated_at=datetime.utcnow().isoformat() + "Z",
         )
 
+        # F11-3 — persistir no cache para evitar re-geração
+        if result_id:
+            try:
+                import json as _json
+                await db.execute(text("""
+                    UPDATE wsi_results SET f11_report_json = :payload
+                    WHERE id = :rid
+                """), {"rid": result_id, "payload": _json.dumps(report.model_dump())})
+                await db.commit()
+            except Exception as _cache_err:
+                logger.warning(f"F11-3: falha ao persistir cache do relatório: {_cache_err}")
+                await db.rollback()
+
+        return report
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"F11 report generation failed for session {session_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro ao gerar relatório F11: {str(e)}")
+
+
+# ---------------------------------------------------------------------------
+# F11-6 — Ranking e Comparativo entre candidatos (Tab 3)
+# ---------------------------------------------------------------------------
+
+@router.get("/ranking/{job_vacancy_id}", summary="F11-6 — Ranking de candidatos por vaga")
+async def get_vacancy_ranking(
+    job_vacancy_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Retorna o ranking completo de candidatos triados para uma vaga.
+
+    Spec: WSI_METHODOLOGY_COMPLETE_v2.md §11.6.4 Tab 3.
+    Ordena por overall_wsi DESC e calcula rank, percentil e médias do pool.
+    """
+    try:
+        rows_r = await db.execute(text("""
+            SELECT
+                r.id            AS result_id,
+                r.candidate_id,
+                COALESCE(c.name, 'Candidato') AS candidate_name,
+                COALESCE(c.current_position, '') AS candidate_title,
+                r.overall_wsi,
+                r.technical_wsi,
+                r.behavioral_wsi,
+                r.classification,
+                s.screening_type,
+                r.created_at
+            FROM wsi_results r
+            LEFT JOIN wsi_sessions s ON s.id = r.session_id
+            LEFT JOIN candidates c   ON c.id::text = r.candidate_id
+            WHERE r.job_vacancy_id = :jv_id
+            ORDER BY r.overall_wsi DESC, r.created_at DESC
+        """), {"jv_id": job_vacancy_id})
+        rows = rows_r.fetchall()
+
+        if not rows:
+            return {
+                "job_vacancy_id": job_vacancy_id,
+                "total_screened": 0,
+                "averages": {"overall": 0.0, "technical": 0.0, "behavioral": 0.0},
+                "ranking": [],
+            }
+
+        total = len(rows)
+        overall_vals  = [float(r[4]) for r in rows]
+        tech_vals     = [float(r[5]) for r in rows]
+        behav_vals    = [float(r[6]) for r in rows]
+
+        ranking = []
+        for rank, row in enumerate(rows, start=1):
+            score = float(row[4])
+            # percentil: proporção de candidatos com score ≤ score deste
+            below_or_eq = sum(1 for v in overall_vals if v <= score)
+            percentile = round((below_or_eq / total) * 100)
+            ranking.append({
+                "rank": rank,
+                "total": total,
+                "result_id": str(row[0]),
+                "candidate_id": str(row[1]),
+                "candidate_name": row[2],
+                "candidate_title": row[3],
+                "overall_wsi": round(score * 2, 2),        # /5 → /10
+                "technical_wsi": round(float(row[5]) * 2, 2),
+                "behavioral_wsi": round(float(row[6]) * 2, 2),
+                "classification": row[7] or "regular",
+                "percentile": percentile,
+                "screening_type": row[8] or "text",
+                "created_at": row[9].isoformat() if row[9] else None,
+            })
+
+        return {
+            "job_vacancy_id": job_vacancy_id,
+            "total_screened": total,
+            "averages": {
+                "overall":    round(sum(overall_vals) / total * 2, 2),
+                "technical":  round(sum(tech_vals) / total * 2, 2),
+                "behavioral": round(sum(behav_vals) / total * 2, 2),
+            },
+            "ranking": ranking,
+        }
+    except Exception as e:
+        logger.error(f"F11-6 vacancy ranking failed for {job_vacancy_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/candidate/{candidate_id}/ranking/{job_vacancy_id}",
+    summary="F11-6 — Posição do candidato no ranking da vaga",
+)
+async def get_candidate_ranking(
+    candidate_id: str,
+    job_vacancy_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Retorna a posição do candidato no ranking da vaga (rank #N de M).
+
+    Spec: WSI_METHODOLOGY_COMPLETE_v2.md §11.6.4 Tab 3.
+    """
+    try:
+        # Busca o resultado mais recente do candidato para esta vaga
+        cand_r = await db.execute(text("""
+            SELECT id, overall_wsi FROM wsi_results
+            WHERE candidate_id = :cid AND job_vacancy_id = :jv_id
+            ORDER BY created_at DESC LIMIT 1
+        """), {"cid": candidate_id, "jv_id": job_vacancy_id})
+        cand_row = cand_r.fetchone()
+
+        if not cand_row:
+            return {"candidate_id": candidate_id, "job_vacancy_id": job_vacancy_id, "ranked": False}
+
+        cand_score = float(cand_row[1])
+
+        # Total de candidatos e posição
+        total_r = await db.execute(text("""
+            SELECT COUNT(*), SUM(CASE WHEN overall_wsi > :score THEN 1 ELSE 0 END)
+            FROM wsi_results WHERE job_vacancy_id = :jv_id
+        """), {"jv_id": job_vacancy_id, "score": cand_score})
+        total_row = total_r.fetchone()
+        total = int(total_row[0]) if total_row else 1
+        above  = int(total_row[1] or 0) if total_row else 0
+        rank   = above + 1  # rank 1 = melhor
+
+        return {
+            "candidate_id": candidate_id,
+            "job_vacancy_id": job_vacancy_id,
+            "ranked": True,
+            "rank": rank,
+            "total": total,
+            "overall_wsi": round(cand_score * 2, 2),
+        }
+    except Exception as e:
+        logger.error(f"F11-6 candidate ranking failed for {candidate_id}/{job_vacancy_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

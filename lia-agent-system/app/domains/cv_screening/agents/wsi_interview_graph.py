@@ -58,6 +58,9 @@ class WSIQuestionBlock:
     dreyfus_level: int  # 1-5
     big_five_trait: Optional[str] = None
     max_score: float = 10.0
+    # F9-1 — peso normalizado do trait F3 (score_final / soma_scores_traits).
+    # Padrão 1.0 = pesos uniformes quando dados F3 indisponíveis (perguntas do DB sem ranking OCEAN).
+    trait_weight: float = 1.0
 
 
 @dataclass
@@ -98,6 +101,9 @@ class WSIInterviewState:
     technical_score: float = 0.0
     behavioral_score: float = 0.0
     situational_score: float = 0.0
+    # Contadores para acumulação ponderada correta (spec F8 — média simples por bloco)
+    technical_score_count: int = 0
+    behavioral_score_count: int = 0
 
     # Score final
     wsi_final_score: Optional[float] = None
@@ -167,6 +173,7 @@ def _wsi_state_to_dict(state: "WSIInterviewState") -> dict:
             "dreyfus_level": b.dreyfus_level,
             "big_five_trait": b.big_five_trait,
             "max_score": b.max_score,
+            "trait_weight": b.trait_weight,
         }
 
     return {
@@ -196,6 +203,8 @@ def _wsi_state_to_dict(state: "WSIInterviewState") -> dict:
         "technical_score": state.technical_score,
         "behavioral_score": state.behavioral_score,
         "situational_score": state.situational_score,
+        "technical_score_count": state.technical_score_count,
+        "behavioral_score_count": state.behavioral_score_count,
         "wsi_final_score": state.wsi_final_score,
         "recommendation": state.recommendation,
         "stage": state.stage.value,
@@ -218,6 +227,7 @@ def _wsi_state_from_dict(d: dict) -> "WSIInterviewState":
             dreyfus_level=b["dreyfus_level"],
             big_five_trait=b.get("big_five_trait"),
             max_score=b.get("max_score", 10.0),
+            trait_weight=float(b.get("trait_weight", 1.0)),
         )
 
     state = WSIInterviewState(
@@ -234,6 +244,8 @@ def _wsi_state_from_dict(d: dict) -> "WSIInterviewState":
         technical_score=d.get("technical_score", 0.0),
         behavioral_score=d.get("behavioral_score", 0.0),
         situational_score=d.get("situational_score", 0.0),
+        technical_score_count=d.get("technical_score_count", 0),
+        behavioral_score_count=d.get("behavioral_score_count", 0),
         wsi_final_score=d.get("wsi_final_score"),
         recommendation=d.get("recommendation", ""),
         stage=WSIInterviewStage(d.get("stage", "init")),
@@ -624,12 +636,28 @@ class WSIInterviewNodes:
         try:
             from app.services.wsi_deterministic_scorer import calculate_final_wsi_score as deterministic_final
 
+            # Usa SENIORITY_WEIGHTS da spec F8 (não hardcoded 70%/30%)
+            _seniority = state.job_requirements.get("seniority")
+
+            # F9-1 — WSI_técnico: média simples por pergunta técnica
+            _tech_scores = [
+                (r.question_block.competency, r.score, 1.0)
+                for r in state.responses
+                if r.question_block.block_type == "technical"
+            ] or [("technical", state.technical_score, 1.0)]
+
+            # F9-1 — WSI_comportamental: ponderado pelo trait_weight do ranking F3
+            # trait_weight = score_final_trait / soma_scores_traits (padrão 1.0 = uniforme)
+            _behav_scores = [
+                (r.question_block.competency, r.score, r.question_block.trait_weight)
+                for r in state.responses
+                if r.question_block.block_type in ("behavioral", "situational")
+            ] or [("behavioral", state.behavioral_score, 1.0)]
+
             _final_result = deterministic_final(
-                technical_scores=[("technical", state.technical_score, 1.0)],
-                behavioral_scores=[
-                    ("behavioral", state.behavioral_score, 0.6),
-                    ("situational", state.situational_score, 0.4),
-                ],
+                technical_scores=_tech_scores,
+                behavioral_scores=_behav_scores,
+                seniority=_seniority,
             )
             state.wsi_final_score = _final_result.get("final_score", 0.0)
 
@@ -728,12 +756,17 @@ class WSIInterviewNodes:
         self, state: WSIInterviewState, block_type: str, score: float, max_score: float
     ) -> None:
         # score comes from DeterministicWSIResult.final_score — already in [1.0, 5.0].
-        # Feed directly to calculate_final_wsi_score which expects /5 scale.
+        # Spec F8: média simples por bloco (cada resposta tem peso igual dentro do bloco).
+        # Fórmula: new_avg = (old_avg * n + new_score) / (n + 1)
         clamped = max(1.0, min(5.0, score))
         if block_type == "technical":
-            state.technical_score = (state.technical_score + clamped) / 2
+            n = state.technical_score_count
+            state.technical_score = (state.technical_score * n + clamped) / (n + 1)
+            state.technical_score_count = n + 1
         elif block_type in ("behavioral", "situational"):
-            state.behavioral_score = (state.behavioral_score + clamped) / 2
+            n = state.behavioral_score_count
+            state.behavioral_score = (state.behavioral_score * n + clamped) / (n + 1)
+            state.behavioral_score_count = n + 1
 
     def _build_fallback_questions(self) -> List[WSIQuestionBlock]:
         """Perguntas de fallback quando o pipeline não consegue gerar questões."""

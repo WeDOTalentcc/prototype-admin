@@ -118,16 +118,19 @@ class PersonalizedFeedbackRequest(BaseModel):
     candidate: CandidateContext
     job: JobContext
     evaluation: WSIEvaluationContext
-    
+
     channel: FeedbackChannel = FeedbackChannel.EMAIL
     tone: FeedbackTone = FeedbackTone.WARM
-    
+
     include_development_plan: bool = True
     include_resources: bool = True
-    
+
     recruiter_notes: Optional[str] = None
     company_id: str = "default"
     requested_by: Optional[str] = None
+    # Gap #11/#12: Caminho de decisão + gates ativados para template determinístico
+    decision_type: Literal["REPROVADO", "EM_AVALIACAO", "APROVADO"] = "REPROVADO"
+    failed_gates: List[str] = Field(default_factory=list)
 
 
 class PersonalizedFeedbackResult(BaseModel):
@@ -590,12 +593,52 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 )
             lines.append("")
 
+        # BLOCO_NIVEL — decisão final (3 caminhos: APROVADO, EM_AVALIACAO, REPROVADO)
+        lines.append("─" * 60)
+        decision_type = getattr(request, "decision_type", "REPROVADO")
+        failed_gates = getattr(request, "failed_gates", []) or []
+
+        _GATE_LABELS = {
+            "G1": "elegibilidade",
+            "G2": "injeção de prompt",
+            "G3": "competência técnica mínima",
+            "G4": "skill crítica",
+            "G5": "engajamento insuficiente",
+            "G6": "inflação sistemática",
+        }
+
+        if decision_type == "APROVADO":
+            lines.append("Resultado: Parabéns! Você avançou para a próxima etapa.")
+            lines.append("")
+            lines.append(
+                f"Sua performance na triagem para a vaga de {job.title} foi positiva e você será "
+                "contatado(a) em breve com as próximas etapas do processo seletivo."
+            )
+        elif decision_type == "EM_AVALIACAO":
+            lines.append("Resultado: Candidatura em análise.")
+            lines.append("")
+            lines.append(
+                f"Sua candidatura para a vaga de {job.title} está sendo avaliada pela equipe responsável. "
+                "Você receberá um retorno assim que o processo de análise for concluído."
+            )
+        else:  # REPROVADO
+            lines.append("Resultado: Não seguiremos com sua candidatura neste momento.")
+            lines.append("")
+            lines.append(
+                f"Após avaliação técnica para a vaga de {job.title}, não avançaremos com sua candidatura "
+                "neste processo. Agradecemos o tempo dedicado e encorajamos novas oportunidades."
+            )
+            if failed_gates:
+                gate_reasons = [_GATE_LABELS.get(g, g) for g in failed_gates]
+                lines.append("")
+                lines.append(f"Critério(s) que não foram atingidos: {', '.join(gate_reasons)}.")
+
         lines.append("─" * 60)
         lines.append(
             "Esta avaliação foi realizada de forma automatizada pelo sistema LIA."
         )
         lines.append(
-            f"A decisão final é responsabilidade do consultor responsável pelo processo."
+            "A decisão final é responsabilidade do consultor responsável pelo processo."
         )
         lines.append(
             "Em caso de dúvidas sobre o processo, entre em contato pelo canal indicado no convite."
@@ -610,6 +653,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             "development_suggestions": dev_areas[:5],
             "recommended_resources": [],
             "template_version": "F8.5.1",
+            "decision_type": decision_type,
+            "failed_gates": failed_gates,
         }
         return body_text, feedback_data
 
@@ -632,6 +677,46 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 html_lines.append(f"<p style='margin:4px 0;'>{line}</p>")
         html_lines.append("</body></html>")
         return "\n".join(html_lines)
+
+    async def send_approval_feedback(
+        self,
+        candidate: CandidateContext,
+        job: JobContext,
+        evaluation: WSIEvaluationContext,
+        company_id: str = "default",
+        db: Optional[AsyncSession] = None,
+    ) -> PersonalizedFeedbackResult:
+        """Gap #11 — Path APROVADO: gera feedback de convite para próxima etapa."""
+        request = PersonalizedFeedbackRequest(
+            candidate=candidate,
+            job=job,
+            evaluation=evaluation,
+            company_id=company_id,
+            decision_type="APROVADO",
+            channel=FeedbackChannel.EMAIL,
+            tone=FeedbackTone.ENCOURAGING,
+        )
+        return await self.generate_personalized_feedback(request, db=db)
+
+    async def send_review_feedback(
+        self,
+        candidate: CandidateContext,
+        job: JobContext,
+        evaluation: WSIEvaluationContext,
+        company_id: str = "default",
+        db: Optional[AsyncSession] = None,
+    ) -> PersonalizedFeedbackResult:
+        """Gap #11 — Path EM_AVALIACAO: gera feedback de análise em andamento."""
+        request = PersonalizedFeedbackRequest(
+            candidate=candidate,
+            job=job,
+            evaluation=evaluation,
+            company_id=company_id,
+            decision_type="EM_AVALIACAO",
+            channel=FeedbackChannel.EMAIL,
+            tone=FeedbackTone.PROFESSIONAL,
+        )
+        return await self.generate_personalized_feedback(request, db=db)
 
     def _build_personalization_prompt(self, request: PersonalizedFeedbackRequest) -> str:
         """Build the AI prompt for personalization."""
