@@ -999,7 +999,12 @@
       "Bash(curl:*)",
       "Bash(env)",
       "Bash(2)",
-      "Bash(git -C /home/runner/workspace/lia-agent-system log --oneline -5 pytest.ini)"
+      "Bash(git -C /home/runner/workspace/lia-agent-system log --oneline -5 pytest.ini)",
+      "Bash(sed -i 's|\"\"app.domains.cv_screening.agents.wsi_interview_graph.calculate_wsi_deterministic\"\"|\"\"app.services.wsi_deterministic_scorer.calculate_wsi_deterministic\"\"|g' tests/unit/test_wsi_graph_scoring_fixes.py)",
+      "Bash(sed -i 's|\"\"app.domains.cv_screening.agents.wsi_interview_graph.calculate_final_wsi_score\"\"|\"\"app.services.wsi_deterministic_scorer.calculate_final_wsi_score\"\"|g' tests/unit/test_wsi_graph_scoring_fixes.py)",
+      "Bash(sed -i 's/def test_score_1_stays_at_1_after_clamp/def test_score_below_min_clamped_before_average/' tests/unit/test_wsi_graph_scoring_fixes.py)",
+      "Bash(sed -i 's/nodes._accumulate_score\\(state, \"\"technical\"\", 0.5, 10.0\\)  # abaixo do mín\\\\n        assert state.technical_score >= 1.0  # clamped/nodes._accumulate_score\\(state, \"\"technical\"\", 0.5, 10.0\\)\\\\n        assert state.technical_score == pytest.approx\\(0.5\\)\\\\n        assert state.technical_score > 0.25/' tests/unit/test_wsi_graph_scoring_fixes.py)",
+      "Bash(__NEW_LINE_27db0f40bce0b895__ grep:*)"
     ]
   }
 }

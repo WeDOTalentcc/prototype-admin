@@ -159,7 +159,7 @@ class WSIResult(BaseModel):
     behavioral_wsi: float = Field(ge=0, le=5)
     overall_wsi: float = Field(ge=0, le=5)
     
-    classification: Literal["excelente", "alto", "medio", "regular", "baixo"]
+    classification: Literal["excepcional", "excelente", "alto", "medio", "regular", "baixo"]
     percentile: Optional[int] = None
     
     response_analyses: List[ResponseAnalysis]

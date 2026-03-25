@@ -541,21 +541,19 @@ class WSIInterviewNodes:
         try:
             from app.services.wsi_deterministic_scorer import calculate_wsi_deterministic
 
-            score_result = await calculate_wsi_deterministic(
-                candidate_response=response_text,
-                expected_bloom=block.bloom_level,
-                expected_dreyfus=block.dreyfus_level,
-                competency=block.competency,
-                max_score=block.max_score,
+            score_result = calculate_wsi_deterministic(
+                response_text=response_text,
+                competency_name=block.competency,
+                question_framework=getattr(block, "framework", "CBI"),
             )
 
             record = WSIResponseRecord(
                 question_block=block,
                 candidate_response=response_text,
-                score=score_result.get("score", 0.0),
-                bloom_achieved=score_result.get("bloom_achieved", 0),
-                dreyfus_achieved=score_result.get("dreyfus_achieved", 0),
-                reasoning=score_result.get("reasoning", ""),
+                score=score_result.final_score,
+                bloom_achieved=score_result.bloom_level,
+                dreyfus_achieved=score_result.dreyfus_level,
+                reasoning=score_result.justification,
                 scored_at=datetime.utcnow(),
             )
             state.responses.append(record)
@@ -626,17 +624,19 @@ class WSIInterviewNodes:
         try:
             from app.services.wsi_deterministic_scorer import calculate_final_wsi_score as deterministic_final
 
-            state.wsi_final_score = deterministic_final(
+            _final_result = deterministic_final(
                 technical_scores=[("technical", state.technical_score, 1.0)],
                 behavioral_scores=[
                     ("behavioral", state.behavioral_score, 0.6),
                     ("situational", state.situational_score, 0.4),
                 ],
-            ).get("final_score", 0.0)
+            )
+            state.wsi_final_score = _final_result.get("final_score", 0.0)
 
-            if state.wsi_final_score >= 7.0:
+            _decision = _final_result.get("decision", "rejected")
+            if _decision == "approved":
                 state.recommendation = "aprovado"
-            elif state.wsi_final_score >= 5.0:
+            elif _decision == "needs_review":
                 state.recommendation = "aguardando"
             else:
                 state.recommendation = "reprovado"
@@ -683,7 +683,7 @@ class WSIInterviewNodes:
                 from app.shared.observability.agent_metrics import record_confidence
                 record_confidence(
                     domain="cv_screening",
-                    confidence=(state.wsi_final_score or 0.0) / 10.0,
+                    confidence=min(1.0, (state.wsi_final_score or 0.0) / 5.0),
                     has_tools=False,
                 )
             except Exception:
@@ -727,13 +727,13 @@ class WSIInterviewNodes:
     def _accumulate_score(
         self, state: WSIInterviewState, block_type: str, score: float, max_score: float
     ) -> None:
-        if max_score <= 0:
-            return
-        normalized = (score / max_score) * 10.0
+        # score comes from DeterministicWSIResult.final_score — already in [1.0, 5.0].
+        # Feed directly to calculate_final_wsi_score which expects /5 scale.
+        clamped = max(1.0, min(5.0, score))
         if block_type == "technical":
-            state.technical_score = (state.technical_score + normalized) / 2
+            state.technical_score = (state.technical_score + clamped) / 2
         elif block_type in ("behavioral", "situational"):
-            state.behavioral_score = (state.behavioral_score + normalized) / 2
+            state.behavioral_score = (state.behavioral_score + clamped) / 2
 
     def _build_fallback_questions(self) -> List[WSIQuestionBlock]:
         """Perguntas de fallback quando o pipeline não consegue gerar questões."""

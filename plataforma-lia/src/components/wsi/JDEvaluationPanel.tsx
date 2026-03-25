@@ -59,7 +59,7 @@ interface JDEvaluationPanelProps {
   department?: string
   description?: string
   hasQuestions: boolean
-  onGenerateQuestions: () => void
+  onGenerateQuestions?: () => void
   onEditJD?: () => void
   onSaveJDInline?: (updates: { description?: string; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
   onSaveEnrichedJD?: (enrichedJd: EnrichedJD) => Promise<void>
@@ -811,36 +811,6 @@ export function JDEvaluationPanel({
                 </div>
               )}
 
-              {/* Generate Questions button - only when NOT editing */}
-              {!isEditing && !hasQuestions && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    className="h-8 text-[11px] px-4 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={onGenerateQuestions}
-                    disabled={isGenerating || !evaluation.can_generate}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-                        Gerando...
-                      </>
-                    ) : (
-                      <>
-                        <Brain className="h-3 w-3 mr-1.5 text-wedo-cyan" />
-                        Gerar Perguntas WSI
-                      </>
-                    )}
-                  </Button>
-                  {!evaluation.can_generate && (
-                    <span className="text-[10px] text-red-600 font-medium">
-                      {evaluation.score < 30
-                        ? 'JD bloqueado — score crítico, complete a descrição'
-                        : 'Score insuficiente (< 50) — adicione mais informações ao JD'}
-                    </span>
-                  )}
-                </div>
-              )}
 
               {/* 2.5. READ-ONLY 2-COLUMN PREVIEW */}
               {!isEditing && (
