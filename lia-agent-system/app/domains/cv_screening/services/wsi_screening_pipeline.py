@@ -404,18 +404,41 @@ class WSIScreeningPipeline:
         target_count: int,
         effective_seniority: str = "pleno",
     ) -> List[UnifiedScreeningQuestion]:
-        fetch_count = max(4, target_count)
-        ctx = ScreeningQuestionRequest(
-            title=request.job_title,
-            department=request.department,
-            seniority=effective_seniority,  # type: ignore
-            big_five_profile=request.big_five_profile,
-            skills=request.technical_skills,
-            job_description=request.job_description,
-            question_count=fetch_count,
-        )
+        available_skills = request.technical_skills or []
+        skill_count = len(available_skills)
 
-        raw = wsi_screening_generator._generate_technical_questions(ctx)
+        if skill_count == 0:
+            logger.warning("No technical skills provided — cannot generate technical questions")
+            return []
+
+        if skill_count >= target_count:
+            fetch_count = max(4, target_count)
+            ctx = ScreeningQuestionRequest(
+                title=request.job_title,
+                department=request.department,
+                seniority=effective_seniority,
+                big_five_profile=request.big_five_profile,
+                skills=available_skills,
+                job_description=request.job_description,
+                question_count=fetch_count,
+            )
+            raw = wsi_screening_generator._generate_technical_questions(ctx)
+        else:
+            logger.info(
+                f"Skills ({skill_count}) < target ({target_count}) — "
+                f"distributing multiple questions per skill"
+            )
+            fetch_count = max(4, target_count + 2)
+            ctx = ScreeningQuestionRequest(
+                title=request.job_title,
+                department=request.department,
+                seniority=effective_seniority,
+                big_five_profile=request.big_five_profile,
+                skills=available_skills,
+                job_description=request.job_description,
+                question_count=fetch_count,
+            )
+            raw = wsi_screening_generator._generate_technical_questions(ctx)
 
         questions: List[UnifiedScreeningQuestion] = []
         for q in raw[:target_count]:
@@ -449,13 +472,28 @@ class WSIScreeningPipeline:
         target_count: int,
         effective_seniority: str = "pleno",
     ) -> List[UnifiedScreeningQuestion]:
+        BIG_FIVE_TRAITS = [
+            "Abertura a mudanças",
+            "Organização e disciplina",
+            "Sociabilidade",
+            "Cooperação",
+            "Estabilidade emocional",
+        ]
+
+        behavioral_skills = request.behavioral_competencies
+        if not behavioral_skills or len(behavioral_skills) == 0:
+            behavioral_skills = BIG_FIVE_TRAITS[:target_count]
+            logger.info(
+                f"No behavioral competencies provided — using Big Five traits as base ({len(behavioral_skills)} traits)"
+            )
+
         fetch_count = max(4, target_count)
         ctx = ScreeningQuestionRequest(
             title=request.job_title,
             department=request.department,
-            seniority=effective_seniority,  # type: ignore
+            seniority=effective_seniority,
             big_five_profile=request.big_five_profile,
-            skills=request.behavioral_competencies or request.technical_skills,
+            skills=behavioral_skills,
             job_description=request.job_description,
             question_count=fetch_count,
         )

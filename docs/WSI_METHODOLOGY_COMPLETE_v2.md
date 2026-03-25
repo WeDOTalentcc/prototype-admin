@@ -248,7 +248,7 @@ F1.E — Recrutador aprova, edita ou rejeita a versão enriquecida
 |---|---|---|
 | `title` | string | Não vazio; ≤ 100 chars |
 | `responsibilities` | text | ≥ 100 palavras |
-| `required_skills` | list[string] | ≥ 3 skills |
+| `required_skills` | list[string] | ≥ 9 skills técnicas (decomposição automática se < 9); ≥ 5 competências comportamentais |
 | `seniority` | enum | Estagiário / Junior / Pleno / Senior / Lead / Principal / Diretor / VP / C-Level |
 
 **Opcionais (aumentam qualidade):**
@@ -259,7 +259,7 @@ F1.E — Recrutador aprova, edita ou rejeita a versão enriquecida
 | `industry` | Prior O\*NET menos preciso |
 | `team_size` | Impossível calibrar escopo de responsabilidade |
 | `desired_skills` | Skills desejáveis tratadas como obrigatórias |
-| `behavioral_competencies` | Extração Big Five menos específica |
+| `behavioral_competencies` | Extração Big Five menos específica; mínimo 5 competências mapeáveis aos 5 traits |
 | `work_model` | Sem contexto de autonomia para perguntas |
 
 ---
@@ -373,9 +373,9 @@ REGRAS DE FAIRNESS E NÃO-DISCRIMINAÇÃO (BASE LEGAL: LGPD ART. 6º, CLT ART. 5
 OS 10 PRINCÍPIOS DE QUALIDADE QUE VOCÊ DEVE AVALIAR:
 P1. Título específico e padronizado com indicador de senioridade
 P2. Coerência entre senioridade e complexidade das responsabilidades
-P3. Skills técnicas específicas (não genéricas como "cloud", "dados", "programação")
+P3. Skills técnicas específicas (não genéricas como "cloud", "dados", "programação") — mínimo 9 skills técnicas; se o recrutador informou menos, decompor skills genéricas em sub-skills específicas (ex: "Cloud" → "AWS EC2", "S3", "CloudFormation", "IAM")
 P4. Responsabilidades com verbos de ação + escopo mensurável
-P5. Competências comportamentais contextualizadas (não apenas listadas)
+P5. Competências comportamentais contextualizadas com mapeamento Big Five (não apenas listadas) — mínimo 5, cada uma mapeável a um dos 5 traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism (estabilidade emocional)
 P6. Ausência de inconsistências internas (autonomia vs. micro-gestão, etc.)
 P7. Linguagem inclusiva — sem marcadores de gênero, origem, idade ou estado civil
 P8. Expectativas realistas de mercado (anos de experiência, raridade da combinação)
@@ -435,7 +435,7 @@ Retorne o seguinte JSON (sem texto fora do JSON):
     ],
     "skills_desejaveis": ["string"],
     "competencias_comportamentais": [
-      { "competencia": "string", "contexto": "em que situações é exigida" }
+      { "competencia": "string", "contexto": "em que situações é exigida", "trait_big_five": "openness | conscientiousness | extraversion | agreeableness | neuroticism" }
     ],
     "context_signals": {
       "nivel_autonomia": "baixo | medio | alto",
@@ -493,17 +493,33 @@ Use este checklist para verificar se a implementação deste prompt está comple
 - [ ] `enriched_jd.alteracoes_realizadas` e `fairness_corrections` não vazios quando houve mudanças
 - [ ] `ready_for_processing: false` quando `score_total < 30` **ou** JD < 50 palavras úteis
 
+**Mínimos de competências para WSI:**
+- [ ] `enriched_jd.skills_obrigatorias` contém no mínimo 9 skills técnicas específicas (não genéricas)
+- [ ] Se o recrutador informou < 9 skills, o prompt decompôs skills genéricas em sub-skills (ex: "Cloud" → "AWS EC2", "S3", "CloudFormation", "IAM") para atingir o mínimo
+- [ ] `enriched_jd.competencias_comportamentais` contém no mínimo 5 competências, cada uma com `trait_big_five` indicando o trait correspondente
+- [ ] Cada um dos 5 traits Big Five está representado por pelo menos uma competência comportamental
+- [ ] Se < 9 skills técnicas no output: `quality_report` deve conter aviso em `avisos` indicando que a geração de perguntas WSI terá cobertura limitada
+
 **Integração downstream:**
 - [ ] `enriched_jd` é o input de F2.5 (Abordagem C — Extração Big Five)
 - [ ] `context_signals` é o input do prior Big Five (F2, Abordagem B)
 - [ ] `quality_report.score_total` determina o gate de prosseguimento (≥ 50 para ativar)
-- [ ] `enriched_jd.skills_obrigatorias` alimenta a seleção de perguntas em F5
+- [ ] `enriched_jd.skills_obrigatorias` alimenta a seleção de perguntas em F5 — cada skill gera 1 pergunta técnica; se < target_count, o pipeline distribui múltiplas perguntas por skill
+- [ ] `enriched_jd.competencias_comportamentais` alimenta F2 como evidências para extração Big Five — o campo `trait_big_five` pré-mapeia cada competência ao trait correspondente, acelerando a extração
+
+**Fluxo F1.C → F2 (competências comportamentais → Big Five):**
+- As `competencias_comportamentais` do enriched_jd servem como **evidências contextuais** para a extração Big Five na F2
+- O campo `trait_big_five` em cada competência facilita o mapeamento direto ao trait correspondente
+- A F2 usa o conjunto completo de 5 traits Big Five como taxonomia fixa; as competências comportamentais do F1.C fornecem o contexto específico da vaga para calibrar os scores
+- Exemplo: competência "Trabalho em equipe em projetos cross-functional" → `trait_big_five: "agreeableness"` → F2 usa como evidência para calibrar o score de Cooperação
 
 **Edge cases cobertos pelo prompt:**
 - [ ] JD com < 50 palavras úteis → `ready_for_processing: false` sem análise Big Five
 - [ ] JD com campos opcionais ausentes → `compliance_flags.fields_missing` + confidence reduzida nas dimensões dependentes
 - [ ] JD com linguagem discriminatória → `fairness_issues_found: true` com lista detalhada
 - [ ] JD com boa qualidade mas em setor não informado → análise parcial com aviso
+- [ ] JD com < 9 skills técnicas após decomposição → `avisos` inclui alerta de cobertura limitada para WSI
+- [ ] JD com competências comportamentais genéricas (sem contexto) → prompt adiciona contexto situacional e mapeamento Big Five
 
 ---
 
@@ -980,12 +996,18 @@ Para triagem (não diagnóstico clínico), 3 perguntas Big Five direcionadas aos
 **Skills técnicas — critérios de seleção:**
 - Ordenar por `importance_score` (definido pelo recrutador no wizard, ou inferido pelo LLM em F1.C)
 - Se não houver ranking: usar as primeiras N skills informadas pelo recrutador
-- Mínimo de 3 skills; se houver menos que N disponíveis, gerar perguntas para todas
+- Mínimo recomendado: **9 skills técnicas** para cobertura completa do modo Full
+- Se houver menos skills que `target_count` (perguntas técnicas necessárias), aplicar **estratégia de distribuição múltipla**:
+  1. Distribuir `target_count` perguntas igualmente entre as skills disponíveis (`perguntas_por_skill = ceil(target_count / len(skills))`)
+  2. Cada pergunta adicional para a mesma skill deve abordar um **nível Bloom diferente** (ex: skill "Python" → 1ª pergunta Bloom 2 (Compreensão), 2ª pergunta Bloom 4 (Análise))
+  3. Variar o contexto situacional entre perguntas da mesma skill para evitar redundância
+- Se houver 0 skills: pipeline retorna erro — nunca gerar perguntas sem base de competência
 
 **Traits comportamentais — critérios de seleção:**
 - Usar o ranking calculado na F3 (por `score_final` normalizado)
 - Top-2, Top-3, Top-4 ou Top-5 conforme tabelas 5.4 e 5.5
 - Traits fora do Top-N selecionado: usados no cruzamento Big Five do relatório (F11), mas **não geram perguntas**
+- A F2 sempre gera os 5 traits Big Five como taxonomia fixa; as `competencias_comportamentais` do F1.C servem como evidências para calibrar os scores
 
 ---
 

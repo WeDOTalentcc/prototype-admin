@@ -346,7 +346,9 @@ class WSIScreeningQuestionGenerator:
         
         sorted_traits = sorted(trait_scores.items(), key=lambda x: x[1], reverse=True)
         
-        for trait, score in sorted_traits[:3]:
+        target_behavioral = context.question_count or 3
+        top_n = min(max(3, target_behavioral), 5)
+        for trait, score in sorted_traits[:top_n]:
             trait_questions = BIG_FIVE_QUESTIONS.get(trait, [])
             
             for q_data in trait_questions:
@@ -396,12 +398,28 @@ class WSIScreeningQuestionGenerator:
         else:
             dreyfus_stage = SENIORITY_TO_DREYFUS.get(seniority, 3)
         
-        skills = context.skills[:5] if context.skills else []
-        
-        for i, skill in enumerate(skills):
-            template_data = templates[i % len(templates)]
+        skills = context.skills if context.skills else []
+        target_count = context.question_count or len(skills) or 5
+
+        skill_queue = []
+        if skills:
+            if len(skills) >= target_count:
+                skill_queue = [(s, 0) for s in skills[:target_count]]
+            else:
+                base_per_skill = target_count // len(skills)
+                remainder = target_count % len(skills)
+                for idx, skill in enumerate(skills):
+                    reps = base_per_skill + (1 if idx < remainder else 0)
+                    for r in range(reps):
+                        skill_queue.append((skill, r))
+
+        for i, (skill, variation) in enumerate(skill_queue):
+            template_data = templates[(i + variation) % len(templates)]
             bloom_level = template_data.get("bloom_level", 3)
-            
+            if variation > 0:
+                bloom_offset = variation % 3
+                bloom_level = max(1, min(6, bloom_level + bloom_offset))
+
             question = ScreeningQuestion(
                 id=str(uuid.uuid4()),
                 text=template_data["template"].format(skill=skill),
@@ -430,7 +448,7 @@ class WSIScreeningQuestionGenerator:
                 order=0
             )
             questions.append(question)
-        
+
         return questions
     
     def _generate_cultural_questions(

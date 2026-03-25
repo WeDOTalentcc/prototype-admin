@@ -43,8 +43,8 @@ from app.services.ats_job_history_service import ATSJobHistoryService
 logger = logging.getLogger(__name__)
 
 
-MIN_TECHNICAL_SKILLS_FOR_WSI = 3
-MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI = 3
+MIN_TECHNICAL_SKILLS_FOR_WSI = 9
+MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI = 5
 MIN_RESPONSIBILITIES = 5
 
 
@@ -261,7 +261,10 @@ class JdEnrichmentService:
             missing_count = max(0, MIN_TECHNICAL_SKILLS_FOR_WSI - len(detected))
             quality_note = None
             if missing_count > 0:
-                quality_note = f"Adicione +{missing_count} competências técnicas para perguntas WSI de qualidade"
+                if len(detected) < 5:
+                    quality_note = f"⚠️ Apenas {len(detected)} competências técnicas — adicione +{missing_count} para triagem WSI completa (modo Full requer até 9 perguntas técnicas)"
+                else:
+                    quality_note = f"Adicione +{missing_count} competências técnicas para cobertura total no modo Completo (recomendado: 9+)"
             
         except Exception as e:
             self.logger.error(f"Error enriching technical skills: {e}")
@@ -330,7 +333,7 @@ class JdEnrichmentService:
             missing_count = max(0, MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI - len(detected))
             quality_note = None
             if missing_count > 0:
-                quality_note = f"⚠️ Faltam {missing_count} competências comportamentais para perguntas WSI de qualidade. Adicione estas sugestões para melhorar a triagem."
+                quality_note = f"⚠️ Faltam {missing_count} competências comportamentais (mínimo {MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI} para cobertura dos 5 pilares de avaliação). Adicione estas sugestões para melhorar a triagem."
             
         except Exception as e:
             self.logger.error(f"Error enriching behavioral competencies: {e}")

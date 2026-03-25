@@ -19,10 +19,10 @@ from pydantic import BaseModel, Field, validator
 router = APIRouter(prefix="/wsi", tags=["WSI Questions"])
 logger = logging.getLogger(__name__)
 
-MIN_TECHNICAL_QUESTIONS = 3
+MIN_TECHNICAL_QUESTIONS = 4
 MIN_BEHAVIORAL_QUESTIONS = 2
 MIN_ELIGIBILITY_QUESTIONS = 2
-DEFAULT_MAX_QUESTIONS = 8
+DEFAULT_MAX_QUESTIONS = 12
 
 _gemini_model = None
 

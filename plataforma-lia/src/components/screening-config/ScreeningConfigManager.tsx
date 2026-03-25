@@ -1591,6 +1591,46 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
             {isEditingScreening && (
               <>
                 <div className="px-5 py-3 border-t border-gray-200 bg-gray-50/30">
+                  {(() => {
+                    const techSkillsCount = (job?.technicalRequirements || []).filter(Boolean).length
+                    const behavCompCount = (job?.behavioralCompetencies || []).filter(Boolean).length
+                    const showTechWarning = techSkillsCount < 9
+                    const showBehavWarning = behavCompCount < 5
+                    const showFullDisabled = techSkillsCount < 5
+                    if (showTechWarning || showBehavWarning) {
+                      return (
+                        <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-3 py-2.5">
+                          <div className="flex items-start gap-2">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                            <div className="space-y-1">
+                              {showTechWarning && (
+                                <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  {techSkillsCount === 0
+                                    ? 'Nenhuma competência técnica cadastrada — adicione competências na seção Job Description para gerar perguntas de triagem.'
+                                    : `Apenas ${techSkillsCount} competência${techSkillsCount === 1 ? '' : 's'} técnica${techSkillsCount === 1 ? '' : 's'} cadastrada${techSkillsCount === 1 ? '' : 's'}. Para triagem completa, recomendamos pelo menos 9.`
+                                  }
+                                </p>
+                              )}
+                              {showBehavWarning && (
+                                <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  {behavCompCount === 0
+                                    ? 'Nenhuma competência comportamental cadastrada — a triagem usará avaliação padrão.'
+                                    : `${behavCompCount} competência${behavCompCount === 1 ? '' : 's'} comportamental${behavCompCount === 1 ? '' : 's'} (recomendado: 5 para cobertura completa).`
+                                  }
+                                </p>
+                              )}
+                              {showFullDisabled && (
+                                <p className="text-[10px] text-amber-600 dark:text-amber-500 italic" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  Modo Completo requer pelo menos 5 competências técnicas.
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    }
+                    return null
+                  })()}
                   <div className="flex items-center gap-2">
                     <button onClick={handleGenerateWSI('compact')} disabled={isGeneratingWSI} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-all disabled:opacity-50 ${wsiGenerationMode === 'compact' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700'}`}>
                       {isGeneratingWSI && wsiGenerationMode === 'compact' ? (
@@ -1602,16 +1642,24 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         </>
                       )}
                     </button>
-                    <button onClick={handleGenerateWSI('full')} disabled={isGeneratingWSI} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-all disabled:opacity-50 ${wsiGenerationMode === 'full' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700'}`}>
-                      {isGeneratingWSI && wsiGenerationMode === 'full' ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <>
-                          <span className="text-[11px] font-semibold">Gerar WSI Completo</span>
-                          <span className={`text-[10px] ${wsiGenerationMode === 'full' ? 'text-gray-400' : 'text-gray-500'}`}>~12 perguntas · 22 min</span>
-                        </>
+                    <div className="relative flex-1 group/full">
+                      <button onClick={handleGenerateWSI('full')} disabled={isGeneratingWSI || (job?.technicalRequirements || []).filter(Boolean).length < 5} className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-all disabled:opacity-50 ${wsiGenerationMode === 'full' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700'}`}>
+                        {isGeneratingWSI && wsiGenerationMode === 'full' ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <span className="text-[11px] font-semibold">Gerar WSI Completo</span>
+                            <span className={`text-[10px] ${wsiGenerationMode === 'full' ? 'text-gray-400' : 'text-gray-500'}`}>~12 perguntas · 22 min</span>
+                          </>
+                        )}
+                      </button>
+                      {(job?.technicalRequirements || []).filter(Boolean).length < 5 && (
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 p-2 bg-gray-900 text-white text-[10px] rounded-md opacity-0 invisible group-hover/full:opacity-100 group-hover/full:visible transition-all z-50 text-center">
+                          <p className="leading-relaxed">Adicione pelo menos 5 competências técnicas na seção Job Description para habilitar o modo Completo.</p>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                        </div>
                       )}
-                    </button>
+                    </div>
                     <div className="relative group">
                       <Brain className="w-5 h-5 cursor-help text-wedo-cyan" />
                       <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-64 p-3 bg-gray-900 text-white text-[11px] rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">

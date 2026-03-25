@@ -24,8 +24,8 @@ from app.data.templates import (
 
 
 WSI_QUALITY_GATES = {
-    "min_technical_skills": 5,
-    "min_behavioral_competencies": 3,
+    "min_technical_skills": 9,
+    "min_behavioral_competencies": 5,
     "min_responsibilities": 5,
 }
 
