@@ -1712,7 +1712,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
     'testeIngles', 'bigFive', 'alertas', 'candidato', 'cargo', 'empresa', 'etapa', 'status', 'acoes'
   ])
 
-  const currentJob = job || jobData
+  const [jobLocalOverrides, setJobLocalOverrides] = useState<Record<string, any>>({})
+  const currentJob = job ? { ...job, ...jobLocalOverrides } : jobData
 
   const [showJobEditor, setShowJobEditor] = useState(false)
   const [editingSection, setEditingSection] = useState<string | null>(null)
@@ -5532,6 +5533,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
               job={currentJob}
               onJobUpdate={(updatedJob) => {
                 setJobEditForm((prev: any) => ({ ...prev, ...updatedJob }))
+                setJobLocalOverrides((prev) => ({ ...prev, ...updatedJob }))
               }}
               onFormUpdate={(updates) => {
                 setJobEditForm((prev: any) => ({ ...prev, ...updates }))
