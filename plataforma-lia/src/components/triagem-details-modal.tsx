@@ -239,7 +239,9 @@ export function TriagemDetailsModal({
     }
   }
 
-  const canTriggerFeedback = !!details
+  const decision = details?.scores?.decision || details?.decision
+  const isPendingDecision = !decision || decision === 'aguardando'
+  const canTriggerFeedback = !!details && !isPendingDecision
   const feedbackAlreadySent = feedbackStatus?.feedback_sent === true
 
   const font = { fontFamily: "'Open Sans', sans-serif" }
@@ -348,7 +350,7 @@ export function TriagemDetailsModal({
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 <div>
                   <p className="text-[10px] text-gray-500" style={font}>Score WSI</p>
-                  <p className="text-base font-bold text-gray-950 dark:text-gray-50" style={font}>{scores.overall_wsi.toFixed(1)}/5.0</p>
+                  <p className={`text-base font-bold ${getScoreColor(scores.overall_wsi)}`} style={font}>{scores.overall_wsi.toFixed(1)}<span className="text-gray-400 font-normal">/5.0</span></p>
                 </div>
               </div>
 
@@ -868,6 +870,19 @@ export function TriagemDetailsModal({
                       </div>
                     )
                   })}
+                </div>
+              )}
+
+              {isPendingDecision && !!details && (
+                <div className="p-3 border border-gray-100 space-y-3" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                  <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
+                    <BookOpen className="w-4 h-4 text-blue-500" /> Feedback para o Candidato
+                  </h3>
+                  <p className="text-xs text-gray-500 italic" style={font}>Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
+                  <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
+                    <p className="text-[10px] text-gray-400 font-medium mb-0.5" style={font}>Prévia do feedback (rascunho)</p>
+                    <p className="text-xs text-gray-600" style={font}>Agradecemos sua participação na triagem. Suas respostas foram analisadas e entraremos em contato em breve com o próximo passo do processo.</p>
+                  </div>
                 </div>
               )}
 
