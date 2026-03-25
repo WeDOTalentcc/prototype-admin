@@ -241,7 +241,7 @@ export function TriagemDetailsModal({
 
   const decision = details?.scores?.decision || details?.decision
   const isPendingDecision = !decision || decision === 'aguardando'
-  const canTriggerFeedback = !!details && !isPendingDecision
+  const canTriggerFeedback = !!details
   const feedbackAlreadySent = feedbackStatus?.feedback_sent === true
 
   const font = { fontFamily: "'Open Sans', sans-serif" }
@@ -928,7 +928,7 @@ export function TriagemDetailsModal({
                 </div>
               )}
 
-              {feedback && (
+              {(feedback || (f11Report?.response_analyses && f11Report.response_analyses.length > 0)) && (
                 <div className="p-3 border border-gray-100" style={{ backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950" style={font}>
@@ -937,13 +937,17 @@ export function TriagemDetailsModal({
                     </h3>
                     <button
                       onClick={() => {
+                        const f11Feedback = f11Report?.response_analyses?.map((a: any) => a.feedback).filter(Boolean) || []
                         const text = [
-                          feedback.main_message,
-                          ...(feedback.technical_strengths || []),
-                          ...(feedback.behavioral_strengths || []),
-                          ...(feedback.development_opportunities || []),
-                          feedback.personalized_tip || '',
-                          feedback.next_steps || '',
+                          ...(feedback ? [
+                            feedback.main_message,
+                            ...(feedback.technical_strengths || []),
+                            ...(feedback.behavioral_strengths || []),
+                            ...(feedback.development_opportunities || []),
+                            feedback.personalized_tip || '',
+                            feedback.next_steps || '',
+                          ] : []),
+                          ...(f11Feedback.length > 0 ? (feedback ? ['', '--- Avaliação detalhada ---'] : []).concat(f11Feedback) : []),
                         ].filter(Boolean).join('\n')
                         navigator.clipboard.writeText(text)
                         setCopiedFeedback(true)
@@ -956,9 +960,21 @@ export function TriagemDetailsModal({
                       {copiedFeedback ? "Copiado!" : "Copiar"}
                     </button>
                   </div>
-                  <p className="text-[11px] text-gray-700 leading-relaxed mb-3" style={font}>{feedback.main_message}</p>
+                  {feedback?.main_message && (
+                    <p className="text-[11px] text-gray-700 leading-relaxed mb-3" style={font}>{feedback.main_message}</p>
+                  )}
 
-                  {feedback.technical_strengths && feedback.technical_strengths.length > 0 && (
+                  {!feedback && f11Report?.response_analyses && (
+                    <div className="mb-3 space-y-1">
+                      {f11Report.response_analyses.slice(0, 3).map((a: any, i: number) => (
+                        a.feedback && (
+                          <p key={i} className="text-[11px] text-gray-700 leading-relaxed" style={font}>{a.feedback}</p>
+                        )
+                      ))}
+                    </div>
+                  )}
+
+                  {feedback?.technical_strengths && feedback.technical_strengths.length > 0 && (
                     <div className="mb-2">
                       <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Pontos Fortes Técnicos:</p>
                       {feedback.technical_strengths.map((s: string, i: number) => (
@@ -970,7 +986,7 @@ export function TriagemDetailsModal({
                     </div>
                   )}
 
-                  {feedback.behavioral_strengths && feedback.behavioral_strengths.length > 0 && (
+                  {feedback?.behavioral_strengths && feedback.behavioral_strengths.length > 0 && (
                     <div className="mb-2">
                       <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Pontos Fortes Comportamentais:</p>
                       {feedback.behavioral_strengths.map((s: string, i: number) => (
@@ -982,7 +998,7 @@ export function TriagemDetailsModal({
                     </div>
                   )}
 
-                  {feedback.development_opportunities && feedback.development_opportunities.length > 0 && (
+                  {feedback?.development_opportunities && feedback.development_opportunities.length > 0 && (
                     <div className="mb-2">
                       <p className="text-[10px] font-medium text-gray-500 mb-1" style={font}>Oportunidades de Desenvolvimento:</p>
                       {feedback.development_opportunities.map((d: string, i: number) => (
@@ -994,14 +1010,14 @@ export function TriagemDetailsModal({
                     </div>
                   )}
 
-                  {feedback.personalized_tip && (
+                  {feedback?.personalized_tip && (
                     <div className="p-2 rounded-lg mt-2" style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)', border: '1px solid rgba(96, 190, 209, 0.2)' }}>
                       <p className="text-[10px] font-medium mb-0.5 text-wedo-cyan" style={{ ...font }}>Dica Personalizada</p>
                       <p className="text-[11px] text-gray-700" style={font}>{feedback.personalized_tip}</p>
                     </div>
                   )}
 
-                  {feedback.next_steps && (
+                  {feedback?.next_steps && (
                     <div className="mt-2 p-2 rounded-lg bg-gray-100">
                       <p className="text-[10px] font-medium text-gray-500 mb-0.5" style={font}>Próximos Passos:</p>
                       <p className="text-[11px] text-gray-700" style={font}>{feedback.next_steps}</p>
