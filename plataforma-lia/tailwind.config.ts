@@ -15,6 +15,7 @@ export default {
       colors: {
         'wedo-cyan': '#60BED1',
         'wedo-cyan-dark': '#4DA8BB',
+        'chat-cyan': '#00B8B8',
         'wedo-green': '#5DA47A',
         'wedo-green-light': '#7BC29A',
         'wedo-green-pastel': '#A8D5B7',

@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
-import { Brain, X, Maximize2, Loader2, Send, ArrowRight, Plus, Eraser, History, Clock } from "lucide-react"
+import { Brain, X, Maximize2, Loader2, Send, ArrowRight, Plus, Eraser, History, Clock, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
@@ -25,6 +25,7 @@ import { useFloatStreaming } from "@/hooks/use-float-streaming"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { FairnessWarningBanner } from "@/components/fairness-warning-banner"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
+import { MessageFeedback } from "@/components/chat/message-feedback"
 import {
   useFloatConversation,
   formatMessageTime,
@@ -69,8 +70,6 @@ export function LiaChatPanel() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // ── WebSocket (Nível 2/3) ──────────────────────────────────────────────────
-
   const wsSessionId = conversationId ?? "float-pending"
 
   const handleStreamComplete = useCallback((content: string) => {
@@ -98,7 +97,6 @@ export function LiaChatPanel() {
     disconnect: wsDisconnect,
   } = useFloatStreaming(wsSessionId, handleStreamComplete)
 
-  // Conecta WebSocket quando o painel abre e há conversationId
   useEffect(() => {
     if (isOpen && conversationId) {
       wsConnect()
@@ -107,8 +105,6 @@ export function LiaChatPanel() {
       wsDisconnect()
     }
   }, [isOpen, conversationId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Sincronização de estado ────────────────────────────────────────────────
 
   useEffect(() => {
     if (ctxConvId && ctxConvId !== conversationId) {
@@ -129,8 +125,6 @@ export function LiaChatPanel() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, isStreaming, hitlPending])
 
-  // ── Envio de mensagem ──────────────────────────────────────────────────────
-
   const handleSend = useCallback(async () => {
     const text = inputText.trim()
     if (!text || isCreating || isStreaming) return
@@ -143,25 +137,20 @@ export function LiaChatPanel() {
       timestamp: formatMessageTime(),
     })
 
-    // Classificação de intent de ação (local, sem LLM)
     const actionResult = detectAction(text)
 
-    // Wizard → redireciona para Vagas com split-view (agente wizard no painel)
     if (actionResult.actionType === "wizard") {
       openSplitView("Vagas", conversationId ?? undefined)
       return
     }
 
-    // Outros modos de ação → ativa banner
     if (actionResult.actionType) {
       setActiveActionType(actionResult.actionType)
       setActionLabel(actionResult.label)
     }
 
-    // Detecção de navegação (async, backend)
     detectIntent(text).catch(() => {})
 
-    // Garante conversationId (cria via REST na primeira mensagem)
     let convId = conversationId
     if (!convId) {
       convId = await initConversation(text)
@@ -175,13 +164,10 @@ export function LiaChatPanel() {
         return
       }
       setSharedConversationId(convId)
-      // Reconecta WebSocket com o sessionId real
       wsConnect()
     }
 
-    // Determina domain do agente pelo tipo de ação detectado
     const domain = actionResult.actionType ? actionTypeToDomain(actionResult.actionType) : ""
-    // P2-B: inclui scope atual para o backend selecionar ferramentas corretas
     wsSend(text, domain, currentScope)
 
   }, [
@@ -256,7 +242,7 @@ export function LiaChatPanel() {
         "flex flex-col",
         "bg-white dark:bg-gray-900",
         "border border-gray-200 dark:border-gray-800",
-        "rounded-md shadow-xl overflow-hidden"
+        "rounded-xl shadow-xl overflow-hidden"
       )}
       role="dialog"
       aria-label="Chat LIA"
@@ -264,11 +250,10 @@ export function LiaChatPanel() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-white dark:bg-gray-800 flex items-center justify-center">
-            <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+          <div className="w-7 h-7 rounded-full flex items-center justify-center">
+            <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
           </div>
           <span className="text-[13px] font-bold text-gray-900 dark:text-gray-50" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
-          {/* Indicador de conexão WebSocket */}
           {isConnected && (
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" title="Conectado" />
           )}
@@ -296,7 +281,7 @@ export function LiaChatPanel() {
             className={cn(
               "p-1.5 rounded-md transition-colors",
               showHistory
-                ? "text-wedo-cyan bg-gray-100 dark:bg-gray-800"
+                ? "text-chat-cyan bg-gray-100 dark:bg-gray-800"
                 : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             )}
             title="Histórico de conversas"
@@ -341,7 +326,7 @@ export function LiaChatPanel() {
         </div>
       )}
 
-      {/* WebSocket status banner — only show during reconnection, not on permanent WS failure (HTTP fallback available) */}
+      {/* WebSocket status banner */}
       {isReconnecting && (
         <div className="px-4 py-1.5 border-b flex-shrink-0 bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900">
           <p className="text-[11px] text-amber-700 dark:text-amber-400" style={{ fontFamily: "Open Sans, sans-serif" }}>
@@ -372,7 +357,7 @@ export function LiaChatPanel() {
                   <p className="text-[12px] text-gray-700 dark:text-gray-300 truncate group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors" style={{ fontFamily: "Open Sans, sans-serif" }}>
                     {chat.title}
                   </p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                  <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5" style={{ fontFamily: "Open Sans, sans-serif" }}>
                     {new Date(chat.timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
@@ -393,17 +378,17 @@ export function LiaChatPanel() {
           ) : (
             <>
               {messages.map(msg => (
-                <MessageBubble key={msg.id} msg={msg} />
+                <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} />
               ))}
 
               {hitlPending && (
                 <div className="flex gap-2">
-                  <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+                      <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
                     </div>
                     <HITLConfirmCard
                       action={hitlPending.action}
@@ -426,7 +411,7 @@ export function LiaChatPanel() {
         </div>
       )}
 
-      {/* FAR-2/C: Fairness warning banner — viés implícito detectado */}
+      {/* FAR-2/C: Fairness warning banner */}
       <FairnessWarningBanner
         warnings={fairnessWarnings}
         onDismiss={dismissFairnessWarnings}
@@ -445,7 +430,7 @@ export function LiaChatPanel() {
             className="flex items-center gap-2 text-[12px] text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors group w-full text-left"
             aria-label={`Abrir ${navIntent.page}`}
           >
-            <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-wedo-cyan group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-chat-cyan group-hover:translate-x-0.5 transition-transform" />
             <span>{navIntent.hint ?? `Ver em ${navIntent.page}`}</span>
           </button>
         </div>
@@ -453,9 +438,9 @@ export function LiaChatPanel() {
 
       {/* Input */}
       <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-gray-100 dark:border-gray-800">
-        <div className="flex items-center gap-2 p-2 rounded-md bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-          <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center">
-            <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+        <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
+            <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
           </div>
           <input
             ref={inputRef}
@@ -469,7 +454,7 @@ export function LiaChatPanel() {
             disabled={isCreating || isStreaming || !!hitlPending}
             maxLength={MAX_INPUT_CHARS}
             aria-label="Mensagem para a LIA"
-            className="flex-1 text-xs bg-transparent focus:outline-none text-gray-950 dark:text-gray-50 disabled:opacity-50"
+            className="flex-1 text-[13px] bg-transparent focus:outline-none text-gray-950 dark:text-gray-50 placeholder:text-gray-400 disabled:opacity-50 min-w-0"
             style={{ fontFamily: "Open Sans, sans-serif" }}
           />
           <AudioRecordButton
@@ -481,11 +466,16 @@ export function LiaChatPanel() {
             onClick={handleSend}
             disabled={!canSend}
             aria-label="Enviar mensagem"
-            className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors disabled:opacity-50 bg-gray-900 dark:bg-gray-50"
+            className={cn(
+              "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors",
+              canSend
+                ? "bg-chat-cyan text-white hover:opacity-90"
+                : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+            )}
           >
             {isCreating || isStreaming
-              ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white dark:text-gray-900" />
-              : <Send className="w-3.5 h-3.5 text-white dark:text-gray-900" />
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+              : <Send className="w-3.5 h-3.5" />
             }
           </button>
         </div>
@@ -499,13 +489,11 @@ export function LiaChatPanel() {
   )
 }
 
-// ── Sub-componentes ────────────────────────────────────────────────────────────
-
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-        <Brain className="w-5 h-5 text-wedo-cyan" strokeWidth={2.5} />
+      <div className="w-10 h-10 rounded-full flex items-center justify-center">
+        <Brain className="w-5 h-5 text-chat-cyan" strokeWidth={2.5} />
       </div>
       <div>
         <p className="text-[13px] font-medium text-gray-700 dark:text-gray-300" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -521,18 +509,18 @@ function EmptyState() {
 
 function ThinkingIndicator() {
   return (
-    <div className="flex gap-2">
-      <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+    <div className="flex gap-2.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+          <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
         </div>
         <span className="flex gap-1 items-center h-5">
-          <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{ animationDelay: "0ms" }} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{ animationDelay: "150ms" }} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{ animationDelay: "300ms" }} />
         </span>
       </div>
     </div>
@@ -553,27 +541,27 @@ function StreamingBubble({ content }: { content: string }) {
   const html = useMemo(() => parseChatMarkdown(cleaned), [cleaned])
 
   return (
-    <div className="flex gap-2">
-      <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+    <div className="flex gap-2.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+          <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
         </div>
-        <div className="rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2.5 max-w-[340px]">
+        <div className="bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
             html={html}
-            className="text-[13px] text-gray-800 dark:text-gray-200 leading-relaxed font-['Open_Sans',sans-serif]"
+            className="text-[13px] text-[#374151] dark:text-gray-200 leading-relaxed font-['Open_Sans',sans-serif]"
           />
-          <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse align-middle" />
+          <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse align-middle" />
         </div>
       </div>
     </div>
   )
 }
 
-function MessageBubble({ msg }: { msg: FloatMessage }) {
+function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversationId: string | null }) {
   const isUser = msg.sender === "user"
 
   const renderedHtml = useMemo(() => {
@@ -584,44 +572,49 @@ function MessageBubble({ msg }: { msg: FloatMessage }) {
 
   if (isUser) {
     return (
-      <div className="flex gap-2 justify-end">
-        <div className="flex flex-col items-end gap-0.5 max-w-[340px]">
-          <div className="rounded-md bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 py-2.5">
+      <div className="flex gap-2.5 justify-end">
+        <div className="flex flex-col items-end gap-1 max-w-[340px]">
+          <div className="bg-[#F3F4F6] dark:bg-gray-800 rounded-[14px] rounded-br-[4px] px-3.5 py-2.5">
             <RichContent
               html={renderedHtml}
-              className="text-[13px] text-gray-900 dark:text-gray-50 leading-relaxed font-['Open_Sans',sans-serif]"
+              className="text-[13px] text-[#374151] dark:text-gray-200 leading-relaxed font-['Open_Sans',sans-serif]"
             />
           </div>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums">
+          <span className="text-[11px] text-gray-400 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums px-1">
             {msg.timestamp}
           </span>
         </div>
-        <div className="w-6 h-6 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">V</span>
+        <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <User className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex gap-2">
-      <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+    <div className="flex gap-2.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
+          <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
+          <span className="text-[11px] text-gray-400 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
         </div>
-        <div className="rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2.5 max-w-[340px]">
+        <div className="bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
             html={renderedHtml}
-            className="text-[13px] text-gray-800 dark:text-gray-200 leading-relaxed font-['Open_Sans',sans-serif]"
+            className="text-[13px] text-[#374151] dark:text-gray-200 leading-relaxed font-['Open_Sans',sans-serif]"
           />
-          <div className="mt-1.5 text-[10px] text-gray-500 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums">
-            {msg.timestamp}
-          </div>
         </div>
+        {conversationId && (
+          <MessageFeedback
+            sessionId={conversationId}
+            messageId={msg.id}
+            originalResponse={msg.content}
+            className="mt-1 px-1"
+          />
+        )}
       </div>
     </div>
   )

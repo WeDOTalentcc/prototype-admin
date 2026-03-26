@@ -3,15 +3,20 @@
 import React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Brain, X } from "lucide-react"
+import { Brain, X, Send, User, Plus, Eraser, History } from "lucide-react"
 import { FileUploadButton, FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
+import { MessageFeedback } from "@/components/chat/message-feedback"
+import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { useToast } from "@/hooks/use-toast"
 
 interface LiaExpandedPanelProps {
   title?: string
   description?: string
   onClose: () => void
+  onNewChat?: () => void
+  onClearChat?: () => void
+  onToggleHistory?: () => void
   width?: number
   height?: string
   resizable?: boolean
@@ -25,9 +30,12 @@ interface LiaExpandedPanelProps {
 }
 
 export function LiaExpandedPanel({
-  title = "Olá! Sou a Lia.",
-  description = "Posso criar vagas, buscar candidatos, analisar métricas e muito mais!",
+  title = "LIA",
+  description,
   onClose,
+  onNewChat,
+  onClearChat,
+  onToggleHistory,
   width,
   height = "calc(100vh - 12rem)",
   resizable = true,
@@ -58,35 +66,69 @@ export function LiaExpandedPanel({
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div 
-                className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}
-              >
-                <Brain className="w-4 h-4 text-wedo-cyan" />
+              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
+                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 
-                  className="text-[14px] font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" 
-                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                  className="text-[13px] font-bold leading-tight truncate text-gray-900 dark:text-gray-50" 
+                  style={{ fontFamily: 'Inter, sans-serif' }}
                 >
                   {title}
                 </h3>
-                <p 
-                  className="text-[11px] leading-tight truncate mt-0.5 text-gray-500" 
-                  style={{ fontFamily: 'Open Sans, sans-serif' }}
-                >
-                  {description}
-                </p>
+                {description && (
+                  <p 
+                    className="text-[11px] leading-tight truncate mt-0.5 text-gray-500" 
+                    style={{ fontFamily: 'Open Sans, sans-serif' }}
+                  >
+                    {description}
+                  </p>
+                )}
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
-            >
-              <X className="w-4 h-4 text-gray-500" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {onNewChat && (
+                <button
+                  onClick={onNewChat}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Novo chat"
+                  aria-label="Iniciar novo chat"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {onClearChat && (
+                <button
+                  onClick={onClearChat}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Limpar mensagens"
+                  aria-label="Limpar mensagens"
+                >
+                  <Eraser className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {onToggleHistory && (
+                <button
+                  onClick={onToggleHistory}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Histórico"
+                  aria-label="Ver histórico de conversas"
+                >
+                  <History className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {(onNewChat || onClearChat || onToggleHistory) && (
+                <div className="w-px h-5 bg-gray-200 mx-0.5" />
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -95,7 +137,7 @@ export function LiaExpandedPanel({
           <div 
             className="flex-shrink-0 px-4 py-3" 
             style={{ 
-              backgroundColor: 'rgba(96, 190, 209, 0.04)',
+              backgroundColor: 'rgba(0, 184, 184, 0.04)',
               borderBottom: '1px solid #E4EBEF' 
             }}
           >
@@ -345,12 +387,9 @@ export function LiaChatInput({
   }
 
   return (
-    <div className="flex items-center gap-2 p-2 rounded-md border bg-white" style={{ borderColor: '#E4EBEF' }}>
-      <div 
-        className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" 
-        style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}
-      >
-        <Brain className="w-4 h-4 text-wedo-cyan" />
+    <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
       </div>
       <input
         type="text"
@@ -359,7 +398,7 @@ export function LiaChatInput({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         data-testid="chat-input"
-        className="flex-1 text-xs bg-transparent focus:outline-none min-w-0"
+        className="flex-1 text-[13px] bg-transparent focus:outline-none min-w-0 text-gray-900 dark:text-gray-50 placeholder:text-gray-400"
         style={{ fontFamily: 'Open Sans, sans-serif' }}
       />
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -382,21 +421,13 @@ export function LiaChatInput({
           type="button"
           onClick={onSubmit}
           disabled={!value.trim() || isLoading}
-          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 bg-wedo-cyan"
+          className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+            value.trim() && !isLoading
+              ? 'bg-chat-cyan text-white hover:opacity-90'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+          }`}
         >
-          <svg 
-            className="w-4 h-4 text-white" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
-            />
-          </svg>
+          <Send className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
@@ -407,82 +438,77 @@ interface LiaChatMessageProps {
   type: 'user' | 'lia'
   content: string
   timestamp?: Date
+  messageId?: string
+  sessionId?: string
 }
 
-export function LiaChatMessage({ type, content, timestamp }: LiaChatMessageProps) {
+export function LiaChatMessage({ type, content, timestamp, messageId, sessionId }: LiaChatMessageProps) {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   }
 
-  const renderContent = (text: string) => {
-    return text.split('**').map((part, i) => 
-      i % 2 === 1 ? <strong key={i}>{part}</strong> : part
-    )
-  }
-
   if (type === 'user') {
+    const userHtml = escapeHtml(content).replace(/\n/g, '<br/>')
     return (
-      <div className="flex justify-end items-end gap-2">
-        <div>
+      <div className="flex justify-end items-start gap-2">
+        <div className="flex flex-col items-end gap-1">
           <div 
             data-testid="chat-message"
             data-role="user"
-            className="max-w-[85%] p-3 bg-gray-100 text-gray-800 rounded-md rounded-br-none ml-auto"
+            className="max-w-[85%] px-3.5 py-2.5 bg-[#F3F4F6] dark:bg-gray-800 rounded-[14px] rounded-br-[4px] ml-auto"
           >
-            <p 
-              className="text-xs whitespace-pre-wrap" 
+            <div 
+              className="text-[13px] leading-relaxed text-[#374151] dark:text-gray-200" 
               style={{ fontFamily: 'Open Sans, sans-serif' }}
-            >
-              {renderContent(content)}
-            </p>
-            {timestamp && (
-              <p 
-                className="text-[10px] text-gray-400 mt-1.5" 
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
-              >
-                {formatTime(timestamp)}
-              </p>
-            )}
+              dangerouslySetInnerHTML={{ __html: userHtml }}
+            />
           </div>
+          {timestamp && (
+            <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+              {formatTime(timestamp)}
+            </span>
+          )}
         </div>
-        <div 
-          className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-semibold bg-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}
-        >
-          U
+        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mt-0.5">
+          <User className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
         </div>
       </div>
     )
   }
 
+  const liaHtml = parseChatMarkdown(cleanAgentResponse(content))
   return (
-    <div className="flex justify-start">
-      <div 
-        data-testid="chat-message"
-        data-role="lia"
-        className="max-w-[85%] p-3 bg-wedo-cyan/[0.08] text-gray-800 rounded-md rounded-bl-none"
-      >
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <Brain className="w-3 h-3 text-wedo-cyan" />
-          <span 
-            className="text-[10px] font-medium" 
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
-          >
+    <div className="flex items-start gap-2.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+      </div>
+      <div className="flex-1 flex flex-col gap-1">
+        <div className="flex items-center gap-1.5 px-1">
+          <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
             LIA
           </span>
         </div>
-        <p 
-          className="text-xs whitespace-pre-wrap" 
-          style={{ fontFamily: 'Open Sans, sans-serif' }}
+        <div 
+          data-testid="chat-message"
+          data-role="lia"
+          className="max-w-[85%] px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px]"
         >
-          {renderContent(content)}
-        </p>
-        {timestamp && (
-          <p 
-            className="text-[10px] text-gray-400 mt-1.5" 
+          <div 
+            className="text-[13px] leading-relaxed text-[#374151] dark:text-gray-200" 
             style={{ fontFamily: 'Open Sans, sans-serif' }}
-          >
+            dangerouslySetInnerHTML={{ __html: liaHtml }}
+          />
+        </div>
+        <MessageFeedback
+          sessionId={sessionId || 'expanded-panel'}
+          messageId={messageId || `lia-msg-${content.slice(0, 20).replace(/\s+/g, '-')}`}
+          originalResponse={content}
+          className="px-1"
+        />
+        {timestamp && (
+          <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
             {formatTime(timestamp)}
-          </p>
+          </span>
         )}
       </div>
     </div>
@@ -491,21 +517,22 @@ export function LiaChatMessage({ type, content, timestamp }: LiaChatMessageProps
 
 export function LiaLoadingIndicator() {
   return (
-    <div className="flex justify-start">
-      <div className="bg-wedo-cyan/[0.08] rounded-md rounded-bl-none p-3 max-w-[85%]">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <Brain className="w-3 h-3 text-wedo-cyan" />
-          <span 
-            className="text-[10px] font-medium" 
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
-          >
+    <div className="flex items-start gap-2.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-1.5 mb-1 px-1">
+          <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
             LIA
           </span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-          <div className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-          <div className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        <div className="bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
         </div>
       </div>
     </div>

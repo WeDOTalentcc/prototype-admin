@@ -6,6 +6,7 @@ interface LIAIconProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl"
   animate?: boolean
   speaking?: boolean
+  useChatCyan?: boolean
 }
 
 function SoundWaveBars({ size }: { size: string }) {
@@ -16,7 +17,7 @@ function SoundWaveBars({ size }: { size: string }) {
         <span
           key={i}
           className={cn(
-            "inline-block w-[2px] rounded-full bg-wedo-cyan lia-sound-wave-bar",
+            "inline-block w-[2px] rounded-full bg-chat-cyan lia-sound-wave-bar",
             barHeight
           )}
           style={{ animationDelay: `${i * 0.15}s` }}
@@ -26,10 +27,10 @@ function SoundWaveBars({ size }: { size: string }) {
   )
 }
 
-export function LIAIcon({ className, size = "md", animate = false, speaking = false }: LIAIconProps) {
+export function LIAIcon({ className, size = "md", animate = false, speaking = false, useChatCyan = false }: LIAIconProps) {
   const sizeClasses = {
     xs: "w-3.5 h-3.5",
-    sm: "w-8 h-8",
+    sm: "w-7 h-7",
     md: "w-9 h-9",
     lg: "w-10 h-10",
     xl: "w-12 h-12"
@@ -37,7 +38,7 @@ export function LIAIcon({ className, size = "md", animate = false, speaking = fa
 
   return (
     <div className={cn(
-      "relative inline-flex items-center justify-center rounded-md",
+      "relative inline-flex items-center justify-center rounded-full",
       animate && "animate-pulse",
       speaking && "lia-speaking-glow",
       sizeClasses[size],
@@ -45,10 +46,11 @@ export function LIAIcon({ className, size = "md", animate = false, speaking = fa
     )}>
       <Brain 
         className={cn(
-          "text-wedo-cyan transition-opacity duration-200",
+          "transition-opacity duration-200",
+          useChatCyan ? "text-chat-cyan" : "text-wedo-cyan",
           speaking && "opacity-30",
           size === "xs" && "w-3.5 h-3.5",
-          size === "sm" && "w-5 h-5",
+          size === "sm" && "w-4 h-4",
           size === "md" && "w-5.5 h-5.5",
           size === "lg" && "w-6 h-6",
           size === "xl" && "w-7 h-7"

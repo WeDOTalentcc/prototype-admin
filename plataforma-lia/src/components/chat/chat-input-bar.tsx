@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useCallback } from "react"
-import { Send, Paperclip, Mic, Loader2 } from "lucide-react"
+import { Send, Brain, Mic, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ChatInputBarProps {
@@ -9,24 +9,22 @@ interface ChatInputBarProps {
   isLoading?: boolean
   placeholder?: string
   className?: string
+  maxLength?: number
+  showMic?: boolean
+  onMicClick?: () => void
 }
 
 export function ChatInputBar({
   onSend,
   isLoading = false,
-  placeholder = "Digite sua mensagem para a LIA...",
+  placeholder = "Envie mensagem para a LIA...",
   className,
+  maxLength = 2000,
+  showMic = true,
+  onMicClick,
 }: ChatInputBarProps) {
   const [message, setMessage] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  const adjustHeight = useCallback(() => {
-    const textarea = textareaRef.current
-    if (textarea) {
-      textarea.style.height = "auto"
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`
-    }
-  }, [])
 
   const handleSend = useCallback(() => {
     const trimmed = message.trim()
@@ -50,10 +48,13 @@ export function ChatInputBar({
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setMessage(e.target.value)
-      adjustHeight()
+      if (e.target.value.length <= maxLength) {
+        setMessage(e.target.value)
+        e.target.style.height = "auto"
+        e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
+      }
     },
-    [adjustHeight]
+    [maxLength]
   )
 
   const canSend = message.trim().length > 0 && !isLoading
@@ -61,17 +62,13 @@ export function ChatInputBar({
   return (
     <div
       className={cn(
-        "flex items-end gap-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2",
+        "flex items-end gap-2 rounded-[24px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2",
         className
       )}
     >
-      <button
-        type="button"
-        className="flex-shrink-0 p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
-        aria-label="Anexar arquivo"
-      >
-        <Paperclip className="w-4 h-4" />
-      </button>
+      <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mb-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+      </div>
 
       <textarea
         ref={textareaRef}
@@ -79,39 +76,45 @@ export function ChatInputBar({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        rows={1}
-        className={cn(
-          "flex-1 resize-none bg-transparent text-[13px] font-['Open_Sans',sans-serif]",
-          "text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500",
-          "focus:outline-none py-2 px-1 max-h-[160px] leading-relaxed"
-        )}
         disabled={isLoading}
+        maxLength={maxLength}
+        rows={1}
+        aria-label="Mensagem para a LIA"
+        className={cn(
+          "flex-1 bg-transparent text-[13px] font-['Open_Sans',sans-serif]",
+          "text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500",
+          "focus:outline-none leading-relaxed min-w-0 resize-none"
+        )}
+        style={{ maxHeight: "120px" }}
       />
 
-      <button
-        type="button"
-        className="flex-shrink-0 p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
-        aria-label="Gravar áudio"
-      >
-        <Mic className="w-4 h-4" />
-      </button>
+      {showMic && (
+        <button
+          type="button"
+          onClick={onMicClick}
+          className="flex-shrink-0 p-1.5 rounded-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mb-0.5"
+          aria-label="Gravar áudio"
+        >
+          <Mic className="w-4 h-4" />
+        </button>
+      )}
 
       <button
         type="button"
         onClick={handleSend}
         disabled={!canSend}
         className={cn(
-          "flex-shrink-0 p-2 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
+          "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors mb-0.5",
           canSend
-            ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
-            : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+            ? "bg-chat-cyan text-white hover:opacity-90"
+            : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
         )}
         aria-label="Enviar mensagem"
       >
         {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
         ) : (
-          <Send className="w-4 h-4" />
+          <Send className="w-3.5 h-3.5" />
         )}
       </button>
     </div>

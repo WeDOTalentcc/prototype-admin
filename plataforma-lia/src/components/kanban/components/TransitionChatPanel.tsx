@@ -9,13 +9,22 @@ import {
   Lightbulb,
   Loader2,
   Mic,
+  Plus,
+  Eraser,
+  History,
+  Clock,
   RotateCcw,
   ShieldAlert,
   Sparkles,
   XCircle,
+  Send,
+  User,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isClearChatCommand } from '@/lib/chat-commands'
+import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from '@/lib/chat-format'
+import { MessageFeedback } from '@/components/chat/message-feedback'
 import type { ChatMessage, TaskItem, LearnedSuggestion } from '@/hooks/use-interpret-context'
 
 interface TransitionChatPanelProps {
@@ -23,9 +32,13 @@ interface TransitionChatPanelProps {
   isLoading: boolean
   onSendMessage: (message: string) => void
   onClearChat?: () => void
+  onNewChat?: () => void
+  onToggleHistory?: () => void
+  onClose?: () => void
   actionBehavior: string
   placeholder?: string
   extractedPreferences?: Record<string, any> | null
+  sessionId?: string
 }
 
 const BEHAVIOR_DESCRIPTIONS: Record<string, string> = {
@@ -49,12 +62,6 @@ const formatTime = (date: Date) => {
   return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
-const renderContent = (text: string) => {
-  return text.split('**').map((part, i) =>
-    i % 2 === 1 ? <strong key={i}>{part}</strong> : part
-  )
-}
-
 function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
   return (
     <div className="mt-2 pt-2 border-t border-gray-200/30">
@@ -66,8 +73,8 @@ function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
           key={idx}
           className="flex items-start gap-1.5 py-0.5"
         >
-          <CheckCircle2 className="w-3 h-3 text-wedo-cyan flex-shrink-0 mt-0.5" />
-          <span className="text-[10px] text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <CheckCircle2 className="w-3 h-3 text-chat-cyan flex-shrink-0 mt-0.5" />
+          <span className="text-[11px] text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
             {task.description || task.type}
             {task.data_type && <span className="text-gray-400 ml-1">({task.data_type})</span>}
           </span>
@@ -98,7 +105,7 @@ function FairnessWarning({ fairnessResult }: { fairnessResult: { is_fair: boolea
       <div className="flex items-start gap-1.5">
         <ShieldAlert className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-[10px] font-semibold text-red-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-[11px] font-semibold text-red-600" style={{ fontFamily: 'Inter, sans-serif' }}>
             Alerta de Fairness
           </p>
           {fairnessResult.warnings.map((w, idx) => (
@@ -153,14 +160,27 @@ function ConfidenceBadge({ confidence, layer }: { confidence?: number; layer?: n
   )
 }
 
+function RichContent({ html, className }: { html: string; className?: string }) {
+  return (
+    <div
+      className={className}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
+}
+
 export function TransitionChatPanel({
   messages,
   isLoading,
   onSendMessage,
   onClearChat,
+  onNewChat,
+  onToggleHistory,
+  onClose,
   actionBehavior,
   placeholder,
   extractedPreferences,
+  sessionId,
 }: TransitionChatPanelProps) {
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -193,232 +213,249 @@ export function TransitionChatPanel({
     onSendMessage(`Sim, use ${s.key}: ${s.value}`)
   }
 
+  const canSend = inputValue.trim().length > 0 && !isLoading
+
   return (
     <div className="flex flex-col h-full overflow-hidden p-3">
-      <div className="flex flex-col flex-1 overflow-hidden rounded-md border" style={{ borderColor: '#E4EBEF', backgroundColor: '#FFFFFF' }}>
-      <div
-        className="flex-shrink-0 px-4 py-3"
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}
-          >
-            <Brain className="w-4 h-4 text-wedo-cyan" />
+      <div className="flex flex-col flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white dark:bg-gray-900">
+        {/* Header */}
+        <div className="flex-shrink-0 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center">
+                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+              </div>
+              <span className="text-[13px] font-bold text-gray-900 dark:text-gray-50" style={{ fontFamily: 'Inter, sans-serif' }}>
+                LIA
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              {onNewChat && (
+                <button
+                  onClick={onNewChat}
+                  title="Novo chat"
+                  aria-label="Iniciar novo chat"
+                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {onClearChat && (
+                <button
+                  onClick={onClearChat}
+                  disabled={messages.length === 0}
+                  title="Limpar mensagens"
+                  aria-label="Limpar mensagens"
+                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Eraser className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {onToggleHistory && (
+                <button
+                  onClick={onToggleHistory}
+                  title="Histórico de conversas"
+                  aria-label="Ver histórico de conversas"
+                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  <History className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {onClose && (
+                <>
+                  <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                  <button
+                    onClick={onClose}
+                    title="Fechar"
+                    aria-label="Fechar"
+                    className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <h3
-              className="text-[14px] font-semibold leading-tight text-gray-950 dark:text-gray-50"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
-            >
-              Olá! Sou a Lia.
-            </h3>
-            <p
-              className="text-[11px] leading-tight mt-0.5 text-gray-500"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
-            >
-              {BEHAVIOR_DESCRIPTIONS[actionBehavior] || 'Como posso te ajudar hoje?'}
-            </p>
-          </div>
-          {onClearChat && messages.length > 0 && (
-            <button
-              onClick={onClearChat}
-              title="Nova conversa"
-              className="flex-shrink-0 p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-          )}
         </div>
-      </div>
 
-      <div
-        className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[240px]"
-        style={{ backgroundColor: '#FFFFFF' }}
-      >
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center py-8 opacity-60">
-            <p className="text-[11px] text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-              Envie uma mensagem para começar
-            </p>
-          </div>
-        ) : (
-          messages.map((msg, i) => {
-            const timestamp = new Date(msg.timestamp)
+        {/* Messages */}
+        <div
+          className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[240px]"
+        >
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-8 opacity-60">
+              <p className="text-[11px] text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                Envie uma mensagem para começar
+              </p>
+            </div>
+          ) : (
+            messages.map((msg, i) => {
+              const timestamp = new Date(msg.timestamp)
 
-            if (msg.role === 'user') {
-              return (
-                <div key={i} className="flex justify-end items-end gap-2">
-                  <div>
-                    <div
-                      className="max-w-[85%] p-3 bg-gray-100 text-gray-800 rounded-md rounded-br-none ml-auto"
-                    >
-                      <p
-                        className="text-xs whitespace-pre-wrap"
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
-                      >
-                        {renderContent(msg.content)}
-                      </p>
-                      <p
-                        className="text-[10px] text-gray-400 mt-1.5"
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
-                      >
+              if (msg.role === 'user') {
+                return (
+                  <div key={i} className="flex justify-end items-start gap-2">
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="max-w-[85%] px-3.5 py-2.5 bg-[#F3F4F6] dark:bg-gray-800 rounded-[14px] rounded-br-[4px]">
+                        <p
+                          className="text-[13px] whitespace-pre-wrap text-[#374151] dark:text-gray-200"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          {msg.content}
+                        </p>
+                      </div>
+                      <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
                         {formatTime(timestamp)}
-                      </p>
+                      </span>
+                    </div>
+                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mt-0.5">
+                      <User className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                     </div>
                   </div>
-                  <div
-                    className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-semibold bg-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    U
+                )
+              }
+
+              const meta = msg.metadata
+              const hasTasks = meta?.tasks && meta.tasks.length > 0
+              const isOutOfScope = meta?.out_of_scope
+              const hasFairnessIssue = meta?.fairness_result && !meta.fairness_result.is_fair
+              const hasLearnedSuggestions = meta?.learned_suggestions && meta.learned_suggestions.length > 0
+
+              const liaHtml = (() => {
+                const cleaned = cleanAgentResponse(msg.content)
+                return parseChatMarkdown(cleaned)
+              })()
+
+              return (
+                <div key={i} className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 px-1">
+                      <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        LIA
+                      </span>
+                      <ConfidenceBadge confidence={meta?.confidence} layer={meta?.layer} />
+                    </div>
+                    <div
+                      className="max-w-[85%] px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px]"
+                    >
+                      <RichContent
+                        html={liaHtml}
+                        className="text-[13px] leading-relaxed text-[#374151] dark:text-gray-200 font-['Open_Sans',sans-serif]"
+                      />
+
+                      {meta?.extracted_preferences && Object.keys(meta.extracted_preferences).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5 pt-1.5 border-t border-gray-200/30">
+                          {Object.entries(meta.extracted_preferences).map(([key, value]) => {
+                            const label = PREFERENCE_LABELS[key] || key
+                            return (
+                              <span
+                                key={key}
+                                className="inline-flex items-center gap-1 text-[9px] bg-gray-50 rounded-full px-2 py-0.5 text-gray-600"
+                                style={{ fontFamily: 'Inter, sans-serif' }}
+                              >
+                                <span className="font-medium">{label}:</span> {String(value)}
+                              </span>
+                            )
+                          })}
+                        </div>
+                      )}
+
+                      {hasTasks && <TasksChecklist tasks={meta!.tasks!} />}
+                      {isOutOfScope && <OutOfScopeIndicator />}
+                      {hasFairnessIssue && <FairnessWarning fairnessResult={meta!.fairness_result!} />}
+                      {hasLearnedSuggestions && (
+                        <LearnedSuggestionsChips
+                          suggestions={meta!.learned_suggestions!}
+                          onAccept={handleLearnedSuggestionAccept}
+                        />
+                      )}
+                    </div>
+                    <MessageFeedback
+                      sessionId={sessionId || 'transition-chat'}
+                      messageId={`transition-msg-${i}`}
+                      originalResponse={msg.content}
+                      className="px-1"
+                    />
+                    <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      {formatTime(timestamp)}
+                    </span>
                   </div>
                 </div>
               )
-            }
-
-            const meta = msg.metadata
-            const hasTasks = meta?.tasks && meta.tasks.length > 0
-            const isOutOfScope = meta?.out_of_scope
-            const hasFairnessIssue = meta?.fairness_result && !meta.fairness_result.is_fair
-            const hasLearnedSuggestions = meta?.learned_suggestions && meta.learned_suggestions.length > 0
-
-            return (
-              <div key={i} className="flex justify-start">
-                <div
-                  className="max-w-[85%] p-3 rounded-md rounded-bl-none"
-                  style={{ backgroundColor: isOutOfScope ? 'rgba(251, 191, 36, 0.08)' : hasFairnessIssue ? 'rgba(239, 68, 68, 0.06)' : 'rgba(96, 190, 209, 0.08)' }}
-                >
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Brain className="w-3 h-3 text-wedo-cyan" />
-                    <span
-                      className="text-[10px] font-medium"
-                      style={{ fontFamily: 'Open Sans, sans-serif' }}
-                    >
-                      LIA
-                    </span>
-                    <ConfidenceBadge confidence={meta?.confidence} layer={meta?.layer} />
+            })
+          )}
+          {isLoading && (
+            <div className="flex items-start gap-2.5">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-1.5 mb-1 px-1">
+                  <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    LIA
+                  </span>
+                </div>
+                <div className="bg-white border border-[#E5E7EB] rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  <p
-                    className="text-xs whitespace-pre-wrap text-gray-800"
-                    style={{ fontFamily: 'Open Sans, sans-serif' }}
-                  >
-                    {renderContent(msg.content)}
-                  </p>
-
-                  {meta?.extracted_preferences && Object.keys(meta.extracted_preferences).length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5 pt-1.5 border-t border-gray-200/30">
-                      {Object.entries(meta.extracted_preferences).map(([key, value]) => {
-                        const label = PREFERENCE_LABELS[key] || key
-                        return (
-                          <span
-                            key={key}
-                            className="inline-flex items-center gap-1 text-[9px] bg-white/60 rounded-full px-2 py-0.5 text-gray-600"
-                            style={{ fontFamily: 'Inter, sans-serif' }}
-                          >
-                            <span className="font-medium">{label}:</span> {String(value)}
-                          </span>
-                        )
-                      })}
-                    </div>
-                  )}
-
-                  {hasTasks && <TasksChecklist tasks={meta!.tasks!} />}
-                  {isOutOfScope && <OutOfScopeIndicator />}
-                  {hasFairnessIssue && <FairnessWarning fairnessResult={meta!.fairness_result!} />}
-                  {hasLearnedSuggestions && (
-                    <LearnedSuggestionsChips
-                      suggestions={meta!.learned_suggestions!}
-                      onAccept={handleLearnedSuggestionAccept}
-                    />
-                  )}
-
-                  <p
-                    className="text-[10px] text-gray-400 mt-1.5"
-                    style={{ fontFamily: 'Open Sans, sans-serif' }}
-                  >
-                    {formatTime(timestamp)}
-                  </p>
                 </div>
               </div>
-            )
-          })
-        )}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div
-              className="rounded-md rounded-bl-none p-3 max-w-[85%]"
-              style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)' }}
-            >
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Brain className="w-3 h-3 text-wedo-cyan" />
-                <span
-                  className="text-[10px] font-medium"
-                  style={{ fontFamily: 'Open Sans, sans-serif' }}
-                >
-                  LIA
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {extractedPreferences && Object.keys(extractedPreferences).filter(k => extractedPreferences[k]).length > 0 && (
+          <div className="flex-shrink-0 px-4 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Brain className="w-3 h-3 text-chat-cyan" strokeWidth={2.5} />
+              <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                Preferências detectadas
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {Object.entries(extractedPreferences).map(([key, value]) => {
+                if (!value) return null
+                const label = PREFERENCE_LABELS[key] || key
+                return (
+                  <span
+                    key={key}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-700 dark:text-gray-300"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{label}:</span> {String(value)}
+                  </span>
+                )
+              })}
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
-      </div>
 
-      {extractedPreferences && Object.keys(extractedPreferences).filter(k => extractedPreferences[k]).length > 0 && (
-        <div className="flex-shrink-0 px-4 py-2" style={{ borderTop: '1px solid #E4EBEF', backgroundColor: 'rgba(96, 190, 209, 0.04)' }}>
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Brain className="w-3 h-3 text-wedo-cyan" />
-            <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-              Preferências detectadas
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {Object.entries(extractedPreferences).map(([key, value]) => {
-              if (!value) return null
-              const label = PREFERENCE_LABELS[key] || key
-              return (
-                <span
-                  key={key}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px] text-gray-700 dark:text-gray-300"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{label}:</span> {String(value)}
-                </span>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      <div
-        className="flex-shrink-0 p-3"
-      >
-        <div className="flex items-center gap-2 p-2 rounded-md border bg-white" style={{ borderColor: '#E4EBEF' }}>
-          <div
-            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(96, 190, 209, 0.12)' }}
-          >
-            <Brain className="w-4 h-4 text-wedo-cyan" />
-          </div>
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder || 'Como posso te ajudar hoje?'}
-            className="flex-1 text-xs bg-transparent focus:outline-none min-w-0"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
-            disabled={isLoading}
-          />
-          <div className="flex items-center gap-1 flex-shrink-0">
+        {/* Input */}
+        <div className="flex-shrink-0 p-3 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
+              <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+            </div>
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder || 'Envie mensagem para a LIA...'}
+              className="flex-1 text-[13px] bg-transparent focus:outline-none min-w-0 text-gray-900 dark:text-gray-50 placeholder:text-gray-400"
+              style={{ fontFamily: 'Open Sans, sans-serif' }}
+              disabled={isLoading}
+            />
             <button
-              className="p-1.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              className="p-1.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 transition-colors rounded-full"
               type="button"
               title="Gravar áudio"
               aria-label="Gravar áudio"
@@ -427,32 +464,24 @@ export function TransitionChatPanel({
             </button>
             <button
               onClick={handleSend}
-              disabled={!inputValue.trim() || isLoading}
+              disabled={!canSend}
               aria-label="Enviar mensagem"
-              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 bg-wedo-cyan"
+              className={cn(
+                "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors",
+                canSend
+                  ? "bg-chat-cyan text-white hover:opacity-90"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+              )}
               type="button"
             >
               {isLoading ? (
-                <Loader2 className="w-4 h-4 text-white animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
               ) : (
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                  />
-                </svg>
+                <Send className="w-3.5 h-3.5" />
               )}
             </button>
           </div>
         </div>
-      </div>
       </div>
     </div>
   )

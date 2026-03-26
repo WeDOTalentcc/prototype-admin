@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Bot, Info, Save, X, Loader2 } from 'lucide-react'
+import { Brain, Info, Save, X, Loader2 } from 'lucide-react'
 import {
   Popover,
   PopoverContent,
@@ -73,7 +73,7 @@ export function LiaInstructionPopover({
           )}
           title={hasInstruction ? "Editar instrução para LIA" : "Adicionar instrução para LIA"}
         >
-          <Bot className="w-3 h-3" />
+          <Brain className="w-3 h-3" />
         </button>
       </PopoverTrigger>
       <PopoverContent 
@@ -84,7 +84,7 @@ export function LiaInstructionPopover({
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bot className="w-4 h-4 text-wedo-cyan" />
+              <Brain className="w-4 h-4 text-chat-cyan" />
               <span className="text-[14px] font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>Instrução para LIA</span>
             </div>
             <button

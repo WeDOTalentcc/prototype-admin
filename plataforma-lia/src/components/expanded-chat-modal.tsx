@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
-import { X, Send, Search, Paperclip, Minimize2, Maximize2, Loader2, Check, Clock, FileText, ChevronRight, ChevronLeft, MessageSquare, ArrowUp, Lightbulb, Brain, Plus, Briefcase, Users, BarChart3, ChevronDown, Target, BookTemplate, Upload, History, Building2, MapPin, DollarSign, GraduationCap, Languages, Laptop, Code, Database, Wrench, Trash2, Edit2, Star, MessageCircle, CheckCircle2, AlertCircle, Rocket, Eye, Phone, Circle, Settings, AlertTriangle, RefreshCw, Globe, Calendar, Bell, ExternalLink, Info, Heart, TrendingUp } from "lucide-react"
+import { X, Send, Search, Paperclip, Minimize2, Maximize2, Loader2, Check, Clock, FileText, ChevronRight, ChevronLeft, MessageSquare, ArrowUp, Lightbulb, Brain, Plus, Briefcase, Users, BarChart3, ChevronDown, Target, BookTemplate, Upload, History, Building2, MapPin, DollarSign, GraduationCap, Languages, Laptop, Code, Database, Wrench, Trash2, Edit2, Star, MessageCircle, CheckCircle2, AlertCircle, Rocket, Eye, Phone, Circle, Settings, AlertTriangle, RefreshCw, Globe, Calendar, Bell, ExternalLink, Info, Heart, TrendingUp, User } from "lucide-react"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
+import { cleanAgentResponse, parseChatMarkdown } from "@/lib/chat-format"
 import { Button } from "@/components/ui/button"
 import { VoiceChatButton } from "@/components/chat/voice-chat-button"
 import { MultimodalUpload, type AnalysisResult, type AnalysisType } from "@/components/chat/multimodal-upload"
@@ -8350,34 +8351,14 @@ Qual prefere?`,
   }
 
   const formatMessageContent = (content: string, isCurrentlyTyping: boolean, messageId: string) => {
-    // Show displayedText for typing messages, but fall back to content if displayedText is empty
     const isLastTypingMessage = isCurrentlyTyping && messages[messages.length - 1]?.id === messageId
     const textToShow = isLastTypingMessage && displayedText.length > 0
       ? displayedText 
       : content
 
-    const lines = textToShow.split('\n')
-    return lines.map((line, i) => {
-      if (line.startsWith('- ')) {
-        return (
-          <div key={i} className="flex items-start gap-2 ml-2">
-            <span className="text-gray-400">•</span>
-            <span>{line.substring(2)}</span>
-          </div>
-        )
-      }
-      if (line.includes('**')) {
-        const parts = line.split(/\*\*(.*?)\*\*/g)
-        return (
-          <p key={i}>
-            {parts.map((part, j) => 
-              j % 2 === 1 ? <strong key={j}>{part}</strong> : part
-            )}
-          </p>
-        )
-      }
-      return <p key={i}>{line}</p>
-    })
+    const cleaned = cleanAgentResponse(textToShow)
+    const html = parseChatMarkdown(cleaned)
+    return <div dangerouslySetInnerHTML={{ __html: html }} />
   }
 
   const getCriteriaStatus = (value: string | string[] | null) => {
@@ -8612,35 +8593,34 @@ Qual prefere?`,
                         </span>
                       </div>
                     ) : message.role === 'user' ? (
-                      /* User Message - Alinhado à direita, balão cinza claro com avatar à esquerda */
-                      <div className="flex items-start gap-3 max-w-[70%]">
-                        <img 
-                          src="https://randomuser.me/api/portraits/men/32.jpg" 
-                          alt="Você"
-                          className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-                        />
-                        <div 
-                          className="px-2.5 py-2 rounded-2xl bg-gray-100 dark:bg-gray-800"
-                          style={{ fontFamily: '"Open Sans", sans-serif' }}
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200">Você</span>
-                            <span className="text-[9px] text-gray-500">{formatTimestamp(message.timestamp)}</span>
+                      /* User Message - Standardized bubble */
+                      <div className="flex items-start gap-2.5 max-w-[70%]">
+                        <div className="flex flex-col items-end gap-1 flex-1">
+                          <div 
+                            className="px-3.5 py-2.5 rounded-[14px] rounded-br-[4px] bg-[#F3F4F6] dark:bg-gray-800"
+                            style={{ fontFamily: '"Open Sans", sans-serif' }}
+                          >
+                            <p className="text-[13px] text-[#374151] dark:text-gray-200 leading-relaxed">{message.content}</p>
                           </div>
-                          <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{message.content}</p>
+                          <span className="text-[11px] text-gray-400 px-1" style={{ fontFamily: '"Inter", sans-serif' }}>
+                            {formatTimestamp(message.timestamp)}
+                          </span>
+                        </div>
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mt-0.5">
+                          <User className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                         </div>
                       </div>
                     ) : message.messageType === 'parecer-lia' && message.parecerData ? (
                       <div className="flex items-start gap-2 max-w-[90%]">
-                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                         </div>
                         <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[9px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
-                          <p className="text-xs text-gray-700 dark:text-gray-300 mb-3">{message.content}</p>
+                          <p className="text-[13px] text-gray-700 dark:text-gray-300 mb-3">{message.content}</p>
                           <ParecerLIACard
                             data={message.parecerData}
                             onAcceptSuggestion={(suggestion) => {
@@ -8648,25 +8628,37 @@ Qual prefere?`,
                               if (inputRef?.current) inputRef.current.focus()
                             }}
                           />
+                          <MessageFeedback
+                            sessionId={conversationId || 'default-session'}
+                            messageId={message.id}
+                            originalResponse={message.content}
+                            className="mt-2"
+                          />
                         </div>
                       </div>
                     ) : message.messageType === 'compensation' ? (
                       /* Compensation Analysis - Text with Open Sans font (DS v4.1) */
                       <div className="flex items-start gap-2 max-w-[85%]">
-                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                         </div>
                         <div 
                           className="pt-1 flex-1 min-w-0"
                           style={{ fontFamily: '"Open Sans", sans-serif' }}
                         >
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[9px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
-                          <div className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap">
+                          <div className="text-[13px] text-[#374151] leading-relaxed whitespace-pre-wrap">
                             {formatSalaryAnalysisText(message.compensationAnalysis || null)}
                           </div>
+                          <MessageFeedback
+                            sessionId={conversationId || 'default-session'}
+                            messageId={message.id}
+                            originalResponse={message.content}
+                            className="mt-2"
+                          />
                         </div>
                       </div>
                     ) : message.messageType === 'competencies' ? (
@@ -8767,13 +8759,13 @@ Qual prefere?`,
                     ) : message.messageType === 'tool-confirmation' && message.toolCall ? (
                       /* Tool Confirmation Message - Conversational UI */
                       <div className="flex items-start gap-2 max-w-[85%]">
-                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                         </div>
                         <div className="pt-1 flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[9px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
                           <ToolConfirmationMessage
                             toolCall={message.toolCall}
@@ -8825,13 +8817,13 @@ Qual prefere?`,
                     ) : message.messageType === 'tool-execution-feedback' && message.toolExecutionResult ? (
                       /* Tool Execution Feedback */
                       <div className="flex items-start gap-2 max-w-[85%]">
-                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                         </div>
                         <div className="pt-1 flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[9px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
                           <ToolExecutionFeedback
                             result={message.toolExecutionResult}
@@ -8850,55 +8842,67 @@ Qual prefere?`,
                               }
                             }}
                           />
+                          <MessageFeedback
+                            sessionId={conversationId || 'default-session'}
+                            messageId={message.id}
+                            originalResponse={message.content}
+                            className="mt-2"
+                          />
                         </div>
                       </div>
                     ) : message.messageType === 'action-result' && message.actionType ? (
                       /* Action Result - WizardActionExecutor feedback */
                       <div className="flex items-start gap-2 max-w-[85%]">
-                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                         </div>
                         <div className="pt-1 flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-wedo-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>ação executada</span>
-                            <span className="text-[9px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-[10px] font-bold text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>ação executada</span>
+                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
                           <ActionResultCard
                             actionType={message.actionType}
                             result={(message.actionResult || {}) as Record<string, unknown> & { candidate_id?: string; candidate_name?: string; from_stage?: string; to_stage?: string; subject?: string; datetime?: string; moved_at?: string; sent_at?: string; scheduled_at?: string; simulated?: boolean; action?: string }}
                           />
                           {message.content && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                            <p className="text-[13px] text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                               {message.content}
                             </p>
                           )}
+                          <MessageFeedback
+                            sessionId={conversationId || 'default-session'}
+                            messageId={message.id}
+                            originalResponse={message.content}
+                            className="mt-2"
+                          />
                         </div>
                       </div>
                     ) : message.messageType === 'proactive' && message.proactiveData ? (
                       /* Proactive Suggestion - LIA's autonomous suggestion */
                       <div className="flex items-start gap-2 max-w-[85%]">
-                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                         </div>
                         <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold text-wedo-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>sugestão proativa</span>
-                            <span className="text-[9px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                            <span className="text-[10px] font-bold text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>sugestão proativa</span>
+                            <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                           </div>
                           <div className={cn(
                             "rounded-md border-l-4 p-2.5 mb-1",
                             message.proactiveData.severity === 'urgent' ? "border-l-red-500 bg-red-500/5" :
                             message.proactiveData.severity === 'warning' ? "border-l-amber-500 bg-amber-500/5" :
-                            "border-l-wedo-cyan bg-wedo-cyan/5"
+                            "border-l-chat-cyan bg-chat-cyan/5"
                           )}>
                             <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{message.content}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-1.5">
                             <button
                               onClick={() => handleProactiveAccept(message.proactiveData!.actionId, message.id)}
-                              className="px-3 py-1 text-[11px] font-medium rounded bg-wedo-cyan/15 text-wedo-cyan hover:bg-wedo-cyan/25 transition-colors"
+                              className="px-3 py-1 text-[11px] font-medium rounded bg-chat-cyan/15 text-chat-cyan hover:bg-chat-cyan/25 transition-colors"
                               style={{ fontFamily: '"Inter", sans-serif' }}
                             >
                               {message.proactiveData.actionLabel}
@@ -8915,8 +8919,8 @@ Qual prefere?`,
                       </div>
                     ) : message.messageType === 'detected-fields' && message.detectedFields && message.detectedFields.length > 0 ? (
                       <div className="flex items-start gap-2 max-w-[85%]">
-                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                         </div>
                         <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           <DetectedFieldsCard
@@ -8952,26 +8956,27 @@ Qual prefere?`,
                         </div>
                       </div>
                     ) : (
-                      /* LIA Message - Sem balão, apenas texto com ícone */
+                      /* LIA Message - Standardized bubble */
                       <div 
                         className="max-w-[85%] group overflow-hidden"
                         style={{ fontFamily: '"Open Sans", sans-serif' }}
                       >
-                        <div className="flex items-start gap-2">
-                          {/* LIA Icon - Sem borda, bold, compacto */}
-                          <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                            <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                        <div className="flex items-start gap-2.5">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                           </div>
-                          <div className="pt-1 flex-1 min-w-0 overflow-hidden">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-[10px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
-                              <span className="text-[9px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
+                          <div className="flex-1 min-w-0 overflow-hidden flex flex-col gap-1">
+                            <div className="flex items-center gap-1.5 px-1">
+                              <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
+                              <span className="text-[11px] text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
                             </div>
-                            <div className="text-xs text-gray-800 space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
-                              {formatMessageContent(message.content, message.isTyping || false, message.id)}
-                              {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
-                                <span className="inline-block w-1 h-3 bg-gray-900 dark:bg-gray-50 animate-pulse ml-0.5" />
-                              )}
+                            <div className="px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px]">
+                              <div className="text-[13px] text-[#374151] dark:text-gray-200 space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
+                                {formatMessageContent(message.content, message.isTyping || false, message.id)}
+                                {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
+                                  <span className="inline-block w-1.5 h-3.5 bg-chat-cyan animate-pulse ml-0.5" />
+                                )}
+                              </div>
                             </div>
                             {message.detectedFieldsData && message.detectedFieldsData.length > 0 && (
                               <DetectedFieldsCard 
@@ -9004,26 +9009,28 @@ Qual prefere?`,
                 ))}
               </div>
 
-              {/* Typing Indicator - "LIA está digitando..." */}
+              {/* Typing Indicator */}
               {(isLoading || isTypingEffect) && (
                 <div 
-                  className="flex items-start gap-2 mt-3 animate-in fade-in-0 duration-300"
+                  className="flex items-start gap-2.5 mt-3 animate-in fade-in-0 duration-300"
                   role="status"
                   aria-live="polite"
                   aria-label="LIA está digitando"
                 >
-                  <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
-                    <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
-                    <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-1.5 h-1.5 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 px-1">
+                      <span className="text-[11px] font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>
-                      LIA está digitando...
-                    </span>
+                    <div className="bg-white dark:bg-gray-900 border border-[#E5E7EB] dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+                      <div className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -9033,10 +9040,12 @@ Qual prefere?`,
 
             {/* Input Area - Fixo na parte inferior, compacto (estilo Claude/ChatGPT) */}
             <div className="px-4 py-4 flex-shrink-0 bg-white mt-auto">
-              {/* Input centralizado com largura ajustada */}
               <div className="flex justify-center">
                 <div className="w-full max-w-lg">
-                  <div className="flex items-center gap-2 px-2 py-1.5 bg-white border border-gray-200 rounded-md">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-[24px]">
+                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
+                      <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                    </div>
                     <input
                       ref={inputRef}
                       type="text"
@@ -9051,23 +9060,17 @@ Qual prefere?`,
                         }, 600)
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder="Descreva a vaga..."
+                      placeholder="Envie mensagem para a LIA..."
                       data-testid="chat-input"
                       aria-label="Digite sua mensagem para a LIA"
                       aria-describedby="chat-input-hint"
-                      className="flex-1 py-1 bg-transparent text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none rounded"
-                      style={{ fontFamily: '"Inter", sans-serif' }}
+                      className="flex-1 py-1 bg-transparent text-[13px] text-gray-900 dark:text-gray-50 placeholder:text-gray-400 focus:outline-none"
+                      style={{ fontFamily: '"Open Sans", sans-serif' }}
                       disabled={isLoading || isTypingEffect}
                     />
                     <span id="chat-input-hint" className="sr-only">Pressione Enter para enviar a mensagem</span>
 
                     <div className="flex items-center gap-1">
-                      <button
-                        className="p-1.5 text-gray-400 hover:text-gray-500 transition-colors"
-                        type="button"
-                      >
-                        <Search className="w-4 h-4" />
-                      </button>
                       <>
                         <input
                           ref={fileInputRef}
@@ -9077,7 +9080,7 @@ Qual prefere?`,
                           className="hidden"
                         />
                         <button
-                          className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:ring-offset-1 rounded"
+                          className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-full"
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
                           title="Anexar arquivo para análise"
@@ -9109,9 +9112,9 @@ Qual prefere?`,
                         aria-label="Enviar mensagem"
                         aria-disabled={!inputValue.trim() || isLoading || isTypingEffect}
                         className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ml-1 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:ring-offset-2",
+                          "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ml-1",
                           inputValue.trim() && !isLoading && !isTypingEffect
-                            ? "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                            ? "bg-chat-cyan text-white hover:opacity-90"
                             : "bg-gray-200 text-gray-400 cursor-not-allowed"
                         )}
                         type="button"
@@ -9119,7 +9122,7 @@ Qual prefere?`,
                         {isLoading ? (
                           <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                         ) : (
-                          <ArrowUp className="w-4 h-4" aria-hidden="true" />
+                          <Send className="w-4 h-4" aria-hidden="true" />
                         )}
                       </button>
                     </div>
@@ -9139,7 +9142,7 @@ Qual prefere?`,
                         style={{ fontFamily: '"Open Sans", sans-serif' }}
                       >
                         <div className="flex items-center gap-1">
-                          <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
+                          <Brain className="w-2.5 h-2.5 text-chat-cyan" />
                           <span>IA Natural</span>
                         </div>
                       </button>
@@ -9297,7 +9300,7 @@ Qual prefere?`,
                           }}
                           disabled={!inputValue.trim()}
                         >
-                          <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
+                          <Brain className="w-3 h-3 mr-1 text-chat-cyan" />
                           Criar Vaga a Partir do JD
                         </Button>
                       </div>
@@ -9454,7 +9457,7 @@ Qual prefere?`,
                   <div className="relative">
                     <div className="w-12 h-12 rounded-full border-3 border-gray-300 dark:border-gray-600 border-t-gray-300 dark:border-t-gray-600 animate-spin" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Brain className="w-5 h-5 text-wedo-cyan" />
+                      <Brain className="w-5 h-5 text-chat-cyan" />
                     </div>
                   </div>
                   <div className="text-center">
@@ -9851,7 +9854,7 @@ Qual prefere?`,
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
+                        <Brain className="w-3.5 h-3.5 text-chat-cyan" />
                         <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Competências Comportamentais
                         </span>
@@ -9964,7 +9967,7 @@ Qual prefere?`,
                     )}
                     
                     <p className="text-[9px] text-gray-400 mt-2 flex items-center gap-1">
-                      <Brain className="w-3 h-3 text-wedo-cyan" />
+                      <Brain className="w-3 h-3 text-chat-cyan" />
                       Texto gerado por IA baseado nas informações da vaga
                     </p>
                   </div>
@@ -10545,7 +10548,7 @@ Qual prefere?`,
                   {searchPhase === 'global-complete' && (
                     <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-green-500/5 rounded-md border border-gray-900 dark:border-gray-50/10">
                       <div className="flex items-center gap-2 mb-2">
-                        <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
+                        <Brain className="w-3.5 h-3.5 text-chat-cyan" />
                         <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Análise da Busca
                         </span>
