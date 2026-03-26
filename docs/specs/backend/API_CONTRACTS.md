@@ -1,34 +1,72 @@
-# API Contracts — WeDOTalent / Plataforma LIA
+# API_CONTRACTS.md — Contratos de API da Plataforma LIA
 
-> Última atualização: 2026-03-26
-> Fonte: `ats_api/config/routes.rb` + controllers + `recruiter_agent_v5/documentation/*.yml`
-> **SPEC-DRIVEN DEVELOPMENT** — contratos REST entre todos os serviços.
+> **Versão**: 2.0  
+> **Última atualização**: 2026-03-26  
+> **Fonte**: `ats_api/config/routes.rb`, `lia-agent-system/app/main.py` (362+ endpoints), `recruiter_agent_v5/src/api.py`  
+> **Proprietário**: WeDOTalent Engineering
 
 ---
 
-## 1. Visão Geral das Integrações
+## 1. Visão Geral da Arquitetura de APIs
 
 ```
-ats_front (Nuxt 3)
-    │
-    ├── REST ──▶ ats_api (Rails) ──▶ PostgreSQL
-    │
-    ├── WebSocket (ActionCable) ◀── ats_api (push)
-    │
-    └── RabbitMQ ──▶ recruiter_agent_v5 (Python)
-                         │
-                         ├── REST ──▶ ats_api (via JWT)
-                         │
-                         └── HTTP ──▶ Google Gemini API
+┌─────────────────────────────────────────────────────────────────────┐
+│  plataforma-lia (Next.js, port 5000)                                │
+│                                                                      │
+│  ┌──────────────────────┐     ┌──────────────────────────────┐     │
+│  │  lia-api.ts (client)  │────>│  /api/lia/[...path]/route.ts │     │
+│  └──────────────────────┘     │  (proxy → localhost:8000)    │     │
+│                                └──────────────┬───────────────┘     │
+└───────────────────────────────────────────────┼─────────────────────┘
+                                                 │ HTTP (internal)
+┌───────────────────────────────────────────────┼─────────────────────┐
+│  lia-agent-system (FastAPI, port 8000)         │                     │
+│  362+ REST endpoints + WebSocket               │                     │
+│  7 ReAct agents (LangGraph)                    │                     │
+│  WorkOS SSO authentication                     │                     │
+└───────────────────────────────────────────────┼─────────────────────┘
+                                                 │ HTTP + RabbitMQ
+┌───────────────────────────────────────────────┼─────────────────────┐
+│  ats_api (Rails 7.1, port 3000)                │                     │
+│  CRUD REST (JSONAPI) + ActionCable             │                     │
+│  JWT authentication                            │                     │
+└────────────────────────────────────────────────────────────────────┘
+                                                 │
+┌────────────────────────────────────────────────▼────────────────────┐
+│  recruiter_agent_v5 (Python, worker)                                │
+│  Chat/Stream API + RabbitMQ consumer                                │
+│  Google Gemini + domain orchestration                               │
+└────────────────────────────────────────────────────────────────────┘
 ```
+
+### 1.1 Serviços e portas
+
+| Serviço | Framework | Porta | Propósito |
+|---------|-----------|-------|-----------|
+| `plataforma-lia` | Next.js 14 | 5000 | Frontend + API proxy |
+| `lia-agent-system` | FastAPI 0.115+ | 8000 | Backend principal — IA, pipeline, compliance |
+| `ats_api` | Rails 7.1 | 3000 | ATS core — CRUD, Elasticsearch, ActionCable |
+| `recruiter_agent_v5` | FastAPI | — | Worker agent — Gemini, domain orchestration |
+
+### 1.2 Convenções globais
+
+| Convenção | Valor |
+|-----------|-------|
+| **Formato de data** | ISO 8601 UTC: `2026-03-15T10:00:00Z` |
+| **IDs** | UUID v4 (`lia-agent-system`) ou Integer (`ats_api`) |
+| **Paginação** | `?page=1&page_size=20` (Python) ou `?page=1&per_page=20` (Rails) |
+| **Multi-tenant** | `company_id` (UUID) via user auth ou header `X-Company-ID` |
+| **Content-Type** | `application/json` |
+| **Charset** | UTF-8 |
+| **Request ID** | Header `X-Request-ID` (auto-gerado pelo middleware) |
 
 ---
 
 ## 2. Autenticação
 
-### 2.1 Login (JWT)
+### 2.1 `ats_api` — JWT
 
-```
+```http
 POST /v1/sessions
 Content-Type: application/json
 
@@ -40,15 +78,13 @@ Content-Type: application/json
 Response 200:
 {
   "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "user": { ... }
+  "user": { "id": 1, "email": "user@example.com", "account_id": 1 }
 }
 ```
 
-### 2.2 Sessão Atual
-
-```
+```http
 GET /v1/me
-Authorization: Bearer <token>
+Authorization: Bearer <jwt_token>
 
 Response 200:
 {
@@ -56,246 +92,811 @@ Response 200:
 }
 ```
 
-### 2.3 Logout
-
-```
+```http
 POST /v1/logout
-Authorization: Bearer <token>
+Authorization: Bearer <jwt_token>
+
+Response 200: {}
 ```
 
 Todas as rotas em `/v1/users/*` requerem `Authorization: Bearer <token>`.
 
+### 2.2 `lia-agent-system` — WorkOS SSO
+
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "provider": "workos",
+  "code": "<workos_auth_code>"
+}
+
+Response 200:
+{
+  "access_token": "eyJ...",
+  "token_type": "bearer",
+  "user": {
+    "id": "uuid",
+    "email": "user@company.com",
+    "name": "João Silva",
+    "role": "recruiter",
+    "company_id": "uuid"
+  }
+}
+```
+
+**Dependency injection**:
+
+| Dependency | Efeito |
+|-----------|--------|
+| `get_current_user` | Valida Bearer token — 401 se ausente/inválido |
+| `get_current_active_user` | + verifica `is_active=True` |
+| `get_current_user_or_demo` | Aceita token ou cria user demo (dev only) |
+| `get_user_company_id` | Extrai `company_id` do user autenticado |
+
+### 2.3 `recruiter_agent_v5` — JWT via `ats_api`
+
+```python
+# ATSAPIClient obtém JWT do ats_api
+POST /v1/sessions { email, password } → { token: "..." }
+# Usado em todas as chamadas subsequentes
+Authorization: Bearer <jwt_from_ats_api>
+```
+
 ---
 
-## 3. Endpoints REST — ats_api
+## 3. Endpoints REST — `ats_api` (Rails)
 
 Base URL: `https://<ats-api-host>/v1`
 
 ### 3.1 Jobs
 
-| Método | Path | Controller | Ação |
-|--------|------|------------|------|
-| GET | `/users/jobs` | `JobsController#index` | Listar vagas (com busca/filtros) |
-| GET | `/users/jobs/:id` | `JobsController#show` | Detalhes de uma vaga |
-| POST | `/users/jobs` | `JobsController#create` | Criar vaga |
-| PUT | `/users/jobs/:id` | `JobsController#update` | Atualizar vaga (owner only) |
-| DELETE | `/users/jobs/:id` | `JobsController#destroy` | Deletar vaga (owner only) |
+| Método | Path | Ação |
+|--------|------|------|
+| GET | `/users/jobs` | Listar vagas (com busca Elasticsearch) |
+| GET | `/users/jobs/:id` | Detalhes de uma vaga |
+| POST | `/users/jobs` | Criar vaga |
+| PUT | `/users/jobs/:id` | Atualizar vaga (owner only) |
+| DELETE | `/users/jobs/:id` | Deletar vaga (owner only) |
 
-**Parâmetros de criação/atualização:**
+**Request body (create/update)**:
 ```json
 {
   "job": {
-    "title": "string (required)",
-    "description": "string (required)",
-    "user_id": "integer",
-    "account_id": "integer"
+    "title": "Dev Rails (required)",
+    "description": "Descrição (required)",
+    "user_id": 1,
+    "account_id": 1
   }
 }
 ```
 
-**Serializer:** `JobSerializer`
+**Serializer**: `JobSerializer` (JSONAPI::Serializer) — 22 attributes
 
 ### 3.2 Candidates
 
-| Método | Path | Controller | Ação |
-|--------|------|------------|------|
-| GET | `/users/candidates` | `CandidatesController#index` | Listar candidatos |
-| GET | `/users/candidates/:id` | `CandidatesController#show` | Detalhes |
-| POST | `/users/candidates` | `CandidatesController#create` | Criar candidato |
-| PUT | `/users/candidates/:id` | `CandidatesController#update` | Atualizar |
-| DELETE | `/users/candidates/:id` | `CandidatesController#destroy` | Deletar |
+| Método | Path | Ação |
+|--------|------|------|
+| GET | `/users/candidates` | Listar candidatos |
+| GET | `/users/candidates/:id` | Detalhes |
+| POST | `/users/candidates` | Criar candidato |
+| PUT | `/users/candidates/:id` | Atualizar |
+| DELETE | `/users/candidates/:id` | Deletar |
 
-**Parâmetros:**
-```json
-{
-  "candidate": {
-    "name": "string (required)",
-    "email": "string (required, unique)",
-    "surname": "string",
-    "mobile_phone": "string",
-    "cpf": "string (unique)",
-    "linkedin": "string",
-    "github": "string",
-    "portfolio": "string",
-    "current_company": "string",
-    "role_name": "string",
-    "position_level": "string",
-    "self_introduction": "text",
-    "curriculum_text": "text",
-    "date_birth": "date",
-    "gender": "integer",
-    "nationality": "string",
-    "city": "string",
-    "state": "string",
-    "country": "string",
-    "clt_expectation": "float",
-    "pj_expectation": "float",
-    "current_salary": "float",
-    "desired_salary": "float",
-    "currency": "string (default: BRL)",
-    "remote_work": "boolean",
-    "source": "string",
-    "avatar_url": "string",
-    "curriculum_pdf_url": "string",
-    "account_id": "integer"
-  }
-}
-```
+**Request body (create/update)**: 45+ campos em `{ "candidate": { ... } }`
 
 ### 3.3 Applies (Candidaturas)
 
-| Método | Path | Controller | Ação |
-|--------|------|------------|------|
-| GET | `/users/applies` | `AppliesController#index` | Listar (filtro `is_deleted: false`) |
-| GET | `/users/applies/:id` | `AppliesController#show` | Detalhes |
-| POST | `/users/applies` | `AppliesController#create` | Criar candidatura |
-| PUT | `/users/applies/:id` | `AppliesController#update` | Atualizar (mover de etapa) |
-| DELETE | `/users/applies/:id` | `AppliesController#destroy` | Soft delete (`is_deleted: true`) |
+| Método | Path | Ação |
+|--------|------|------|
+| GET | `/users/applies` | Listar (filtro `is_deleted: false`) |
+| GET | `/users/applies/:id` | Detalhes |
+| POST | `/users/applies` | Criar candidatura |
+| PUT | `/users/applies/:id` | Atualizar (mover de etapa) |
+| DELETE | `/users/applies/:id` | Soft delete (`is_deleted: true`) |
 
-**Parâmetros:**
+**Request body**:
 ```json
 {
   "apply": {
-    "candidate_id": "integer (required)",
-    "job_id": "integer (required)",
-    "selective_process_id": "integer (required)",
-    "is_deleted": "boolean",
-    "account_id": "integer"
+    "candidate_id": 1,
+    "job_id": 1,
+    "selective_process_id": 1,
+    "account_id": 1
   }
 }
 ```
 
-### 3.4 Selective Processes (Etapas)
+### 3.4 Selective Processes
 
-| Método | Path | Controller | Ação |
-|--------|------|------------|------|
-| GET | `/users/selective_processes` | `SelectiveProcessesController#index` | Listar etapas |
-| GET | `/users/selective_processes/:id` | `SelectiveProcessesController#show` | Detalhes |
-| POST | `/users/selective_processes` | `SelectiveProcessesController#create` | Criar etapa |
-| PUT | `/users/selective_processes/:id` | `SelectiveProcessesController#update` | Atualizar |
-| DELETE | `/users/selective_processes/:id` | `SelectiveProcessesController#destroy` | Deletar |
+| Método | Path | Ação |
+|--------|------|------|
+| GET | `/users/selective_processes` | Listar etapas |
+| GET | `/users/selective_processes/:id` | Detalhes |
+| POST | `/users/selective_processes` | Criar etapa |
+| PUT | `/users/selective_processes/:id` | Atualizar |
+| DELETE | `/users/selective_processes/:id` | Deletar |
 
 ### 3.5 Messages
 
-| Método | Path | Controller | Ação |
-|--------|------|------------|------|
-| GET | `/users/messages` | `MessagesController#index` | Listar mensagens |
-| POST | `/users/messages` | `MessagesController#create` | Criar mensagem |
+| Método | Path | Ação |
+|--------|------|------|
+| GET | `/users/messages` | Listar mensagens |
+| POST | `/users/messages` | Criar mensagem |
 
 ### 3.6 Users (Search)
 
-| Método | Path | Controller | Ação |
-|--------|------|------------|------|
-| GET | `/users/search` | `UsersController#index` | Buscar usuários |
-| GET | `/users/search/:id` | `UsersController#show` | Detalhes do usuário |
-| POST | `/users/create` | `UsersController#create` | Criar usuário |
-| PUT | `/users/edit/:id` | `UsersController#update` | Editar |
-| DELETE | `/users/delete/:id` | `UsersController#destroy` | Deletar |
+| Método | Path | Ação |
+|--------|------|------|
+| GET | `/users/search` | Buscar usuários |
+| GET | `/users/search/:id` | Detalhes |
+| POST | `/users/create` | Criar |
+| PUT | `/users/edit/:id` | Editar |
+| DELETE | `/users/delete/:id` | Deletar |
 
----
+### 3.7 Busca e Filtros (`perform_search`)
 
-## 4. Busca e Filtros (perform_search)
-
-O `ApplicationController` fornece `perform_search` via concern `SearchRenderer`:
-
-```
+```http
 GET /users/candidates?q=Maria&where[city]=SP&page=1&per_page=20
 ```
 
 | Parâmetro | Tipo | Descrição |
 |-----------|------|-----------|
-| `q` | string | Texto livre para full-text search |
-| `where[campo]` | any | Filtro exato por campo |
+| `q` | string | Full-text search (Elasticsearch) |
+| `where[campo]` | any | Filtro exato |
 | `page` | integer | Página (default 1) |
-| `per_page` | integer | Itens por página (default 20) |
+| `per_page` | integer | Itens/página (default 20) |
 | `order[campo]` | asc/desc | Ordenação |
 
-**Response shape:**
+**Response shape (JSONAPI)**:
 ```json
 {
-  "data": [...],
+  "data": [
+    { "id": 1, "title": "Dev Rails", "user_id": 5, "..." : "..." }
+  ],
   "meta": {
-    "total": 150,
-    "page": 1,
-    "per_page": 20,
-    "total_pages": 8
+    "total": 42,
+    "aggregators": {}
   }
 }
 ```
 
 ---
 
-## 5. WebSocket (ActionCable)
+## 4. Endpoints REST — `lia-agent-system` (FastAPI)
 
-| Canal | Path | Uso |
-|-------|------|-----|
-| MessageChannel | `/cable` | Push de mensagens do chat em tempo real |
-| CreditChannel | `/cable` | Atualização de créditos de sourcing |
+Base URL: `https://<host>/api/v1`  
+**Total**: 362+ endpoints REST + WebSocket  
+**Documentação interativa**: `/docs` (Swagger UI), `/docs/redoc` (ReDoc), `/openapi.json`
 
-Montado via: `mount ActionCable.server => "/cable"`
+### 4.1 OpenAPI Tags (categorias)
+
+| Tag | Descrição | Módulo(s) principal(is) |
+|-----|-----------|------------------------|
+| `agents` | Agentes ReAct de recrutamento | `agent_chat_ws`, `orchestrated_*` |
+| `candidates` | Gestão de candidatos, busca RAG híbrida | `candidates.py`, `candidate_search.py` |
+| `jobs` | Vagas, wizard, importação JD | `job_vacancies.py`, `jd_import.py` |
+| `rag-search` | Busca semântica BM25 + pgvector | `rag_search.py` |
+| `hitl` | Human-in-the-Loop | `hitl.py` |
+| `guardrails` | Guardrails de agentes | `guardrails.py` |
+| `pipeline` | Pipeline, stages, kanban | `pipeline.py`, `recruitment_stages.py` |
+| `sourcing` | Busca ativa, boolean strings | `sourcing.py` |
+| `cv-screening` | Triagem WSI, scores | `triagem.py`, `wsi.py` |
+| `compliance` | LGPD, bias audit, fairness | `bias_audit.py`, `lgpd_compliance.py` |
+| `analytics` | KPIs, funil, previsões ML | `reports.py`, `ml_predictions.py` |
+| `communication` | Email, WhatsApp, Teams | `communication.py`, `whatsapp.py` |
+| `scheduling` | Entrevistas, calendário | `scheduling.py`, `calendar.py` |
+| `auth` | WorkOS SSO, permissões | `workos.py`, `auth.py` |
+| `admin` | Administração, circuit breakers | `admin.py`, `admin_circuit_breakers.py` |
+| `health` | Health check, observabilidade | `system_health.py`, `health_langgraph.py` |
+| `toon` | TOON cards — perfil visual | `toon.py` |
+| `drift` | Model drift detection | `drift.py` |
+| `bias-audit` | Four-Fifths Rule | `bias_audit.py` |
+| `wsi` | Entrevista estruturada WhatsApp/voz | `wsi.py`, `wsi_async.py` |
+| `policy-engine` | Motor de políticas por setor | `policy_engine.py` |
+| `short-lists` | Short lists por vaga | `short_lists.py` |
+
+### 4.2 Chat e Conversação
+
+```http
+POST /api/v1/chat
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "message": "Preciso de desenvolvedores Python sênior em São Paulo",
+  "user_id": "uuid",
+  "conversation_id": "uuid (optional)"
+}
+
+Response 200:
+{
+  "response": "Encontrei 15 candidatos que atendem ao perfil...",
+  "conversation_id": "uuid",
+  "metadata": {
+    "intent": "search_candidates",
+    "entities": {
+      "job_title": "desenvolvedor Python",
+      "seniority": "sênior",
+      "skills": ["Python"],
+      "location": "São Paulo"
+    },
+    "confidence": 0.95,
+    "workflow_data": {
+      "search_results": {
+        "query": "Senior Python developer São Paulo",
+        "total_found": 15,
+        "candidates": [...]
+      }
+    }
+  }
+}
+```
+
+**Intents reconhecidos** (`INTENT_TO_ACTIONABLE`):
+
+| Intent (EN) | Ação (PT) | Descrição |
+|-------------|-----------|-----------|
+| `move_candidate` | `mover_candidato` | Mover no pipeline |
+| `update_candidate_status` | `atualizar_status_candidato` | Atualizar status |
+| `reject_candidate` | `reprovar_candidato` | Reprovar |
+| `approve_candidate` | `aprovar_candidato` | Aprovar |
+| `send_email` | `enviar_email` | Enviar email |
+| `schedule_interview` | `agendar_entrevista` | Agendar entrevista |
+| `trigger_screening` | `disparar_triagem` | Disparar triagem |
+| `analyze_profile` | `analisar_perfil` | Analisar perfil |
+| `pause_job` | `pausar_vaga` | Pausar vaga |
+| `close_job` | `fechar_vaga` | Fechar vaga |
+| `duplicate_job` | `duplicar_vaga` | Duplicar vaga |
+| `reopen_job` | `reabrir_vaga` | Reabrir vaga |
+
+**Intents que não geram ação** (`SKIP_ACTION_INTENTS`): `create_job`, `greeting`, `general_question`, `search_candidates`, `unknown`
+
+### 4.3 Chat Streaming
+
+```http
+POST /api/v1/chat/stream
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "message": "Analise o perfil do candidato João",
+  "user_id": "uuid"
+}
+
+Response: text/event-stream (SSE)
+data: {"token": "Anali"}
+data: {"token": "sando"}
+data: {"token": " o perfil..."}
+data: {"done": true, "metadata": {...}}
+```
+
+### 4.4 Job Vacancies (4677 linhas)
+
+```http
+GET /api/v1/job-vacancies
+Authorization: Bearer <token>
+
+Query params:
+  ?page=1&page_size=20
+  &status=active
+  &company_id=uuid
+  &search=python developer
+
+Response 200:
+{
+  "items": [...],
+  "total": 42,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 3
+}
+```
+
+```http
+POST /api/v1/job-vacancies
+Authorization: Bearer <token>
+
+{
+  "title": "Senior Python Engineer",
+  "description": "...",
+  "department": "Engineering",
+  "seniority_level": "senior",
+  "employment_type": "clt",
+  "work_model": "hybrid",
+  "location_city": "São Paulo",
+  "location_state": "SP",
+  "salary_min": 15000,
+  "salary_max": 25000,
+  "salary_currency": "BRL",
+  "required_skills": ["Python", "FastAPI", "PostgreSQL"],
+  "experience_years": 5
+}
+```
+
+```http
+GET /api/v1/job-vacancies/{vacancy_id}
+PUT /api/v1/job-vacancies/{vacancy_id}
+DELETE /api/v1/job-vacancies/{vacancy_id}
+```
+
+**Sub-endpoints de vaga**:
+
+| Método | Path | Descrição |
+|--------|------|-----------|
+| GET | `/job-vacancies/{id}/candidates` | Candidatos da vaga |
+| GET | `/job-vacancies/{id}/funnel` | Funil da vaga |
+| GET | `/job-vacancies/{id}/analytics` | Analytics da vaga |
+| POST | `/job-vacancies/{id}/publish` | Publicar vaga |
+| POST | `/job-vacancies/{id}/pause` | Pausar vaga |
+| POST | `/job-vacancies/{id}/close` | Fechar vaga |
+| POST | `/job-vacancies/{id}/duplicate` | Duplicar vaga |
+| POST | `/job-vacancies/{id}/reopen` | Reabrir vaga |
+| GET | `/job-vacancies/{id}/report` | Relatório da vaga |
+
+**Vagas públicas** (sem autenticação):
+
+```http
+GET /api/v1/public-vacancies
+GET /api/v1/public-vacancies/{vacancy_id}
+```
+
+### 4.5 Candidates (2128 linhas)
+
+**Busca 2-tier**: Local (PostgreSQL, gratuito) → Global (Pearch AI 190M+, pago)
+
+```http
+GET /api/v1/candidates/search
+Authorization: Bearer <token>
+
+Query params:
+  ?query=python developer senior
+  &location=São Paulo
+  &skills=Python,FastAPI
+  &experience_min=3
+  &page=1&page_size=20
+
+Response 200:
+{
+  "candidates": [...],
+  "total": 150,
+  "search_type": "local",
+  "search_time_seconds": 0.45
+}
+```
+
+```http
+POST /api/v1/candidates/pearch-search
+Authorization: Bearer <token>
+
+{
+  "query": "Senior Python engineer in São Paulo",
+  "limit": 10
+}
+
+Response 200:
+{
+  "query": "Senior Python engineer in São Paulo",
+  "total_results": 10,
+  "candidates": [
+    {
+      "id": null,
+      "name": "...",
+      "headline": "Senior Python Engineer @ Company",
+      "current_title": "Senior Python Engineer",
+      "current_company": "Company X",
+      "location": "São Paulo, Brazil",
+      "contact": {
+        "email": "...",
+        "linkedin_url": "..."
+      },
+      "skills": ["Python", "Django", "AWS"],
+      "summary": "...",
+      "match_score": 0.92
+    }
+  ],
+  "search_time_seconds": 2.3
+}
+```
+
+**Stage transitions**:
+
+```http
+PUT /api/v1/candidates/{candidate_id}/stage
+Authorization: Bearer <token>
+
+{
+  "vacancy_id": "uuid",
+  "from_stage": "triagem",
+  "to_stage": "entrevista rh",
+  "reason": "CV aprovado"
+}
+```
+
+### 4.6 Recruitment Stages
+
+```http
+GET /api/v1/recruitment-stages/{vacancy_id}
+POST /api/v1/recruitment-stages
+PUT /api/v1/recruitment-stages/{stage_id}
+DELETE /api/v1/recruitment-stages/{stage_id}
+```
+
+### 4.7 Sourcing Pipeline
+
+```http
+POST /api/v1/sourcing/start
+Authorization: Bearer <token>
+
+{
+  "vacancy_id": "uuid",
+  "search_criteria": {...},
+  "auto_calibrate": true
+}
+```
+
+### 4.8 WSI — Entrevista Estruturada
+
+```http
+POST /api/v1/wsi/start
+Authorization: Bearer <token>
+
+{
+  "candidate_id": "uuid",
+  "vacancy_id": "uuid",
+  "channel": "whatsapp"
+}
+
+Response 200:
+{
+  "session_id": "uuid",
+  "questions": [...],
+  "estimated_duration_minutes": 15
+}
+```
+
+```http
+POST /api/v1/wsi/analyze
+{
+  "session_id": "uuid",
+  "answers": [...]
+}
+
+Response 200:
+{
+  "score": 78.5,
+  "recommendation": "approved",
+  "analysis": {
+    "technical": { "score": 85, "details": "..." },
+    "communication": { "score": 70, "details": "..." },
+    "cultural_fit": { "score": 80, "details": "..." }
+  }
+}
+```
+
+### 4.9 Calibration
+
+```http
+POST /api/v1/calibration/feedback
+{
+  "vacancy_id": "uuid",
+  "candidate_id": "uuid",
+  "feedback": "like",
+  "reason": "Strong Python background"
+}
+```
+
+```http
+GET /api/v1/calibration/session/{session_id}
+
+Response 200:
+{
+  "status": "learning",
+  "total_shown": 12,
+  "likes_count": 7,
+  "dislikes_count": 5,
+  "learned_criteria": {...},
+  "sourcing_blocked": true
+}
+```
+
+### 4.10 LIA Opinions
+
+```http
+GET /api/v1/opinions/{candidate_id}
+POST /api/v1/opinions/generate
+Authorization: Bearer <token>
+
+{
+  "candidate_id": "uuid",
+  "vacancy_id": "uuid",
+  "opinion_type": "wsi"
+}
+
+Response 200:
+{
+  "id": "uuid",
+  "score": 82.5,
+  "wsi_score": 78.0,
+  "recommendation": "approved",
+  "archetype": "Executor Pragmático",
+  "summary": "Candidato demonstra forte competência técnica...",
+  "score_breakdown": {
+    "technical": 85,
+    "communication": 70,
+    "cultural_fit": 90
+  },
+  "strengths": ["Python avançado", "Liderança técnica"],
+  "concerns": ["Pouca experiência com cloud"],
+  "next_steps": "Agendar entrevista técnica"
+}
+```
+
+### 4.11 HITL — Human-in-the-Loop
+
+```http
+GET /api/v1/hitl/pending
+Authorization: Bearer <token>
+
+Response 200:
+{
+  "pending_actions": [
+    {
+      "id": "uuid",
+      "action_type": "mover_candidato",
+      "description": "Mover João para Entrevista RH",
+      "entities": {...},
+      "created_at": "2026-03-15T10:00:00Z"
+    }
+  ]
+}
+```
+
+```http
+POST /api/v1/hitl/{action_id}/approve
+POST /api/v1/hitl/{action_id}/reject
+{
+  "reason": "Candidato não atende requisitos mínimos"
+}
+```
+
+### 4.12 Guardrails
+
+```http
+GET /api/v1/guardrails
+POST /api/v1/guardrails
+PUT /api/v1/guardrails/{id}
+DELETE /api/v1/guardrails/{id}
+POST /api/v1/guardrails/seed-defaults
+```
+
+### 4.13 Compliance — LGPD
+
+```http
+GET /api/v1/lgpd/consents/{candidate_id}
+POST /api/v1/lgpd/consents
+DELETE /api/v1/lgpd/consents/{consent_id}
+```
+
+```http
+POST /api/v1/data-subject-requests
+{
+  "candidate_email": "joao@example.com",
+  "request_type": "access",
+  "description": "Solicito acesso aos meus dados"
+}
+```
+
+**DSR types**: `access`, `rectification`, `erasure`, `portability`, `restriction`, `objection`
+
+### 4.14 Bias Audit
+
+```http
+GET /api/v1/bias-audit/{vacancy_id}
+
+Response 200:
+{
+  "vacancy_id": "uuid",
+  "four_fifths_rule": {
+    "gender": { "ratio": 0.85, "passed": true },
+    "ethnicity": { "ratio": 0.72, "passed": false }
+  },
+  "recommendations": [...]
+}
+```
+
+### 4.15 Communication
+
+```http
+POST /api/v1/communication/send
+{
+  "candidate_id": "uuid",
+  "channel": "email",
+  "template_id": "uuid",
+  "variables": { "name": "João", "position": "Dev Python" }
+}
+```
+
+**Channels suportados**: `email`, `whatsapp`, `sms`, `teams`
+
+### 4.16 Scheduling
+
+```http
+POST /api/v1/scheduling/create
+{
+  "candidate_id": "uuid",
+  "vacancy_id": "uuid",
+  "type": "technical_interview",
+  "proposed_times": [
+    "2026-04-01T14:00:00Z",
+    "2026-04-02T10:00:00Z"
+  ],
+  "interviewer_ids": ["uuid1", "uuid2"]
+}
+```
+
+### 4.17 Admin — Monitoramento
+
+```http
+GET /api/v1/admin/circuit-breakers
+POST /api/v1/admin/circuit-breakers/{name}/reset
+GET /api/v1/admin/agents/status
+GET /api/v1/admin/dlq
+POST /api/v1/admin/dlq/{id}/retry
+GET /api/v1/admin/token-budget
+```
+
+### 4.18 Health Check
+
+```http
+GET /health
+→ 307 Redirect to /api/v1/health
+
+GET /api/v1/health
+
+Response 200:
+{
+  "status": "healthy",
+  "app": "lia-agent-system",
+  "version": "3.0.0",
+  "environment": "development",
+  "database": "connected",
+  "services": {
+    "pearch": "configured",
+    "openmic": "configured",
+    "workos": "configured",
+    "sentry": "configured",
+    "langsmith": "configured"
+  }
+}
+```
+
+```http
+GET /metrics
+→ Prometheus metrics (text/plain; openmetrics)
+```
+
+### 4.19 Observabilidade
+
+```http
+GET /api/v1/observability/traces
+GET /api/v1/observability/metrics
+GET /api/v1/model-drift/status
+GET /api/v1/agent-explainability/{decision_id}
+```
 
 ---
 
-## 6. Contrato recruiter_agent_v5 → ats_api
+## 5. WebSocket
+
+### 5.1 `ats_api` — ActionCable
+
+```
+WebSocket URL: wss://<ats-api-host>/cable
+
+Channels:
+  - MessageChannel → Push de mensagens em tempo real
+  - CreditChannel  → Atualização de créditos de sourcing
+```
+
+### 5.2 `lia-agent-system` — FastAPI WebSocket
+
+```
+WebSocket URL: wss://<host>/ws/agent-chat
+
+Message format (client → server):
+{
+  "type": "message",
+  "content": "Preciso de desenvolvedores Python",
+  "user_id": "uuid",
+  "conversation_id": "uuid"
+}
+
+Message format (server → client):
+{
+  "type": "response",
+  "content": "Encontrei 15 candidatos...",
+  "metadata": {...}
+}
+
+{
+  "type": "thinking",
+  "content": "Analisando requisitos da vaga..."
+}
+
+{
+  "type": "action_required",
+  "action": {
+    "type": "mover_candidato",
+    "description": "Mover João para Entrevista RH",
+    "requires_confirmation": true
+  }
+}
+```
+
+```
+WebSocket URL: wss://<host>/ws/jobs/{vacancy_id}
+→ Real-time updates para uma vaga específica (candidatos, stage changes)
+```
+
+---
+
+## 6. Contrato `recruiter_agent_v5` → `ats_api`
 
 O agente Python acessa o Rails API via `ATSAPIClient` (`src/services/api_client.py`).
 
-### 6.1 Autenticação
-
-```python
-# Login e obtenção de JWT
-POST /v1/sessions { email, password }
-→ { token: "..." }
-```
-
-### 6.2 Ferramentas Documentadas (YAML)
+### 6.1 Tools documentadas em YAML
 
 Cada tool do agente tem um arquivo YAML em `documentation/`:
 
-| Arquivo | Endpoint | Método |
-|---------|----------|--------|
-| `candidates_search.yml` | `/users/candidates` | GET |
-| `candidates_create.yml` | `/users/candidates` | POST |
-| `candidates_show.yml` | `/users/candidates/:id` | GET |
-| `candidates_update.yml` | `/users/candidates/:id` | PUT |
-| `candidates_delete.yml` | `/users/candidates/:id` | DELETE |
-| `jobs_search.yml` | `/users/jobs` | GET |
-| `jobs_create.yml` | `/users/jobs` | POST |
-| `jobs_show.yml` | `/users/jobs/:id` | GET |
-| `jobs_update.yml` | `/users/jobs/:id` | PUT |
-| `jobs_delete.yml` | `/users/jobs/:id` | DELETE |
-| `applies_search.yml` | `/users/applies` | GET |
-| `applies_create.yml` | `/users/applies` | POST |
-| `applies_update.yml` | `/users/applies/:id` | PUT |
-| `applies_delete.yml` | `/users/applies/:id` | DELETE |
-| `selective_processes_search.yml` | `/users/selective_processes` | GET |
-| `selective_processes_create.yml` | `/users/selective_processes` | POST |
-| `selective_processes_update.yml` | `/users/selective_processes/:id` | PUT |
-| `selective_processes_delete.yml` | `/users/selective_processes/:id` | DELETE |
-| `evaluations_search.yml` | `/users/evaluations` | GET |
-| `evaluations_create.yml` | `/users/evaluations` | POST |
-| `evaluations_update.yml` | `/users/evaluations/:id` | PUT |
-| `evaluations_delete.yml` | `/users/evaluations/:id` | DELETE |
-| `questions_search.yml` | `/users/questions` | GET |
-| `questions_create.yml` | `/users/questions` | POST |
-| `questions_update.yml` | `/users/questions/:id` | PUT |
-| `questions_delete.yml` | `/users/questions/:id` | DELETE |
-| `users_search.yml` | `/users/search` | GET |
-| `users_create.yml` | `/users/create` | POST |
-| `users_update.yml` | `/users/edit/:id` | PUT |
-| `users_delete.yml` | `/users/delete/:id` | DELETE |
-| `sourced_profile_sourcings_search.yml` | `/users/sourced_profile_sourcings` | GET |
-| `sourced_profile_sourcings_create.yml` | `/users/sourced_profile_sourcings` | POST |
-| `sourced_profiles_import.yml` | `/users/sourced_profiles/import` | POST |
-| `sourced_profiles_convert_to_candidates.yml` | `/users/sourced_profiles/convert` | POST |
-| `lists_search.yml` | `/users/lists` | GET |
-| `list_relationships_create.yml` | `/users/list_relationships` | POST |
-| `talent_pool_search.yml` | `/users/talent_pool` | GET |
-| `organizational_structure_create.yml` | `/users/organizational_structure` | POST |
+| Resource | Endpoints | YAML files |
+|----------|-----------|------------|
+| candidates | GET, POST, PUT, DELETE `/users/candidates` | `candidates_search/create/show/update/delete.yml` |
+| jobs | GET, POST, PUT, DELETE `/users/jobs` | `jobs_search/create/show/update/delete.yml` |
+| applies | GET, POST, PUT, DELETE `/users/applies` | `applies_search/create/update/delete.yml` |
+| selective_processes | GET, POST, PUT, DELETE `/users/selective_processes` | `selective_processes_search/create/update/delete.yml` |
+| evaluations | GET, POST, PUT, DELETE `/users/evaluations` | `evaluations_search/create/update/delete.yml` |
+| questions | GET, POST, PUT, DELETE `/users/questions` | `questions_search/create/update/delete.yml` |
+| users | GET, POST, PUT, DELETE `/users/search\|create\|edit\|delete` | `users_search/create/update/delete.yml` |
+| sourced_profiles | GET, POST `/users/sourced_profile_sourcings` | `sourced_profile_sourcings_search/create.yml` |
+| sourced_profiles | POST `/users/sourced_profiles/import\|convert` | `sourced_profiles_import/convert_to_candidates.yml` |
+| lists | GET `/users/lists` | `lists_search.yml` |
+| list_relationships | POST `/users/list_relationships` | `list_relationships_create.yml` |
+| talent_pool | GET `/users/talent_pool` | `talent_pool_search.yml` |
+| org_structure | POST `/users/organizational_structure` | `organizational_structure_create.yml` |
+
+### 6.2 Chat/Stream API
+
+```http
+POST /chat
+Content-Type: application/json
+
+{
+  "message": "Quero ver vagas abertas",
+  "session_id": "uuid",
+  "domain": "jobs",
+  "hub_mode": true,
+  "context_data": {}
+}
+
+Response 200:
+{
+  "response": "Você tem 3 vagas abertas...",
+  "session_id": "uuid",
+  "domain": "jobs",
+  "actions_taken": [...]
+}
+```
+
+```http
+POST /chat/stream
+→ Server-Sent Events (SSE)
+```
 
 ---
 
-## 7. Contrato recruiter_agent_v5 ↔ RabbitMQ
+## 7. Contrato RabbitMQ (`recruiter_agent_v5` ↔ `lia-agent-system`)
 
 ### 7.1 Queues
 
@@ -303,8 +904,9 @@ Cada tool do agente tem um arquivo YAML em `documentation/`:
 |-------|----------|--------|
 | `recruiter_agent` | `celery_worker.py` | Queries de domínio |
 | `evaluation` | `evaluation_worker.py` | Avaliação de candidatos |
+| `lia_platform_events` | `rabbitmq_consumer` | Eventos inter-API assíncronos |
 
-### 7.2 Formato da Mensagem (RabbitMQ)
+### 7.2 Formato da mensagem
 
 ```json
 {
@@ -316,20 +918,18 @@ Cada tool do agente tem um arquivo YAML em `documentation/`:
     "user_id": 1,
     "account_id": 1,
     "auth_token": "jwt...",
-    "viewing_entities": { ... }
+    "viewing_entities": {}
   },
   "metadata": {
-    "source": "chat|voice",
+    "source": "chat|voice|webhook",
     "timestamp": "2026-03-26T10:00:00Z"
   }
 }
 ```
 
-### 7.3 Callback de Resposta
+### 7.3 Callback de resposta
 
-O agente envia resposta de volta ao Rails via HTTP POST:
-
-```
+```http
 POST /v1/agent_responses
 Authorization: Bearer <agent_token>
 
@@ -337,7 +937,7 @@ Authorization: Bearer <agent_token>
   "session_id": "uuid",
   "message": "resposta em português",
   "metadata": {
-    "action_type": "search|create|update|...",
+    "action_type": "search|create|update|delete",
     "execution_time_ms": 1500,
     "api_calls": 3,
     "suggestions": ["Sugestão 1", "Sugestão 2"]
@@ -347,39 +947,159 @@ Authorization: Bearer <agent_token>
 
 ---
 
-## 8. Error Handling
+## 8. Frontend Proxy (`plataforma-lia`)
 
-### 8.1 HTTP Status Codes (Rails)
+O frontend Next.js proxia requests para o backend via API route:
 
-| Code | Significado | Quando |
-|------|------------|--------|
-| 200 | OK | Sucesso |
-| 201 | Created | Recurso criado |
-| 204 | No Content | Deletado com sucesso |
-| 401 | Unauthorized | Token inválido/expirado |
-| 403 | Forbidden | Sem permissão (ex: editar job de outro user) |
-| 404 | Not Found | Recurso não encontrado |
-| 422 | Unprocessable Entity | Validação falhou |
-| 500 | Internal Server Error | Erro do servidor |
+```
+Frontend → /api/lia/api/v1/chat → Proxy → http://localhost:8000/api/v1/chat
+```
 
-### 8.2 Formato de Erro
+**Implementação**: `src/app/api/lia/[...path]/route.ts`
 
-```json
-{
-  "error": "Mensagem de erro",
-  "details": { ... }
-}
+**Métodos permitidos**: GET, POST, PUT, DELETE, PATCH  
+**Headers**: sanitizados, sem vazamento de stack traces  
+**Razão**: Replit expõe apenas porta 5000 publicamente; porta 8000 é interna
+
+**Client service**: `src/services/lia-api.ts`
+
+```typescript
+import { liaApi } from '@/services/lia-api'
+
+await liaApi.sendMessage({ message: "...", user_id: "..." })
+await liaApi.searchCandidates({ query: "...", limit: 10 })
+await liaApi.healthCheck()
+await liaApi.getConversations(userId)
+await liaApi.getConversationHistory(conversationId)
+await liaApi.searchCandidatesByJobDescription(jd)
+await liaApi.checkPearchHealth()
 ```
 
 ---
 
-## 9. Health Check
+## 9. Error Handling
 
+### 9.1 `ats_api` — Rails
+
+| Code | Significado | Quando |
+|------|-------------|--------|
+| 200 | OK | Sucesso |
+| 201 | Created | Recurso criado |
+| 204 | No Content | Deletado com sucesso |
+| 401 | Unauthorized | Token inválido/expirado |
+| 403 | Forbidden | Sem permissão |
+| 404 | Not Found | Recurso não encontrado |
+| 422 | Unprocessable Entity | Validação falhou |
+| 500 | Internal Server Error | Erro do servidor |
+
+**Formato de erro Rails**:
+```json
+{
+  "error": "Mensagem de erro",
+  "details": {}
+}
 ```
-GET /up
-Response 200 — aplicação saudável
-Response 500 — aplicação com erro
+
+### 9.2 `lia-agent-system` — FastAPI
+
+| Code | Significado | Quando |
+|------|-------------|--------|
+| 200 | OK | Sucesso |
+| 201 | Created | Recurso criado |
+| 400 | Bad Request | Payload inválido (Pydantic validation) |
+| 401 | Unauthorized | Token ausente ou inválido |
+| 403 | Forbidden | Sem permissão para o recurso |
+| 404 | Not Found | Recurso não encontrado |
+| 422 | Validation Error | Pydantic field validation failed |
+| 429 | Too Many Requests | Rate limit excedido (`RateLimitMiddleware`) |
+| 500 | Internal Server Error | Erro do servidor — capturado pelo Sentry |
+
+**Formato de erro FastAPI**:
+```json
+{
+  "error": true,
+  "status_code": 404,
+  "message": "Vacancy not found",
+  "request_id": "abc-123-def"
+}
 ```
+
+**Exception handlers globais** (definidos em `main.py`):
+
+```python
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": True,
+            "status_code": exc.status_code,
+            "message": exc.detail,
+            "request_id": request.state.request_id,
+        }
+    )
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request, exc):
+    sentry_sdk.capture_exception(exc)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": True,
+            "status_code": 500,
+            "message": "Internal server error",
+            "request_id": request.state.request_id,
+        }
+    )
+```
+
+---
+
+## 10. Middleware Stack (`lia-agent-system`)
+
+Ordem de execução (outermost → innermost):
+
+| Ordem | Middleware | Função |
+|-------|-----------|--------|
+| 1 | `StructuredLoggingMiddleware` | Logs estruturados com status code final |
+| 2 | `RequestIdMiddleware` | Gera `X-Request-ID` para tracing |
+| 3 | `RateLimitMiddleware` | Rate limiting por IP/user |
+| 4 | `CORSMiddleware` | CORS headers — `allow_origins: settings.CORS_ORIGINS` |
+
+---
+
+## 11. Startup e Serviços Inicializados
+
+No `lifespan` do FastAPI (em `main.py`), os seguintes serviços são inicializados na ordem:
+
+| Serviço | Validação | Fallback se falhar |
+|---------|-----------|-------------------|
+| Microsoft Teams Bot | `MICROSOFT_APP_ID` + `MICROSOFT_APP_PASSWORD` | Warning — Teams offline |
+| Microsoft Graph API | `AZURE_CLIENT_ID` + `AZURE_CLIENT_SECRET` + `AZURE_TENANT_ID` | Warning — Calendar offline |
+| Pearch AI | `PEARCH_API_KEY` | Warning — Search offline |
+| OpenMic.ai | `OPENMIC_API_KEY` | Warning — Voice offline |
+| Database | `init_db()` | **Fatal** — startup fails |
+| Domain Registry | `DomainRegistry().list_domains()` | Info |
+| Embedding Cache | `embedding_cache.warm_up(db)` | Warning |
+| Multi-Agent Orchestrator | `initialize_orchestrator(llm_service)` | Warning — chat offline |
+| Automation Scheduler | `automation_scheduler.start()` | Warning — automations offline |
+| Stage Automation Engine | `register_all_handlers()` | Warning — triggers offline |
+| Tool Registry | `initialize_tools()` | Warning — function calling offline |
+| PolicyEngine Rules | `PolicyEngineService().load_default_rules()` | Warning (non-blocking) |
+| ReAct Agent Registry | `register_react_agents()` | Warning — agents offline |
+| RabbitMQ Consumer | `rabbitmq_consumer.start()` | Info — async messaging offline |
+| Platform Event Handlers | `register_platform_handlers()` | Warning |
+
+---
+
+## 12. Rate Limiting
+
+| Tier | Limite | Escopo |
+|------|--------|--------|
+| Default | 100 req/min | Per IP |
+| Authenticated | 300 req/min | Per user |
+| Admin | 1000 req/min | Per user (admin role) |
+| LLM endpoints | 20 req/min | Per user — proteção de custo |
 
 ---
 
@@ -387,10 +1107,14 @@ Response 500 — aplicação com erro
 
 | Arquivo | Localização |
 |---------|-------------|
-| Routes | `ats_api/config/routes.rb` |
-| Jobs Controller | `ats_api/app/controllers/v1/users/jobs_controller.rb` |
-| Applies Controller | `ats_api/app/controllers/v1/users/applies_controller.rb` |
-| Candidates Controller | `ats_api/app/controllers/v1/users/candidates_controller.rb` |
-| Application Controller | `ats_api/app/controllers/application_controller.rb` |
+| Routes (Rails) | `ats_api/config/routes.rb` |
+| Main app (Python) | `lia-agent-system/app/main.py` |
+| Chat API | `lia-agent-system/app/api/v1/chat.py` |
+| Job Vacancies API | `lia-agent-system/app/api/v1/job_vacancies.py` |
+| Candidates API | `lia-agent-system/app/api/v1/candidates.py` |
+| WorkOS Auth | `lia-agent-system/app/api/v1/workos.py` |
 | Tool Documentation | `recruiter_agent_v5/documentation/*.yml` |
-| API Client (Python) | `recruiter_agent_v5/src/services/api_client.py` |
+| Frontend API Client | `plataforma-lia/src/services/lia-api.ts` |
+| Frontend Proxy | `plataforma-lia/src/app/api/lia/[...path]/route.ts` |
+| Integration Doc | `docs/integracao/FRONTEND_BACKEND_INTEGRATION.md` |
+| BACKEND_STANDARDS | `docs/specs/standards/BACKEND_STANDARDS.md` |
