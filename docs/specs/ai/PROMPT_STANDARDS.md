@@ -645,17 +645,34 @@ RESPONDA EM JSON:
 
 ---
 
-## 15. Anti-Patterns Identificados
+## 15. Fontes de Verdade por Componente
 
-### 15.1 Duplicação de Prompts
+| Comportamento | Fonte Canônica | Status |
+|---------------|---------------|--------|
+| Prompt YAML loading + cache | `app/shared/prompts/loader.py` → `PromptLoader` | Implementado |
+| Domain system prompts (inline Python) | `app/domains/*/agents/*_system_prompt.py` | Implementado |
+| Anti-sycophancy blocks | `app/shared/prompts/anti_sycophancy_block.py` | Implementado (3 variantes) |
+| Interaction patterns (negation/confirmation) | `app/shared/prompts/interaction_patterns.py` | Implementado |
+| Defensive prompts (clarification/error) | `app/shared/robustness/defensive_prompts.py` + `shared/defensive.yaml` | Implementado |
+| Few-shot examples (sourcing only) | `app/domains/sourcing/prompts.py` | Implementado (1 domínio) |
+| Cascaded router prompts | `app/orchestrator/cascaded_router.py` | Implementado |
+| LLM cascade (confidence thresholds) | `app/services/llm.py` → `generate_with_cascade()` | Implementado |
+| Ethical guidelines / FAIRNESS_AND_COMPLIANCE | `shared/lia_persona.yaml` + inline nos system prompts | Duplicação: YAML e inline coexistem |
+| ReAct reasoning JSON format | `react_loop.py` → `_parse_reasoning()` | Implementado |
+
+---
+
+## 16. Anti-Patterns Identificados
+
+### 16.1 Duplicação de Prompts
 
 O `wizard_system_prompt.py` define inline as mesmas regras de `=== COMPLIANCE E ÉTICA ===` e `=== FAIRNESS_AND_COMPLIANCE ===` que existem em `ethical_guidelines` no YAML compartilhado. Isso cria risco de drift entre as duas fontes.
 
-### 15.2 Prompts Mockados no Frontend (Archived)
+### 16.2 Prompts Mockados no Frontend (Archived)
 
 3 tabs do Talent Funnel (Pipelines, Personas, Mapping) foram arquivadas em `plataforma-lia/src/components/talent-funnel-tabs/_archived/`. Cada uma implementava `handleLIAInsights()` com respostas hardcoded locais — sem LLM ou backend real. Os componentes ativos (`candidates-page.tsx`, `tasks-page.tsx`) usam `handleLIAChatMessage()` e `handleLIAAction()` que delegam ao backend LIA.
 
-### 15.3 Inconsistência de Idioma em Fallbacks
+### 16.3 Inconsistência de Idioma em Fallbacks
 
 O error handler genérico do ReAct loop retorna fallback em inglês:
 ```
@@ -666,11 +683,11 @@ Enquanto o circuit breaker handler retorna em português:
 "O serviço de IA está temporariamente indisponível..."
 ```
 
-### 15.4 Temperatura Hardcoded vs Configurável
+### 16.4 Temperatura Hardcoded vs Configurável
 
 O `ReActConfig` define `temperature: float = 0.3` como default fixo, enquanto o `LLMService` usa `settings.LLM_DEFAULT_TEMPERATURE`. Não há garantia de que o valor seja o mesmo.
 
-### 15.5 Few-Shot Examples Apenas em Sourcing
+### 16.5 Few-Shot Examples Apenas em Sourcing
 
 Apenas o domínio `sourcing/prompts.py` possui few-shot examples estruturados (5 exemplos). Outros domínios com prompts complexos (kanban, talent, jobs_mgmt) em `app/domains/recruiter_assistant/prompts/` existem mas com escopo diferente (prompts de assistentes, não few-shot).
 

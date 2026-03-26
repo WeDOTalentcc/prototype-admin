@@ -49,6 +49,22 @@
 └──────────────────────────────────────────────────────────────────┘
 ```
 
+### 1.1 Fontes de Verdade por Componente
+
+| Mecanismo | Fonte Canônica | Arquivo |
+|-----------|---------------|---------|
+| Circuit breaker (14 circuits) | `CircuitBreakerManager` | `app/shared/resilience/circuit_breaker.py` |
+| ReAct loop error handling | `ReActLoop.run()` | `libs/agents-core/lia_agents_core/react_loop.py` |
+| LLM cascade (confidence) | `LLMService.generate_with_cascade()` | `app/services/llm.py` L827-909 |
+| Cascaded router (6 tiers) | `CascadedRouter.route()` | `app/orchestrator/cascaded_router.py` |
+| Defensive prompts | `get_defensive_prompt_section()` | `app/shared/robustness/defensive_prompts.py` + `shared/defensive.yaml` |
+| Guardrails (3-source cascade) | `_resolve_guardrails()` | `libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` L108-163 |
+| Autonomy engine (per-company) | `AutonomyEngine.resolve_guardrails()` | `libs/agents-core/lia_agents_core/autonomy_engine.py` |
+| Token budget guard | `token_tracking_service.check_limits()` | `react_loop.py` pré-loop check |
+| Agent health alerts | `agent_health_alert_service.record_failure()` | Chamado no `except` do ReAct loop |
+| Degraded mode responses | `DEGRADED_MODE_RESPONSES` dict | `circuit_breaker.py` (inline dict) |
+| Scope validation (fail-open) | `is_tool_allowed_in_scope()` | `app/tools/scope_config.py` via `react_loop.py` L494-510 |
+
 ---
 
 ## 2. Circuit Breaker — Implementação Detalhada
