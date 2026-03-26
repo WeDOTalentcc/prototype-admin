@@ -120,7 +120,10 @@ A plataforma usa uma **cascata de 3 modelos** que otimiza custo vs qualidade aut
 
 ### 7.3 Cascade de Confiança (`generate_with_cascade`)
 
+Arquivo: `app/services/llm.py` — método `LLMService.generate_with_cascade()`
+
 ```python
+# Thresholds (settings em libs/config/lia_config/config.py):
 LLM_CASCADE_FAST_THRESHOLD    = 0.80  # Haiku aceito se confiança >= 80%
 LLM_CASCADE_MID_THRESHOLD     = 0.70  # Sonnet aceito se confiança >= 70%
 LLM_CASCADE_FALLBACK_THRESHOLD = 0.60 # Opus aceito se confiança >= 60%
@@ -133,11 +136,16 @@ class LLMCascadeResult:
     requires_human: bool  # True se todos abaixo do threshold
     reason: str
 
-result = await llm_service.generate_with_cascade(
-    prompt=prompt,
-    cascade=["haiku", "sonnet", "opus"],
-    confidence_threshold=settings.LLM_CASCADE_FAST_THRESHOLD
-)
+# Assinatura real (do código):
+async def generate_with_cascade(
+    self,
+    prompt: str,
+    system_prompt: str = "",
+    context: str = "",
+) -> LLMCascadeResult:
+    # Internamente monta cascade:
+    # [(LLM_FAST_MODEL, 0.80), (LLM_PRIMARY_MODEL, 0.70), (LLM_POWERFUL_MODEL, 0.60)]
+    # Confidence extraída da resposta JSON do LLM
 ```
 
 ### 7.4 Tool Use / Function Calling
@@ -192,43 +200,36 @@ response = await llm_service.generate_with_tools(
 
 ## 9. ReAct Loop — Configuração LLM
 
-**O que é:** Parâmetros de controle do loop de raciocínio dos agentes ReAct. Definidos em `app/core/config.py` (settings).
+**O que é:** Parâmetros de controle do loop de raciocínio dos agentes ReAct. Definidos em `libs/config/lia_config/config.py`.
 
-| Variável (settings) | Valor | Descrição |
+| Variável (settings) | Valor (código) | Descrição |
 |----------|:-----:|-----------|
 | `REACT_MAX_ITERATIONS_DEFAULT` | 5 | Máximo de iterações reason→act→observe |
-| `REACT_MAX_TOOL_CALLS` | 10 | Máximo de tool calls por request |
-| `REACT_DUPLICATE_THRESHOLD` | 3 | Mesma ação N vezes → para |
+| `REACT_MAX_TOOL_CALLS` | 3 | Máximo de tool calls por request |
+| `REACT_DUPLICATE_THRESHOLD` | 2 | Mesma ação N vezes → para |
 | `REACT_OBSERVATION_MAX_CHARS` | 5000 | Trunca resultado de tool |
 
 **Limites:** Cada iteração é rastreada via LangSmith `@traceable`. ReActObserver registra company_id, user_id, domain, tool timing.
 
 ---
 
-## 10. Orchestrator — Routing LLM
+## 10. Orchestrator — 6-Tier CascadedRouter
 
-### 10.1 T1: Hash Cache (sem LLM)
+Arquivo: `app/orchestrator/cascaded_router.py`
 
-```
-cache_max_size = 1000
-Hash MD5 da mensagem → lookup O(1)
-```
+O routing usa 6 tiers em cascata (custo crescente). Apenas Tier 5 usa LLM.
 
-### 10.2 T2: FastRouter (sem LLM)
+| Tier | Nome | Usa LLM? | O que faz |
+|:----:|------|:--------:|-----------|
+| 0 | MemoryResolver | Não | Resolve pronomes/referências de contexto |
+| 1 | LRU in-process | Não | Hash MD5 da mensagem → cache em memória (O(1)) |
+| 2 | Redis hash cache | Não | Cache distribuído entre workers |
+| 3 | VectorSemanticCache | Não | pgvector cosine similarity >= 0.92 |
+| 4 | FastRouter | Não | regex/keyword, threshold confiança >= 0.7 |
+| 5 | LLM Cascade | **Sim** | `generate_with_cascade()`: Haiku → Sonnet → Opus |
+| — | Clarification | Não | Fallback: pergunta ao usuário (opções pré-definidas) |
 
-```
-ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7
-Regex/keyword patterns → domínio
-```
-
-### 10.3 T3: IntentRouter (com LLM)
-
-```
-generate_with_cascade(): Haiku → Sonnet → Opus
-Few-shot examples: app/shared/prompts/examples/orchestrator_examples.py
-```
-
-### 10.4 Conversation Summary
+### 10.1 Conversation Summary
 
 A cada `ROUTER_SUMMARY_EVERY_N_MESSAGES` (padrão: 10) mensagens, gera resumo via LLM para manter contexto compacto.
 

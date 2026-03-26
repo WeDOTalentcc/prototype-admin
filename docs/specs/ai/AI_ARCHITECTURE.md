@@ -13,7 +13,7 @@ O sistema de IA da WeDOTalent opera em duas camadas complementares:
 | Camada | Repositório | Stack | Papel |
 |--------|-------------|-------|-------|
 | **Agente Multi-Domínio** | `recruiter_agent_v5` | Python + LangGraph + Gemini + Celery + RabbitMQ | Processa queries do recrutador via linguagem natural, executando ações no ATS |
-| **Serviços LIA** | `lia-agent-system` | Python + FastAPI + LangGraph + Claude (primário) | 12 domínios, 13 agentes, 3 StateGraphs, orquestrador 3-tier, compliance integrado |
+| **Serviços LIA** | `lia-agent-system` | Python + FastAPI + LangGraph + Claude (primário) | 12 domínios, 13 agentes, 3 StateGraphs, CascadedRouter 6-tier, compliance integrado |
 
 ### 1.1 Diagrama de Fluxo Geral
 
@@ -247,22 +247,22 @@ UniversalReActAgent
 │   362+ endpoints      │   └──────────────────────────────────────────┘
 └────────┬──────────────┘                      │
          ▼                                     ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                   ORCHESTRATOR (3 Tiers)                             │
-│   app/orchestrator/orchestrator.py                                   │
-│                                                                       │
-│   T1: CascadedRouter — Hash MD5 → cache em memória (O(1))           │
-│       app/orchestrator/cascaded_router.py                            │
-│       cache_max_size = 1000                                          │
-│                                                                       │
-│   T2: FastRouter — regex/keyword patterns (O(n))                     │
-│       app/orchestrator/fast_router.py                                │
-│       ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7                         │
-│                                                                       │
-│   T3: IntentRouter — LLM few-shot com cascade Haiku→Sonnet→Opus     │
-│       app/orchestrator/intent_router.py                              │
-│       generate_with_cascade() via LLMService                         │
-└─────────────────────────────┬───────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                ORCHESTRATOR (6-Tier CascadedRouter)                   │
+│   app/orchestrator/orchestrator.py                                    │
+│   app/orchestrator/cascaded_router.py                                 │
+│                                                                        │
+│   Tier 0: MemoryResolver — pronomes/referências de contexto           │
+│   Tier 1: LRU in-process — hash MD5 em memória local (O(1))          │
+│   Tier 2: Redis hash cache — distribuído, compartilhado               │
+│   Tier 3: VectorSemanticCache — pgvector, cosine >= 0.92              │
+│   Tier 4: FastRouter — regex/keyword (O(n) patterns)                  │
+│       app/orchestrator/fast_router.py                                 │
+│       ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7                          │
+│   Tier 5: LLM Cascade — Haiku→Sonnet→Opus (caro)                     │
+│       app/orchestrator/intent_router.py                               │
+│   Fallback: clarification_needed — pergunta ao usuário                │
+└──────────────────────────────┬────────────────────────────────────────┘
                                │ Roteia para:
         ┌──────────────────────┼───────────────────────────┐
         │                      │                           │
@@ -297,8 +297,8 @@ UniversalReActAgent
                    │    + Learning Extractor + Tool categories       │
                    │                                                  │
                    │  ReActLoop (react_loop.py)                      │
-                   │    max_iterations=5, max_tool_calls=10          │
-                   │    duplicate_threshold=3                        │
+                   │    max_iterations=5, max_tool_calls=3           │
+                   │    duplicate_threshold=2                        │
                    │                                                  │
                    │  GuardrailRepository (3-tier)                   │
                    │    global → tenant → domain                     │
@@ -326,8 +326,10 @@ UniversalReActAgent
 ### 7.1 Domínio ↔ Roteamento do Orchestrador
 
 ```python
+# app/orchestrator/cascaded_router.py — AGENT_TYPE_TO_DOMAIN
 AGENT_TYPE_TO_DOMAIN = {
     "job_planner":         "job_management",
+    "job_intake":          "job_management",
     "sourcing":            "sourcing",
     "cv_screening":        "cv_screening",
     "screening":           "cv_screening",
@@ -340,18 +342,47 @@ AGENT_TYPE_TO_DOMAIN = {
     "ats_integrator":      "ats_integration",
     "recruiter_assistant": "recruiter_assistant",
     "task_planner":        "automation",
+    # Kanban subagents (Z1-01)
+    "kanban_search":       "kanban_search",
+    "kanban_insight":      "kanban_insight",
+    "kanban_action":       "kanban_action",
+    # Pipeline subagents (Z1-02)
+    "pipeline_context":    "pipeline_context",
+    "pipeline_decision":   "pipeline_decision",
+    "pipeline_action":     "pipeline_action",
+    # Sourcing subagents (Z2-02)
+    "sourcing_planner":    "sourcing_planner",
+    "sourcing_search":     "sourcing_search",
+    "sourcing_enrich":     "sourcing_enrich",
+    "sourcing_engagement": "sourcing_engagement",
 }
 ```
 
-### 7.2 Orchestrator 3 Fases (Detalhado)
+### 7.2 Orchestrator — Fases de Processamento
+
+O orchestrator processa mensagens em 3 fases antes de invocar o router:
 
 | Fase | Componente | O que faz |
 |------|-----------|-----------|
 | Phase 0 | `PendingAction` | HITL multi-turn — resolve ações pendentes de confirmação do recrutador |
 | Phase 1 | `ActionExecutor` | Intents fechadas — ações diretas sem precisar de roteamento de domínio |
-| Phase 2 | `CascadedRouter` | Roteamento em cascata T1→T2→T3 para domínio correto |
+| Phase 2 | `CascadedRouter` | Roteamento 6-tier (memory → in-process → redis → vector → fast → LLM + clarification) |
 
-### 7.3 PolicyEngine (Limites por Plano)
+### 7.3 CascadedRouter — 6 Tiers (Detalhado)
+
+Arquivo: `app/orchestrator/cascaded_router.py`
+
+| Tier | Nome | Custo | O que faz |
+|:----:|------|:-----:|-----------|
+| 0 | MemoryResolver | Free | Resolve pronomes/referências de contexto ("ele", "essa vaga") |
+| 1 | LRU in-process | Free | Hash MD5 da mensagem → cache em memória local (O(1)) |
+| 2 | Redis hash cache | Free | Cache distribuído, compartilhado entre workers |
+| 3 | VectorSemanticCache | Baixo | pgvector, cosine similarity >= 0.92 |
+| 4 | FastRouter | Baixo | regex/keyword patterns (O(n)), threshold confiança >= 0.7 |
+| 5 | LLM Cascade | Alto | Haiku→Sonnet→Opus via `generate_with_cascade()` |
+| — | Clarification | — | Pergunta ao usuário quando tudo falha (fallback final) |
+
+### 7.4 PolicyEngine (Limites por Plano)
 
 ```
 app/orchestrator/policy_engine.py
@@ -555,13 +586,13 @@ Loop (até REACT_MAX_ITERATIONS_DEFAULT = 5):
   4. DECIDE  — Continuar, tentar diferente, ou finalizar
 ```
 
-**Contratos (settings em `app/core/config.py`):**
+**Contratos (settings em `libs/config/lia_config/config.py`):**
 
-| Setting | Valor (config) | Descrição |
+| Setting | Valor (código) | Descrição |
 |---------|:--------------:|-----------|
 | `REACT_MAX_ITERATIONS_DEFAULT` | 5 | Máximo de iterações reason→act→observe |
-| `REACT_MAX_TOOL_CALLS` | 10 | Máximo de tool calls por request |
-| `REACT_DUPLICATE_THRESHOLD` | 3 | Mesma ação N vezes → para |
+| `REACT_MAX_TOOL_CALLS` | 3 | Máximo de tool calls por request |
+| `REACT_DUPLICATE_THRESHOLD` | 2 | Mesma ação N vezes → para |
 | `REACT_OBSERVATION_MAX_CHARS` | 5000 | Trunca resultado de tool |
 
 **Limites:** LangSmith `@traceable` em cada iteração. ReActObserver logga company_id, user_id, tool timing.
