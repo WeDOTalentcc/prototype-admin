@@ -192,12 +192,16 @@ response = await llm_service.generate_with_tools(
 
 ## 9. ReAct Loop — Configuração LLM
 
-| Variável | Valor | Descrição |
-|----------|-------|-----------|
+**O que é:** Parâmetros de controle do loop de raciocínio dos agentes ReAct. Definidos em `app/core/config.py` (settings).
+
+| Variável (settings) | Valor | Descrição |
+|----------|:-----:|-----------|
 | `REACT_MAX_ITERATIONS_DEFAULT` | 5 | Máximo de iterações reason→act→observe |
-| `REACT_MAX_TOOL_CALLS` | 10 | Tool calls por request |
+| `REACT_MAX_TOOL_CALLS` | 10 | Máximo de tool calls por request |
 | `REACT_DUPLICATE_THRESHOLD` | 3 | Mesma ação N vezes → para |
-| `REACT_OBSERVATION_MAX_CHARS` | 5000 | Trunca observação |
+| `REACT_OBSERVATION_MAX_CHARS` | 5000 | Trunca resultado de tool |
+
+**Limites:** Cada iteração é rastreada via LangSmith `@traceable`. ReActObserver registra company_id, user_id, domain, tool timing.
 
 ---
 
@@ -313,7 +317,7 @@ Sampling: 10% das interações (Sprint J1).
 
 ### ADR-LLM-005: Python, não Ruby (decisão de stack)
 
-**Arquivo:** `docs/adr/001-python-not-ruby.md`
+**Arquivo:** `docs/adr/001-python-not-ruby.md` (raiz do repo lia-agent-system)
 **Decisão:** Python é a stack definitiva — sem migração planejada.
 - Ecossistema de ML/IA (LangGraph, LangChain, PyTorch)
 - Python `multiprocessing` usa todos os cores
@@ -345,5 +349,5 @@ Sampling: 10% das interações (Sprint J1).
 | Circuit Breaker | `lia-agent-system/app/shared/resilience/circuit_breaker.py` |
 | IntentRouter | `lia-agent-system/app/orchestrator/intent_router.py` |
 | Drift Service | `lia-agent-system/app/services/model_drift_service.py` |
-| ADR 001 | `lia-agent-system/docs/adr/001-python-not-ruby.md` |
-| ADR 002 | `lia-agent-system/docs/adr/002-graph-vs-react.md` |
+| ADR 001 | `docs/adr/001-python-not-ruby.md` (raiz do repo lia-agent-system) |
+| ADR 002 | `docs/adr/002-graph-vs-react.md` (raiz do repo lia-agent-system) |

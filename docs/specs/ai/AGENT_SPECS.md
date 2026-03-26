@@ -14,17 +14,19 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 1.1 IntentAnalyzerAgent
 
+**O que é:** Primeiro nó do pipeline — analisa a query do recrutador e extrai intent estruturado.
+
 | Campo | Valor |
 |-------|-------|
 | **Arquivo** | `src/agents/intent_analyzer.py` |
-| **Objetivo** | Analisar a query do recrutador e extrair intent estruturado |
+| **Como funciona** | Recebe query em português, consulta RAG para documentação de APIs, retorna intent com entities, action, filters |
 | **Input** | `QueryState.question` (string em português) |
 | **Output** | `QueryState.intent` com: entities, main_action, filters, aggregations, fields_needed, restricted_fields |
 | **LLM** | Gemini (via settings) — temperature 0.0 |
 | **Tools** | RAGService para consultar documentação de APIs |
 | **Limites** | Não executa ações, apenas classifica. Pode retornar erro se query incompreensível |
 
-**Actions identificáveis:** `list`, `count`, `filter`, `aggregate`, `analyze`, `create_applies`, `multi_step`
+**Contratos — Actions identificáveis:** `list`, `count`, `filter`, `aggregate`, `analyze`, `create_applies`, `multi_step`
 
 ### 1.2 APIPlannerAgent
 
@@ -85,24 +87,34 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 2.1 AppliesDomain
 
+**O que é:** Domínio para gestão de candidaturas (applications) — busca, movimentação, comparação.
+
 | Campo | Valor |
 |-------|-------|
 | **Arquivo** | `src/domains/applies/domain.py` |
 | **Domain ID** | `applies` |
+| **Como funciona** | Recebe intent classificada, executa ação correspondente via AppliesCacheManager |
 | **LLM** | `create_tracked_llm(temperature=0.0, service_name="AppliesDomain")` |
 | **Cache** | `AppliesCacheManager` com tier |
 
-**Ações:** `search_applies`, `show_apply_details`, `pipeline_status`, `move_apply`, `compare_candidates`, `bulk_move`, `ranking`, `analytics`, `scoring`
+**Contratos — Ações:** `search_applies`, `show_apply_details`, `pipeline_status`, `move_apply`, `compare_candidates`, `bulk_move`, `ranking`, `analytics`, `scoring`
+
+**Limites:** move_apply e bulk_move requerem confirmação do usuário.
 
 ### 2.2 JobsDomain
+
+**O que é:** Domínio para gestão completa de vagas — CRUD, analytics, sourcing automático.
 
 | Campo | Valor |
 |-------|-------|
 | **Arquivo** | `src/domains/jobs/domain.py` |
 | **Domain ID** | `jobs` |
-| **Fairness** | `JobFairnessGuard` — bloqueia filtros discriminatórios |
+| **Como funciona** | Executa ações sobre vagas via ATS API. FairnessGuard valida filtros contra campos proibidos. |
+| **Fairness** | `JobFairnessGuard` — bloqueia filtros discriminatórios (gender, age, race, religion, marital_status) |
 
-**Ações:** `search_jobs`, `show_job_details`, `create_job`, `update_job`, `pipeline_status`, `pipeline_health`, `job_analytics`, `summarize_job`, `alerts`, `account_stats`, `export_job`, `auto_source`, `send_reject_feedback`
+**Contratos — Ações:** `search_jobs`, `show_job_details`, `create_job`, `update_job`, `pipeline_status`, `pipeline_health`, `job_analytics`, `summarize_job`, `alerts`, `account_stats`, `export_job`, `auto_source`, `send_reject_feedback`
+
+**Limites:** create_job e update_job validados pelo FairnessGuard antes de execução.
 
 ### 2.3 InsightsDomain
 
@@ -123,28 +135,47 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 **Ações:** `send_feedback_positive`, `send_feedback_negative`, `send_invite`, `send_followup`, `send_custom`, `check_history`, `bulk_send`
 
-### 2.5 AutonomousDomain
+### 2.5 SourcingDomain
 
 | Campo | Valor |
 |-------|-------|
+| **O que é** | Domínio de busca e atração de candidatos |
+| **Arquivo** | `src/domains/sourcing/domain.py` |
+| **Domain ID** | `sourcing` |
+| **Como funciona** | Delega para ferramentas de busca via LangGraph workflow. Ferramentas de sourcing também disponíveis no AutonomousDomain via `tools/sourcing.py` |
+
+**Contratos — Ações:** `search_candidates`, `source_from_external`, `engagement_outreach`, `pipeline_add`, `market_intelligence`
+
+**Limites:** Sourcing externo depende de Pearch AI (serviço externo); sujeito a rate limits e disponibilidade.
+
+### 2.6 AutonomousDomain
+
+| Campo | Valor |
+|-------|-------|
+| **O que é** | Agente ReAct universal com acesso completo a todas as APIs |
 | **Arquivo** | `src/domains/autonomous/domain.py` |
 | **Domain ID** | `autonomous` |
-| **Agent** | `UniversalReActAgent` — ~73 ferramentas |
+| **Como funciona** | `UniversalReActAgent` — ~73 ferramentas cobrindo todos os domínios |
 | **Prompt** | `AUTONOMOUS_SYSTEM_PROMPT` — 28KB |
 
-**Playbooks YAML:** `diagnostico_vaga`, `panorama_vagas`, `sourcing_completo`, `triagem_vaga`, `weekly_review`
+**Contratos — Playbooks YAML:** `diagnostico_vaga`, `panorama_vagas`, `sourcing_completo`, `triagem_vaga`, `weekly_review`
 
-### 2.6 EvaluationDomain
+**Limites:** Contexto longo (~28KB prompt + tools) pode causar compressão. Playbooks são macros compostas (múltiplos tool calls sequenciais).
+
+### 2.7 EvaluationDomain
 
 | Campo | Valor |
 |-------|-------|
+| **O que é** | Avaliação de candidatos em entrevistas com rubrica estruturada |
 | **Arquivo** | `src/domains/evaluation/domain.py` |
 | **Domain ID** | `evaluation` |
+| **Como funciona** | LangGraph sub-graph: classify → evaluate → decide_flow → craft_message |
 | **LLM** | `create_tracked_llm(temperature=0.2, service_name="EvaluationNode")` |
-| **Graph** | LangGraph: classify → evaluate → decide_flow → craft_message |
 | **Segurança** | `safe_process_input()` — proteção contra prompt injection |
 
-**Rubrica:** relevância 30%, profundidade 30%, clareza 20%, exemplos 20%
+**Contratos — Rubrica:** relevância 30%, profundidade 30%, clareza 20%, exemplos 20%
+
+**Limites:** Temperature 0.2 (única exceção ao 0.0 universal). Segurança contra prompt injection obrigatória.
 
 ---
 
@@ -154,13 +185,16 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.1 WizardReActAgent — Criação de Vagas
 
+**O que é:** Agente conversacional para criação e edição de vagas em 6 etapas guiadas.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/job_management/agents/` |
 | **Registry** | `wizard` |
-| **Contexto** | Recrutador cria ou edita vaga — interface conversacional em 6 etapas |
+| **Como funciona** | ReAct loop + stage context. Cada estágio filtra tools disponíveis e adapta o system prompt. |
 | **Stages** | input-evaluation, jd-enrichment, salary, competencies, wsi-questions, review-publish |
 | **Tools** | 9 |
+| **Limites** | FairnessGuard obrigatório em requisitos/descrição. Drafts salvos permitem retomada. |
 
 | Ferramenta | O que faz | Stage(s) |
 |-----------|-----------|---------|
@@ -176,13 +210,16 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.2 PipelineReActAgent — Triagem de Candidatos
 
+**O que é:** Agente para análise de candidatos e ações no pipeline de recrutamento.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/cv_screening/agents/` |
 | **Registry** | `pipeline` |
-| **Contexto** | Recrutador abre candidato dentro de vaga — análise e ações |
+| **Como funciona** | ReAct loop com tools filtradas por estágio do pipeline. Acessa dados reais PostgreSQL. |
 | **Stages** | triage, screening, shortlist, interview, offer, hired |
 | **Tools** | 14 |
+| **Limites** | Todas as movimentações são rastreadas com motivo. WSI scoring via serviço dedicado. |
 
 | Ferramenta | O que faz | Stage(s) |
 |-----------|-----------|---------|
@@ -203,12 +240,15 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.3 PipelineTransitionAgent — Transições de Etapa
 
+**O que é:** Agente ReAct de invocação direta para validar e executar transições de estágio no pipeline.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/pipeline/agents/` |
 | **Invocação** | `POST /api/v1/pipeline/interpret-context` (direta, não via registry) |
-| **Contexto** | Validação e execução de transições de estágio |
+| **Como funciona** | Recebe contexto de transição, valida regras, executa com HITL pre-check |
 | **Tools** | 17 |
+| **Limites** | FairnessGuard sobre motivos de transição. HITL obrigatório para execute_stage_transition. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -232,12 +272,15 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.4 SourcingReActAgent — Busca de Candidatos
 
+**O que é:** Agente para busca iterativa de candidatos em fontes internas e externas (Pearch AI).
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/sourcing/agents/` |
 | **Registry** | `sourcing` |
-| **Contexto** | Recrutador busca candidatos no Funil de Talentos |
+| **Como funciona** | ReAct loop com WorkingMemory + LongTermMemory. Combina busca interna (PostgreSQL) com Pearch AI (190M+ perfis). |
 | **Tools** | 10 |
+| **Limites** | Pearch AI sujeito a rate limits. FairnessGuard em critérios de busca. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -254,12 +297,16 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.5 TalentReActAgent — Funil de Talentos
 
+**O que é:** Assistente de recrutador para análise e gestão do banco de talentos.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/recruiter_assistant/agents/talent_*` |
 | **Registry** | `talent` |
+| **Como funciona** | ReAct loop com 3 stages progressivos: discovery → analysis → action_planning |
 | **Stages** | discovery, analysis, action_planning |
 | **Tools** | 12 |
+| **Limites** | FairnessGuard em critérios de busca. create_shortlist requer HITL. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -278,12 +325,16 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.6 JobsMgmtReActAgent — Portfólio de Vagas
 
+**O que é:** Agente para gestão do portfólio de vagas do recrutador — métricas, SLA, ações em massa.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/recruiter_assistant/agents/jobs_mgmt_*` |
 | **Registry** | `jobs_management` |
+| **Como funciona** | ReAct loop com 3 stages: overview → analysis → action |
 | **Stages** | overview, analysis, action |
 | **Tools** | 14 |
+| **Limites** | pause_job e close_job requerem HITL. FairnessGuard sobre justificativas. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -304,12 +355,16 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.7 KanbanReActAgent — Pipeline Kanban
 
+**O que é:** Agente para operações no quadro Kanban de candidatos — maior número de tools (21).
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/recruiter_assistant/agents/kanban_*` |
 | **Registry** | `kanban` |
+| **Como funciona** | ReAct loop com 3 stages: pipeline_overview → stage_analysis → pipeline_actions |
 | **Stages** | pipeline_overview, stage_analysis, pipeline_actions |
 | **Tools** | 21 |
+| **Limites** | batch_move, send_batch_communication, start_screening_batch requerem HITL. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|

@@ -297,8 +297,8 @@ UniversalReActAgent
                    │    + Learning Extractor + Tool categories       │
                    │                                                  │
                    │  ReActLoop (react_loop.py)                      │
-                   │    max_iterations=5, max_tool_calls=3           │
-                   │    duplicate_threshold=2                        │
+                   │    max_iterations=5, max_tool_calls=10          │
+                   │    duplicate_threshold=3                        │
                    │                                                  │
                    │  GuardrailRepository (3-tier)                   │
                    │    global → tenant → domain                     │
@@ -423,7 +423,7 @@ VALIDATOR ──── pronto ──→ EXECUTOR → RESPONSE → END
 
 ### 8.4 ADR: Graph vs ReAct
 
-Arquivo: `docs/adr/002-graph-vs-react.md`
+Arquivo: `docs/adr/002-graph-vs-react.md` (raiz do repo lia-agent-system)
 
 | Critério | Graph (LangGraph) | ReAct Loop |
 |----------|-------------------|-----------|
@@ -542,21 +542,29 @@ class AgentOutput(BaseModel):
 
 ### 10.3 ReAct Loop
 
-Arquivo: `app/shared/agents/react_loop.py`
+**O que é:** Motor de raciocínio iterativo que executa o padrão Reason→Act→Observe até convergir ou atingir limites.
 
+**Arquivo:** `app/shared/agents/react_loop.py`
+
+**Como funciona:**
 ```
 Loop (até REACT_MAX_ITERATIONS_DEFAULT = 5):
   1. REASON  — LLM analisa contexto e histórico
   2. ACT     — Executa tool chamada pelo LLM
   3. OBSERVE — Formata resultado da tool como observação
   4. DECIDE  — Continuar, tentar diferente, ou finalizar
-
-Proteções:
-  - Detecção de duplicatas: REACT_DUPLICATE_THRESHOLD = 2
-  - Observação truncada: REACT_OBSERVATION_MAX_CHARS = 5000
-  - Tool calls por request: REACT_MAX_TOOL_CALLS = 3
-  - LangSmith tracing: @traceable em cada iteração
 ```
+
+**Contratos (settings em `app/core/config.py`):**
+
+| Setting | Valor (config) | Descrição |
+|---------|:--------------:|-----------|
+| `REACT_MAX_ITERATIONS_DEFAULT` | 5 | Máximo de iterações reason→act→observe |
+| `REACT_MAX_TOOL_CALLS` | 10 | Máximo de tool calls por request |
+| `REACT_DUPLICATE_THRESHOLD` | 3 | Mesma ação N vezes → para |
+| `REACT_OBSERVATION_MAX_CHARS` | 5000 | Trunca resultado de tool |
+
+**Limites:** LangSmith `@traceable` em cada iteração. ReActObserver logga company_id, user_id, tool timing.
 
 ### 10.4 Memória em 3 Níveis
 
@@ -678,4 +686,4 @@ Filtros bloqueados: gender, genero, sexo, age, idade, birth_date, race, raca, et
 | JobWizardGraph | `lia-agent-system/app/domains/job_management/agents/job_wizard_graph.py` |
 | WSIInterviewGraph | `lia-agent-system/app/domains/cv_screening/agents/wsi_interview_graph.py` |
 | InterviewGraph | `lia-agent-system/app/domains/interview_scheduling/agents/interview_graph.py` |
-| ADR Graph vs ReAct | `lia-agent-system/docs/adr/002-graph-vs-react.md` |
+| ADR Graph vs ReAct | `docs/adr/002-graph-vs-react.md` (raiz do repo lia-agent-system) |
