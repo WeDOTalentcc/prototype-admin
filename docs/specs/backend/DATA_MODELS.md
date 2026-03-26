@@ -21,8 +21,8 @@ A Plataforma LIA opera com **duas bases de dados PostgreSQL** em sistemas distin
 | Convenção | `ats_api` (Rails) | `lia-agent-system` (Python) |
 |-----------|-------------------|----------------------------|
 | **IDs** | Integer autoincrement | UUID v4 (`uuid.uuid4()`) |
-| **Timestamps** | `created_at`, `updated_at` (Rails auto) | `server_default=func.now()`, `onupdate=func.now()` |
-| **Multi-tenancy** | `account_id` (FK integer) | `company_id` (UUID) — obrigatório em toda query |
+| **Timestamps** | `created_at`, `updated_at` (Rails auto) | `datetime.utcnow()` default em Python |
+| **Multi-tenancy** | `account_id` (FK integer) | `company_id` (String(255), default `"demo_company"`) — obrigatório em toda query |
 | **Soft delete** | `is_deleted: boolean DEFAULT false` | `is_active: boolean` ou `status` enum |
 | **JSON columns** | PostgreSQL `jsonb` | PostgreSQL `JSONB` via SQLAlchemy `JSON` type |
 | **Naming** | snake_case (Rails convention) | snake_case (Python convention) |
@@ -552,14 +552,14 @@ Mensagens do chat (polimórfico).
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
 | `id` | UUID (PK) | Sim | `uuid.uuid4()` |
-| `company_id` | UUID | Sim | Tenant — empresa dona da vaga |
+| `company_id` | String(255) | Sim | Tenant — empresa dona da vaga (default: `"demo_company"`) |
 | `created_by` | UUID | Não | Usuário criador |
 | `status` | String(50) | Sim | `draft`, `active`, `paused`, `closed`, `cancelled` |
 | `creation_method` | String(50) | Não | `wizard`, `import`, `manual`, `api` |
 | `wizard_step` | Integer | Não | Passo atual no wizard (1-7) |
 | `wizard_completed` | Boolean | Não | Wizard finalizado |
-| `created_at` | DateTime | Auto | `server_default=func.now()` |
-| `updated_at` | DateTime | Auto | `onupdate=func.now()` |
+| `created_at` | DateTime | Auto | `default=datetime.utcnow` |
+| `updated_at` | DateTime | Auto | `default=datetime.utcnow, onupdate=datetime.utcnow` |
 
 #### Descrição do cargo
 
@@ -630,7 +630,7 @@ Mensagens do chat (polimórfico).
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
 | `id` | UUID (PK) | Sim | |
-| `company_id` | UUID | Sim | Tenant |
+| `company_id` | String(255) | Sim | Tenant |
 | `external_id` | String | Não | ID no ATS Rails (`ats_api`) |
 | `source` | String(100) | Não | `pearch`, `linkedin`, `manual`, `career_page`, `referral` |
 | `source_detail` | String(255) | Não | Detalhe da origem |
@@ -698,7 +698,7 @@ anonymize_for_llm(candidates)
 | `id` | UUID (PK) | Sim | |
 | `vacancy_id` | UUID (FK) | Sim | `→ job_vacancies.id` |
 | `candidate_id` | UUID (FK) | Sim | `→ candidates.id` |
-| `company_id` | UUID | Sim | Tenant |
+| `company_id` | String(255) | Sim | Tenant |
 | `current_stage` | String(100) | Sim | Estágio atual no pipeline |
 | `previous_stage` | String(100) | Não | Estágio anterior |
 | `stage_changed_at` | DateTime | Não | Última mudança de estágio |
@@ -746,7 +746,7 @@ else                   → return "neutral"
 |-------|------|-------------|-----------|
 | `id` | UUID (PK) | Sim | |
 | `vacancy_id` | UUID (FK) | Sim | |
-| `company_id` | UUID | Sim | Tenant |
+| `company_id` | String(255) | Sim | Tenant |
 | `name` | String(100) | Sim | Nome do estágio |
 | `stage_type` | String(50) | Sim | `sourcing`, `screening`, `interview`, `offer`, `hired` |
 | `order_index` | Integer | Sim | Posição no pipeline |
@@ -777,7 +777,7 @@ else                   → return "neutral"
 | `id` | UUID (PK) | Sim | |
 | `candidate_id` | UUID (FK) | Sim | |
 | `job_vacancy_id` | UUID (FK) | Não | |
-| `company_id` | UUID | Sim | Tenant |
+| `company_id` | String(255) | Sim | Tenant |
 | `call_provider` | String(50) | Sim | `openmic`, `twilio`, `vapi` |
 | `provider_call_id` | String(255) | Não | ID no provedor |
 | `status` | String(50) | Sim | `scheduled`, `in_progress`, `completed`, `failed`, `no_answer` |
@@ -884,7 +884,7 @@ else                   → return "neutral"
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
 | `id` | UUID (PK) | Sim | |
-| `company_id` | UUID | Sim | |
+| `company_id` | String(255) | Sim | |
 | `name` | String(255) | Sim | Nome do template |
 | `description` | Text | Não | |
 | `trigger_stage` | String(100) | Não | Estágio que dispara o template |
@@ -979,7 +979,7 @@ class User(Base):
     email: str
     name: str
     role: UserRole           # admin, recruiter, viewer, hiring_manager
-    company_id: UUID         # Tenant obrigatório
+    company_id: String(255)  # Tenant obrigatório (default: "demo_company")
     is_active: bool
     last_login: datetime
 
@@ -1041,7 +1041,7 @@ class UserRole(str, Enum):
 | PKs | `UUID(as_uuid=True), primary_key=True, default=uuid.uuid4` | Integer |
 | Campos obrigatórios | `nullable=False` | Sem constraint |
 | Índices | `index=True` em campos de busca (`company_id`, `status`, `email`) | Sem índice |
-| Timestamps | `server_default=func.now()` | `datetime.now()` em Python |
+| Timestamps | `default=datetime.utcnow` | `datetime.utcnow()` em Python |
 
 ---
 

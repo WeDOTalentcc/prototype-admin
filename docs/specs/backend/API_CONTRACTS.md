@@ -101,30 +101,40 @@ Response 200: {}
 
 Todas as rotas em `/v1/users/*` requerem `Authorization: Bearer <token>`.
 
-### 2.2 `lia-agent-system` — WorkOS SSO
+### 2.2 `lia-agent-system` — JWT (email/password) + WorkOS SSO (separado)
+
+Fonte: `app/api/v1/auth.py` (login JWT) + `app/api/v1/workos.py` (SSO)
+
+**Login padrão** (email/password → JWT):
 
 ```http
 POST /api/v1/auth/login
 Content-Type: application/json
 
 {
-  "provider": "workos",
-  "code": "<workos_auth_code>"
+  "email": "user@company.com",
+  "password": "secret"
 }
 
-Response 200:
+Response 200 (TokenResponse):
 {
   "access_token": "eyJ...",
+  "refresh_token": "eyJ...",
   "token_type": "bearer",
-  "user": {
-    "id": "uuid",
-    "email": "user@company.com",
-    "name": "João Silva",
-    "role": "recruiter",
-    "company_id": "uuid"
-  }
+  "expires_in": 1800
 }
 ```
+
+**WorkOS SSO** (rotas separadas em `app/api/v1/workos.py`):
+
+| Rota | Prefixo | Proteção |
+|------|---------|----------|
+| `router` | `/workos` | `verify_internal_auth` |
+| `scim_router` | `/workos` | `verify_scim_webhook` |
+| `auth_router` | `/auth/workos` | `verify_internal_auth` |
+| `webhook_router` | `/workos/webhooks` | (webhook signature) |
+
+WorkOS SSO é para integração empresarial — NÃO é o login padrão.
 
 **Dependency injection**:
 
@@ -299,40 +309,51 @@ Base URL: `https://<host>/api/v1`
 
 ### 4.2 Chat e Conversação
 
+Fonte: `app/api/v1/chat.py` + `app/schemas/chat.py`
+
+**Request**: `MessageCreate` (Pydantic)
+
 ```http
 POST /api/v1/chat
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "message": "Preciso de desenvolvedores Python sênior em São Paulo",
-  "user_id": "uuid",
-  "conversation_id": "uuid (optional)"
+  "content": "Preciso de desenvolvedores Python sênior em São Paulo",
+  "conversation_id": "uuid (optional — se null, cria nova)"
 }
+```
 
-Response 200:
+**Response 200**: `ChatResponse` (Pydantic)
+
+```json
 {
-  "response": "Encontrei 15 candidatos que atendem ao perfil...",
-  "conversation_id": "uuid",
-  "metadata": {
-    "intent": "search_candidates",
-    "entities": {
-      "job_title": "desenvolvedor Python",
-      "seniority": "sênior",
-      "skills": ["Python"],
-      "location": "São Paulo"
+  "message": {
+    "id": "uuid",
+    "conversation_id": "uuid",
+    "role": "assistant",
+    "content": "Encontrei 15 candidatos que atendem ao perfil...",
+    "message_metadata": {
+      "intent": "search_candidates",
+      "entities": {"skills": ["Python"], "location": "São Paulo"},
+      "confidence": 0.95,
+      "action_executed": false
     },
-    "confidence": 0.95,
-    "workflow_data": {
-      "search_results": {
-        "query": "Senior Python developer São Paulo",
-        "total_found": 15,
-        "candidates": [...]
-      }
-    }
+    "created_at": "2026-03-26T10:00:00Z"
+  },
+  "conversation": {
+    "id": "uuid",
+    "status": "active",
+    "message_count": 2,
+    "created_at": "2026-03-26T10:00:00Z",
+    "updated_at": "2026-03-26T10:00:00Z"
   }
 }
 ```
+
+**Fluxo interno**: `send_message()` → `_invoke_orchestrator()` → `handle_action_flow()` → `_build_response_from_action()`  
+**user_id**: extraído do JWT via `get_current_user_or_demo`  
+**company_id**: `current_user.company_id` ou fallback `"demo_company"`
 
 **Intents reconhecidos** (`INTENT_TO_ACTIONABLE`):
 
@@ -353,7 +374,11 @@ Response 200:
 
 **Intents que não geram ação** (`SKIP_ACTION_INTENTS`): `create_job`, `greeting`, `general_question`, `search_candidates`, `unknown`
 
-### 4.3 Chat Streaming
+### 4.3 Chat Streaming (SSE)
+
+Fonte: `app/api/v1/chat.py` linhas 1125-1240
+
+**Request**: `MessageCreate` (mesmo schema do REST)
 
 ```http
 POST /api/v1/chat/stream
@@ -361,16 +386,24 @@ Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "message": "Analise o perfil do candidato João",
-  "user_id": "uuid"
+  "content": "Analise o perfil do candidato João",
+  "conversation_id": "uuid (optional)"
 }
-
-Response: text/event-stream (SSE)
-data: {"token": "Anali"}
-data: {"token": "sando"}
-data: {"token": " o perfil..."}
-data: {"done": true, "metadata": {...}}
 ```
+
+**Response**: `text/event-stream` (SSE via `StreamingResponse`)
+
+```
+data: Anali
+data: sando
+data:  o perfil...
+data: [DONE]
+```
+
+**Implementação**: usa `anthropic` SDK `client.messages.stream()` com Claude.  
+Cada chunk de texto é emitido como `data: <text>\n\n`.  
+Ao final: `data: [DONE]\n\n` — NÃO é JSON, é texto literal.  
+Após stream completo, persiste `Message` no DB com `message_metadata={"stream": True}`.
 
 ### 4.4 Job Vacancies (4677 linhas)
 
@@ -1133,7 +1166,7 @@ Frontend → /api/lia/api/v1/chat → Proxy → http://localhost:8000/api/v1/cha
 ```typescript
 import { liaApi } from '@/services/lia-api'
 
-await liaApi.sendMessage({ message: "...", user_id: "..." })
+await liaApi.sendMessage({ content: "...", conversation_id: "..." })
 await liaApi.searchCandidates({ query: "...", limit: 10 })
 await liaApi.healthCheck()
 await liaApi.getConversations(userId)
