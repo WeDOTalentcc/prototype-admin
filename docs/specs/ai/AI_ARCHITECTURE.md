@@ -709,7 +709,7 @@ Filtros bloqueados: gender, genero, sexo, age, idade, birth_date, race, raca, et
 | WSI Deterministic Scorer | Determinístico | Funções puras sem LLM |
 | Cache de avaliação (hash) | Determinístico | Mesmo candidato = mesmo resultado |
 | Agentes ReAct (reasoning) | Não-determinístico | Raciocínio livre do LLM |
-| Avaliação WSI (rubrica) | Não-determinístico | LLM julga qualidade |
+| Avaliação WSI por rubrica (recruiter_agent_v5) | Não-determinístico | LLM julga qualidade textual — scoring numérico WSI usa Deterministic Scorer acima |
 | FairnessGuard L3 | Não-determinístico | LLM detecta viés sutil |
 | Geração de feedback | Não-determinístico | LLM redige texto personalizado |
 
