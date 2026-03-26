@@ -31,7 +31,7 @@ import {
   type FloatMessage,
 } from "@/hooks/use-float-conversation"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
-import { cleanAgentResponse, parseChatMarkdown } from "@/lib/chat-format"
+import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 
 const MAX_INPUT_CHARS = 2000
 
@@ -577,7 +577,7 @@ function MessageBubble({ msg }: { msg: FloatMessage }) {
   const isUser = msg.sender === "user"
 
   const renderedHtml = useMemo(() => {
-    if (isUser) return msg.content.replace(/\n/g, "<br/>")
+    if (isUser) return escapeHtml(msg.content).replace(/\n/g, "<br/>")
     const cleaned = cleanAgentResponse(msg.content)
     return parseChatMarkdown(cleaned)
   }, [msg.content, isUser])

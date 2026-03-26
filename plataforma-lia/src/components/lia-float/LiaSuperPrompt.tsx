@@ -16,7 +16,7 @@ import { useFloatStreaming } from "@/hooks/use-float-streaming"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
 import { useActionIntent, actionTypeToDomain } from "@/hooks/use-action-intent"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
-import { cleanAgentResponse, parseChatMarkdown } from "@/lib/chat-format"
+import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { useRouter } from "next/navigation"
 
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
@@ -472,7 +472,7 @@ export function LiaSuperPrompt() {
 function SuperPromptBubble({ message }: { message: { sender: string; content: string; timestamp: string } }) {
   const isUser = message.sender === "user"
   const html = useMemo(() => {
-    if (isUser) return message.content.replace(/\n/g, "<br/>")
+    if (isUser) return escapeHtml(message.content).replace(/\n/g, "<br/>")
     const cleaned = cleanAgentResponse(message.content)
     return parseChatMarkdown(cleaned)
   }, [message.content, isUser])

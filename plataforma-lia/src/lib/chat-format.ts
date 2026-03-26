@@ -1,3 +1,14 @@
+export function escapeHtml(str: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }
+  return str.replace(/[&<>"']/g, (char) => map[char])
+}
+
 export function cleanAgentResponse(raw: string): string {
   let text = raw
 
