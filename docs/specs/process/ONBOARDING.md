@@ -17,7 +17,7 @@ A Plataforma LIA é um sistema de recrutamento e seleção com IA da WeDOTalent.
 
 ---
 
-## 2. Ordem de Leitura dos Specs
+## 2. Ordem de Leitura dos Specs (16 documentos)
 
 ### Dia 1 — Contexto e Arquitetura
 

@@ -322,11 +322,11 @@ python -m pytest tests/contract/ -v
 # Apenas security (red team)
 python -m pytest tests/security/ -v
 
-# DeepEval (requer OPENAI_API_KEY)
-python -m pytest tests/deepeval/ -v --continue-on-error
+# DeepEval (requer OPENAI_API_KEY, non-blocking no CI)
+python -m pytest tests/deepeval/ -v
 
-# RAGAS (requer OPENAI_API_KEY)
-python -m pytest tests/ragas/ -v --continue-on-error
+# RAGAS (requer OPENAI_API_KEY, non-blocking no CI)
+python -m pytest tests/ragas/ -v
 ```
 
 ### 8.2 Frontend
