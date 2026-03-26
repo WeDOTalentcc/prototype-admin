@@ -6,6 +6,8 @@
 
 ---
 
+# PARTE I — recruiter_agent_v5 (Gemini)
+
 ## 1. Modelo Primário
 
 | Campo | Valor |
@@ -16,94 +18,53 @@
 | **Biblioteca** | `langchain-google-genai` (`ChatGoogleGenerativeAI`) |
 | **API Key** | `GEMINI_API_KEY` (env var obrigatória) |
 
-### 1.1 Por que Gemini
+### 1.1 Por que Gemini (recruiter_agent_v5)
 
-- **Custo**: Gemini Flash tem custo significativamente menor que GPT-4 e Claude
+- **Custo**: ~10x menor que GPT-4
 - **Velocidade**: Flash models otimizados para latência baixa
 - **Português**: Bom suporte a português brasileiro
-- **LangChain**: Integração nativa via `langchain-google-genai`
 - **Context window**: 1M tokens (permite contextos longos sem chunking)
+- **LangChain**: Integração nativa via `langchain-google-genai`
 
----
-
-## 2. Configurações por Domínio/Agente
+## 2. Configurações por Domínio (recruiter_agent_v5)
 
 | Agente/Domínio | Temperature | Modelo | Motivo |
 |----------------|-------------|--------|--------|
-| `IntentAnalyzerAgent` | 0.0 | default (gemini-2.5-flash) | Determinismo na classificação de intent |
-| `APIPlannerAgent` | 0.0 | default | Planos de execução devem ser reproduzíveis |
-| `PlanValidatorAgent` | 0.0 | default | Validação determinística |
-| `AnswerFormatterAgent` | 0.0 | default | Formatação consistente |
-| `AppliesDomain` | 0.0 | default | Ações sobre candidaturas devem ser precisas |
-| `JobsDomain` | 0.0 | default | CRUD e analytics precisos |
-| `InsightsDomain` | 0.0 | default | Análises baseadas em dados concretos |
-| `MessagingDomain` | 0.0 | default | Comunicação precisa, sem criatividade indesejada |
-| `EvaluationDomain` (nodes) | **0.2** | default | Leve variação para avaliação mais natural |
-| `AutonomousDomain` | 0.0 | default | Agente universal precisa de determinismo |
+| `IntentAnalyzerAgent` | 0.0 | gemini-2.5-flash | Determinismo na classificação |
+| `APIPlannerAgent` | 0.0 | gemini-2.5-flash | Planos reproduzíveis |
+| `PlanValidatorAgent` | 0.0 | gemini-2.5-flash | Validação determinística |
+| `AnswerFormatterAgent` | 0.0 | gemini-2.5-flash | Formatação consistente |
+| `AppliesDomain` | 0.0 | gemini-2.5-flash | Ações precisas |
+| `JobsDomain` | 0.0 | gemini-2.5-flash | CRUD e analytics |
+| `InsightsDomain` | 0.0 | gemini-2.5-flash | Dados concretos |
+| `MessagingDomain` | 0.0 | gemini-2.5-flash | Sem criatividade indesejada |
+| `EvaluationDomain` | **0.2** | gemini-2.5-flash | Avaliação mais natural |
+| `AutonomousDomain` | 0.0 | gemini-2.5-flash | Determinismo universal |
 
-### 2.1 Regra Geral
-
-**Temperature 0.0 é o padrão.** Apenas o `EvaluationDomain` usa 0.2 porque avaliação de candidatos se beneficia de leve variação para respostas mais naturais ao candidato.
-
----
-
-## 3. Factory Centralizada
-
-Toda criação de LLM passa pelo `create_tracked_llm()` em `src/utils/llm_factory.py`:
+## 3. Factory Centralizada (recruiter_agent_v5)
 
 ```python
 create_tracked_llm(
     temperature=0.0,
     service_name="NomeDoDominio",
     operation="chat|intent",
-    model_override=None,      # para usar modelo diferente do default
-    max_output_tokens=None,    # limite de tokens de saída
-    extra_callbacks=None,      # callbacks adicionais
+    model_override=None,
+    max_output_tokens=None,
+    extra_callbacks=None,
 )
 ```
 
-### 3.1 Tracking
+Tracking via `LLMUsageCallbackHandler`: service_name, operation, tokens in/out, latência, custo.
 
-Cada chamada LLM é rastreada via `LLMUsageCallbackHandler`:
-- `service_name` — identifica qual domínio/agente fez a chamada
-- `operation` — tipo de operação (chat, intent, evaluation)
-- Métricas: tokens de entrada/saída, latência, custo estimado
-
-Configuração via `LLMTrackingConfig.from_env()` (ativável por env var).
-
----
-
-## 4. RAG (Retrieval-Augmented Generation)
+## 4. RAG (recruiter_agent_v5)
 
 | Campo | Valor |
 |-------|-------|
 | **Serviço** | `RAGService` (`src/services/rag_service.py`) |
-| **Uso** | IntentAnalyzer e APIPlanner consultam documentação de APIs |
-| **Fonte** | Documentação YAML em `documentation/*.yml` (~50 arquivos) |
-| **Embedding** | Embeddings locais ou via API |
+| **Uso** | IntentAnalyzer e APIPlanner consultam docs de APIs |
+| **Fonte** | ~50 arquivos YAML em `documentation/` |
 
-### 4.1 Documentação de Tools (YAML)
-
-Cada ferramenta disponível tem um arquivo YAML em `documentation/`:
-- `candidates_search.yml`, `jobs_create.yml`, `applies_update.yml`, etc.
-- Define: endpoint, parâmetros, formato de resposta, exemplos
-- Total: ~50 ferramentas documentadas
-
----
-
-## 5. Critérios de Troca de Modelo
-
-| Cenário | Ação |
-|---------|------|
-| Gemini indisponível | Circuit breaker abre após 3 falhas, cooldown 30s |
-| Contexto > 1M tokens | Compressão via `autonomous/compression.py` |
-| Avaliação precisa mais nuance | `temperature=0.2` (já implementado no EvaluationDomain) |
-| Custo excessivo | Monitorar via LLM tracking, considerar Gemini Flash-Lite |
-| Qualidade insuficiente em PT-BR | Considerar `model_override` para Gemini Pro |
-
-### 5.1 Circuit Breaker para LLM
-
-Implementado em `src/services/circuit_breaker.py`:
+## 5. Circuit Breaker (recruiter_agent_v5)
 
 | Parâmetro | Valor |
 |-----------|-------|
@@ -111,11 +72,7 @@ Implementado em `src/services/circuit_breaker.py`:
 | Cooldown | 30 segundos |
 | Retry delay | 1 segundo |
 
----
-
-## 6. Custos e Limites
-
-### 6.1 Gemini Flash Pricing (referência)
+## 6. Custos Gemini Flash (referência)
 
 | Métrica | Valor |
 |---------|-------|
@@ -123,80 +80,257 @@ Implementado em `src/services/circuit_breaker.py`:
 | Input (> 128K tokens) | $0.15 / 1M tokens |
 | Output | $0.30 / 1M tokens |
 | Context window | 1M tokens |
-| RPM (requests/min) | 1000 (tier padrão) |
 
-### 6.2 Estimativa de Uso por Query
-
-| Etapa | Tokens estimados (input) | Tokens estimados (output) |
-|-------|-------------------------|--------------------------|
-| Intent Analysis | ~2K | ~500 |
-| API Planning | ~5K (com RAG docs) | ~1K |
-| Plan Validation | ~3K | ~300 |
-| Answer Formatting | ~5K (com dados) | ~1K |
-| **Total por query** | **~15K** | **~2.8K** |
-
-### 6.3 Monitoramento
-
-- `LLMUsageCallbackHandler` rastreia todas as chamadas
-- `LLMTrackingConfig` configurável via env vars
-- Logs estruturados com service_name, operation, duração
+**Estimativa por query:** ~15K input + ~2.8K output
 
 ---
 
-## 7. Modelos no lia-agent-system (Replit)
+# PARTE II — lia-agent-system (Claude Primário)
 
-| Domínio | Modelo | Temperature | Uso |
-|---------|--------|-------------|-----|
-| WSI Screening | Gemini | 0.0 | Triagem WSI — determinismo obrigatório |
-| Chat Geral | Gemini / Claude / OpenAI | 0.0 | Configurable via env |
-| Voice Processing | Gemini | 0.0 | Transcrição e análise de voz |
+## 7. LLM Service — Cascade Haiku→Sonnet→Opus
 
-### 7.1 Integrações Disponíveis (Replit)
+Arquivo: `app/services/llm.py`
 
-| Provider | Status | Env Var |
-|----------|--------|---------|
-| Google Gemini | Ativo | `GEMINI_API_KEY` |
-| Anthropic Claude | Configurado | `ANTHROPIC_API_KEY` |
-| OpenAI | Configurado | `OPENAI_API_KEY` |
+A plataforma usa uma **cascata de 3 modelos** que otimiza custo vs qualidade automaticamente: começa pelo mais barato (Haiku), e só escala se a confiança não atingir o threshold mínimo.
+
+### 7.1 Modelos Configurados
+
+| Variável | Modelo | Papel |
+|----------|--------|-------|
+| `LLM_PRIMARY_MODEL` | `claude-sonnet-4-6` | Primário para tudo |
+| `LLM_FAST_MODEL` | `claude-haiku-4-5` | Rápido e barato |
+| `LLM_POWERFUL_MODEL` | `claude-opus-4-6` | Complexo, caro |
+| `LLM_GEMINI_MODEL` | `gemini-2.5-flash` | Fallback final |
+
+### 7.2 Provedores em Ordem
+
+```
+1. Claude (Anthropic) — primário para tudo
+   → ChatAnthropic (LangChain)
+   → ANTHROPIC_API_KEY ou AI_INTEGRATIONS_ANTHROPIC_API_KEY
+
+2. OpenAI (GPT-4o) — fallback
+   → ChatOpenAI (LangChain)
+   → OPENAI_API_KEY
+
+3. Gemini (Google) — fallback para geração de texto simples
+   → google.genai SDK nativo (via Replit AI Integration)
+   → AI_INTEGRATIONS_GEMINI_API_KEY
+```
+
+### 7.3 Cascade de Confiança (`generate_with_cascade`)
+
+```python
+LLM_CASCADE_FAST_THRESHOLD    = 0.80  # Haiku aceito se confiança >= 80%
+LLM_CASCADE_MID_THRESHOLD     = 0.70  # Sonnet aceito se confiança >= 70%
+LLM_CASCADE_FALLBACK_THRESHOLD = 0.60 # Opus aceito se confiança >= 60%
+
+@dataclass
+class LLMCascadeResult:
+    content: Optional[str]
+    model_used: str       # qual modelo foi suficiente
+    confidence: float
+    requires_human: bool  # True se todos abaixo do threshold
+    reason: str
+
+result = await llm_service.generate_with_cascade(
+    prompt=prompt,
+    cascade=["haiku", "sonnet", "opus"],
+    confidence_threshold=settings.LLM_CASCADE_FAST_THRESHOLD
+)
+```
+
+### 7.4 Tool Use / Function Calling
+
+```python
+response = await llm_service.generate_with_tools(
+    messages=history,
+    tools=tool_definitions,          # lista de ToolDefinition (Pydantic)
+    provider="claude",
+    system_prompt=system_prompt,
+    max_tokens=4096
+)
+# Retorna: ToolCallResponse
+#   .is_tool_call: bool
+#   .tool_calls: List[ToolCallRequest] (id, name, parameters)
+#   .text_response: Optional[str]
+```
+
+### 7.5 Parâmetros de Geração (sem magic numbers)
+
+| Parâmetro | Valor | Arquivo |
+|-----------|-------|---------|
+| `LLM_DEFAULT_TEMPERATURE` | 0.7 | `app/core/config.py` |
+| `LLM_AGENT_TEMPERATURE` | 0.3 | `app/core/config.py` |
+| `LLM_MAX_TOKENS` | 4096 | `app/core/config.py` |
+| `LLM_TIMEOUT_SECONDS` | 120.0 | `app/core/config.py` |
 
 ---
 
-## 8. Decisões Arquiteturais (ADR)
+## 8. Configurações por Uso (lia-agent-system)
 
-### ADR-LLM-001: Gemini como modelo primário
+| Uso | Temperature | Modelo | Motivo |
+|-----|-------------|--------|--------|
+| T3 IntentRouter (classificação) | 0.0 | Haiku→Sonnet→Opus (cascade) | Determinismo forçado no roteamento |
+| ReAct Loop (reasoning) | 0.3 | Claude Sonnet | Raciocínio controlado |
+| Perguntas de triagem WSI | 0.1 | Claude Sonnet | Quase-determinístico |
+| Geração de JD, emails | 0.5–0.7 | Claude Sonnet | Criatividade desejada |
+| FairnessGuard L3 (LLM) | 0.0 | Claude Sonnet | Compliance determinístico |
+| Avaliação WSI (rubrica) | — | Claude Sonnet | Score qualitativo |
+| WSI Deterministic Scorer | — | Sem LLM | Funções puras, zero custo |
 
-**Contexto:** Precisávamos de um LLM com bom suporte a português, custo baixo, e context window grande.
+### 8.1 Regra Geral de Temperatura
 
-**Decisão:** Google Gemini Flash como modelo primário para todos os agentes.
+| Temperatura | Caso de uso | Tipo |
+|-------------|-------------|------|
+| 0.0 | Classificação de intent, compliance | Determinístico forçado |
+| 0.1 | Perguntas de triagem WSI | Quase-determinístico |
+| 0.3 | Reasoning do loop ReAct | Não-determinístico controlado |
+| 0.5–0.7 | Geração de JD, emails personalizados | Não-determinístico desejado |
 
-**Consequências:**
+---
+
+## 9. ReAct Loop — Configuração LLM
+
+| Variável | Valor | Descrição |
+|----------|-------|-----------|
+| `REACT_MAX_ITERATIONS_DEFAULT` | 5 | Máximo de iterações reason→act→observe |
+| `REACT_MAX_TOOL_CALLS` | 10 | Tool calls por request |
+| `REACT_DUPLICATE_THRESHOLD` | 3 | Mesma ação N vezes → para |
+| `REACT_OBSERVATION_MAX_CHARS` | 5000 | Trunca observação |
+
+---
+
+## 10. Orchestrator — Routing LLM
+
+### 10.1 T1: Hash Cache (sem LLM)
+
+```
+cache_max_size = 1000
+Hash MD5 da mensagem → lookup O(1)
+```
+
+### 10.2 T2: FastRouter (sem LLM)
+
+```
+ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7
+Regex/keyword patterns → domínio
+```
+
+### 10.3 T3: IntentRouter (com LLM)
+
+```
+generate_with_cascade(): Haiku → Sonnet → Opus
+Few-shot examples: app/shared/prompts/examples/orchestrator_examples.py
+```
+
+### 10.4 Conversation Summary
+
+A cada `ROUTER_SUMMARY_EVERY_N_MESSAGES` (padrão: 10) mensagens, gera resumo via LLM para manter contexto compacto.
+
+---
+
+## 11. Observabilidade de LLM
+
+### 11.1 LangSmith
+
+```python
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=ls__...
+LANGCHAIN_PROJECT=lia-agent-system
+```
+
+`@traceable` em todos os agentes e grafos — rastreia chamadas LLM com company_id + user_id.
+
+### 11.2 Prometheus (13+ métricas)
+
+Arquivo: `app/observability/metrics.py`
+
+Métricas: `agent_iterations_total`, latência por domínio, tokens consumidos, erros por provider.
+
+### 11.3 Drift Detection (4 triggers)
+
+| Trigger | Threshold | Descrição |
+|---------|-----------|-----------|
+| Score drift | 0.5 | Variação absoluta no score médio WSI |
+| Aprovação drift | 0.10 | 10 p.p. na taxa de aprovação |
+| Cost drift | 0.20 | 20% variação no custo |
+| Latency drift | 0.50 | 50% variação no P95 |
+
+Batch: `drift.run_batch` — diário 06h Brasília.
+Alerta: 1 trigger=WARNING, 2+=URGENT → Bell + Teams.
+
+### 11.4 AgentQualityEvaluator
+
+Sampling: 10% das interações (Sprint J1).
+
+### 11.5 AgentHealthAlertService
+
+3 falhas → WARNING, 5 → CRITICAL. Notifica Bell + Teams automático.
+
+---
+
+## 12. Integrações de LLM Disponíveis (Replit)
+
+| Provider | Status | Variáveis |
+|----------|--------|-----------|
+| Anthropic (Claude) | Ativo — primário | `ANTHROPIC_API_KEY` ou `AI_INTEGRATIONS_ANTHROPIC_API_KEY` + `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` |
+| OpenAI | Configurado — fallback | `OPENAI_API_KEY` |
+| Google Gemini | Configurado — fallback | `AI_INTEGRATIONS_GEMINI_API_KEY` + `AI_INTEGRATIONS_GEMINI_BASE_URL` |
+
+---
+
+## 13. Decisões Arquiteturais (ADR)
+
+### ADR-LLM-001: Gemini como modelo primário (recruiter_agent_v5)
+
+**Decisão:** Google Gemini Flash para todos os agentes do recruiter_agent_v5.
 - (+) Custo ~10x menor que GPT-4
 - (+) Context window de 1M tokens
-- (+) Bom português
-- (-) Pode ser menos preciso que GPT-4 em raciocínio complexo
-- (-) Vendor lock-in com Google
+- (-) Pode ser menos preciso em raciocínio complexo
 
-### ADR-LLM-002: Temperature 0.0 como default
+### ADR-LLM-002: Claude como modelo primário (lia-agent-system)
 
-**Contexto:** Agentes de recrutamento precisam de respostas consistentes e reproduzíveis.
+**Decisão:** Claude Sonnet 4.6 como modelo primário com cascade de confiança.
+- (+) Melhor raciocínio e tool calling
+- (+) Cascade otimiza custo (Haiku para casos simples)
+- (+) Fallbacks para OpenAI e Gemini
+- (-) Custo maior que Gemini
 
-**Decisão:** Temperature 0.0 para todos os agentes, exceto EvaluationDomain (0.2).
+### ADR-LLM-003: Temperature 0.0 como default de roteamento
 
-**Consequências:**
-- (+) Respostas determinísticas
-- (+) Facilita debugging e testes
-- (-) Respostas podem parecer "secas" (mitigado pelo prompt de formatação)
+**Decisão:** Temperature 0.0 para classificação de intent e compliance. 0.3 para ReAct reasoning.
+- (+) Routing determinístico
+- (+) Compliance reproduzível
+- (-) Respostas de agentes podem parecer "secas" (mitigado pelo prompt)
 
-### ADR-LLM-003: Factory centralizada
+### ADR-LLM-004: Factory centralizada
 
-**Contexto:** Múltiplos domínios criam instâncias de LLM independentemente.
-
-**Decisão:** `create_tracked_llm()` como factory única com tracking embutido.
-
-**Consequências:**
+**Decisão:** `create_tracked_llm()` (r_a_v5) e `LLMService` (lia) como factories únicas.
 - (+) Tracking uniforme de custos
 - (+) Configuração centralizada
 - (+) Fácil trocar modelo globalmente
+
+### ADR-LLM-005: Python, não Ruby (decisão de stack)
+
+**Arquivo:** `docs/adr/001-python-not-ruby.md`
+**Decisão:** Python é a stack definitiva — sem migração planejada.
+- Ecossistema de ML/IA (LangGraph, LangChain, PyTorch)
+- Python `multiprocessing` usa todos os cores
+- Validado pelo especialista externo André
+
+---
+
+## 14. Critérios de Troca de Modelo
+
+| Cenário | Ação | Repositório |
+|---------|------|-------------|
+| Gemini indisponível | Circuit breaker 3 falhas, cooldown 30s | recruiter_agent_v5 |
+| Claude indisponível | Fallback OpenAI → Gemini | lia-agent-system |
+| Confiança < threshold | Escala: Haiku → Sonnet → Opus → humano | lia-agent-system |
+| Contexto > 1M tokens | Compressão via `compression.py` | recruiter_agent_v5 |
+| Custo excessivo | Monitorar tracking, ajustar thresholds cascade | ambos |
+| Qualidade insuficiente | `model_override` ou ajustar cascade | ambos |
 
 ---
 
@@ -205,9 +339,11 @@ Implementado em `src/services/circuit_breaker.py`:
 | Arquivo | Localização |
 |---------|-------------|
 | Gemini Config | `recruiter_agent_v5/src/config/gemini_config.py` |
-| Settings | `recruiter_agent_v5/src/config/settings.py` |
 | LLM Factory | `recruiter_agent_v5/src/utils/llm_factory.py` |
-| LLM Tracking | `recruiter_agent_v5/src/config/llm_tracking_config.py` |
-| Circuit Breaker | `recruiter_agent_v5/src/services/circuit_breaker.py` |
-| RAG Service | `recruiter_agent_v5/src/services/rag_service.py` |
-| Evaluation Config | `recruiter_agent_v5/src/config/evaluation_config.py` |
+| LLMService | `lia-agent-system/app/services/llm.py` |
+| Config (lia) | `lia-agent-system/app/core/config.py` |
+| Circuit Breaker | `lia-agent-system/app/shared/resilience/circuit_breaker.py` |
+| IntentRouter | `lia-agent-system/app/orchestrator/intent_router.py` |
+| Drift Service | `lia-agent-system/app/services/model_drift_service.py` |
+| ADR 001 | `lia-agent-system/docs/adr/001-python-not-ruby.md` |
+| ADR 002 | `lia-agent-system/docs/adr/002-graph-vs-react.md` |
