@@ -418,13 +418,17 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.8 PolicyReActAgent — Políticas de Contratação
 
+**O que é:** Agente para configuração de políticas de contratação da empresa — pipeline, agendamento, comunicação, screening, automação.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/hiring_policy/agents/` |
 | **Registry** | `policy` |
 | **Registry file** | `policy_tool_registry.py` |
+| **Como funciona** | ReAct loop com setup wizard por blocos. Cada bloco (pipeline_rules, scheduling_rules, etc.) é salvo independentemente. |
 | **Tools** | 13 |
 | **max_iterations** | 5 |
+| **Limites** | Validação legal/ética obrigatória via `validate_policy_compliance` antes de salvar. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -444,14 +448,17 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.9 AutomationReActAgent — Decomposição de Tarefas
 
+**O que é:** Agente para decomposição de tarefas complexas de recrutamento em subtarefas executáveis com DAG de dependências.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/automation/agents/` |
 | **Registry** | `automation` |
 | **Registry file** | `automation_tool_registry.py` |
+| **Como funciona** | Recebe tarefa em linguagem natural, decompõe em subtarefas com agente responsável, estima duração, identifica dependências e oportunidades de paralelismo |
 | **Tools** | 6 |
 | **max_iterations** | 6 |
-| **Descrição** | Agente de decomposição de tarefas e planejamento de execução |
+| **Limites** | Agentes atribuíveis: job_planner, sourcing, cv_screening, interviewer, wsi_evaluator, scheduling, analyst_feedback |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -464,22 +471,29 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.10 PolicySetupAgent (LLM Direto)
 
+**O que é:** Agente de configuração inicial de políticas — guia o recrutador por 19 perguntas em 5 blocos.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/policy/agents/agent.py` |
 | **Tipo** | LLM direto (não ReAct) |
-| **Função** | 19 perguntas em 5 blocos de configuração de política |
+| **Como funciona** | Fluxo linear de perguntas, cada resposta salva no banco por bloco |
 | **Blocos** | pipeline_rules, scheduling_rules, communication_rules, screening_rules, automation_rules |
+| **Limites** | Não possui tools — usa chamada LLM direta para interpretar respostas |
 
 ### 3.11 AnalyticsReActAgent
+
+**O que é:** Agente de analytics, KPIs e previsões de contratação.
 
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/analytics/agents/` |
 | **Registry** | `analytics` |
 | **Registry file** | `analytics_tool_registry.py` |
+| **Como funciona** | ReAct loop com acesso a dados agregados de vagas, candidatos e agentes |
 | **Tools** | 6 |
 | **max_iterations** | 6 |
+| **Limites** | Dados derivados de PostgreSQL — sem acesso a dados brutos de LLM |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -492,13 +506,17 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.12 ATSIntegrationReActAgent
 
+**O que é:** Agente de integração bidirecional com plataformas ATS externas (Gupy, Pandapé, Merge).
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/ats_integration/agents/` |
 | **Registry** | `ats_integration` |
 | **Registry file** | `ats_integration_tool_registry.py` |
+| **Como funciona** | ReAct loop para sincronizar candidatos entre LIA e ATS externos |
 | **Tools** | 5 |
 | **max_iterations** | 6 |
+| **Limites** | Dependente de APIs externas (Gupy, Pandapé). Rate limits aplicáveis. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -510,13 +528,17 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 3.13 CommunicationReActAgent
 
+**O que é:** Agente de comunicação multi-canal com conformidade LGPD.
+
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/communication/agents/` |
 | **Registry** | `communication` |
 | **Registry file** | `communication_tool_registry.py` |
+| **Como funciona** | ReAct loop para envio de mensagens via email e WhatsApp com rate limiting |
 | **Tools** | 5 |
 | **max_iterations** | 6 |
+| **Limites** | Rate limiting obrigatório via `check_rate_limit` antes de envio. Conformidade LGPD. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
@@ -559,7 +581,8 @@ Contagens extraídas por `ToolDefinition(` count em cada arquivo `*_tool_registr
 | Talent | `create_shortlist` |
 | Kanban | `batch_move_candidates`, `send_batch_communication`, `start_screening_batch` |
 | JobsMgmt | `pause_job`, `close_job` |
-| PipelineTransition | `execute_stage_transition` |
+| PipelineTransition | `validate_transition` (validação pré-transição) |
+| Pipeline (cv_screening) | `move_candidate`, `batch_move` |
 | Messaging (r_a_v5) | Todos os envios |
 
 ---
@@ -614,6 +637,6 @@ Nota: `check_engagement_gaps()` existe como método mas NÃO está na lista de `
 | Base Domain (r_a_v5) | `recruiter_agent_v5/src/domains/base.py` |
 | ReactAgentRegistry (lia) | `lia-agent-system/libs/agents-core/lia_agents_core/react_agent_registry.py` |
 | Tool Registry Metadata | `lia-agent-system/app/tools/tool_registry_metadata.yaml` |
-| Proactive Worker | `lia-agent-system/app/shared/agents/proactive_worker.py` |
+| Proactive Worker | `lia-agent-system/libs/agents-core/lia_agents_core/proactive_worker.py` |
 | MAPA_INTELIGENCIA | `docs/analises/MAPA_INTELIGENCIA_LIA_COMPLETO.md` |
 | GUIA_ARQUITETURA_IA | `docs/GUIA_ARQUITETURA_IA_v1.0.md` |
