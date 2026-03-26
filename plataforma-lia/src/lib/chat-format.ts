@@ -102,6 +102,8 @@ export function parseChatMarkdown(text: string): string {
 
   output = output.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => {
     const isInternal = href.startsWith("/")
+    const isSafeProtocol = /^(https?:\/\/|\/)/i.test(href)
+    if (!isSafeProtocol) return label
     return `<a href="${href}" ${isInternal ? '' : 'target="_blank" rel="noopener noreferrer"'} class="text-wedo-cyan underline hover:opacity-80 transition-opacity">${label}</a>`
   })
 
