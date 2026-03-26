@@ -292,36 +292,54 @@ ats_api (Rails REST)
 
 ## 7. Frontend — `ats_front`
 
-> Lido de `ats_front` (branch `develop`). Números reais do codebase.
+> Lido de `ats_front` (branch `develop`, 901 arquivos). Números reais do codebase.
 
-**Stack:** Nuxt 3 + Vue 3 + Vuetify 3 + TypeScript + Pinia
+**Stack:** Nuxt 3 + Vue 3 + Vuetify 3 + TypeScript + Pinia (Options API) + Axios + ActionCable
 
 | Métrica | Valor |
 |---------|-------|
+| Total de arquivos | 901 |
 | Páginas | 34 (file-based routing Nuxt) |
-| Feature modules | 24+ (em `features/`) |
+| Feature modules | 28 (em `features/`, 358 arquivos) |
 | Composables | 57 (em `composables/`) |
-| Stores (Pinia) | 18 (em `stores/`) |
-| UI components | 130 (em `components/ui/`) |
-| LLM components | 8 (em `components/llm/`) |
+| Stores (Pinia) | 18 (em `stores/`, Options API) |
+| Components totais | 145 (ui: 130, llm: 8, shared: 3, sourcing: 3, applies: 1) |
+| Base components | 13 (`Base*` — wrappers Vuetify) |
+| Table cell renderers | 30+ (`td*` — registro global) |
+| Chat IA components | 10 (streaming, code blocks, markdown) |
 | Plugins | 11 (em `plugins/`) |
 | Layouts | 5 (user, admin, blank, evaluations, setup) |
+| Types | 7 arquivos `.ts` |
 
 **Maiores feature modules:**
 
 | Feature | Arquivos | Descrição |
 |---------|----------|-----------|
-| `features/messages/` | 88 | Comunicação com candidatos |
-| `features/candidates/` | 48 | Gestão de candidatos |
-| `features/lia/` | 46 | Chat com IA LIA |
-| `features/admin/` | 44 | Painel administrativo |
-| `features/jobs/` | 38 | Gestão de vagas |
-| `features/applies/` | 23 | Pipeline de candidaturas |
+| `features/messages/` | 88 | Templates de comunicação |
+| `features/candidates/` | 48 | Gestão + filtros + emails + cards |
+| `features/lia/` | 46 | [AI] Chat LIA, sourcing, archetypes, search |
+| `features/admin/` | 44 | AI costs dashboard, sectors, roles, WhatsApp |
+| `features/jobs/` | 38 | Form multistep, cards, workflow, screening |
+| `features/applies/` | 23 | Kanban, dialogs, screening results |
 
 **Comunicação com backend:**
-- HTTP REST via Axios (`plugins/axios.ts`)
-- WebSocket via ActionCable (`plugins/websocket.client.ts`, `composables/useCable.ts`)
-- Streaming de chat IA via `useMessageStreaming.ts`
+- HTTP REST dual: `$api` (`$fetch` wrapper, `plugins/api.ts`) + `$axios` (legacy, `plugins/axios.ts`)
+- WebSocket via ActionCable (`@rails/actioncable` → `composables/useCable.ts`)
+- Streaming de chat IA via `composables/useMessageStreaming.ts`
+- Auth: JWT via `useCookie('auth_token')` — interceptor automático em ambos clients
+
+**Tema Vuetify (`config/vuetify.config.ts`):**
+- `lightTheme` / `darkTheme` com cores WeDo (cyan, green, orange, purple, magenta)
+- Primary = `#111827` (Gray 900 — botões pretos)
+- `componentDefaults`: VBtn rounded=12px, VTextField/VSelect density=compact
+- Componentes Vuetify importados manualmente (sem auto-import)
+
+**Ferramentas adicionais:**
+- Histoire (Storybook-like) para component stories
+- Vue Flow (diagramas de workflow)
+- Vue Toastification (notificações)
+- Splitpanes (layout redimensionável)
+- Auto Animate (transições automáticas)
 
 ---
 
