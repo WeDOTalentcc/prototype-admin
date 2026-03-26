@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useCallback, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   X, Minimize2, Send, Search, Brain,
@@ -16,6 +16,7 @@ import { useFloatStreaming } from "@/hooks/use-float-streaming"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
 import { useActionIntent, actionTypeToDomain } from "@/hooks/use-action-intent"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
+import { cleanAgentResponse, parseChatMarkdown } from "@/lib/chat-format"
 import { useRouter } from "next/navigation"
 
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
@@ -358,27 +359,7 @@ export function LiaSuperPrompt() {
                                   <LIAIcon size="md" />
                                 </div>
                               )}
-                              <div
-                                className="rounded-lg p-4 flex-1"
-                                style={{
-                                  backgroundColor: message.sender === "user"
-                                    ? "#F3F4F6"
-                                    : "#F0FDFF",
-                                  color: "#1F2937"
-                                }}
-                              >
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-sm font-medium">
-                                    {message.sender === "lia" ? "Lia" : "Você"}
-                                  </span>
-                                  <span className="text-xs text-gray-400">
-                                    {message.timestamp}
-                                  </span>
-                                </div>
-                                <p className="text-sm leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                                  {message.content}
-                                </p>
-                              </div>
+                              <SuperPromptBubble message={message} />
                             </div>
                           </div>
                         ))}
@@ -388,17 +369,7 @@ export function LiaSuperPrompt() {
                             <div className="flex-shrink-0 pt-3">
                               <LIAIcon size="md" />
                             </div>
-                            <div
-                              className="rounded-lg p-4 flex-1"
-                              style={{ backgroundColor: "#F0FDFF", color: "#1F2937" }}
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-sm font-medium">Lia</span>
-                              </div>
-                              <p className="text-sm leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                                {streamingContent}
-                              </p>
-                            </div>
+                            <SuperPromptStreamingBubble content={streamingContent} />
                           </div>
                         )}
 
@@ -495,5 +466,62 @@ export function LiaSuperPrompt() {
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+function SuperPromptBubble({ message }: { message: { sender: string; content: string; timestamp: string } }) {
+  const isUser = message.sender === "user"
+  const html = useMemo(() => {
+    if (isUser) return message.content.replace(/\n/g, "<br/>")
+    const cleaned = cleanAgentResponse(message.content)
+    return parseChatMarkdown(cleaned)
+  }, [message.content, isUser])
+
+  return (
+    <div
+      className="rounded-lg p-4 flex-1"
+      style={{
+        backgroundColor: isUser ? "#F3F4F6" : "#F0FDFF",
+        color: "#1F2937",
+        borderWidth: 1,
+        borderColor: isUser ? "#E5E7EB" : "#D0EFF5",
+      }}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-sm font-medium" style={{ fontFamily: '"Inter", sans-serif' }}>
+          {isUser ? "Voce" : "Lia"}
+        </span>
+        <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>
+          {message.timestamp}
+        </span>
+      </div>
+      <div
+        className="text-[13px] leading-relaxed"
+        style={{ fontFamily: '"Open Sans", sans-serif' }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </div>
+  )
+}
+
+function SuperPromptStreamingBubble({ content }: { content: string }) {
+  const cleaned = useMemo(() => cleanAgentResponse(content), [content])
+  const html = useMemo(() => parseChatMarkdown(cleaned), [cleaned])
+
+  return (
+    <div
+      className="rounded-lg p-4 flex-1"
+      style={{ backgroundColor: "#F0FDFF", color: "#1F2937", borderWidth: 1, borderColor: "#D0EFF5" }}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-sm font-medium" style={{ fontFamily: '"Inter", sans-serif' }}>Lia</span>
+      </div>
+      <div
+        className="text-[13px] leading-relaxed"
+        style={{ fontFamily: '"Open Sans", sans-serif' }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+      <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse align-middle" />
+    </div>
   )
 }

@@ -15,7 +15,7 @@
  * Compatível com Vue/Nuxt: sem React-only patterns; lógica em hooks separados.
  */
 
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Brain, X, Maximize2, Loader2, Send, ArrowRight, Plus, Eraser, History, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat } from "@/contexts/lia-float-context"
@@ -31,6 +31,7 @@ import {
   type FloatMessage,
 } from "@/hooks/use-float-conversation"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
+import { cleanAgentResponse, parseChatMarkdown } from "@/lib/chat-format"
 
 const MAX_INPUT_CHARS = 2000
 
@@ -538,21 +539,34 @@ function ThinkingIndicator() {
   )
 }
 
+function RichContent({ html, className }: { html: string; className?: string }) {
+  return (
+    <div
+      className={className}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
+}
+
 function StreamingBubble({ content }: { content: string }) {
+  const cleaned = useMemo(() => cleanAgentResponse(content), [content])
+  const html = useMemo(() => parseChatMarkdown(cleaned), [cleaned])
+
   return (
     <div className="flex gap-2">
       <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
         <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
-        <div className="flex items-center gap-1.5 mb-0.5">
+        <div className="flex items-center gap-1.5 mb-1">
           <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
         </div>
-        <div className="rounded-md bg-gray-50 dark:bg-gray-800 px-3 py-2 max-w-[320px]">
-          <p className="text-[12px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "Open Sans, sans-serif" }}>
-            {renderFormattedContent(content)}
-            <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse align-middle" />
-          </p>
+        <div className="rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2.5 max-w-[340px]">
+          <RichContent
+            html={html}
+            className="text-[13px] text-gray-800 dark:text-gray-200 leading-relaxed font-['Open_Sans',sans-serif]"
+          />
+          <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse align-middle" />
         </div>
       </div>
     </div>
@@ -562,16 +576,23 @@ function StreamingBubble({ content }: { content: string }) {
 function MessageBubble({ msg }: { msg: FloatMessage }) {
   const isUser = msg.sender === "user"
 
+  const renderedHtml = useMemo(() => {
+    if (isUser) return msg.content.replace(/\n/g, "<br/>")
+    const cleaned = cleanAgentResponse(msg.content)
+    return parseChatMarkdown(cleaned)
+  }, [msg.content, isUser])
+
   if (isUser) {
     return (
       <div className="flex gap-2 justify-end">
-        <div className="flex flex-col items-end gap-0.5 max-w-[320px]">
-          <div className="rounded-md bg-gray-100 dark:bg-gray-800 px-3 py-2">
-            <p className="text-[12px] text-gray-800 dark:text-gray-200 leading-relaxed" style={{ fontFamily: "Open Sans, sans-serif" }}>
-              {msg.content}
-            </p>
+        <div className="flex flex-col items-end gap-0.5 max-w-[340px]">
+          <div className="rounded-md bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 py-2.5">
+            <RichContent
+              html={renderedHtml}
+              className="text-[13px] text-gray-900 dark:text-gray-50 leading-relaxed font-['Open_Sans',sans-serif]"
+            />
           </div>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500" style={{ fontFamily: "Open Sans, sans-serif" }}>
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums">
             {msg.timestamp}
           </span>
         </div>
@@ -588,47 +609,20 @@ function MessageBubble({ msg }: { msg: FloatMessage }) {
         <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
-        <div className="flex items-center gap-1.5 mb-0.5">
+        <div className="flex items-center gap-1.5 mb-1">
           <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500" style={{ fontFamily: "Open Sans, sans-serif" }}>{msg.timestamp}</span>
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
         </div>
-        <div className="rounded-md bg-gray-50 dark:bg-gray-800 px-3 py-2 max-w-[320px]">
-          <div className="text-[12px] text-gray-800 dark:text-gray-200 leading-relaxed" style={{ fontFamily: "Open Sans, sans-serif" }}>
-            {renderFormattedContent(msg.content)}
+        <div className="rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2.5 max-w-[340px]">
+          <RichContent
+            html={renderedHtml}
+            className="text-[13px] text-gray-800 dark:text-gray-200 leading-relaxed font-['Open_Sans',sans-serif]"
+          />
+          <div className="mt-1.5 text-[10px] text-gray-500 dark:text-gray-500 font-['Inter',sans-serif] tabular-nums">
+            {msg.timestamp}
           </div>
         </div>
       </div>
     </div>
   )
-}
-
-/**
- * Renderiza markdown básico: bold, links internos/externos, quebras de linha.
- * Links internos (começam com /) usam navegação SPA; externos abrem em nova aba.
- */
-function renderFormattedContent(content: string): React.ReactNode[] {
-  // Divide por bold (**texto**) e links markdown ([texto](url))
-  const parts = content.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/)
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>
-    }
-    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
-    if (linkMatch) {
-      const [, label, href] = linkMatch
-      const isInternal = href.startsWith("/")
-      return (
-        <a
-          key={i}
-          href={href}
-          target={isInternal ? undefined : "_blank"}
-          rel={isInternal ? undefined : "noopener noreferrer"}
-          className="text-wedo-cyan underline hover:opacity-80 transition-opacity"
-        >
-          {label}
-        </a>
-      )
-    }
-    return <span key={i}>{part}</span>
-  })
 }
