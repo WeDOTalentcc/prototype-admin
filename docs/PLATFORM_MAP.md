@@ -520,6 +520,7 @@ Bridge que permite AI coding assistants (Claude Code, Cursor) trabalhar automati
 | `LLM_DECISIONS.md` | `docs/specs/ai/LLM_DECISIONS.md` | Criado |
 | `PROMPT_STANDARDS.md` | `docs/specs/ai/PROMPT_STANDARDS.md` | Criado |
 | `AI_FAILURE_MODES.md` | `docs/specs/ai/AI_FAILURE_MODES.md` | Criado |
+| `LIA_AUTOMATION.md` | `docs/specs/ai/LIA_AUTOMATION.md` | Criado (unificação de 4 docs) |
 | `DATA_MODELS.md` | `docs/specs/backend/DATA_MODELS.md` | Criado |
 | `API_CONTRACTS.md` | `docs/specs/backend/API_CONTRACTS.md` | Criado |
 | `FRONTEND_STANDARDS.md` | `docs/specs/frontend/FRONTEND_STANDARDS.md` | Criado |

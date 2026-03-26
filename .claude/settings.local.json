@@ -1006,7 +1006,10 @@
       "Bash(sed -i 's/nodes._accumulate_score\\(state, \"\"technical\"\", 0.5, 10.0\\)  # abaixo do mín\\\\n        assert state.technical_score >= 1.0  # clamped/nodes._accumulate_score\\(state, \"\"technical\"\", 0.5, 10.0\\)\\\\n        assert state.technical_score == pytest.approx\\(0.5\\)\\\\n        assert state.technical_score > 0.25/' tests/unit/test_wsi_graph_scoring_fixes.py)",
       "Bash(__NEW_LINE_27db0f40bce0b895__ grep:*)",
       "Bash(wait)",
-      "Bash(echo \"EXIT:$?\")"
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(wc -l /home/runner/workspace/plataforma-lia/src/components/ui/*.tsx)",
+      "Bash(gh auth:*)",
+      "Bash(TOKEN=\"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\" curl -s -H \"Authorization: token $TOKEN\" \"https://api.github.com/orgs/WeDOTalent/repos\")"
     ]
   }
 }
