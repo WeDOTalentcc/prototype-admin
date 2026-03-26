@@ -53,7 +53,7 @@
 
 | Mecanismo | Fonte Canônica | Arquivo |
 |-----------|---------------|---------|
-| Circuit breaker (14 circuits) | `CircuitBreakerManager` | `app/shared/resilience/circuit_breaker.py` |
+| Circuit breaker (14 circuits) | Circuit instances + utilities | `app/shared/resilience/circuit_breaker.py` |
 | ReAct loop error handling | `ReActLoop.run()` | `libs/agents-core/lia_agents_core/react_loop.py` |
 | LLM cascade (confidence) | `LLMService.generate_with_cascade()` | `app/services/llm.py` L827-909 |
 | Cascaded router (6 tiers) | `CascadedRouter.route()` | `app/orchestrator/cascaded_router.py` |
@@ -611,7 +611,7 @@ O `wizard_system_prompt.py` inclui instruções específicas de error handling i
 | Personas | `_archived/personas-tab.tsx` | `handleLIAInsights()` | **ARCHIVED** — não carregada em produção |
 | Mapping | `_archived/mapping-tab.tsx` | `handleLIAInsights()` | **ARCHIVED** — não carregada em produção |
 
-Os componentes ativos (`candidates-page.tsx`, `tasks-page.tsx`) usam `handleLIAChatMessage()` e `handleLIAAction()` que delegam ao backend LIA real via API.
+O componente ativo `candidates-page.tsx` usa `handleLIAChatMessage()` e `handleLIAClick()` para interação com o backend LIA via API; `tasks-page.tsx` usa `handleLIAAction()` para ações contextuais por vaga.
 
 ---
 
