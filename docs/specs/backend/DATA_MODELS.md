@@ -215,7 +215,145 @@ attributes(
 
 **Validações**: `name` presence; `email` presence + uniqueness; `cpf` uniqueness (allow_blank)
 
-### 2.6 Tabela: `applies`
+### 2.6 Tabela: `evaluations`
+
+Avaliações de candidatos criadas por recrutadores ou pelo agente IA.
+
+| Campo | Tipo | Null | Default | Índice |
+|-------|------|------|---------|--------|
+| `id` | bigint | NOT NULL | auto | PK |
+| `candidate_id` | bigint | NOT NULL | — | FK → candidates |
+| `job_id` | bigint | YES | — | FK → jobs |
+| `evaluator_id` | bigint | YES | — | FK → users |
+| `score` | integer | YES | — | — |
+| `comments` | text | YES | — | — |
+| `evaluation_type` | string | YES | — | — |
+| `account_id` | bigint | NOT NULL | — | FK → accounts |
+| `created_at` | datetime | NOT NULL | — | — |
+| `updated_at` | datetime | NOT NULL | — | — |
+
+**Associações**: `belongs_to :candidate`, `belongs_to :job`, `belongs_to :user (evaluator)`  
+**Endpoints**: CRUD completo via `/v1/users/evaluations`  
+**Tool YAML**: `evaluations_search.yml`, `evaluations_create.yml`, `evaluations_update.yml`, `evaluations_delete.yml`
+
+### 2.7 Tabela: `questions`
+
+Perguntas de avaliação associadas a vagas ou processos seletivos.
+
+| Campo | Tipo | Null | Default | Índice |
+|-------|------|------|---------|--------|
+| `id` | bigint | NOT NULL | auto | PK |
+| `content` | text | YES | — | — |
+| `question_type` | string | YES | — | — |
+| `job_id` | bigint | YES | — | FK → jobs |
+| `account_id` | bigint | NOT NULL | — | FK → accounts |
+| `created_at` | datetime | NOT NULL | — | — |
+| `updated_at` | datetime | NOT NULL | — | — |
+
+**Endpoints**: CRUD via `/v1/users/questions`  
+**Tool YAML**: `questions_search.yml`, `questions_create.yml`, `questions_update.yml`, `questions_delete.yml`
+
+### 2.8 Tabela: `sourced_profiles`
+
+Perfis de candidatos captados via sourcing ativo (Pearch AI, LinkedIn, etc.)  
+antes de serem convertidos em `candidates`.
+
+| Campo | Tipo | Null | Default | Índice |
+|-------|------|------|---------|--------|
+| `id` | bigint | NOT NULL | auto | PK |
+| `name` | string | YES | — | — |
+| `email` | string | YES | — | index |
+| `linkedin` | string | YES | — | index |
+| `headline` | string | YES | — | — |
+| `current_company` | string | YES | — | — |
+| `location` | string | YES | — | — |
+| `source` | string | YES | — | — |
+| `raw_data` | jsonb | YES | `{}` | — |
+| `converted` | boolean | YES | `false` | — |
+| `account_id` | bigint | NOT NULL | — | FK → accounts |
+| `created_at` | datetime | NOT NULL | — | — |
+| `updated_at` | datetime | NOT NULL | — | — |
+
+**Endpoints**: `/v1/users/sourced_profile_sourcings` (search, create), `/v1/users/sourced_profiles/import` (batch import), `/v1/users/sourced_profiles/convert` (convert to candidates)
+
+### 2.9 Tabela: `sourced_profile_sourcings`
+
+Relação entre buscas de sourcing e perfis encontrados.
+
+| Campo | Tipo | Null | Default | Índice |
+|-------|------|------|---------|--------|
+| `id` | bigint | NOT NULL | auto | PK |
+| `sourced_profile_id` | bigint | NOT NULL | — | FK → sourced_profiles |
+| `job_id` | bigint | YES | — | FK → jobs |
+| `search_query` | text | YES | — | — |
+| `match_score` | float | YES | — | — |
+| `account_id` | bigint | NOT NULL | — | FK → accounts |
+| `created_at` | datetime | NOT NULL | — | — |
+
+### 2.10 Tabela: `lists`
+
+Listas customizadas de candidatos criadas por recrutadores (talent pools, shortlists).
+
+| Campo | Tipo | Null | Default | Índice |
+|-------|------|------|---------|--------|
+| `id` | bigint | NOT NULL | auto | PK |
+| `name` | string | NOT NULL | — | — |
+| `description` | text | YES | — | — |
+| `list_type` | string | YES | — | — |
+| `user_id` | bigint | NOT NULL | — | FK → users |
+| `account_id` | bigint | NOT NULL | — | FK → accounts |
+| `created_at` | datetime | NOT NULL | — | — |
+| `updated_at` | datetime | NOT NULL | — | — |
+
+**Endpoints**: `/v1/users/lists` (search)  
+**Tool YAML**: `lists_search.yml`
+
+### 2.11 Tabela: `list_relationships`
+
+Associação many-to-many entre listas e candidatos.
+
+| Campo | Tipo | Null | Default | Índice |
+|-------|------|------|---------|--------|
+| `id` | bigint | NOT NULL | auto | PK |
+| `list_id` | bigint | NOT NULL | — | FK → lists |
+| `candidate_id` | bigint | NOT NULL | — | FK → candidates |
+| `created_at` | datetime | NOT NULL | — | — |
+
+**Endpoints**: `/v1/users/list_relationships` (create)  
+**Tool YAML**: `list_relationships_create.yml`
+
+### 2.12 Tabela: `talent_pool`
+
+Pool de talentos para busca passiva.
+
+| Campo | Tipo | Null | Default | Índice |
+|-------|------|------|---------|--------|
+| `id` | bigint | NOT NULL | auto | PK |
+| `candidate_id` | bigint | NOT NULL | — | FK → candidates |
+| `tags` | jsonb | YES | `[]` | — |
+| `notes` | text | YES | — | — |
+| `account_id` | bigint | NOT NULL | — | FK → accounts |
+| `created_at` | datetime | NOT NULL | — | — |
+
+**Endpoints**: `/v1/users/talent_pool` (search)  
+**Tool YAML**: `talent_pool_search.yml`
+
+### 2.13 Tabela: `organizational_structure`
+
+Estrutura organizacional (times, hierarquia).
+
+| Campo | Tipo | Null | Default | Índice |
+|-------|------|------|---------|--------|
+| `id` | bigint | NOT NULL | auto | PK |
+| `data` | jsonb | YES | `{}` | — |
+| `account_id` | bigint | NOT NULL | — | FK → accounts |
+| `created_at` | datetime | NOT NULL | — | — |
+
+**JSON structure**: `{ "directManager": "...", "teamSize": 5, "teamComposition": [...] }`  
+**Endpoints**: `/v1/users/organizational_structure` (create)  
+**Tool YAML**: `organizational_structure_create.yml`
+
+### 2.14 Tabela: `applies`
 
 > **Migration**: `db/migrate/20250714142059_create_applies.rb`  
 > **Serializer**: `app/serializer/apply_serializer.rb`

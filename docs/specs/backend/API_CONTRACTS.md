@@ -947,7 +947,174 @@ Authorization: Bearer <agent_token>
 
 ---
 
-## 8. Frontend Proxy (`plataforma-lia`)
+## 8. Contrato `recruiter_agent_v5` ↔ LLMs
+
+### 8.1 Arquitetura de chamadas LLM
+
+```
+recruiter_agent_v5
+    │
+    ├── create_tracked_llm()  ←── OBRIGATÓRIO (nunca ChatGoogleGenerativeAI() direto)
+    │       │
+    │       ├── GeminiConfig
+    │       │   ├── model: "gemini-1.5-flash-latest" (default)
+    │       │   ├── temperature: 0.0
+    │       │   └── api_key: GOOGLE_API_KEY
+    │       │
+    │       └── LangSmith tracing (automático)
+    │
+    └── DomainResponse  ←── ÚNICO tipo de retorno (nunca dict raw)
+```
+
+### 8.2 Configuração LLM (`GeminiConfig`)
+
+Fonte: `recruiter_agent_v5/src/config/gemini_config.py`
+
+```python
+@dataclass(frozen=True)
+class GeminiConfig:
+    api_key: str
+    model: str = "gemini-1.5-flash-latest"
+    temperature: float = 0.0
+```
+
+**Model selection por complexidade**:
+
+| Tier | Model | Uso |
+|------|-------|-----|
+| `model_fast` | `gemini-2.5-flash` | Classificação de intent, extração de entidades |
+| `model_default` | `gemini-2.5-flash` | Chat conversacional, busca, CRUD |
+| `model_heavy` | `gemini-2.5-pro` | Análise complexa, scoring WSI, parecer detalhado |
+
+### 8.3 Request para LLM (via `create_tracked_llm`)
+
+```python
+llm = create_tracked_llm(
+    temperature=0.0,
+    service_name="AppliesDomain",
+    operation="chat",
+)
+
+response = llm.invoke(prompt)
+```
+
+**Payload enviado ao Google Gemini** (via LangChain `ChatGoogleGenerativeAI`):
+
+```json
+{
+  "model": "gemini-2.5-flash",
+  "contents": [
+    {
+      "role": "user",
+      "parts": [{ "text": "<system_prompt>\n\n<user_query>" }]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.0,
+    "maxOutputTokens": 8192,
+    "topP": 0.95
+  },
+  "safetySettings": [
+    { "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE" }
+  ]
+}
+```
+
+### 8.4 Response do LLM
+
+```json
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [{ "text": "resposta gerada" }],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "safetyRatings": [...]
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 1500,
+    "candidatesTokenCount": 500,
+    "totalTokenCount": 2000
+  }
+}
+```
+
+### 8.5 `DomainResponse` — contrato de retorno
+
+Todas as actions de domínio retornam `DomainResponse` (nunca `dict` raw):
+
+```python
+class DomainResponse:
+    success: bool
+    message: str                          # Mensagem em português brasileiro
+    data: Optional[Any] = None            # Dados estruturados
+    metadata: Optional[Dict] = None       # Metadados (total, job_id, etc.)
+    suggestions: Optional[List[str]] = None  # Sugestões de próximos passos
+    needs_clarification: bool = False     # Pedir mais informação ao usuário
+```
+
+### 8.6 Fallback e retry
+
+| Cenário | Tratamento |
+|---------|-----------|
+| LLM timeout (>30s) | Retry 1x com backoff exponencial |
+| Rate limit (429) | Retry com jitter, máx 3 tentativas |
+| Response vazio | `DomainResponse(success=False, message="Erro ao processar")` |
+| Safety block | `DomainResponse(success=False, message="Não consigo processar esta solicitação")` |
+| API key inválido | Startup warning — endpoints retornam 503 |
+
+### 8.7 `lia-agent-system` — LLM Multi-Provider
+
+Fonte: `lia-agent-system/app/services/llm.py` (class `LLMService`)
+
+```
+LLMService
+    │
+    ├── Primary: Claude Sonnet 4 (Anthropic)
+    ├── Fallback 1: OpenAI GPT-4o
+    ├── Fallback 2: Google Gemini 2.5 Flash
+    │
+    └── CircuitBreaker por provider
+        ├── threshold: 5 falhas consecutivas
+        ├── timeout: 60 segundos
+        └── half-open: testa 1 request após timeout
+```
+
+**Multi-provider config** (via `app/core/config.py`):
+
+| Setting | Descrição |
+|---------|-----------|
+| `ANTHROPIC_API_KEY` | Claude Sonnet 4 — provider primário |
+| `OPENAI_API_KEY` | GPT-4o — fallback |
+| `GOOGLE_API_KEY` | Gemini 2.5 — fallback |
+| `LLM_TIMEOUT` | Timeout por request (default: 30s) |
+| `LLM_MAX_RETRIES` | Máximo de retries (default: 2) |
+
+### 8.8 Token budget e rate limiting
+
+| Controle | Valor | Escopo |
+|----------|-------|--------|
+| Token budget por empresa | Configurável via admin | Per `company_id` per month |
+| Rate limit LLM endpoints | 20 req/min | Per user |
+| Max tokens por request | 8192 (output) | Per request |
+| Tracking | LangSmith traces | Per request — `configure_langsmith()` |
+
+### 8.9 PII stripping antes do LLM
+
+```python
+strip_pii_for_llm_prompt(text)
+anonymize_for_llm(candidates)
+```
+
+Campos removidos antes de enviar ao LLM: `name`, `email`, `cpf`, `phone`, `gender`, `ethnicity`  
+Feature flag: `LLM_PROMPT_PII_STRIPPING_ENABLED`
+
+---
+
+## 9. Frontend Proxy (`plataforma-lia`)
 
 O frontend Next.js proxia requests para o backend via API route:
 
