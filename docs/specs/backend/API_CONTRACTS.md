@@ -1153,13 +1153,22 @@ Feature flag: `LLM_PROMPT_PII_STRIPPING_ENABLED`
 
 ## 9. Frontend Proxy (`plataforma-lia`)
 
-O frontend Next.js proxia requests para o backend via API route:
+O frontend Next.js proxia requests para o backend via duas estratégias:
+
+**1. Rotas explícitas** (`src/app/api/backend-proxy/**/route.ts`):
+
+Cada feature tem sua própria route handler (100+ arquivos):
+- `/api/backend-proxy/chat/message/route.ts`
+- `/api/backend-proxy/approvals/[id]/approve/route.ts`
+- `/api/backend-proxy/candidates/compare/route.ts`
+- `/api/backend-proxy/auth/[...slug]/route.ts`
+- etc.
+
+**2. Catch-all fallback** (`src/app/api/lia/[...path]/route.ts`):
 
 ```
-Frontend → /api/backend-proxy/chat → Proxy → http://localhost:8000/api/v1/chat
+Frontend → /api/lia/api/v1/<path> → Proxy → http://localhost:8000/api/v1/<path>
 ```
-
-**Implementação**: `src/app/api/backend-proxy/[...path]/route.ts`
 
 **Métodos permitidos**: GET, POST, PUT, DELETE, PATCH  
 **Headers**: sanitizados, sem vazamento de stack traces  

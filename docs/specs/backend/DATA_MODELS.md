@@ -583,24 +583,25 @@ mas as definições de campos vêm da lib interna.
 
 #### Requisitos
 
+Fonte: `libs/models/lia_models/job_vacancy.py` linhas 36-48
+
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
-| `required_skills` | JSON | Não | `["Python", "Django", "AWS"]` |
-| `desired_skills` | JSON | Não | Skills desejáveis |
-| `education_level` | String(100) | Não | Escolaridade mínima |
-| `experience_years` | Integer | Não | Anos de experiência mínima |
-| `certifications` | JSON | Não | Certificações |
-| `languages` | JSON | Não | `[{"language": "English", "level": "fluent"}]` |
+| `requirements` | ARRAY(String) | Não | Requisitos básicos (legacy) |
+| `technical_requirements` | JSON | Não | `[{"category": "Linguagens", "technology": "Python", "level": "Avançado", "required": true}]` |
+| `behavioral_competencies` | JSON | Não | `[{"competency": "Liderança", "weight": "Essencial"}]` |
+| `languages` | JSON | Não | `[{"language": "Inglês", "level": "Intermediário", "required": true}]` |
 
 #### Financeiro
 
+Fonte: `libs/models/lia_models/job_vacancy.py` linhas 49-57
+
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
-| `salary_min` | Float | Não | Salário mínimo |
-| `salary_max` | Float | Não | Salário máximo |
-| `salary_currency` | String(10) | Não | `BRL`, `USD`, `EUR` |
-| `salary_display` | Boolean | Não | Exibir salário no anúncio |
-| `benefits` | JSON | Não | `["VR", "VT", "Plano de Saúde"]` |
+| `salary` | String(100) | Não | Formato legacy (string) |
+| `salary_range` | JSON | Não | `{"min": 12000, "max": 18000, "currency": "BRL"}` |
+| `bonus_range` | JSON | Não | `{"min": 5000, "max": 8000, "currency": "BRL"}` |
+| `benefits` | ARRAY(String) | Não | `["VR", "VT", "Plano de Saúde"]` |
 
 #### Pipeline e IA
 
