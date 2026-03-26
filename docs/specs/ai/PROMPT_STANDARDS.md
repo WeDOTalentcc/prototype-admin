@@ -693,11 +693,11 @@ Apenas o domínio `sourcing/prompts.py` possui few-shot examples estruturados (5
 
 ---
 
-## 16. Regras de Escrita de Prompts
+## 17. Regras de Escrita de Prompts
 
 **Nota**: As regras abaixo são o padrão-alvo (target standard). Atualmente, os agentes Wizard, Kanban, Sourcing e Talent seguem a maioria delas. Domínios mais simples (automation, analytics, communication) podem não implementar todos os blocos obrigatórios.
 
-### 16.1 Obrigatórias
+### 17.1 Obrigatórias
 
 1. Todo prompt DEVE ser em Português Brasileiro (PT-BR)
 2. Todo prompt DEVE incluir bloco `=== IDENTIDADE ===` com nome LIA
@@ -707,7 +707,7 @@ Apenas o domínio `sourcing/prompts.py` possui few-shot examples estruturados (5
 6. Todo prompt DEVE incluir regras de tratamento de erro amigável
 7. Todo prompt DEVE proibir exposição de JSON, IDs internos ou stack traces
 
-### 16.2 Recomendadas
+### 17.2 Recomendadas
 
 1. Usar seções com delimitadores `=== SEÇÃO ===` para prompts longos
 2. Incluir exemplos de interação inline no system prompt
@@ -715,7 +715,7 @@ Apenas o domínio `sourcing/prompts.py` possui few-shot examples estruturados (5
 4. Usar o `CHAIN_OF_THOUGHT_BLOCK` para agentes que precisam de raciocínio estruturado
 5. Incluir `NEGATION_DETECTION_BLOCK` em agentes que executam ações destrutivas
 
-### 16.3 Proibidas
+### 17.3 Proibidas
 
 1. Prompts em inglês em agentes voltados ao recrutador
 2. Uso de termos técnicos de IA sem explicação ao recrutador
@@ -725,7 +725,7 @@ Apenas o domínio `sourcing/prompts.py` possui few-shot examples estruturados (5
 
 ---
 
-## 17. Vocabulário Técnico de RH — Referência
+## 18. Vocabulário Técnico de RH — Referência
 
 O YAML `lia_persona.yaml` define tabelas de vocabulário por categoria:
 
