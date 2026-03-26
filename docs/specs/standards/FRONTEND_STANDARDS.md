@@ -154,7 +154,7 @@ ats_front/
 O `ats_front` usa componentes `Base*` que são wrappers tipados sobre Vuetify:
 
 ```vue
-<!-- components/ui/base/BaseButton.vue — código real do ats_front -->
+<!-- components/ui/base/BaseButton.vue — extraído de ats_front/components/ui/base/BaseButton.vue -->
 <template>
   <v-btn
     :variant="vuetifyVariant"
@@ -282,7 +282,7 @@ features/candidates/
 O `ats_front` usa **Options Store** (não Setup Store):
 
 ```typescript
-// stores/user.ts — código real do ats_front
+// stores/user.ts — extraído de ats_front (simplificado)
 import { defineStore } from "pinia";
 
 export const useUserStore = defineStore("user", {
@@ -354,15 +354,96 @@ const isLoading = ref(false)
 
 ---
 
-## 5. Chamadas de API
+## 5. Formulários e Validação
 
-### 5.1 Dois clientes HTTP
+### 5.1 Biblioteca: Vuelidate (NÃO VeeValidate/Zod)
+
+O `ats_front` usa **Vuelidate v2** para validação (`@vuelidate/core` ^2.0.3 + `@vuelidate/validators` ^2.0.4). Não há VeeValidate nem Zod no projeto.
+
+### 5.2 Validators centralizados — `composables/useValidators.ts`
+
+```typescript
+// composables/useValidators.ts — extraído de ats_front (completo)
+import { required, email, minLength, maxLength, helpers } from '@vuelidate/validators'
+
+export const validators = {
+  required: helpers.withMessage('Campo obrigatório', required),
+  email: helpers.withMessage('Email inválido', email),
+  minLength: (min: number) => helpers.withMessage(`Mínimo ${min} caracteres`, minLength(min)),
+  maxLength: (max: number) => helpers.withMessage(`Máximo ${max} caracteres`, maxLength(max)),
+}
+```
+
+### 5.3 Uso em componentes
+
+```vue
+<script setup lang="ts">
+import { useVuelidate } from '@vuelidate/core'
+import { validators } from '~/composables/useValidators'
+
+const state = reactive({ name: '', email: '' })
+const rules = {
+  name: { required: validators.required },
+  email: { required: validators.required, email: validators.email },
+}
+const v$ = useVuelidate(rules, state)
+
+const submit = async () => {
+  const valid = await v$.value.$validate()
+  if (!valid) return
+  // proceed with API call
+}
+</script>
+```
+
+### 5.4 Componentes de formulário (`components/ui/form/`)
+
+Formulários usam wrappers UI específicos (não Base*):
+
+| Componente | Função |
+|-----------|--------|
+| `form/input.vue` | Text input com label + validação |
+| `form/select.vue` | Select com label |
+| `form/textarea.vue` | Textarea com label |
+| `form/autocomplete.vue` | Autocomplete com label |
+| `form/phone.vue` | Input de telefone (vue-tel-input) |
+| `form/currency.vue` | Input de moeda |
+| `form/color.vue` | Color picker |
+| `form/checkbox.vue` | Checkbox |
+| `form/radio.vue` | Radio buttons |
+| `form/switch.vue` | Switch |
+| `form/avatar.vue` | Upload de avatar |
+| `form/user_autocomplete.vue` | Autocomplete de usuários |
+
+### 5.5 Formulários multi-step
+
+Formulários complexos são organizados em sub-componentes dentro de `form/`:
+
+```
+features/jobs/form/
+├── index.vue          ← Container com stepper
+├── general.vue        ← Step 1: dados gerais
+├── description.vue    ← Step 2: descrição
+├── people.vue         ← Step 3: responsáveis
+├── remuneration.vue   ← Step 4: remuneração
+├── questions.vue      ← Step 5: perguntas
+├── screening.vue      ← Step 6: [AI] triagem IA
+├── selective_processes.vue ← Step 7: processos seletivos
+├── menu.vue           ← Menu lateral do form
+└── NewSkillDialog.vue ← Dialog auxiliar
+```
+
+---
+
+## 6. Chamadas de API
+
+### 6.1 Dois clientes HTTP
 
 O `ats_front` tem **dois** clientes HTTP registrados como plugins:
 
 **Plugin `axios.ts`** — Axios com interceptor de auth:
 ```typescript
-// plugins/axios.ts — código real
+// plugins/axios.ts — extraído de ats_front (simplificado)
 const api = axios.create({ baseURL: config.public.apiBase })
 api.interceptors.request.use(config => {
   const token = useCookie('auth_token');
@@ -376,7 +457,7 @@ api.interceptors.request.use(config => {
 
 **Plugin `api.ts`** — `$fetch` wrapper nativo Nuxt:
 ```typescript
-// plugins/api.ts — código real
+// plugins/api.ts — extraído de ats_front (simplificado)
 const fetcher = $fetch.create({
   baseURL,
   async onRequest({ options }) {
@@ -399,7 +480,7 @@ const api = {
 // Uso: const { $api } = useNuxtApp()
 ```
 
-### 5.2 Composables de domínio
+### 6.2 Composables de domínio
 
 Chamadas de API ficam em composables, nunca direto no componente:
 
@@ -407,10 +488,10 @@ Chamadas de API ficam em composables, nunca direto no componente:
 // composables/useTalentSearch.ts, useSmartCalendar.ts, etc.
 ```
 
-### 5.3 WebSocket — ActionCable (Rails)
+### 6.3 WebSocket — ActionCable (Rails)
 
 ```typescript
-// composables/useCable.ts — código real
+// composables/useCable.ts — extraído de ats_front (simplificado)
 import { createConsumer } from '@rails/actioncable'
 
 export default function useCable(token, entity = null, account_uid = null) {
@@ -435,7 +516,7 @@ export default function useCable(token, entity = null, account_uid = null) {
 }
 ```
 
-### 5.4 Streaming de chat IA
+### 6.4 Streaming de chat IA
 
 ```typescript
 // composables/useMessageStreaming.ts — detecta blocks (text, table, list)
@@ -467,7 +548,7 @@ export function useMessageStreaming() {
 ### 7.1 Nuxt Config
 
 ```typescript
-// nuxt.config.ts — código real (simplificado)
+// nuxt.config.ts — extraído de ats_front (simplificado)
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
@@ -486,7 +567,7 @@ export default defineNuxtConfig({
 ### 7.2 Tema: `lightTheme` / `darkTheme` — de `config/vuetify.config.ts`
 
 ```typescript
-// config/vuetify.config.ts — código real do ats_front
+// config/vuetify.config.ts — extraído de ats_front (cores principais mostradas)
 export const lightTheme: ThemeDefinition = {
   dark: false,
   colors: {
@@ -772,4 +853,4 @@ Toda interação visual deve ter `transition` definida (0.15s–0.3s ease).
 | Design System doc | `wedo-nuxt/docs/00-design-system-v4.md` |
 | Vuetify options (wedo-nuxt) | `wedo-nuxt/app/vuetify-options.ts` |
 
-> **Fonte**: todo código deste documento foi lido diretamente dos repositórios `ats_front` (branch `develop`) e `wedo-nuxt` no GitHub WeDOTalent.
+> **Fonte**: Código extraído via GitHub API dos repositórios `ats_front` (branch `develop`, 901 arquivos) e `wedo-nuxt` no GitHub WeDOTalent. Trechos marcados como "(simplificado)" mostram a estrutura essencial; consulte os arquivos originais para o código completo.

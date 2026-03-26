@@ -322,6 +322,45 @@ ats_api (Rails REST)
 | `features/jobs/` | 38 | Form multistep, cards, workflow, screening |
 | `features/applies/` | 23 | Kanban, dialogs, screening results |
 
+**Inventário completo de rotas (34 páginas):**
+
+| Rota | Arquivo | Layout | Descrição |
+|------|---------|--------|-----------|
+| `/` | `pages/index.vue` | blank | Login |
+| `/auth/callback` | `pages/auth/callback.vue` | blank | OAuth callback |
+| `/workos-callback` | `pages/workos-callback.vue` | blank | WorkOS SSO callback |
+| `/reset-password/[token]` | `pages/reset-password/[token].vue` | blank | Reset de senha |
+| `/terms` | `pages/terms.vue` | blank | Termos de uso |
+| `/cookies` | `pages/cookies/index.vue` | blank | Política de cookies |
+| `/user/dashboard` | `pages/user/dashboard/index.vue` | user | Dashboard principal |
+| `/user/candidates` | `pages/user/candidates/index.vue` | user | Lista de candidatos |
+| `/user/candidates/[id]` | `pages/user/candidates/[id].vue` | user | Perfil do candidato |
+| `/user/candidates/sourcings/[id]` | `pages/user/candidates/sourcings/[id].vue` | user | Resultados de sourcing |
+| `/user/jobs` | `pages/user/jobs/index.vue` | user | Lista de vagas |
+| `/user/jobs/[id]` | `pages/user/jobs/[id]/index.vue` | user | Detalhe da vaga + Kanban |
+| `/user/jobs/[id]/applies/[apply_id]` | `pages/user/jobs/[id]/applies/[apply_id].vue` | user | Candidatura individual |
+| `/user/lia` | `pages/user/lia/index.vue` | user | [AI] Hub LIA |
+| `/user/lia/[uid]` | `pages/user/lia/[uid].vue` | user | [AI] Chat LIA |
+| `/user/sourcing/[id]/chat` | `pages/user/sourcing/[id]/chat.vue` | user | [AI] Chat de sourcing |
+| `/user/evaluations` | `pages/user/evaluations/index.vue` | user | Avaliações |
+| `/user/settings` | `pages/user/settings/index.vue` | user | Configurações |
+| `/user/microsoft` | `pages/user/microsoft.vue` | user | Auth Microsoft |
+| `/user/admin/dashboard` | `pages/user/admin/dashboard.vue` | admin | Dashboard admin |
+| `/user/admin/accounts` | `pages/user/admin/accounts/index.vue` | admin | Contas + LLM quota |
+| `/user/admin/ai_costs` | `pages/user/admin/ai_costs/index.vue` | admin | [AI] Dashboard de custos IA |
+| `/user/admin/business` | `pages/user/admin/business/index.vue` | admin | Dados da empresa |
+| `/user/admin/job_status` | `pages/user/admin/job_status/index.vue` | admin | Status de vagas |
+| `/user/admin/roles` | `pages/user/admin/roles/index.vue` | admin | Cargos e permissões |
+| `/user/admin/sectors` | `pages/user/admin/sectors/index.vue` | admin | Setores |
+| `/user/admin/users` | `pages/user/admin/users/index.vue` | admin | Gestão de usuários |
+| `/user/admin/whatsapp_configurations` | `pages/user/admin/whatsapp_configurations/index.vue` | admin | Config WhatsApp |
+| `/evaluations/[id]/[uid]` | `pages/evaluations/[id]/[uid].vue` | evaluations | [AI] Avaliação pública |
+| `/interviews/[account_uid]/[token]` | `pages/interviews/[account_uid]/[token].vue` | blank | [AI] Entrevista ao vivo |
+| `/scheduling/[account_uid]/[token]` | `pages/scheduling/[account_uid]/[token].vue` | blank | Auto-agendamento |
+| `/setups/[uid]` | `pages/setups/[uid]/index.vue` | setup | Setup inicial |
+| `/setups/[uid]/forms` | `pages/setups/[uid]/forms.vue` | setup | Formulários de setup |
+| `/vagas/[slug]/[account_slug]` | `pages/vagas/[slug]/[account_slug].vue` | blank | Career page pública |
+
 **Comunicação com backend:**
 - HTTP REST dual: `$api` (`$fetch` wrapper, `plugins/api.ts`) + `$axios` (legacy, `plugins/axios.ts`)
 - WebSocket via ActionCable (`@rails/actioncable` → `composables/useCable.ts`)
