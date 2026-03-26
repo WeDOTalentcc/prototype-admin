@@ -1,6 +1,6 @@
 # Platform Map — WeDOTalent / Plataforma LIA
 
-> Última atualização: 2026-03-24
+> Última atualização: 2026-03-26
 > Gerado a partir do código real dos 6 repositórios do ecossistema.
 > **FONTE DA VERDADE TÉCNICA** — qualquer informação conflitante em outros documentos deve ser resolvida aqui.
 
@@ -64,54 +64,68 @@ PM prototipa ──► plataforma-lia (Replit)
 
 ## 3. Rotas da Interface do Recrutador
 
-> Baseado em `PRODUCT_CAPABILITIES.md` do `recruiter_agent_v5` e `plataforma-lia/src/app/`.
+> Baseado no `ats_front` (produção, branch `develop`) — file-based routing Nuxt 3.
 
-### 3.1 Navegação Principal (recrutador)
+### 3.1 Páginas Públicas (sem auth)
 
-| Rota | Descrição | Role |
-|------|-----------|------|
-| `/user/dashboard` | Dashboard principal | recruiter |
-| `/user/jobs` | Lista de vagas | recruiter |
-| `/user/jobs?tab=active` | Vagas ativas | recruiter |
-| `/user/jobs?tab=paused` | Vagas pausadas | recruiter |
-| `/user/jobs?tab=archived` | Vagas arquivadas | recruiter |
-| `/user/jobs?tab=urgent` | Vagas urgentes | recruiter |
-| `/user/candidates` | Lista de candidatos | recruiter |
-| `/user/candidates?tab=candidatos` | Todos os candidatos | recruiter |
-| `/user/candidates?tab=favoritos` | Candidatos favoritos | recruiter |
-| `/user/evaluations` | Avaliações e testes | recruiter |
-| `/user/control-panel` | Painel de controle | recruiter |
-| `/user/lia` | Interface direta com a LIA | recruiter |
-| `/user/admin/dashboard` | Dashboard administrativo | [RESTRICTED] admin |
+| Rota | Arquivo | Descrição |
+|------|---------|-----------|
+| `/` | `pages/index.vue` | Login |
+| `/vagas/[slug]/[account_slug]` | `pages/vagas/[slug]/[account_slug].vue` | Career page pública |
+| `/evaluations/[id]/[uid]` | `pages/evaluations/[id]/[uid].vue` | [AI] Avaliação do candidato |
+| `/interviews/[account_uid]/[token]` | `pages/interviews/[account_uid]/[token].vue` | [AI] Entrevista ao vivo |
+| `/scheduling/[account_uid]/[token]` | `pages/scheduling/[account_uid]/[token].vue` | Auto-agendamento |
+| `/terms` | `pages/terms.vue` | Termos de uso |
+| `/cookies` | `pages/cookies/index.vue` | Política de cookies |
+| `/reset-password/[token]` | `pages/reset-password/[token].vue` | Reset de senha |
+| `/auth/callback` | `pages/auth/callback.vue` | Auth callback |
+| `/workos-callback` | `pages/workos-callback.vue` | WorkOS SSO callback |
+| `/setups/[uid]` | `pages/setups/[uid]/index.vue` | Configuração inicial |
+| `/setups/[uid]/forms` | `pages/setups/[uid]/forms.vue` | Formulários de setup |
 
-### 3.2 Fluxos Funcionais (plataforma-lia — protótipo)
+### 3.2 Navegação Principal — Recrutador (`/user/`)
+
+| Rota | Arquivo | Descrição | Layout |
+|------|---------|-----------|--------|
+| `/user/dashboard` | `pages/user/dashboard/index.vue` | Dashboard principal | user |
+| `/user/candidates` | `pages/user/candidates/index.vue` | Lista de candidatos | user |
+| `/user/candidates/[id]` | `pages/user/candidates/[id].vue` | Perfil do candidato | user |
+| `/user/candidates/sourcings/[id]` | `pages/user/candidates/sourcings/[id].vue` | Perfis sourced | user |
+| `/user/jobs` | `pages/user/jobs/index.vue` | Lista de vagas | user |
+| `/user/jobs/[id]` | `pages/user/jobs/[id]/index.vue` | Detalhe + Kanban | user |
+| `/user/jobs/[id]/applies/[apply_id]` | `pages/user/jobs/[id]/applies/[apply_id].vue` | Detalhe candidatura | user |
+| `/user/lia` | `pages/user/lia/index.vue` | [AI] Lista de chats LIA | user |
+| `/user/lia/[uid]` | `pages/user/lia/[uid].vue` | [AI] Chat LIA específico | user |
+| `/user/evaluations` | `pages/user/evaluations/index.vue` | Avaliações | user |
+| `/user/sourcing/[id]/chat` | `pages/user/sourcing/[id]/chat.vue` | [AI] Chat de sourcing | user |
+| `/user/settings` | `pages/user/settings/index.vue` | Configurações | user |
+| `/user/microsoft` | `pages/user/microsoft.vue` | Auth Microsoft | user |
+
+### 3.3 Admin (`/user/admin/`)
+
+| Rota | Arquivo | Descrição |
+|------|---------|-----------|
+| `/user/admin/dashboard` | `pages/user/admin/dashboard.vue` | [RESTRICTED] Dashboard admin |
+| `/user/admin/accounts` | `pages/user/admin/accounts/index.vue` | [RESTRICTED] Contas/tenants |
+| `/user/admin/users` | `pages/user/admin/users/index.vue` | [RESTRICTED] Usuários |
+| `/user/admin/roles` | `pages/user/admin/roles/index.vue` | [RESTRICTED] Permissões |
+| `/user/admin/ai_costs` | `pages/user/admin/ai_costs/index.vue` | [RESTRICTED] [AI] Custos de IA |
+| `/user/admin/business` | `pages/user/admin/business/index.vue` | [RESTRICTED] Negócios |
+| `/user/admin/job_status` | `pages/user/admin/job_status/index.vue` | [RESTRICTED] Status de vagas |
+| `/user/admin/sectors` | `pages/user/admin/sectors/index.vue` | [RESTRICTED] Setores |
+| `/user/admin/whatsapp_configurations` | `pages/user/admin/whatsapp_configurations/index.vue` | [RESTRICTED] WhatsApp |
+
+### 3.4 Protótipo plataforma-lia (Replit)
 
 | Rota | Descrição | Status |
 |------|-----------|--------|
 | `/jobs` | Lista de vagas | Protótipo |
 | `/jobs/[id]` | Detalhe da vaga + Kanban | Protótipo |
 | `/funil-de-talentos` | Funil de candidatos | Protótipo |
-| `/funil-de-talentos/candidato/[id]` | Perfil no funil | Protótipo |
-| `/triagem/[token]` | Triagem pública do candidato | [AI] Protótipo |
-| `/chat` | Interface de chat com LIA | [AI] Protótipo |
-| `/tasks` | Tarefas | Protótipo |
+| `/triagem/[token]` | [AI] Triagem pública do candidato | Protótipo |
+| `/chat` | [AI] Interface de chat com LIA | Protótipo |
 | `/vagas/[slug]` | Portal público de vagas | Protótipo |
 | `/portal/data-request/[token]` | [RESTRICTED] LGPD — solicitação de dados | Compliance |
-| `/configuracoes` | Configurações da conta | recruiter |
-| `/configuracoes/integracoes` | Integrações externas | admin |
-| `/configuracoes/ai-credits` | [AI] Créditos de IA | admin |
-
-### 3.3 Admin (super-admin WeDOTalent)
-
-| Rota | Descrição |
-|------|-----------|
-| `/admin` | Dashboard super-admin |
-| `/admin/clientes/[clientId]/*` | Gestão por cliente (setup, users, metrics, billing...) |
-| `/admin/compliance/*` | LGPD, SOC-2, ISO-27001, auditoria |
-| `/admin/configuracoes/*` | Configurações globais, comunicações, políticas |
-| `/admin/jornada-recrutamento` | Jornada de recrutamento |
-| `/admin/templates` | Templates globais |
-| `/admin/sso` | [RESTRICTED] SSO configuration |
 
 ---
 
@@ -209,15 +223,16 @@ Domain.process_intent + Domain.execute_action
 ats_api (Rails REST)
 ```
 
-**5 Domínios:**
+**6 Domínios ativos (v5):**
 
 | Domain ID | Pasta | Responsabilidade | Actions principais |
 |-----------|-------|------------------|--------------------|
-| `jobs` | `src/domains/jobs/` | CRUD e analytics de vagas | list, detail, analytics, pipeline, readiness |
-| `applies` | `src/domains/applies/` | Pipeline de candidaturas | search, scoring, bulk, comparison, pipeline |
-| `sourced_profile_sourcing` | `src/domains/sourced_profile_sourcing/` | Busca e comparação de candidatos | search, compare, rank, enrich |
-| `scheduling` | `src/domains/scheduling/` | Agendamento multi-turno | schedule, reschedule, cancel, availability |
-| `evaluation` | `src/domains/evaluation/` | Avaliações e testes | evaluate, score, report |
+| `applies` | `src/domains/applies/` | Pipeline de candidaturas (per `job_id`) | search, pipeline, scoring, ranking, bulk, compare |
+| `jobs` | `src/domains/jobs/` | CRUD e analytics de vagas | search, create, update, pipeline, analytics, auto_source |
+| `insights` | `src/domains/insights/` | Analytics cross-domain | daily_briefing, metrics, bottleneck, reports, trends |
+| `messaging` | `src/domains/messaging/` | Comunicação com candidatos (preview obrigatório) | send_feedback, send_invite, send_followup, bulk_send |
+| `autonomous` | `src/domains/autonomous/` | Agente universal ReAct (~73 tools) | Qualquer ação via tools + playbooks YAML |
+| `evaluation` | `src/domains/evaluation/` | Avaliação de candidatos (LangGraph próprio) | classify_input, evaluate_response, craft_message |
 
 **Serviços cross-cutting:**
 
@@ -275,7 +290,42 @@ ats_api (Rails REST)
 
 ---
 
-## 7. Design System — `wedo-nuxt`
+## 7. Frontend — `ats_front`
+
+> Lido de `ats_front` (branch `develop`). Números reais do codebase.
+
+**Stack:** Nuxt 3 + Vue 3 + Vuetify 3 + TypeScript + Pinia
+
+| Métrica | Valor |
+|---------|-------|
+| Páginas | 34 (file-based routing Nuxt) |
+| Feature modules | 24+ (em `features/`) |
+| Composables | 57 (em `composables/`) |
+| Stores (Pinia) | 18 (em `stores/`) |
+| UI components | 130 (em `components/ui/`) |
+| LLM components | 8 (em `components/llm/`) |
+| Plugins | 11 (em `plugins/`) |
+| Layouts | 5 (user, admin, blank, evaluations, setup) |
+
+**Maiores feature modules:**
+
+| Feature | Arquivos | Descrição |
+|---------|----------|-----------|
+| `features/messages/` | 88 | Comunicação com candidatos |
+| `features/candidates/` | 48 | Gestão de candidatos |
+| `features/lia/` | 46 | Chat com IA LIA |
+| `features/admin/` | 44 | Painel administrativo |
+| `features/jobs/` | 38 | Gestão de vagas |
+| `features/applies/` | 23 | Pipeline de candidaturas |
+
+**Comunicação com backend:**
+- HTTP REST via Axios (`plugins/axios.ts`)
+- WebSocket via ActionCable (`plugins/websocket.client.ts`, `composables/useCable.ts`)
+- Streaming de chat IA via `useMessageStreaming.ts`
+
+---
+
+## 8. Design System — `wedo-nuxt` (biblioteca de componentes)
 
 Biblioteca de componentes oficiais da plataforma.
 
@@ -404,20 +454,21 @@ Bridge que permite AI coding assistants (Claude Code, Cursor) trabalhar automati
 6. PR    → Referencia o card Jira + atualiza docs impactados
 ```
 
-**Documentos SDD (a criar — veja tasks relacionadas):**
-- `docs/PLATFORM_MAP.md` ← este documento
-- `docs/ARCHITECTURE.md`
-- `docs/CODING_STANDARDS.md`
-- `docs/specs/standards/FRONTEND_STANDARDS.md`
-- `docs/specs/standards/BACKEND_STANDARDS.md`
-- `docs/specs/standards/AI_ARCHITECTURE.md`
-- `docs/specs/standards/AGENT_SPECS.md`
-- `docs/specs/standards/PROMPT_STANDARDS.md`
-- `docs/specs/qa/GOLDEN_DATASET.md`
-- `docs/specs/templates/SPEC_TEMPLATE.md`
-- `docs/specs/templates/AGENT_SPEC_TEMPLATE.md`
-- `docs/specs/templates/JIRA_CARD_TEMPLATE.md`
+**Documentos SDD (status):**
 
----
-
-> **Próximos documentos SDD:** Ver `docs/ARCHITECTURE.md` para decisões técnicas, `docs/specs/standards/AI_ARCHITECTURE.md` para orquestração de agentes.
+| Documento | Localização | Status |
+|-----------|-------------|--------|
+| `PLATFORM_MAP.md` | `docs/PLATFORM_MAP.md` | Atualizado |
+| `AI_ARCHITECTURE.md` | `docs/specs/ai/AI_ARCHITECTURE.md` | Criado |
+| `AGENT_SPECS.md` | `docs/specs/ai/AGENT_SPECS.md` | Criado |
+| `LLM_DECISIONS.md` | `docs/specs/ai/LLM_DECISIONS.md` | Criado |
+| `PROMPT_STANDARDS.md` | `docs/specs/ai/PROMPT_STANDARDS.md` | Criado |
+| `AI_FAILURE_MODES.md` | `docs/specs/ai/AI_FAILURE_MODES.md` | Criado |
+| `DATA_MODELS.md` | `docs/specs/backend/DATA_MODELS.md` | Criado |
+| `API_CONTRACTS.md` | `docs/specs/backend/API_CONTRACTS.md` | Criado |
+| `FRONTEND_STANDARDS.md` | `docs/specs/frontend/FRONTEND_STANDARDS.md` | Criado |
+| `DESIGN_SYSTEM.md` | `docs/specs/frontend/DESIGN_SYSTEM.md` | Criado |
+| `UX_PATTERNS.md` | `docs/specs/frontend/UX_PATTERNS.md` | Criado |
+| `GOLDEN_DATASET.md` | `docs/specs/qa/GOLDEN_DATASET.md` | Pendente |
+| `CONTRIBUTING.md` | `docs/specs/process/CONTRIBUTING.md` | Pendente |
+| `ONBOARDING.md` | `docs/specs/process/ONBOARDING.md` | Pendente |
