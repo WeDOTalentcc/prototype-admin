@@ -525,6 +525,9 @@ Bridge que permite AI coding assistants (Claude Code, Cursor) trabalhar automati
 | `FRONTEND_STANDARDS.md` | `docs/specs/frontend/FRONTEND_STANDARDS.md` | Criado |
 | `DESIGN_SYSTEM.md` | `docs/specs/frontend/DESIGN_SYSTEM.md` | Criado |
 | `UX_PATTERNS.md` | `docs/specs/frontend/UX_PATTERNS.md` | Criado |
-| `GOLDEN_DATASET.md` | `docs/specs/qa/GOLDEN_DATASET.md` | Pendente |
-| `CONTRIBUTING.md` | `docs/specs/process/CONTRIBUTING.md` | Pendente |
-| `ONBOARDING.md` | `docs/specs/process/ONBOARDING.md` | Pendente |
+| `QA_PROTOCOL.md` | `docs/specs/qa/QA_PROTOCOL.md` | Criado |
+| `AI_QA_PROTOCOL.md` | `docs/specs/qa/AI_QA_PROTOCOL.md` | Criado |
+| `GOLDEN_DATASET.md` | `docs/specs/qa/GOLDEN_DATASET.md` | Criado |
+| `CONTRIBUTING.md` | `docs/specs/process/CONTRIBUTING.md` | Criado |
+| `ONBOARDING.md` | `docs/specs/process/ONBOARDING.md` | Criado |
+| `SPEC_TEMPLATE.md` | `docs/specs/process/SPEC_TEMPLATE.md` | Criado |
