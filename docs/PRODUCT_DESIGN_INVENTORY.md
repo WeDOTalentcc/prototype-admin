@@ -1,7 +1,17 @@
 # Inventário Completo de Design — Plataforma LIA (WeDOTalent)
 
-> Documento de referência para revisão de design. Cobre 100% dos elementos visuais da área operacional.
-> Última atualização: Março 2026
+> Documento de referência para revisão de design. Snapshot dos elementos visuais da área operacional.
+
+| Meta | Valor |
+|------|-------|
+| Última validação | Março 2026 |
+| Metodologia | Extração automatizada de arquivos-fonte (`components/ui/`, `components/modals/`, `components/pages/`, `design-tokens.css`, `tailwind.config.ts`) + revisão manual |
+| Componentes UI cobertos | 70 de 70 (excluindo `.stories.tsx`) |
+| Modais cobertos | 35 |
+| Telas operacionais | Dashboard, Vagas (lista + kanban), Funil de Talentos, Candidato Full, Configurações, Sidebar, TopBar |
+| Gaps conhecidos | Telas de Onboarding, Analytics Avançado, ATS Integrations e Real-Time Dashboard não detalhadas neste inventário (escopo: área operacional core) |
+
+**Manutenção:** Ao adicionar novo componente UI, modal, ou tela, atualizar a seção correspondente deste documento com: arquivo, export, layout, campos/props, estados e tokens.
 
 ---
 
@@ -1732,7 +1742,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 11. CONFIGURAÇÕES (Settings)
+## 12. CONFIGURAÇÕES (Settings)
 
 - **Arquivo:** `plataforma-lia/src/components/pages/settings-page-enhanced.tsx`
 - **Componente:** `SettingsPageEnhanced`
@@ -1775,9 +1785,9 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 12. COMPONENTES TRANSVERSAIS
+## 13. COMPONENTES TRANSVERSAIS
 
-### 12.1 Chat LIA
+### 13.1 Chat LIA
 - **Arquivo:** `plataforma-lia/src/components/pages/chat-page.tsx`
 - **Componente:** `ChatPage`
 - **CSS:** `plataforma-lia/src/components/pages/chat-page.css`
@@ -1785,29 +1795,29 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 - **Sugestões:** `PromptSuggestionsDock`, `PromptSuggestionsPopover`
 - **Ações rápidas:** `QuickActionChips`
 
-### 12.2 Busca Global
+### 13.2 Busca Global
 - **Componente:** `CommandPalette` (`components/ui/command-palette.tsx`)
 - **Atalho:** Ctrl+K / Cmd+K
 - **Primitiva:** cmdk
 - **Também:** `LiaSearchQueriesGuide`, `LiaVacancyQueriesGuide`, `CandidateQueriesGuide`
 
-### 12.3 Sistema de Notificações
+### 13.3 Sistema de Notificações
 - **Componente:** `NotificationSystem` (`components/notification-system.tsx`)
 - **Ícone trigger:** `Bell` (Lucide) na TopBar
 - **Toast:** Componente `Toaster` + `Toast` (Radix)
 
-### 12.4 AI Disclaimer
+### 13.4 AI Disclaimer
 - **Componente:** `AIDisclaimer` (`components/ui/ai-disclaimer.tsx`)
 - **Uso:** Aviso em conteúdos gerados por IA
 
-### 12.5 Theme Toggle
+### 13.5 Theme Toggle
 - **Componente:** `ThemeToggle` (`components/theme-toggle.tsx`)
 - **Posição:** Na sidebar, rodapé
 - **Ação:** Alterna entre light/dark mode (class strategy)
 
 ---
 
-## 13. PÁGINAS ADICIONAIS
+## 14. PÁGINAS ADICIONAIS
 
 | Página | Arquivo | Componente |
 |--------|---------|-----------|
@@ -1830,7 +1840,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 14. CLASSES CSS UTILITÁRIAS CUSTOMIZADAS
+## 15. CLASSES CSS UTILITÁRIAS CUSTOMIZADAS
 
 ### Cards
 | Classe | Background | Shadow | Border |
@@ -1886,7 +1896,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 15. RESUMO DE ÍCONES POR ÁREA
+## 16. RESUMO DE ÍCONES POR ÁREA
 
 | Área | Ícones Lucide mais usados |
 |------|--------------------------|
@@ -1900,9 +1910,9 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 16. MATRIZ DE ESTADOS POR TELA
+## 17. MATRIZ DE ESTADOS POR TELA
 
-### 16.1 Vagas (Lista)
+### 17.1 Vagas (Lista)
 | Estado | Visual | Componente/Estilo |
 |--------|--------|-------------------|
 | Loading | Skeleton rows (animate-pulse) | `Skeleton` rows |
@@ -1911,7 +1921,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Filtered (sem resultados) | `EmptyState` com filtro ativo | Mensagem de filtro |
 | Error (API fail) | Toast destructive | `Toast variant="destructive"` |
 
-### 16.2 Kanban (Gestão da Vaga)
+### 17.2 Kanban (Gestão da Vaga)
 | Estado | Visual | Componente/Estilo |
 |--------|--------|-------------------|
 | Loading | Skeleton columns | `LoadingCard` x N |
@@ -1923,7 +1933,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Bulk selection | Bottom bar visible | `UnifiedBulkActionsBar` slide-up |
 | Error | Toast | `Toast variant="destructive"` |
 
-### 16.3 Funil de Talentos
+### 17.3 Funil de Talentos
 | Estado | Visual | Componente/Estilo |
 |--------|--------|-------------------|
 | Initial (busca vazia) | Search bar + sugestões | `CandidateSearchBar` + `PromptSuggestionsDock` |
@@ -1936,7 +1946,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Bulk selection | Bottom bar visible | `UnifiedBulkActionsBar` |
 | Error (search) | Toast | `Toast variant="destructive"` |
 
-### 16.4 Configurações da Vaga
+### 17.4 Configurações da Vaga
 | Estado | Visual | Componente/Estilo |
 |--------|--------|-------------------|
 | Loading | Skeleton sections | `LoadingCard` por seção |
@@ -1949,7 +1959,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | JD enriched | Painel com scores | Barras de progresso D1-D9 |
 | Skills suggesting | Button loading | `Brain` icon + `Loader2` |
 
-### 16.5 Modais (padrão geral)
+### 17.5 Modais (padrão geral)
 | Estado | Visual | Componente/Estilo |
 |--------|--------|-------------------|
 | Closed | Invisível | — |
@@ -1960,7 +1970,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Error | Inline error ou toast | `text-red-500` ou `Toast variant="destructive"` |
 | Closing | Content zoom-out + overlay fade-out | Reverse animations |
 
-### 16.6 Sidebar
+### 17.6 Sidebar
 | Estado | Visual | Componente/Estilo |
 |--------|--------|-------------------|
 | Expanded | Full width (~240px) | Labels visíveis |
@@ -1970,7 +1980,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Item locked | Opacity + lock icon | `Lock` icon, `opacity-60` |
 | Sub-menu open | Expandido com items filhos | `ChevronDown/Up` toggle |
 
-### 16.7 TopBar
+### 17.7 TopBar
 | Estado | Visual | Componente/Estilo |
 |--------|--------|-------------------|
 | Default | Avatar + Bell | — |
@@ -1981,15 +1991,294 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-**Arquivos-chave de referência:**
-- Design tokens: `plataforma-lia/src/styles/design-tokens.css`
-- CSS global: `plataforma-lia/src/app/globals.css`
-- Tailwind config: `plataforma-lia/tailwind.config.ts`
-- Componentes UI: `plataforma-lia/src/components/ui/*.tsx`
-- Páginas: `plataforma-lia/src/components/pages/*.tsx`
-- Modais: `plataforma-lia/src/components/modals/*.tsx`
-- Settings: `plataforma-lia/src/components/settings/*.tsx`
-- Screening: `plataforma-lia/src/components/screening-config/*.tsx`
-- WSI: `plataforma-lia/src/components/wsi/*.tsx`
-- Kanban sub-componentes: `plataforma-lia/src/components/pages/job-kanban/*.tsx`
-- Candidatos sub-componentes: `plataforma-lia/src/components/pages/candidates/*.tsx`
+## 18. MAPEAMENTO REACT → VUETIFY 3 (Correspondência por Componente)
+
+> Referência para conversão futura. Stack alvo: **Vue 3 + Vuetify 3 + Nuxt 3 + Pinia**.
+> Skill de preparação: `.agents/skills/vue-migration-prep/SKILL.md`
+> Plano de migração: `plataforma-lia/docs/design-system/VUETIFY-MIGRATION-PLAN.md`
+
+### 18.1 Componentes Base — shadcn/ui → Vuetify 3
+
+| # | Componente React (shadcn) | Arquivo Atual | Vuetify 3 Equivalente | Notas de Conversão |
+|---|--------------------------|---------------|----------------------|-------------------|
+| 1 | `Button` | `ui/button.tsx` | `<v-btn>` | `variant="default"` → `color="grey-darken-4" variant="flat"`. `variant="outline"` → `variant="outlined"`. `variant="ghost"` → `variant="text"`. `variant="destructive"` → `color="error"`. `size="sm"` → `size="small"`. `size="icon"` → `icon` prop. |
+| 2 | `Badge` | `ui/badge.tsx` | `<v-chip>` | `variant="default"` → `size="small" color="grey-darken-4"`. `variant="outline"` → `variant="outlined"`. `variant="secondary"` → `color="grey-lighten-3"`. |
+| 3 | `Card` / `CardHeader` / `CardContent` / `CardFooter` | `ui/card.tsx` | `<v-card>` / `<v-card-title>` / `<v-card-text>` / `<v-card-actions>` | `variant="outlined"` no Vuetify. `rounded="md"`. |
+| 4 | `Input` | `ui/input.tsx` | `<v-text-field>` | `variant="outlined"` + `density="compact"`. `text-[11px]` → custom CSS `font-size: 11px`. |
+| 5 | `Textarea` | `ui/textarea.tsx` | `<v-textarea>` | `variant="outlined"` + `density="compact"`. `rows` prop direto. |
+| 6 | `Select` / `SelectTrigger` / `SelectContent` / `SelectItem` | `ui/select.tsx` | `<v-select>` | `variant="outlined"` + `density="compact"`. `:items` array. `item-title` + `item-value`. |
+| 7 | `Checkbox` | `ui/checkbox.tsx` | `<v-checkbox>` | `color="grey-darken-4"`. `density="compact"`. |
+| 8 | `Switch` | `ui/switch.tsx` | `<v-switch>` | `color="grey-darken-4"`. `density="compact"`. |
+| 9 | `Tabs` / `TabsList` / `TabsTrigger` / `TabsContent` | `ui/tabs.tsx` | `<v-tabs>` + `<v-tab>` + `<v-tabs-window>` + `<v-tabs-window-item>` | `color="grey-darken-4"`. `slider-color="grey-darken-4"`. |
+| 10 | `Dialog` / `DialogContent` / `DialogHeader` / `DialogTitle` / `DialogFooter` | `ui/dialog.tsx` | `<v-dialog>` + `<v-card>` (dentro) | `max-width` como prop. `<v-card-title>` = header. `<v-card-actions>` = footer. `persistent` para modais blocking. |
+| 11 | `Sheet` / `SheetContent` / `SheetHeader` | `ui/sheet.tsx` | `<v-navigation-drawer>` `temporary` | `location="right"` para side panel. `width="400"`. |
+| 12 | `Table` / `TableHeader` / `TableRow` / `TableCell` | `ui/table.tsx` | `<v-data-table>` | `:headers` + `:items`. Slots personalizados via `#item.campo`. Sorting/pagination built-in. |
+| 13 | `Avatar` / `AvatarFallback` | `ui/avatar.tsx` | `<v-avatar>` | `size="40"`. Fallback via slot default com iniciais. `color="grey-lighten-3"`. |
+| 14 | `Tooltip` / `TooltipTrigger` / `TooltipContent` | `ui/tooltip.tsx` | `<v-tooltip>` | `location="top"`. Trigger via `activator` slot. |
+| 15 | `DropdownMenu` / `DropdownMenuTrigger` / `DropdownMenuContent` / `DropdownMenuItem` | `ui/dropdown-menu.tsx` | `<v-menu>` + `<v-list>` + `<v-list-item>` | Trigger via `activator` slot. `<v-list-item-title>` para texto. `<v-divider>` para separadores. |
+| 16 | `Progress` | `ui/progress.tsx` | `<v-progress-linear>` | `color="grey-darken-4"`. `:model-value` para %. `height="8"`. |
+| 17 | `Skeleton` | `ui/skeleton.tsx` | `<v-skeleton-loader>` | `type="text"`, `type="avatar"`, `type="card"`, etc. |
+| 18 | `Accordion` / `AccordionItem` / `AccordionTrigger` / `AccordionContent` | `ui/accordion.tsx` | `<v-expansion-panels>` + `<v-expansion-panel>` | `variant="accordion"`. `<v-expansion-panel-title>` + `<v-expansion-panel-text>`. |
+| 19 | `AlertDialog` / `AlertDialogAction` / `AlertDialogCancel` | `ui/alert-dialog.tsx` | `<v-dialog>` + `<v-card>` (confirmação) | `max-width="500"`. `persistent`. Botões em `<v-card-actions>`. |
+| 20 | `Collapsible` / `CollapsibleTrigger` / `CollapsibleContent` | `ui/collapsible.tsx` | `<v-expand-transition>` + `v-show` | Sem equivalente direto — usar transition + toggle manual. |
+| 21 | `Label` | `ui/label.tsx` | Vuetify labels integrados nos inputs | `<v-text-field label="...">`. Para labels avulsos: `<label class="text-caption">`. |
+| 22 | `Popover` / `PopoverTrigger` / `PopoverContent` | `ui/popover.tsx` | `<v-menu>` | `location="bottom"`. `close-on-content-click="false"`. Content via default slot. |
+| 23 | `RadioGroup` / `RadioGroupItem` | `ui/radio-group.tsx` | `<v-radio-group>` + `<v-radio>` | `color="grey-darken-4"`. `density="compact"`. |
+| 24 | `ScrollArea` | `ui/scroll-area.tsx` | CSS nativo ou `<v-virtual-scroll>` | Vuetify não tem ScrollArea equivalente — usar `overflow-y: auto` com estilização customizada do scrollbar. |
+| 25 | `Separator` | `ui/separator.tsx` | `<v-divider>` | Horizontal por padrão. `vertical` prop. `class="my-2"`. |
+| 26 | `Slider` | `ui/slider.tsx` | `<v-slider>` | `color="grey-darken-4"`. `thumb-size="20"`. `track-size="4"`. |
+| 27 | `Toast` / `Toaster` | `ui/toast.tsx` + `ui/toaster.tsx` | `<v-snackbar>` | `location="bottom right"`. `color` por variant: default → nenhum, destructive → `"error"`, success → `"success"`, warning → `"warning"`, info → `"info"`. |
+| 28 | `Command` / `CommandDialog` / `CommandInput` | `ui/command.tsx` | `<v-dialog>` + `<v-text-field>` + `<v-list>` customizado | Sem equivalente direto — implementar command palette com dialog + search + list filtrada. |
+| 29 | `CommandPalette` | `ui/command-palette.tsx` | `<v-dialog>` + busca + `<v-list>` | Componente customizado necessário. Atalho Ctrl+K mantido via `@keydown`. |
+
+### 18.2 Componentes Especializados — Conversão
+
+| # | Componente React | Vuetify 3 Equivalente | Complexidade | Notas |
+|---|-----------------|----------------------|-------------|-------|
+| 1 | `StatusBadge` | `<v-chip>` customizado | Média | 8 variants com cores pastéis — definir como componente Vue com prop `variant`. Cores via CSS variables. |
+| 2 | `ScoreIconButton` | `<v-btn icon>` customizado | Média | 6 ícones SVG customizados. Manter como componente Vue com prop `scoreType`. |
+| 3 | `CandidateCard` | `<v-card>` customizado | Alta | Avatar + badges + scores. Compor com `<v-avatar>`, `<v-chip>`, `<v-btn>`. |
+| 4 | `EmptyState` | Componente customizado | Baixa | Sem equivalente Vuetify. `<v-card variant="flat">` + ícone + texto. |
+| 5 | `AudioPlayer` | Componente customizado | Alta | Sem equivalente Vuetify. Manter implementação HTML5 Audio. |
+| 6 | `BigFiveProfile` | Componente customizado | Alta | Radar chart — manter lib de charts (Chart.js ou similar). |
+| 7 | `DateRangePicker` | `<v-date-picker>` com range | Média | Vuetify 3 Labs tem `VDateRangePicker` (experimental). |
+| 8 | `FileUploadButton` | `<v-file-input>` | Baixa | `variant="outlined"`. `prepend-icon="mdi-upload"`. |
+| 9 | `PipelineStagesCarousel` | `<v-slide-group>` | Média | `show-arrows`. Items como `<v-slide-group-item>`. |
+| 10 | `PremiumAutocomplete` | `<v-autocomplete>` | Baixa | `variant="outlined"`. `auto-select-first`. |
+| 11 | `BulkSelectionBar` / `UnifiedBulkActionsBar` | `<v-bottom-sheet>` ou `<v-snackbar>` fixo | Média | Barra flutuante no rodapé — usar `<v-bottom-navigation>` temporária ou `position: fixed`. |
+| 12 | `InterviewSchedulingModal` | `<v-dialog>` + `<v-date-picker>` + `<v-select>` | Alta | Combinar vários componentes Vuetify dentro do dialog. |
+| 13 | `LiaExpandedPanel` | `<v-navigation-drawer>` `temporary` `location="right"` | Média | Side panel da LIA. Width customizado. |
+| 14 | `PromptSuggestionsDock` | Componente customizado | Média | Chips/botões fixos — `<v-chip-group>` ou botões customizados. |
+| 15 | `VariableSelector` | `<v-menu>` + `<v-list>` agrupada | Média | Usar `<v-list-subheader>` para categorias. |
+| 16 | `SearchLoadingAnimation` | Componente customizado | Baixa | Animação CSS pura — transferir diretamente. |
+| 17 | `ResizableTableHeader` | `<v-data-table>` com resize | Alta | Vuetify v-data-table não suporta resize nativo. Implementar com directive customizada. |
+| 18 | `RubricEvaluationModal` | `<v-dialog>` complexo | Alta | Multi-seção com tabs, cards, badges. Compor com `<v-tabs>`, `<v-card>`, `<v-chip>`, `<v-expansion-panels>`. |
+| 19 | `CandidateReviewModal` | `<v-dialog fullscreen>` ou page | Alta | 3 colunas. Usar `<v-row>` + `<v-col>`. Tabs com `<v-tabs>`. Keyboard nav mantida via composable. |
+
+### 18.3 Tokens de Design — CSS Variables → Vuetify Theme
+
+| Token CSS LIA | Classe Tailwind | Vuetify Theme Key | Valor |
+|--------------|----------------|-------------------|-------|
+| `--wedo-cyan` | `text-wedo-cyan` | `colors.wedo-cyan` | `#60BED1` |
+| `--wedo-cyan-dark` | `text-wedo-cyan-dark` | `colors.wedo-cyan-dark` | `#4DA8BB` |
+| `--wedo-coral` | `text-wedo-coral` | `colors.error` (override) | `#C74446` |
+| `--wedo-green` | `text-wedo-green` | `colors.success` (override) | `#5DA47A` |
+| `--wedo-orange` | `text-wedo-orange` | `colors.warning` (override) | `#D19960` |
+| gray-50 | `bg-gray-50` | `colors.grey-lighten-5` | `#F9FAFB` |
+| gray-100 | `bg-gray-100` | `colors.grey-lighten-4` | `#F3F4F6` |
+| gray-200 | `border-gray-200` | `colors.grey-lighten-3` | `#E5E7EB` |
+| gray-400 | `text-gray-400` | `colors.grey-lighten-1` | `#9CA3AF` |
+| gray-500 | `text-gray-500` | `colors.grey` | `#6B7280` |
+| gray-600 | `text-gray-600` | `colors.grey-darken-1` | `#4B5563` |
+| gray-700 | `text-gray-700` | `colors.grey-darken-2` | `#374151` |
+| gray-800 | `text-gray-800` | `colors.grey-darken-3` | `#1F2937` |
+| gray-900 | `bg-gray-900` | `colors.grey-darken-4` | `#111827` |
+| gray-950 | `text-gray-950` | custom | `#030712` |
+
+### 18.4 Tipografia — Tailwind → Vuetify
+
+| Tailwind Class | Vuetify Class | Font | Uso |
+|---------------|--------------|------|-----|
+| `text-[11px]` | custom CSS `font-size: 11px` | Open Sans | Padrão LIA (labels, botões, badges) |
+| `text-xs` (12px) | `text-caption` | Open Sans | Small text, disclaimers |
+| `text-sm` (14px) | `text-body-2` | Open Sans | Texto corpo padrão |
+| `text-base` (16px) | `text-body-1` | Open Sans | Texto corpo grande |
+| `text-lg` (18px) | `text-subtitle-1` | Open Sans | Subtítulos |
+| `text-xl` (20px) | `text-h6` | Open Sans | Títulos de seção |
+| `text-2xl` (24px) | `text-h5` | Open Sans | Títulos de página |
+| `font-medium` (500) | `font-weight-medium` | — | Labels, botões |
+| `font-semibold` (600) | `font-weight-bold` | — | Títulos (Vuetify usa bold≈600) |
+| `font-mono` | custom CSS `font-family: 'JetBrains Mono'` | JetBrains Mono | Código, IDs (5% da UI) |
+| Inter para métricas | custom CSS `font-family: 'Inter'` | Inter | Dados numéricos, scores (10% da UI) |
+
+### 18.5 Layout — Tailwind → Vuetify
+
+| Tailwind | Vuetify | Exemplo |
+|----------|---------|---------|
+| `flex items-center gap-2` | `d-flex align-center ga-2` | Layout inline |
+| `flex flex-col gap-4` | `d-flex flex-column ga-4` | Layout vertical |
+| `grid grid-cols-3 gap-4` | `<v-row><v-col cols="4">` × 3 | Grid de 3 colunas |
+| `grid grid-cols-12` | `<v-row><v-col :cols="n">` | Grid responsivo |
+| `p-4` | `pa-4` | Padding all |
+| `px-6 py-4` | `px-6 py-4` | Padding eixos (idêntico) |
+| `mt-2 mb-4` | `mt-2 mb-4` | Margin (idêntico) |
+| `rounded-md` | `rounded="md"` | Border radius |
+| `shadow-sm` | `elevation="1"` | Sombra |
+| `shadow-md` | `elevation="3"` | Sombra média |
+| `border border-gray-200` | `border-sm` + custom color | Borda |
+| `overflow-y-auto` | `class="overflow-y-auto"` | Scroll (idêntico) |
+| `animate-pulse` | `<v-skeleton-loader>` | Skeleton loading |
+| `animate-spin` | `<v-progress-circular indeterminate size="20">` | Spinner |
+
+### 18.6 Transições CSS → Vuetify Transitions
+
+| Animação CSS LIA | Vuetify Transition | Uso |
+|-----------------|-------------------|-----|
+| `fadeIn 150ms` | `<v-fade-transition>` | Overlay, entrada de modais |
+| `slideInFromBottom 200ms` | `<v-slide-y-transition>` | Modais, menus |
+| `slideInFromRight 300ms` | `<v-slide-x-reverse-transition>` | Side panels, sheets |
+| `scaleIn 150ms` | `<v-scale-transition>` | FABs, tooltips, botões |
+| `expandFromTop 200ms` | `<v-expand-transition>` | Acordeões, collapsibles |
+| Custom `backdrop-blur` | Vuetify overlay padrão | Modais usam Vuetify overlay built-in |
+
+### 18.7 Modais — Conversão por Tipo
+
+| Tipo de Modal | Componentes React | Vuetify 3 Pattern |
+|--------------|------------------|------------------|
+| Formulário simples | `Dialog` + `Input` + `Button` | `<v-dialog max-width="600"><v-card><v-card-title>` + `<v-card-text>` com `<v-text-field>` + `<v-card-actions>` com `<v-btn>` |
+| Formulário complexo | `Dialog` + multi-step | `<v-dialog>` + `<v-stepper>` ou `<v-tabs>` internos |
+| Confirmação | `AlertDialog` | `<v-dialog max-width="400" persistent>` + texto + 2 botões |
+| Side panel | `Sheet` | `<v-navigation-drawer temporary location="right" width="400">` |
+| Full-screen | Custom overlay | `<v-dialog fullscreen>` ou `<v-dialog max-width="95vw">` |
+| Comparação | `Dialog` wide | `<v-dialog max-width="1200">` + `<v-data-table>` ou grid |
+
+### 18.8 Ícones — Lucide → Material Design Icons
+
+| Lucide (React) | MDI (Vuetify) | Uso |
+|---------------|--------------|-----|
+| `Briefcase` | `mdi-briefcase` | Vagas |
+| `Users` | `mdi-account-group` | Candidatos |
+| `Settings` | `mdi-cog` | Configurações |
+| `Search` | `mdi-magnify` | Busca |
+| `Filter` | `mdi-filter` | Filtros |
+| `Plus` | `mdi-plus` | Adicionar |
+| `X` | `mdi-close` | Fechar |
+| `ChevronDown` | `mdi-chevron-down` | Dropdown |
+| `ChevronLeft/Right` | `mdi-chevron-left` / `mdi-chevron-right` | Navegação |
+| `Check` | `mdi-check` | Confirmação |
+| `AlertTriangle` | `mdi-alert` | Alerta |
+| `Bell` | `mdi-bell` | Notificações |
+| `Star` | `mdi-star` | Favorito |
+| `Eye` | `mdi-eye` | Visualizar |
+| `Edit2` / `Pencil` | `mdi-pencil` | Editar |
+| `Trash2` | `mdi-delete` | Excluir |
+| `Mail` | `mdi-email` | Email |
+| `Phone` | `mdi-phone` | Telefone |
+| `MapPin` | `mdi-map-marker` | Localização |
+| `Brain` | `mdi-brain` | LIA / IA |
+| `Clock` | `mdi-clock` | Tempo |
+| `Linkedin` | `mdi-linkedin` | LinkedIn |
+| `GraduationCap` | `mdi-school` | Educação |
+| `Building` / `Building2` | `mdi-office-building` | Empresa |
+| `Loader2` (spinning) | `<v-progress-circular indeterminate>` | Loading |
+| `GripVertical` | `mdi-drag-vertical` | Drag handle |
+| `MoreVertical` | `mdi-dots-vertical` | Menu opções |
+| `ExternalLink` | `mdi-open-in-new` | Link externo |
+| `Crown` | `mdi-crown` | Premium |
+| `MessageSquare` | `mdi-message` | Chat/Mensagens |
+| `Send` | `mdi-send` | Enviar |
+
+### 18.9 Recomendações de Conversão por Prioridade
+
+| Prioridade | Módulo | Componentes | Complexidade |
+|-----------|--------|-------------|-------------|
+| 1 (Piloto) | Configurações (Settings) | Formulários, Tabs, Inputs, Selects | Baixa-Média |
+| 2 | Pipeline/Kanban | KanbanColumn, KanbanCard, DnD, Side preview | Alta |
+| 3 | Vagas (Lista + Formulários) | Table, Modais CRUD, Badges | Média |
+| 4 | Funil de Talentos | Search, Filters (1125 linhas), Table, Bulk actions | Alta |
+| 5 | CandidateReviewModal | 3-col layout, Tabs, Criteria, Keyboard nav | Alta |
+| 6 | Dashboard | Cards KPI, Charts | Média |
+| 7 | Modais de Comunicação | Templates, Rich text, Multi-canal | Média-Alta |
+| 8 | RubricEvaluationModal | Tabs, Score logic, Rubric grid, Audit section | Alta |
+
+---
+
+## 19. ARQUIVOS DE REFERÊNCIA
+
+### 19.1 Código-Fonte (React/Tailwind)
+
+| Categoria | Path | Arquivos | Descrição |
+|-----------|------|----------|-----------|
+| Design tokens | `plataforma-lia/src/styles/design-tokens.css` | 1 | CSS custom properties (cores, sombras, radius, transições) |
+| CSS global | `plataforma-lia/src/app/globals.css` | 1 | Imports, resets, classes utilitárias `.wedo-*` |
+| Tailwind config | `plataforma-lia/tailwind.config.ts` | 1 | Theme extensions, custom colors, animations |
+| Componentes UI | `plataforma-lia/src/components/ui/*.tsx` | 70 | Biblioteca base (shadcn + customizados) |
+| Stories (Storybook) | `plataforma-lia/src/components/ui/*.stories.tsx` | 6 | Badge, Button, Card, Dialog, Input, Select |
+| Modais | `plataforma-lia/src/components/modals/*.tsx` | 34 | Todos os modais da aplicação |
+| Páginas | `plataforma-lia/src/components/pages/*.tsx` | ~15 | Telas principais |
+| Kanban | `plataforma-lia/src/components/pages/job-kanban/*.tsx` | 3 | KanbanColumn, KanbanCard, MoveConfirmationModal |
+| Candidatos | `plataforma-lia/src/components/pages/candidates/*.tsx` | 5+ | Header, Tabs, SearchBar, FilterPanel, Table |
+| Settings | `plataforma-lia/src/components/settings/*.tsx` | ~10 | Sub-componentes de configuração |
+| Screening | `plataforma-lia/src/components/screening-config/*.tsx` | 5 | Modais de triagem/screening |
+| WSI | `plataforma-lia/src/components/wsi/*.tsx` | 2 | Modais de triagem WSI |
+| Rubric Evaluation | `plataforma-lia/src/components/rubric-evaluation-modal.tsx` | 1 | Modal de avaliação por rubrica (872 linhas) |
+| Hooks | `plataforma-lia/src/hooks/*.ts` | ~8 | use-toast, use-mobile, etc. |
+| Lib/Utils | `plataforma-lia/src/lib/utils.ts` | 1 | `cn()` helper (clsx + twMerge) |
+
+### 19.2 Documentação de Design System
+
+| Documento | Path | Conteúdo |
+|-----------|------|----------|
+| Design System v4 | `plataforma-lia/docs/design-system/00-design-system-v4.md` | Tokens, regras, Vuetify mapping |
+| Design System LIA | `plataforma-lia/docs/design-system/LIA-DESIGN-SYSTEM.md` | Identidade visual da LIA |
+| Vuetify Migration Plan | `plataforma-lia/docs/design-system/VUETIFY-MIGRATION-PLAN.md` | Fases 0-3, auditoria de cores, workflow Figma→Vue |
+| Modal Standards | `plataforma-lia/docs/design-system/modal-design-standards.md` | Padrões de modais |
+| DS v3 Pendências | `plataforma-lia/docs/design-system/design-system-v3-pendencias.md` | Pendências da v3 |
+
+### 19.3 Skills de Migração Vue
+
+| Skill | Path | Uso |
+|-------|------|-----|
+| Vue Migration Prep | `.agents/skills/vue-migration-prep/SKILL.md` | Princípios, mapeamento React→Vue, prompts de conversão, diagnóstico de portabilidade |
+| Design Standardize | `.agents/skills/design-standardize/SKILL.md` | Padronização visual conforme DS v4.2.1 |
+
+### 19.4 Vuetify Theme Config (template para projeto Vue)
+
+```typescript
+import { createVuetify } from 'vuetify'
+
+const liaTheme = {
+  dark: false,
+  colors: {
+    background: '#FFFFFF',
+    surface: '#FFFFFF',
+    'surface-variant': '#F9FAFB',
+    primary: '#111827',
+    secondary: '#6B7280',
+    error: '#C74446',
+    warning: '#D19960',
+    success: '#5DA47A',
+    info: '#60BED1',
+    'on-primary': '#FFFFFF',
+    'on-secondary': '#FFFFFF',
+    'on-error': '#FFFFFF',
+    'on-warning': '#FFFFFF',
+    'on-success': '#FFFFFF',
+    'on-info': '#FFFFFF',
+    'wedo-cyan': '#60BED1',
+    'wedo-cyan-dark': '#4DA8BB',
+    'wedo-coral': '#C74446',
+    'wedo-green': '#5DA47A',
+    'wedo-orange': '#D19960',
+  },
+  variables: {
+    'border-color': '#E5E7EB',
+    'border-opacity': 1,
+    'high-emphasis-opacity': 0.95,
+    'medium-emphasis-opacity': 0.70,
+    'disabled-opacity': 0.50,
+    'theme-overlay-multiplier': 1,
+  },
+}
+
+export default createVuetify({
+  theme: {
+    defaultTheme: 'liaTheme',
+    themes: { liaTheme },
+  },
+  defaults: {
+    VBtn: { rounded: 'md', elevation: 0 },
+    VCard: { rounded: 'md', elevation: 0, variant: 'outlined' },
+    VTextField: { variant: 'outlined', density: 'compact' },
+    VTextarea: { variant: 'outlined', density: 'compact' },
+    VSelect: { variant: 'outlined', density: 'compact' },
+    VCheckbox: { color: 'grey-darken-4', density: 'compact' },
+    VSwitch: { color: 'grey-darken-4', density: 'compact' },
+    VRadio: { color: 'grey-darken-4' },
+    VChip: { size: 'small' },
+    VDataTable: { density: 'compact' },
+    VDialog: { maxWidth: 600 },
+    VTabs: { color: 'grey-darken-4' },
+  },
+})
+```
