@@ -315,10 +315,10 @@ UniversalReActAgent
                    │              ASYNC LAYER (Celery 5.4)             │
                    │                                                    │
                    │  app/core/celery_app.py — broker=REDIS_URL        │
-                   │  app/jobs/celery_tasks.py — 5 tasks:              │
-                   │    drift.run_batch | agents.wsi_interview.start   │
-                   │    agents.triagem.run | agents.sourcing.search    │
-                   │    communication.email.send_bulk                  │
+                   │  app/jobs/celery_tasks.py — 27 tasks:             │
+                   │    7 agent execute + 2 async process + 3 legacy   │
+                   │    2 compliance + 2 ML + 2 RAG + 3 comunicação   │
+                   │    6 manutenção (drift, memory, routing, etc.)   │
                    │  Beat: drift-run-batch-daily (06h Brasília)       │
                    └───────────────────────────────────────────────────┘
 ```

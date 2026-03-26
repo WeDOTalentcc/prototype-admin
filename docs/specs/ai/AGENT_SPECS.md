@@ -181,6 +181,8 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 # PARTE II — lia-agent-system
 
+**Nota:** Não existe domínio "questions" separado. As perguntas WSI são gerenciadas pelo estágio `wsi-questions` do WizardReActAgent (seção 3.1) e pelo serviço `cv_screening/services/wsi_question_generator.py`. Os 12 domínios do lia-agent-system são: job_management, cv_screening, pipeline, sourcing, recruiter_assistant (talent + jobs_mgmt + kanban), hiring_policy, policy, automation, analytics, ats_integration, communication, interview_scheduling.
+
 ## 3. Agents ReAct — Contratos Completos
 
 ### 3.1 WizardReActAgent — Criação de Vagas
@@ -619,13 +621,18 @@ Nota: `check_engagement_gaps()` existe como método mas NÃO está na lista de `
 
 ### 6.3 Celery Tasks (lia-agent-system)
 
-| Task | Schedule |
-|------|---------|
-| `drift.run_batch` | Diário 06h Brasília |
-| `agents.wsi_interview.start` | On-demand |
-| `agents.triagem.run` | On-demand |
-| `agents.sourcing.search` | On-demand |
-| `communication.email.send_bulk` | On-demand |
+Arquivo: `app/jobs/celery_tasks.py` — 27 tasks registradas.
+
+| Categoria | Tasks | Schedule |
+|-----------|-------|---------|
+| **Agentes (execute)** | `agents.wizard.execute`, `agents.pipeline.execute`, `agents.sourcing.execute`, `agents.screening.execute`, `agents.kanban.execute`, `agents.policy.execute`, `agents.automation.execute` | On-demand |
+| **Agentes (processo)** | `agents.wizard.process_async`, `agents.pipeline.transition_async` | On-demand |
+| **Agentes (legacy)** | `agents.wsi_interview.start`, `agents.triagem.run`, `agents.sourcing.search` | On-demand |
+| **Compliance** | `audit.apply_lifecycle_policy`, `lgpd.run_cleanup_daily` | Diário |
+| **ML/Feedback** | `ml.feedback.process_weights`, `ml.feedback.recompute_active_jobs` | On-demand |
+| **RAG** | `rag.rebuild_all_domains`, `rag.rebuild_domain_index` | On-demand |
+| **Comunicação** | `communication.email.send_bulk`, `followup.process_pending`, `briefing.send_daily` | Diário / On-demand |
+| **Manutenção** | `drift.run_batch`, `memory.compress_old_episodes`, `routing.recompute_adjustments`, `wsi.check_abandoned`, `ragas.evaluate_batch`, `agents.registry.check_reload` | Diário / On-demand |
 
 ---
 
