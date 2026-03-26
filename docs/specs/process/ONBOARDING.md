@@ -181,12 +181,12 @@ Usuário → Router → Agente do domínio → ReAct Loop:
 | `analytics` | KPIs, dashboards, funil | `app/domains/analytics/` |
 | `sourcing` | Busca proativa, boolean queries | `app/domains/sourcing/` |
 | `policy` | Regras de automação, governance | `app/domains/policy/` |
-| `jobs_management` | CRUD de vagas, wizard | `app/domains/jobs_management/` |
+| `job_management` | CRUD de vagas, wizard | `app/domains/job_management/` |
 
 ### 5.3 LLM Factory
 
 ```python
-from app.shared.llm.llm_factory import create_tracked_llm
+from app.shared.providers.llm_factory import create_tracked_llm
 
 llm = create_tracked_llm(
     domain="talent_management",
@@ -209,7 +209,7 @@ query = select(Candidate).where(Candidate.company_id == company_id)
 Qualquer output que impacta candidatos DEVE passar pelo FairnessGuard:
 
 ```python
-from app.shared.fairness_guard import FairnessGuard
+from app.shared.compliance.fairness_guard import FairnessGuard
 result = FairnessGuard().check(output_text)
 if result.blocked:
     output_text = "Esta avaliação requer revisão humana."

@@ -122,7 +122,7 @@ Testa que prompts adversariais não conseguem alterar scores com base em atribut
 
 | Controle | Módulo | Onde é chamado |
 |----------|--------|---------------|
-| `FairnessGuard.check()` | `app/shared/fairness_guard` | `rubric_evaluation.py:168`, `interview_notes.py:983,1004` |
+| `FairnessGuard.check()` | `app/shared/compliance/fairness_guard` | `rubric_evaluation.py:168`, `interview_notes.py:983,1004` |
 | `GEOGRAPHIC_ADJUSTMENTS = {}` | `calibration_profiles.py` | Multiplicador universal 1.0 (B2 corrigido) |
 | Blind evaluation | `rubric_evaluation_service.py` | Nome removido de `_extract_cv_content()` (B1 corrigido) |
 | System prompt fairness | Todos os 8 system prompts | Seção FAIRNESS_AND_COMPLIANCE / COMPLIANCE E ETICA |
