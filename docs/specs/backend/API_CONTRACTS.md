@@ -393,17 +393,21 @@ Content-Type: application/json
 
 **Response**: `text/event-stream` (SSE via `StreamingResponse`)
 
+Fonte: `app/api/v1/chat.py` `_sse_event_generator()` linha 1161
+
 ```
-data: Anali
-data: sando
-data:  o perfil...
+data: {"token": "Anali"}
+data: {"token": "sando"}
+data: {"token": " o perfil..."}
 data: [DONE]
 ```
 
-**Implementação**: usa `anthropic` SDK `client.messages.stream()` com Claude.  
-Cada chunk de texto é emitido como `data: <text>\n\n`.  
-Ao final: `data: [DONE]\n\n` — NÃO é JSON, é texto literal.  
-Após stream completo, persiste `Message` no DB com `message_metadata={"stream": True}`.
+Cada chunk é emitido como JSON envelope `{"token": "<text>"}` via `json.dumps()`.  
+Erros: `{"error": "<message>"}`.  
+Fim do stream: `data: [DONE]\n\n` (texto literal, não JSON).  
+**Implementação**: `anthropic.AsyncAnthropic` SDK, `client.messages.stream()` com `claude-sonnet-4-6`, `max_tokens=2048`.  
+System prompt: `_LIA_STREAM_SYSTEM_PROMPT` (linha 1128).  
+Após stream completo, persiste `Message` no DB com `role="ai"`, `message_metadata={"stream": True}`.
 
 ### 4.4 Job Vacancies (4677 linhas)
 

@@ -543,9 +543,14 @@ Mensagens do chat (polimórfico).
                                              └─────────────────────┘
 ```
 
+**Nota sobre importações**: Todos os arquivos em `app/models/*.py` são shims que re-exportam
+os modelos reais via `from lia_models.<module> import *`. Os modelos definidos de facto estão em
+`lia-agent-system/libs/models/lia_models/`. Os paths abaixo referem o shim para consistência de import,
+mas as definições de campos vêm da lib interna.
+
 ### 3.2 Tabela: `job_vacancies` (60+ campos)
 
-> **Model**: `lia-agent-system/app/models/job_vacancy.py`
+> **Model**: `lia-agent-system/app/models/job_vacancy.py` → `libs/models/lia_models/job_vacancy.py`
 
 #### Identidade e controle
 
@@ -623,7 +628,7 @@ Mensagens do chat (polimórfico).
 
 ### 3.3 Tabela: `candidates` (55+ campos)
 
-> **Model**: `lia-agent-system/app/models/candidate.py`
+> **Model**: `lia-agent-system/app/models/candidate.py` → `libs/models/lia_models/candidate.py`
 
 #### Identidade
 
