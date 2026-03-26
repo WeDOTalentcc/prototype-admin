@@ -45,13 +45,14 @@
 
 ```python
 create_tracked_llm(
-    temperature=0.0,
+    temperature=0.0,             # recruiter_agent_v5 usa 0.0 por domínio
     service_name="NomeDoDominio",
     operation="chat|intent",
     model_override=None,
     max_output_tokens=None,
     extra_callbacks=None,
 )
+# Nota: lia-agent-system usa LLM_AGENT_TEMPERATURE=0.3 (config.py) para cascade
 ```
 
 Tracking via `LLMUsageCallbackHandler`: service_name, operation, tokens in/out, latência, custo.
@@ -177,24 +178,22 @@ response = await llm_service.generate_with_tools(
 
 ## 8. Configurações por Uso (lia-agent-system)
 
-| Uso | Temperature | Modelo | Motivo |
-|-----|-------------|--------|--------|
-| T3 IntentRouter (classificação) | 0.0 | Haiku→Sonnet→Opus (cascade) | Determinismo forçado no roteamento |
-| ReAct Loop (reasoning) | 0.3 | Claude Sonnet | Raciocínio controlado |
-| Perguntas de triagem WSI | 0.1 | Claude Sonnet | Quase-determinístico |
-| Geração de JD, emails | 0.5–0.7 | Claude Sonnet | Criatividade desejada |
-| FairnessGuard L3 (LLM) | 0.0 | Claude Sonnet | Compliance determinístico |
-| Avaliação WSI (rubrica) | — | Claude Sonnet | Score qualitativo |
+| Uso | Temperature | Modelo | Fonte |
+|-----|-------------|--------|-------|
+| Cascade de agentes (Haiku→Sonnet→Opus) | **0.3** | Claude cascade | `LLM_AGENT_TEMPERATURE` em `config.py` via `_get_claude_for_model()` |
+| T5 LLM Cascade (IntentRouter) | **0.3** | Claude cascade | Mesmo `_get_claude_for_model()` — NÃO usa 0.0 |
+| ReAct Loop (reasoning) | **0.3** | Claude Sonnet | `LLM_AGENT_TEMPERATURE` |
+| Uso geral (embeddings, geração) | **0.7** | Variado | `LLM_DEFAULT_TEMPERATURE` em `config.py` |
 | WSI Deterministic Scorer | — | Sem LLM | Funções puras, zero custo |
 
 ### 8.1 Regra Geral de Temperatura
 
-| Temperatura | Caso de uso | Tipo |
-|-------------|-------------|------|
-| 0.0 | Classificação de intent, compliance | Determinístico forçado |
-| 0.1 | Perguntas de triagem WSI | Quase-determinístico |
-| 0.3 | Reasoning do loop ReAct | Não-determinístico controlado |
-| 0.5–0.7 | Geração de JD, emails personalizados | Não-determinístico desejado |
+Definidas em `libs/config/lia_config/config.py`:
+
+| Variável | Valor | Caso de uso | Tipo |
+|----------|:-----:|-------------|------|
+| `LLM_AGENT_TEMPERATURE` | 0.3 | Cascade, ReAct, roteamento de intent | Não-determinístico controlado |
+| `LLM_DEFAULT_TEMPERATURE` | 0.7 | Geração de JD, emails, uso geral | Não-determinístico desejado |
 
 ---
 
@@ -302,12 +301,14 @@ Sampling: 10% das interações (Sprint J1).
 - (+) Fallbacks para OpenAI e Gemini
 - (-) Custo maior que Gemini
 
-### ADR-LLM-003: Temperature 0.0 como default de roteamento
+### ADR-LLM-003: Temperature por camada
 
-**Decisão:** Temperature 0.0 para classificação de intent e compliance. 0.3 para ReAct reasoning.
-- (+) Routing determinístico
-- (+) Compliance reproduzível
-- (-) Respostas de agentes podem parecer "secas" (mitigado pelo prompt)
+**Decisão:** Duas temperaturas configuráveis em `libs/config/lia_config/config.py`:
+- `LLM_DEFAULT_TEMPERATURE = 0.7` — uso geral (embeddings, geração não-agente)
+- `LLM_AGENT_TEMPERATURE = 0.3` — cascade de agentes (usado em `_get_claude_for_model()` para Haiku/Sonnet/Opus)
+- (+) Agentes determinísticos o suficiente sem perder naturalidade
+- (+) Cascade inteiro usa mesma temperature (consistência)
+- (-) Não é 0.0 puro — roteamento tem leve variação (mitigado por thresholds de confiança)
 
 ### ADR-LLM-004: Factory centralizada
 

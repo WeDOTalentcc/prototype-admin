@@ -425,8 +425,9 @@ PLAN_LIMITS_ENFORCE=true
 | Campo | Valor |
 |-------|-------|
 | **Arquivo** | `app/domains/cv_screening/agents/wsi_interview_graph.py` |
-| **Estágios** | ~9: welcome → background_collection → wsi_questions → response_analysis → competency_scoring → feedback_generation → closing → persist_session → END |
-| **Estado** | `WSIInterviewState`: candidate_id, job_id, company_id, session_id, interview_type ("wsi_full"/"wsi_short"/"wsi_custom"), transcript, current_stage, scores (competência → 0.0–1.0), interview_ready |
+| **Estágios (WSIInterviewStage enum)** | 10: INIT → LOAD_CONTEXT → GENERATE_QUESTION → AWAIT_RESPONSE → VALIDATE_RESPONSE → SCORE_RESPONSE → ADVANCE → GENERATE_FEEDBACK → COMPLETE \| ERROR |
+| **Estado (WSIInterviewState @dataclass)** | `session_id`, `company_id`, `candidate_id`, `job_id`, `interview_level` ("quick"\|"standard"\|"full"), `job_requirements`, `candidate_profile`, `question_blocks: List[WSIQuestionBlock]`, `current_question_index`, `responses: List[WSIResponseRecord]`, `current_question`, `awaiting_response`, `technical_score`, `behavioral_score`, `situational_score`, `wsi_final_score`, `recommendation` ("aprovado"\|"aguardando"\|"reprovado"), `stage`, `execution_log`, `started_at`, `completed_at`, `error` |
+| **WSIQuestionBlock** | `block_id`, `block_type` ("technical"\|"behavioral"\|"situational"), `question`, `competency`, `bloom_level` (1-6), `dreyfus_level` (1-5), `big_five_trait`, `max_score` (10.0), `trait_weight` (1.0) |
 | **HITL** | `interrupt_before=["lg_generate_feedback"]` |
 | **Scoring** | Determinístico via `wsi_deterministic_scorer.py` — substituiu AvaliadorWSIAgent (zero latência, zero custo LLM) |
 | **Invocação** | Celery: `agents.wsi_interview.start` — sessões longas (30–120 min) via WebSocket |
@@ -551,26 +552,40 @@ Todo agente ReAct herda deste mixin:
 
 ### 10.2 BaseAgent Interface
 
+Arquivo: `libs/agents-core/lia_agents_core/agent_interface.py`
+
 ```python
 class BaseAgent(ABC):
-    domain_name: str                       # propriedade abstrata
-    available_tools: List[str]             # propriedade abstrata
-    async def process(input: AgentInput, db: AsyncSession) -> AgentOutput
+    @property
+    @abstractmethod
+    def domain_name(self) -> str: ...
+
+    @property
+    @abstractmethod
+    def available_tools(self) -> List[str]: ...
+
+    @abstractmethod
+    async def process(self, input: AgentInput) -> AgentOutput: ...
 
 class AgentInput(BaseModel):
     message: str
+    context: Dict[str, Any] = {}
     session_id: str
-    company_id: str          # Multi-tenant obrigatório
+    company_id: str
     user_id: str
-    pipeline_stage: Optional[str]
-    context: Optional[dict]
+    conversation_history: List[Dict[str, Any]] = []
+    metadata: Dict[str, Any] = {}
 
 class AgentOutput(BaseModel):
-    response: str
-    actions: List[AgentAction]
-    navigation: Optional[NavigationCommand]
-    confidence: float
-    metadata: dict
+    message: str                              # resposta ao usuário
+    actions: List[AgentAction] = []
+    state_updates: Dict[str, Any] = {}
+    navigation: Optional[NavigationCommand] = None
+    confidence: float = 0.0
+    reasoning_steps: List[str] = []
+    tool_results: List[Dict[str, Any]] = []
+    metadata: Dict[str, Any] = {}
+    error: Optional[str] = None
 ```
 
 ### 10.3 ReAct Loop
