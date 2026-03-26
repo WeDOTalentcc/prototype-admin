@@ -651,9 +651,9 @@ RESPONDA EM JSON:
 
 O `wizard_system_prompt.py` define inline as mesmas regras de `=== COMPLIANCE E ÉTICA ===` e `=== FAIRNESS_AND_COMPLIANCE ===` que existem em `ethical_guidelines` no YAML compartilhado. Isso cria risco de drift entre as duas fontes.
 
-### 15.2 Prompts Mockados no Frontend
+### 15.2 Prompts Mockados no Frontend (Archived)
 
-3 tabs do Talent Funnel (Pipelines, Personas, Mapping) usam handlers `handleLIACommand()` com if/else em keywords locais — não há prompt real, apenas respostas hardcoded no frontend.
+3 tabs do Talent Funnel (Pipelines, Personas, Mapping) foram arquivadas em `plataforma-lia/src/components/talent-funnel-tabs/_archived/`. Cada uma implementava `handleLIAInsights()` com respostas hardcoded locais — sem LLM ou backend real. Os componentes ativos (`candidates-page.tsx`, `tasks-page.tsx`) usam `handleLIAChatMessage()` e `handleLIAAction()` que delegam ao backend LIA.
 
 ### 15.3 Inconsistência de Idioma em Fallbacks
 

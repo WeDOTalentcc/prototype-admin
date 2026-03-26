@@ -352,29 +352,44 @@ RESPONDA EM JSON:
 | LLM resposta vazia | `not response_text` | Chama `_generate_response()` como fallback | Gera resposta com dados parciais das observações |
 | Todos os LLMs falharam | Cascade exaure 3 tiers | `requires_human=True` | Escalonamento para humano |
 
-### 8.2 Falhas de Tool Call (Por Domínio)
+### 8.2 Falhas de Tool Call — Comportamento Genérico do ReAct Loop
 
-| Domínio | Tool | Falha possível | Comportamento |
-|---------|------|---------------|---------------|
-| Wizard | `get_salary_benchmarks` | API de benchmark indisponível | "Não consegui buscar os benchmarks salariais agora, mas posso sugerir uma faixa com base na minha experiência." |
-| Wizard | `validate_job_requirements` | FairnessGuard indisponível | Falha registrada; agente continua sem validação (fail-open) |
-| Wizard | `save_job_draft` | Banco de dados indisponível | Erro registrado; dados mantidos em memória; retry na próxima interação |
-| Sourcing | `search_external_candidates` | Pearch circuit OPEN | "A busca de candidatos externos está temporariamente indisponível. Você pode buscar na base interna." |
-| Sourcing | `search_candidates` | PostgreSQL timeout | Tool retorna `success=False`; agente tenta com critérios diferentes |
-| CV Screening | `run_wsi_screening` | Modelo WSI indisponível | Retorna resultado existente em cache ou sugere avaliar manualmente |
-| Kanban | `batch_move_candidates` | Falha parcial (alguns movidos) | Reporta quais moveram e quais falharam; sugere retry dos falhados |
-| Pipeline | `execute_stage_transition` | Violação de regra de negócio | `check_fairness` bloqueia; mensagem explica por que transição não é permitida |
-| Interview | `schedule_interview` | Google Calendar circuit OPEN | "Agende manualmente e tente a sincronização mais tarde." |
-| Communication | `send_communication` | SendGrid circuit OPEN | "O envio de emails está temporariamente indisponível. As mensagens serão reenviadas." |
+Quando qualquer tool falha, o comportamento é determinado pelo ReAct loop (código em `react_loop.py` linhas 520-580):
 
-### 8.3 Falhas de Contexto (Todos os Domínios)
+```
+1. Tool retorna success=False ou lança exceção
+2. call_key é adicionado a state.failed_tool_calls
+3. Observação de erro é adicionada ao state para o LLM raciocinar
+4. Na próxima iteração, se mesma tool/args → skip automático com mensagem:
+   "Tool '{name}' already failed with these parameters."
+5. LLM decide: tentar outra abordagem, outro tool, ou responder ao usuário
+```
 
-| Tipo | Detecção | Comportamento |
-|------|----------|---------------|
-| Vaga não encontrada no contexto | Tool retorna vazio | Clarification trigger: "Qual vaga você está trabalhando?" |
-| Candidato não encontrado | Tool retorna 404 | Clarification trigger: "Qual candidato? (nome ou ID)" |
-| Sessão expirada | session_id inválido no WorkingMemory | Nova sessão criada; contexto anterior perdido |
-| Dados desatualizados | Pipeline state mudou durante operação | Tool refaz consulta; observação inclui dados atualizados |
+**Tools registradas por domínio** (verificáveis nos `*_tool_registry.py` de cada domínio):
+
+| Domínio | Tools registradas | Arquivo de referência |
+|---------|------------------|----------------------|
+| Wizard (Job Management) | `get_salary_benchmarks`, `validate_job_requirements`, `save_job_draft` | `app/domains/job_management/agents/wizard_tool_registry.py` |
+| Sourcing | `search_candidates` (6 variantes), `send_outreach` | `app/domains/sourcing/tools.py`, `sourcing_engagement_tool_registry.py` |
+| CV Screening (Pipeline) | `run_wsi_screening`, `view_screening_results`, `move_candidate`, `finalize_hiring` | `app/domains/cv_screening/agents/pipeline_tool_registry.py` |
+| Kanban | `batch_move`, `send_bulk_email`, `start_screening_batch` | `app/domains/recruiter_assistant/agents/kanban_tool_registry.py` |
+| Talent | `search_candidates`, `list_candidates`, `view_candidate_profile` | `app/domains/recruiter_assistant/agents/talent_tool_registry.py` |
+
+**Nota**: O LLM decide a mensagem de fallback ao usuário com base no contexto; não há mensagens de fallback hardcoded por tool. As mensagens no `wizard_system_prompt.py` são instruções ao LLM sobre *como* comunicar falhas, não templates fixos.
+
+### 8.3 Falhas de Contexto
+
+O tratamento de contexto ausente é feito via prompts defensivos (definidos em `shared/defensive.yaml`). O LLM usa os clarification triggers para pedir informações ao recrutador:
+
+| Trigger (defensive.yaml) | Quando aplicado | Mensagem ao Recrutador |
+|--------------------------|-----------------|----------------------|
+| `missing_job` | Contexto de vaga ausente | "Qual vaga você está trabalhando?" |
+| `missing_candidate` | Contexto de candidato ausente | "Qual candidato você está avaliando?" |
+| `ambiguous_action` | Intenção não clara | "Não tenho certeza do que você quer fazer..." |
+| `missing_date` | Data/horário faltante | "Para quando você gostaria de agendar?" |
+| `missing_criteria` | Critérios de busca ausentes | "Quais critérios você gostaria de usar?" |
+
+**Nota**: estas mensagens são templates nos prompts defensivos — o LLM pode reformulá-las. Não são respostas fixas do sistema.
 
 ---
 
@@ -489,25 +504,62 @@ Eventos de streaming NUNCA bloqueiam o loop principal. Se o WebSocket falhar, o 
 
 ## 13. Guardrails — Ações que Requerem Confirmação
 
-Certas tool calls são bloqueadas pelo ReAct loop até o recrutador confirmar:
+Certas tool calls são bloqueadas pelo ReAct loop até o recrutador confirmar. A lista é determinada por 3 fontes em cascata (código em `enhanced_agent_mixin.py` linhas 108-163):
 
-| Domínio | Tools com Guardrail | Tipo de Ação |
-|---------|-------------------|--------------|
-| Talent | `create_shortlist` | Criação de lista de candidatos |
-| Kanban | `batch_move_candidates` | Movimentação em massa |
-| Kanban | `send_batch_communication` | Comunicação em massa |
-| Kanban | `start_screening_batch` | Triagem em lote |
-| CV Screening | `move_candidate` (rejeição) | Rejeição de candidato |
-| CV Screening | `finalize_hiring` | Contratação definitiva |
+### 13.1 Fonte Primária: AutonomyEngine (por empresa)
 
-**Comportamento quando guardrail ativa:**
+```
+Arquivo: libs/agents-core/lia_agents_core/autonomy_engine.py
+
+GUARDRAILS_BY_LEVEL:
+  low:    move_candidate, batch_move, reject_candidate, schedule_interview,
+          generate_offer, finalize_hiring, create_job, update_job, delete_job,
+          send_message, bulk_send
+  medium: batch_move, reject_candidate, generate_offer, finalize_hiring,
+          delete_job, bulk_send
+  high:   finalize_hiring, delete_job
+```
+
+O nível é determinado pela `CompanyHiringPolicy` da empresa (cache 5min, TTL 300s).
+
+### 13.2 Fonte Secundária: GuardrailRepository (banco de dados)
+
+Se a AutonomyEngine falhar → consulta `GuardrailRepository.get_blocked_tools(db, domain, company_id)`.
+
+### 13.3 Fallback Estático (_DEFAULT_GUARDRAIL_TOOLS)
+
+Se ambas as fontes falharem → lista estática:
+
 ```python
-state.final_response = (
-    f"I need your confirmation before executing '{tool_name}'. "
-    f"Shall I proceed?"
-)
-state.should_respond = True
-break  # Sai do loop, espera confirmação
+_DEFAULT_GUARDRAIL_TOOLS = [
+    "move_candidate",
+    "batch_move",
+    "finalize_hiring",
+    "delete_job",
+    "reject_candidate",
+    "send_bulk_email",
+    "update_candidate_field",
+]
+```
+
+### 13.4 Guardrails por Domínio (Registros Específicos)
+
+| Domínio | Guardrail Tools | Fonte |
+|---------|----------------|-------|
+| Sourcing | `send_outreach` | `sourcing_engagement_tool_registry.py` L14 |
+
+### 13.5 Comportamento quando guardrail ativa
+
+```
+Arquivo: react_loop.py linhas 471-485
+
+if tool_name in self.config.guardrails:
+    state.final_response = (
+        f"I need your confirmation before executing '{tool_name}'. "
+        f"Shall I proceed?"
+    )
+    state.should_respond = True
+    break  # Sai do loop, espera confirmação
 ```
 
 ---
@@ -533,17 +585,17 @@ O `wizard_system_prompt.py` inclui instruções específicas de error handling i
 
 ---
 
-## 15. Mock Interfaces — Falha por Design
+## 15. Archived Mock Interfaces
 
-3 tabs do Talent Funnel usam handlers locais sem backend real:
+3 tabs do Talent Funnel foram arquivadas em `_archived/` com handlers locais sem backend:
 
-| Tab | Handler | Comportamento em "erro" |
-|-----|---------|------------------------|
-| Pipelines | `handleLIACommand()` | Se keyword não reconhecida → resposta genérica mockada |
-| Personas | `handleLIACommand()` | Se keyword não reconhecida → resposta genérica mockada |
-| Mapping | `handleLIACommand()` | Se keyword não reconhecida → resposta genérica mockada |
+| Tab | Arquivo | Handler | Status |
+|-----|---------|---------|--------|
+| Pipelines | `_archived/pipelines-tab.tsx` | `handleLIAInsights()` | **ARCHIVED** — não carregada em produção |
+| Personas | `_archived/personas-tab.tsx` | `handleLIAInsights()` | **ARCHIVED** — não carregada em produção |
+| Mapping | `_archived/mapping-tab.tsx` | `handleLIAInsights()` | **ARCHIVED** — não carregada em produção |
 
-**Impacto**: o usuário nunca vê um erro real nestas tabs — mas as respostas são completamente fabricadas (não usam LLM ou dados reais).
+Os componentes ativos (`candidates-page.tsx`, `tasks-page.tsx`) usam `handleLIAChatMessage()` e `handleLIAAction()` que delegam ao backend LIA real via API.
 
 ---
 
