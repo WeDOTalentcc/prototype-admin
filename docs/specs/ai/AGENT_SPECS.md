@@ -191,22 +191,25 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 |-------|-------|
 | **Domínio** | `app/domains/job_management/agents/` |
 | **Registry** | `wizard` |
+| **Registry file** | `wizard_tool_registry.py` |
 | **Como funciona** | ReAct loop + stage context. Cada estágio filtra tools disponíveis e adapta o system prompt. |
 | **Stages** | input-evaluation, jd-enrichment, salary, competencies, wsi-questions, review-publish |
-| **Tools** | 9 |
+| **Tools** | 10 |
+| **max_iterations** | 5 |
 | **Limites** | FairnessGuard obrigatório em requisitos/descrição. Drafts salvos permitem retomada. |
 
-| Ferramenta | O que faz | Stage(s) |
-|-----------|-----------|---------|
-| `validate_job_requirements` | FairnessGuard (3 camadas) sobre requisitos, descrição ou perguntas | input-eval, competencies, review |
-| `get_salary_benchmarks` | Histórico interno (SQL) + benchmarks externos (Robert Half, Gupy 2024) | salary |
-| `search_salary_benchmark` | Pesquisa rápida por cargo/senioridade | salary |
-| `validate_job_fields` | Score de completude, campos faltantes | input-eval, salary, review |
-| `get_job_suggestions` | Sugestões de IA por campo (skills, benefícios, modelo de trabalho) | jd-enrichment, competencies |
-| `save_job_draft` | Salva rascunho no banco | todas |
-| `get_company_config` | Configurações da empresa: benefícios, políticas, templates | todas |
-| `generate_enriched_jd` | Gera descrição completa enriquecida | jd-enrichment |
-| `check_job_draft_health` | Avalia saúde do rascunho (0-100%, riscos) | input-eval, salary, review |
+| Ferramenta | O que faz |
+|-----------|-----------|
+| `validate_job_requirements` | FairnessGuard (3 camadas) sobre requisitos, descrição ou perguntas |
+| `get_salary_benchmarks` | Histórico interno (SQL) + benchmarks externos (Robert Half, Gupy 2024) |
+| `search_salary_benchmark` | Pesquisa rápida por cargo/senioridade |
+| `validate_job_fields` | Score de completude, campos faltantes |
+| `get_job_suggestions` | Sugestões de IA por campo (skills, benefícios, modelo de trabalho) |
+| `save_job_draft` | Salva rascunho no banco |
+| `get_company_config` | Configurações da empresa: benefícios, políticas, templates |
+| `generate_enriched_jd` | Gera descrição completa enriquecida |
+| `check_job_draft_health` | Avalia saúde do rascunho (0-100%, riscos) |
+| `generate_report` | Gera relatório de vagas criadas e publicadas no período |
 
 ### 3.2 PipelineReActAgent — Triagem de Candidatos
 
@@ -216,84 +219,99 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 |-------|-------|
 | **Domínio** | `app/domains/cv_screening/agents/` |
 | **Registry** | `pipeline` |
+| **Registry file** | `cv_screening/agents/pipeline_tool_registry.py` |
 | **Como funciona** | ReAct loop com tools filtradas por estágio do pipeline. Acessa dados reais PostgreSQL. |
 | **Stages** | triage, screening, shortlist, interview, offer, hired |
-| **Tools** | 14 |
+| **Tools** | 15 |
+| **max_iterations** | 5 |
 | **Limites** | Todas as movimentações são rastreadas com motivo. WSI scoring via serviço dedicado. |
 
-| Ferramenta | O que faz | Stage(s) |
-|-----------|-----------|---------|
-| `view_candidate_profile` | Perfil completo com skills, scores — dados reais PostgreSQL | triage, shortlist |
-| `analyze_cv` | Análise: fit score, skills, experiência, certificações | triage |
-| `run_wsi_screening` | Resultado WSI (técnico, comportamental, overall, percentil) | screening |
-| `schedule_interview` | Cria registro de entrevista | interview |
-| `send_communication` | Envia mensagem + salva em communication_logs | interview, offer |
-| `add_notes` | Nota timestampada ao candidato | todas |
-| `move_candidate` | Move de etapa com motivo (rastreabilidade) | todas |
-| `batch_move` | Move múltiplos candidatos | shortlist |
-| `add_to_shortlist` | Marca como shortlisted | shortlist |
-| `view_screening_results` | WSI score + LIA score | screening |
-| `view_interview_notes` | Histórico de entrevistas | interview |
-| `generate_offer` | Estrutura de proposta (salário, cargo, modelo) | offer |
-| `finalize_hiring` | Marca como contratado | hired |
-| `update_status` | Atualiza status: contratado, rejeitado, desistente | hired |
+| Ferramenta | O que faz |
+|-----------|-----------|
+| `view_candidate_profile` | Perfil completo com skills, scores — dados reais PostgreSQL |
+| `move_candidate` | Move de etapa com motivo (rastreabilidade) |
+| `analyze_cv` | Análise: fit score, skills, experiência, certificações |
+| `run_wsi_screening` | Resultado WSI (técnico, comportamental, overall, percentil) |
+| `schedule_interview` | Cria registro de entrevista |
+| `send_communication` | Envia mensagem + salva em communication_logs |
+| `add_notes` | Nota timestampada ao candidato |
+| `batch_move` | Move múltiplos candidatos |
+| `add_to_shortlist` | Marca como shortlisted |
+| `view_screening_results` | WSI score + LIA score |
+| `view_interview_notes` | Histórico de entrevistas |
+| `generate_offer` | Estrutura de proposta (salário, cargo, modelo) |
+| `finalize_hiring` | Marca como contratado |
+| `update_status` | Atualiza status: contratado, rejeitado, desistente |
+| `generate_report` | Relatório de métricas do pipeline de seleção |
 
 ### 3.3 PipelineTransitionAgent — Transições de Etapa
 
-**O que é:** Agente ReAct de invocação direta para validar e executar transições de estágio no pipeline.
+**O que é:** Agente LangGraph ReAct (não registrado no ReactAgentRegistry) para interpretar contexto de transição de estágio.
 
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/pipeline/agents/` |
+| **Classe** | `PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin)` |
+| **Registry file** | `pipeline/agents/pipeline_tool_registry.py` |
 | **Invocação** | `POST /api/v1/pipeline/interpret-context` (direta, não via registry) |
-| **Como funciona** | Recebe contexto de transição, valida regras, executa com HITL pre-check |
-| **Tools** | 17 |
-| **Limites** | FairnessGuard sobre motivos de transição. HITL obrigatório para execute_stage_transition. |
+| **Como funciona** | Recebe contexto de transição (from_stage, to_stage, candidate, job), usa ALL_TOOLS do registry |
+| **Tools** | 20 |
+| **Limites** | FairnessGuard sobre motivos de rejeição. Preferências do recrutador aprendidas automaticamente. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
-| `get_candidate_profile` | Dados do candidato para contexto |
-| `get_vacancy_details` | Detalhes da vaga alvo |
-| `get_pipeline_stage_config` | Regras de cada etapa |
-| `validate_stage_transition` | Valida se transição é permitida |
-| `execute_stage_transition` | Executa a transição |
-| `check_candidate_preferences` | Preferências de trabalho (modelo, localização, salário) |
-| `update_candidate_preferences` | Atualiza preferências extraídas da conversa |
-| `extract_candidate_preferences` | Extrai preferências de texto livre com NLP |
-| `check_fairness` | FairnessGuard sobre motivo da transição |
-| `log_recruiter_learning` | Registra aprendizado do recrutador |
-| `get_company_policy` | Política de contratação da empresa |
-| `generate_stage_checklist` | Checklist da etapa de destino |
-| `calculate_lia_score` | Recalcula LIA score |
-| `get_historical_transitions` | Histórico de transições |
-| `notify_stakeholders` | Notifica interessados |
-| `schedule_next_action` | Agenda próxima ação |
-| `generate_transition_summary` | Resumo da transição |
+| `get_candidate_profile` | Perfil completo do candidato (nome, email, telefone, skills, scores) |
+| `get_candidate_wsi_scores` | Scores WSI: geral, por competência e percentil |
+| `get_candidate_screening_results` | Resultados de triagem: respostas, análise IA |
+| `get_candidate_salary_info` | Pretensão salarial CLT/PJ do candidato |
+| `update_candidate_field` | Atualiza campo cadastral (telefone, email, LinkedIn) |
+| `request_data_collection` | Agenda tarefa para coletar dado específico do candidato |
+| `get_stage_sub_statuses` | Lista sub-statuses disponíveis para a etapa de destino |
+| `suggest_sub_status` | Sugere sub-status baseado no tipo de ação e contexto |
+| `extract_preferences` | Extrai preferências estruturadas do texto do recrutador |
+| `validate_transition` | Valida se a transição é permitida pelas regras do pipeline |
+| `get_job_context` | Dados da vaga: título, departamento, modelo de trabalho |
+| `schedule_secondary_task` | Agenda tarefa secundária combinada com a ação principal |
+| `personalize_communication` | Define personalização da comunicação (tom, idioma, canal) |
+| `check_rejection_fairness` | FairnessGuard sobre motivo de rejeição |
+| `check_candidate_availability` | Disponibilidade baseada em histórico de interações |
+| `get_recruiter_preferences` | Preferências aprendidas do recrutador (padrões de agendamento) |
+| `save_recruiter_preference` | Salva/atualiza preferência aprendida do recrutador |
+| `get_interview_details` | Detalhes da entrevista agendada (data, hora, tipo) |
+| `cancel_interview` | Cancela entrevista agendada |
+| `reschedule_interview` | Reagenda entrevista para nova data/hora |
 
 ### 3.4 SourcingReActAgent — Busca de Candidatos
 
-**O que é:** Agente para busca iterativa de candidatos em fontes internas e externas (Pearch AI).
+**O que é:** Agente para busca iterativa de candidatos em fontes internas e externas.
 
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/sourcing/agents/` |
 | **Registry** | `sourcing` |
-| **Como funciona** | ReAct loop com WorkingMemory + LongTermMemory. Combina busca interna (PostgreSQL) com Pearch AI (190M+ perfis). |
-| **Tools** | 10 |
-| **Limites** | Pearch AI sujeito a rate limits. FairnessGuard em critérios de busca. |
+| **Registry file** | `sourcing_tool_registry.py` |
+| **Como funciona** | ReAct loop com WorkingMemory + LongTermMemory. Combina busca interna (PostgreSQL) com fontes externas. |
+| **Tools** | 15 |
+| **max_iterations** | 5 |
+| **Limites** | Fontes externas sujeitas a rate limits. FairnessGuard em critérios de busca. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
 | `set_search_criteria` | Define parâmetros (cargo, skills, localização, experiência, salário) |
+| `suggest_skills` | Sugere skills relacionadas ao cargo |
 | `search_candidates` | Busca real no banco com filtros avançados |
-| `search_external_candidates` | Fontes externas (Pearch AI — 190M+ perfis) |
-| `analyze_search_results` | Analytics: distribuição, qualidade, alertas proativos |
-| `save_search` | Salva critérios para reutilização |
-| `add_to_pipeline` | Adiciona candidato a uma vaga |
+| `filter_results` | Filtra resultados de busca por critérios adicionais |
+| `view_candidate` | Perfil completo do candidato |
+| `analyze_profile` | Análise detalhada de perfil (fit, gaps, pontos fortes) |
+| `compare_candidates` | Comparação lado a lado entre candidatos |
+| `score_candidate` | Score de match candidato×vaga |
+| `add_to_shortlist` | Adiciona à lista de pré-seleção |
+| `remove_from_shortlist` | Remove da lista de pré-seleção |
+| `rank_candidates` | Ranking por score/critérios |
 | `send_outreach` | Mensagem de prospecção (email/WhatsApp) |
-| `create_shortlist` | Cria lista selecionada |
-| `check_sourcing_fairness` | FairnessGuard nos critérios |
-| `get_market_intelligence` | Inteligência de mercado |
+| `generate_message` | Gera mensagem personalizada para candidato |
+| `track_response` | Rastreia resposta do candidato |
+| `generate_report` | Relatório de sourcing com métricas |
 
 ### 3.5 TalentReActAgent — Funil de Talentos
 
@@ -303,9 +321,11 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 |-------|-------|
 | **Domínio** | `app/domains/recruiter_assistant/agents/talent_*` |
 | **Registry** | `talent` |
+| **Registry file** | `talent_tool_registry.py` |
 | **Como funciona** | ReAct loop com 3 stages progressivos: discovery → analysis → action_planning |
 | **Stages** | discovery, analysis, action_planning |
-| **Tools** | 12 |
+| **Tools** | 13 |
+| **max_iterations** | 5 |
 | **Limites** | FairnessGuard em critérios de busca. create_shortlist requer HITL. |
 
 | Ferramenta | O que faz |
@@ -322,6 +342,7 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 | `check_search_fairness` | FairnessGuard (3 camadas) |
 | `get_talent_pool_benchmarks` | Benchmarks: tamanho, score, distribuição |
 | `check_pool_health` | Saúde do pool: riscos com severidade |
+| `generate_report` | Gera relatório completo do banco de talentos |
 
 ### 3.6 JobsMgmtReActAgent — Portfólio de Vagas
 
@@ -331,13 +352,17 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 |-------|-------|
 | **Domínio** | `app/domains/recruiter_assistant/agents/jobs_mgmt_*` |
 | **Registry** | `jobs_management` |
+| **Registry file** | `jobs_mgmt_tool_registry.py` |
 | **Como funciona** | ReAct loop com 3 stages: overview → analysis → action |
 | **Stages** | overview, analysis, action |
 | **Tools** | 14 |
+| **max_iterations** | 5 |
 | **Limites** | pause_job e close_job requerem HITL. FairnessGuard sobre justificativas. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
+| `validate_job_action_fairness` | FairnessGuard sobre justificativas |
+| `get_recruitment_benchmarks` | TTF real vs. mercado (above/at/below) |
 | `list_jobs` | Vagas com contagem, dias em aberto, prioridade |
 | `view_job_details` | Detalhes + candidatos por status |
 | `get_portfolio_metrics` | Total ativas/pausadas/fechadas, avg TTF, fill rate |
@@ -349,25 +374,27 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 | `close_job` | Fecha definitivamente (requer motivo) |
 | `update_priority` | Prioridade alta/média/baixa |
 | `generate_report` | Relatório portfolio: TTF, fill rate, totais |
-| `get_recruitment_benchmarks` | TTF real vs. mercado (above/at/below) |
-| `validate_job_action_fairness` | FairnessGuard sobre justificativas |
 | `get_pipeline_prediction` | Probabilidade de fechamento por vaga |
 
 ### 3.7 KanbanReActAgent — Pipeline Kanban
 
-**O que é:** Agente para operações no quadro Kanban de candidatos — maior número de tools (21).
+**O que é:** Agente para operações no quadro Kanban de candidatos — maior número de tools (22).
 
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/recruiter_assistant/agents/kanban_*` |
 | **Registry** | `kanban` |
+| **Registry file** | `kanban_tool_registry.py` |
 | **Como funciona** | ReAct loop com 3 stages: pipeline_overview → stage_analysis → pipeline_actions |
 | **Stages** | pipeline_overview, stage_analysis, pipeline_actions |
-| **Tools** | 21 |
+| **Tools** | 22 |
+| **max_iterations** | 5 |
 | **Limites** | batch_move, send_batch_communication, start_screening_batch requerem HITL. |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
+| `view_candidate_full_profile` | Perfil completo do candidato no contexto do kanban |
+| `get_pipeline_benchmarks` | Tempo real vs. média empresa |
 | `get_pipeline_summary` | Contagem por etapa, conversão, total |
 | `get_stage_metrics` | Candidatos, tempo médio, LIA score, risco |
 | `list_stage_candidates` | Candidatos de etapa com days_in_stage |
@@ -380,15 +407,14 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 | `send_batch_communication` | Massa por email/WhatsApp/SMS (requer confirmação) |
 | `start_screening_batch` | WSI em lote (requer confirmação) |
 | `generate_pipeline_report` | Relatório consolidado |
-| `get_pipeline_benchmarks` | Tempo real vs. média empresa |
 | `check_rejection_fairness` | FairnessGuard sobre rejeições |
-| `get_pipeline_velocity` | Velocidade real + gargalos vs. benchmark |
 | `find_silver_medalists` | Candidatos prata de processos anteriores |
-| `get_at_risk_candidates` | EWS score elevado — risco de ghosting |
-| `get_journey_metrics` | Health score (0–100) + padrões preditivos |
 | `get_recruiter_backlog` | Candidatos aguardando ação |
 | `get_recruiter_benchmark` | Performance vs. mediana anônima |
+| `get_journey_metrics` | Health score (0–100) + padrões preditivos |
+| `get_at_risk_candidates` | EWS score elevado — risco de ghosting |
 | `get_pipeline_prediction` | Probabilidade de fechamento (0–100%) |
+| `get_pipeline_velocity` | Velocidade real + gargalos vs. benchmark |
 
 ### 3.8 PolicyReActAgent — Políticas de Contratação
 
@@ -396,40 +422,45 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 |-------|-------|
 | **Domínio** | `app/domains/hiring_policy/agents/` |
 | **Registry** | `policy` |
-| **Tools** | 12 |
+| **Registry file** | `policy_tool_registry.py` |
+| **Tools** | 13 |
+| **max_iterations** | 5 |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
-| `get_current_policy` | Política atual (pipeline, scheduling, communication, screening, automation rules, learned_patterns, autonomy_level) |
-| `update_pipeline_rules` | Regras de progressão de etapas |
-| `update_scheduling_rules` | Regras de agendamento (horários, buffers) |
-| `update_communication_rules` | Templates e regras de comunicação |
-| `update_screening_rules` | WSI, triagem, qualificação |
-| `update_automation_rules` | Automações e thresholds |
-| `validate_policy` | Validação legal + FairnessGuard |
-| `get_policy_analytics` | Eficácia das políticas |
+| `get_current_policy` | Carrega todas as políticas de contratação atuais da empresa |
+| `save_policy_field` | Salva um campo específico de política no banco |
+| `get_policy_summary` | Resumo formatado de todas as políticas configuradas |
+| `validate_policy_compliance` | Verifica se política proposta viola critérios éticos ou legais |
+| `get_company_context` | Dados reais da empresa (volume de vagas, candidatos, TTF) |
 | `get_industry_benchmarks` | Benchmarks setoriais (ABRH, GPTW, LinkedIn, Robert Half) |
-| `setup_pipeline_templates` | Templates de pipeline |
-| `get_setup_status` | Setup progress por seção |
-| `validate_policy_fairness` | FairnessGuard sobre políticas |
+| `explain_policy_impact` | Explica impacto de configuração nos agentes downstream |
+| `get_setup_progress` | Progresso da configuração: quais blocos completos |
+| `get_platform_benchmarks` | Benchmarks REAIS calculados dos dados da própria plataforma |
+| `detect_policy_impact_anomalies` | Detecta anomalias causadas pelas políticas atuais |
+| `get_policy_effectiveness_report` | Relatório de efetividade das políticas |
+| `save_policy_block` | Salva bloco inteiro de política de uma vez |
+| `apply_industry_defaults` | Aplica configurações padrão do setor em todos os blocos |
 
-### 3.9 AutomationReActAgent
+### 3.9 AutomationReActAgent — Decomposição de Tarefas
 
 | Campo | Valor |
 |-------|-------|
 | **Domínio** | `app/domains/automation/agents/` |
 | **Registry** | `automation` |
-| **Tools** | 7 |
+| **Registry file** | `automation_tool_registry.py` |
+| **Tools** | 6 |
+| **max_iterations** | 6 |
+| **Descrição** | Agente de decomposição de tarefas e planejamento de execução |
 
 | Ferramenta | O que faz |
 |-----------|-----------|
-| `list_automations` | Lista configuradas com status e histórico |
-| `create_automation` | Nova automação: trigger + ações encadeadas |
-| `update_automation` | Edita existente |
-| `toggle_automation` | Habilita/desabilita |
-| `test_automation` | Executa em modo teste (sem efeitos reais) |
-| `view_execution_log` | Histórico de execuções |
-| `get_automation_metrics` | Volume, taxa de sucesso, economia de tempo |
+| `decompose_task` | Decompõe tarefa principal em subtarefas executáveis com duração e agente |
+| `prioritize_tasks` | Prioriza tarefas por urgência, impacto, criticidade e eficiência |
+| `get_execution_plan` | Gera plano de execução ordenado com paralelismo |
+| `build_dag` | Constrói DAG de dependências entre subtarefas |
+| `check_dependencies` | Verifica se dependências de uma tarefa estão satisfeitas |
+| `get_next_tasks` | Retorna próximas tarefas desbloqueadas para execução |
 
 ### 3.10 PolicySetupAgent (LLM Direto)
 
@@ -446,7 +477,18 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 |-------|-------|
 | **Domínio** | `app/domains/analytics/agents/` |
 | **Registry** | `analytics` |
-| **Função** | Métricas, relatórios, insights de recrutamento |
+| **Registry file** | `analytics_tool_registry.py` |
+| **Tools** | 6 |
+| **max_iterations** | 6 |
+
+| Ferramenta | O que faz |
+|-----------|-----------|
+| `get_job_insights` | Insights de vagas (tempo aberto, conversão, comparação) |
+| `predict_hiring_metrics` | Previsões de contratação baseadas em dados históricos |
+| `generate_job_report` | Relatório de performance de vagas |
+| `generate_candidate_report` | Relatório de candidatos por vaga/pipeline |
+| `get_search_analytics` | Analytics de buscas realizadas |
+| `get_agent_performance` | Métricas de performance dos agentes IA |
 
 ### 3.12 ATSIntegrationReActAgent
 
@@ -454,7 +496,17 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 |-------|-------|
 | **Domínio** | `app/domains/ats_integration/agents/` |
 | **Registry** | `ats_integration` |
-| **Função** | Sincronização bidirecional com Gupy/Pandapé/Merge |
+| **Registry file** | `ats_integration_tool_registry.py` |
+| **Tools** | 5 |
+| **max_iterations** | 6 |
+
+| Ferramenta | O que faz |
+|-----------|-----------|
+| `sync_candidate_to_ats` | Sincroniza candidato para plataforma ATS externa |
+| `fetch_candidate_from_ats` | Importa candidato de plataforma ATS externa |
+| `validate_ats_fields` | Valida campos antes de sincronização |
+| `bulk_sync_candidates` | Sincronização em massa de candidatos |
+| `get_sync_status` | Status da sincronização (sucesso, erro, pendente) |
 
 ### 3.13 CommunicationReActAgent
 
@@ -462,28 +514,41 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 |-------|-------|
 | **Domínio** | `app/domains/communication/agents/` |
 | **Registry** | `communication` |
-| **Função** | Comunicações multi-canal (email, WhatsApp, Teams) |
+| **Registry file** | `communication_tool_registry.py` |
+| **Tools** | 5 |
+| **max_iterations** | 6 |
+
+| Ferramenta | O que faz |
+|-----------|-----------|
+| `send_email` | Envia email ao candidato |
+| `send_whatsapp` | Envia mensagem WhatsApp |
+| `get_communication_history` | Histórico de comunicações com candidato |
+| `schedule_message` | Agenda envio de mensagem para data futura |
+| `check_rate_limit` | Verifica limites de envio antes de comunicação |
 
 ---
 
 ## 4. Tool Registries — Sumário
 
-| Registry | Agente | Tools | Dados acessados |
-|----------|--------|:-----:|-----------------|
-| `wizard_tool_registry.py` | WizardReAct | 9 | Vagas, benchmarks, FairnessGuard |
-| `pipeline_tool_registry.py` (cv_screening) | PipelineReAct | 14 | Triagem, scoring, WSI |
-| `pipeline_tool_registry.py` (pipeline) | PipelineTransition | 17 | Transições de estágio |
-| `sourcing_tool_registry.py` | SourcingReAct | 10 | Candidatos, Pearch AI |
-| `talent_tool_registry.py` | TalentReAct | 12 | Banco de talentos |
-| `jobs_mgmt_tool_registry.py` | JobsMgmtReAct | 14 | Vagas, métricas |
-| `kanban_tool_registry.py` | KanbanReAct | 21 | Pipeline, movimentação |
-| `policy_tool_registry.py` | PolicyReAct | 12 | Políticas, compliance |
-| `automation_tool_registry.py` | AutomationReAct | 7 | Automações |
-| `analytics_tool_registry.py` | AnalyticsReAct | — | Métricas, dashboards |
-| `ats_integration_tool_registry.py` | ATSIntegrationReAct | — | Gupy, Pandapé, Merge |
-| `communication_tool_registry.py` | CommunicationReAct | — | Email, WhatsApp, Teams |
+Contagens extraídas por `ToolDefinition(` count em cada arquivo `*_tool_registry.py`.
 
-**Catálogo central:** `app/tools/tool_registry_metadata.yaml` — 32 tools com `allowed_agents` e `scope`.
+| Registry file | Agente | Tools | Registry key |
+|----------|--------|:-----:|-------------|
+| `job_management/agents/wizard_tool_registry.py` | WizardReAct | 10 | `wizard` |
+| `cv_screening/agents/pipeline_tool_registry.py` | PipelineReAct | 15 | `pipeline` |
+| `pipeline/agents/pipeline_tool_registry.py` | PipelineTransition | 20 | (invocação direta) |
+| `sourcing/agents/sourcing_tool_registry.py` | SourcingReAct | 15 | `sourcing` |
+| `recruiter_assistant/agents/talent_tool_registry.py` | TalentReAct | 13 | `talent` |
+| `recruiter_assistant/agents/jobs_mgmt_tool_registry.py` | JobsMgmtReAct | 14 | `jobs_management` |
+| `recruiter_assistant/agents/kanban_tool_registry.py` | KanbanReAct | 22 | `kanban` |
+| `hiring_policy/agents/policy_tool_registry.py` | PolicyReAct | 13 | `policy` |
+| `automation/agents/automation_tool_registry.py` | AutomationReAct | 6 | `automation` |
+| `analytics/agents/analytics_tool_registry.py` | AnalyticsReAct | 6 | `analytics` |
+| `ats_integration/agents/ats_integration_tool_registry.py` | ATSIntegrationReAct | 5 | `ats_integration` |
+| `communication/agents/communication_tool_registry.py` | CommunicationReAct | 5 | `communication` |
+| **TOTAL** | **12 registries** | **144** | |
+
+**Catálogo central:** `app/tools/tool_registry_metadata.yaml`
 
 ---
 
@@ -503,21 +568,24 @@ Estes agentes formam o pipeline sequencial do `WorkflowOrchestrator` em `src/wor
 
 ### 6.1 ProactiveAgentWorker
 
-Ciclo: 30 min | Arquivo: `app/shared/agents/proactive_worker.py`
+Ciclo: 30 min | Arquivo: `libs/agents-core/lia_agents_core/proactive_worker.py`
+
+Checks executados por `run_all_checks()` (10 checks ativos, na ordem do código):
 
 | Check | Trigger | Severidade |
 |-------|---------|-----------|
-| `check_stale_pipeline` | Candidato parado ≥7d | warning; ≥14d critical |
-| `check_low_pipeline` | Vaga <3 candidatos | warning; zero critical |
-| `check_high_scorers` | Score >80% em "Novo" | warning |
-| `check_deadlines` | Prazo ≤7d | warning; ≤2d critical |
-| `check_engagement_gaps` | Sem contato ≥10d | info |
 | `check_velocity_bottleneck` | Acima do threshold por etapa | warning/critical |
-| `check_silver_medalists` | Candidatos prata disponíveis | info |
 | `check_recruiter_backlog` | Aguardando ação (por recrutador) | warning/critical |
 | `check_early_warning` | EWS ≥0.6 (por recrutador) | warning/critical |
 | `check_journey_intelligence` | Health <50 (por recrutador) | warning/critical |
 | `check_pipeline_prediction` | Prob <30% (por recrutador) | warning/critical |
+| `check_stale_pipeline` | Candidato parado ≥7d | warning; ≥14d critical |
+| `check_low_pipeline` | Vaga <3 candidatos | warning; zero critical |
+| `check_high_scorers` | Score >80% em "Novo" | warning |
+| `check_deadlines` | Prazo ≤7d | warning; ≤2d critical |
+| `check_silver_medalists` | Candidatos prata disponíveis | info |
+
+Nota: `check_engagement_gaps()` existe como método mas NÃO está na lista de `run_all_checks()`.
 
 ### 6.2 Workers (recruiter_agent_v5)
 

@@ -479,25 +479,27 @@ app/domains/<domain>/agents/
 
 ### 9.2 11 Agentes Registrados no ReactAgentRegistry
 
-| # | Agente | Domínio Registry | Tools (aprox.) |
-|---|--------|-----------------|:------:|
-| 1 | AnalyticsReActAgent | `analytics` | — |
-| 2 | ATSIntegrationReActAgent | `ats_integration` | — |
-| 3 | AutomationReActAgent | `automation` | 7 |
-| 4 | CommunicationReActAgent | `communication` | — |
-| 5 | PipelineReActAgent | `pipeline` (cv_screening) | 14 |
-| 6 | PolicyReActAgent | `policy` (hiring_policy) | 13 |
-| 7 | WizardReActAgent | `wizard` (job_management) | 9 |
-| 8 | KanbanReActAgent | `kanban` (recruiter_assistant) | 21 |
-| 9 | JobsMgmtReActAgent | `jobs_management` (recruiter_assistant) | 14 |
-| 10 | TalentReActAgent | `talent` (recruiter_assistant) | 12 |
-| 11 | SourcingReActAgent | `sourcing` | 10 |
+Contagens verificadas por `ToolDefinition(` count em cada `*_tool_registry.py`.
 
-### 9.3 Agente ReAct de Invocação Direta
+| # | Agente | Registry key | Tools | max_iterations |
+|---|--------|-------------|:-----:|:--------------:|
+| 1 | WizardReActAgent | `wizard` | 10 | 5 |
+| 2 | PipelineReActAgent | `pipeline` | 15 | 5 |
+| 3 | SourcingReActAgent | `sourcing` | 15 | 5 |
+| 4 | TalentReActAgent | `talent` | 13 | 5 |
+| 5 | JobsMgmtReActAgent | `jobs_management` | 14 | 5 |
+| 6 | KanbanReActAgent | `kanban` | 22 | 5 |
+| 7 | PolicyReActAgent | `policy` | 13 | 5 |
+| 8 | AutomationReActAgent | `automation` | 6 | 6 |
+| 9 | AnalyticsReActAgent | `analytics` | 6 | 6 |
+| 10 | CommunicationReActAgent | `communication` | 5 | 6 |
+| 11 | ATSIntegrationReActAgent | `ats_integration` | 5 | 6 |
+
+### 9.3 Agente LangGraph ReAct de Invocação Direta
 
 | # | Agente | Invocação | Tools |
 |---|--------|-----------|:-----:|
-| 12 | PipelineTransitionAgent | `POST /api/v1/pipeline/interpret-context` | 17 |
+| 12 | PipelineTransitionAgent | `POST /api/v1/pipeline/interpret-context` | 20 |
 
 ### 9.4 Agente LLM Direto (não ReAct)
 
