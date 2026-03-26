@@ -13,7 +13,7 @@ O sistema de IA da WeDOTalent opera em duas camadas complementares:
 | Camada | Repositório | Stack | Papel |
 |--------|-------------|-------|-------|
 | **Agente Multi-Domínio** | `recruiter_agent_v5` | Python + LangGraph + Gemini + Celery + RabbitMQ | Processa queries do recrutador via linguagem natural, executando ações no ATS |
-| **Serviços LIA** | `lia-agent-system` | Python + FastAPI + LangGraph + Claude (primário) | 12 domínios, 13 agentes, 3 StateGraphs, CascadedRouter 6-tier, compliance integrado |
+| **Serviços LIA** | `lia-agent-system` | Python + FastAPI + LangGraph + Gemini (produção) | 12 domínios, 13 agentes, 3 StateGraphs, CascadedRouter 6-tier, compliance integrado |
 
 ### 1.1 Diagrama de Fluxo Geral
 
@@ -287,7 +287,8 @@ UniversalReActAgent
                    ┌──────────────▼──────────────────────────────────┐
                    │           SHARED INFRASTRUCTURE                 │
                    │                                                  │
-                   │  LLMService (Claude→OpenAI→Gemini cascade)      │
+                   │  LLMService (Gemini em produção; cascade          │
+                   │  Haiku→Sonnet→Opus no código, não ativo)        │
                    │    app/services/llm.py                          │
                    │    Cascade: Haiku→Sonnet→Opus (thresholds       │
                    │    0.80→0.70→0.60)                              │
@@ -667,7 +668,7 @@ Filtros bloqueados: gender, genero, sexo, age, idade, birth_date, race, raca, et
 |--------|---------------|-------------|
 | Camada 1 | Regex sobre 40+ padrões explícitos (gênero, idade, raça, religião, estado civil) | Sempre |
 | Camada 2 | Léxico de viés implícito (`IMPLICIT_BIAS_TERMS`) | Sempre |
-| Camada 3 | Análise semântica por Claude (detecta viés sutil) | Opt-in via `FAIRNESS_LAYER3_ENABLED` (+2s latência) |
+| Camada 3 | Análise semântica por LLM (detecta viés sutil) — Gemini em produção | Opt-in via `FAIRNESS_LAYER3_ENABLED` (+2s latência) |
 
 **Agentes que usam FairnessGuard:**
 

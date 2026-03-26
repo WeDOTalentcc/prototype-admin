@@ -86,37 +86,36 @@ Tracking via `LLMUsageCallbackHandler`: service_name, operation, tokens in/out, 
 
 ---
 
-# PARTE II — lia-agent-system (Claude Primário)
+# PARTE II — lia-agent-system (Gemini em Produção)
 
-## 7. LLM Service — Cascade Haiku→Sonnet→Opus
+> **Nota de produção (confirmado 2026-03-26):** WeDOTalent usa **exclusivamente Gemini** em produção. O código do `lia-agent-system` contém providers para Claude (Anthropic) e OpenAI, mas estes **não são ativados em produção**. A cascade Haiku→Sonnet→Opus e o fallback chain Claude→OpenAI→Gemini existem no código mas não refletem o ambiente de produção atual.
+
+## 7. LLM Service — Cascade de Confiança
 
 Arquivo: `app/services/llm.py`
 
-A plataforma usa uma **cascata de 3 modelos** que otimiza custo vs qualidade automaticamente: começa pelo mais barato (Haiku), e só escala se a confiança não atingir o threshold mínimo.
+O código implementa uma cascata de 3 modelos que otimiza custo vs qualidade. Em produção, apenas Gemini é utilizado.
 
-### 7.1 Modelos Configurados
+### 7.1 Modelos Configurados (no código)
 
-| Variável | Modelo | Papel |
-|----------|--------|-------|
-| `LLM_PRIMARY_MODEL` | `claude-sonnet-4-6` | Primário para tudo |
-| `LLM_FAST_MODEL` | `claude-haiku-4-5` | Rápido e barato |
-| `LLM_POWERFUL_MODEL` | `claude-opus-4-6` | Complexo, caro |
-| `LLM_GEMINI_MODEL` | `gemini-2.5-flash` | Fallback final |
+| Variável | Valor no Código | Em Produção |
+|----------|--------|-------------|
+| `LLM_PRIMARY_MODEL` | `claude-sonnet-4-6` | **Gemini** (configuração de produção sobrescreve) |
+| `LLM_FAST_MODEL` | `claude-haiku-4-5` | **Gemini** |
+| `LLM_POWERFUL_MODEL` | `claude-opus-4-6` | **Gemini** |
+| `LLM_GEMINI_MODEL` | `gemini-2.5-flash` | **Gemini 2.5 Flash** (ativo) |
 
-### 7.2 Provedores em Ordem
+### 7.2 Provedores (código vs produção)
 
 ```
-1. Claude (Anthropic) — primário para tudo
-   → ChatAnthropic (LangChain)
-   → ANTHROPIC_API_KEY ou AI_INTEGRATIONS_ANTHROPIC_API_KEY
+Código (3 providers implementados):
+1. Claude (Anthropic) — ChatAnthropic (LangChain) — NÃO usado em produção
+2. OpenAI (GPT-4o) — ChatOpenAI (LangChain) — NÃO usado em produção
+3. Gemini (Google) — google.genai SDK — ÚNICO provider em produção
 
-2. OpenAI (GPT-4o) — fallback
-   → ChatOpenAI (LangChain)
-   → OPENAI_API_KEY
-
-3. Gemini (Google) — fallback para geração de texto simples
-   → google.genai SDK nativo (via Replit AI Integration)
-   → AI_INTEGRATIONS_GEMINI_API_KEY
+Produção:
+→ Google Gemini exclusivamente
+→ AI_INTEGRATIONS_GEMINI_API_KEY (via Replit AI Integration)
 ```
 
 ### 7.3 Cascade de Confiança (`generate_with_cascade`)
@@ -155,7 +154,7 @@ async def generate_with_cascade(
 response = await llm_service.generate_with_tools(
     messages=history,
     tools=tool_definitions,          # lista de ToolDefinition (Pydantic)
-    provider="claude",
+    provider="gemini",  # produção; código tem "claude" como default
     system_prompt=system_prompt,
     max_tokens=4096
 )
@@ -180,9 +179,9 @@ response = await llm_service.generate_with_tools(
 
 | Uso | Temperature | Modelo | Fonte |
 |-----|-------------|--------|-------|
-| Cascade de agentes (Haiku→Sonnet→Opus) | **0.3** | Claude cascade | `LLM_AGENT_TEMPERATURE` em `config.py` via `_get_claude_for_model()` |
-| T5 LLM Cascade (IntentRouter) | **0.3** | Claude cascade | Mesmo `_get_claude_for_model()` — NÃO usa 0.0 |
-| ReAct Loop (reasoning) | **0.3** | Claude Sonnet | `LLM_AGENT_TEMPERATURE` |
+| Cascade de agentes | **0.3** | Gemini (produção); código referencia Claude cascade | `LLM_AGENT_TEMPERATURE` em `config.py` |
+| T5 LLM Cascade (IntentRouter) | **0.3** | Gemini (produção) | Mesmo mecanismo — NÃO usa 0.0 |
+| ReAct Loop (reasoning) | **0.3** | Gemini (produção) | `LLM_AGENT_TEMPERATURE` |
 | Uso geral (embeddings, geração) | **0.7** | Variado | `LLM_DEFAULT_TEMPERATURE` em `config.py` |
 | WSI Deterministic Scorer | — | Sem LLM | Funções puras, zero custo |
 
@@ -276,11 +275,11 @@ Sampling: 10% das interações (Sprint J1).
 
 ## 12. Integrações de LLM Disponíveis (Replit)
 
-| Provider | Status | Variáveis |
-|----------|--------|-----------|
-| Anthropic (Claude) | Ativo — primário | `ANTHROPIC_API_KEY` ou `AI_INTEGRATIONS_ANTHROPIC_API_KEY` + `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` |
-| OpenAI | Configurado — fallback | `OPENAI_API_KEY` |
-| Google Gemini | Configurado — fallback | `AI_INTEGRATIONS_GEMINI_API_KEY` + `AI_INTEGRATIONS_GEMINI_BASE_URL` |
+| Provider | Status em Produção | Variáveis |
+|----------|-------------------|-----------|
+| Google Gemini | **Ativo — único provider em produção** | `AI_INTEGRATIONS_GEMINI_API_KEY` + `AI_INTEGRATIONS_GEMINI_BASE_URL` |
+| Anthropic (Claude) | Código existe, **não ativo em produção** | `ANTHROPIC_API_KEY` ou `AI_INTEGRATIONS_ANTHROPIC_API_KEY` |
+| OpenAI | Código existe, **não ativo em produção** | `OPENAI_API_KEY` |
 
 ---
 
@@ -293,19 +292,19 @@ Sampling: 10% das interações (Sprint J1).
 - (+) Context window de 1M tokens
 - (-) Pode ser menos preciso em raciocínio complexo
 
-### ADR-LLM-002: Claude como modelo primário (lia-agent-system)
+### ADR-LLM-002: Gemini como modelo em produção (lia-agent-system)
 
-**Decisão:** Claude Sonnet 4.6 como modelo primário com cascade de confiança.
-- (+) Melhor raciocínio e tool calling
-- (+) Cascade otimiza custo (Haiku para casos simples)
-- (+) Fallbacks para OpenAI e Gemini
-- (-) Custo maior que Gemini
+**Decisão (atualizada 2026-03-26):** Produção usa exclusivamente Google Gemini. O código contém providers Claude (cascade Haiku→Sonnet→Opus) e OpenAI, mas estes não são ativados.
+- (+) Mesmo provider que `recruiter_agent_v5` — operação simplificada
+- (+) Custo menor que Claude
+- (+) Código mantém Claude/OpenAI como opção futura se necessário
+- (-) Cascade de confiança no código não reflete uso real em produção
 
 ### ADR-LLM-003: Temperature por camada
 
 **Decisão:** Duas temperaturas configuráveis em `libs/config/lia_config/config.py`:
 - `LLM_DEFAULT_TEMPERATURE = 0.7` — uso geral (embeddings, geração não-agente)
-- `LLM_AGENT_TEMPERATURE = 0.3` — cascade de agentes (usado em `_get_claude_for_model()` para Haiku/Sonnet/Opus)
+- `LLM_AGENT_TEMPERATURE = 0.3` — cascade de agentes (em produção, aplicado ao Gemini)
 - (+) Agentes determinísticos o suficiente sem perder naturalidade
 - (+) Cascade inteiro usa mesma temperature (consistência)
 - (-) Não é 0.0 puro — roteamento tem leve variação (mitigado por thresholds de confiança)
@@ -332,8 +331,8 @@ Sampling: 10% das interações (Sprint J1).
 | Cenário | Ação | Repositório |
 |---------|------|-------------|
 | Gemini indisponível | Circuit breaker 3 falhas, cooldown 30s | recruiter_agent_v5 |
-| Claude indisponível | Fallback OpenAI → Gemini | lia-agent-system |
-| Confiança < threshold | Escala: Haiku → Sonnet → Opus → humano | lia-agent-system |
+| Gemini indisponível | Código suporta fallback para Claude/OpenAI (não ativo em produção) | lia-agent-system |
+| Confiança < threshold | Cascade de modelos (código suporta Haiku→Sonnet→Opus; em produção, retry com Gemini) | lia-agent-system |
 | Contexto > 1M tokens | Compressão via `compression.py` | recruiter_agent_v5 |
 | Custo excessivo | Monitorar tracking, ajustar thresholds cascade | ambos |
 | Qualidade insuficiente | `model_override` ou ajustar cascade | ambos |

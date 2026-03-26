@@ -251,7 +251,7 @@ ats_api (Rails REST)
 
 [AI] Backend de IA da LIA persona. Processa triagens, avaliações, sourcing, voz e análises.
 
-**LLM:** Anthropic Claude (via integração modelFarm)
+**LLM:** Google Gemini (produção); código contém providers Claude/OpenAI não ativados
 **Framework:** FastAPI + LangGraph
 **Canais suportados:** WhatsApp (360dialog), Microsoft Teams
 
@@ -444,8 +444,7 @@ Bridge que permite AI coding assistants (Claude Code, Cursor) trabalhar automati
 |---------|-----------|----------------|------|
 | **WhatsApp (360dialog)** | Comunicação com candidatos | `lia-agent-system` | Webhook + API REST |
 | **Microsoft Teams** | Interface do recrutador | `recruiter_agent_v5`, `lia-agent-system` | Bot Framework |
-| **Google Gemini** | [AI] LLM para agente V5 | `recruiter_agent_v5` | API REST |
-| **Anthropic Claude** | [AI] LLM para LIA | `lia-agent-system` | API REST (modelFarm proxy) |
+| **Google Gemini** | [AI] LLM — único provider em produção (ambos repos) | `recruiter_agent_v5`, `lia-agent-system` | API REST |
 | **LangSmith** | [AI] Monitoramento de traces | `recruiter_agent_v5` | SDK Python |
 | **Elasticsearch** | Busca full-text de candidatos/vagas | `ats_api` | Searchkick gem |
 | **Redis** | Cache + filas Sidekiq + sessões | `ats_api`, `recruiter_agent_v5` | TCP |
