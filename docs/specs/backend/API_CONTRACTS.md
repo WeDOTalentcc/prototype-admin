@@ -458,19 +458,27 @@ PUT /api/v1/job-vacancies/{vacancy_id}
 DELETE /api/v1/job-vacancies/{vacancy_id}
 ```
 
-**Sub-endpoints de vaga**:
+**Sub-endpoints de vaga** (verificados em `app/api/v1/job_vacancies.py`):
 
 | Método | Path | Descrição |
 |--------|------|-----------|
-| GET | `/job-vacancies/{id}/candidates` | Candidatos da vaga |
-| GET | `/job-vacancies/{id}/funnel` | Funil da vaga |
-| GET | `/job-vacancies/{id}/analytics` | Analytics da vaga |
-| POST | `/job-vacancies/{id}/publish` | Publicar vaga |
-| POST | `/job-vacancies/{id}/pause` | Pausar vaga |
-| POST | `/job-vacancies/{id}/close` | Fechar vaga |
-| POST | `/job-vacancies/{id}/duplicate` | Duplicar vaga |
-| POST | `/job-vacancies/{id}/reopen` | Reabrir vaga |
-| GET | `/job-vacancies/{id}/report` | Relatório da vaga |
+| POST | `/job-vacancies/finalize` | Finalizar criação (linha 310) |
+| GET | `/job-vacancies/search` | Buscar vagas (linha 391) |
+| POST | `/job-vacancies/{job_id}/publish` | Publicar vaga (linha 511) |
+| POST | `/job-vacancies/{job_id}/confirm-global-search` | Confirmar busca global (linha 594) |
+| GET | `/job-vacancies/{job_id}/sourcing-status` | Status de sourcing (linha 638) |
+| GET | `/job-vacancies/{job_vacancy_id}/metrics` | Métricas da vaga (linha 719) |
+| GET | `/job-vacancies/{job_id}/analytics` | Analytics (linha 933) |
+| GET | `/job-vacancies/{job_id}/history` | Histórico (linha 1226) |
+| GET | `/job-vacancies/archetypes` | Arquétipos (linha 1324) |
+| GET | `/job-vacancies/stats/overview` | Estatísticas (linha 1570) |
+| PATCH | `/job-vacancies/{job_vacancy_id}/status` | Mudar status (linha 2281) |
+| POST | `/job-vacancies/{job_id}/duplicate` | Duplicar (linha 2736) |
+| POST | `/{vacancy_id}/close` | Fechar vaga (linha 4366) |
+| GET | `/jobs/{job_id}/report` | Relatório (linha 4558) |
+| POST | `/job-vacancies/bulk/pause` | Bulk pausar (linha 3906) |
+| POST | `/job-vacancies/bulk/resume` | Bulk retomar (linha 4005) |
+| POST | `/job-vacancies/bulk/archive` | Bulk arquivar (linha 4091) |
 
 **Vagas públicas** (sem autenticação):
 
@@ -1171,7 +1179,9 @@ Frontend → /api/lia/api/v1/<path> → Proxy → http://localhost:8000/api/v1/<
 ```
 
 **Métodos permitidos**: GET, POST, PUT, DELETE, PATCH  
-**Headers**: sanitizados, sem vazamento de stack traces  
+**Erro handling**: erros do backend retornam `{ error: data.detail || data }` com status original.  
+Erros de conexão: `{ error: "Failed to connect to LIA backend" }` com 500.  
+NÃO sanitiza headers/stack traces — expõe `data.detail` do backend (linha 66).  
 **Razão**: Replit expõe apenas porta 5000 publicamente; porta 8000 é interna
 
 **Client service**: `src/services/lia-api.ts` (base: `/api/backend-proxy`)

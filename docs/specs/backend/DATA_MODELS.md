@@ -558,28 +558,25 @@ mas as definições de campos vêm da lib interna.
 |-------|------|-------------|-----------|
 | `id` | UUID (PK) | Sim | `uuid.uuid4()` |
 | `company_id` | String(255) | Sim | Tenant — empresa dona da vaga (default: `"demo_company"`) |
-| `created_by` | UUID | Não | Usuário criador |
-| `status` | String(50) | Sim | `draft`, `active`, `paused`, `closed`, `cancelled` |
-| `creation_method` | String(50) | Não | `wizard`, `import`, `manual`, `api` |
-| `wizard_step` | Integer | Não | Passo atual no wizard (1-7) |
-| `wizard_completed` | Boolean | Não | Wizard finalizado |
-| `created_at` | DateTime | Auto | `default=datetime.utcnow` |
-| `updated_at` | DateTime | Auto | `default=datetime.utcnow, onupdate=datetime.utcnow` |
+| `status` | String(50) | Não | default `"Rascunho"` — valores em PT: `Ativa`, `Rascunho`, `Pausada`, `Concluída`, etc. (free string, sem enum constraint) |
+| `stage` | String(50) | Não | default `"Planejamento"` — `Planejamento`, `Aprovação`, `Publicada`, etc. |
+| `priority` | String(20) | Não | default `"média"` — `alta`, `média`, `baixa` |
+| `urgency_level` | Integer | Não | default `3` (1-5) |
+| `created_by` | String(255) | Não | Usuário que criou via LIA |
 
 #### Descrição do cargo
+
+Fonte: `libs/models/lia_models/job_vacancy.py` linhas 27-34
 
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
 | `title` | String(255) | Sim | Título da vaga |
-| `description` | Text | Não | Descrição completa (HTML ou Markdown) |
-| `department` | String(100) | Não | Departamento (TI, RH, Comercial) |
-| `seniority_level` | String(50) | Não | `junior`, `pleno`, `senior`, `lead`, `manager`, `director` |
-| `employment_type` | String(50) | Não | `clt`, `pj`, `temporary`, `internship`, `freelancer` |
-| `work_model` | String(50) | Não | `remote`, `hybrid`, `on_site` |
-| `location_city` | String(100) | Não | |
-| `location_state` | String(100) | Não | |
-| `location_country` | String(100) | Não | |
-| `number_of_positions` | Integer | Não | Quantidade de vagas |
+| `description` | Text | Não | Descrição completa |
+| `department` | String(100) | Não | Departamento |
+| `seniority_level` | String(50) | Não | `Júnior`, `Pleno`, `Sênior`, `Especialista` |
+| `employment_type` | String(50) | Não | `CLT`, `PJ`, `Temporary` |
+| `work_model` | String(50) | Não | `presencial`, `híbrido`, `remoto` |
+| `location` | String(255) | Não | Localização (campo único, não normalizado) |
 
 #### Requisitos
 
