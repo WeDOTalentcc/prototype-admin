@@ -344,7 +344,6 @@ Content-Type: application/json
   "conversation": {
     "id": "uuid",
     "status": "active",
-    "message_count": 2,
     "created_at": "2026-03-26T10:00:00Z",
     "updated_at": "2026-03-26T10:00:00Z"
   }
@@ -548,7 +547,7 @@ Response 200:
 **Stage transitions**:
 
 ```http
-PUT /api/v1/candidates/{candidate_id}/stage
+PATCH /api/v1/candidates/{candidate_id}/stage
 Authorization: Bearer <token>
 
 {
@@ -562,10 +561,16 @@ Authorization: Bearer <token>
 ### 4.6 Recruitment Stages
 
 ```http
-GET /api/v1/recruitment-stages/{vacancy_id}
-POST /api/v1/recruitment-stages
-PUT /api/v1/recruitment-stages/{stage_id}
-DELETE /api/v1/recruitment-stages/{stage_id}
+GET /api/v1/recruitment-stages/stages
+POST /api/v1/recruitment-stages/stages
+PUT /api/v1/recruitment-stages/stages/{stage_id}
+DELETE /api/v1/recruitment-stages/stages/{stage_id}
+PUT /api/v1/recruitment-stages/stages/{stage_id}/config
+POST /api/v1/recruitment-stages/stages/reorder
+POST /api/v1/recruitment-stages/transition
+POST /api/v1/recruitment-stages/initialize
+GET /api/v1/recruitment-stages/jobs/{job_id}/pipeline
+PUT /api/v1/recruitment-stages/jobs/{job_id}/pipeline
 ```
 
 ### 4.7 Sourcing Pipeline
@@ -584,7 +589,7 @@ Authorization: Bearer <token>
 ### 4.8 WSI — Entrevista Estruturada
 
 ```http
-POST /api/v1/wsi/start
+POST /api/v1/wsi/generate-questions
 Authorization: Bearer <token>
 
 {
@@ -602,7 +607,7 @@ Response 200:
 ```
 
 ```http
-POST /api/v1/wsi/analyze
+POST /api/v1/wsi/analyze-response
 {
   "session_id": "uuid",
   "answers": [...]
