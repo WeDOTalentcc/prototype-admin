@@ -703,6 +703,38 @@
 - **Inserção:** Click insere `{{variavel}}` no textarea
 - **States:** closed, open (lista de variáveis)
 
+#### CandidateQueriesGuide (`candidate-queries-guide.tsx`)
+- **Export:** `CandidateQueriesGuide`
+- **Função:** Popover com exemplos de queries para busca de candidatos
+- **Container:** `Popover` + `PopoverContent` + `ScrollArea`
+- **Ícones:** Lightbulb, Search, Users, BarChart3, TrendingUp, Target, Brain, Globe, Filter, MessageSquare, X, Star, UserCheck, Zap, RefreshCw, Eye, Send, Clock, Database
+- **Layout:** Lista categorizada de exemplos de queries
+- **States:** closed (trigger visível), open (popover com lista)
+
+#### LiaQueriesGuide (`lia-queries-guide.tsx`)
+- **Export:** `LiaQueriesGuide`
+- **Função:** Popover com exemplos de queries para a LIA (assistente IA)
+- **Container:** `Popover` + `PopoverContent` + `ScrollArea`
+- **Ícones:** Lightbulb, Search, Users, BarChart3, Calendar, TrendingUp, Target, FileText, Briefcase, Building, Clock, AlertCircle, CheckCircle, Star, Filter, MessageSquare, Globe, Zap, X, Brain
+- **Layout:** Lista categorizada de queries por tipo (análise, relatório, etc.)
+- **States:** closed, open (lista de queries)
+
+#### LiaSearchQueriesGuide (`lia-search-queries-guide.tsx`)
+- **Export:** `LiaSearchQueriesGuide`
+- **Função:** Popover com exemplos de queries de busca semântica
+- **Container:** `Popover` + `PopoverContent` + `ScrollArea`
+- **Ícones:** Lightbulb, Search, Users, BarChart3, TrendingUp, Target, FileText, MapPin, Clock, Globe, Star, Filter, Briefcase, GraduationCap, DollarSign, Building, UserCheck, Accessibility, X, Brain, Zap
+- **Layout:** Lista de exemplos de busca com categorias (localização, salário, skills, etc.)
+- **States:** closed, open (lista de queries)
+
+#### LiaVacancyQueriesGuide (`lia-vacancy-queries-guide.tsx`)
+- **Export:** `LiaVacancyQueriesGuide`
+- **Função:** Popover com exemplos de queries relacionadas a vagas
+- **Container:** `Popover` + `PopoverContent` + `ScrollArea`
+- **Ícones:** Lightbulb, Search, Users, BarChart3, TrendingUp, Target, Clock, Brain, X, Filter, AlertCircle
+- **Layout:** Lista de exemplos de queries para vagas
+- **States:** closed, open (lista de queries)
+
 #### AIDisclaimer (`ai-disclaimer.tsx`)
 - **Export:** `AIDisclaimer`
 - **Função:** Aviso de que o conteúdo foi gerado/assistido por IA
@@ -1580,6 +1612,123 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 - **Campos:** Canal (email/WhatsApp), mensagem personalizada, agendamento
 - **Botões:** `Button outline` (Cancelar) + `Button default` (Enviar Convite)
 - **States:** configuring, sending, sent
+
+### 10.35 RubricEvaluationModal
+- **Arquivo:** `plataforma-lia/src/components/rubric-evaluation-modal.tsx`
+- **Export:** `RubricEvaluationModal` (named + default)
+- **Container:** Overlay customizado (`fixed inset-0 z-50 bg-black/30 backdrop-blur-[1px]`)
+- **Panel:** `max-w-3xl max-h-[90vh] bg-white rounded-md shadow-xl`
+- **Header:** Nome do candidato + job title + score badge + fechar (X)
+- **Score badge:** Dynamic colors — ≥85 'Excelente' cyan, ≥70 'Bom' cyan, ≥50 'Moderado' amber, ≥30 'Fraco' coral, <30 'Inadequado' coral
+- **Decision badge:** `APROVAR_TRIAGEM` (CheckCircle cyan), `MANTER_ESPERA` (Clock amber), `NAO_PROSSEGUIR` (XCircle coral)
+
+| Seção | Componentes | Dados |
+|-------|-----------|-------|
+| Tabs de navegação | `overview` / `details` botões | 2 seções alternáveis |
+| Score Hero | Número grande + `Badge` label | Score geral + classificação |
+| Requirements Grid | Cards com ícone + badge | Por requisito: nome, prioridade, nível, evidência |
+| Rubric Levels | `Check` / `AlertTriangle` / `X` ícones | Excede, Atende, Parcial, Ausente |
+| Priority Badges | `Badge` inline | Essencial (coral bg), Importante (amber bg), Desejável (gray bg) |
+| Red Flags | Cards com status | ok (gray), warning (amber), critical (coral) |
+| Why Candidate | Lista numerada | Evidências positivas |
+| Parecer LIA | Accordion sections | Contexto fit, pontos fortes, riscos, recomendação |
+| Audit Metrics | Collapsible section | Total requirements, essential/important/desirable met, confidence, data completeness |
+
+- **Rubric style logic:**
+  - `exceeds`: bg `rgba(96,190,209,0.08)`, ícone Check gray-700
+  - `meets`: bg `rgba(96,190,209,0.04)`, ícone Check gray-700
+  - `partial`: bg `rgba(245,158,11,0.08)`, ícone AlertTriangle amber
+  - `missing`: bg `rgba(225,97,98,0.08)`, ícone X wedo-coral
+- **Footer:** `Button outline` (Rejeitar, ThumbsDown) + `Button default` (Aprovar, ThumbsUp)
+- **Loading states:** `isApproving` / `isRejecting` com `Loader2 animate-spin`
+- **Props:** `isOpen`, `onClose`, `evaluation: RubricEvaluationData`, `candidateId`, `candidateName`, `jobId`, `onApprove`, `onReject`
+- **States:** closed, open (overview tab), details tab, audit expanded, approving (loader), rejecting (loader), approved (toast success), rejected (toast)
+
+---
+
+## 11. TELA FULL DO CANDIDATO (CandidateReviewModal)
+
+- **Arquivo:** `plataforma-lia/src/components/pages/candidate-review-modal.tsx`
+- **Export:** `CandidateReviewModal` (named + default)
+- **Container:** `fixed inset-0 z-50` overlay (`bg-black/50`) + panel `bg-white m-4 rounded-md`
+- **Font:** `fontFamily: 'Open Sans, sans-serif'`
+- **Keyboard shortcuts:** `A` = Approve, `R` = Reject, `ArrowLeft/Right` = navigation
+
+### 11.1 Header
+- **Layout:** `flex items-center justify-between px-6 py-4 border-b`
+- **Back button:** `ChevronLeft w-5 h-5` + "Review Profiles" `text-sm font-medium`
+- **Job title:** `text-sm text-gray-600`
+
+### 11.2 Layout 3 Colunas
+- **Coluna Esquerda (420px):** Perfil do candidato
+- **Coluna Central (flex-1):** Critérios de avaliação + Match reasons
+- **Coluna Direita (hidden/visible):** Edição de critérios (overlay)
+
+### 11.3 Coluna Esquerda — Perfil
+
+| Elemento | Componente | Estilo |
+|----------|-----------|--------|
+| Nome | `h2 text-xl font-semibold text-gray-950` | Open Sans |
+| LinkedIn | `Linkedin w-5 h-5 text-[#0077B5]` | Link externo |
+| Localização | `MapPin w-4 h-4` + texto `text-sm text-gray-600` | — |
+| Cargo atual | `Briefcase w-4 h-4` + "Title at Company" `text-sm text-gray-800` | Company logo se disponível |
+| Educação | `GraduationCap w-4 h-4` + texto `text-sm text-gray-600` | — |
+| Full Profile btn | `Button variant="outline" size="sm" text-xs` | `ExternalLink w-3 h-3` |
+
+#### Tabs de Perfil (3 tabs)
+| Tab | Dados |
+|-----|-------|
+| Experience | Highlights (grid 3-col bg-gray-50), Experience stats (grid 3-col), Timeline de experiências |
+| Education | Lista de formações (institution, degree, period) |
+| Skill Map | Skills + Languages em `Badge variant="outline" text-xs` |
+
+#### Experience Highlights (grid)
+- **Card:** `p-3 bg-gray-50 rounded-md border border-gray-100`
+- **Título:** `text-xs font-semibold text-gray-950`
+- **Descrição:** `text-[11px] text-gray-600 line-clamp-2`
+
+#### Experience Stats (grid 3-col)
+- **Label:** `text-[11px] text-gray-600 uppercase tracking-wide`
+- **Value:** `text-sm font-semibold text-gray-950`
+- **Campos:** Average Tenure, Current Tenure, Total Experience
+
+#### Experience Timeline
+- **Card:** `pl-6 relative` com `absolute left-0 top-2 w-2 h-2 rounded-full bg-gray-300`
+- **Company:** `img w-5 h-5 rounded` ou `Building2 w-4 h-4`
+- **Title:** `text-sm font-medium text-gray-950`
+- **Period:** `text-[11px] text-gray-600`
+- **Skills:** `Badge variant="outline" text-[10px]`
+- **Promotion:** `Badge text-[10px] bg-amber-50 text-amber-700 border-amber-200` com `Star w-3 h-3`
+
+### 11.4 Coluna Central — Avaliação
+
+| Elemento | Componente | Detalhes |
+|----------|-----------|---------|
+| Criteria counter | `text-sm font-medium` | "Your Criteria (X)" |
+| Edit button | `Button variant="ghost" size="sm"` + `Edit2 w-4 h-4` | Abre panel de edição |
+| Criteria list | `Badge` por critério | Pinned (`Star fill w-3`) e normais |
+| Match reasons | `Card bg-white border-gray-200` | Por critério: explanation + score bar |
+| Score bar (match) | `div h-1.5 rounded-full bg-gray-100` | Fill: green se isGoodMatch, red senão |
+| Good match indicator | `CheckCircle2 w-4 h-4 text-green-600` | — |
+| Bad match indicator | `XIcon w-4 h-4 text-red-500` | — |
+
+### 11.5 Footer de Ação
+- **Layout:** `border-t border-gray-200 bg-white px-6 py-4`
+- **Navigation:** `ChevronLeft`/`ChevronRight` arrows + `Badge variant="outline" text-xs` (X de Y)
+- **Action buttons:** `Button` (Reject, XIcon, border-red-200 hover:bg-red-50) + `Button` (Approve, Check, bg-gray-900)
+- **States:** navigating (prev/next), approving (action + auto-advance), rejecting (action + auto-advance)
+
+### 11.6 Panel de Edição de Critérios (overlay)
+- **Trigger:** Edit button na coluna central
+- **Layout:** `fixed inset-0 z-50 bg-black/50` + panel `bg-white rounded-md`
+- **Elementos:**
+  - Lista de critérios com `GripVertical` drag handle
+  - `Input` para adicionar novo critério
+  - `Button` (Save, `Save w-4 h-4 bg-gray-900`)
+  - `Button` (Cancel, `X w-4 h-4`)
+  - Presets: `DEFAULT_PRESETS` (Tech Senior, Product Manager, Design Lead)
+- **Ações por critério:** Pin (`Star`), Delete (`Trash2`)
+- **States:** editing, reordering (drag), saving
 
 ---
 
