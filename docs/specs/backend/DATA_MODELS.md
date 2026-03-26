@@ -684,7 +684,7 @@ mas as definições de campos vêm da lib interna.
 | `match_score` | Float | Não | Score de match com vaga |
 | `archetype` | String(100) | Não | Arquétipo identificado |
 | `tags` | JSON | Não | Tags automáticas |
-| `embedding` | Vector(1536) | Não | pgvector para busca semântica híbrida |
+| _nota_ | — | — | pgvector é usado para busca semântica via `CandidateSearch`, não diretamente na tabela `candidates` |
 
 **Anonimização para LLM**: Antes de enviar candidatos ao LLM, `anonymize_for_llm()` substitui campos PII:
 
@@ -696,27 +696,31 @@ anonymize_for_llm(candidates)
 
 ### 3.4 Tabela: `vacancy_candidates` (Tabela de junção)
 
-> **Model**: `lia-agent-system/app/models/candidate.py` (class `VacancyCandidate`)
+> **Model**: `libs/models/lia_models/candidate.py` (class `VacancyCandidate`, linha 356)
 
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
-| `id` | UUID (PK) | Sim | |
-| `vacancy_id` | UUID (FK) | Sim | `→ job_vacancies.id` |
-| `candidate_id` | UUID (FK) | Sim | `→ candidates.id` |
-| `company_id` | String(255) | Sim | Tenant |
-| `current_stage` | String(100) | Sim | Estágio atual no pipeline |
-| `previous_stage` | String(100) | Não | Estágio anterior |
-| `stage_changed_at` | DateTime | Não | Última mudança de estágio |
-| `status` | String(50) | Sim | `active`, `rejected`, `hired`, `withdrawn` |
-| `rejection_reason` | String(255) | Não | Motivo da rejeição |
-| `match_score` | Float | Não | Score de match (0-100) |
-| `wsi_score` | Float | Não | Score WSI (0-100) |
-| `lia_recommendation` | String(50) | Não | `approved`, `pending_review`, `not_approved` |
-| `recruiter_notes` | Text | Não | Notas do recrutador |
-| `source` | String(100) | Não | Origem da associação |
-| `applied_at` | DateTime | Não | Data da candidatura |
-| `created_at` | DateTime | Auto | |
-| `updated_at` | DateTime | Auto | |
+| `id` | UUID (PK) | Sim | `uuid.uuid4()` |
+| `vacancy_id` | UUID | Sim | `index=True` |
+| `candidate_id` | UUID | Sim | `index=True` |
+| `company_id` | String(255) | Sim | default `"demo_company"`, `index=True` |
+| `source` | String(50) | Sim | default `"local"` |
+| `origin` | String(50) | Não | default `"web"`, `index=True` |
+| `lia_score` | Float | Não | Score LIA |
+| `match_percentage` | Float | Não | Percentual de match |
+| `status` | String(50) | Não | default `"sourced"`, `index=True` |
+| `stage` | String(50) | Não | default `"initial"`, `index=True` |
+| `added_by` | String(255) | Não | |
+| `notes` | Text | Não | |
+| `additional_data` | JSON | Não | default `{}` |
+| `rejected_by_human` | Boolean | Não | LGPD art. 20 — Human Review Gate (L3) |
+| `human_reviewer_id` | String(255) | Não | |
+| `scheduled_deletion_at` | DateTime | Não | LGPD retention policy, `index=True` |
+| `stage_entered_at` | DateTime | Não | Quando entrou no estágio atual, `index=True` |
+| `created_at` | DateTime | Auto | `default=datetime.utcnow`, `index=True` |
+| `updated_at` | DateTime | Auto | `default=datetime.utcnow, onupdate=datetime.utcnow` |
+
+**Unique constraint**: `uq_vacancy_candidate (vacancy_id, candidate_id)`
 
 #### Progressão de estágios (`STAGE_PROGRESSION_ORDER`)
 

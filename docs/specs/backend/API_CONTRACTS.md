@@ -1135,7 +1135,7 @@ LLMService
 | Controle | Valor | Escopo |
 |----------|-------|--------|
 | Token budget por empresa | Configurável via admin | Per `company_id` per month |
-| Rate limit LLM endpoints | 20 req/min | Per user |
+| Rate limit (all endpoints) | 600 req/min per user, 3000/min per company | Via `rate_limiter.py` |
 | Max tokens por request | 8192 (output) | Per request |
 | Tracking | LangSmith traces | Per request — `configure_langsmith()` |
 
@@ -1156,16 +1156,16 @@ Feature flag: `LLM_PROMPT_PII_STRIPPING_ENABLED`
 O frontend Next.js proxia requests para o backend via API route:
 
 ```
-Frontend → /api/lia/api/v1/chat → Proxy → http://localhost:8000/api/v1/chat
+Frontend → /api/backend-proxy/chat → Proxy → http://localhost:8000/api/v1/chat
 ```
 
-**Implementação**: `src/app/api/lia/[...path]/route.ts`
+**Implementação**: `src/app/api/backend-proxy/[...path]/route.ts`
 
 **Métodos permitidos**: GET, POST, PUT, DELETE, PATCH  
 **Headers**: sanitizados, sem vazamento de stack traces  
 **Razão**: Replit expõe apenas porta 5000 publicamente; porta 8000 é interna
 
-**Client service**: `src/services/lia-api.ts`
+**Client service**: `src/services/lia-api.ts` (base: `/api/backend-proxy`)
 
 ```typescript
 import { liaApi } from '@/services/lia-api'
@@ -1298,12 +1298,17 @@ No `lifespan` do FastAPI (em `main.py`), os seguintes serviços são inicializad
 
 ## 12. Rate Limiting
 
+Fonte: `app/middleware/rate_limiter.py` (Redis sliding window)
+
 | Tier | Limite | Escopo |
 |------|--------|--------|
-| Default | 100 req/min | Per IP |
-| Authenticated | 300 req/min | Per user |
-| Admin | 1000 req/min | Per user (admin role) |
-| LLM endpoints | 20 req/min | Per user — proteção de custo |
+| Per user (minuto) | 600 req/min | Per `user_id` |
+| Per empresa (minuto) | 3000 req/min | Per `company_id` |
+| Per empresa (hora) | 60000 req/hora | Per `company_id` |
+
+Fallback: in-memory rate limiting quando Redis indisponível.  
+Headers: `X-RateLimit-Limit` (600), `X-RateLimit-Remaining`, `X-RateLimit-Reset`.  
+Retry: `Retry-After: 300` (5 min) para limites horários, `Retry-After: 60` para minuto.
 
 ---
 
