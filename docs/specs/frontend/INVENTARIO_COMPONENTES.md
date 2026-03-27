@@ -1,7 +1,7 @@
 # Inventário Completo de Componentes — Plataforma LIA (React)
 
-> **Última atualização:** 2026-03-27
-> **Total:** 465 componentes em 80 diretórios
+> **Última atualização:** 2026-03-27 (Fase 0 aplicada — código morto removido)
+> **Total:** 460 componentes em 76 diretórios (era 465 — removidos 5 arquivados + sedPT8vmF + 7 stories)
 > **Localização:** `plataforma-lia/src/components/`
 > **Stack:** React 19 + Next.js 15 + Tailwind CSS + shadcn/ui (Radix UI)
 
@@ -695,9 +695,10 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 > Ordenado por: menor risco primeiro, maior impacto na conversão Vue.
 > Nenhuma fase altera o visual do produto. Todas são refatorações internas.
 
-### Fase 0 — Limpeza de Código Morto
+### Fase 0 — Limpeza de Código Morto ✅ CONCLUÍDA (2026-03-27)
 
 **Esforço:** 1 dia | **Risco:** Zero | **Impacto visual:** Nenhum
+**Resultado:** 9.820 linhas removidas, 16 arquivos deletados, 0 imports quebrados
 
 | Ação | Arquivos | Linhas | Como fazer |
 |------|----------|--------|-----------|
