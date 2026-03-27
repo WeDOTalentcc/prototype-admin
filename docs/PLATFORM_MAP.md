@@ -527,7 +527,7 @@ Bridge que permite AI coding assistants (Claude Code, Cursor) trabalhar automati
 | `DESIGN_SYSTEM.md` | `docs/specs/frontend/DESIGN_SYSTEM.md` | Criado |
 | `UX_PATTERNS.md` | `docs/specs/frontend/UX_PATTERNS.md` | Criado |
 | `DIAGNOSTICO_REACT_VUE.md` | `docs/specs/frontend/DIAGNOSTICO_REACT_VUE.md` | Criado — 114 itens comparativos com coluna de decisão |
-| `INVENTARIO_COMPONENTES.md` | `docs/specs/frontend/INVENTARIO_COMPONENTES.md` | Criado — 465 componentes catalogados em 16 categorias |
+| `INVENTARIO_COMPONENTES.md` | `docs/specs/frontend/INVENTARIO_COMPONENTES.md` | Criado — 465 componentes + análise de otimização + plano de 6 fases |
 | `QA_PROTOCOL.md` | `docs/specs/qa/QA_PROTOCOL.md` | Criado |
 | `AI_QA_PROTOCOL.md` | `docs/specs/qa/AI_QA_PROTOCOL.md` | Criado |
 | `GOLDEN_DATASET.md` | `docs/specs/qa/GOLDEN_DATASET.md` | Criado |

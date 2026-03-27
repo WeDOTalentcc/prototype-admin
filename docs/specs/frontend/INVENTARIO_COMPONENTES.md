@@ -450,3 +450,474 @@ Configurações, gestão de empresa, equipe e preferências.
 | 8 | `command-palette` | 2.121 | Paleta de comandos Ctrl+K |
 | 9 | `CommunicationHub` | 1.796 | Hub de comunicações |
 | 10 | `personas-tab` (archived) | 1.687 | Tab de personas (arquivada) |
+
+---
+
+## 17. Análise de Potencial de Otimização
+
+> Dados extraídos automaticamente do codebase em 2026-03-27.
+> Nenhuma das otimizações abaixo altera o visual do produto — são refatorações internas.
+
+### 17.1 Cores Hardcoded — 298 cores hex em 1.607 linhas
+
+O maior problema de padronização. Cores são escritas diretamente nos componentes em vez de usar tokens do `design-tokens.css` ou classes Tailwind. Isso significa que uma mudança de cor no design system **não se propaga** automaticamente.
+
+**Tabela: Top 30 cores mais usadas com mapeamento para token**
+
+| # | Hex Hardcoded | Usos | Token CSS Equivalente | Classe Tailwind Equivalente | Contexto |
+|---|--------------|------|----------------------|----------------------------|----------|
+| 1 | `#374151` | 120 | `--lia-border-default` | `text-gray-700` / `border-gray-700` | Borders, texto secundário escuro |
+| 2 | `#FFFFFF` | 96 | `--lia-bg-primary` | `bg-white` / `text-white` | Backgrounds, texto em fundo escuro |
+| 3 | `#6B7280` | 78 | `--wedo-text-muted` | `text-gray-500` | Placeholders, hints, labels muted |
+| 4 | `#111827` | 75 | `--lia-text-primary` | `text-gray-900` | Títulos, texto principal |
+| 5 | `#F59E0B` | 70 | `--wedo-amber` | `text-amber-500` | Warnings, alertas |
+| 6 | `#D1D5DB` | 69 | `--lia-text-disabled` | `text-gray-300` | Disabled, dividers claros |
+| 7 | `#E5E7EB` | 65 | `--lia-border-subtle` | `border-gray-200` | Borders sutis |
+| 8 | `#e5e7eb` | 51 | (duplicata case-insensitive do #7) | `border-gray-200` | Mesmo uso, casing diferente |
+| 9 | `#EF4444` | 48 | — | `text-red-500` | Error, destructive |
+| 10 | `#9CA3AF` | 46 | `--lia-text-tertiary` | `text-gray-400` | Texto terciário, ícones muted |
+| 11 | `#F3F4F6` | 42 | `--lia-bg-tertiary` | `bg-gray-100` | Backgrounds hover, disabled |
+| 12 | `#1a1a1a` | 38 | — | `text-gray-900` (aprox.) | Dark mode, fundo escuro |
+| 13 | `#5DA47A` | 36 | `--wedo-green` | — (custom) | Candidatos, sucesso WeDo |
+| 14 | `#EEEEEE` | 35 | — | `bg-gray-200` (aprox.) | Backgrounds neutros |
+| 15 | `#22C55E` | 33 | — | `text-green-500` | Success |
+| 16 | `#8B5CF6` | 28 | `--wedo-purple` (aprox.) | `text-violet-500` | Insights, premium |
+| 17 | `#10B981` | 27 | — | `text-emerald-500` | Score alto, WSI positivo |
+| 18 | `#F5F5F5` | 26 | — | `bg-neutral-100` | Backgrounds neutros |
+| 19 | `#1F2937` | 24 | `--wedo-text-body` | `text-gray-800` | Texto corpo |
+| 20 | `#60BED1` | 22 | `--wedo-cyan` | — (custom) | LIA, IA, destaque inteligente |
+| 21 | `#E8E8E8` | 18 | — | `bg-gray-200` (aprox.) | Dividers, fundos |
+| 22 | `#D5BFA8` | 18 | — | — | Cor sépia do pipeline |
+| 23 | `#3B82F6` | 18 | — | `text-blue-500` | Info, links |
+| 24 | `#0A66C2` | 18 | — | — | LinkedIn blue (manter hardcoded) |
+| 25 | `#999999` | 17 | — | `text-gray-400` (aprox.) | Legado, cinza genérico |
+| 26 | `#A8CED5` | 16 | `--lia-info-light` | — | Background info sutil |
+| 27 | `#1f2937` | 16 | (duplicata case-insensitive do #19) | `text-gray-800` | Mesmo uso |
+| 28 | `#E5A853` | 15 | `--lia-cat-interviews` | — | Entrevistas, LIA |
+| 29 | `#D19960` | 15 | `--wedo-orange` | — (custom) | Alertas WeDo |
+| 30 | `#6B9BD1` | 15 | — | — | Cor de pipeline específica |
+
+**Top 20 arquivos com mais cores hardcoded:**
+
+| # | Arquivo | Cores hardcoded | Comentário |
+|---|---------|----------------|-----------|
+| 1 | `search/smart-search-input.tsx` | 151 | Maior ofensor — paleta de filtros e sugestões |
+| 2 | `ui/status-badge.tsx` | 90 | Paleta de 17 etapas do pipeline |
+| 3 | `pages/job-kanban-page.tsx` | 87 | Cores de colunas e cards do kanban |
+| 4 | `settings/archived/onboarding-wizard.tsx` | 63 | Arquivo arquivado — deletar resolve |
+| 5 | `triagem-details-modal.tsx` | 47 | Cores de scores e status |
+| 6 | `pages/jobs-page.tsx` | 45 | Cores de status de vagas |
+| 7 | `email-templates/report-email-templates.tsx` | 44 | Cores de templates HTML |
+| 8 | `pages/big-five-dashboard-page.tsx` | 39 | Radar chart cores |
+| 9 | `rubric-evaluation-modal.tsx` | 37 | Escala de avaliação |
+| 10 | `pages/candidates-page.tsx` | 37 | Cores de cards e badges |
+| 11 | `ui/prompt-suggestions-dock.tsx` | 35 | Paleta de sugestões |
+| 12 | `expandable-ai-prompt.tsx` | 34 | Cores de ações e contexto |
+| 13 | `candidate-preview.tsx` | 30 | Seções e scores |
+| 14 | `candidate-page.tsx` | 30 | Página do candidato |
+| 15 | `ui/lia-search-queries-guide.tsx` | 28 | Guia de queries |
+| 16 | `lia-float/LiaSuperPrompt.tsx` | 28 | Prompt flutuante |
+| 17 | `ui/lia-vacancy-queries-guide.tsx` | 27 | Guia de queries de vagas |
+| 18 | `ui/lia-queries-guide.tsx` | 27 | Guia de queries LIA |
+| 19 | `ui/candidate-queries-guide.tsx` | 27 | Guia de queries candidatos |
+| 20 | `agent-control-center/index.tsx` | 27 | Painel de agentes |
+
+### 17.2 Valores Arbitrários Tailwind — 4.765 ocorrências
+
+Valores como `text-[11px]`, `w-[300px]`, `h-[42px]` escritos diretamente em vez de usar classes do design system. Impossibilita mudança global de tamanhos.
+
+**Distribuição de tamanhos de texto arbitrários:**
+
+| Valor | Usos | % do total | Mapeamento proposto |
+|-------|------|-----------|-------------------|
+| `text-[11px]` | 2.307 | 48.4% | Criar `text-ui` no tailwind.config |
+| `text-[10px]` | 1.670 | 35.0% | Criar `text-micro` |
+| `text-[9px]` | 368 | 7.7% | Criar `text-tiny` (avaliar remoção — acessibilidade) |
+| `text-[13px]` | 186 | 3.9% | Criar `text-base-ui` ou usar `text-sm` |
+| `text-[14px]` | 65 | 1.4% | Usar `text-sm` (já é 14px no Tailwind default) |
+| `text-[8px]` | 25 | 0.5% | Eliminar — muito pequeno para WCAG AA |
+| `text-[16px]` | 23 | 0.5% | Usar `text-base` |
+| `text-[18px]` | 22 | 0.5% | Usar `text-lg` |
+| `text-[12px]` | 18 | 0.4% | Usar `text-xs` |
+| `text-[20px]` | 13 | 0.3% | Usar `text-xl` |
+| `text-[7px]` | 1 | — | Eliminar |
+| Outros (15, 24, 28, 32px) | 12 | — | Usar classes Tailwind padrão |
+| **Total** | **4.710** | | |
+
+**Distribuição de larguras arbitrárias (top 10):**
+
+| Valor | Usos | Mapeamento proposto |
+|-------|------|-------------------|
+| `w-[200px]` | 29 | `w-[12.5rem]` ou criar token `w-sidebar-content` |
+| `w-[300px]` | 23 | `w-[18.75rem]` ou criar token `w-panel-sm` |
+| `w-[100px]` | 14 | `w-24` (96px) ou `w-[6.25rem]` |
+| `w-[180px]` | 13 | Criar token se recorrente |
+| `w-[350px]` | 12 | Criar token `w-panel-md` |
+| `w-[400px]` | 10 | `w-[25rem]` ou criar token `w-panel-lg` |
+| `w-[500px]` | 8 | Criar token `w-panel-xl` |
+| `w-[280px]` | 8 | `w-72` (288px, próximo) |
+| `w-[80px]` | 7 | `w-20` (80px — equivalente exato) |
+| `w-[420px]` | 7 | Criar token se recorrente |
+
+**Distribuição de alturas arbitrárias (top 10):**
+
+| Valor | Usos | Mapeamento proposto |
+|-------|------|-------------------|
+| `h-[200px]` | 16 | `h-[12.5rem]` ou token `h-chart` |
+| `h-[100px]` | 16 | `h-24` (96px, próximo) |
+| `h-[400px]` | 13 | Token `h-panel-lg` |
+| `h-[300px]` | 11 | Token `h-panel-md` |
+| `h-[180px]` | 11 | Token `h-card-lg` |
+| `h-[120px]` | 9 | `h-[7.5rem]` |
+| `h-[280px]` | 7 | `h-72` (288px, próximo) |
+| `h-[60px]` | 6 | `h-[3.75rem]` ou `h-15` |
+| `h-[80px]` | 5 | `h-20` (80px — equivalente exato) |
+| `h-[56px]` | 5 | `h-14` (56px — equivalente exato) |
+
+### 17.3 Componentes Gigantes — 37 arquivos > 1.000 linhas = 118.037 linhas
+
+Representam **94% de todo o código** de componentes. Cada um mistura lógica de negócio, state management, UI, e estilo. Dificulta testes, manutenção e conversão para Vue.
+
+| # | Componente | Linhas | Categoria | Proposta de Split |
+|---|-----------|--------|-----------|-----------------|
+| 1 | `expanded-chat-modal` | 11.824 | Chat | → WizardChat, MessageList, InputBar, ToolResults, StageManager, StateReducer, FieldSync, JobPreview (~8-10 sub) |
+| 2 | `pages/job-kanban-page` | 10.377 | Pipeline | → KanbanBoard, KanbanColumn, CandidateCard, Filters, BulkActions, StageConfig, Analytics (~7 sub) |
+| 3 | `pages/candidates-page` | 10.329 | Candidatos | → CandidateTable, FilterPanel, BulkActions, PreviewPanel, SearchBar, Pagination (~6 sub) |
+| 4 | `pages/jobs-page` | 8.046 | Vagas | → JobsTable, JobCard, Filters, Stats, BulkActions, CreateButton (~6 sub) |
+| 5 | `candidate-preview` | 6.723 | Candidatos | → ProfileHeader, Timeline, Skills, WSI, Notes, Actions, Tabs (~7 sub) |
+| 6 | `pages/chat-page` | 5.592 | Chat | → ChatContainer, MessageList, InputBar, VoiceChat, Suggestions (~5 sub) |
+| 7 | `search/smart-search-input` | 5.475 | Search | → SearchBar, FilterChips, Suggestions, BooleanBuilder, Results (~5 sub) |
+| 8 | `settings/CompanyTeamHub` | 5.235 | Settings | → TeamTable, InviteModal, RoleManager, Permissions, ActivityLog (~5 sub) |
+| 9 | `pages/settings-page` | 4.449 | Settings | → TabManager + cada tab como componente separado (~8 sub) |
+| 10 | `expandable-ai-prompt` | 4.308 | LIA | → PromptInput, SuggestionDock, AttachmentBar, ActionChips (~4 sub) |
+| 11 | `pages/dashboards-page` | 3.283 | Dashboard | → DashboardGrid, MetricCards, Charts, Filters (~4 sub) |
+| 12 | `search/advanced-filters-modal` | 3.282 | Search | → FilterGroups, FilterField, SavedFilters (~3 sub) |
+| 13 | `candidate-page` | 2.504 | Candidatos | → ProfileSections, Timeline, Actions (~3 sub) |
+| 14 | `screening-config/ScreeningConfigManager` | 2.402 | Triagem | → ConfigForm, QuestionEditor, Preview (~3 sub) |
+| 15 | `settings/goals-management` | 2.302 | Settings | → GoalsList, GoalForm, GoalProgress (~3 sub) |
+| 16 | `pages/tasks-page` | 2.192 | Tasks | → TaskList, TaskForm, TaskFilters (~3 sub) |
+| 17 | `quick-actions-modals` | 2.076 | Modals | → Cada modal como componente individual (~5 sub) |
+| 18 | `modals/edit-job-modal` | 1.989 | Modals | → Tabs de edição como sub-componentes (~4 sub) |
+| 19 | `settings/archived/onboarding-wizard` | 1.905 | Archived | → DELETAR (código morto) |
+| 20 | `settings/CommunicationHub` | 1.796 | Settings | → TemplateList, TemplateEditor, Preview (~3 sub) |
+| 21 | `pages/indicators-page` | 1.753 | Dashboard | → IndicatorCards, Charts, Filters (~3 sub) |
+| 22 | `jobs/JobEditTab` | 1.727 | Vagas | → FormSections, FieldGroups (~3 sub) |
+| 23 | `talent-funnel-tabs/_archived/personas-tab` | 1.687 | Archived | → DELETAR (código morto) |
+| 24 | `pages/ats-integrations-page` | 1.522 | Settings | → IntegrationCard, ConfigForm (~2 sub) |
+| 25 | `modals/job-insights-modal` | 1.496 | Modals | → InsightsSections, Charts (~3 sub) |
+| 26 | `wsi/JDEvaluationPanel` | 1.312 | WSI | → EvalForm, ScoreDisplay, QuestionList (~3 sub) |
+| 27 | `talent-funnel-tabs/_archived/mapping-tab` | 1.271 | Archived | → DELETAR (código morto) |
+| 28 | `settings/BenefitsTab` | 1.204 | Settings | → BenefitsList, BenefitForm (~2 sub) |
+| 29 | `triagem-details-modal` | 1.194 | Triagem | → TriagemHeader, ResultPanel, Actions (~3 sub) |
+| 30 | `modals/new-candidate-unified-modal` | 1.162 | Modals | → CandidateForm, CVUpload, Preview (~3 sub) |
+| 31 | `modals/job-status-modal` | 1.151 | Modals | → StatusForm, Checklist (~2 sub) |
+| 32 | `lia-screening-guide` | 1.131 | LIA | → GuideSteps, Examples (~2 sub) |
+| 33 | `pages/candidates/CandidatesFilterPanel` | 1.124 | Candidatos | → FilterGroups, FilterField (~2 sub) |
+| 34 | `talent-funnel-tabs/_archived/pipelines-tab` | 1.069 | Archived | → DELETAR (código morto) |
+| 35 | `modals/job-compare-modal` | 1.059 | Modals | → CompareGrid, MetricRow (~2 sub) |
+| 36 | `settings/GoalsPlanningHub` | 1.050 | Settings | → PlanGrid, GoalCard (~2 sub) |
+| 37 | `settings/CompanyDataSection` | 1.036 | Settings | → DataForm, DataCards (~2 sub) |
+
+### 17.4 Código Morto — ~7.000 linhas em 8 arquivos
+
+Componentes em pastas `archived/` ou `_archived/` que não são referenciados por nenhuma rota ativa.
+
+| # | Arquivo | Linhas | Agravante |
+|---|---------|--------|----------|
+| 1 | `settings/archived/onboarding-wizard.tsx` | 1.905 | 63 cores hardcoded — o 4º pior ofensor |
+| 2 | `talent-funnel-tabs/_archived/personas-tab.tsx` | 1.687 | Importa Chart.js desnecessariamente |
+| 3 | `talent-funnel-tabs/_archived/mapping-tab.tsx` | 1.271 | Importa Chart.js |
+| 4 | `talent-funnel-tabs/_archived/pipelines-tab.tsx` | 1.069 | Importa Chart.js |
+| 5 | `pages/archived/learning-dashboard-page.tsx` | ~500 | Dashboard não utilizado |
+| 6 | `pages/archived/jobs-page-dashboards-archived.tsx` | ~400 | Versão antiga da page |
+| 7 | `archived/tabs-preview-vaga/lia-metrics-tab.tsx` | 321 | Tab removida |
+| 8 | `archived/tabs-preview-vaga/screening-script-tab.tsx` | 671 | Tab removida |
+
+**Ação:** Deletar todos. Zero impacto no produto. Reduz ~7.000 linhas e elimina imports desnecessários de Chart.js.
+
+**Outros arquivos mortos:**
+- `ui/sedPT8vmF` — arquivo espúrio com nome aleatório. Deletar.
+- `ui/badge.stories.tsx`, `ui/button.stories.tsx`, `ui/card.stories.tsx`, `ui/dialog.stories.tsx`, `ui/input.stories.tsx`, `ui/select.stories.tsx` — 6 story files, Storybook instalado mas sem uso ativo. Avaliar se vale manter.
+
+### 17.5 Duplicação de Badges e Status — 7 componentes similares
+
+| # | Componente | Linhas | Função | Problema |
+|---|-----------|--------|--------|---------|
+| 1 | `ui/badge.tsx` | 102 | Badge primitivo, 8 variantes | Base correta, sem problemas |
+| 2 | `ui/status-badge.tsx` | 601 | Badge de status do pipeline | 90 cores hardcoded, 17 tons de pipeline inline |
+| 3 | `ui/setup-alert-badge.tsx` | 207 | Badge de setup pendente | Poderia usar badge.tsx como base |
+| 4 | `job-creation/field-origin-badge.tsx` | 122 | Badge de origem (manual/IA) | Poderia usar badge.tsx como base |
+| 5 | `wizard/suggestion-badge.tsx` | 146 | Badge de sugestão IA | Poderia usar badge.tsx como base |
+| 6 | `screening/auto-screening-badge.tsx` | ~60 | Badge de screening automático | Poderia usar badge.tsx como base |
+| 7 | `ui/chat-status-indicators.tsx` | 171 | Indicadores de status do chat | Padrão diferente mas relacionado |
+
+**Recomendação:** Consolidar para 3 componentes:
+1. `badge.tsx` — primitivo (manter como está)
+2. `status-badge.tsx` — refatorar para usar tokens e badge.tsx como base
+3. `indicator.tsx` — estados temporários (chat, loading)
+
+### 17.6 Modais/Dialogs — 154 arquivos
+
+154 componentes importam ou implementam Modal, Dialog, Drawer ou Sheet. Muitos reimplementam o mesmo padrão:
+- Overlay com fundo escuro
+- Formulário com campos
+- Botões Cancel/Submit
+- Validação e loading state
+
+**Recomendação:** Criar padrão composable `FormDialog` que receba um schema de campos e gere o formulário automaticamente. Reduziria boilerplate em ~50% dos modais.
+
+### 17.7 Inline Styles — 249 arquivos
+
+249 dos 465 arquivos (54%) usam `style={}` inline. Problemas:
+- Não responde a dark mode via classes CSS
+- Não é responsivo
+- Não é portável para Vue (onde scoped styles são preferidos)
+- Dificulta override e customização
+
+**Recomendação:** Converter gradualmente para classes Tailwind. Priorizar os componentes que aparecem em dark mode.
+
+### 17.8 Resumo Quantitativo
+
+| Problema | Escopo | Impacto na manutenção | Impacto na conversão Vue |
+|----------|--------|----------------------|------------------------|
+| 298 cores hardcoded | 1.607 linhas | **Alto** — cor muda no DS, não propaga | **Crítico** — cada cor precisa tradução manual |
+| 4.765 valores arbitrários | text-[Xpx], w-[px], h-[px] | **Médio** — impossível mudar escala global | **Alto** — não tem equivalente no Vuetify |
+| 37 componentes >1.000 linhas | 118.037 linhas (94% do total) | **Alto** — difícil testar e debugar | **Crítico** — impossível converter monólitos |
+| 8 arquivos mortos | ~7.000 linhas | **Baixo** — ocupam espaço, confundem grep | **Nenhum** — não converter |
+| 7 badges duplicados | ~1.400 linhas | **Médio** — inconsistência visual | **Alto** — precisa decidir qual é o canônico |
+| 154 modais sem padrão | Espalhados | **Médio** — cada modal reinventa a roda | **Alto** — 154 conversões individuais |
+| 249 arquivos com inline style | ~54% dos arquivos | **Alto** — dark mode quebra | **Crítico** — Vue usa scoped styles |
+
+---
+
+## 18. Plano de Otimização em 6 Fases
+
+> Ordenado por: menor risco primeiro, maior impacto na conversão Vue.
+> Nenhuma fase altera o visual do produto. Todas são refatorações internas.
+
+### Fase 0 — Limpeza de Código Morto
+
+**Esforço:** 1 dia | **Risco:** Zero | **Impacto visual:** Nenhum
+
+| Ação | Arquivos | Linhas | Como fazer |
+|------|----------|--------|-----------|
+| Deletar `settings/archived/` | 1 arquivo | 1.905 | `rm -rf` |
+| Deletar `talent-funnel-tabs/_archived/` | 3 arquivos | 4.027 | `rm -rf` |
+| Deletar `pages/archived/` | 2 arquivos | ~900 | `rm -rf` |
+| Deletar `archived/tabs-preview-vaga/` | 2 arquivos (+README) | ~992 | `rm -rf` |
+| Deletar `ui/sedPT8vmF` | 1 arquivo | ? | `rm` |
+| Total | **9 arquivos** | **~7.800** | |
+
+**Verificação pós-limpeza:** `npm run build` deve passar sem erros. Se algum import quebrar, remover o import (significa que algo já estava importando código morto).
+
+### Fase 1 — Escala Tipográfica
+
+**Esforço:** 2 dias | **Risco:** Baixo | **Impacto visual:** Nenhum (mesmos pixels)
+
+**Passo 1 — Adicionar tokens ao `tailwind.config.ts`:**
+
+```typescript
+fontSize: {
+  'ui': ['0.6875rem', { lineHeight: '1.4' }],    // 11px — substitui 2.307 usos
+  'micro': ['0.625rem', { lineHeight: '1.3' }],  // 10px — substitui 1.670 usos
+  'tiny': ['0.5625rem', { lineHeight: '1.2' }],  // 9px — substitui 368 usos (avaliar)
+  'base-ui': ['0.8125rem', { lineHeight: '1.5' }], // 13px — substitui 186 usos
+}
+```
+
+**Passo 2 — Find/replace global:**
+
+| De | Para | Usos | Comando |
+|----|------|------|---------|
+| `text-[11px]` | `text-ui` | 2.307 | `sed -i 's/text-\[11px\]/text-ui/g'` |
+| `text-[10px]` | `text-micro` | 1.670 | `sed -i 's/text-\[10px\]/text-micro/g'` |
+| `text-[9px]` | `text-tiny` | 368 | `sed -i 's/text-\[9px\]/text-tiny/g'` |
+| `text-[13px]` | `text-base-ui` | 186 | `sed -i 's/text-\[13px\]/text-base-ui/g'` |
+| `text-[12px]` | `text-xs` | 18 | Manual — verificar contexto |
+| `text-[16px]` | `text-base` | 23 | Manual |
+| `text-[18px]` | `text-lg` | 22 | Manual |
+| `text-[14px]` | `text-sm` | 65 | Manual — verificar se já é sm no config |
+
+**Passo 3 — Validar:**
+- `npm run build` (sem erros)
+- Comparação visual de 5 telas críticas (Dashboard, Kanban, Candidato, Chat, Settings)
+
+### Fase 2 — Tokenização de Cores
+
+**Esforço:** 5-7 dias | **Risco:** Baixo | **Impacto visual:** Nenhum (mesmas cores)
+
+**Prioridade 1 — Top 15 cores (cobrem ~850 linhas, 53% do problema):**
+
+| Hex | → Classe Tailwind | Usos |
+|-----|------------------|------|
+| `#374151` | `text-gray-700` ou `border-gray-700` | 120 |
+| `#FFFFFF` | `bg-white` ou `text-white` | 96 |
+| `#6B7280` | `text-gray-500` | 78 |
+| `#111827` | `text-gray-900` | 75 |
+| `#F59E0B` | `text-amber-500` | 70 |
+| `#D1D5DB` | `text-gray-300` ou `border-gray-300` | 69 |
+| `#E5E7EB` / `#e5e7eb` | `border-gray-200` | 116 |
+| `#EF4444` | `text-red-500` | 48 |
+| `#9CA3AF` | `text-gray-400` | 46 |
+| `#F3F4F6` | `bg-gray-100` | 42 |
+| `#1a1a1a` | `text-gray-900` (verificar contexto) | 38 |
+| `#5DA47A` | `text-wedo-green` (custom) | 36 |
+| `#EEEEEE` | `bg-gray-200` | 35 |
+| `#22C55E` | `text-green-500` | 33 |
+| `#8B5CF6` | `text-violet-500` | 28 |
+
+**Prioridade 2 — Cores WeDo (já existem como tokens):**
+
+| Hex | → Classe | Usos |
+|-----|---------|------|
+| `#60BED1` | `text-wedo-cyan` | 22 |
+| `#D19960` | `text-wedo-orange` | 15 |
+| `#10B981` | `text-emerald-500` | 27 |
+| `#3B82F6` | `text-blue-500` | 18 |
+| `#E5A853` | Custom token `text-wedo-interview` | 15 |
+
+**Prioridade 3 — Arquivo `status-badge.tsx` (90 cores):**
+- Extrair paleta de 17 etapas do pipeline para constante exportável
+- Converter cada cor para referência a token
+
+**Excluir da migração (OK hardcoded):**
+- `#0A66C2` — LinkedIn blue (cor de terceiro)
+- Cores dentro de gráficos Chart.js/Recharts (precisam ser hex)
+- Cores de email HTML em `report-email-templates.tsx` (HTML inline requer hex)
+
+**Processo por arquivo (top 20):**
+1. Abrir arquivo
+2. Identificar cada hex e contexto (texto, bg, border, fill)
+3. Substituir por classe Tailwind ou variável CSS
+4. Testar visualmente
+
+### Fase 3 — Consolidação de Badges e Status
+
+**Esforço:** 2-3 dias | **Risco:** Médio | **Impacto visual:** Nenhum
+
+**Ações:**
+
+| Componente atual | Ação | Como |
+|-----------------|------|------|
+| `ui/badge.tsx` | Manter | É o primitivo — está correto |
+| `ui/status-badge.tsx` | Refatorar | Extrair 17 cores de pipeline para constante. Usar badge.tsx como base com prop `pipelineStage` |
+| `ui/setup-alert-badge.tsx` | Simplificar | Usar badge.tsx com variante `warning` |
+| `job-creation/field-origin-badge.tsx` | Simplificar | Usar badge.tsx com variante `info` para IA, `secondary` para manual |
+| `wizard/suggestion-badge.tsx` | Simplificar | Usar badge.tsx com variante custom `suggestion` |
+| `screening/auto-screening-badge.tsx` | Simplificar | Usar badge.tsx com variante `success` |
+| `ui/chat-status-indicators.tsx` | Manter separado | Padrão diferente — são indicadores temporários, não badges |
+
+**Resultado:** 7 → 3 componentes (badge, status-badge refatorado, chat-status-indicators)
+
+### Fase 4 — Split de Componentes Gigantes
+
+**Esforço:** 3-4 semanas | **Risco:** Alto | **Impacto visual:** Nenhum
+
+> Esta é a fase mais complexa. Requer testes extensivos após cada split.
+> Recomendação: fazer 1 componente por sprint, testar completamente antes de avançar.
+
+**Sprint 1 — `expanded-chat-modal.tsx` (11.824 linhas)**
+
+| Sub-componente proposto | Responsabilidade | Linhas estimadas |
+|------------------------|------------------|-----------------|
+| `ExpandedChatContainer` | Layout, state global, context | ~800 |
+| `ChatMessageList` | Renderização de mensagens | ~1.500 |
+| `ChatInputBar` | Input, upload, voz | ~800 |
+| `WizardStagePanel` | Painel lateral do wizard | ~1.200 |
+| `ToolExecutionResults` | Cards de resultado de tools | ~600 |
+| `ChatStateReducer` | Reducer de estado do chat | ~500 |
+| `FieldSyncManager` | Sync de campos wizard↔chat | ~400 |
+| `JobPreviewPanel` | Preview da vaga em criação | ~800 |
+| `ChatMessageTypes` | Tipos e interfaces TypeScript | ~200 |
+| Restante no modal principal | Orchestração | ~5.000 |
+
+**Sprint 2 — Pages gigantes (28.752 linhas total)**
+
+| Arquivo | Linhas | Split proposto |
+|---------|--------|---------------|
+| `job-kanban-page` | 10.377 | KanbanHeader, KanbanBoard, KanbanColumn, CandidateKanbanCard, BulkActionsBar, StageConfig, KanbanAnalytics |
+| `candidates-page` | 10.329 | CandidateTableView, FilterPanel, BulkActions, CandidatePreviewPanel, SearchBar, Pagination |
+| `jobs-page` | 8.046 | JobsTableView, JobCardView, JobFilters, JobStats, BulkActions |
+
+**Sprint 3 — Candidatos (9.227 linhas)**
+
+| Arquivo | Linhas | Split proposto |
+|---------|--------|---------------|
+| `candidate-preview` | 6.723 | ProfileHeader, ExperienceTimeline, SkillsSection, WSISection, NotesSection, ActionsBar, PreviewTabs |
+| `candidate-page` | 2.504 | CandidateProfileSections, CandidateTimeline, CandidateActions |
+
+**Sprint 4 — Search e Settings (14.992 linhas)**
+
+| Arquivo | Linhas | Split proposto |
+|---------|--------|---------------|
+| `smart-search-input` | 5.475 | SearchBar, FilterChips, SuggestionsList, BooleanBuilder, SearchResults |
+| `CompanyTeamHub` | 5.235 | TeamTable, InviteModal, RoleManager, Permissions, ActivityLog |
+| `expandable-ai-prompt` | 4.308 | PromptInput, SuggestionDock, AttachmentBar, ActionChips |
+
+### Fase 5 — Padronização de Dimensões
+
+**Esforço:** 3-5 dias | **Risco:** Médio | **Impacto visual:** Mínimo
+
+**Passo 1 — Criar tokens de layout no `tailwind.config.ts`:**
+
+```typescript
+extend: {
+  width: {
+    'panel-sm': '300px',
+    'panel-md': '350px',
+    'panel-lg': '400px',
+    'panel-xl': '500px',
+    'sidebar-content': '200px',
+  },
+  height: {
+    'chart': '200px',
+    'panel-md': '300px',
+    'panel-lg': '400px',
+    'card-lg': '180px',
+  },
+}
+```
+
+**Passo 2 — Substituir valores com equivalente Tailwind exato:**
+
+| De | Para | Usos |
+|----|------|------|
+| `w-[80px]` | `w-20` | 7 |
+| `h-[56px]` | `h-14` | 5 |
+| `h-[80px]` | `h-20` | 5 |
+
+**Passo 3 — Converter inline styles para Tailwind:**
+- Focar nos 249 arquivos com `style=`
+- Priorizar: componentes com dark mode, componentes de layout, componentes da ui/
+
+---
+
+## 19. Impacto na Conversão para Vue/Vuetify
+
+Após completar as Fases 0-3 (~2 semanas), o benefício para conversão Vue é substancial:
+
+| Antes da otimização | Depois da otimização |
+|---------------------|---------------------|
+| 298 cores hardcoded — cada uma precisa de tradução manual | Tokens nomeados — mapear token React → token Vuetify automaticamente |
+| `text-[11px]` espalhado — sem semântica, impossível mapear | `text-ui` — mapear para `.wedo-label { font-size: 0.6875rem }` no Vue |
+| 37 monólitos de 1.000-11.000 linhas — impossível converter | Sub-componentes de 200-800 linhas — conversão componente por componente |
+| 7 tipos de badge — qual é o canônico? | 3 tipos claros — traduzir 1:1 para Vue |
+
+**Fórmula de esforço para conversão Vue:**
+- Sem otimização: ~465 componentes × análise individual = impraticável
+- Com Fases 0-3: ~450 componentes tokenizados × conversão mecânica = viável
+- Com Fases 0-5: ~150 componentes menores tokenizados × conversão automatizável = ótimo
+
+---
+
+## 20. Tabela-Resumo do Plano
+
+| Fase | O que faz | Linhas afetadas | Impacto visual | Risco | Esforço | Benefício Vue |
+|------|----------|----------------|---------------|-------|---------|--------------|
+| 0 — Limpeza | Remove código morto | ~7.800 removidas | Nenhum | Zero | 1 dia | Reduz ruído |
+| 1 — Tipografia | text-[Xpx] → tokens | ~4.500 | Nenhum | Baixo | 2 dias | Mapeamento 1:1 para Vue |
+| 2 — Cores | hex → tokens/classes | ~1.600 | Nenhum | Baixo | 5-7 dias | Ponte de tokens React↔Vue |
+| 3 — Badges | 7 → 3 componentes | ~1.400 | Nenhum | Médio | 2-3 dias | Decide componente canônico |
+| 4 — Split | 37 → ~150 sub-componentes | ~118.000 | Nenhum | Alto | 3-4 semanas | Conversão por partes |
+| 5 — Dimensões | px → tokens | ~5.400 | Mínimo | Médio | 3-5 dias | Tokens compartilhados |
+| **Total** | | **~138.700** | **Zero** | | **~6-7 semanas** | **Conversão viável** |
