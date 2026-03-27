@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
-import { X, Send, Search, Paperclip, Minimize2, Maximize2, Loader2, Check, Clock, FileText, ChevronRight, ChevronLeft, MessageSquare, ArrowUp, Lightbulb, Brain, Plus, Briefcase, Users, BarChart3, ChevronDown, Target, BookTemplate, Upload, History, Building2, MapPin, DollarSign, GraduationCap, Languages, Laptop, Code, Database, Wrench, Trash2, Edit2, Star, MessageCircle, CheckCircle2, AlertCircle, Rocket, Eye, Phone, Circle, Settings, AlertTriangle, RefreshCw, Globe, Calendar, Bell, ExternalLink, Info, Heart, TrendingUp, User } from "lucide-react"
+import { X, Send, Search, Paperclip, Minimize2, Maximize2, Loader2, Check, Clock, FileText, ChevronRight, ChevronLeft, MessageSquare, ArrowUp, Lightbulb, Brain, Plus, Briefcase, Users, BarChart3, ChevronDown, Target, BookTemplate, Upload, History, Building2, MapPin, DollarSign, GraduationCap, Languages, Laptop, Code, Database, Wrench, Edit2, Star, MessageCircle, CheckCircle2, AlertCircle, Rocket, Eye, Phone, Circle, Settings, AlertTriangle, RefreshCw, Globe, Calendar, Bell, ExternalLink, Info, Heart, TrendingUp, User } from "lucide-react"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { cleanAgentResponse, parseChatMarkdown } from "@/lib/chat-format"
 import { Button } from "@/components/ui/button"
@@ -120,6 +120,7 @@ import {
   isTechnicalRole,
   getCoreSkillsForRole,
 } from './expanded-chat/utils/skill-weight-utils'
+import { ClearDraftConfirmModal, EditCriteriaModal } from './expanded-chat/modals'
 
 function ExpandedChatModalContent({
   isOpen,
@@ -10386,166 +10387,11 @@ Qual prefere?`,
       )}
 
       {/* Modal: Clear Draft Confirmation */}
-      {showClearDraftConfirm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[400px] p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-status-error/10 rounded-full flex items-center justify-center">
-                <Trash2 className="w-5 h-5 text-status-error" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                  Começar do zero?
-                </h3>
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-              Isso irá <strong>apagar todo o rascunho</strong> da vaga atual, incluindo todas as informações preenchidas até agora.
-            </p>
-            <p className="text-xs text-gray-400 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-              Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowClearDraftConfirm(false)}
-                className="flex-1 h-10 rounded-md border-gray-300 text-gray-600"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleClearDraftAndReset}
-                className="flex-1 h-10 rounded-md bg-status-error text-white"
-              >
-                <Trash2 className="w-4 h-4 mr-1.5" />
-                Limpar tudo
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Competencies Suggestions from LIA - DISABLED: Now shown in chat flow */}
-      {false && showCompetenciesSuggestionsModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[500px] max-h-[80vh] flex flex-col">
-            <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-200">
-              <div className="w-10 h-10 bg-wedo-cyan/20 rounded-full flex items-center justify-center">
-                <Brain className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                  Sugestões da LIA
-                </h3>
-                <p className="text-xs text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                  Baseadas no cargo: {basicInfoFields.cargo || 'não definido'}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-              {suggestedTechnicalSkills.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-2" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                    <Code className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    Competências Técnicas
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {suggestedTechnicalSkills.map(skill => (
-                      <button
-                        key={skill}
-                        onClick={() => {
-                          setSelectedSuggestedTechnical(prev => {
-                            const newSet = new Set(prev)
-                            if (newSet.has(skill)) {
-                              newSet.delete(skill)
-                            } else {
-                              newSet.add(skill)
-                            }
-                            return newSet
-                          })
-                        }}
-                        className={`px-3 py-1.5 rounded-full text-sm transition-all ${
-                          selectedSuggestedTechnical.has(skill)
-                            ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        }`}
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
-                      >
-                        {selectedSuggestedTechnical.has(skill) && <Check className="w-3 h-3 inline mr-1" />}
-                        {skill}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {suggestedBehavioralSkills.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-2" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                    <Heart className="w-4 h-4 text-wedo-purple" />
-                    Competências Comportamentais
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {suggestedBehavioralSkills.map(skill => (
-                      <button
-                        key={skill}
-                        onClick={() => {
-                          setSelectedSuggestedBehavioral(prev => {
-                            const newSet = new Set(prev)
-                            if (newSet.has(skill)) {
-                              newSet.delete(skill)
-                            } else {
-                              newSet.add(skill)
-                            }
-                            return newSet
-                          })
-                        }}
-                        className={`px-3 py-1.5 rounded-full text-sm transition-all ${
-                          selectedSuggestedBehavioral.has(skill)
-                            ? 'bg-wedo-purple text-white'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        }`}
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
-                      >
-                        {selectedSuggestedBehavioral.has(skill) && <Check className="w-3 h-3 inline mr-1" />}
-                        {skill}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex gap-3 px-6 py-4 border-t border-gray-200">
-              <Button
-                variant="outline"
-                onClick={handleSkipSuggestions}
-                className="flex-1 h-10 rounded-md border-gray-200 text-gray-500"
-              >
-                Pular
-              </Button>
-              <Button
-                onClick={() => {
-                  setSelectedSuggestedTechnical(new Set(suggestedTechnicalSkills))
-                  setSelectedSuggestedBehavioral(new Set(suggestedBehavioralSkills))
-                }}
-                variant="outline"
-                className="h-10 rounded-md border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400"
-              >
-                Selecionar Todas
-              </Button>
-              <Button
-                onClick={handleAcceptSuggestions}
-                className="flex-1 h-10 rounded-md bg-gray-900 text-white"
-                disabled={selectedSuggestedTechnical.size === 0 && selectedSuggestedBehavioral.size === 0}
-              >
-                Aceitar ({selectedSuggestedTechnical.size + selectedSuggestedBehavioral.size})
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ClearDraftConfirmModal
+        open={showClearDraftConfirm}
+        onClose={() => setShowClearDraftConfirm(false)}
+        onConfirm={handleClearDraftAndReset}
+      />
 
       {/* Modal: Calibration Profile Review */}
       {showCalibrationModal && calibrationCandidates.length > 0 && (
@@ -10924,83 +10770,13 @@ Qual prefere?`,
       )}
 
       {/* Modal: Edit Criteria */}
-      {showEditCriteriaModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[500px] max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                Editar Critérios
-              </h3>
-              <button
-                onClick={() => setShowEditCriteriaModal(false)}
-                className="p-2 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-3">
-              {calibrationCriteria.map((criterion, idx) => (
-                <div
-                  key={criterion.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-md group"
-                >
-                  <div className="cursor-move text-gray-300 hover:text-gray-500">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                    </svg>
-                  </div>
-                  <span className="text-sm font-medium text-gray-500 w-6">①</span>
-                  <span className="flex-1 text-sm text-gray-800">{criterion.text}</span>
-                  <span className={cn(
-                    "text-xs px-2 py-0.5 rounded",
-                    criterion.source === 'technical' ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' : 'bg-violet-500/10 text-violet-500'
-                  )}>
-                    {criterion.source === 'technical' ? 'Técnico' : 'Comportamental'}
-                  </span>
-                  <button
-                    onClick={() => removeCalibrationCriterion(criterion.id)}
-                    className="p-1.5 rounded-md text-gray-300 hover:text-status-error hover:bg-status-error/10 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="px-6 py-4 border-t border-gray-200 space-y-3">
-              <div className="flex gap-2">
-                <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-gray-800 transition-colors">
-                  <FileText className="w-4 h-4" />
-                  Selecionar Preset
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-gray-800 transition-colors">
-                  <Upload className="w-4 h-4" />
-                  Salvar Preset
-                </button>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    const text = prompt('Digite o novo critério:')
-                    if (text) addCalibrationCriterion(text)
-                  }}
-                  className="flex-1 py-2.5 px-4 border border-gray-200 rounded-md text-sm font-medium text-gray-500 hover:border-gray-900 dark:hover:border-gray-50 hover:text-gray-900 dark:hover:text-gray-50 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Adicionar Critério
-                </button>
-                <button
-                  onClick={() => setShowEditCriteriaModal(false)}
-                  className="flex-1 py-2.5 px-4 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors"
-                >
-                  Atualizar ↗
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <EditCriteriaModal
+        open={showEditCriteriaModal}
+        criteria={calibrationCriteria}
+        onClose={() => setShowEditCriteriaModal(false)}
+        onAddCriterion={addCalibrationCriterion}
+        onRemoveCriterion={removeCalibrationCriterion}
+      />
 
       {/* File Upload Modal */}
       <AlertDialog open={showUploadModal} onOpenChange={setShowUploadModal}>
