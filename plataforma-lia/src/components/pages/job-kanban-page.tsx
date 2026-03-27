@@ -4337,7 +4337,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
               onDragStart={(e) => handleDragStart(e, candidate, stageId)}
               onDragEnd={handleDragEnd}
               className={`bg-white dark:bg-gray-800 rounded-md border relative overflow-hidden ${
-                candidate.needsAction ? 'border-l-4 border-l-[#1F2937] border-gray-200 dark:border-gray-700' : 
+                candidate.needsAction ? 'border-l-4 border-l-gray-800 border-gray-200 dark:border-gray-700' :
                 (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-green-500 border-gray-200 dark:border-gray-700 bg-green-50/30 dark:bg-green-900/20' : 
                 'border-gray-200 dark:border-gray-700'
               } hover:transition-all duration-300 cursor-move group`}
@@ -8036,14 +8036,14 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                     className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-all"
                                     style={{ 
                                       backgroundColor: col.visible ? 'rgba(31,41,55,0.05)' : 'var(--gray-50)',
-                                      border: col.visible ? '1px solid rgba(31,41,55,0.2)' : '1px solid #e5e7eb'
+                                      border: col.visible ? '1px solid rgba(31,41,55,0.2)' : '1px solid var(--gray-200)'
                                     }}
                                   >
                                     <div 
                                       className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
                                       style={{ 
                                         backgroundColor: col.visible ? 'var(--gray-800)' : 'transparent',
-                                        border: col.visible ? 'none' : '2px solid #d1d5db'
+                                        border: col.visible ? 'none' : '2px solid var(--gray-300)'
                                       }}
                                     >
                                       {col.visible && (

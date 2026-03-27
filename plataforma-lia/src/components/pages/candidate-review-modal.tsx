@@ -452,7 +452,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                         href={currentCandidate.linkedinUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#0077B5] hover:text-[#005582] transition-colors"
+                        className="text-gray-600 hover:text-gray-700 transition-colors"
                       >
                         <Linkedin className="w-5 h-5" />
                       </a>
@@ -757,7 +757,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   style={{
                     backgroundColor: 'white',
                     color: 'var(--status-success)',
-                    border: '2px solid #10B981'
+                    border: '2px solid var(--status-success)'
                   }}
                 >
                   Approve
@@ -775,7 +775,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   style={{
                     backgroundColor: 'white',
                     color: 'var(--status-error)',
-                    border: '2px solid #EF4444'
+                    border: '2px solid var(--status-error)'
                   }}
                 >
                   Reject
