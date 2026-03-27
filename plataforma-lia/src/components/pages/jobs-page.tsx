@@ -7745,7 +7745,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-white rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark">CBI</Badge>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-gray-600">CBI</Badge>
                         <span className="text-micro text-gray-600">McClelland, 1973</span>
                       </div>
                       <p className="text-micro text-gray-800">
@@ -8007,8 +8007,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   <div className="flex items-start gap-2">
                     <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-micro font-medium text-wedo-cyan-dark mb-1">Calibração Automática</p>
-                      <p className="text-micro text-wedo-cyan-dark leading-relaxed">
+                      <p className="text-micro font-medium text-gray-700 dark:text-gray-300 mb-1">Calibração Automática</p>
+                      <p className="text-micro text-gray-700 dark:text-gray-300 leading-relaxed">
                         Após atingir volume suficiente, a LIA recalibra automaticamente os cortes por percentil histórico, 
                         mantendo a qualidade das contratações.
                       </p>

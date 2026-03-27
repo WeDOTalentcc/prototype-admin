@@ -75,7 +75,7 @@ export function MockupShadcnVuePage() {
           <div className="flex items-start gap-3">
  <Info className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
             <div className="space-y-2 text-sm">
- <p className="text-wedo-cyan-dark dark:text-gray-400 font-medium">
+ <p className="text-gray-700 dark:text-gray-400 font-medium">
                 Esta página demonstra as otimizações propostas para facilitar a migração para Vue.js + shadcn-vue
               </p>
  <ul className="space-y-1 text-gray-600/80 text-xs">

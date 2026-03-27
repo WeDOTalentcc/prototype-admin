@@ -7270,7 +7270,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                           </div>
                                           <button
                                             onClick={() => setSearchResults(prev => ({ ...prev, globalDismissed: false }))}
-                                            className="text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark hover:underline"
+                                            className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 hover:underline"
                                             style={{ fontFamily: 'Open Sans, sans-serif' }}
                                           >
                                             Expandir busca
@@ -7674,27 +7674,27 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                               </div>
                               <div className="flex flex-wrap gap-1.5">
                                 {extractedJDCriteria.job_title && (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                                     {extractedJDCriteria.job_title}
                                   </span>
                                 )}
                                 {extractedJDCriteria.seniority && (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                                     {extractedJDCriteria.seniority}
                                   </span>
                                 )}
                                 {extractedJDCriteria.skills.map((skill, idx) => (
-                                  <span key={idx} className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span key={idx} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                                     {skill}
                                   </span>
                                 ))}
                                 {extractedJDCriteria.experience_years && (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                                     {extractedJDCriteria.experience_years}+ anos
                                   </span>
                                 )}
                                 {extractedJDCriteria.location && (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark">
+                                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                                     {extractedJDCriteria.location}
                                   </span>
                                 )}
@@ -10043,7 +10043,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     {tag}
                     <button
                       onClick={() => setPreviewTags(prev => prev.filter((_, i) => i !== index))}
-                      className="ml-0.5 hover:bg-wedo-cyan/20 rounded-full p-0.5 transition-colors"
+                      className="ml-0.5 hover:bg-gray-100 rounded-full p-0.5 transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>

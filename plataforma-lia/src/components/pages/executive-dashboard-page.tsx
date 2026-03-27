@@ -439,7 +439,7 @@ export function ExecutiveDashboardPage() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <Card className="bg-gray-100 dark:bg-gray-800">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-wedo-cyan-dark">{data.strategicMetrics.employeeSatisfaction}</div>
+                    <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">{data.strategicMetrics.employeeSatisfaction}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">Satisfação</div>
                     <div className="text-xs text-gray-600 mt-1">de 5.0</div>
                   </CardContent>
@@ -555,7 +555,7 @@ export function ExecutiveDashboardPage() {
                         </div>
                         <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
                           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Utilizado</div>
-                          <div className="text-lg font-bold text-wedo-cyan-dark">
+                          <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
                             R$ {data.financialMetrics.spentToDate.toLocaleString()}
                           </div>
                         </div>
@@ -618,7 +618,7 @@ export function ExecutiveDashboardPage() {
                           <Badge className={`text-xs ${
                             risk.impact === 'High' ? 'bg-red-100 text-red-800' :
                             risk.impact === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark'
+                            'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                           }`}>
                             {risk.probability}%
                           </Badge>

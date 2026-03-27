@@ -481,10 +481,10 @@ export function WorkModelAnalyticsPage() {
                     </div>
 
                     <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-                      <h4 className="text-sm font-medium text-wedo-cyan-dark dark:text-gray-400 mb-1">
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-400 mb-1">
                         💰 Salário Remoto vs Híbrido
                       </h4>
-                      <p className="text-xs text-wedo-cyan-dark dark:text-gray-400/80">
+                      <p className="text-xs text-gray-700 dark:text-gray-300 dark:text-gray-400/80">
                         Trabalho híbrido oferece salário médio 8.2% maior que remoto
                       </p>
                     </div>

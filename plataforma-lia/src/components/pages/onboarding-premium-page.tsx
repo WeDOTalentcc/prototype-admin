@@ -159,7 +159,7 @@ const approvedCandidates: ApprovedCandidate[] = [
 ]
 
 const kanbanStages = [
-  { id: 'welcome', name: 'Boas-vindas', color: 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark', description: 'Email de boas-vindas enviado' },
+  { id: 'welcome', name: 'Boas-vindas', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', description: 'Email de boas-vindas enviado' },
   { id: 'documentation', name: 'Documentação', color: 'bg-yellow-100 text-yellow-700', description: 'Coleta de documentos' },
   { id: 'equipment', name: 'Equipamentos', color: 'bg-orange-100 text-orange-700', description: 'Entrega de equipamentos' },
   { id: 'systems', name: 'Sistemas', color: 'bg-purple-100 text-purple-700', description: 'Criação de acessos' },

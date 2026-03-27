@@ -1462,8 +1462,8 @@ export function IndicatorsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
-                  <h4 className="font-medium text-wedo-cyan-dark mb-2">🚀 Tendência Crescente</h4>
-                  <p className="text-sm text-wedo-cyan-dark">
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">🚀 Tendência Crescente</h4>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
                     Modelo remoto cresceu 8% no trimestre, especialmente em Tech e Design.
                     Considere expandir políticas de trabalho remoto.
                   </p>

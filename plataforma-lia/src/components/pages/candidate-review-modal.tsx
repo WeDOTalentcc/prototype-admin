@@ -666,7 +666,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   </h3>
                   <button
                     onClick={() => setShowEditCriteria(true)}
-                    className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark transition-colors"
+                    className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 transition-colors"
                   >
                     Edit Criteria
                   </button>

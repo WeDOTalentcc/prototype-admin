@@ -2876,7 +2876,7 @@ export function CandidatePreview({
                                                 {activity.jobId && (
                                                   <a
                                                     href={`#vaga-${activity.jobId}`}
-                                                    className="text-xs text-gray-700 dark:text-gray-300 hover:text-wedo-cyan-dark hover:underline flex items-center gap-0.5"
+                                                    className="text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:underline flex items-center gap-0.5"
                                                     onClick={(e) => e.stopPropagation()}
                                                   >
                                                     <Briefcase className="w-2.5 h-2.5" />
@@ -3604,7 +3604,7 @@ export function CandidatePreview({
                                     {activity.jobId && (
                                       <a
                                         href={`#vaga-${activity.jobId}`}
-                                        className="text-xs text-gray-700 dark:text-gray-300 hover:text-wedo-cyan-dark hover:underline flex items-center gap-0.5"
+                                        className="text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:underline flex items-center gap-0.5"
                                         onClick={(e) => e.stopPropagation()}
                                       >
                                         <Briefcase className="w-2.5 h-2.5" />

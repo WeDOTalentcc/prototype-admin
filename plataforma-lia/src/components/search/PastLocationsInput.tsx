@@ -254,7 +254,7 @@ export function PastLocationsInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark font-medium"
+            className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 font-medium"
           >
             Clear all
           </button>

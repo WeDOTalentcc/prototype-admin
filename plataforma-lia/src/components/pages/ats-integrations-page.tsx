@@ -252,7 +252,7 @@ export function ATSIntegrationsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected': return 'bg-green-50 text-green-700 border-green-200'
-      case 'connecting': return 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark border-gray-300 dark:border-gray-600'
+      case 'connecting': return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
       case 'error': return 'bg-red-50 text-red-700 border-red-200'
       case 'disabled': return 'bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200'
       default: return 'bg-yellow-50 text-yellow-700 border-yellow-200'
@@ -294,7 +294,7 @@ export function ATSIntegrationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className={textStyles.label}>Registros Sincronizados</p>
-                <p className={`${textStyles.titleXl} text-2xl text-wedo-cyan-dark`}>
+                <p className={`${textStyles.titleXl} text-2xl text-gray-700 dark:text-gray-300`}>
                   {atsystems.reduce((acc, sys) => acc + sys.syncedRecords, 0).toLocaleString()}
                 </p>
                 <p className={`${textStyles.caption} text-green-600`}>+47 hoje</p>
@@ -761,7 +761,7 @@ export function ATSIntegrationsPage() {
                           log.status === 'success' ? 'bg-green-100 text-green-700' :
                           log.status === 'warning' ? 'bg-yellow-100 text-yellow-700' :
                           log.status === 'error' ? 'bg-red-100 text-red-700' :
-                          'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark'
+                          'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                         }`}>
                           {log.status === 'success' ? 'Sucesso' :
                            log.status === 'warning' ? 'Aviso' :
@@ -1441,8 +1441,8 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
       {/* Instructions */}
       <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-4">
-        <h5 className="font-medium text-wedo-cyan-dark mb-2">Como usar o mapeamento:</h5>
-        <ul className="text-sm text-wedo-cyan-dark space-y-1">
+        <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Como usar o mapeamento:</h5>
+        <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
           <li>• Arraste campos da origem para os campos de destino correspondentes</li>
           <li>• Use templates pré-configurados para mapeamentos comuns</li>
           <li>• Verifique a porcentagem de confiança de cada mapeamento</li>

@@ -185,7 +185,7 @@ export function ResumeAnalysisResult({
               href={result.contact_info.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark"
+              className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900"
             >
               <Briefcase className="h-4 w-4" />
               Ver perfil no LinkedIn

@@ -340,7 +340,7 @@ export function SettingsPage() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans settings-menu-item ${
                         activeTab === tab.id
- ? 'bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-200 text-wedo-cyan-dark dark:text-gray-300'
+ ? 'bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-200 text-gray-900 dark:text-gray-300'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'
                       }`}
                       style={{ fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500' }}
@@ -442,7 +442,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                   }}
                   className={`p-3 rounded-md border text-center transition-colors ${
                     theme === themeOption.id
- ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800 text-wedo-cyan-dark dark:text-gray-300'
+ ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300'
                       : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -2052,7 +2052,7 @@ function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (changed: bo
                 onClick={() => setActiveSubTab(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors font-crimson ${
                   activeSubTab === tab.id
- ? 'bg-gray-50 dark:bg-gray-800 text-wedo-cyan-dark dark:text-gray-300'
+ ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'
                 }`}
               >
@@ -2591,7 +2591,7 @@ function CommunicationTab({ onSettingsChange }: { onSettingsChange: (changed: bo
                 onClick={() => setActiveSubTab(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors font-crimson ${
                   activeSubTab === tab.id
- ? 'bg-gray-50 dark:bg-gray-800 text-wedo-cyan-dark dark:text-gray-300'
+ ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'
                 }`}
               >
@@ -3345,7 +3345,7 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
       type: 'teams',
       status: 'active',
       icon: MessageSquare,
-      color: 'bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark',
+      color: 'bg-gray-50 dark:bg-gray-900 text-gray-700',
       webhookUrl: 'https://outlook.office.com/webhook/xxxxx/IncomingWebhook/yyyyy',
       channels: ['RH Geral', 'Aprovações'],
       events: ['aprovacao_lote', 'candidato_final', 'relatorio_semanal'],
@@ -3489,7 +3489,7 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected': return 'bg-green-50 text-green-700 border-green-200'
-      case 'connecting': return 'bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark border-gray-900 dark:border-gray-50'
+      case 'connecting': return 'bg-gray-50 dark:bg-gray-900 text-gray-700 border-gray-900 dark:border-gray-50'
       case 'error': return 'bg-red-50 text-red-700 border-red-200'
       case 'disabled': return 'bg-gray-50 text-gray-800 border-gray-200'
       default: return 'bg-yellow-50 text-yellow-700 border-yellow-200'
@@ -4107,7 +4107,7 @@ function AdminWeDOTalentTab({ onSettingsChange }: { onSettingsChange: (changed: 
     switch (status) {
       case "ativo": return "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
       case "setup": return "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400"
- case "trial": return "bg-gray-50 text-wedo-cyan-dark dark:bg-gray-800 dark:text-gray-400"
+ case "trial": return "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
       case "suspenso": return "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
       default: return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-500"
     }
@@ -4222,7 +4222,7 @@ function AdminWeDOTalentTab({ onSettingsChange }: { onSettingsChange: (changed: 
                 <div className="text-sm text-orange-600 dark:text-orange-500">Em Setup</div>
               </div>
               <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                <div className="text-2xl font-bold text-wedo-cyan-dark dark:text-gray-400">2</div>
+                <div className="text-2xl font-bold text-gray-700 dark:text-gray-400">2</div>
  <div className="text-sm text-gray-600">Trial</div>
               </div>
             </div>
@@ -4294,7 +4294,7 @@ function AdminWeDOTalentTab({ onSettingsChange }: { onSettingsChange: (changed: 
                 onClick={() => setActiveSection(section.id)}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
                   activeSection === section.id
- ? 'bg-gray-50 dark:bg-gray-800 text-wedo-cyan-dark dark:text-gray-300'
+ ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'
                 }`}
               >

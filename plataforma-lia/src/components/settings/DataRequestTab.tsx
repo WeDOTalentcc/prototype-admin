@@ -916,7 +916,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       variant="ghost" 
                       size="sm" 
                       onClick={() => generateLiaSuggestion('welcome')}
-                      className="h-6 text-micro px-2 text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark hover:bg-gray-50"
+                      className="h-6 text-micro px-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 hover:bg-gray-50"
                     >
                       <Bot className="w-3 h-3 mr-1" />
                       Sugerir com LIA
@@ -946,7 +946,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       variant="ghost" 
                       size="sm" 
                       onClick={() => generateLiaSuggestion('thankYou')}
-                      className="h-6 text-micro px-2 text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark hover:bg-gray-50"
+                      className="h-6 text-micro px-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 hover:bg-gray-50"
                     >
                       <Bot className="w-3 h-3 mr-1" />
                       Sugerir com LIA

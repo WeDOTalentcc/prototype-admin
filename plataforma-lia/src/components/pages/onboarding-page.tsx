@@ -220,7 +220,7 @@ export function OnboardingPage() {
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-      in_progress: 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark border-gray-300 dark:border-gray-600',
+      in_progress: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600',
       completed: 'bg-green-100 text-green-700 border-green-200',
       delayed: 'bg-red-100 text-red-700 border-red-200'
     }
@@ -261,7 +261,7 @@ export function OnboardingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Em Andamento</p>
-                <p className="text-2xl font-bold text-wedo-cyan-dark">
+                <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">
                   {onboardingCandidates.filter(c => c.status === 'in_progress').length}
                 </p>
                 <p className="text-xs text-gray-800 dark:text-gray-200">processos ativos</p>
@@ -683,7 +683,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-      in_progress: 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark border-gray-300 dark:border-gray-600',
+      in_progress: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600',
       completed: 'bg-green-100 text-green-700 border-green-200',
       delayed: 'bg-red-100 text-red-700 border-red-200'
     }

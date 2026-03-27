@@ -209,7 +209,7 @@ export function LinkedInCell({ url, onClick }: { url?: string; onClick?: (e: Rea
         e.stopPropagation()
         onClick?.(e)
       }}
-      className="text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark transition-colors"
+      className="text-gray-600 dark:text-gray-400 hover:text-gray-900 transition-colors"
     >
       <Linkedin className="w-3.5 h-3.5" />
     </a>
