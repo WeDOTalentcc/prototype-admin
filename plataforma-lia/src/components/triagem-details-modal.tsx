@@ -253,8 +253,9 @@ export function TriagemDetailsModal({
   // canTriggerFeedback: disponível para todos os estados de decisão quando há dados de triagem
   const canTriggerFeedback = !!details && !!details.scores
   const feedbackAlreadySent = feedbackStatus?.feedback_sent === true
+  const font = {} // DS: Open Sans is the global default
 
-  const font = { fontFamily: "'Open Sans', sans-serif" }
+
 
   if (loading) {
     return (

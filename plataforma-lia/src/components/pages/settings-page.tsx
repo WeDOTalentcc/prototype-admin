@@ -872,7 +872,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
             <Map className="w-5 h-5 text-gray-700" />
             Journey Mapping
           </CardTitle>
-          <p className="text-sm text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <p className="text-sm text-gray-800 dark:text-gray-200">
             Configure o mapa da jornada de recrutamento da sua empresa através do wizard interativo.
           </p>
         </CardHeader>
@@ -909,7 +909,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                       <span className="font-semibold">{step.id}</span>
                     )}
                   </div>
-                  <span className="text-xs font-medium text-center" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <span className="text-xs font-medium text-center">
                     {step.title}
                   </span>
                 </button>
@@ -936,7 +936,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="text-sm text-gray-800 dark:text-gray-200">
               Descreva o fluxo típico de abertura de vagas na sua empresa.
             </p>
             <textarea
@@ -948,7 +948,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
               placeholder="Ex: As vagas são abertas pelo gestor da área através de um formulário no sistema interno. Após aprovação do RH e do budget, a vaga é publicada..."
               rows={6}
               className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
-              style={{ fontFamily: "'Open Sans', sans-serif" }}
+             
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -965,7 +965,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                   }}
                   className="p-4 border border-gray-200 dark:border-gray-700 rounded-md hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50 transition-all text-left"
                 >
-                  <div className="font-medium text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>{option.label}</div>
+                  <div className="font-medium text-sm">{option.label}</div>
                   <div className="text-xs text-gray-600 mt-1">{option.desc}</div>
                 </button>
               ))}
@@ -983,13 +983,13 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <p className="text-sm text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="text-sm text-gray-800 dark:text-gray-200">
               Selecione os sistemas e plataformas que sua empresa utiliza no processo de recrutamento.
             </p>
 
             {['ATS', 'Workforce Planning', 'HRIS/Folha', 'Avaliação Técnica', 'Assessment', 'Assinatura Digital', 'Comunicação'].map((category) => (
               <div key={category}>
-                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">
                   {category}
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1007,7 +1007,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                         {wizardData.sistemasUsados.includes(sistema.id) && (
                           <Check className="w-4 h-4" />
                         )}
-                        <span className="text-sm font-medium" style={{ fontFamily: "'Open Sans', sans-serif" }}>{sistema.name}</span>
+                        <span className="text-sm font-medium">{sistema.name}</span>
                       </div>
                     </button>
                   ))}
@@ -1027,7 +1027,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="text-sm text-gray-800 dark:text-gray-200">
               Selecione as etapas que fazem parte do seu processo de recrutamento.
             </p>
 
@@ -1050,7 +1050,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                     }`}>
                       {wizardData.etapasProcesso.includes(etapa) && <Check className="w-3 h-3" />}
                     </div>
-                    <span className="text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>{etapa}</span>
+                    <span className="text-sm">{etapa}</span>
                   </div>
                 </button>
               ))}
@@ -1058,7 +1058,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
 
             {wizardData.etapasProcesso.length > 0 && (
               <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-                <h4 className="text-sm font-semibold mb-3" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <h4 className="text-sm font-semibold mb-3">
                   Ordem das etapas selecionadas:
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -1084,7 +1084,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-sm text-gray-800 dark:text-gray-200">
                 Selecione as automações que você gostaria de implementar no seu processo.
               </p>
 
@@ -1108,7 +1108,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                         {wizardData.automacoesDesejadas.includes(automacao.id) && <Check className="w-3 h-3" />}
                       </div>
                       <div>
-                        <div className="font-medium text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>{automacao.name}</div>
+                        <div className="font-medium text-sm">{automacao.name}</div>
                         <div className="text-xs text-gray-600 mt-1">{automacao.desc}</div>
                       </div>
                     </div>
@@ -1126,7 +1126,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-sm text-gray-800 dark:text-gray-200">
                 Defina como a LIA poderá se comunicar com os candidatos durante o processo seletivo.
               </p>
 
@@ -1153,7 +1153,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                         {canal.id === 'sms' && <MessageCircle className="w-5 h-5" />}
                       </div>
                       <div>
-                        <div className="font-medium text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>{canal.name}</div>
+                        <div className="font-medium text-sm">{canal.name}</div>
                         {canal.essential && (
                           <span className="text-micro text-gray-600 dark:text-gray-400 font-medium">Recomendado</span>
                         )}
@@ -1167,10 +1167,10 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                 <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-md">
                   <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-amber-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <p className="text-sm font-medium text-amber-800">
                       Atenção: Canais essenciais desativados
                     </p>
-                    <p className="text-xs text-amber-700 mt-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <p className="text-xs text-amber-700 mt-1">
                       Limitar os canais de comunicação pode comprometer a velocidade e eficiência do processo seletivo, 
                       reduzindo as chances de contato rápido com os melhores candidatos.
                     </p>
@@ -1191,7 +1191,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="text-sm text-gray-800 dark:text-gray-200">
               Onde vocês publicam as vagas? Selecione os canais que sua empresa utiliza.
             </p>
 
@@ -1215,7 +1215,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                       {wizardData.canaisPublicacao.includes(canal.id) && <Check className="w-3 h-3" />}
                     </div>
                     <div>
-                      <div className="font-medium text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>{canal.name}</div>
+                      <div className="font-medium text-sm">{canal.name}</div>
                       <div className="text-xs text-gray-600 mt-1">{canal.desc}</div>
                     </div>
                   </div>
@@ -1225,7 +1225,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
 
             {wizardData.canaisPublicacao.includes('site_proprio') && (
               <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-                <label className="text-sm font-medium" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <label className="text-sm font-medium">
                   URL da página de carreiras:
                 </label>
                 <input
@@ -1237,7 +1237,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                   }}
                   placeholder="https://suaempresa.com/carreiras"
                   className="w-full mt-2 p-3 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 />
               </div>
             )}
@@ -1257,7 +1257,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                 <h3 className="font-semibold text-green-800 dark:text-green-200">
                   Jornada configurada com sucesso!
                 </h3>
-                <p className="text-sm text-green-600 dark:text-green-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <p className="text-sm text-green-600 dark:text-green-300">
                   Suas configurações foram salvas. LIA está pronta para otimizar seu recrutamento.
                 </p>
               </div>
@@ -1278,7 +1278,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                 <h3 className="font-semibold text-red-800 dark:text-red-200">
                   Erro ao salvar configuração
                 </h3>
-                <p className="text-sm text-red-600 dark:text-red-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <p className="text-sm text-red-600 dark:text-red-300">
                   {submitError}
                 </p>
               </div>
@@ -1350,7 +1350,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                         className="w-32 h-20 rounded-md border-2 flex items-center justify-center p-2 text-center"
                         style={{ backgroundColor: 'white' }}
                       >
-                        <span className="text-xs font-medium" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                        <span className="text-xs font-medium">
                           {etapa}
                         </span>
                       </div>
@@ -1365,7 +1365,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
             ) : (
               <div className="text-center py-8 text-gray-600">
                 <Map className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <p className="text-sm">
                   Selecione as etapas do processo para visualizar o mapa da jornada
                 </p>
               </div>

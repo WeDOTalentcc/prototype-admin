@@ -47,7 +47,6 @@ export function CreditConfirmationDialog({
         style={{
           backgroundColor: 'var(--gray-50)',
           borderRadius: '10px',
-          fontFamily: '"Open Sans", sans-serif'
         }}
       >
         <div className="space-y-3">
@@ -121,7 +120,7 @@ export function CreditConfirmationDialog({
         <AlertDialogFooter className="flex flex-row justify-end gap-2.5 sm:justify-end pt-3">
           <AlertDialogCancel
             disabled={isLoading}
-            className="mt-0 h-8 text-xs px-4 font-medium text-gray-600" style={{ backgroundColor: 'transparent', borderRadius: '6px', fontFamily: '"Open Sans", sans-serif' }}
+            className="mt-0 h-8 text-xs px-4 font-medium text-gray-600" style={{ backgroundColor: 'transparent', borderRadius: '6px' }}
           >
             Cancelar
           </AlertDialogCancel>
@@ -132,7 +131,6 @@ export function CreditConfirmationDialog({
             className="text-white h-8 text-xs px-4 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 font-medium"
             style={{ 
               borderRadius: '6px',
-              fontFamily: '"Open Sans", sans-serif'
             }}
           >
             {isLoading ? (

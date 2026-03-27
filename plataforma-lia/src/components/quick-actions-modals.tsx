@@ -386,7 +386,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-4xl max-h-[90vh] overflow-y-auto`} style={{ fontFamily: '"Open Sans", sans-serif' }}>
+      <div className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
@@ -976,7 +976,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`} style={{ fontFamily: '"Open Sans", sans-serif' }}>
+      <div className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">

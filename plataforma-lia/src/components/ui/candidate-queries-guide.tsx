@@ -141,7 +141,7 @@ export function CandidateQueriesGuide({
           )}
           style={{ 
             borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)',
-            fontFamily: '"Open Sans", sans-serif', 
+            
             fontWeight: 500
           }}
         >
@@ -175,7 +175,7 @@ export function CandidateQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-              style={{ fontFamily: '"Open Sans", sans-serif', color: 'var(--gray-950)' }}
+              style={{ color: 'var(--gray-950)' }}
               autoFocus
             />
             {searchTerm && (
@@ -198,7 +198,7 @@ export function CandidateQueriesGuide({
                 ? "bg-gray-900 dark:bg-gray-50 text-white" 
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
             )}
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             Todas
           </button>
@@ -212,7 +212,7 @@ export function CandidateQueriesGuide({
                   ? "bg-gray-900 dark:bg-gray-50 text-white" 
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
               )}
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               <Icon className="w-3 h-3" />
               {label}
@@ -249,7 +249,7 @@ export function CandidateQueriesGuide({
                 <span 
                   className="text-sm leading-relaxed pt-1"
                   style={{ 
-                    fontFamily: '"Open Sans", sans-serif',
+                    
                     color: 'var(--gray-600)'
                   }}
                 >
@@ -269,7 +269,7 @@ export function CandidateQueriesGuide({
                 <p 
                   className="text-sm"
                   style={{ 
-                    fontFamily: '"Open Sans", sans-serif',
+                    
                     color: 'var(--gray-400)'
                   }}
                 >
@@ -290,7 +290,7 @@ export function CandidateQueriesGuide({
           <p 
             className="text-xs text-center"
             style={{ 
-              fontFamily: '"Open Sans", sans-serif',
+              
               color: 'var(--gray-400)'
             }}
           >

@@ -221,7 +221,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md rounded-md dark:bg-gray-800 dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-wedo-cyan" />
             <span className="text-gray-950 dark:text-gray-50">Novo Job Autônomo</span>
           </DialogTitle>

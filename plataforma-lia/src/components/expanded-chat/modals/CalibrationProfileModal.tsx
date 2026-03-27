@@ -70,7 +70,7 @@ export function CalibrationProfileModal({
               className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
-              <span className="text-sm font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-sm font-medium">
                 Review Profiles
               </span>
             </button>
@@ -97,7 +97,7 @@ export function CalibrationProfileModal({
                   <div className="flex items-center gap-2">
                     <h2
                       className="text-base font-semibold text-gray-800"
-                      style={{ fontFamily: '"Open Sans", sans-serif' }}
+                     
                     >
                       {candidate.name}
                     </h2>
@@ -117,13 +117,13 @@ export function CalibrationProfileModal({
                       Full Profile ↗
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <p className="text-xs text-gray-500 mt-1">
                     {candidate.location}
                   </p>
-                  <p className="text-xs text-gray-800 mt-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <p className="text-xs text-gray-800 mt-1">
                     ↻ {candidate.currentRole} at {candidate.currentCompany}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <p className="text-xs text-gray-500 mt-1">
                     ★ {candidate.education}
                   </p>
                 </div>
@@ -141,7 +141,7 @@ export function CalibrationProfileModal({
                         ? "text-gray-800 border-gray-800"
                         : "text-gray-500 border-transparent hover:text-gray-800"
                     )}
-                    style={{ fontFamily: '"Open Sans", sans-serif' }}
+                   
                   >
                     {tab === 'experience' ? 'Experience' : tab === 'education' ? 'Education' : 'Skill Map'}
                   </button>
@@ -153,7 +153,7 @@ export function CalibrationProfileModal({
                 <div className="space-y-4">
                   {/* Highlights */}
                   <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
-                    <h4 className="text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <h4 className="text-sm font-semibold text-gray-800 mb-3">
                       Highlights{' '}
                       <span className="text-gray-500 font-normal">Show more ({candidate.highlights.length})</span>
                     </h4>
@@ -194,7 +194,7 @@ export function CalibrationProfileModal({
 
                   {/* Experiences */}
                   <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <h4 className="text-sm font-semibold text-gray-800">
                       Experiences
                     </h4>
                     {candidate.experiences.map((exp) => (
@@ -301,7 +301,7 @@ export function CalibrationProfileModal({
               <div className="flex items-center justify-between">
                 <h3
                   className="text-sm font-semibold text-gray-800"
-                  style={{ fontFamily: '"Open Sans", sans-serif' }}
+                 
                 >
                   Por que encontramos este perfil
                 </h3>
@@ -351,7 +351,7 @@ export function CalibrationProfileModal({
                 onChange={(e) => onSetComment(e.target.value)}
                 placeholder="Ex: Gostei do perfil mas prefiro candidatos com mais experiência em startups..."
                 className="w-full px-3 py-2 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 resize-none bg-white"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
                 rows={2}
               />
             </div>

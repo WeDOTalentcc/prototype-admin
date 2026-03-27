@@ -389,7 +389,7 @@ export function WSITextScreeningModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
         className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-white rounded-md border border-gray-100 dark:bg-gray-800 dark:border-gray-700"
-        style={{ fontFamily: '"Open Sans", sans-serif' }}
+       
       >
         <DialogHeader className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 p-5">
           <div className="flex items-center justify-between">
@@ -398,7 +398,7 @@ export function WSITextScreeningModal({
                 <FileText className="w-5 h-5 text-white dark:text-gray-900" />
               </div>
               <div>
-                <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
                   Triagem WSI (Texto)
                   <Badge variant="outline" className="text-micro font-normal">
                     Bloom + Dreyfus + Big Five
@@ -519,7 +519,7 @@ export function WSITextScreeningModal({
             <div className="space-y-4">
               <div className="text-center py-4">
                 <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>Triagem WSI Concluída</h3>
+                <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">Triagem WSI Concluída</h3>
               </div>
 
               <Card className="bg-white border-gray-200">

@@ -70,7 +70,6 @@ export function ResizableTableHeader({
       style={{ 
         width: `${safeWidth}px`, 
         minWidth: `${minWidth}px`, 
-        fontFamily: 'Open Sans, sans-serif' 
       }}
       draggable={!isFixed && !!onDragStart}
       onDragStart={!isFixed ? onDragStart : undefined}

@@ -61,7 +61,7 @@ export function WizardSidebar({
                         ? "text-gray-500" 
                         : "text-gray-400"
                   )}
-                  style={{ fontFamily: '"Open Sans", sans-serif' }}
+                 
                 >
                   {phase.label}
                 </span>
@@ -116,7 +116,7 @@ export function WizardSidebar({
                               ? "text-gray-600" 
                               : "text-gray-400"
                         )}
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                       
                       >
                         {stage.title}
                       </span>
@@ -158,7 +158,7 @@ export function WizardSidebar({
                       ? "text-gray-500" 
                       : "text-gray-400"
                 )}
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
               >
                 {phase.label}
               </span>
@@ -202,7 +202,7 @@ export function WizardSidebar({
                               ? "text-gray-500" 
                               : "text-gray-400"
                         )}
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                       
                       >
                         {stage.title.length > 10 ? stage.title.split(' ')[0] : stage.title}
                       </span>

@@ -762,7 +762,7 @@ export function ScreeningQuestionsPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-wedo-cyan" />
-            <CardTitle className="text-sm font-medium" style={{ fontFamily: 'Open Sans, sans-serif' }}>Roteiro WSI de Triagem</CardTitle>
+            <CardTitle className="text-sm font-medium">Roteiro WSI de Triagem</CardTitle>
             <Badge 
               variant="outline" 
               className="text-micro px-1.5 py-0 rounded-full bg-green-50 text-green-700 border-green-200"

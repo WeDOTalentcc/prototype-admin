@@ -79,7 +79,7 @@ export function LiaExpandedPanel({
                 {description && (
                   <p 
                     className="text-xs leading-tight truncate mt-0.5 text-gray-500" 
-                    style={{ fontFamily: 'Open Sans, sans-serif' }}
+                   
                   >
                     {description}
                   </p>
@@ -219,7 +219,7 @@ export function LiaTabButton({
         className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
           active ? 'text-white' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
         }`}
-        style={{ fontFamily: 'Open Sans, sans-serif', ...(active ? { backgroundColor: 'var(--gray-600)' } : {}) }}
+        style={{ ...(active ? { backgroundColor: 'var(--gray-600)' } : {}) }}
       >
         <div className="flex items-center gap-1.5">
           {icon}
@@ -233,7 +233,7 @@ export function LiaTabButton({
     <button
       onClick={onClick}
       className="pb-2.5 text-xs font-medium transition-colors relative"
-      style={{ fontFamily: 'Open Sans, sans-serif' }}
+     
     >
       <div className={`flex items-center gap-1.5 ${active ? 'text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>
         {icon}
@@ -257,7 +257,7 @@ export function LiaQuickActionChip({ icon, label, onClick }: LiaQuickActionChipP
     <button
       onClick={onClick}
       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-full hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50 transition-all"
-      style={{ fontFamily: 'Open Sans, sans-serif' }}
+     
     >
       <span className="flex-shrink-0 text-gray-700">{icon}</span>
       {label}
@@ -349,7 +349,6 @@ export function LiaChatInput({
           className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 transition-all resize-none text-gray-950 dark:text-gray-50"
           style={{ 
             border: '1px solid var(--gray-200)',
-            fontFamily: 'Open Sans, sans-serif',
             backgroundColor: 'var(--gray-50)'
           }}
         />
@@ -374,7 +373,6 @@ export function LiaChatInput({
           <Button
             className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' : 'bg-gray-100 text-gray-400'}`}
             style={{
-              fontFamily: 'Open Sans, sans-serif'
             }}
             onClick={onSubmit}
             disabled={!value.trim() || isLoading}
@@ -399,7 +397,7 @@ export function LiaChatInput({
         onKeyDown={handleKeyDown}
         data-testid="chat-input"
         className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 text-gray-900 dark:text-gray-50 placeholder:text-gray-400"
-        style={{ fontFamily: 'Open Sans, sans-serif' }}
+       
       />
       <div className="flex items-center gap-1 flex-shrink-0">
         {showFileUpload && (
@@ -459,7 +457,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           >
             <div 
               className="text-base-ui leading-relaxed text-gray-700 dark:text-gray-200" 
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+             
               dangerouslySetInnerHTML={{ __html: userHtml }}
             />
           </div>
@@ -495,7 +493,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
         >
           <div 
             className="text-base-ui leading-relaxed text-gray-700 dark:text-gray-200" 
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+           
             dangerouslySetInnerHTML={{ __html: liaHtml }}
           />
         </div>

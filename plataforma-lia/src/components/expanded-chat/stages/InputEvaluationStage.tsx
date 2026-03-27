@@ -56,7 +56,7 @@ export function InputEvaluationStage({
       {configLoaded && hasConfigData && (
         <div className="mb-3 px-3 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md flex items-center gap-2">
           <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-          <span className="text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-xs text-gray-600 dark:text-gray-400">
             Usando dados das Configurações da sua empresa
           </span>
         </div>
@@ -66,7 +66,7 @@ export function InputEvaluationStage({
       <div className="mb-4">
         <h4
           className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
         >
           Critérios Detectados
         </h4>
@@ -108,14 +108,14 @@ export function InputEvaluationStage({
                 <div className="flex-1 min-w-0">
                   <p
                     className="text-xs font-medium text-gray-800 transition-colors duration-300"
-                    style={{ fontFamily: '"Open Sans", sans-serif' }}
+                   
                   >
                     {item.label}
                   </p>
                   {isDetected && displayValue && (
                     <p
                       className="text-micro mt-0.5 truncate text-gray-600 dark:text-gray-400 font-medium"
-                      style={{ fontFamily: '"Open Sans", sans-serif' }}
+                     
                     >
                       {displayValue}
                     </p>
@@ -130,12 +130,12 @@ export function InputEvaluationStage({
       {/* Progress Summary */}
       <div className="mt-3 p-2.5 rounded-md bg-white">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-micro text-gray-600" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-micro text-gray-600">
             Detectando critérios...
           </span>
           <span
             className="text-micro font-semibold text-gray-900 dark:text-gray-50"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             {criteriaItems.filter(item => getCriteriaStatus(item.value)).length} / {criteriaItems.length}
           </span>

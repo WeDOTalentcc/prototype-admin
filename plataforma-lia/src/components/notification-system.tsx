@@ -122,7 +122,7 @@ const NotificationItem = React.memo(({
           : "bg-transparent border border-transparent"
       }`}
       onClick={handleClick}
-      style={{ fontFamily: 'Open Sans, sans-serif' }}
+     
     >
       <div className="flex items-start gap-2.5">
         <div className="flex-shrink-0 mt-0.5">
@@ -328,7 +328,7 @@ export function NotificationSystem({
           <CardContent className="p-0">
             <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                   Notificações
                   {unreadCount > 0 && (
                     <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
@@ -346,7 +346,7 @@ export function NotificationSystem({
                       size="sm"
                       onClick={markAllAsRead}
                       className="text-xs h-6 px-2 text-gray-800 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-200"
-                      style={{ fontFamily: 'Open Sans, sans-serif' }}
+                     
                     >
                       Marcar lidas
                     </Button>
@@ -367,7 +367,7 @@ export function NotificationSystem({
               {error ? (
                 <div className="py-10 px-4 text-center">
                   <AlertCircle className="w-8 h-8 mx-auto mb-2 text-red-400" />
-                  <p className="text-sm text-red-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>{error}</p>
+                  <p className="text-sm text-red-500">{error}</p>
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -392,7 +392,7 @@ export function NotificationSystem({
               ) : (
                 <div className="py-10 px-4 text-center">
                   <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-                  <p className="text-sm text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <p className="text-sm text-gray-800 dark:text-gray-200">
                     {isLoading ? "Carregando..." : "Nenhuma notificação"}
                   </p>
                 </div>

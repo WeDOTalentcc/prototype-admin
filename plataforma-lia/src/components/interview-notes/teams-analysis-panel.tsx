@@ -185,7 +185,7 @@ export function TeamsAnalysisPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-wedo-cyan" />
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
               Análise de Entrevista Teams
             </h3>
           </div>

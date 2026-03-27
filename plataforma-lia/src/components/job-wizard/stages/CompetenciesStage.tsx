@@ -241,7 +241,7 @@ export function CompetenciesStage() {
     return (
       <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-white rounded-md border border-gray-200">
         <div className="flex items-center gap-2">
-          <span className="flex-1 text-xs font-medium text-gray-800 flex items-center gap-1.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="flex-1 text-xs font-medium text-gray-800 flex items-center gap-1.5">
             {skill.name}
             {isSkillFromConfig(skill.name) && (
               <span className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 flex-shrink-0" title="Pré-preenchido das Configurações" />
@@ -322,7 +322,7 @@ export function CompetenciesStage() {
         >
           {comp.enabled && <CheckCircle2 className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
         </button>
-        <span className="flex-1 text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <span className="flex-1 text-xs font-medium text-gray-800">
           {comp.name}
         </span>
       </div>

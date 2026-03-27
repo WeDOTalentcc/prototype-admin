@@ -180,7 +180,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 print:w-4 print:h-4" />
               <div>
-                <h2 className="text-xs font-semibold print:text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>Relatório Executivo da Vaga</h2>
+                <h2 className="text-xs font-semibold print:text-xs">Relatório Executivo da Vaga</h2>
                 <p className="text-micro text-white/80">{reportLoading ? "Carregando..." : job.title} • {job.jobId}</p>
               </div>
             </div>
@@ -236,12 +236,12 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
           <div 
             ref={reportRef} 
             className="w-full bg-white p-4 print:p-3 space-y-3 print:space-y-2"
-            style={{ fontFamily: "'Open Sans', sans-serif" }}
+           
           >
             {/* Cabeçalho do Relatório */}
             <div className="flex items-center justify-between pb-2 border-b border-gray-200">
               <div>
-                <h1 className="text-base font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <h1 className="text-base font-semibold text-gray-950 dark:text-gray-50">
                   {job.title}
                 </h1>
                 <div className="flex items-center gap-3 mt-0.5 text-micro text-gray-600">
@@ -268,7 +268,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             {/* Resumo Executivo - Grid 4 colunas compacto */}
             {selectedSections.overview && (
               <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1">
                   <Briefcase className="w-3 h-3 text-gray-600" />
                   Resumo Executivo
                 </h3>
@@ -309,7 +309,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               {/* Análise do Funil */}
               {selectedSections.funnel && (
                 <div className="space-y-2">
-                  <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1">
                     <Filter className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                     Análise do Funil
                   </h3>
@@ -352,7 +352,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               {/* Performance por Canal */}
               {selectedSections.performance && (
                 <div className="space-y-2">
-                  <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1">
                     <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                     Performance por Canal
                   </h3>
@@ -407,7 +407,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               {/* Top Candidatos */}
               {selectedSections.candidates && (
                 <div className="space-y-2">
-                  <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1">
                     <Trophy className="w-3 h-3 text-wedo-orange" />
                     Top 5 Candidatos
                   </h3>
@@ -439,7 +439,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               {/* Linha do Tempo */}
               {selectedSections.timeline && (
                 <div className="space-y-2">
-                  <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                     Linha do Tempo
                   </h3>
@@ -470,7 +470,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             {/* Análise de Custos */}
             {selectedSections.costs && (
               <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1">
                   <DollarSign className="w-3 h-3 text-wedo-green" />
                   Análise de Custos
                 </h3>
@@ -503,7 +503,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             {/* Recomendações */}
             {selectedSections.recommendations && (
               <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1 bg-yellow-50 py-1.5 px-2 rounded-t border border-yellow-100 border-b-0" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <h3 className="text-xs font-semibold text-gray-950 flex items-center gap-1 bg-yellow-50 py-1.5 px-2 rounded-t border border-yellow-100 border-b-0">
                   <Lightbulb className="w-3 h-3 text-wedo-orange" />
                   Recomendações e Próximos Passos
                 </h3>

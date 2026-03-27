@@ -49,7 +49,7 @@ export function RevealCreditsModal({
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
       <AlertDialogContent 
         className="max-w-md bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
-        style={{ fontFamily: '"Open Sans", sans-serif' }}
+       
       >
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">

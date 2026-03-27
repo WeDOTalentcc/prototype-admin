@@ -61,7 +61,7 @@ export function JobDescriptionStage() {
     <div className="space-y-2.5">
       {/* Cargo */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1">
           Cargo *
           {fieldOrigins['job_title'] && (
             <FieldOriginBadge 
@@ -77,7 +77,7 @@ export function JobDescriptionStage() {
           onChange={(e) => handleFieldChange('cargo', e.target.value)}
           placeholder="Ex: Desenvolvedor Python Sr"
           className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
           aria-label="Título do cargo"
           aria-required="true"
         />
@@ -85,7 +85,7 @@ export function JobDescriptionStage() {
 
       {/* Área */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1">
           Área/Departamento *
           {fieldOrigins['department'] && (
             <FieldOriginBadge 
@@ -99,7 +99,7 @@ export function JobDescriptionStage() {
           value={basicInfoFields.area}
           onChange={(e) => handleFieldChange('area', e.target.value)}
           className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors bg-white"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
           aria-label="Área ou departamento"
           aria-required="true"
         >
@@ -112,7 +112,7 @@ export function JobDescriptionStage() {
 
       {/* Gestor */}
       <div>
-        <label className="block text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="block text-micro font-medium text-gray-500 mb-1">
           Gestor Responsável
         </label>
         <input
@@ -121,14 +121,14 @@ export function JobDescriptionStage() {
           onChange={(e) => setBasicInfoFields(prev => ({ ...prev, gestor: e.target.value }))}
           placeholder="Ex: João Silva"
           className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
           aria-label="Nome do gestor responsável"
         />
       </div>
 
       {/* Localidade */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1">
           Localidade
           {fieldOrigins['location'] && (
             <FieldOriginBadge 
@@ -146,7 +146,7 @@ export function JobDescriptionStage() {
             onChange={(e) => handleFieldChange('localidade', e.target.value)}
             placeholder="Ex: São Paulo, SP"
             className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
             aria-label="Localidade ou cidade"
           />
         </div>
@@ -154,7 +154,7 @@ export function JobDescriptionStage() {
 
       {/* Modelo de Trabalho */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1">
           Modelo de Trabalho
           {fieldOrigins['work_model'] && (
             <FieldOriginBadge 
@@ -175,7 +175,7 @@ export function JobDescriptionStage() {
                   ? "bg-gray-900 dark:bg-gray-50 text-white"
                   : "border border-gray-200 text-gray-500 hover:border-gray-900 dark:hover:border-gray-50"
               )}
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               {modelo}
             </button>
@@ -186,7 +186,7 @@ export function JobDescriptionStage() {
       {/* Dias Híbridos - só aparece se modelo for híbrido */}
       {basicInfoFields.modeloTrabalho === 'Híbrido' && (
         <div>
-          <label className="block text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <label className="block text-micro font-medium text-gray-500 mb-1">
             Dias Presenciais por Semana
           </label>
           <div className="flex gap-1.5">
@@ -201,7 +201,7 @@ export function JobDescriptionStage() {
                     ? "bg-gray-900 dark:bg-gray-50 text-white"
                     : "border border-gray-200 text-gray-500 hover:border-gray-900 dark:hover:border-gray-50"
                 )}
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
               >
                 {dias} {dias === 1 ? 'dia' : 'dias'}
               </button>
@@ -212,7 +212,7 @@ export function JobDescriptionStage() {
 
       {/* Tipo de Contrato */}
       <div>
-        <label className="block text-micro font-medium text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <label className="block text-micro font-medium text-gray-500 mb-1">
           Tipo de Contrato
         </label>
         <div className="flex flex-wrap gap-2">
@@ -226,7 +226,7 @@ export function JobDescriptionStage() {
                   ? "bg-gray-900 dark:bg-gray-50 text-white"
                   : "border border-gray-200 text-gray-500 hover:border-gray-900 dark:hover:border-gray-50"
               )}
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               {tipo}
             </button>

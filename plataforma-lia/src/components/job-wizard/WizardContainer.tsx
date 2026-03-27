@@ -85,7 +85,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           isCurrent && "text-gray-600 dark:text-gray-400",
           isPast && "text-status-success",
           !isCurrent && !isPast && "text-gray-400"
-        )} style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        )}>
           {stageConfig?.title || stage}
         </span>
       </div>
@@ -104,7 +104,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark flex items-center justify-center">
               <span className="text-white text-sm font-bold">L</span>
             </div>
-            <span className="text-sm font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <span className="text-sm font-semibold text-gray-800">
               LIA • Criação de Vaga
             </span>
           </div>
@@ -117,7 +117,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
                   currentPhase.id === phase.id
                     ? "bg-gray-900 dark:bg-gray-50 text-white"
                     : "text-gray-500"
-                )} style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                )}>
                   {phase.label}
                 </span>
                 {phaseIndex < WIZARD_PHASES.length - 1 && (
@@ -173,7 +173,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             style={{ width: `${panelWidth}%` }}
           >
             <div className="p-3 border-b border-gray-200">
-              <h3 className="text-xs font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <h3 className="text-xs font-semibold text-gray-800">
                 {currentStageConfig?.panelTitle || 'Painel'}
               </h3>
             </div>
@@ -195,7 +195,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
               ? "text-gray-400 cursor-not-allowed"
               : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800"
           )}
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
         >
           <ChevronLeft className="w-4 h-4" />
           Voltar
@@ -232,7 +232,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
               onClose()
             }}
             className="flex items-center gap-1.5 px-4 py-2 bg-status-success text-white rounded-md text-xs font-medium hover:bg-status-success transition-all"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             <Check className="w-4 h-4" />
             Finalizar
@@ -240,7 +240,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
         ) : isReviewStage ? (
           <button
             className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md text-xs font-medium transition-all"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             Publicar Vaga
             <ChevronRight className="w-4 h-4" />
@@ -255,7 +255,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
                 ? "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             )}
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             Avançar
             <ChevronRight className="w-4 h-4" />

@@ -254,7 +254,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div 
         className="bg-white dark:bg-gray-900 rounded-md w-full max-w-3xl max-h-[80vh] overflow-hidden border border-gray-200 dark:border-gray-700"
-        style={{ fontFamily: 'Open Sans, sans-serif' }}
+       
       >
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
@@ -264,7 +264,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                   Dicas e Comandos da LIA
                 </h2>
                 <p className="text-xs text-gray-800 dark:text-gray-200">

@@ -85,7 +85,7 @@ export function LiaInstructionPopover({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-chat-cyan" />
-              <span className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>Instrução para LIA</span>
+              <span className="text-sm font-semibold text-gray-950 dark:text-gray-50">Instrução para LIA</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}

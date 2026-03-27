@@ -726,7 +726,7 @@ export function JobInsightsModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
         className="max-w-4xl max-h-[85vh] bg-white border border-gray-200 flex flex-col"
-        style={{ fontFamily: "'Open Sans', sans-serif" }}
+       
         aria-describedby="insights-modal-description"
       >
         <DialogHeader className="pb-3 border-b border-gray-200 flex-shrink-0">

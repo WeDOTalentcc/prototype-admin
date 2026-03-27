@@ -42,7 +42,7 @@ export function AddCompetencyModal({
       <div className="bg-white rounded-2xl w-[440px] p-6">
         <h3
           className="text-lg font-semibold text-gray-800 mb-4"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
         >
           Adicionar Competência Comportamental
         </h3>
@@ -80,7 +80,7 @@ export function AddCompetencyModal({
             onChange={(e) => onCompetencyNameChange(e.target.value)}
             placeholder="Nome da competência (ex: Liderança)"
             className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
             autoFocus
           />
           <textarea
@@ -88,7 +88,7 @@ export function AddCompetencyModal({
             onChange={(e) => onCompetencyJustificationChange(e.target.value)}
             placeholder="Justificativa (ex: Necessário para gestão de equipe)"
             className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400 resize-none"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
             rows={3}
           />
         </div>

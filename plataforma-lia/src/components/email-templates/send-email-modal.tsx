@@ -141,7 +141,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         className="max-w-4xl h-[80vh] p-0 gap-0 overflow-hidden bg-white border border-gray-100 rounded-md dark:bg-gray-800 dark:border-gray-700"
-        style={{ fontFamily: '"Open Sans", sans-serif' }}
+       
       >
         <VisuallyHidden>
           <DialogTitle>Enviar Email</DialogTitle>
@@ -153,7 +153,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
               <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
                 <CheckCircle className="w-7 h-7 text-green-600" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-1">
                 Email Enviado!
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -169,7 +169,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   <Mail className="w-3.5 h-3.5 text-gray-600" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                     Enviar Email
                   </h2>
                   {candidate && (

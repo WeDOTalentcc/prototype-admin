@@ -147,7 +147,7 @@ export function WSIQuestionsStage() {
           
           {/* Question content */}
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-800 leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <p className="text-xs text-gray-800 leading-relaxed">
               {question.question}
             </p>
             
@@ -263,7 +263,7 @@ export function WSIQuestionsStage() {
           </div>
           {/* Business Rule Note: These questions are ADDITIONAL to the 5-question limit */}
           <div className="mb-2 p-2 bg-blue-50 rounded border border-blue-200">
-            <p className="text-micro text-blue-700" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <p className="text-micro text-blue-700">
               💡 <strong>Nota:</strong> Estas perguntas são <strong>adicionais</strong> às 5 perguntas WSI. Elas não contam no limite.
             </p>
           </div>
@@ -285,7 +285,7 @@ export function WSIQuestionsStage() {
                   <span className={cn(
                     "text-xs",
                     q.enabled ? "text-gray-800" : "text-gray-400"
-                  )} style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  )}>
                     {q.question}
                   </span>
                 </div>
@@ -302,7 +302,7 @@ export function WSIQuestionsStage() {
       {isGeneratingWSI && (
         <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2">
           <Loader2 className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
-          <span className="text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-xs text-gray-600 dark:text-gray-400">
             Gerando perguntas personalizadas para esta vaga...
           </span>
         </div>
@@ -386,7 +386,7 @@ export function WSIQuestionsStage() {
       {/* Instructions */}
       {wsiCandidates.length === 0 && !isGeneratingWSI && (
         <div className="p-4 bg-amber-50 rounded-md border border-amber-200 text-center">
-          <p className="text-xs text-amber-700" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <p className="text-xs text-amber-700">
             Complete as etapas anteriores para que a LIA gere perguntas de triagem personalizadas para esta vaga.
           </p>
         </div>

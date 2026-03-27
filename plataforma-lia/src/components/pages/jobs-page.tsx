@@ -3669,7 +3669,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       placeholder="Como posso te ajudar com suas vagas hoje?"
                       value={liaPromptValue}
                       onChange={(e) => setLiaPromptValue(e.target.value)}
-                      style={{ fontFamily: 'Open Sans, sans-serif' }}
+                     
                       className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-gray-950 dark:text-gray-50"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && liaPromptValue.trim()) {
@@ -3716,7 +3716,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                 {/* Segunda linha de tags - Sugestões Dinâmicas (estilo Funil) */}
                 <div className="px-4 pb-4">
                   <div className="flex flex-wrap items-start gap-2 pt-3">
-                    <span className="text-xs text-gray-800 font-medium mt-0.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>Sugestões:</span>
+                    <span className="text-xs text-gray-800 font-medium mt-0.5">Sugestões:</span>
                     {/* Renderiza sugestões do orquestrador quando disponíveis, senão usa contextuais baseadas no estado */}
                     {(orchestratorSuggestions.length > 0 ? orchestratorSuggestions : getContextualSuggestions()).slice(0, 4).map((suggestion, index) => (
                       <button
@@ -3726,7 +3726,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           setTimeout(() => openGeneralChat(suggestion), 100)
                         }}
                         className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-all bg-gray-50 text-gray-800 border border-gray-200 hover:text-gray-900 hover:bg-gray-100"
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                       
                       >
                         {suggestion}
                       </button>
@@ -3758,7 +3758,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   style={{ 
                     backgroundColor: "var(--lia-bg-primary)",
                     color: "var(--gray-950)",
-                    fontFamily: '"Open Sans", sans-serif'
                   }}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-800)"
@@ -3963,13 +3962,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <div className="min-w-0 flex-1">
                             <h3 
                               className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" 
-                              style={{ fontFamily: 'Open Sans, sans-serif' }}
+                             
                             >
                               Olá! Sou a Lia.
                             </h3>
                             <p 
                               className="text-xs leading-tight truncate mt-0.5 text-gray-500" 
-                              style={{ fontFamily: 'Open Sans, sans-serif' }}
+                             
                             >
                               Como posso te ajudar hoje?
                             </p>
@@ -4030,7 +4029,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               />
                               <div 
                                 className="px-2.5 py-2 rounded-md bg-gray-100"
-                                style={{ fontFamily: 'Open Sans, sans-serif' }}
+                               
                               >
                                 <p className="text-xs text-gray-800 leading-relaxed">{message.content}</p>
                               </div>
@@ -4038,7 +4037,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           ) : (
                             <div 
                               className="max-w-[90%] group"
-                              style={{ fontFamily: 'Open Sans, sans-serif' }}
+                             
                             >
                               <div className="flex items-start gap-2">
                                 <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
@@ -4117,7 +4116,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         }}
                         disabled={liaInlineLoading}
                         className="flex-1 text-xs bg-transparent focus:outline-none text-gray-950 dark:text-gray-50 disabled:opacity-50"
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       />
                       <AudioRecordButton
                         onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
@@ -4145,7 +4144,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
  activeSearchTab === 'ia-natural' ? 'text-white bg-gray-900' : 'text-gray-700 hover:dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
                         }`}
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <div className="flex items-center gap-1">
                           <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
@@ -4157,7 +4156,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
  activeSearchTab === 'job-description' ? 'text-white bg-gray-900' : 'text-gray-700 hover:dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
                         }`}
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <div className="flex items-center gap-1">
                           <FileText className="w-2.5 h-2.5" />
@@ -4169,7 +4168,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
  activeSearchTab === 'templates' ? 'text-white bg-gray-900' : 'text-gray-700 hover:dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
                         }`}
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <div className="flex items-center gap-1">
                           <Target className="w-2.5 h-2.5" />
@@ -4181,14 +4180,14 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     {/* Tags de Ações Rápidas - Abaixo das abas (só visíveis em IA Natural) */}
                     {activeSearchTab === 'ia-natural' && (
                       <div className="flex items-center gap-1.5 mt-1.5">
-                        <span className="text-micro font-medium text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões:</span>
+                        <span className="text-micro font-medium text-gray-500">Sugestões:</span>
                         <button
                           onClick={() => {
                             setShowExpandedLIA(false)
                             openJobCreationChat()
                           }}
                           className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
-                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                         
                         >
                           <Plus className="w-2.5 h-2.5 text-gray-500" />
                           Criar vaga
@@ -4212,7 +4211,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <div className="space-y-3">
                         {/* Descrição */}
                         <div className="p-2.5 rounded-md" style={{ backgroundColor: 'var(--gray-50)' }}>
-                          <p className="text-xs" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <p className="text-xs">
                             Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você, configurando todos os detalhes.
                           </p>
                         </div>
@@ -4223,7 +4222,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)..."
                             value={jobDescriptionText}
                             onChange={(e) => setJobDescriptionText(e.target.value)}
-                            className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-all resize-none text-gray-950 dark:text-gray-50 border border-gray-100" style={{ fontFamily: 'Open Sans, sans-serif', backgroundColor: 'var(--gray-50)' }}
+                            className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-all resize-none text-gray-950 dark:text-gray-50 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)' }}
                           />
                           {/* Botões de Anexo */}
                           <div className="absolute bottom-2 right-2 flex items-center gap-1">
@@ -4259,13 +4258,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                         {/* Erro de upload */}
                         {jdUploadError && (
-                          <p className="text-micro text-red-500 px-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <p className="text-micro text-red-500 px-1">
                             {jdUploadError}
                           </p>
                         )}
 
                         {/* Aviso LGPD */}
-                        <p className="text-micro text-gray-400 px-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <p className="text-micro text-gray-400 px-1">
                           O arquivo pode conter dados pessoais. Revise o conteúdo antes de importar. (LGPD)
                         </p>
 
@@ -4275,7 +4274,6 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           style={{
                             backgroundColor: jobDescriptionText.trim() ? 'var(--gray-800)' : 'var(--gray-50)',
                             color: jobDescriptionText.trim() ? 'var(--white)' : 'var(--gray-400)',
-                            fontFamily: 'Open Sans, sans-serif'
                           }}
                           onClick={() => {
                             if (jobDescriptionText.trim()) {
@@ -4296,7 +4294,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-20rem)]">
                         {/* Seção 1: Criar a partir de Template */}
                         <div>
-                          <h4 className="text-xs font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h4 className="text-xs font-medium mb-0.5 text-gray-800">
                             Criar Vaga a Partir de Template
                           </h4>
                           <p className={`${textStyles.caption} mb-2`}>
@@ -4324,7 +4322,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-sm">{template.icon}</span>
                                   <div className="flex-1 min-w-0">
-                                    <h5 className="text-xs font-medium truncate text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                    <h5 className="text-xs font-medium truncate text-gray-800">
                                       {template.title}
                                     </h5>
                                     <div className="flex gap-1 mt-0.5">
@@ -4341,7 +4339,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                         {/* Seção 2: Criar a partir de Vaga Existente */}
                         <div className="pt-2">
-                          <h4 className="text-xs font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h4 className="text-xs font-medium mb-0.5 text-gray-800">
                             Criar a Partir de Vaga Existente
                           </h4>
                           <p className={`${textStyles.caption} mb-2`}>
@@ -4354,7 +4352,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             <input
                               type="text"
                               placeholder="Buscar vaga por título ou ID..."
-                              className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors text-gray-800 border border-gray-100" style={{ fontFamily: '"Open Sans", sans-serif', backgroundColor: 'var(--gray-50)' }}
+                              className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors text-gray-800 border border-gray-100" style={{ backgroundColor: 'var(--gray-50)' }}
                               onFocus={(e) => e.target.style.borderColor = 'var(--gray-400)'}
                               onBlur={(e) => e.target.style.borderColor = 'var(--gray-50)'}
                             />
@@ -4378,7 +4376,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--gray-50)'}
                               >
                                 <span className="text-micro px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--gray-50)' }}>{job.id}</span>
-                                <span className="text-xs truncate flex-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                <span className="text-xs truncate flex-1 text-gray-800">
                                   {job.title}
                                 </span>
                                 <Copy className="w-3.5 h-3.5 text-gray-400" />
@@ -4389,7 +4387,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                         {/* Seção 3: Criar Novo Template */}
                         <div className="pt-2">
-                          <h4 className="text-xs font-medium mb-0.5 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h4 className="text-xs font-medium mb-0.5 text-gray-800">
                             Salvar Template
                           </h4>
                           <p className={`${textStyles.caption} mb-2`}>
@@ -4398,7 +4396,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           
                           <Button
                             variant="outline"
-                            className="w-full h-9 !text-xs font-medium rounded-md text-gray-800 border border-gray-100" style={{ fontFamily: '"Open Sans", sans-serif' }}
+                            className="w-full h-9 !text-xs font-medium rounded-md text-gray-800 border border-gray-100"
                             onClick={() => {
                               console.log('Criar template a partir de vaga')
                             }}
@@ -4456,7 +4454,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <div className="flex items-center gap-2">
                         <Target className="w-4 h-4 text-gray-600" />
                         <div>
-                          <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                             Filtros Avançados
                           </h3>
                           <p className={textStyles.bodySmall}>
@@ -4486,7 +4484,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         placeholder="Buscar por título, ID, departamento..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-8 py-2 text-xs rounded-md border focus:outline-none focus:border-gray-900 transition-colors border border-gray-100" style={{ fontFamily: 'Open Sans, sans-serif', backgroundColor: 'white' }}
+                        className="w-full pl-9 pr-8 py-2 text-xs rounded-md border focus:outline-none focus:border-gray-900 transition-colors border border-gray-100" style={{ backgroundColor: 'white' }}
                       />
                       {searchTerm && (
                         <button
@@ -4997,7 +4995,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
               <div 
                 className="flex-shrink-0 bg-white dark:bg-gray-800 rounded-md overflow-hidden animate-slide-in flex flex-col h-full max-h-[calc(100vh-180px)] relative group"
                 style={{ 
-                  fontFamily: '"Open Sans", sans-serif',
+                  
                   width: `${previewWidth}px`,
                   minWidth: '320px',
                   maxWidth: '700px'
@@ -5037,7 +5035,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <div className="flex-1 min-w-0">
                         {/* Row 1: Título + Código (lado direito) */}
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50 truncate">
                             {previewJob.title}
                           </h3>
                           <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{ backgroundColor: 'rgba(107, 114, 128, 0.15)', border: '1px solid rgba(107, 114, 128, 0.3)' }}>

@@ -118,7 +118,7 @@ export function ChatMessageList({
               <div className="flex flex-col items-end gap-1 flex-1">
                 <div
                   className="px-3.5 py-2.5 rounded-[14px] rounded-br-[4px] bg-gray-100 dark:bg-gray-800"
-                  style={{ fontFamily: '"Open Sans", sans-serif' }}
+                 
                 >
                   <p className="text-base-ui text-gray-700 dark:text-gray-200 leading-relaxed">{message.content}</p>
                 </div>
@@ -135,7 +135,7 @@ export function ChatMessageList({
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
               </div>
-              <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="text-xs font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
                   <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
@@ -162,7 +162,7 @@ export function ChatMessageList({
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
               </div>
-              <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-xs font-bold text-gray-800" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
                   <span className="text-xs text-gray-400" style={{ fontFamily: '"Inter", sans-serif' }}>{formatTimestamp(message.timestamp)}</span>
@@ -364,7 +364,7 @@ export function ChatMessageList({
                   result={(message.actionResult || {}) as Record<string, unknown> & { candidate_id?: string; candidate_name?: string; from_stage?: string; to_stage?: string; subject?: string; datetime?: string; moved_at?: string; sent_at?: string; scheduled_at?: string; simulated?: boolean; action?: string }}
                 />
                 {message.content && (
-                  <p className="text-base-ui text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <p className="text-base-ui text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
                     {message.content}
                   </p>
                 )}
@@ -382,7 +382,7 @@ export function ChatMessageList({
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
               </div>
-              <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-micro font-bold text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>LIA</span>
                   <span className="text-micro px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{ fontFamily: '"Inter", sans-serif' }}>sugestão proativa</span>
@@ -419,7 +419,7 @@ export function ChatMessageList({
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
               </div>
-              <div className="pt-1 flex-1 min-w-0" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <div className="pt-1 flex-1 min-w-0">
                 <DetectedFieldsCard
                   fields={message.detectedFields}
                   onEdit={(fieldLabel) => {
@@ -438,7 +438,7 @@ export function ChatMessageList({
                 "px-3 py-2 rounded-md text-xs transition-all duration-300",
                 message.processingState === 'completed' ? "bg-gray-100 text-gray-800" : "bg-gray-50 text-gray-500"
               )}
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               <div className="flex items-center gap-2">
                 {message.processingState !== 'completed' && (
@@ -451,7 +451,7 @@ export function ChatMessageList({
             /* LIA Message - Standardized bubble */
             <div
               className="max-w-[85%] group overflow-hidden"
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               <div className="flex items-start gap-2.5">
                 <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">

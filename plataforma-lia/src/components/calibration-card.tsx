@@ -116,7 +116,7 @@ export function CalibrationCard({
                     Calibração completa! Sourcing liberado.
                   </span>
                 ) : (
-                  <span style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <span>
                     Candidato {progress.currentIndex + 1} de {progress.totalRequired} - Avalie para eu aprender seu perfil
                   </span>
                 )}
@@ -130,7 +130,7 @@ export function CalibrationCard({
               className="h-1.5 bg-gray-100 dark:bg-gray-800"
             />
             {!progress.isComplete && feedbacksRemaining > 0 && (
-              <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p className="text-xs text-gray-800 dark:text-gray-200">
                 {feedbacksRemaining === 1 
                   ? 'Falta apenas 1 avaliação para liberar o sourcing automático'
                   : `Faltam ${feedbacksRemaining} avaliações para liberar o sourcing automático`
@@ -162,7 +162,7 @@ export function CalibrationCard({
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 truncate">
                     {candidate.name}
                   </h4>
                   {candidate.linkedin_url && (
@@ -184,7 +184,7 @@ export function CalibrationCard({
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Briefcase className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400 truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <span className="text-xs text-gray-600 dark:text-gray-400 truncate">
                     {candidate.current_title}
                   </span>
                 </div>
@@ -213,7 +213,7 @@ export function CalibrationCard({
             </div>
 
             {candidate.summary && (
-              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
                 {candidate.summary}
               </p>
             )}

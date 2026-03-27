@@ -99,13 +99,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             <div>
               <h2 
                 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Teste Técnico
               </h2>
               <p 
                 className="text-xs text-gray-600"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 {candidate?.name ?? 'Candidato'}
               </p>
@@ -131,7 +131,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               />
               <span 
                 className="text-xs font-medium"
-                style={{ fontFamily: "'Open Sans', sans-serif", color: statusConfig.color }}
+                style={{ color: statusConfig.color }}
               >
                 {statusConfig.label}
               </span>
@@ -139,7 +139,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             {testData.completedAt && status === 'completed' && (
               <span 
                 className="text-micro text-gray-600"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Concluído em {new Date(testData.completedAt).toLocaleDateString('pt-BR')}
               </span>
@@ -156,20 +156,20 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                     <Trophy className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     <span 
                       className="text-micro text-gray-600"
-                      style={{ fontFamily: "'Open Sans', sans-serif" }}
+                     
                     >
                       Score Geral
                     </span>
                   </div>
                   <span 
                     className="text-2xl font-bold"
-                    style={{ fontFamily: "'Open Sans', sans-serif", color: getScoreColor(testData.score) }}
+                    style={{ color: getScoreColor(testData.score) }}
                   >
                     {testData.score}
                   </span>
                   <span 
                     className="text-sm ml-1 text-gray-400"
-                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                   
                   >
                     / 100
                   </span>
@@ -182,20 +182,20 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                     <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     <span 
                       className="text-micro text-gray-600"
-                      style={{ fontFamily: "'Open Sans', sans-serif" }}
+                     
                     >
                       Tempo de Conclusão
                     </span>
                   </div>
                   <span 
                     className="text-2xl font-bold text-gray-950 dark:text-gray-50"
-                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                   
                   >
                     {testData.duration}
                   </span>
                   <span 
                     className="text-sm ml-1 text-gray-400"
-                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                   
                   >
                     / {testData.maxDuration} min
                   </span>
@@ -209,14 +209,14 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 <span 
                   className="text-xs text-gray-600 dark:text-gray-400"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 >
                   Comparação com outros candidatos:
                 </span>
                 <span 
                   className="text-xs font-semibold ml-auto"
                   style={{ 
-                    fontFamily: "'Open Sans', sans-serif", 
+                    
                     color: testData.score >= testData.averageScore ? 'var(--status-success)' : 'var(--status-error)' 
                   }}
                 >
@@ -227,7 +227,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               <div className="mb-4">
                 <p 
                   className="text-xs font-semibold mb-3 text-gray-950 dark:text-gray-50"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 >
                   Breakdown por Categoria
                 </p>
@@ -241,7 +241,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                       <div className="flex items-center justify-between mb-2">
                         <span 
                           className="text-xs font-medium text-gray-950 dark:text-gray-50"
-                          style={{ fontFamily: "'Open Sans', sans-serif" }}
+                         
                         >
                           {category.name}
                         </span>
@@ -249,7 +249,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                           {getComparisonIcon(category.score, category.avgScore)}
                           <span 
                             className="text-xs font-bold"
-                            style={{ fontFamily: "'Open Sans', sans-serif", color: getScoreColor(category.score) }}
+                            style={{ color: getScoreColor(category.score) }}
                           >
                             {category.score}
                           </span>
@@ -267,14 +267,14 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                       <div className="flex items-center justify-between mt-1">
                         <span 
                           className="text-micro text-gray-600"
-                          style={{ fontFamily: "'Open Sans', sans-serif" }}
+                         
                         >
                           Média dos candidatos: {category.avgScore}
                         </span>
                         <span 
                           className="text-micro"
                           style={{ 
-                            fontFamily: "'Open Sans', sans-serif", 
+                            
                             color: category.score >= category.avgScore ? 'var(--status-success)' : 'var(--status-error)' 
                           }}
                         >
@@ -295,13 +295,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               <AlertCircle className="w-12 h-12 mb-3" />
               <p 
                 className="text-xs font-medium mb-1 text-gray-500"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Teste ainda não iniciado
               </p>
               <p 
                 className="text-micro text-center text-gray-400"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 O candidato receberá um convite para realizar o teste técnico.
               </p>
@@ -316,13 +316,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 
                 className="text-xs font-medium mb-1 text-gray-500"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Teste em andamento
               </p>
               <p 
                 className="text-micro text-center text-gray-400"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 O candidato está realizando o teste técnico neste momento.
               </p>
@@ -337,7 +337,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             onClick={onClose}
             size="sm"
             className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
-            style={{ fontFamily: "'Open Sans', sans-serif" }}
+           
           >
             Fechar
           </Button>

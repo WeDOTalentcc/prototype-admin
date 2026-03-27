@@ -122,7 +122,7 @@ export function SalaryStage() {
         <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-wedo-green-bright/5 rounded-md border border-gray-300 dark:border-gray-600">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <span className="text-xs font-medium text-gray-800">
               Benchmark de Mercado
             </span>
             {salaryBenchmark.market?.learning_adjusted && (
@@ -215,7 +215,7 @@ export function SalaryStage() {
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, minSalary: e.target.value }))}
                 placeholder="12.000"
                 className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
               />
             </div>
           </div>
@@ -229,7 +229,7 @@ export function SalaryStage() {
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, maxSalary: e.target.value }))}
                 placeholder="18.000"
                 className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
               />
             </div>
           </div>
@@ -253,7 +253,7 @@ export function SalaryStage() {
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, minBonus: e.target.value }))}
                 placeholder="10.000"
                 className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
               />
             </div>
           </div>
@@ -267,7 +267,7 @@ export function SalaryStage() {
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, maxBonus: e.target.value }))}
                 placeholder="20.000"
                 className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
               />
             </div>
           </div>
@@ -278,7 +278,7 @@ export function SalaryStage() {
           onChange={(e) => setSalaryInfo(prev => ({ ...prev, bonusCriteria: e.target.value }))}
           placeholder="Critérios: Desempenho individual + metas da empresa"
           className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
         />
       </div>
 
@@ -328,7 +328,7 @@ export function SalaryStage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1">
-                            <span className="text-micro font-medium text-gray-800 block truncate" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                            <span className="text-micro font-medium text-gray-800 block truncate">
                               {benefit.name}
                             </span>
                             {benefit.is_highlighted && (
@@ -420,7 +420,7 @@ export function SalaryStage() {
       {/* Summary */}
       <div className="p-2 bg-gray-50 rounded-md border border-gray-300 dark:border-gray-600">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-gray-500">
             Benefícios selecionados:
           </span>
           <span className="font-semibold text-gray-900 dark:text-gray-50">{enabledBenefitsCount}</span>

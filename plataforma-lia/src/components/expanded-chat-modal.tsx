@@ -7785,7 +7785,7 @@ Qual prefere?`,
                       aria-label="Digite sua mensagem para a LIA"
                       aria-describedby="chat-input-hint"
                       className="flex-1 py-1 bg-transparent text-base-ui text-gray-900 dark:text-gray-50 placeholder:text-gray-400 focus:outline-none"
-                      style={{ fontFamily: '"Open Sans", sans-serif' }}
+                     
                       disabled={isLoading || isTypingEffect}
                     />
                     <span id="chat-input-hint" className="sr-only">Pressione Enter para enviar a mensagem</span>
@@ -7859,7 +7859,7 @@ Qual prefere?`,
                             ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
                             : "text-gray-700 bg-gray-100 hover:bg-gray-200"
                         )}
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                       
                       >
                         <div className="flex items-center gap-1">
                           <Brain className="w-2.5 h-2.5 text-chat-cyan" />
@@ -7874,7 +7874,7 @@ Qual prefere?`,
                             ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
                             : "text-gray-700 bg-gray-100 hover:bg-gray-200"
                         )}
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                       
                       >
                         <div className="flex items-center gap-1">
                           <FileText className="w-2.5 h-2.5" />
@@ -7889,7 +7889,7 @@ Qual prefere?`,
                             ? "text-white bg-gray-900 dark:bg-gray-50 dark:text-gray-900" 
                             : "text-gray-700 bg-gray-100 hover:bg-gray-200"
                         )}
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                       
                       >
                         <div className="flex items-center gap-1">
                           <Target className="w-2.5 h-2.5" />
@@ -7902,7 +7902,7 @@ Qual prefere?`,
                   {/* Badges de sugestão abaixo das tabs (só quando IA Natural selecionado) */}
                   {!hideModeButtons && activeInputTab === 'ia-natural' && (
                     <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
-                      <span className="text-micro font-medium text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>Sugestões:</span>
+                      <span className="text-micro font-medium text-gray-500">Sugestões:</span>
                       {suggestionTags.map((tag) => {
                         const IconComponent = tag.icon
                         return (
@@ -7961,7 +7961,7 @@ Qual prefere?`,
                                 ? "opacity-50 cursor-not-allowed"
                                 : "hover:bg-gray-200"
                             )}
-                            style={{ fontFamily: '"Open Sans", sans-serif' }}
+                           
                           >
                             <IconComponent className="w-2.5 h-2.5 text-gray-500" />
                             {tag.label}
@@ -7981,7 +7981,7 @@ Qual prefere?`,
                   {/* Conteúdo da aba Job Description */}
                   {activeInputTab === 'job-description' && (
                     <div className="mt-3 p-3 rounded-md border border-gray-100 bg-white">
-                      <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                      <p className="text-xs text-gray-600 mb-2">
                         Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você, configurando todos os detalhes.
                       </p>
                       <textarea
@@ -7990,7 +7990,7 @@ Qual prefere?`,
                         placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)."
                         className="w-full px-3 py-2.5 text-xs rounded-md border border-gray-100 focus:border-gray-400 focus:outline-none resize-none transition-colors bg-gray-50"
                         style={{ 
-                          fontFamily: '"Open Sans", sans-serif',
+                          
                           minHeight: '80px'
                         }}
                         rows={4}
@@ -8007,7 +8007,6 @@ Qual prefere?`,
                             inputValue.trim() ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-400"
                           )}
                           style={{
-                            fontFamily: '"Open Sans", sans-serif'
                           }}
                           onClick={() => {
                             if (inputValue.trim()) {
@@ -8032,7 +8031,7 @@ Qual prefere?`,
                     <div className="mt-3 p-3 rounded-md border border-gray-100 bg-white space-y-3">
                       {/* Seção 1: Criar a partir de Template */}
                       <div>
-                        <h4 className="text-xs font-medium mb-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <h4 className="text-xs font-medium mb-1 text-gray-800">
                           Criar Vaga a Partir de Template
                         </h4>
                         <p className="text-micro text-gray-500 mb-2">
@@ -8060,7 +8059,7 @@ Qual prefere?`,
                               <div className="flex items-center gap-1.5">
                                 <span className="text-sm">{template.icon}</span>
                                 <div className="flex-1 min-w-0">
-                                  <h5 className="text-xs font-medium truncate text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                  <h5 className="text-xs font-medium truncate text-gray-800">
                                     {template.title}
                                   </h5>
                                   <div className="flex gap-1 mt-0.5">
@@ -8077,7 +8076,7 @@ Qual prefere?`,
 
                       {/* Seção 2: Criar a partir de Vaga Existente */}
                       <div className="pt-2 border-t border-gray-100">
-                        <h4 className="text-xs font-medium mb-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <h4 className="text-xs font-medium mb-1 text-gray-800">
                           Criar a Partir de Vaga Existente
                         </h4>
                         <p className="text-micro text-gray-500 mb-2">
@@ -8090,7 +8089,6 @@ Qual prefere?`,
                             placeholder="Buscar vaga por título ou ID..."
                             className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-gray-100 focus:border-gray-400 focus:outline-none transition-colors bg-gray-50"
                             style={{ 
-                              fontFamily: '"Open Sans", sans-serif'
                             }}
                           />
                         </div>
@@ -8181,10 +8179,10 @@ Qual prefere?`,
                     </div>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-medium text-gray-700" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <p className="text-sm font-medium text-gray-700">
                       LIA está analisando...
                     </p>
-                    <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <p className="text-xs text-gray-500 mt-1">
                       Preparando sugestões personalizadas
                     </p>
                   </div>
@@ -8466,11 +8464,11 @@ Qual prefere?`,
                   onSetShowCalibrationModal={setShowCalibrationModal}
                 />
               ) : currentStage === 'input-evaluation' ? (
-                <div className="text-center text-micro text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <div className="text-center text-micro text-gray-500">
                   Continue descrevendo a vaga para detectar mais critérios
                 </div>
               ) : currentStage === 'jd-enrichment' ? (
-                <div className="text-center text-micro text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <div className="text-center text-micro text-gray-500">
                   Revise as sugestões no chat e responda o que deseja aceitar ou modificar
                 </div>
               ) : (
@@ -8479,7 +8477,7 @@ Qual prefere?`,
                     <Button
                       variant="outline"
                       className="flex-1 h-9 rounded-md text-xs font-medium border-gray-200 text-gray-600 hover:border-gray-900 dark:hover:border-gray-50 hover:text-gray-900 dark:hover:text-gray-50"
-                      style={{ fontFamily: '"Open Sans", sans-serif' }}
+                     
                       onClick={goToPreviousStage}
                       aria-label="Voltar para etapa anterior"
                     >
@@ -8501,7 +8499,6 @@ Qual prefere?`,
                           : "bg-gray-200 text-gray-400"
                     )}
                     style={{ 
-                      fontFamily: '"Open Sans", sans-serif'
                     }}
                     disabled={!canAdvanceToNextStage()}
                     onClick={currentStage === 'review-publish' ? handlePublishJob : goToNextStage}

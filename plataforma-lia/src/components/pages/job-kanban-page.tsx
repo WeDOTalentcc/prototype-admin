@@ -4368,7 +4368,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                 >
                   <div className="flex items-center gap-1">
                     <Flag className="w-3 h-3 text-amber-500" />
-                    <span className="text-micro font-bold text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Ação Necessária</span>
+                    <span className="text-micro font-bold text-gray-500">Ação Necessária</span>
                   </div>
                 </div>
               )}
@@ -4392,7 +4392,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); handleSendEmail(candidate); }} 
                         className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <Mail className="w-3.5 h-3.5 mr-2 text-gray-500" />
                         Enviar Email
@@ -4400,7 +4400,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); handleSendWhatsApp(candidate); }} 
                         className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <MessageCircle className="w-3.5 h-3.5 mr-2 text-gray-500" />
                         Enviar WhatsApp
@@ -4408,7 +4408,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); handleScheduleInterview(candidate); }} 
                         className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <Calendar className="w-3.5 h-3.5 mr-2 text-gray-500" />
                         Agendar Entrevista
@@ -4416,7 +4416,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); handleSendWSIInvite(candidate); }} 
                         className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <ClipboardList className="w-3.5 h-3.5 mr-2 text-gray-500" />
                         Triagem WSI
@@ -4424,7 +4424,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); handleSendFeedback(candidate); }} 
                         className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <MessageSquareText className="w-3.5 h-3.5 mr-2 text-gray-500" />
                         Enviar Feedback
@@ -4433,7 +4433,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       <DropdownMenuItem
                         onClick={(e) => { e.stopPropagation(); handleToggleShortList(candidate.id); }}
                         className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <Bookmark className={`w-3.5 h-3.5 mr-2 ${shortListedCandidateIds.has(candidate.id) ? 'fill-gray-900 text-gray-900 dark:fill-gray-50 dark:text-gray-50' : 'text-gray-500'}`} />
                         {shortListedCandidateIds.has(candidate.id) ? 'Remover da Short List' : 'Adicionar à Short List'}
@@ -4441,7 +4441,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       <DropdownMenuItem
                         onClick={(e) => { e.stopPropagation(); handleToggleFavorite(candidate.id); }}
                         className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
-                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                       
                       >
                         <Heart className={`w-3.5 h-3.5 mr-2 ${favoriteCandidates.has(candidate.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
                         {favoriteCandidates.has(candidate.id) ? 'Remover dos Favoritos' : 'Adicionar a Favoritos'}
@@ -4539,7 +4539,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                   {/* Nome do candidato + Data Request Indicator */}
                   <div className="flex items-center gap-1 flex-1 min-w-0">
-                    <h4 className="font-medium text-xs truncate text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <h4 className="font-medium text-xs truncate text-gray-950 dark:text-gray-50">
                       {candidate.name}
                     </h4>
                     {/* DataRequestIndicator - Real data from API */}
@@ -4610,15 +4610,15 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                 {/* Informações do candidato - Alinhadas à esquerda */}
                 <div className="space-y-0 mb-1.5">
-                  <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <div className="flex items-center gap-1 text-xs">
                     <Briefcase className="w-2.5 h-2.5 flex-shrink-0" />
                     <span className="truncate">{candidate.role}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <div className="flex items-center gap-1 text-xs">
                     <Building className="w-2.5 h-2.5 flex-shrink-0" />
                     <span className="truncate">{candidate.currentCompany || 'Não informado'}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <div className="flex items-center gap-1 text-xs">
                     <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
                     <span className="truncate">{candidate.location}</span>
                   </div>
@@ -4944,7 +4944,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div className="flex gap-1">
                       <button
                         className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
-                        style={{ fontFamily: "'Open Sans', sans-serif" }}
+                       
                         onClick={(e) => {
                           e.stopPropagation()
                           openDecisionFlowModal(candidate, 'approve')
@@ -4955,7 +4955,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       </button>
                       <button
                         className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-micro font-medium transition-colors"
-                        style={{ fontFamily: "'Open Sans', sans-serif" }}
+                       
                         onClick={(e) => {
                           e.stopPropagation()
                           openDecisionFlowModal(candidate, 'reject')
@@ -4972,7 +4972,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div className="flex gap-1">
                       <button
                         className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
-                        style={{ fontFamily: "'Open Sans', sans-serif" }}
+                       
                         onClick={(e) => {
                           e.stopPropagation()
                           handleApproveFromScreening(candidate)
@@ -4983,7 +4983,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       </button>
                       <button
                         className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-micro font-medium transition-colors"
-                        style={{ fontFamily: "'Open Sans', sans-serif" }}
+                       
                         onClick={(e) => {
                           e.stopPropagation()
                           handleRejectFromScreening(candidate)
@@ -5005,7 +5005,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           {/* Botão Entrevista Agendada - Abre Teams diretamente */}
                           <button
                             className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
-                            style={{ fontFamily: "'Open Sans', sans-serif" }}
+                           
                             onClick={(e) => {
                               e.stopPropagation()
                               const teamsUrl = candidate.teamsLink || 'https://teams.microsoft.com/l/meetup-join/...'
@@ -5019,7 +5019,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           {/* Botão Alterar Horário - Abre UniversalTransitionModal com LIA */}
                           <button
                             className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-micro font-medium transition-colors"
-                            style={{ fontFamily: "'Open Sans', sans-serif" }}
+                           
                             onClick={(e) => {
                               e.stopPropagation()
                               const dateStr = candidate.interviewDate || new Date(candidate.agendada).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
@@ -5035,7 +5035,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           {/* Botão Cancelar Entrevista */}
                           <button
                             className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-full text-micro font-medium transition-colors"
-                            style={{ fontFamily: "'Open Sans', sans-serif" }}
+                           
                             onClick={(e) => {
                               e.stopPropagation()
                               const dateStr = candidate.interviewDate || new Date(candidate.agendada).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
@@ -5055,7 +5055,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           {/* Botão Solicitar Urgência - Abre modal de confirmação */}
                           <button
                             className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-micro font-medium transition-colors"
-                            style={{ fontFamily: "'Open Sans', sans-serif" }}
+                           
                             onClick={(e) => {
                               e.stopPropagation()
                               setDecisionFlowCandidate(candidate)
@@ -5069,7 +5069,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           {/* Botão Alterar Horário - Abre modal de confirmação */}
                           <button
                             className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
-                            style={{ fontFamily: "'Open Sans', sans-serif" }}
+                           
                             onClick={(e) => {
                               e.stopPropagation()
                               setDecisionFlowCandidate(candidate)
@@ -5088,7 +5088,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   {stageId === 'offer' && (
                     <button
                       className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 dark:text-gray-900 rounded-full text-micro transition-colors"
-                      style={{ fontFamily: "'Open Sans', sans-serif" }}
+                     
                       onClick={(e) => {
                         e.stopPropagation()
                         console.log('Gerenciar proposta:', candidate.name)
@@ -5463,7 +5463,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
             <div className="ml-auto flex items-center gap-2">
               {pipelineInheritance.isCustomized ? (
                 <>
-                  <span className="inline-flex items-center gap-1 text-micro text-amber-600 dark:text-amber-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <span className="inline-flex items-center gap-1 text-micro text-amber-600 dark:text-amber-400">
                     <Settings className="w-3 h-3" />
                     Pipeline personalizado
                   </span>
@@ -5477,14 +5477,14 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     }}
                     disabled={pipelineInheritance.isLoading}
                     className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                   
                   >
                     <RotateCcw className="w-3 h-3" />
                     Resetar para padrão
                   </button>
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1 text-micro text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <span className="inline-flex items-center gap-1 text-micro text-gray-400 dark:text-gray-500">
                   <Link2 className="w-3 h-3" />
                   Herdado da empresa
                 </span>
@@ -5625,7 +5625,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         style={{ 
                           backgroundColor: 'var(--gray-50)',
                           color: 'var(--gray-950)',
-                          fontFamily: '"Open Sans", sans-serif'
                         }}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = 'var(--gray-800)'
@@ -5797,7 +5796,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     }
                   }}
                   className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 dark:text-gray-200 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
-                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                 
                 >
                   {/* Calcular candidatos visíveis para o texto do botão */}
                   {(() => {
@@ -5887,7 +5886,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
                       : 'text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
-                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                 
                 >
                   <Target className="w-4 h-4" />
                   Filtros
@@ -5902,7 +5901,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
                         : 'text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
-                    style={{ fontFamily: 'Open Sans, sans-serif' }}
+                   
                   >
                     <ChevronsLeftRight className="w-4 h-4" />
                     Colunas
@@ -6017,10 +6016,10 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <h3 className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50">
                               Olá! Sou a Lia.
                             </h3>
-                            <p className="text-xs leading-tight truncate mt-0.5 text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <p className="text-xs leading-tight truncate mt-0.5 text-gray-500">
                               Como posso te ajudar hoje?
                             </p>
                           </div>
@@ -6088,7 +6087,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         >
                           <div className="flex items-center gap-2">
                             <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan" />
-                            <span className="text-xs font-semibold text-gray-700" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões da LIA</span>
+                            <span className="text-xs font-semibold text-gray-700">Sugestões da LIA</span>
                             <Badge className="bg-wedo-cyan text-white border-0 text-micro px-1.5 py-0 h-4 min-w-[18px] flex items-center justify-center">
                               {computedSuggestions.length}
                             </Badge>
@@ -6110,8 +6109,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                   <div className="flex items-start gap-2">
                                     <IconComponent className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${iconColor}`} />
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-xs text-gray-700 leading-tight" style={{ fontFamily: 'Open Sans, sans-serif' }}>{suggestion.message}</p>
-                                      <p className="text-micro text-gray-500 mt-0.5" style={{ fontFamily: 'Open Sans, sans-serif' }}>{suggestion.suggested_action}</p>
+                                      <p className="text-xs text-gray-700 leading-tight">{suggestion.message}</p>
+                                      <p className="text-micro text-gray-500 mt-0.5">{suggestion.suggested_action}</p>
                                     </div>
                                     <button
                                       onClick={(e) => {
@@ -6150,7 +6149,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 />
                                 <div 
                                   className="px-2.5 py-2 rounded-md bg-gray-100"
-                                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                 
                                 >
                                   <p className="text-xs text-gray-800 leading-relaxed">{msg.content}</p>
                                 </div>
@@ -6158,7 +6157,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             ) : (
                               <div 
                                 className="max-w-[90%] group"
-                                style={{ fontFamily: 'Open Sans, sans-serif' }}
+                               
                               >
                                 <div className="flex items-start gap-2">
                                   <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0">
@@ -6249,7 +6248,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           }}
                           disabled={isLiaLoading}
                           className="flex-1 text-xs bg-transparent focus:outline-none text-gray-950 dark:text-gray-50 disabled:opacity-50"
-                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                         
                         />
                         <AudioRecordButton
                           onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
@@ -6272,11 +6271,11 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       
                       {/* Sugestões de Análises - Abaixo do input */}
                       <div className="flex items-center gap-1.5 mt-2">
-                        <span className="text-micro font-medium text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sugestões:</span>
+                        <span className="text-micro font-medium text-gray-500">Sugestões:</span>
                         <button
                           onClick={() => setLiaPromptValue('Rankear candidatos desta vaga')}
                           className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
-                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                         
                         >
                           <Star className="w-2.5 h-2.5 text-gray-500" />
                           Rankear
@@ -6284,7 +6283,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <button
                           onClick={() => setLiaPromptValue('Comparar os melhores candidatos')}
                           className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
-                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                         
                         >
                           <Users className="w-2.5 h-2.5 text-gray-500" />
                           Comparar
@@ -6343,7 +6342,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                       {/* Filtro por Score LIA */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Score LIA Mínimo
                         </label>
                         <div className="flex items-center gap-2">
@@ -6361,7 +6360,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                       {/* Filtro por Status */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Status
                         </label>
                         <div className="space-y-1.5">
@@ -6379,7 +6378,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
                               />
-                              <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <span className="text-xs text-gray-600">
                                 {status === 'novo' ? 'Novo' :
                                  status === 'em_analise' ? 'Em análise' :
                                  status === 'aguardando_aprovacao' ? 'Aguardando aprovação' :
@@ -6393,7 +6392,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                       {/* Filtro por Origem */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Origem
                         </label>
                         <div className="space-y-1.5">
@@ -6416,7 +6415,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
                               />
-                              <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <span className="text-xs text-gray-600">
                                 {label}
                               </span>
                             </label>
@@ -6426,7 +6425,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                       {/* Filtro por Modelo de Trabalho */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Modelo de Trabalho
                         </label>
                         <div className="space-y-1.5">
@@ -6444,7 +6443,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
                               />
-                              <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <span className="text-xs text-gray-600">
                                 {modelo === 'remoto' ? 'Remoto' : modelo === 'hibrido' ? 'Híbrido' : 'Presencial'}
                               </span>
                             </label>
@@ -6464,13 +6463,13 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             setKanbanOriginFilter([])
                           }}
                           className="flex-1 px-3 py-2 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                         
                         >
                           Limpar
                         </button>
                         <button
                           onClick={() => setShowKanbanFiltersPanel(false)}
-                          className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors bg-gray-800" style={{ fontFamily: 'Open Sans, sans-serif' }}
+                          className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors bg-gray-800"
                         >
                           Aplicar
                         </button>
@@ -6536,7 +6535,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
                             <Plus className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                           </div>
-                          <span className="text-xs text-gray-400 group-hover:text-gray-600 font-medium transition-colors" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <span className="text-xs text-gray-400 group-hover:text-gray-600 font-medium transition-colors">
                             Adicionar Coluna
                           </span>
                         </div>
@@ -6545,12 +6544,12 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowAddColumnPopover(false)}>
                           <div className="bg-white rounded-md w-[420px] max-h-[600px] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-between mb-4">
-                              <h3 className="text-sm font-semibold text-neutral-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>Adicionar Coluna ao Pipeline</h3>
+                              <h3 className="text-sm font-semibold text-neutral-800">Adicionar Coluna ao Pipeline</h3>
                               <button onClick={() => setShowAddColumnPopover(false)} className="p-1 rounded hover:bg-neutral-100"><X className="w-4 h-4 text-neutral-400" /></button>
                             </div>
                             
                             <div className="space-y-3 mb-4">
-                              <label className="text-xs font-medium text-neutral-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Nome da Etapa</label>
+                              <label className="text-xs font-medium text-neutral-600">Nome da Etapa</label>
                               <input
                                 type="text"
                                 value={newColumnName}
@@ -6560,7 +6559,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 placeholder="Ex: Teste de Lógica, Entrevista Cultural..."
                                 className="w-full px-3 py-2.5 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-neutral-400 focus:border-neutral-400 transition-all"
-                                style={{ fontFamily: 'Open Sans, sans-serif' }}
+                               
                               />
                               {newColumnName.length >= 3 && !inferredBehavior && (
                                 <button
@@ -6663,13 +6662,13 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }
                               }}
                               className="w-full py-2.5 rounded text-sm font-medium text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                              style={{ backgroundColor: newColumnName.length >= 2 && !isAddingColumn ? 'var(--gray-950)' : 'var(--gray-400)', fontFamily: 'Open Sans, sans-serif' }}
+                              style={{ backgroundColor: newColumnName.length >= 2 && !isAddingColumn ? 'var(--gray-950)' : 'var(--gray-400)' }}
                             >
                               {isAddingColumn ? 'Adicionando...' : 'Adicionar Coluna'}
                             </button>
                             
                             <div className="mt-4 pt-4 border-t border-neutral-100">
-                              <label className="text-xs font-medium text-neutral-500 mb-2 block" style={{ fontFamily: 'Open Sans, sans-serif' }}>Ou escolha do catálogo:</label>
+                              <label className="text-xs font-medium text-neutral-500 mb-2 block">Ou escolha do catálogo:</label>
                               <div className="grid grid-cols-2 gap-2">
                                 {[
                                   { name: 'Teste Técnico', behavior: 'evaluation', color: 'var(--gray-300)' },
@@ -6753,7 +6752,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                     className="flex items-center gap-2 p-2 rounded-sm border border-neutral-200 hover:border-neutral-400 hover:bg-neutral-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
-                                    <span className="text-xs text-neutral-700 font-medium" style={{ fontFamily: 'Open Sans, sans-serif' }}>{cat.name}</span>
+                                    <span className="text-xs text-neutral-700 font-medium">{cat.name}</span>
                                   </button>
                                 ))}
                               </div>
@@ -6846,7 +6845,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                       {/* Filtro por Etapa */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Etapa do Pipeline
                         </label>
                         <div className="space-y-1.5">
@@ -6864,7 +6863,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
                               />
-                              <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <span className="text-xs text-gray-600">
                                 {stage.displayName}
                               </span>
                             </label>
@@ -6874,7 +6873,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                       {/* Filtro por Score LIA */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Score LIA Mínimo
                         </label>
                         <div className="flex items-center gap-2">
@@ -6891,7 +6890,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                       {/* Filtro por Status */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Status
                         </label>
                         <div className="space-y-1.5">
@@ -6901,7 +6900,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 type="checkbox"
                                 className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
                               />
-                              <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <span className="text-xs text-gray-600">
                                 {status}
                               </span>
                             </label>
@@ -6911,7 +6910,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                       {/* Filtro por Modelo de Trabalho */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                        <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Modelo de Trabalho
                         </label>
                         <div className="space-y-1.5">
@@ -6921,7 +6920,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 type="checkbox"
                                 className="w-3.5 h-3.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
                               />
-                              <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <span className="text-xs text-gray-600">
                                 {modelo}
                               </span>
                             </label>
@@ -6938,13 +6937,13 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             setTableStageFilter([])
                           }}
                           className="flex-1 px-3 py-2 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                         
                         >
                           Limpar
                         </button>
                         <button
                           onClick={() => setShowTableFiltersPanel(false)}
-                          className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors bg-gray-800" style={{ fontFamily: 'Open Sans, sans-serif' }}
+                          className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors bg-gray-800"
                         >
                           Aplicar
                         </button>
@@ -7320,7 +7319,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                               ? 'bg-gray-100 dark:bg-gray-800 font-bold'
                                               : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                                           }`}
-                                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                         
                                           onClick={() => {
                                             if (!isCurrent) {
                                               handleTransitionRequired([candidate], candidate.stageId || candidate.stage, stage.id)
@@ -7936,12 +7935,12 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             value={columnSearchTerm}
                             onChange={(e) => setColumnSearchTerm(e.target.value)}
                             className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 text-gray-950 dark:text-gray-50"
-                            style={{ fontFamily: 'Open Sans, sans-serif' }}
+                           
                           />
                         </div>
                         <div className="flex gap-2">
                           <button
-                            className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-all text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}
+                            className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-all text-gray-600"
                             onClick={() => {
                               setTableColumns(getDefaultTableColumns())
                             }}
@@ -7949,7 +7948,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             Restaurar Padrão
                           </button>
                           <button
-                            className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-all text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}
+                            className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-all text-gray-600"
                             onClick={() => {
                               setTableColumns(prev => prev.map(col => ({ ...col, visible: true })))
                             }}
@@ -8009,7 +8008,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                               <div className="flex items-center justify-between mb-2 px-1">
                                 <h4 
                                   className="text-xs font-semibold uppercase tracking-wider text-gray-600"
-                                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                 
                                 >
                                   {categoryLabels[category] || category}
                                 </h4>
@@ -8018,7 +8017,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                   style={{ 
                                     backgroundColor: visibleCount > 0 ? 'rgba(31,41,55,0.1)' : 'var(--gray-200)',
                                     color: visibleCount > 0 ? 'var(--gray-800)' : 'var(--gray-400)',
-                                    fontFamily: 'Open Sans, sans-serif'
                                   }}
                                 >
                                   {visibleCount}/{columns.length}
@@ -8054,7 +8052,6 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                       className="text-xs flex-1"
                                       style={{ 
                                         color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)',
-                                        fontFamily: 'Open Sans, sans-serif',
                                         fontWeight: col.visible ? 500 : 400
                                       }}
                                     >
@@ -9783,7 +9780,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
           />
           <div 
             className="relative bg-white dark:bg-gray-900 rounded-md w-full max-w-md mx-4 overflow-hidden border border-gray-200 dark:border-gray-700"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+           
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
@@ -9927,7 +9924,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
           />
           <div 
             className="relative bg-white dark:bg-gray-900 rounded-md w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden border border-gray-200 dark:border-gray-700"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+           
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">

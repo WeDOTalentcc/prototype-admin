@@ -138,7 +138,7 @@ export function AddToListModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`max-w-md ${cardStyles.default}`} style={{ fontFamily: '"Open Sans", sans-serif' }}>
+      <DialogContent className={`max-w-md ${cardStyles.default}`}>
         <DialogHeader>
           <DialogTitle className={`${textStyles.title} flex items-center gap-2`}>
             <List className="w-5 h-5 text-gray-600 dark:text-gray-400" />

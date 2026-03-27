@@ -223,10 +223,10 @@ const EditCriteriaPopup: React.FC<{
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div 
         className="relative bg-white dark:bg-gray-900 rounded-md w-full max-w-lg p-6 z-10"
-        style={{ fontFamily: 'Open Sans, sans-serif' }}
+       
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
             Edit Criteria
           </h3>
           <button
@@ -416,7 +416,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
         
         <div 
           className="relative flex-1 bg-white dark:bg-gray-900 m-4 rounded-md overflow-hidden flex flex-col"
-          style={{ fontFamily: 'Open Sans, sans-serif' }}
+         
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
@@ -444,7 +444,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                    <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">
                       {currentCandidate.name}
                     </h2>
                     {currentCandidate.linkedinUrl && (
@@ -661,7 +661,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800">
               <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
                     Why we matched this profile
                   </h3>
                   <button

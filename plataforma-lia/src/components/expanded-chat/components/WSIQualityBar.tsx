@@ -64,7 +64,7 @@ export function WSIQualityBar({
               <Target className={cn('w-4 h-4', colors.text)} />
               <span 
                 className={cn('text-xs font-semibold', colors.text)}
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
               >
                 WSI Quality
               </span>
@@ -81,7 +81,7 @@ export function WSIQualityBar({
 
             <span 
               className={cn('text-xs font-bold', colors.text)}
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               {score}%
             </span>
@@ -120,7 +120,7 @@ export function WSIQualityBar({
         <div className="mt-1.5 flex items-center justify-between gap-2">
           <p 
             className="text-micro text-gray-600 truncate"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             {summaryText}
           </p>
@@ -128,7 +128,7 @@ export function WSIQualityBar({
           {!canAdvance && (
             <span 
               className="text-micro text-red-500 font-medium whitespace-nowrap"
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               Mínimo 70% para avançar
             </span>

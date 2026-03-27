@@ -283,7 +283,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-16">
       <div 
         className="bg-white dark:bg-gray-900 rounded-md w-full max-w-2xl max-h-[70vh] overflow-hidden border border-gray-200 dark:border-gray-700"
-        style={{ fontFamily: 'Open Sans, sans-serif' }}
+       
       >
         {/* Header */}
         <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
@@ -297,7 +297,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar candidatos, vagas, conversas..."
                 className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-950 dark:text-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-600 focus:border-gray-300 dark:focus:border-gray-600 placeholder:text-gray-600"
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               />
               {isLoading && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

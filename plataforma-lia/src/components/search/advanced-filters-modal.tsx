@@ -2011,7 +2011,7 @@ export function AdvancedFiltersModal({
       
       <div 
         className="relative w-full max-w-4xl max-h-[85vh] rounded-md overflow-hidden border border-gray-200 flex flex-col bg-white dark:bg-gray-800 dark:border-gray-700"
-        style={{ fontFamily: '"Open Sans", sans-serif' }}
+       
       >
         <div className="flex flex-col overflow-hidden flex-1">
           <div 

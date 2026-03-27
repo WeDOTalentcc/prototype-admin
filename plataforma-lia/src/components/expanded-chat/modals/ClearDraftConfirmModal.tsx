@@ -26,15 +26,15 @@ export function ClearDraftConfirmModal({ open, onClose, onConfirm }: ClearDraftC
                 <Trash2 className="w-5 h-5 text-status-error" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <h3 className="text-lg font-semibold text-gray-800">
                   Começar do zero?
                 </h3>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <p className="text-sm text-gray-500 mb-4">
               Isso irá <strong>apagar todo o rascunho</strong> da vaga atual, incluindo todas as informações preenchidas até agora.
             </p>
-            <p className="text-xs text-gray-400 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <p className="text-xs text-gray-400 mb-4">
               Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-3">

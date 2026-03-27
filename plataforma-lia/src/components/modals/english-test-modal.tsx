@@ -111,13 +111,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             <div>
               <h2 
                 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Teste de Inglês
               </h2>
               <p 
                 className="text-xs text-gray-500"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 {candidate?.name ?? 'Candidato'}
               </p>
@@ -143,7 +143,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               />
               <span 
                 className="text-xs font-medium"
-                style={{ fontFamily: "'Open Sans', sans-serif", color: statusConfig.color }}
+                style={{ color: statusConfig.color }}
               >
                 {statusConfig.label}
               </span>
@@ -151,7 +151,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             {testData.completedAt && status === 'completed' && (
               <span 
                 className="text-micro text-gray-500"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Concluído em {new Date(testData.completedAt).toLocaleDateString('pt-BR')}
               </span>
@@ -168,20 +168,20 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                     <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     <span 
                       className="text-micro text-gray-500"
-                      style={{ fontFamily: "'Open Sans', sans-serif" }}
+                     
                     >
                       Score Geral
                     </span>
                   </div>
                   <span 
                     className="text-2xl font-bold"
-                    style={{ fontFamily: "'Open Sans', sans-serif", color: getScoreColor(testData.score) }}
+                    style={{ color: getScoreColor(testData.score) }}
                   >
                     {testData.score}
                   </span>
                   <span 
                     className="text-sm ml-1 text-gray-400"
-                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                   
                   >
                     / 100
                   </span>
@@ -194,20 +194,20 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                   <div className="flex items-center gap-2 mb-1">
                     <span 
                       className="text-micro text-gray-500"
-                      style={{ fontFamily: "'Open Sans', sans-serif" }}
+                     
                     >
                       Nível CEFR
                     </span>
                   </div>
                   <span 
                     className="text-lg font-bold"
-                    style={{ fontFamily: "'Open Sans', sans-serif", color: levelInfo.color }}
+                    style={{ color: levelInfo.color }}
                   >
                     {testData.level}
                   </span>
                   <p 
                     className="text-micro mt-0.5 text-gray-600"
-                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                   
                   >
                     {levelInfo.description}
                   </p>
@@ -217,7 +217,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               <div className="mb-4">
                 <p 
                   className="text-xs font-semibold mb-3 text-gray-950 dark:text-gray-50"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 >
                   Breakdown por Habilidade
                 </p>
@@ -238,7 +238,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                             <Icon className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                             <span 
                               className="text-xs font-medium text-gray-950 dark:text-gray-50"
-                              style={{ fontFamily: "'Open Sans', sans-serif" }}
+                             
                             >
                               {skill.label}
                             </span>
@@ -247,7 +247,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                             <span 
                               className="text-micro px-1.5 py-0.5 rounded-full font-medium"
                               style={{ 
-                                fontFamily: "'Open Sans', sans-serif", 
+                                
                                 color: LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)',
                                 backgroundColor: `${LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)'}15`
                               }}
@@ -256,7 +256,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                             </span>
                             <span 
                               className="text-xs font-bold"
-                              style={{ fontFamily: "'Open Sans', sans-serif", color: getScoreColor(score) }}
+                              style={{ color: getScoreColor(score) }}
                             >
                               {score}
                             </span>
@@ -278,13 +278,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               >
                 <p 
                   className="text-micro font-medium mb-1 text-gray-700 dark:text-gray-300"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 >
                   Sobre o nível CEFR
                 </p>
                 <p 
                   className="text-micro text-gray-600"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 >
                   O CEFR (Quadro Europeu Comum de Referência) é um padrão internacional para descrever habilidades linguísticas em uma escala de A1 (iniciante) a C2 (proficiente).
                 </p>
@@ -299,13 +299,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               <AlertCircle className="w-12 h-12 mb-3" />
               <p 
                 className="text-xs font-medium mb-1 text-gray-500"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Teste ainda não iniciado
               </p>
               <p 
                 className="text-micro text-center text-gray-400"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 O candidato receberá um convite para realizar o teste de inglês.
               </p>
@@ -320,13 +320,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               <Loader2 className="w-12 h-12 mb-3 animate-spin" />
               <p 
                 className="text-xs font-medium mb-1 text-gray-500"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Teste em andamento
               </p>
               <p 
                 className="text-micro text-center text-gray-400"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 O candidato está realizando o teste de inglês neste momento.
               </p>

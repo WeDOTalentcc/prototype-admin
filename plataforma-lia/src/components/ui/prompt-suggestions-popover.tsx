@@ -256,7 +256,7 @@ export function PromptSuggestionsPopover({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
-              <h3 className="text-xs font-semibold" style={{ color: 'var(--eleven-text-primary)', fontFamily: 'Open Sans, sans-serif' }}>
+              <h3 className="text-xs font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
                 Ações Sugeridas
               </h3>
             </div>

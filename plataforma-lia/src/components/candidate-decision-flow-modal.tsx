@@ -74,7 +74,7 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
                   ? 'bg-gray-900 text-white ring-2 ring-gray-900/20 dark:bg-gray-100 dark:text-gray-900'
                   : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
               }`}
-              style={{ fontFamily: "'Open Sans', sans-serif" }}
+             
             >
               {step.status === 'completed' ? (
                 <Check className="w-3 h-3" />
@@ -90,7 +90,7 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
                   ? 'text-gray-600 dark:text-gray-400'
                   : 'text-gray-400'
               }`}
-              style={{ fontFamily: "'Open Sans', sans-serif" }}
+             
             >
               {step.label}
             </span>
@@ -117,17 +117,17 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <button className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
             <Info className="w-3 h-3" />
             <span>Como funciona?</span>
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-xs p-3">
           <div className="space-y-2">
-            <p className="font-medium text-xs text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="font-medium text-xs text-gray-950 dark:text-gray-50">
               {isInterview ? 'Processo de Agendamento LIA:' : 'Processo de Triagem LIA:'}
             </p>
-            <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
               {isInterview ? (
                 <>
                   <li className="flex items-start gap-1.5">
@@ -309,7 +309,7 @@ Equipe de Recrutamento`
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700">
-          <DialogTitle className="flex items-center gap-2 text-sm font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <DialogTitle className="flex items-center gap-2 text-sm font-semibold">
             {config.icon}
             {config.title}
           </DialogTitle>
@@ -321,14 +321,14 @@ Equipe de Recrutamento`
               {candidate.avatar ? (
                 <img src={candidate.avatar} alt={candidate.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-sm font-semibold text-gray-600 dark:text-gray-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                   {candidate.name.charAt(0)}
                 </span>
               )}
             </div>
             <div>
-              <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>{candidate.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50">{candidate.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {candidate.role} {candidate.currentCompany && `• ${candidate.currentCompany}`}
               </p>
             </div>
@@ -345,10 +345,10 @@ Equipe de Recrutamento`
                   <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
                     {flowType === 'approve_to_triage' ? 'LIA vai iniciar a triagem' : 'LIA vai agendar a entrevista'}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                     {flowType === 'approve_to_triage' 
                       ? `Contato via ${contactChannels.join(' e ') || 'WhatsApp e Email'}`
                       : 'Candidato receberá link para escolher horário'
@@ -367,10 +367,10 @@ Equipe de Recrutamento`
                   <CheckCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
                     LIA vai enviar boas-vindas
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                     {`Contato via ${contactChannels.join(' e ') || 'Email'} com próximos passos de onboarding`}
                   </p>
                 </div>
@@ -385,10 +385,10 @@ Equipe de Recrutamento`
                   <AlertCircle className="w-3.5 h-3.5 text-wedo-coral" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
                     Candidato será reprovado
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Como ainda não iniciou a triagem, não é necessário enviar feedback.
                   </p>
                 </div>
@@ -403,10 +403,10 @@ Equipe de Recrutamento`
                   <MessageSquare className="w-3.5 h-3.5 text-wedo-coral" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
                     Candidato participou da triagem
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Recomendamos enviar feedback para manter boa experiência do candidato.
                   </p>
                 </div>
@@ -421,10 +421,10 @@ Equipe de Recrutamento`
                   <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
                     Solicitação de Urgência
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     A LIA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.
                   </p>
                 </div>
@@ -439,10 +439,10 @@ Equipe de Recrutamento`
                   <Calendar className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
                     Alterar Horário da Entrevista
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.
                   </p>
                 </div>
@@ -457,7 +457,7 @@ Equipe de Recrutamento`
             onClick={onClose} 
             disabled={isLoading}
             className="text-xs h-8 border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-            style={{ fontFamily: "'Open Sans', sans-serif" }}
+           
           >
             Cancelar
           </Button>
@@ -472,7 +472,7 @@ Equipe de Recrutamento`
                 }}
                 disabled={isLoading}
                 className="text-xs h-8 text-gray-600"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Apenas reprovar
               </Button>
@@ -485,7 +485,7 @@ Equipe de Recrutamento`
                 }}
                 disabled={isLoading}
                 className="bg-wedo-coral hover:bg-status-error text-white text-xs h-8"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 <Send className="w-3.5 h-3.5 mr-1" />
                 Enviar Feedback
@@ -496,7 +496,7 @@ Equipe de Recrutamento`
               onClick={handleConfirm}
               disabled={isLoading}
               className={`${config.confirmColor} text-white text-xs h-8`}
-              style={{ fontFamily: "'Open Sans', sans-serif" }}
+             
             >
               {isLoading ? (
                 <>

@@ -112,7 +112,7 @@ export function VariableSelector({
             size="sm"
             className={cn("gap-2 rounded-md text-xs", className)}
             disabled={disabled}
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+           
           >
             <Variable className="h-3.5 w-3.5" />
             Inserir Variável
@@ -151,7 +151,7 @@ export function VariableSelector({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar variável..."
               className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 focus:outline-none"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+             
             />
           </div>
 
@@ -188,7 +188,7 @@ export function VariableSelector({
           {filteredRegistry.length === 0 ? (
             <div className="py-6 text-center">
               <Variable className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <p className="text-xs text-gray-500">
                 Nenhuma variável encontrada
               </p>
             </div>
@@ -204,7 +204,7 @@ export function VariableSelector({
         </div>
 
         <div className="p-2 border-t" style={{ borderColor: 'var(--eleven-border, var(--gray-200))' }}>
-          <p className="text-micro text-gray-500 text-center" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <p className="text-micro text-gray-500 text-center">
             Clique para inserir a variável no template
           </p>
         </div>
@@ -225,7 +225,7 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
     <div className="mb-2">
       <div className="flex items-center gap-1.5 px-2 py-1">
         <Icon className="w-3 h-3 text-gray-400" />
-        <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+        <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
           {group.label}
         </span>
       </div>
@@ -247,12 +247,12 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
                   <code className="text-micro font-mono px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 text-gray-700 dark:text-gray-300">
                     {`{{${variable.key}}}`}
                   </code>
-                  <span className="text-xs font-medium text-gray-900 truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <span className="text-xs font-medium text-gray-900 truncate">
                     {variable.label}
                   </span>
                   <ChevronRight className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity ml-auto flex-shrink-0" />
                 </div>
-                <p className="text-micro text-gray-500 line-clamp-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <p className="text-micro text-gray-500 line-clamp-1">
                   {variable.description}
                 </p>
               </div>

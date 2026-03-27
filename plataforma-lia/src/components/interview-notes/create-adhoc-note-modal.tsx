@@ -89,7 +89,7 @@ export function CreateAdhocNoteModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg rounded-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <DialogTitle className="flex items-center gap-2 text-lg dark:text-gray-50">
             <Plus className="w-5 h-5 text-gray-700" />
             Nova Nota de Entrevista
           </DialogTitle>

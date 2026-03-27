@@ -1046,7 +1046,9 @@
       "Bash(awk '/Input Area - Fixo/{start=NR} /Botão para reabrir/{if\\(start\\){print \"\"InputArea:\"\", NR-start; start=0}}' plataforma-lia/src/components/expanded-chat-modal.tsx)",
       "Bash(awk '/Messages Area/{start=NR} /Input Area/{if\\(start\\){print \"\"MessagesArea:\"\", NR-start; start=0}}' plataforma-lia/src/components/expanded-chat-modal.tsx)",
       "Bash(head -10 grep -n \"AddSkillModal\\\\|AddCompetencyModal\\\\|AddBenefitModal\\\\|SkipCompetencies\" plataforma-lia/src/components/expanded-chat-modal.tsx)",
-      "Bash(head -5 grep -rn \"interface CalibrationCandidate\\\\|type CalibrationCandidate\" plataforma-lia/src --include=\"*.ts\" --include=\"*.tsx\")"
+      "Bash(head -5 grep -rn \"interface CalibrationCandidate\\\\|type CalibrationCandidate\" plataforma-lia/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(head -10 grep -n \"body {\" src/app/globals.css)",
+      "Bash(echo \"=== Open Sans residuais finais ===\" grep -rn \"fontFamily.*[Oo]pen.Sans\" src/ --include=\"*.tsx\")"
     ]
   }
 }

@@ -112,7 +112,7 @@ export function LiaVacancyQueriesGuide({
             )}
             style={{ 
               borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)',
-              fontFamily: '"Open Sans", sans-serif', 
+              
               fontWeight: 500
             }}
           >
@@ -147,7 +147,7 @@ export function LiaVacancyQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400"
-              style={{ fontFamily: '"Open Sans", sans-serif', color: 'var(--gray-950)' }}
+              style={{ color: 'var(--gray-950)' }}
               autoFocus
             />
             {searchTerm && (
@@ -170,7 +170,7 @@ export function LiaVacancyQueriesGuide({
                 ? "bg-gray-900 dark:bg-gray-50 text-white" 
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
             )}
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             Todas
           </button>
@@ -184,7 +184,7 @@ export function LiaVacancyQueriesGuide({
                   ? "bg-gray-900 dark:bg-gray-50 text-white" 
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
               )}
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               <Icon className="w-2.5 h-2.5" />
               {label}
@@ -221,7 +221,7 @@ export function LiaVacancyQueriesGuide({
                 <span 
                   className="text-xs leading-snug"
                   style={{ 
-                    fontFamily: '"Open Sans", sans-serif',
+                    
                     color: 'var(--gray-600)'
                   }}
                 >
@@ -241,7 +241,7 @@ export function LiaVacancyQueriesGuide({
                 <p 
                   className="text-xs"
                   style={{ 
-                    fontFamily: '"Open Sans", sans-serif',
+                    
                     color: 'var(--gray-400)'
                   }}
                 >
@@ -262,7 +262,7 @@ export function LiaVacancyQueriesGuide({
           <p 
             className="text-micro text-center"
             style={{ 
-              fontFamily: '"Open Sans", sans-serif',
+              
               color: 'var(--gray-400)'
             }}
           >

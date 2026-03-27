@@ -109,7 +109,7 @@ export function NextStepModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md rounded-md">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
             Próxima Etapa
           </DialogTitle>
           <DialogDescription className="text-xs text-gray-600 dark:text-gray-400">

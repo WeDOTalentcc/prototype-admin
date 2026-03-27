@@ -179,7 +179,7 @@ export function ProactiveInsightCard({
                 )}
               >
                 {getAlertIcon(alert.type)}
-                <span className="text-gray-800 dark:text-gray-200 flex-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <span className="text-gray-800 dark:text-gray-200 flex-1">
                   {alert.message}
                 </span>
               </div>

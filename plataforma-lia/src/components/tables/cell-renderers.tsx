@@ -736,7 +736,7 @@ export function ActionButtons({
             style={{ backgroundColor: 'rgba(31, 41, 55, 0.08)' }}
           >
             <Zap className="w-3 h-3 text-gray-800 dark:text-gray-200 animate-pulse" />
-            <span className="text-micro font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <span className="text-micro font-semibold text-gray-800 dark:text-gray-200">
               Ação Necessária
             </span>
           </div>

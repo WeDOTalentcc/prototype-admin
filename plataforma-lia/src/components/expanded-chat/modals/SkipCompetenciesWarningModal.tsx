@@ -36,7 +36,7 @@ export function SkipCompetenciesWarningModal({
           <div>
             <h3
               className="text-lg font-semibold text-gray-800"
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               Competências incompletas
             </h3>
@@ -44,13 +44,13 @@ export function SkipCompetenciesWarningModal({
         </div>
         <p
           className="text-sm text-gray-500 mb-4"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
         >
           Recomendamos pelo menos <strong>3 competências técnicas</strong> e <strong>3 comportamentais</strong> para que a LIA encontre candidatos de forma mais assertiva.
         </p>
         <p
           className="text-xs text-gray-400 mb-4"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
         >
           Atualmente você tem: {technicalSkillsCount} técnicas e {behavioralCompetenciesCount} comportamentais.
         </p>

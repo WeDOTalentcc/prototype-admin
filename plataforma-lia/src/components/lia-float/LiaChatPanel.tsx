@@ -313,7 +313,7 @@ export function LiaChatPanel() {
       {/* Action mode banner */}
       {activeActionType && actionLabel && (
         <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-          <span className="text-xs text-gray-500 dark:text-gray-400 font-medium" style={{ fontFamily: "Open Sans, sans-serif" }}>
+          <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
             {actionLabel}
           </span>
           <button
@@ -329,7 +329,7 @@ export function LiaChatPanel() {
       {/* WebSocket status banner */}
       {isReconnecting && (
         <div className="px-4 py-1.5 border-b flex-shrink-0 bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900">
-          <p className="text-xs text-amber-700 dark:text-amber-400" style={{ fontFamily: "Open Sans, sans-serif" }}>
+          <p className="text-xs text-amber-700 dark:text-amber-400">
             {`Reconectando… (tentativa ${reconnectAttempt}/3)`}
           </p>
         </div>
@@ -342,7 +342,7 @@ export function LiaChatPanel() {
             Conversas recentes
           </p>
           {recentChats.length === 0 ? (
-            <p className="text-sm-ui text-gray-400 dark:text-gray-500 text-center mt-6" style={{ fontFamily: "Open Sans, sans-serif" }}>
+            <p className="text-sm-ui text-gray-400 dark:text-gray-500 text-center mt-6">
               Nenhuma conversa anterior encontrada.
             </p>
           ) : (
@@ -354,10 +354,10 @@ export function LiaChatPanel() {
               >
                 <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm-ui text-gray-700 dark:text-gray-300 truncate group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                  <p className="text-sm-ui text-gray-700 dark:text-gray-300 truncate group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">
                     {chat.title}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                     {new Date(chat.timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
@@ -455,7 +455,7 @@ export function LiaChatPanel() {
             maxLength={MAX_INPUT_CHARS}
             aria-label="Mensagem para a LIA"
             className="flex-1 text-base-ui bg-transparent focus:outline-none text-gray-950 dark:text-gray-50 placeholder:text-gray-400 disabled:opacity-50 min-w-0"
-            style={{ fontFamily: "Open Sans, sans-serif" }}
+           
           />
           <AudioRecordButton
             onTranscription={(text) => setInputText(prev => prev ? `${prev} ${text}` : text)}
@@ -480,7 +480,7 @@ export function LiaChatPanel() {
           </button>
         </div>
         {inputText.length > MAX_INPUT_CHARS * 0.9 && (
-          <p className="text-xs text-gray-400 mt-1 text-right" style={{ fontFamily: "Open Sans, sans-serif" }}>
+          <p className="text-xs text-gray-400 mt-1 text-right">
             {inputText.length}/{MAX_INPUT_CHARS}
           </p>
         )}
@@ -499,7 +499,7 @@ function EmptyState() {
         <p className="text-base-ui font-medium text-gray-700 dark:text-gray-300" style={{ fontFamily: "Inter, sans-serif" }}>
           Como posso ajudar?
         </p>
-        <p className="text-sm-ui text-gray-400 dark:text-gray-500 mt-1" style={{ fontFamily: "Open Sans, sans-serif" }}>
+        <p className="text-sm-ui text-gray-400 dark:text-gray-500 mt-1">
           Pergunte sobre vagas, candidatos, relatórios e muito mais.
         </p>
       </div>

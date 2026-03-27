@@ -779,10 +779,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     }
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                       {showScreeningToggleConfirm === 'activate' ? 'Ativar Triagem' : 'Pausar Triagem'}
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {job.title}
                     </p>
                   </div>
@@ -853,7 +853,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           {(job.screeningStatus || 'not_configured') === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-gray-400" />}
                         </div>
                         <div>
-                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>Status da Triagem</span>
+                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">Status da Triagem</span>
                           <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
                             (job.screeningStatus || 'not_configured') === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                             (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
@@ -901,7 +901,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               <ChIcon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
                               <span className="text-xs font-medium text-gray-600 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>{ch.label}</span>
                               {ch.key === 'phone' && !ch.enabled && (
-                                <span className="text-micro text-gray-300 dark:text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>(Integração pendente)</span>
+                                <span className="text-micro text-gray-300 dark:text-gray-600">(Integração pendente)</span>
                               )}
                             </div>
                             <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${ch.enabled ? 'bg-gray-400' : 'bg-gray-200 dark:bg-gray-700'}`}>
@@ -932,7 +932,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                 </div>
                                 <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
-                                <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5">{preset.desc}</span>
                               </div>
                             )
                           })}
@@ -1000,7 +1000,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                 </div>
                                 <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.limit}</span>
-                                <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5">{preset.desc}</span>
                               </div>
                             )
                           })}
@@ -1009,7 +1009,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
                         <div className="border border-gray-100 dark:border-gray-700 rounded-md p-2.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Progresso atual</span>
+                            <span className="text-micro text-gray-400 dark:text-gray-500">Progresso atual</span>
                             <span className="text-micro font-medium text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
                               {screeningConfig?.settings?.auto_approvals_count ?? 0}/{screeningConfig?.settings?.auto_approval_limit ?? 10} aprovações
                             </span>
@@ -1060,7 +1060,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                     {isSelected && <CheckCircle className="w-3 h-3 text-gray-400 dark:text-gray-500" />}
                                   </div>
                                   <span className={`text-micro font-medium block ${isSelected ? 'text-gray-600' : 'text-gray-400 dark:text-gray-500'}`} style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
-                                  <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                  <span className="text-micro text-gray-400 dark:text-gray-500 block mt-0.5">{preset.desc}</span>
                                 </div>
                               )
                             })}
@@ -1079,7 +1079,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               {screeningConfig?.scheduling?.available_hours || '9h-18h'}
                             </div>
                             {(screeningConfig?.scheduling?.available_hours_inherited ?? true) && (
-                              <span className="text-micro text-gray-300 dark:text-gray-600 mt-0.5 block" style={{ fontFamily: "'Open Sans', sans-serif" }}>Conforme config. da empresa</span>
+                              <span className="text-micro text-gray-300 dark:text-gray-600 mt-0.5 block">Conforme config. da empresa</span>
                             )}
                           </div>
                           <div>
@@ -1115,7 +1115,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           {(job.screeningStatus || 'not_configured') === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-gray-400" />}
                         </div>
                         <div>
-                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>Status da Triagem</span>
+                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">Status da Triagem</span>
                           <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
                             (job.screeningStatus || 'not_configured') === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                             (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
@@ -1173,7 +1173,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               <ChIcon className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                               <span className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Inter', sans-serif" }}>{ch.label}</span>
                               {ch.key === 'phone' && !enabled && (
-                                <span className="text-micro text-gray-400 dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>(Integração pendente)</span>
+                                <span className="text-micro text-gray-400 dark:text-gray-500">(Integração pendente)</span>
                               )}
                             </div>
                             <button
@@ -1207,7 +1207,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                 </div>
                                 <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
-                                <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5">{preset.desc}</span>
                               </button>
                             )
                           })}
@@ -1253,7 +1253,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                 </div>
                                 <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.limit}</span>
-                                <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5">{preset.desc}</span>
                               </button>
                             )
                           })}
@@ -1262,7 +1262,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
                         <div className="border border-gray-200 dark:border-gray-600 rounded-md p-2.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>Progresso atual</span>
+                            <span className="text-micro text-gray-500 dark:text-gray-400">Progresso atual</span>
                             <span className="text-micro font-medium text-gray-700 dark:text-gray-300" style={{ fontFamily: "'Inter', sans-serif" }}>
                               {screeningConfig?.settings?.auto_approvals_count ?? 0}/{approvalPresetToLimit(editAutoApprovalPreset)} aprovações
                             </span>
@@ -1335,7 +1335,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                     {isSelected && <CheckCircle className="w-3 h-3 text-gray-900 dark:text-gray-300" />}
                                   </div>
                                   <span className="text-micro font-medium text-gray-800 dark:text-gray-200 block" style={{ fontFamily: "'Inter', sans-serif" }}>{preset.score}</span>
-                                  <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{preset.desc}</span>
+                                  <span className="text-micro text-gray-500 dark:text-gray-400 block mt-0.5">{preset.desc}</span>
                                 </button>
                               )
                             })}
@@ -1356,7 +1356,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors" />
                             </div>
                             {editAvailableHoursInherited && (
-                              <span className="text-micro text-gray-400 dark:text-gray-500 mt-0.5 block" style={{ fontFamily: "'Open Sans', sans-serif" }}>Conforme config. da empresa</span>
+                              <span className="text-micro text-gray-400 dark:text-gray-500 mt-0.5 block">Conforme config. da empresa</span>
                             )}
                           </div>
                           <div>
@@ -1496,7 +1496,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 <div className="space-y-4">
                   <div>
                     <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
-                    <div className="flex items-center gap-3 text-micro text-gray-600 dark:text-gray-400 flex-wrap mb-3" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <div className="flex items-center gap-3 text-micro text-gray-600 dark:text-gray-400 flex-wrap mb-3">
                       <span>Total: {job.screeningQuestions?.length || 0} perguntas WSI</span>
                       <span>•</span>
                       <span>{(job.screeningQuestions || []).filter((q: any) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
@@ -1514,13 +1514,13 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         <div key={block.id} className={`px-3 py-2 rounded-md ${isAutomatic ? 'bg-gray-50/50 border border-gray-100' : totalBlockCount > 0 ? 'bg-white border border-gray-100' : 'bg-white border border-gray-200 border-dashed/50 dark:border-gray-600'}`}>
                           <div className="flex items-center gap-2">
                             <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-gray-100' : 'text-gray-400 dark:text-gray-400 dark:bg-gray-700'}`}>{block.id}</span>
-                            <span className={`text-xs font-medium ${isAutomatic ? 'text-gray-500' : 'text-gray-800 dark:text-gray-200'}`} style={{ fontFamily: "'Open Sans', sans-serif" }}>{block.name}</span>
+                            <span className={`text-xs font-medium ${isAutomatic ? 'text-gray-500' : 'text-gray-800 dark:text-gray-200'}`}>{block.name}</span>
                             {isAutomatic ? (
                               <span className="text-micro px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded-full font-medium uppercase tracking-wide dark:bg-gray-700 dark:text-gray-500">Automático</span>
                             ) : totalBlockCount > 0 ? (
-                              <span className="text-micro text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
+                              <span className="text-micro text-gray-500 dark:text-gray-400">({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
                             ) : (
-                              <span className="text-micro text-gray-400 italic dark:text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Nenhuma pergunta</span>
+                              <span className="text-micro text-gray-400 italic dark:text-gray-500">Nenhuma pergunta</span>
                             )}
                           </div>
                           {block.id === 2 && (
@@ -1561,7 +1561,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           {!isAutomatic && block.id !== 2 && blockQuestions.length > 0 && (
                             <div className="space-y-1 ml-7 mt-1.5">
                               {blockQuestions.map((q: any, idx: number) => (
-                                <p key={q.id || idx} className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p key={q.id || idx} className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed truncate">
                                   • {q.question || q.text}
                                 </p>
                               ))}
@@ -1569,15 +1569,15 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           )}
                           {isAutomatic && WSI_AUTOMATIC_MESSAGES[block.id] && (
                             <div className="ml-7 mt-1.5">
-                              <p className="text-micro font-medium text-gray-500 dark:text-gray-400 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
+                              <p className="text-micro font-medium text-gray-500 dark:text-gray-400 mb-1">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
                               <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg px-2.5 py-2">
-                                <p className="text-micro text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line" style={{ fontFamily: "'Open Sans', sans-serif" }}>{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
+                                <p className="text-micro text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
                               </div>
-                              <p className="text-micro text-gray-400 dark:text-gray-500 mt-1 italic" style={{ fontFamily: "'Open Sans', sans-serif" }}>{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                              <p className="text-micro text-gray-400 dark:text-gray-500 mt-1 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                             </div>
                           )}
                           {isAutomatic && !WSI_AUTOMATIC_MESSAGES[block.id] && (
-                            <p className="text-micro text-gray-400 dark:text-gray-500 ml-7 mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>{block.description}</p>
+                            <p className="text-micro text-gray-400 dark:text-gray-500 ml-7 mt-0.5">{block.description}</p>
                           )}
                         </div>
                       )
@@ -1604,7 +1604,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
                             <div className="space-y-1">
                               {showTechWarning && (
-                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                                   {techSkillsCount === 0
                                     ? 'Nenhuma competência técnica cadastrada — adicione competências na seção Job Description para gerar perguntas de triagem.'
                                     : `Apenas ${techSkillsCount} competência${techSkillsCount === 1 ? '' : 's'} técnica${techSkillsCount === 1 ? '' : 's'} cadastrada${techSkillsCount === 1 ? '' : 's'}. Para triagem completa, recomendamos pelo menos 9.`
@@ -1612,7 +1612,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </p>
                               )}
                               {showBehavWarning && (
-                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                                   {behavCompCount === 0
                                     ? 'Nenhuma competência comportamental cadastrada — a triagem usará avaliação padrão.'
                                     : `${behavCompCount} competência${behavCompCount === 1 ? '' : 's'} comportamental${behavCompCount === 1 ? '' : 's'} (recomendado: 5 para cobertura completa).`
@@ -1620,7 +1620,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </p>
                               )}
                               {showFullDisabled && (
-                                <p className="text-micro text-amber-600 dark:text-amber-500 italic" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-micro text-amber-600 dark:text-amber-500 italic">
                                   Modo Completo requer pelo menos 5 competências técnicas.
                                 </p>
                               )}
@@ -1681,10 +1681,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-base-ui font-semibold text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-base-ui font-semibold text-gray-800">
                             {wsiGenerationStep < 4 ? 'Gerando Roteiro e Perguntas de Triagem...' : 'Roteiro e Perguntas de Triagem'}
                           </p>
-                          <p className="text-xs text-gray-600 mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-xs text-gray-600 mt-0.5">
                             {wsiGenerationStep < 4
                               ? `Analisando ${wsiGenerationMode === 'compact' ? 'modo compacto' : 'modo completo'}`
                               : `Status: ${wsiGeneratedCount} perguntas geradas · Metodologia WeDoTalent Skill Index (WSI) Completa`
@@ -1726,7 +1726,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                     <span className="text-micro font-semibold text-gray-400">{step.num}</span>
                                   )}
                                 </div>
-                                <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'text-gray-400'}`} style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'text-gray-400'}`}>
                                   {step.label}
                                 </span>
                               </div>
@@ -1743,7 +1743,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {wsiGenerationStep < 4 && wsiTypedMessage && (
                         <div className="px-5 pb-3 flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-100 animate-pulse" />
-                          <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-base-ui text-gray-800">
                             {wsiTypedMessage}
                             {wsiTypedMessage.length < wsiDynamicMessage.length && (
                               <span className="inline-block w-[2px] h-[14px] bg-gray-900 dark:bg-gray-100 ml-0.5 align-middle animate-pulse" />
@@ -1756,8 +1756,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         <div className="px-5 pb-4 pt-1 space-y-3 border-t border-gray-100 dark:border-gray-700">
                           {wsiGenerationStep >= 1 && wsiGenerationContext && (
                             <div className="pt-2">
-                              <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>Cargo analisado</p>
-                              <p className="text-xs text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                              <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Cargo analisado</p>
+                              <p className="text-xs text-gray-800">
                                 {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-gray-600 dark:text-gray-400"> · {wsiGenerationContext.seniority}</span> : ''}
                               </p>
                             </div>
@@ -1767,7 +1767,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             <div className="space-y-2">
                               {wsiGenerationContext.responsibilities.length > 0 && (
                                 <div>
-                                  <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades Chave</p>
+                                  <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1">Responsabilidades Chave</p>
                                   <div className="flex flex-wrap gap-1">
                                     {wsiGenerationContext.responsibilities.map((resp: string, i: number) => (
                                       <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">
@@ -1779,7 +1779,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               )}
                               {wsiGenerationContext.technicalSkills.length > 0 && (
                                 <div>
-                                  <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Técnicas</p>
+                                  <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1">Competências Técnicas</p>
                                   <div className="flex flex-wrap gap-1">
                                     {wsiGenerationContext.technicalSkills.map((skill: string, i: number) => (
                                       <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">{skill}</span>
@@ -1789,7 +1789,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               )}
                               {wsiGenerationContext.behavioralCompetencies.length > 0 && (
                                 <div>
-                                  <p className="text-micro font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Comportamentais</p>
+                                  <p className="text-micro font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Competências Comportamentais</p>
                                   <div className="flex flex-wrap gap-1">
                                     {wsiGenerationContext.behavioralCompetencies.map((comp: string, i: number) => (
                                       <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-full">{comp}</span>
@@ -1802,9 +1802,9 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
 
                           {wsiGenerationStep >= 3 && (
                             <div>
-                              <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Metodologias Utilizadas para Gerar Perguntas</p>
+                              <p className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-1">Metodologias Utilizadas para Gerar Perguntas</p>
                               {wsiGenerationStep >= 4 && wsiGenerationContext?.methodologyBreakdown && Object.keys(wsiGenerationContext.methodologyBreakdown).length > 0 ? (
-                                <p className="text-xs text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-xs text-gray-700">
                                   {Object.entries(wsiGenerationContext.methodologyBreakdown)
                                     .filter(([key]) => key !== 'Dreyfus')
                                     .map(([method, count]) => {
@@ -1826,7 +1826,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           {wsiGenerationStep >= 4 && wsiGenerationContext && (
                             <div className="space-y-4 pt-1">
                               <div>
-                                <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-base-ui text-gray-800">
                                   {wsiSummaryTypedText}
                                   {!wsiSummaryTypingDone && (
                                     <span className="inline-block w-[2px] h-[14px] bg-gray-900 dark:bg-gray-100 ml-0.5 align-middle animate-pulse" />
@@ -1839,7 +1839,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {(wsiGenerationContext.blockBreakdown?.[2] || 0) > 0 && (
                                     <div className="flex items-start gap-2">
                                       <span className="text-gray-400 dark:text-gray-500 mt-0.5">•</span>
-                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="text-base-ui text-gray-800">
                                         <span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo
                                       </p>
                                     </div>
@@ -1847,7 +1847,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {(wsiGenerationContext.blockBreakdown?.[3] || 0) > 0 && (
                                     <div className="flex items-start gap-2">
                                       <span className="text-gray-400 dark:text-gray-500 mt-0.5">•</span>
-                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="text-base-ui text-gray-800">
                                         <span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática
                                       </p>
                                     </div>
@@ -1855,7 +1855,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                   {(wsiGenerationContext.blockBreakdown?.[4] || 0) > 0 && (
                                     <div className="flex items-start gap-2">
                                       <span className="text-gray-400 dark:text-gray-500 mt-0.5">•</span>
-                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="text-base-ui text-gray-800">
                                         <span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga
                                       </p>
                                     </div>
@@ -1863,57 +1863,57 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </div>
 
                                 <div className="space-y-1">
-                                  <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <p className="text-base-ui text-gray-800">
                                     Ao todo, a triagem será composta por <span className="font-semibold">{wsiGeneratedCount} perguntas</span>.
                                   </p>
-                                  <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <p className="text-base-ui text-gray-800">
                                     O tempo médio estimado de triagem é de <span className="font-semibold">15 a 20 minutos</span>, considerando o tempo de leitura e resposta do candidato.
                                   </p>
                                 </div>
 
                                 {!wsiSummaryExpanded ? (
-                                  <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 transition-colors" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 transition-colors">
                                     <ChevronDown className="w-3.5 h-3.5" />
                                     Ver detalhes completos
                                   </button>
                                 ) : (
                                   <>
                                     <div>
-                                      <p className="text-base-ui font-semibold text-gray-900 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Próximo passo</p>
-                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>Selecione as perguntas em cada um dos blocos abaixo.</p>
+                                      <p className="text-base-ui font-semibold text-gray-900 mb-1">Próximo passo</p>
+                                      <p className="text-base-ui text-gray-800">Selecione as perguntas em cada um dos blocos abaixo.</p>
                                     </div>
                                     <div className="space-y-1.5">
-                                      <p className="text-base-ui text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="text-base-ui text-gray-800">
                                         As perguntas foram geradas com base na metodologia <span className="font-semibold text-gray-900 dark:text-gray-50">WeDoTalent Skill Index</span>, considerando:
                                       </p>
                                       <div className="space-y-0.5 pl-1">
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Senioridade do cargo</p></div>
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades e competências mapeadas</p></div>
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Metodologias de avaliação (CBI, Bloom, Big Five e Dreyfus)</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700">Senioridade do cargo</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700">Responsabilidades e competências mapeadas</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">•</span><p className="text-base-ui text-gray-700">Metodologias de avaliação (CBI, Bloom, Big Five e Dreyfus)</p></div>
                                       </div>
                                     </div>
-                                    <p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <p className="text-base-ui text-gray-700">
                                       As perguntas estão organizadas em ordem de prioridade, mas você pode escolher aquelas que julgar mais adequadas ao contexto da vaga.
                                     </p>
-                                    <p className="text-base-ui text-gray-800 font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <p className="text-base-ui text-gray-800 font-semibold">
                                       Caso deseje perguntas adicionais, utilize a opção de adicionar perguntas personalizadas manualmente em cada bloco.
                                     </p>
                                     <div className="border-t border-gray-100 pt-3">
-                                      <p className="text-base-ui font-semibold text-gray-900 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>Finalização</p>
-                                      <p className="text-base-ui text-gray-800 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Após concluir a seleção das perguntas:</p>
+                                      <p className="text-base-ui font-semibold text-gray-900 mb-1.5">Finalização</p>
+                                      <p className="text-base-ui text-gray-800 mb-1">Após concluir a seleção das perguntas:</p>
                                       <div className="space-y-0.5 pl-1">
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">1.</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Salve as alterações</p></div>
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">2.</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>Inicie o disparo da triagem</p></div>
-                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">3.</span><p className="text-base-ui text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>A LIA realizará a avaliação inicial e sinalizará os candidatos aprovados para a próxima etapa</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">1.</span><p className="text-base-ui text-gray-700">Salve as alterações</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">2.</span><p className="text-base-ui text-gray-700">Inicie o disparo da triagem</p></div>
+                                        <div className="flex items-start gap-2"><span className="text-gray-400 mt-0.5">3.</span><p className="text-base-ui text-gray-700">A LIA realizará a avaliação inicial e sinalizará os candidatos aprovados para a próxima etapa</p></div>
                                       </div>
                                     </div>
                                     {wsiGenerationContext.companyStandardFound && (
                                       <div className="flex items-center gap-1.5 pt-1">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                                        <span className="text-xs text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>Perguntas padrão da empresa incluídas</span>
+                                        <span className="text-xs text-gray-600">Perguntas padrão da empresa incluídas</span>
                                       </div>
                                     )}
-                                    <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 transition-colors pt-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 transition-colors pt-1">
                                       <ChevronUp className="w-3.5 h-3.5" />
                                       Recolher detalhes
                                     </button>

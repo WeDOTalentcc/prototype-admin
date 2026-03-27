@@ -333,7 +333,7 @@ export function LiaSuperPrompt() {
                         Conversas recentes
                       </p>
                       {recentChats.length === 0 ? (
-                        <p className="text-base-ui text-gray-400 text-center mt-10" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                        <p className="text-base-ui text-gray-400 text-center mt-10">
                           Nenhuma conversa anterior encontrada.
                         </p>
                       ) : (
@@ -346,10 +346,10 @@ export function LiaSuperPrompt() {
                             >
                               <Clock className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-base-ui text-gray-700 truncate group-hover:text-gray-900 transition-colors" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                                <p className="text-base-ui text-gray-700 truncate group-hover:text-gray-900 transition-colors">
                                   {chat.title}
                                 </p>
-                                <p className="text-xs text-gray-400 mt-0.5" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                                <p className="text-xs text-gray-400 mt-0.5">
                                   {new Date(chat.timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                                 </p>
                               </div>
@@ -417,13 +417,13 @@ export function LiaSuperPrompt() {
                                     <div className="flex-1 min-w-0">
                                       <h3
                                         className="font-semibold text-sm leading-tight mb-1"
-                                        style={{ color: "var(--gray-800)", fontFamily: '"Open Sans", sans-serif' }}
+                                        style={{ color: "var(--gray-800)" }}
                                       >
                                         {suggestion.title}
                                       </h3>
                                       <p
                                         className="text-xs leading-snug line-clamp-2"
-                                        style={{ color: "var(--gray-500)", fontFamily: '"Open Sans", sans-serif' }}
+                                        style={{ color: "var(--gray-500)" }}
                                       >
                                         {suggestion.description}
                                       </p>
@@ -495,7 +495,6 @@ export function LiaSuperPrompt() {
                           className="flex-1 resize-none text-base-ui focus:outline-none bg-transparent min-w-0"
                           style={{
                             color: "var(--gray-800)",
-                            fontFamily: '"Open Sans", sans-serif'
                           }}
                           rows={1}
                         />
@@ -553,7 +552,7 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
             >
               <div
                 className="text-base-ui leading-relaxed text-gray-700"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
+               
                 dangerouslySetInnerHTML={{ __html: html }}
               />
             </div>
@@ -588,7 +587,7 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
         >
           <div
             className="text-base-ui leading-relaxed text-gray-700"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
             dangerouslySetInnerHTML={{ __html: html }}
           />
         </div>
@@ -617,7 +616,7 @@ function SuperPromptStreamingBubble({ content }: { content: string }) {
       <div className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-white border border-gray-200">
         <div
           className="text-base-ui leading-relaxed text-gray-700"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
           dangerouslySetInnerHTML={{ __html: html }}
         />
         <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse align-middle" />

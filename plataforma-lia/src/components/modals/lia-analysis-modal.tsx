@@ -173,7 +173,7 @@ export function LiaAnalysisModal({
             <Brain className="w-6 h-6 text-wedo-cyan animate-pulse" />
             <div className="absolute inset-0 w-6 h-6 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" />
           </div>
-          <p className="text-micro text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <p className="text-micro text-gray-600">
             LIA está gerando a análise...
           </p>
         </div>
@@ -184,7 +184,7 @@ export function LiaAnalysisModal({
       return (
         <div className="flex flex-col items-center justify-center py-6 space-y-2">
           <Brain className="w-6 h-6 text-wedo-cyan" />
-          <p className="text-micro text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <p className="text-micro text-gray-600">
             Clique na aba para gerar a análise
           </p>
         </div>
@@ -214,7 +214,7 @@ export function LiaAnalysisModal({
     }
 
     return (
-      <div className="text-xs text-gray-800 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+      <div className="text-xs text-gray-800 leading-relaxed">
         <p className="font-semibold text-gray-950 mb-2 text-xs">{candidate?.name || candidate?.nome}</p>
         <div className="space-y-0">
           {formatContent(analysis.content)}
@@ -240,7 +240,7 @@ export function LiaAnalysisModal({
         align="start"
         sideOffset={8}
       >
-        <div className="flex flex-col" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+        <div className="flex flex-col">
           <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 bg-gray-50/50 rounded-t-lg">
             <div className="flex items-center gap-1.5">
               <Brain className="w-4 h-4 text-wedo-cyan" />

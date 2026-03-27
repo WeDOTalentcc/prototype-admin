@@ -84,7 +84,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
       <button
         onClick={handleToggle}
         className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-        style={{ fontFamily: "Open Sans, sans-serif" }}
+       
       >
         <span className="flex items-center gap-1.5">
           <TrendingUp className="w-3.5 h-3.5 text-gray-500" />
@@ -116,7 +116,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
           {loading && !timeToFill && !salary && (
             <div className="flex items-center justify-center py-3">
               <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-              <span className="ml-2 text-xs text-gray-500" style={{ fontFamily: "Open Sans, sans-serif" }}>
+              <span className="ml-2 text-xs text-gray-500">
                 Calculando previsões...
               </span>
             </div>
@@ -127,7 +127,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
             <div className="flex items-start gap-2">
               <Clock className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Tempo estimado de preenchimento
                 </p>
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -136,7 +136,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
                     ({timeToFill.range_min}–{timeToFill.range_max})
                   </span>
                 </p>
-                <p className={`text-micro ${confidenceColor(timeToFill.confidence_level)}`} style={{ fontFamily: "Open Sans, sans-serif" }}>
+                <p className={`text-micro ${confidenceColor(timeToFill.confidence_level)}`}>
                   {timeToFill.comparison_to_market}
                 </p>
               </div>
@@ -148,13 +148,13 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
             <div className="flex items-start gap-2">
               <DollarSign className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Faixa salarial sugerida
                 </p>
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: "Inter, sans-serif" }}>
                   {formatCurrency(salary.suggested_min)} – {formatCurrency(salary.suggested_max)}
                 </p>
-                <p className={`text-micro ${confidenceColor(salary.confidence_level)}`} style={{ fontFamily: "Open Sans, sans-serif" }}>
+                <p className={`text-micro ${confidenceColor(salary.confidence_level)}`}>
                   {salary.competitive_analysis} · P{salary.market_percentile}
                 </p>
               </div>
@@ -167,7 +167,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
               <button
                 onClick={handleRefresh}
                 className="flex items-center gap-1 text-micro text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                style={{ fontFamily: "Open Sans, sans-serif" }}
+               
               >
                 <RefreshCw className="w-2.5 h-2.5" />
                 Atualizar

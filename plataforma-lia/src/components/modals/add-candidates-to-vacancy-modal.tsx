@@ -368,7 +368,7 @@ export function AddCandidatesToVacancyModal({
   const modalContent = (
     <div 
       className="fixed inset-0 z-[9999] flex items-center justify-center"
-      style={{ fontFamily: '"Open Sans", sans-serif' }}
+     
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-vacancy-modal-title"

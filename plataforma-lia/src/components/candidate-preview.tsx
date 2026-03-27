@@ -1320,7 +1320,7 @@ export function CandidatePreview({
   }
 
   return (
-    <div className="h-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 flex flex-col transition-all duration-300 w-full" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+    <div className="h-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 flex flex-col transition-all duration-300 w-full">
       {/* Header */}
       <TooltipProvider delayDuration={200}>
         <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">
@@ -1329,7 +1329,7 @@ export function CandidatePreview({
             {/* Avatar */}
             <Avatar className="w-12 h-12 flex-shrink-0 ring-2 ring-white">
               <AvatarImage src={candidate.avatar_url || candidate.avatar || candidate.photo_url || candidate.photoUrl} alt={candidate.name} />
-              <AvatarFallback className="font-semibold text-sm bg-gray-200 text-gray-700" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <AvatarFallback className="font-semibold text-sm bg-gray-200 text-gray-700">
                 {candidate.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>

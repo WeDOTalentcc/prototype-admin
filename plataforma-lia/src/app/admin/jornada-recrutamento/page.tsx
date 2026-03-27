@@ -209,7 +209,7 @@ export default function JornadaRecrutamentoPage() {
               </Badge>
             )}
           </div>
-          <p className="text-sm text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <p className="text-sm text-gray-500">
             {isEditMode 
               ? "Arraste para reordenar, ative automações e personalize cada etapa."
               : "Visualize as etapas configuradas do seu processo seletivo."

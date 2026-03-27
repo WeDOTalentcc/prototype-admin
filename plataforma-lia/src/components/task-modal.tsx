@@ -39,7 +39,7 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
       <Card className="w-full max-w-md mx-4 rounded-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>{task.title}</CardTitle>
+            <CardTitle className="text-lg dark:text-gray-50">{task.title}</CardTitle>
             <Button
               variant="ghost"
               size="sm"

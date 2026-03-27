@@ -514,10 +514,10 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                     <AlertTriangle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                       Alterar Status para {statusChangeConfirm.newStatus}
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {job?.title || jobEditForm.title}
                     </p>
                   </div>
@@ -664,7 +664,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                             (job?.screeningStatus || 'not_configured') === 'completed' ? 'border-blue-200 bg-blue-50/50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
                             'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
                           }`}
-                          style={{ fontFamily: "'Open Sans', sans-serif" }}
+                         
                           onClick={() => {
                             setActiveSection('configuracoes')
                           }}

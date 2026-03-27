@@ -362,7 +362,7 @@ export function StatusBadge({
       )}
       style={{
         ...cssVars,
-        fontFamily: "'Open Sans', sans-serif",
+        
       }}
       onClick={onClick}
       title={tooltipText}
@@ -466,7 +466,7 @@ export function SourceBadge({ source, isApplication, className }: SourceBadgePro
         'border border-gray-200 dark:border-gray-600',
         className
       )}
-      style={{ fontFamily: "'Open Sans', sans-serif" }}
+     
       title={isApplication ? `Inscrito via ${sourceLabels[source.toLowerCase()] || source}` : `Origem: ${sourceLabels[source.toLowerCase()] || source}`}
     >
       <Icon className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-gray-400" />
@@ -495,7 +495,7 @@ export function WarningBadge({ days, message, className }: WarningBadgeProps) {
         'border border-gray-300 dark:border-gray-500',
         className
       )}
-      style={{ fontFamily: "'Open Sans', sans-serif" }}
+     
     >
       <AlertCircle className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-gray-300" />
       <span className="text-micro text-gray-600 dark:text-gray-200 font-semibold">
@@ -568,7 +568,7 @@ export function OriginBadge({ origin, className }: OriginBadgeProps) {
         `border ${config.border}`,
         className
       )}
-      style={{ fontFamily: "'Open Sans', sans-serif" }}
+     
       title={`Origem: ${config.label}`}
     >
       <Icon className={cn('w-2 h-2 flex-shrink-0', config.text)} />
@@ -592,7 +592,7 @@ export function AwaitingBadge({ className }: AwaitingBadgeProps) {
         'border border-amber-200 dark:border-amber-700',
         className
       )}
-      style={{ fontFamily: "'Open Sans', sans-serif" }}
+     
       title="Aguardando na fila de saturação"
     >
       <Clock className="w-2 h-2 flex-shrink-0 text-amber-600 dark:text-amber-400" />

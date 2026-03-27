@@ -187,7 +187,7 @@ export function FilterAutocomplete({
             placeholder={selectedValues.length === 0 ? placeholder : "Adicionar..."}
             disabled={disabled || (maxSelections !== undefined && selectedValues.length >= maxSelections)}
             className="w-full bg-transparent text-xs text-gray-950 dark:text-gray-50 placeholder-gray-400 focus:outline-none"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+           
           />
           {isLoading && (
             <div className="absolute right-0 top-1/2 -translate-y-1/2">
@@ -353,7 +353,7 @@ export function TagInput({
         placeholder={value.length === 0 ? placeholder : ""}
         disabled={disabled}
         className="flex-1 min-w-[100px] bg-transparent text-xs text-gray-950 dark:text-gray-50 placeholder-gray-400 focus:outline-none"
-        style={{ fontFamily: 'Open Sans, sans-serif' }}
+       
       />
     </div>
   )

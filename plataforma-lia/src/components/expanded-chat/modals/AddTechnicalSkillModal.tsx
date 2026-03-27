@@ -49,7 +49,7 @@ export function AddTechnicalSkillModal({
       <div className="bg-white rounded-2xl w-[400px] p-6">
         <h3
           className="text-lg font-semibold text-gray-800 mb-4"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
         >
           Adicionar {CATEGORY_LABELS[skillCategory]}
         </h3>
@@ -59,7 +59,7 @@ export function AddTechnicalSkillModal({
           onChange={(e) => onSkillNameChange(e.target.value)}
           placeholder={`Nome da ${CATEGORY_PLACEHOLDERS[skillCategory]}...`}
           className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
           autoFocus
           onKeyDown={(e) => e.key === 'Enter' && onAdd(skillName)}
         />

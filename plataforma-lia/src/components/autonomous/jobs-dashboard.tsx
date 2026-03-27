@@ -147,7 +147,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
     <div className={cn("space-y-4", className)}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Jobs Autônomos
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -250,7 +250,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                         <TypeIcon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>{job.name}</CardTitle>
+                        <CardTitle className="truncate">{job.name}</CardTitle>
                         <CardDescription className="truncate">
                           {JOB_TYPE_LABELS[job.job_type] || job.job_type}
                         </CardDescription>

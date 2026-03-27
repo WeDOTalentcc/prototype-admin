@@ -214,7 +214,6 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
         <SelectTrigger 
           className="w-[160px] h-9 text-sm border-gray-200 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
           style={{ 
-            fontFamily: "Open Sans, sans-serif"
           }}
         >
           <SelectValue placeholder="Selecionar período" />
@@ -242,7 +241,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
               >
                 <ChevronLeft className="w-4 h-4 text-gray-600" />
               </button>
-              <span className="text-sm font-medium text-gray-950 dark:text-gray-50" style={{ fontFamily: "Open Sans, sans-serif" }}>
+              <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                 {MONTHS_PT[currentMonth.getMonth()]} {currentMonth.getFullYear()}
               </span>
               <button
@@ -258,7 +257,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                 <div
                   key={day}
                   className="text-center text-xs text-gray-500 py-1"
-                  style={{ fontFamily: "Open Sans, sans-serif" }}
+                 
                 >
                   {day}
                 </div>
@@ -289,7 +288,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                       }
                       ${isToday && !isSelected ? "ring-1 ring-gray-900/20" : ""}
                     `}
-                    style={{ fontFamily: "Open Sans, sans-serif" }}
+                   
                   >
                     {date.getDate()}
                   </button>
@@ -299,7 +298,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
 
             {tempStart && tempEnd && (
               <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: "Open Sans, sans-serif" }}>
+                <p className="text-xs text-gray-600 mb-2">
                   Selecionado: <span className="font-medium text-gray-950 dark:text-gray-50">
                     {formatDateFull(tempStart)} - {formatDateFull(tempEnd)}
                   </span>

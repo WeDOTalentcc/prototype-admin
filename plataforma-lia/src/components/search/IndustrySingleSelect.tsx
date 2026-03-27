@@ -192,7 +192,7 @@ export function IndustrySingleSelect({
         
         {selectedIndustry && !isOpen ? (
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-sm text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <span className="text-sm text-gray-950 dark:text-gray-50">
               {selectedIndustry.labelPt}
             </span>
             <button
@@ -217,7 +217,7 @@ export function IndustrySingleSelect({
               onKeyDown={handleKeyDown}
               placeholder={selectedIndustry ? selectedIndustry.labelPt : placeholder}
               className="flex-1 text-sm bg-transparent outline-none text-gray-950 dark:text-gray-50 placeholder:text-gray-400"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+             
             />
             {isLoadingAI && (
               <Loader2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 animate-spin flex-shrink-0" />
@@ -246,7 +246,7 @@ export function IndustrySingleSelect({
                   : "hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200",
                 item.type === 'ai' && "border-t border-gray-100 dark:border-gray-700"
               )}
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+             
             >
               {item.type === 'ai' && (
                 <Brain className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />

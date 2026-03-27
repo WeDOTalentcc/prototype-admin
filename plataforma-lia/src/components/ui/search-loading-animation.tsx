@@ -61,24 +61,24 @@ export function SearchLoadingAnimation({ isActive }: SearchLoadingAnimationProps
           </div>
         </div>
         <div className="text-left">
-          <p className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">
             Processando busca...
           </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
             Analisando critérios e perfis
           </p>
         </div>
       </div>
       
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
           <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-wedo-green">
             <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
           </div>
           <span>Interpretando</span>
         </div>
         <span className="text-gray-400 text-xs">•</span>
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
           <div 
             className="spin-animation w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-900"
           >
@@ -87,7 +87,7 @@ export function SearchLoadingAnimation({ isActive }: SearchLoadingAnimationProps
           <span>Buscando</span>
         </div>
         <span className="text-gray-400 text-xs">•</span>
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
           <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-600 flex-shrink-0" />
           <span>Rankeando</span>
         </div>

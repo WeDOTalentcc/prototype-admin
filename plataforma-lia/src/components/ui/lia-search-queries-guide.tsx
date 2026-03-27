@@ -130,7 +130,7 @@ export function LiaSearchQueriesGuide({
           )}
           style={{ 
             borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)', 
-            fontFamily: '"Open Sans", sans-serif', 
+            
             fontWeight: 500
           }}
         >
@@ -165,7 +165,7 @@ export function LiaSearchQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400"
-              style={{ fontFamily: '"Open Sans", sans-serif', color: 'var(--gray-800)' }}
+              style={{ color: 'var(--gray-800)' }}
               autoFocus
             />
             {searchTerm && (
@@ -189,7 +189,7 @@ export function LiaSearchQueriesGuide({
                 ? "bg-gray-900 dark:bg-gray-50 text-white" 
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
             )}
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             Todas
           </button>
@@ -203,7 +203,7 @@ export function LiaSearchQueriesGuide({
                   ? "bg-gray-900 dark:bg-gray-50 text-white" 
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
               )}
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               <Icon className="w-2.5 h-2.5" />
               {label}
@@ -220,7 +220,7 @@ export function LiaSearchQueriesGuide({
             <UserCheck className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
             <span 
               className="text-micro"
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               {selectedCount} candidato{selectedCount > 1 ? 's' : ''} selecionado{selectedCount > 1 ? 's' : ''}
             </span>
@@ -257,7 +257,7 @@ export function LiaSearchQueriesGuide({
                 <span 
                   className="text-xs leading-snug font-medium"
                   style={{ 
-                    fontFamily: '"Open Sans", sans-serif',
+                    
                     color: 'var(--gray-800)'
                   }}
                 >
@@ -277,7 +277,7 @@ export function LiaSearchQueriesGuide({
                 <p 
                   className="text-xs"
                   style={{ 
-                    fontFamily: '"Open Sans", sans-serif',
+                    
                     color: 'var(--gray-400)'
                   }}
                 >
@@ -299,7 +299,7 @@ export function LiaSearchQueriesGuide({
           <p 
             className="text-micro text-center"
             style={{ 
-              fontFamily: '"Open Sans", sans-serif',
+              
               color: 'var(--gray-400)'
             }}
           >

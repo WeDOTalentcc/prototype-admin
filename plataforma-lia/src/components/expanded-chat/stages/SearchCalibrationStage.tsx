@@ -77,7 +77,7 @@ export function SearchCalibrationStage({
                 <CheckCircle2 className="w-4 h-4 text-wedo-green" />
               </div>
               <div>
-                <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <h4 className="text-xs font-medium text-gray-900">
                   Vaga Publicada!
                 </h4>
                 <p className="text-micro text-gray-500">
@@ -92,7 +92,7 @@ export function SearchCalibrationStage({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <span className="text-sm text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <span className="text-sm text-gray-500">
                   Candidatos ideais:
                 </span>
               </div>
@@ -118,7 +118,7 @@ export function SearchCalibrationStage({
           <div className="p-3 bg-white border border-gray-200 rounded-md">
             <div className="flex items-center gap-2 mb-2">
               <Database className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-gray-800">
                 Busca na Base Interna
               </span>
             </div>
@@ -151,7 +151,7 @@ export function SearchCalibrationStage({
                   <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-xs font-medium text-gray-800 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <h4 className="text-xs font-medium text-gray-800 mb-1">
                     Expandir para busca global?
                   </h4>
                   <p className="text-micro text-gray-500 mb-2">
@@ -185,7 +185,7 @@ export function SearchCalibrationStage({
             <div className="p-3 bg-white border border-gray-200 rounded-md">
               <div className="flex items-center gap-2 mb-2">
                 <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <span className="text-xs font-medium text-gray-800">
                   Busca Global (Pearch AI)
                 </span>
               </div>
@@ -203,7 +203,7 @@ export function SearchCalibrationStage({
             <div className="p-3 bg-white border border-gray-200 rounded-md">
               <div className="flex items-center gap-2 mb-2">
                 <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <span className="text-xs font-medium text-gray-800">
                   Busca Global (Pearch AI)
                 </span>
               </div>
@@ -224,7 +224,7 @@ export function SearchCalibrationStage({
             <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-3.5 h-3.5 text-chat-cyan" />
-                <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <span className="text-xs font-medium text-gray-800">
                   Análise da Busca
                 </span>
               </div>
@@ -264,7 +264,7 @@ export function SearchCalibrationStage({
                   <Target className="w-4 h-4 text-wedo-green" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <h4 className="text-xs font-medium text-gray-900">
                     Próximo passo: Calibração
                   </h4>
                   <p className="text-micro text-gray-500">
@@ -293,7 +293,7 @@ export function SearchCalibrationStage({
               <div className="flex items-center gap-3">
                 <Loader2 className="w-5 h-5 text-gray-600 dark:text-gray-400 animate-spin" />
                 <div>
-                  <h4 className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <h4 className="text-xs font-medium text-gray-800">
                     Buscando candidatos...
                   </h4>
                   <p className="text-micro text-gray-500">
@@ -312,7 +312,7 @@ export function SearchCalibrationStage({
                   <AlertTriangle className="w-4 h-4 text-status-warning" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <h4 className="text-xs font-medium text-gray-900">
                     Nenhum candidato encontrado
                   </h4>
                   <p className="text-micro text-gray-600 mt-1">
@@ -351,7 +351,7 @@ export function SearchCalibrationStage({
                     <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <h4 className="text-xs font-medium text-gray-800">
                       Calibração em andamento
                     </h4>
                     <p className="text-micro text-gray-500">
@@ -400,7 +400,7 @@ export function SearchCalibrationStage({
                 <CheckCircle2 className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="text-xs font-semibold text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <h3 className="text-xs font-semibold text-gray-900">
                   Perfeito! Vaga Configurada com Sucesso
                 </h3>
                 <p className="text-micro text-gray-500">
@@ -412,7 +412,7 @@ export function SearchCalibrationStage({
 
           {/* O que acontece agora */}
           <div className="p-3 bg-white border border-gray-200 rounded-md">
-            <h4 className="text-xs font-semibold text-gray-800 mb-3" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <h4 className="text-xs font-semibold text-gray-800 mb-3">
               O que acontece agora:
             </h4>
             <ul className="space-y-2.5">
@@ -438,7 +438,7 @@ export function SearchCalibrationStage({
 
           {/* Nota final */}
           <div className="p-2.5 bg-gray-50 rounded-md">
-            <p className="text-micro text-gray-500 text-center italic" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <p className="text-micro text-gray-500 text-center italic">
               *Todos estes detalhes serão enviados por e-mail junto com a confirmação de abertura da vaga.
             </p>
           </div>
@@ -483,7 +483,7 @@ export function SearchCalibrationNavButtons({
 }: SearchCalibrationNavButtonsProps) {
   if (calibrationComplete) {
     return (
-      <div className="text-center text-micro text-wedo-green font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+      <div className="text-center text-micro text-wedo-green font-medium">
         Calibração concluída! Candidatos sendo adicionados ao kanban...
       </div>
     )
@@ -492,13 +492,13 @@ export function SearchCalibrationNavButtons({
   return (
     <div className="flex gap-3">
       {calibrationCandidates.length === 0 && hasAttemptedCalibrationGeneration && !isLoadingCalibration ? (
-        <div className="w-full text-center text-micro text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+        <div className="w-full text-center text-micro text-gray-500">
           Use os botões acima para tentar novamente ou prosseguir
         </div>
       ) : (
         <Button
           className="w-full h-9 rounded-md text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
-          style={{ fontFamily: '"Open Sans", sans-serif' }}
+         
           onClick={() => {
             if (calibrationCandidates.length > 0) {
               onSetShowCalibrationModal(true)

@@ -672,7 +672,7 @@ export function AdminTemplateHub() {
                         </div>
                         <div>
                           <span className="text-base-ui font-semibold text-gray-900">Ajustar com a LIA</span>
-                          <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <p className="text-xs text-gray-500">
                             Descreva as alterações desejadas
                           </p>
                         </div>
@@ -686,7 +686,7 @@ export function AdminTemplateHub() {
                           placeholder="Ex: Torne mais formal e adicione contexto técnico..."
                           disabled={isGenerating}
                           className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-400"
-                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                         
                         />
                         <Button 
                           onClick={handleAdjustWithAI}
@@ -714,7 +714,7 @@ export function AdminTemplateHub() {
                             <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '150ms' }}></span>
                             <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '300ms' }}></span>
                           </div>
-                          <span className="text-xs" style={{ color: 'var(--wedo-cyan-dark)', fontFamily: 'Open Sans, sans-serif' }}>
+                          <span className="text-xs" style={{ color: 'var(--wedo-cyan-dark)' }}>
                             A LIA está analisando e ajustando o template...
                           </span>
                         </div>
@@ -736,7 +736,7 @@ export function AdminTemplateHub() {
                               <h3 className="text-sm font-semibold text-gray-900">
                                 Ajustes da LIA
                               </h3>
-                              <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              <p className="text-xs text-gray-500">
                                 Revise as alterações sugeridas
                               </p>
                             </div>
@@ -748,7 +748,7 @@ export function AdminTemplateHub() {
                       </div>
                       <CardContent className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                             Alterações Realizadas
                           </label>
                           <div className="flex flex-wrap gap-1.5">
@@ -763,20 +763,20 @@ export function AdminTemplateHub() {
                         
                         {aiResultModal.newSubject && (
                           <div>
-                            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                               Novo Assunto
                             </label>
-                            <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900">
                               {aiResultModal.newSubject}
                             </div>
                           </div>
                         )}
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                             Novo Conteúdo
                           </label>
-                          <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900 whitespace-pre-wrap max-h-[300px] overflow-y-auto" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                          <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900 whitespace-pre-wrap max-h-[300px] overflow-y-auto">
                             {aiResultModal.newBody}
                           </div>
                         </div>
@@ -784,7 +784,7 @@ export function AdminTemplateHub() {
                         <div className="p-3 rounded-md border border-amber-200 bg-amber-50">
                           <div className="flex items-start gap-2">
                             <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                            <p className="text-xs text-amber-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                            <p className="text-xs text-amber-800">
                               Ao aplicar os ajustes, o texto será atualizado no editor. Lembre-se de clicar em <strong>"Salvar"</strong> para confirmar as alterações definitivamente.
                             </p>
                           </div>

@@ -132,7 +132,7 @@ export function BenefitBadgeList({
                     focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300
                     ${sizeClasses[size]}
                   `}
-                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                 
                 >
                   {showCategory && (
                     <span className={`${category.color}`}>
@@ -224,7 +224,7 @@ export function BenefitBadgeList({
               focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300
               ${sizeClasses[size]}
             `}
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+           
           >
             +{remainingCount} mais
           </button>

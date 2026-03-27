@@ -2114,7 +2114,7 @@ export function ExpandableAIPrompt({
   const statusInfo = getStatusInfo()
 
   return (
-    <div className="space-y-3" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+    <div className="space-y-3">
 
       {/* Candidato Específico Preview */}
       {candidateContext && (
@@ -2934,7 +2934,6 @@ export function ExpandableAIPrompt({
                             style={{ 
                               backgroundColor: colors.bg,
                               color: colors.text,
-                              fontFamily: '"Open Sans", sans-serif'
                             }}
                             title={tag.value}
                           >
@@ -2974,7 +2973,7 @@ export function ExpandableAIPrompt({
                                   ? "bg-gray-900 text-white" 
                                   : "bg-gray-100 text-gray-500"
                               )}
-                              style={{ fontFamily: '"Open Sans", sans-serif' }}
+                             
                             >
                               <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'text-gray-400'}`} />
                               <span className="font-medium text-xs">
@@ -3039,7 +3038,6 @@ export function ExpandableAIPrompt({
                                 style={{ 
                                   backgroundColor: 'rgba(229, 231, 235, 0.3)', 
                                   border: '1px solid rgba(96, 190, 209, 0.3)',
-                                  fontFamily: '"Open Sans", sans-serif' 
                                 }}
                               >
                                 <Target className="w-3 h-3" />
@@ -3358,7 +3356,7 @@ export function ExpandableAIPrompt({
                     <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                       <div className="flex items-start gap-2">
                         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
-                        <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                        <p className="text-xs text-gray-800 dark:text-gray-200">
                           <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
                         </p>
                       </div>
@@ -4185,7 +4183,7 @@ export function ExpandableAIPrompt({
       <AlertDialog open={showDeleteArchetypeDialog} onOpenChange={setShowDeleteArchetypeDialog}>
         <AlertDialogContent 
           className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-md border" 
-          style={{ backgroundColor: 'var(--gray-50)', fontFamily: '"Open Sans", sans-serif' }}
+          style={{ backgroundColor: 'var(--gray-50)' }}
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
@@ -4227,7 +4225,7 @@ export function ExpandableAIPrompt({
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
           className="sm:max-w-[200px] w-[80vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md border" 
-          style={{ backgroundColor: 'var(--gray-100)', fontFamily: '"Open Sans", sans-serif' }}
+          style={{ backgroundColor: 'var(--gray-100)' }}
         >
           <div className="space-y-2" style={{ fontSize: '10px', lineHeight: '1.4' }}>
             <div className="flex items-center gap-1.5">

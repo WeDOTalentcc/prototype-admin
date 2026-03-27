@@ -265,7 +265,7 @@ export function SharedSearchDetailsModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
         className="max-w-3xl bg-zinc-900 border-zinc-700 text-white p-0 gap-0 max-h-[90vh] flex flex-col"
-        style={{ fontFamily: '"Open Sans", sans-serif' }}
+       
       >
         <DialogHeader className="px-5 py-4 border-b border-zinc-700 flex-shrink-0">
           <div className="flex items-center justify-between">

@@ -225,7 +225,7 @@ export function CompetenciesStage({
     return (
       <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-white rounded-md border border-gray-200">
         <div className="flex items-center gap-2">
-          <span className="flex-1 text-xs font-medium text-gray-800 flex items-center gap-1.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="flex-1 text-xs font-medium text-gray-800 flex items-center gap-1.5">
             {skill.name}
             {skill.source === 'company_catalog' && (
               <span
@@ -334,7 +334,7 @@ export function CompetenciesStage({
               <Brain className="w-3.5 h-3.5 text-green-500" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-green-800">
                 Competências pré-configuradas
               </span>
               <p className="text-micro text-gray-500 mt-0.5">
@@ -368,7 +368,7 @@ export function CompetenciesStage({
               <Settings className="w-3.5 h-3.5 text-blue-500" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-blue-800 flex items-center gap-1.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-blue-800 flex items-center gap-1.5">
                 Competências pré-preenchidas do catálogo da empresa
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
               </span>
@@ -387,7 +387,7 @@ export function CompetenciesStage({
               <Laptop className="w-3.5 h-3.5 text-violet-500" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-violet-800 flex items-center gap-1.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-violet-800 flex items-center gap-1.5">
                 Competências pré-preenchidas do Tech Stack
                 <span className="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0" />
               </span>
@@ -436,7 +436,7 @@ export function CompetenciesStage({
             (isFieldHighlighted('technicalSkill') || isFieldHighlighted('skills') || isFieldHighlighted('competencias') || isFieldHighlighted('competencias_tecnicas')) && "field-highlight field-pulse"
           )}>
             <Code className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <span className="text-xs font-semibold text-gray-800 flex items-center gap-1.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <span className="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
               Competências Técnicas
               {companyConfig?.techStack && companyConfig.techStack.length > 0 && (
                 <Settings className="w-3 h-3 text-gray-600 dark:text-gray-400" />
@@ -491,7 +491,7 @@ export function CompetenciesStage({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Database className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                    <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
                       Bancos de Dados
                     </span>
                   </div>
@@ -510,7 +510,7 @@ export function CompetenciesStage({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Wrench className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                    <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
                       Ferramentas e Plataformas
                     </span>
                   </div>
@@ -529,7 +529,7 @@ export function CompetenciesStage({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                    <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
                       Competências Técnicas Gerais
                     </span>
                   </div>
@@ -549,7 +549,7 @@ export function CompetenciesStage({
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Wrench className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                  <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
                     Conhecimentos Específicos da Área
                   </span>
                 </div>
@@ -568,7 +568,7 @@ export function CompetenciesStage({
 
             <div className="p-2 bg-gray-50 rounded-md border border-gray-300 dark:border-gray-600">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>Total de competências técnicas:</span>
+                <span className="text-gray-500">Total de competências técnicas:</span>
                 <span className="font-semibold text-gray-900 dark:text-gray-50">{technicalSkills.length}</span>
               </div>
               <div className="flex items-center justify-between text-micro mt-1">
@@ -583,7 +583,7 @@ export function CompetenciesStage({
             (isFieldHighlighted('behavioralCompetency') || isFieldHighlighted('competencias_comportamentais') || isFieldHighlighted('behavioral')) && "field-highlight field-pulse"
           )}>
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <span className="text-xs font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <span className="text-xs font-semibold text-gray-800">
               Competências Comportamentais
             </span>
             <span className="ml-auto text-micro bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded-full">
@@ -624,7 +624,7 @@ export function CompetenciesStage({
                     >
                       {comp.enabled && <Check className="w-2.5 h-2.5" />}
                     </button>
-                    <span className="text-xs font-medium text-gray-800 flex-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    <span className="text-xs font-medium text-gray-800 flex-1">
                       {comp.name}
                     </span>
                     <div className="flex items-center gap-0.5">
@@ -683,7 +683,7 @@ export function CompetenciesStage({
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
-                  <p className="text-micro text-gray-400 mt-1 ml-6" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <p className="text-micro text-gray-400 mt-1 ml-6">
                     {comp.justification}
                   </p>
                 </div>
@@ -700,7 +700,7 @@ export function CompetenciesStage({
 
             <div className="p-2 bg-gray-50 rounded-md border border-gray-300 dark:border-gray-600 mt-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>Competências ativas:</span>
+                <span className="text-gray-500">Competências ativas:</span>
                 <span className="font-semibold text-gray-900 dark:text-gray-50">{behavioralCompetencies.filter(c => c.enabled).length}</span>
               </div>
               <div className={`${textStyles.description} mt-1`}>

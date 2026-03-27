@@ -106,7 +106,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex-1">
-          <h4 className="text-xs font-semibold text-gray-800 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <h4 className="text-xs font-semibold text-gray-800 mb-1">
             {skill.name}
           </h4>
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -200,7 +200,7 @@ function SkillsTabContent({ skills, selectedSkills, onAddSkill, tabLabel }: TabC
 
       {filteredSkills.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-xs text-gray-400" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <p className="text-xs text-gray-400">
             {searchQuery ? 'Nenhum resultado encontrado' : 'Nenhuma skill disponível'}
           </p>
         </div>
@@ -428,7 +428,7 @@ export function AddSkillModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md" role="dialog" aria-modal="true" aria-labelledby="add-skill-modal-title">
         <DialogHeader>
-          <DialogTitle id="add-skill-modal-title" className="text-sm font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <DialogTitle id="add-skill-modal-title" className="text-sm font-semibold text-gray-800">
             Adicionar Skill: {CATEGORY_LABELS[category]}
           </DialogTitle>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -461,7 +461,7 @@ export function AddSkillModal({
           <TabsContent value="catalog" className="space-y-3">
             {catalogByCategory.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-xs text-gray-400" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <p className="text-xs text-gray-400">
                   Nenhuma skill de {CATEGORY_LABELS[category].toLowerCase()} no catálogo da empresa
                 </p>
               </div>
@@ -478,7 +478,7 @@ export function AddSkillModal({
           <TabsContent value="market" className="space-y-3">
             {suggestionsWithoutSelected.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-xs text-gray-400" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <p className="text-xs text-gray-400">
                   Nenhuma sugestão de mercado disponível para {CATEGORY_LABELS[category].toLowerCase()}
                 </p>
               </div>

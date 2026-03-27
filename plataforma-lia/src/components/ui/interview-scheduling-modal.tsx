@@ -134,7 +134,7 @@ export function InterviewSchedulingModal({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
               Agendar Entrevista
             </DialogTitle>
           </div>

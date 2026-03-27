@@ -236,7 +236,7 @@ export function EnrichedJDStage({
           <button
             onClick={handleAcceptAll}
             className="px-3 py-1.5 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
-            style={{ fontFamily: '"Open Sans", sans-serif' }}
+           
           >
             Aceitar todas
           </button>

@@ -211,7 +211,7 @@ export function EmailTemplateFormModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col rounded-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <DialogTitle className="flex items-center gap-2 dark:text-gray-50">
             <Mail className="w-5 h-5 text-gray-900 dark:text-gray-50" />
             {isEditing ? "Editar Template" : "Novo Template de Email"}
           </DialogTitle>

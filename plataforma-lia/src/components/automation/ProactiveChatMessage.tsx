@@ -34,14 +34,14 @@ export default function ProactiveChatMessage({
         <div className="w-1.5 h-1.5 rounded-full bg-wedo-cyan" />
         <span
           className="text-sm font-medium text-gray-200"
-          style={{ fontFamily: "Open Sans, sans-serif" }}
+         
         >
           {title}
         </span>
       </div>
       <p
         className="text-xs text-gray-400 mb-2"
-        style={{ fontFamily: "Open Sans, sans-serif" }}
+       
       >
         {message}
       </p>
@@ -50,7 +50,7 @@ export default function ProactiveChatMessage({
           onClick={onAccept}
           disabled={processing}
           className="px-3 py-1 text-xs font-medium rounded bg-wedo-cyan/20 text-wedo-cyan hover:bg-wedo-cyan/30 transition-colors disabled:opacity-50"
-          style={{ fontFamily: "Open Sans, sans-serif" }}
+         
         >
           {processing ? "Processando..." : actionLabel}
         </button>
@@ -58,7 +58,7 @@ export default function ProactiveChatMessage({
           onClick={onReject}
           disabled={processing}
           className="px-3 py-1 text-xs rounded text-gray-500 hover:text-gray-300 hover:bg-white/5 transition-colors disabled:opacity-50"
-          style={{ fontFamily: "Open Sans, sans-serif" }}
+         
         >
           Ignorar
         </button>

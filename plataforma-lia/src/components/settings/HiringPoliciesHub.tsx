@@ -240,13 +240,13 @@ export function HiringPoliciesHub() {
                 <div className="min-w-0 flex-1">
                   <h3
                     className="text-sm font-semibold leading-tight truncate text-gray-950 dark:text-gray-50"
-                    style={{ fontFamily: 'Open Sans, sans-serif' }}
+                   
                   >
                     Olá! Sou a Lia.
                   </h3>
                   <p
                     className="text-xs leading-tight truncate mt-0.5 text-gray-500"
-                    style={{ fontFamily: 'Open Sans, sans-serif' }}
+                   
                   >
                     Posso criar vagas, buscar candidatos, analisar ...
                   </p>

@@ -139,7 +139,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       >
         <div className="flex items-center gap-2">
           <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <span className="text-xs font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-xs font-semibold text-gray-800">
             {title}
           </span>
           {count !== undefined && (
@@ -165,7 +165,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
         <div className="px-3 py-2 bg-gray-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <span className="text-xs font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+            <span className="text-xs font-semibold text-gray-800">
               Descrição da Vaga
             </span>
           </div>
@@ -317,7 +317,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       <div className="rounded-md border border-gray-200 overflow-hidden">
         <div className="px-3 py-2 bg-gray-50 flex items-center gap-2">
           <Rocket className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <span className="text-xs font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-xs font-semibold text-gray-800">
             Publicar em
           </span>
         </div>
@@ -340,7 +340,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
                 )}>
                   {platform.enabled && <CheckCircle2 className="w-2.5 h-2.5" />}
                 </div>
-                <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <span className="text-xs font-medium text-gray-800">
                   {platform.name}
                 </span>
               </button>

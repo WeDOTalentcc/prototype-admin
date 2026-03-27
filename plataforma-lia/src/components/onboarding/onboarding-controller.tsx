@@ -241,20 +241,20 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         <h2 className="text-2xl font-bold text-gray-950 mb-4">
           Acesso Restrito
         </h2>
-        <p className="text-gray-800 mb-6" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+        <p className="text-gray-800 mb-6">
           Você precisa de um convite para acessar a plataforma LIA.
         </p>
         <div className="space-y-3">
           <button
             onClick={() => window.location.href = '/login'}
-            className="w-full text-white px-6 py-2 rounded-md hover:opacity-90 transition-colors bg-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}
+            className="w-full text-white px-6 py-2 rounded-md hover:opacity-90 transition-colors bg-gray-900"
           >
             Fazer Login
           </button>
           <button
             onClick={() => window.location.href = '/demo-onboarding'}
             className="w-full bg-gray-700 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+           
           >
             🚀 Demonstração do Onboarding
           </button>

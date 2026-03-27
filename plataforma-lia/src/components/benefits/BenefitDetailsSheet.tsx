@@ -144,7 +144,7 @@ export function BenefitDetailsSheet({
               </SheetTitle>
               <SheetDescription 
                 className="text-sm text-gray-800 dark:text-gray-200"
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 {totalBenefits} benefícios disponíveis
               </SheetDescription>
@@ -205,7 +205,7 @@ export function BenefitDetailsSheet({
                 <Gift className="w-12 h-12 text-gray-300 mb-3" />
                 <p 
                   className="text-sm text-gray-800 dark:text-gray-200"
-                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                 
                 >
                   Nenhum benefício disponível
                 </p>
@@ -243,7 +243,7 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
           <div className="flex items-center gap-2 mb-1">
             <h4 
               className="font-medium text-gray-950 dark:text-gray-50 text-sm truncate"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+             
             >
               {benefit.name}
             </h4>
@@ -255,7 +255,7 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
           {benefit.description && (
             <p 
               className="text-xs text-gray-800 dark:text-gray-200 line-clamp-2 mb-2"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+             
             >
               {benefit.description}
             </p>

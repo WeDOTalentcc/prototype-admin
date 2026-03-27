@@ -145,20 +145,20 @@ export function AgentMemoryIndicator({
               }}
             />
           </div>
-          <span style={{ fontSize: 11, fontFamily: "Open Sans, sans-serif" }}>
+          <span style={{ fontSize: 11 }}>
             {pct}%
           </span>
         </div>
 
         <span
-          className="text-gray-400 border-l border-l-gray-200" style={{ fontSize: 11, paddingLeft: 8, fontFamily: "Open Sans, sans-serif" }}
+          className="text-gray-400 border-l border-l-gray-200" style={{ fontSize: 11, paddingLeft: 8 }}
         >
           {memory.fields_count} campos
         </span>
 
         {relTime && (
           <span
-            className="text-gray-400 border-l border-l-gray-200" style={{ fontSize: 11, paddingLeft: 8, fontFamily: "Open Sans, sans-serif" }}
+            className="text-gray-400 border-l border-l-gray-200" style={{ fontSize: 11, paddingLeft: 8 }}
           >
             {relTime}
           </span>
@@ -210,14 +210,14 @@ export function AgentMemoryIndicator({
 
               <div style={{ marginBottom: 6 }}>
                 <span style={{ fontWeight: 500 }}>Estágio: </span>
-                <span style={{ fontFamily: "Open Sans, sans-serif" }}>
+                <span>
                   {stageName}
                 </span>
               </div>
 
               <div style={{ marginBottom: 10 }}>
                 <span style={{ fontWeight: 500 }}>Progresso: </span>
-                <span style={{ fontFamily: "Open Sans, sans-serif" }}>
+                <span>
                   {pct}% ({memory.fields_count} campos)
                 </span>
               </div>
@@ -246,7 +246,6 @@ export function AgentMemoryIndicator({
                             key={key}
                             style={{
                               marginBottom: 2,
-                              fontFamily: "Open Sans, sans-serif",
                               }}
                           >
                             <span style={{ fontWeight: 500 }}>
@@ -267,7 +266,7 @@ export function AgentMemoryIndicator({
                 fullMemory.pending_actions.length > 0 && (
                   <div style={{ marginBottom: 6 }}>
                     <span style={{ fontWeight: 500 }}>Ações pendentes: </span>
-                    <span style={{ fontFamily: "Open Sans, sans-serif" }}>
+                    <span>
                       {fullMemory.pending_actions.length}
                     </span>
                   </div>
@@ -285,7 +284,6 @@ export function AgentMemoryIndicator({
                   </div>
                   <div
                     style={{
-                      fontFamily: "Open Sans, sans-serif",
                       fontStyle: "italic",
                       fontSize: 11,
                     }}

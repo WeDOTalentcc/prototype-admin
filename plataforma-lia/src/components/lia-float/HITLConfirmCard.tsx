@@ -63,7 +63,7 @@ export function HITLConfirmCard({
       {/* Descrição da ação */}
       <p
         className="text-sm-ui text-gray-700 dark:text-gray-300 leading-relaxed pl-6"
-        style={{ fontFamily: "Open Sans, sans-serif" }}
+       
       >
         {description}
       </p>
@@ -83,7 +83,7 @@ export function HITLConfirmCard({
         />
         <span
           className="text-xs text-gray-500 dark:text-gray-400"
-          style={{ fontFamily: "Open Sans, sans-serif" }}
+         
         >
           Confirmar automaticamente esta ação no futuro
         </span>

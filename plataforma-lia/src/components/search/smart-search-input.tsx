@@ -1743,9 +1743,8 @@ export function SmartSearchInput({
                 ? { 
                     backgroundColor: "var(--gray-800)",
                     color: "white",
-                    fontFamily: '"Open Sans", sans-serif'
                   } 
-                : { color: "var(--gray-600)", fontFamily: '"Open Sans", sans-serif' }
+                : { color: "var(--gray-600)" }
               }
             >
               <m.icon className="w-3.5 h-3.5" />
@@ -1811,7 +1810,7 @@ export function SmartSearchInput({
                     ref={ghostOverlayRef}
                     className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-base-ui min-h-[56px] overflow-hidden"
                     style={{ 
-                      fontFamily: '"Open Sans", sans-serif',
+                      
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
                       zIndex: 1,
@@ -1839,7 +1838,7 @@ export function SmartSearchInput({
                     backgroundColor: ghostTextSuffix && !showAutocomplete ? "transparent" : "var(--white)",
                     color: "var(--gray-950)",
                     caretColor: "var(--gray-950)",
-                    fontFamily: '"Open Sans", sans-serif',
+                    
                     zIndex: 2,
                   }}
                   onFocus={(e) => {
@@ -2211,7 +2210,6 @@ export function SmartSearchInput({
                       style={{ 
                         backgroundColor: colors.bg,
                         color: colors.text,
-                        fontFamily: '"Open Sans", sans-serif'
                       }}
                       title={tag.value}
                     >
@@ -2244,7 +2242,7 @@ export function SmartSearchInput({
                             ? "bg-gray-900 text-white" 
                             : "bg-gray-100 text-gray-500"
                         )}
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                       
                       >
                         <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'text-gray-400'}`} />
                         <span className="font-medium text-xs">
@@ -2326,7 +2324,7 @@ export function SmartSearchInput({
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
                           Qualidade da busca
                         </span>
                         <span 
@@ -2414,7 +2412,7 @@ export function SmartSearchInput({
                   {/* Sugestões de enriquecimento - Inline scroll se necessário */}
                   {Object.keys(searchAnalysis.enrichment_suggestions).length > 0 && (
                     <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                      <span className="text-xs text-gray-950 dark:text-gray-50 font-medium whitespace-nowrap" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                      <span className="text-xs text-gray-950 dark:text-gray-50 font-medium whitespace-nowrap">
                         Adicionar:
                       </span>
                       <div className="flex gap-1.5 flex-nowrap">
@@ -2426,7 +2424,6 @@ export function SmartSearchInput({
                               className="px-2 py-0.5 rounded-full text-xs font-medium transition-all hover:scale-105 border border-gray-200 whitespace-nowrap flex-shrink-0"
                               style={{ 
                                 backgroundColor: "var(--lia-bg-primary)",
-                                fontFamily: '"Open Sans", sans-serif'
                               }}
                             >
                               + {item}
@@ -2442,7 +2439,7 @@ export function SmartSearchInput({
               {/* Sugestões de busca - Horizontal lado a lado */}
               {!value && (
                 <div className="pt-1 w-full flex items-start gap-2">
-                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap mt-0.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap mt-0.5">
                     Sugestões:
                   </span>
                   <div className="flex items-center gap-2 flex-nowrap overflow-x-auto">
@@ -2451,7 +2448,7 @@ export function SmartSearchInput({
                         key={suggestion}
                         onClick={() => onChange(suggestion)}
                         className="px-2.5 py-0.5 text-xs text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-50 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-200 transition-all whitespace-nowrap flex-shrink-0"
-                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                       
                         title={suggestion}
                       >
                         {suggestion}
@@ -2482,7 +2479,6 @@ export function SmartSearchInput({
                     style={{ 
                       backgroundColor: "var(--lia-bg-primary)",
                       color: "var(--gray-950)",
-                      fontFamily: "'Open Sans', sans-serif"
                     }}
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -2549,7 +2545,7 @@ export function SmartSearchInput({
                       <div 
                         key={index}
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs"
-                        style={{ backgroundColor: "var(--gray-50)", fontFamily: "'Open Sans', sans-serif" }}
+                        style={{ backgroundColor: "var(--gray-50)" }}
                       >
                         <FileText className="w-3 h-3 text-gray-500" />
                         <span className="max-w-[150px] truncate text-gray-800 dark:text-gray-200">{file.name}</span>
@@ -2562,7 +2558,7 @@ export function SmartSearchInput({
                       <button
                         onClick={() => cvFileInputRef.current?.click()}
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors border"
-                        style={{ backgroundColor: "var(--lia-bg-primary)", fontFamily: "'Open Sans', sans-serif" }}
+                        style={{ backgroundColor: "var(--lia-bg-primary)" }}
                       >
                         <Upload className="w-3 h-3" />
                         + CV
@@ -2573,7 +2569,7 @@ export function SmartSearchInput({
                   <button
                     onClick={() => cvFileInputRef.current?.click()}
                     className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors border border-dashed"
-                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                   
                   >
                     <Upload className="w-3.5 h-3.5" />
                     Arraste CVs aqui ou clique para upload (máx. 2)
@@ -2652,11 +2648,11 @@ export function SmartSearchInput({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5 text-gray-700" />
-                      <span className="text-xs font-medium" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                      <span className="text-xs font-medium">
                         Preview do prompt de busca
                       </span>
                     </div>
-                    <span className="text-micro text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>editável</span>
+                    <span className="text-micro text-gray-400">editável</span>
                   </div>
                   <div className="relative">
                     <textarea
@@ -2667,7 +2663,6 @@ export function SmartSearchInput({
                       style={{ 
                         backgroundColor: "var(--lia-bg-primary)",
                         color: "var(--gray-950)",
-                        fontFamily: "'Open Sans', sans-serif"
                       }}
                       onFocus={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -2859,7 +2854,6 @@ export function SmartSearchInput({
                     style={{ 
                       backgroundColor: "var(--lia-bg-primary)",
                       color: "var(--gray-950)",
-                      fontFamily: "'Open Sans', sans-serif"
                     }}
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -3043,7 +3037,7 @@ export function SmartSearchInput({
               <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-800 dark:text-gray-200">
                     <strong>Dica:</strong> Cole 1 a 3 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
                   </p>
                 </div>
@@ -3059,11 +3053,11 @@ export function SmartSearchInput({
                 <div className="flex items-center justify-between mb-1.5">
                   <span 
                     className="text-xs font-medium"
-                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                   
                   >
                     Buscar vaga existente
                   </span>
-                  <span className="text-micro text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>opcional</span>
+                  <span className="text-micro text-gray-400">opcional</span>
                 </div>
                 
                 {selectedVacancy ? (
@@ -3078,9 +3072,9 @@ export function SmartSearchInput({
                         <Briefcase className="w-3 h-3 text-gray-600" />
                       </div>
                       <div>
-                        <p className="text-base-ui font-medium text-gray-800" style={{ fontFamily: "'Open Sans', sans-serif" }}>{selectedVacancy.title}</p>
+                        <p className="text-base-ui font-medium text-gray-800">{selectedVacancy.title}</p>
                         {selectedVacancy.job_id && (
-                          <p className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>ID: {selectedVacancy.job_id}</p>
+                          <p className="text-micro text-gray-500">ID: {selectedVacancy.job_id}</p>
                         )}
                       </div>
                     </div>
@@ -3109,7 +3103,6 @@ export function SmartSearchInput({
                       style={{ 
                         backgroundColor: 'var(--gray-50)',
                         color: 'var(--gray-950)',
-                        fontFamily: "'Open Sans', sans-serif"
                       }}
                       onFocus={(e) => {
                         e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -3136,7 +3129,7 @@ export function SmartSearchInput({
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <p className="text-base-ui font-medium text-gray-800 truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>{vacancy.title}</p>
+                                  <p className="text-base-ui font-medium text-gray-800 truncate">{vacancy.title}</p>
                                   <Badge 
                                     variant="outline" 
                                     className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
@@ -3150,12 +3143,12 @@ export function SmartSearchInput({
                                 </div>
                                 <div className="flex items-center gap-2 mt-0.5">
                                   {vacancy.job_id && (
-                                    <span className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>ID: {vacancy.job_id}</span>
+                                    <span className="text-micro text-gray-500">ID: {vacancy.job_id}</span>
                                   )}
-                                  <span className="text-micro text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>{formatDate(vacancy.created_at)}</span>
+                                  <span className="text-micro text-gray-400">{formatDate(vacancy.created_at)}</span>
                                 </div>
                                 {vacancy.description_preview && (
-                                  <p className="text-xs text-gray-500 mt-1 line-clamp-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                                     {vacancy.description_preview}
                                   </p>
                                 )}
@@ -3172,7 +3165,7 @@ export function SmartSearchInput({
                         className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
                         style={{ backgroundColor: 'var(--gray-50)' }}
                       >
-                        <p className="text-base-ui text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Nenhuma vaga encontrada</p>
+                        <p className="text-base-ui text-gray-500">Nenhuma vaga encontrada</p>
                       </div>
                     )}
                   </div>
@@ -3190,7 +3183,7 @@ export function SmartSearchInput({
               <div className="flex items-center justify-between mb-1.5">
                 <span 
                   className="text-xs font-medium"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 >
                   Cole a descrição da vaga
                 </span>
@@ -3206,7 +3199,7 @@ export function SmartSearchInput({
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
                   className="text-xs h-6 px-2"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 >
                   <Upload className="w-3 h-3 mr-1" />
                   Upload
@@ -3228,7 +3221,6 @@ export function SmartSearchInput({
                   style={{ 
                     backgroundColor: "var(--lia-bg-primary)",
                     color: "var(--gray-950)",
-                    fontFamily: "'Open Sans', sans-serif"
                   }}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -3438,7 +3430,7 @@ export function SmartSearchInput({
               <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-800 dark:text-gray-200">
                     <strong>Dica:</strong> Selecione uma vaga existente ou cole a JD completa para extrair automaticamente requisitos técnicos e comportamentais.
                   </p>
                 </div>
@@ -3661,7 +3653,7 @@ export function SmartSearchInput({
               <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  <p className="text-xs text-gray-800 dark:text-gray-200">
                     <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND "São Paulo"
                   </p>
                 </div>
@@ -3684,7 +3676,6 @@ export function SmartSearchInput({
                   )}
                   style={{ 
                     color: archetypeTab === "list" ? "var(--gray-950)" : "var(--gray-400)",
-                    fontFamily: "'Open Sans', sans-serif"
                   }}
                 >
                   <Target className="w-3 h-3" />
@@ -3695,7 +3686,6 @@ export function SmartSearchInput({
                   className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-all ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50"
                   style={{ 
                     backgroundColor: "white",
-                    fontFamily: "'Open Sans', sans-serif"
                   }}
                 >
                   <Plus className="w-3 h-3" />
@@ -3820,7 +3810,7 @@ export function SmartSearchInput({
                               {!isExpanded && arch.description && (
                                 <p 
                                   className="mt-1 pl-[21px] text-micro line-clamp-1" 
-                                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                                 
                                 >
                                   {arch.description}
                                 </p>
@@ -3830,18 +3820,18 @@ export function SmartSearchInput({
                             {isExpanded && (
                               <div className="px-3 pb-3 space-y-2 border-t border-t-gray-200" style={{ paddingTop: "10px" }}>
                                 {arch.description && (
-                                  <p className="text-micro" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <p className="text-micro">
                                     {arch.description}
                                   </p>
                                 )}
                                 
                                 <div className="space-y-1">
-                                  <span className="text-micro font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                  <span className="text-micro font-medium text-gray-400">
                                     Query de Busca
                                   </span>
                                   <p 
                                     className="text-xs p-2 rounded" 
-                                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                                   
                                   >
                                     {arch.query || "Sem query definida"}
                                   </p>
@@ -3849,7 +3839,7 @@ export function SmartSearchInput({
                                 
                                 {arch.tags && arch.tags.length > 0 && (
                                   <div className="space-y-1">
-                                    <span className="text-micro font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <span className="text-micro font-medium text-gray-400">
                                       Tags
                                     </span>
                                     <div className="flex flex-wrap gap-1">
@@ -3867,7 +3857,7 @@ export function SmartSearchInput({
                                 
                                 {arch.filters?.skills && arch.filters.skills.length > 0 && (
                                   <div className="space-y-1">
-                                    <span className="text-micro font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <span className="text-micro font-medium text-gray-400">
                                       Skills
                                     </span>
                                     <div className="flex flex-wrap gap-1">
@@ -3883,7 +3873,7 @@ export function SmartSearchInput({
                                   </div>
                                 )}
                                 
-                                <div className="flex flex-wrap gap-2 text-micro" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <div className="flex flex-wrap gap-2 text-micro">
                                   {arch.seniority && (
                                     <div className="flex items-center gap-1">
                                       <span className="text-gray-400">Senioridade:</span>
@@ -3933,7 +3923,7 @@ export function SmartSearchInput({
                                 </div>
                                 {arch.filters?.languages && arch.filters.languages.length > 0 && (
                                   <div className="space-y-1">
-                                    <span className="text-micro font-medium text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                    <span className="text-micro font-medium text-gray-400">
                                       Idiomas
                                     </span>
                                     <div className="flex flex-wrap gap-1">
@@ -3958,7 +3948,7 @@ export function SmartSearchInput({
                                       setArchetypeSearchPrompt(buildArchetypePrompt(arch))
                                       setExpandedArchetypeId(null)
                                     }}
-                                    className="flex-1 text-xs h-8 bg-gray-800" style={{ color: "white", fontFamily: "'Open Sans', sans-serif" }}
+                                    className="flex-1 text-xs h-8 bg-gray-800" style={{ color: "white" }}
                                   >
                                     <Check className="w-3 h-3 mr-1" />
                                     Usar Arquétipo
@@ -3968,7 +3958,7 @@ export function SmartSearchInput({
                                     variant="outline"
                                     onClick={(e) => openEditArchetype(arch, e)}
                                     className="text-xs h-8"
-                                    style={{ fontFamily: "'Open Sans', sans-serif" }}
+                                   
                                   >
                                     <Pencil className="w-3 h-3 mr-1" />
                                     Editar
@@ -4004,11 +3994,11 @@ export function SmartSearchInput({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <FileText className="w-3.5 h-3.5 text-gray-700" />
-                          <span className="text-xs font-medium" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <span className="text-xs font-medium">
                             Preview do prompt de busca
                           </span>
                         </div>
-                        <span className="text-micro text-gray-400" style={{ fontFamily: "'Open Sans', sans-serif" }}>editável</span>
+                        <span className="text-micro text-gray-400">editável</span>
                       </div>
                       <div className="relative">
                         <textarea
@@ -4019,7 +4009,6 @@ export function SmartSearchInput({
                           style={{ 
                             backgroundColor: "var(--lia-bg-primary)",
                             color: "var(--gray-950)",
-                            fontFamily: "'Open Sans', sans-serif"
                           }}
                           onFocus={(e) => {
                             e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -4211,7 +4200,6 @@ export function SmartSearchInput({
                         style={{ 
                           backgroundColor: "var(--lia-bg-primary)",
                           color: "var(--gray-950)",
-                          fontFamily: "'Open Sans', sans-serif"
                         }}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -4396,7 +4384,7 @@ export function SmartSearchInput({
                   <div className="px-2 py-1.5 rounded-md bg-gray-50 border border-gray-200">
                     <div className="flex items-center gap-1.5">
                       <Lightbulb className="w-3 h-3 flex-shrink-0 text-gray-700" />
-                      <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                      <p className="text-xs text-gray-800 dark:text-gray-200">
                         <strong>Dica:</strong> Arquétipos são perfis baseados em contratações bem-sucedidas.
                       </p>
                     </div>
@@ -4440,7 +4428,7 @@ export function SmartSearchInput({
                   {/* A partir de Vaga */}
                   {archetypeCreateMode === "job" && (
                     <div className="space-y-2">
-                      <p className="text-xs" style={{ color: "var(--eleven-text-secondary)", fontFamily: "'Open Sans', sans-serif" }}>
+                      <p className="text-xs" style={{ color: "var(--eleven-text-secondary)" }}>
                         Busque por nome ou ID da vaga para criar um arquétipo:
                       </p>
                       
@@ -4455,7 +4443,7 @@ export function SmartSearchInput({
                             searchJobsForArchetype(e.target.value)
                           }}
                           placeholder="Buscar vaga por nome ou ID..."
-                          className="w-full pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}
+                          className="w-full pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                         />
                         {isSearchingJobs && (
                           <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin text-gray-700" />
@@ -4490,7 +4478,7 @@ export function SmartSearchInput({
                                   <Briefcase className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-600" />
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                      <p className="font-medium text-xs truncate" style={{ color: "var(--gray-950)", fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="font-medium text-xs truncate" style={{ color: "var(--gray-950)" }}>
                                         {job.title}
                                       </p>
                                       <span 
@@ -4555,7 +4543,7 @@ export function SmartSearchInput({
                       <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                         <div className="flex items-start gap-2">
                           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                          <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-xs text-gray-800 dark:text-gray-200">
                             <strong>Dica:</strong> Selecione uma vaga para preencher automaticamente os dados do arquétipo. Você poderá editar antes de salvar.
                           </p>
                         </div>
@@ -4566,7 +4554,7 @@ export function SmartSearchInput({
                   {/* A partir de Descrição */}
                   {archetypeCreateMode === "description" && (
                     <div className="space-y-2">
-                      <p className="text-xs" style={{ color: "var(--eleven-text-secondary)", fontFamily: "'Open Sans', sans-serif" }}>
+                      <p className="text-xs" style={{ color: "var(--eleven-text-secondary)" }}>
                         Descreva o perfil ideal que deseja buscar:
                       </p>
                       <textarea
@@ -4608,7 +4596,7 @@ export function SmartSearchInput({
                       <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
                         <div className="flex items-start gap-2">
                           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                          <p className="text-xs text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <p className="text-xs text-gray-800 dark:text-gray-200">
                             <strong>Dica:</strong> Descreva o perfil ideal e a LIA vai extrair automaticamente cargo, senioridade e skills para criar o arquétipo.
                           </p>
                         </div>
@@ -4640,7 +4628,7 @@ export function SmartSearchInput({
         >
           <div 
             className="bg-white rounded-md w-full max-w-[700px] mx-3 max-h-[85vh] overflow-y-auto"
-            style={{ fontFamily: "'Open Sans', sans-serif" }}
+           
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header - Padrão ElevenLabs */}
@@ -4655,7 +4643,7 @@ export function SmartSearchInput({
                 <h3 className="text-sm font-semibold" style={{ color: "var(--gray-950)" }}>
                   {editingArchetype?.id ? "Editar Arquétipo" : "Criar Arquétipo"}
                 </h3>
-                <p className="text-xs truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <p className="text-xs truncate">
                   {editArchetypeName || "Novo perfil de candidato ideal"}
                 </p>
               </div>
@@ -4894,7 +4882,7 @@ export function SmartSearchInput({
                         <span 
                           key={idx}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                          style={{ backgroundColor: "rgba(96, 190, 209, 0.15)", fontFamily: "'Open Sans', sans-serif" }}
+                          style={{ backgroundColor: "rgba(96, 190, 209, 0.15)" }}
                         >
                           {lang}
                           <button
@@ -4964,7 +4952,7 @@ export function SmartSearchInput({
                     <span 
                       key={idx}
                       className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                      style={{ backgroundColor: "rgba(96, 190, 209, 0.15)", fontFamily: "'Open Sans', sans-serif" }}
+                      style={{ backgroundColor: "rgba(96, 190, 209, 0.15)" }}
                     >
                       {skill}
                       <button
@@ -5015,7 +5003,7 @@ export function SmartSearchInput({
                         }
                       }}
                       placeholder="Digite e pressione Enter..."
-                      className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}
+                      className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                     />
                     <button
                       type="button"
@@ -5161,7 +5149,7 @@ export function SmartSearchInput({
                     <span 
                       key={idx}
                       className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                      style={{ fontFamily: "'Open Sans', sans-serif" }}
+                     
                     >
                       {tag}
                       <button
@@ -5212,7 +5200,7 @@ export function SmartSearchInput({
                         }
                       }}
                       placeholder="Digite e pressione Enter..."
-                      className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}
+                      className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                     />
                     <button
                       type="button"
@@ -5392,7 +5380,7 @@ export function SmartSearchInput({
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
           className="sm:max-w-[320px] w-[85vw] p-4 rounded-md border" 
-          style={{ backgroundColor: 'var(--gray-50)', fontFamily: '"Open Sans", sans-serif' }}
+          style={{ backgroundColor: 'var(--gray-50)' }}
         >
           <AlertDialogTitle className="sr-only">
             {pendingSourceChange === 'hybrid' ? 'Ativar Busca Híbrida' : 'Ativar Busca Global'}

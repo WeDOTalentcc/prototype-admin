@@ -271,7 +271,7 @@ export function AlertSettingsModal({
             {/* Lista de Regras */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>Regras de Alerta ({rules.length})</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50">Regras de Alerta ({rules.length})</h3>
                 <Button
                   size="sm"
                   onClick={handleAddNewRule}
@@ -365,7 +365,7 @@ export function AlertSettingsModal({
               {editingRule ? (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50" style={{ fontFamily: 'Open Sans, sans-serif' }}>Editar Regra</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50">Editar Regra</h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -378,7 +378,7 @@ export function AlertSettingsModal({
                   {/* Configurações Básicas */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base" style={{ fontFamily: 'Open Sans, sans-serif' }}>Configurações Básicas</CardTitle>
+                      <CardTitle className="text-base">Configurações Básicas</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
@@ -479,7 +479,7 @@ export function AlertSettingsModal({
                   {/* Departamentos */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base" style={{ fontFamily: 'Open Sans, sans-serif' }}>Departamentos</CardTitle>
+                      <CardTitle className="text-base">Departamentos</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
@@ -508,7 +508,7 @@ export function AlertSettingsModal({
                   {/* Notificações */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base" style={{ fontFamily: 'Open Sans, sans-serif' }}>Notificações</CardTitle>
+                      <CardTitle className="text-base">Notificações</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">

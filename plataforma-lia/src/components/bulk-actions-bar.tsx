@@ -358,7 +358,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
     <>
       <div 
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300"
-        style={{ fontFamily: 'Open Sans, sans-serif' }}
+       
       >
         <div className="flex items-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-md border border-gray-700">
           <div className="flex items-center gap-2 pr-3 border-r border-gray-600">

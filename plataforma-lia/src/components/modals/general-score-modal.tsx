@@ -110,13 +110,13 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             <div>
               <h2 
                 className="text-sm font-semibold text-gray-950 dark:text-gray-50"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Nota Geral LIA
               </h2>
               <p 
                 className="text-xs text-gray-600"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Metodologia de cálculo do score
               </p>
@@ -137,20 +137,20 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             <div>
               <p 
                 className="text-micro uppercase tracking-wide mb-1 text-gray-600"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
+               
               >
                 Nota Final
               </p>
               <div className="flex items-baseline gap-2">
                 <span 
                   className="text-3xl font-bold"
-                  style={{ fontFamily: "'Open Sans', sans-serif", color: getScoreColor(finalScore) }}
+                  style={{ color: getScoreColor(finalScore) }}
                 >
                   {finalScore}
                 </span>
                 <span 
                   className="text-sm text-gray-500"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
+                 
                 >
                   / 100
                 </span>
@@ -162,7 +162,6 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                 style={{ 
                   backgroundColor: `${getScoreColor(finalScore)}15`,
                   color: getScoreColor(finalScore),
-                  fontFamily: "'Open Sans', sans-serif"
                 }}
               >
                 <TrendingUp className="w-3 h-3" />
@@ -174,7 +173,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
           <div className="mb-3">
             <p 
               className="text-xs font-semibold mb-3 text-gray-950 dark:text-gray-50"
-              style={{ fontFamily: "'Open Sans', sans-serif" }}
+             
             >
               Composição do Score (Média Ponderada)
             </p>
@@ -195,12 +194,12 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                         <Icon className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                         <span 
                           className="text-xs font-medium text-gray-950 dark:text-gray-50"
-                          style={{ fontFamily: "'Open Sans', sans-serif" }}
+                         
                         >
                           {component.label}
                         </span>
                         <span 
-                          className="text-micro px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}
+                          className="text-micro px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-200"
                         >
                           Peso: {component.weight}%
                         </span>
@@ -208,7 +207,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                       <span 
                         className="text-xs font-bold"
                         style={{ 
-                          fontFamily: "'Open Sans', sans-serif", 
+                          
                           color: hasScore ? getScoreColor(score) : 'var(--gray-400)'
                         }}
                       >
@@ -221,7 +220,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                     />
                     <p 
                       className="text-micro mt-1.5 text-gray-600"
-                      style={{ fontFamily: "'Open Sans', sans-serif" }}
+                     
                     >
                       {component.description}
                     </p>
@@ -237,13 +236,13 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
           >
             <p 
               className="text-micro font-medium mb-1 text-gray-700 dark:text-gray-300"
-              style={{ fontFamily: "'Open Sans', sans-serif" }}
+             
             >
               Fórmula do cálculo:
             </p>
             <p 
               className="text-micro text-gray-600"
-              style={{ fontFamily: "'Open Sans', sans-serif" }}
+             
             >
               Score = (CV × 0.25) + (Triagem × 0.30) + (Técnico × 0.25) + (Inglês × 0.20)
             </p>

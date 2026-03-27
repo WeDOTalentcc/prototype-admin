@@ -492,7 +492,7 @@ export function UnifiedCommunicationModal({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-[9999] flex items-center justify-center p-4">
       <div 
         className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
-        style={{ fontFamily: '"Open Sans", sans-serif' }}
+       
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">

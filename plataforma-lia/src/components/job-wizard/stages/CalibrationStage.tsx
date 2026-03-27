@@ -68,7 +68,7 @@ export function CalibrationStage() {
       <div className="flex flex-col items-center justify-center py-12 gap-4">
         <Loader2 className="w-8 h-8 text-gray-600 dark:text-gray-400 animate-spin" />
         <div className="text-center">
-          <p className="text-sm text-gray-800 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <p className="text-sm text-gray-800 font-medium">
             Buscando candidatos compatíveis...
           </p>
           <p className="text-xs text-gray-400 mt-1">
@@ -87,7 +87,7 @@ export function CalibrationStage() {
           <Trophy className="w-8 h-8 text-status-success" />
         </div>
         <div className="text-center">
-          <p className="text-sm text-gray-800 font-semibold" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <p className="text-sm text-gray-800 font-semibold">
             Calibração Concluída!
           </p>
           <p className="text-xs text-gray-500 mt-1">
@@ -172,7 +172,7 @@ export function CalibrationStage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <h3 className="text-sm font-semibold text-gray-800 truncate">
                 {currentCandidate.name}
               </h3>
               {currentCandidate.linkedinUrl && (

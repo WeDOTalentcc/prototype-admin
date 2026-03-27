@@ -89,7 +89,7 @@ export function ReviewPublishStage({
         <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-base font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <h3 className="text-base font-semibold text-gray-800">
                 {basicInfoFields.cargo || 'Cargo não definido'}
               </h3>
               <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
@@ -120,7 +120,7 @@ export function ReviewPublishStage({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Code className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-gray-800">
                 Requisitos Técnicos
               </span>
             </div>
@@ -158,7 +158,7 @@ export function ReviewPublishStage({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-3.5 h-3.5 text-chat-cyan" />
-              <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-gray-800">
                 Competências Comportamentais
               </span>
             </div>
@@ -187,7 +187,7 @@ export function ReviewPublishStage({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <DollarSign className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-gray-800">
                 Remuneração
               </span>
             </div>
@@ -198,7 +198,7 @@ export function ReviewPublishStage({
               <Edit2 className="w-3 h-3" />
             </button>
           </div>
-          <div className="text-xs text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <div className="text-xs text-gray-800">
             {salaryInfo.minSalary && salaryInfo.maxSalary ? (
               <span className="font-medium">R$ {salaryInfo.minSalary} - R$ {salaryInfo.maxSalary}</span>
             ) : (
@@ -218,7 +218,7 @@ export function ReviewPublishStage({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-gray-800">
                 Triagem WSI
               </span>
             </div>
@@ -229,7 +229,7 @@ export function ReviewPublishStage({
               <Edit2 className="w-3 h-3" />
             </button>
           </div>
-          <div className="text-xs text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <div className="text-xs text-gray-500">
             {wsiQuestions.length} perguntas configuradas via WhatsApp
           </div>
         </div>
@@ -239,7 +239,7 @@ export function ReviewPublishStage({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <FileText className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <span className="text-xs font-medium text-gray-800">
                 Descrição do Anúncio
               </span>
               {companyConfig && (
@@ -266,7 +266,7 @@ export function ReviewPublishStage({
           ) : (
             <div
               className="text-xs text-gray-800 leading-relaxed whitespace-pre-line bg-gray-50 rounded-md p-2.5 max-h-[180px] overflow-y-auto"
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
+             
             >
               {jobDescription || 'Descrição será gerada automaticamente...'}
             </div>
@@ -285,7 +285,7 @@ export function ReviewPublishStage({
               <Globe className="w-4 h-4 text-wedo-green" />
             </div>
             <div>
-              <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+              <h4 className="text-xs font-medium text-gray-900">
                 Pronto para escolher plataformas!
               </h4>
               <p className="text-micro text-gray-500">
@@ -306,7 +306,7 @@ export function ReviewPublishStage({
                 <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               </div>
               <div>
-                <h3 className="text-xs font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <h3 className="text-xs font-semibold text-gray-800">
                   Onde publicar esta vaga?
                 </h3>
                 <p className="text-micro text-gray-500">
@@ -685,7 +685,7 @@ export function ReviewPublishStage({
                 <Rocket className="w-4 h-4 text-wedo-green" />
               </div>
               <div>
-                <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <h4 className="text-xs font-medium text-gray-900">
                   {publishingPlatforms.filter(p => p.enabled).length} plataforma(s) selecionada(s)
                 </h4>
                 <p className="text-micro text-gray-500">

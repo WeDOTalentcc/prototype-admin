@@ -244,7 +244,6 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                       className="font-semibold text-sm leading-tight mb-1"
                       style={{ 
                         color: 'var(--gray-800)',
-                        fontFamily: '"Open Sans", sans-serif'
                       }}
                     >
                       {suggestion.title}
@@ -253,7 +252,6 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                       className="text-xs leading-snug line-clamp-2"
                       style={{ 
                         color: 'var(--gray-500)',
-                        fontFamily: '"Open Sans", sans-serif'
                       }}
                     >
                       {suggestion.description}
@@ -296,7 +294,6 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             className="text-xs font-medium"
             style={{ 
               color: 'var(--gray-500)',
-              fontFamily: '"Open Sans", sans-serif'
             }}
           >
             Sugestões
@@ -393,7 +390,6 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                         className="font-medium text-sm leading-tight"
                         style={{ 
                           color: 'var(--gray-800)',
-                          fontFamily: '"Open Sans", sans-serif'
                         }}
                       >
                         {suggestion.title}

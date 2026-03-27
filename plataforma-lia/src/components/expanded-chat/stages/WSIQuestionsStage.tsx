@@ -120,7 +120,7 @@ export function WSIQuestionsStage({
         </button>
 
         <div className="flex-1">
-          <p className="text-xs text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <p className="text-xs text-gray-800">
             {q.question}
           </p>
 
@@ -450,7 +450,7 @@ export function WSIQuestionsStage({
           ) : (
             <AlertCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
           )}
-          <span className="text-micro text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+          <span className="text-micro text-gray-500">
             {selectedCount === 5
               ? "Triagem completa! Revise as respostas esperadas acima."
               : `Selecione mais ${5 - selectedCount} pergunta(s) para completar.`}

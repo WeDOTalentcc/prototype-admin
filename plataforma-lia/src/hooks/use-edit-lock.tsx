@@ -49,7 +49,7 @@ export function useEditLock(options: UseEditLockOptions = {}): UseEditLockReturn
       <button
         onClick={startEditing}
         className={`inline-flex items-center font-medium rounded-2xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors ${sizeClasses} ${className || ''}`}
-        style={{ fontFamily: 'Open Sans, sans-serif' }}
+       
       >
         <svg className={size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -72,14 +72,14 @@ export function useEditLock(options: UseEditLockOptions = {}): UseEditLockReturn
           onClick={cancelEditing}
           disabled={isSaving}
           className="inline-flex items-center py-1.5 px-3 text-xs font-medium rounded-2xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
-          style={{ fontFamily: 'Open Sans, sans-serif' }}
+         
         >
           {cancelLabel}
         </button>
         <button
           onClick={saveAndExit}
           disabled={isSaving}
-          className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium rounded-2xl text-white transition-colors disabled:opacity-50 bg-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}
+          className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium rounded-2xl text-white transition-colors disabled:opacity-50 bg-gray-900"
         >
           {isSaving ? (
             <>

@@ -213,21 +213,21 @@ export function MessageComposer({
       {successMessage && (
         <div className="mb-3 px-3 py-2 rounded-md flex items-center gap-2" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', borderColor: 'rgba(96, 190, 209, 0.3)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
           <Check className="w-4 h-4 text-gray-700" />
-          <span className="text-xs" style={{ fontFamily: 'Open Sans, sans-serif' }}>{successMessage}</span>
+          <span className="text-xs">{successMessage}</span>
         </div>
       )}
       
       {errorMessage && (
         <div className="mb-3 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
-          <span className="text-xs" style={{ fontFamily: 'Open Sans, sans-serif' }}>{errorMessage}</span>
+          <span className="text-xs">{errorMessage}</span>
         </div>
       )}
 
       {showTemplateSelector && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
               Templates
             </label>
             <span className="text-micro flex items-center gap-1 text-gray-700">
@@ -256,7 +256,7 @@ export function MessageComposer({
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="text-xs font-medium text-gray-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <div className="text-xs font-medium text-gray-800">
                     {template.name}
                   </div>
                   {template.subject && channel === 'email' && (
@@ -275,7 +275,7 @@ export function MessageComposer({
         {channel === 'email' && (
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
                 Assunto
               </label>
               {showVariableSelector && (
@@ -299,7 +299,7 @@ export function MessageComposer({
               onChange={(e) => handleSubjectChange(e.target.value)}
               onFocus={() => setFocusedField('subject')}
               className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+             
               placeholder="Assunto do email..."
             />
           </div>
@@ -307,7 +307,7 @@ export function MessageComposer({
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
               {channel === 'email' ? 'Mensagem' : 'Mensagem WhatsApp'}
             </label>
             {showVariableSelector && (
@@ -331,7 +331,7 @@ export function MessageComposer({
             onFocus={() => setFocusedField('message')}
             rows={8}
             className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none resize-none"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+           
             placeholder={channel === 'email' ? 'Escreva sua mensagem...' : 'Escreva sua mensagem WhatsApp...'}
           />
         </div>
@@ -348,7 +348,7 @@ export function MessageComposer({
                 <span className="text-base-ui font-semibold text-gray-900">
                   Ajustar com a LIA
                 </span>
-                <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <p className="text-xs text-gray-500">
                   Ajustes são aplicados apenas neste envio
                 </p>
               </div>
@@ -356,7 +356,7 @@ export function MessageComposer({
                 value={toneStyle}
                 onChange={(e) => setToneStyle(e.target.value as ToneStyle)}
                 className="text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-gray-400"
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 {TONE_OPTIONS.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -373,7 +373,7 @@ export function MessageComposer({
                 placeholder="Ex: Torne mais formal e adicione urgência..."
                 disabled={isGenerating}
                 className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-400"
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               />
               <Button
                 onClick={handleAdjustWithLIA}
@@ -402,7 +402,7 @@ export function MessageComposer({
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '150ms' }}></span>
                   <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '300ms' }}></span>
                 </div>
-                <span className="text-xs" style={{ color: 'var(--wedo-cyan-dark)', fontFamily: 'Open Sans, sans-serif' }}>
+                <span className="text-xs" style={{ color: 'var(--wedo-cyan-dark)' }}>
                   A LIA está analisando e ajustando a mensagem...
                 </span>
               </div>
@@ -424,7 +424,7 @@ export function MessageComposer({
                     <h3 className="text-sm font-semibold text-gray-900">
                       Ajustes da LIA
                     </h3>
-                    <p className="text-xs text-gray-500" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                    <p className="text-xs text-gray-500">
                       Revise as alterações sugeridas
                     </p>
                   </div>
@@ -436,7 +436,7 @@ export function MessageComposer({
             </div>
             <CardContent className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                   Alterações Realizadas
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -451,20 +451,20 @@ export function MessageComposer({
               
               {channel === 'email' && aiResultModal.newSubject && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                     Novo Assunto
                   </label>
-                  <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900">
                     {aiResultModal.newSubject}
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                   Nova Mensagem
                 </label>
-                <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900 whitespace-pre-wrap max-h-[300px] overflow-y-auto" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900 whitespace-pre-wrap max-h-[300px] overflow-y-auto">
                   {aiResultModal.newBody}
                 </div>
               </div>
@@ -472,7 +472,7 @@ export function MessageComposer({
               <div className="p-3 rounded-md border border-amber-200 bg-amber-50">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-800" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  <p className="text-xs text-amber-800">
                     Os ajustes serão aplicados apenas a esta mensagem. O template original permanece inalterado.
                   </p>
                 </div>

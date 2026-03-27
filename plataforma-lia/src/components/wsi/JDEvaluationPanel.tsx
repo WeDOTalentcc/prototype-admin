@@ -92,19 +92,19 @@ function formatJDText(text: string): React.ReactNode {
     
     if (line.startsWith('### ')) {
       elements.push(
-        <h4 key={i} className="text-xs font-bold text-gray-800 dark:text-gray-200 mt-3 mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+        <h4 key={i} className="text-xs font-bold text-gray-800 dark:text-gray-200 mt-3 mb-1">
           {line.replace('### ', '')}
         </h4>
       )
     } else if (line.startsWith('## ')) {
       elements.push(
-        <h3 key={i} className="text-base-ui font-bold text-gray-900 dark:text-gray-100 mt-4 mb-1.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+        <h3 key={i} className="text-base-ui font-bold text-gray-900 dark:text-gray-100 mt-4 mb-1.5">
           {line.replace('## ', '')}
         </h3>
       )
     } else if (line.startsWith('# ')) {
       elements.push(
-        <h2 key={i} className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+        <h2 key={i} className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
           {line.replace('# ', '')}
         </h2>
       )
@@ -112,14 +112,14 @@ function formatJDText(text: string): React.ReactNode {
       elements.push(
         <div key={i} className="flex items-start gap-2 ml-1 mb-0.5">
           <span className="text-micro text-gray-400 mt-1">•</span>
-          <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
             {line.replace('- ', '')}
           </span>
         </div>
       )
     } else {
       elements.push(
-        <p key={i} className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+        <p key={i} className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed mb-1">
           {line}
         </p>
       )
@@ -655,7 +655,7 @@ export function JDEvaluationPanel({
             </div>
           </div>
           <div className="px-4 py-2.5 border-t border-gray-100 bg-white dark:bg-gray-800 dark:border-gray-700">
-            <div className="flex items-center gap-2 flex-wrap" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 text-micro text-gray-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300">
                 <ListChecks className="w-3 h-3 text-gray-400 dark:text-gray-500" />
                 Responsabilidades: {responsibilities.length}
@@ -818,7 +818,7 @@ export function JDEvaluationPanel({
               {!isEditing && (
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="space-y-3">
-                    <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide block" style={{ fontFamily: "'Open Sans', sans-serif" }}>DESCRIÇÃO DO CLIENTE</span>
+                    <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide block">DESCRIÇÃO DO CLIENTE</span>
                     <div className="border border-gray-100 dark:border-gray-700 rounded-md p-3 bg-gray-50/30 dark:bg-gray-800/30 space-y-3">
 
                     {description && (
@@ -846,7 +846,7 @@ export function JDEvaluationPanel({
 
                     {responsibilities.length > 0 && (
                       <div>
-                        <span className="text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide block mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades</span>
+                        <span className="text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide block mb-1">Responsabilidades</span>
                         <ul className="space-y-0.5">
                           {responsibilities.map((item, idx) => (
                             <li key={idx} className="flex items-start gap-1.5">
@@ -860,7 +860,7 @@ export function JDEvaluationPanel({
 
                     {technicalSkills.length > 0 && (
                       <div>
-                        <span className="text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide block mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Técnicas</span>
+                        <span className="text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide block mb-1">Competências Técnicas</span>
                         <div className="flex flex-wrap gap-1.5">
                           {technicalSkills.map((skill, idx) => (
                             <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -873,7 +873,7 @@ export function JDEvaluationPanel({
 
                     {behavioralCompetencies.length > 0 && (
                       <div>
-                        <span className="text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide block mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Comportamentais</span>
+                        <span className="text-micro font-semibold text-gray-900 dark:text-gray-50 uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                         <div className="flex flex-wrap gap-1.5">
                           {behavioralCompetencies.map((comp, idx) => (
                             <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -888,7 +888,7 @@ export function JDEvaluationPanel({
                   </div>
 
                   <div className="space-y-3">
-                    <span className="text-xs font-semibold uppercase tracking-wide block" style={{ fontFamily: "'Open Sans', sans-serif" }}>DESCRIÇÃO ENRIQUECIDA (LIA)</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide block">DESCRIÇÃO ENRIQUECIDA (LIA)</span>
 
                     {enrichedJd && (enrichedJd.generated_jd_text || enrichedJd.description) ? (
                       <div className="border rounded-md p-3 space-y-3 dark:bg-gray-800/30" style={{ borderColor: 'rgba(96,190,209,0.2)', backgroundColor: 'rgba(96,190,209,0.02)' }}>
@@ -904,7 +904,7 @@ export function JDEvaluationPanel({
 
                         {enrichedJd.responsibilities && enrichedJd.responsibilities.length > 0 && (
                           <div>
-                            <span className="text-micro font-semibold uppercase tracking-wide block mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades</span>
+                            <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Responsabilidades</span>
                             <ul className="space-y-0.5">
                               {enrichedJd.responsibilities.map((item, idx) => (
                                 <li key={idx} className="flex items-start gap-1.5">
@@ -918,7 +918,7 @@ export function JDEvaluationPanel({
 
                         {enrichedJd.technical_skills && enrichedJd.technical_skills.length > 0 && (
                           <div>
-                            <span className="text-micro font-semibold uppercase tracking-wide block mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Técnicas</span>
+                            <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Técnicas</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.technical_skills.map((skill, idx) => (
                                 <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300" style={{ backgroundColor: "rgba(96,190,209,0.1)", fontFamily: "'Inter', sans-serif" }}>
@@ -931,7 +931,7 @@ export function JDEvaluationPanel({
 
                         {enrichedJd.behavioral_competencies && enrichedJd.behavioral_competencies.length > 0 && (
                           <div>
-                            <span className="text-micro font-semibold uppercase tracking-wide block mb-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Comportamentais</span>
+                            <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.behavioral_competencies.map((comp, idx) => (
                                 <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-gray-300" style={{ backgroundColor: "rgba(96,190,209,0.1)", fontFamily: "'Inter', sans-serif" }}>
@@ -965,7 +965,7 @@ export function JDEvaluationPanel({
                     <div className="space-y-4">
                       {/* Section 1 - Descrição / Sumário */}
                       <div>
-                        <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-2 block dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>Descrição / Sumário</label>
+                        <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-2 block dark:text-gray-100">Descrição / Sumário</label>
                         <div className="bg-white rounded-md border border-gray-200 dark:border-gray-700 dark:bg-gray-900 p-3">
                           <textarea
                             value={editDescription}
@@ -979,7 +979,7 @@ export function JDEvaluationPanel({
 
                       {/* Section 2 - Responsabilidades */}
                       <div>
-                        <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-2 block dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>Responsabilidades</label>
+                        <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-2 block dark:text-gray-100">Responsabilidades</label>
                         <div className="bg-white rounded-md border border-gray-200 dark:border-gray-700 dark:bg-gray-900 p-3">
                           <div className="space-y-0.5">
                             {editResponsibilities.map((item, idx) => (
@@ -1019,7 +1019,7 @@ export function JDEvaluationPanel({
                       {/* Section 3 - Competências Técnicas */}
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Técnicas</label>
+                          <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide dark:text-gray-100">Competências Técnicas</label>
                           <button
                             onClick={fetchTechSuggestions}
                             disabled={isLoadingTechSuggestions}
@@ -1080,7 +1080,7 @@ export function JDEvaluationPanel({
                       {/* Section 4 - Competências Comportamentais */}
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>Competências Comportamentais</label>
+                          <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide dark:text-gray-100">Competências Comportamentais</label>
                           <button
                             onClick={fetchBehavSuggestions}
                             disabled={isLoadingBehavSuggestions}
@@ -1142,7 +1142,7 @@ export function JDEvaluationPanel({
                     {/* 4. RIGHT COLUMN - empty state or generated JD */}
                     <div className="sticky top-0 self-start">
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide dark:text-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>Descrição Gerada pela LIA</label>
+                        <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide dark:text-gray-100">Descrição Gerada pela LIA</label>
                         <Button
                           variant="outline"
                           size="sm"
@@ -1171,10 +1171,10 @@ export function JDEvaluationPanel({
                                 <Loader2 className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">
                                   Gerando Descrição do Cargo...
                                 </p>
-                                <p className="text-micro text-gray-500 mt-0.5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-micro text-gray-500 mt-0.5">
                                   Etapa {jdGenerationStep} de 4
                                 </p>
                               </div>
@@ -1182,7 +1182,7 @@ export function JDEvaluationPanel({
                             {jdTypedMessage && (
                               <div className="flex items-center gap-2 pl-1">
                                 <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 animate-pulse" />
-                                <p className="text-xs text-gray-700 dark:text-gray-300" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                                <p className="text-xs text-gray-700 dark:text-gray-300">
                                   {jdTypedMessage}
                                   {jdTypedMessage.length < jdDynamicMessage.length && (
                                     <span className="inline-block w-[2px] h-[13px] bg-gray-900 dark:bg-gray-50 ml-0.5 align-middle animate-pulse" />

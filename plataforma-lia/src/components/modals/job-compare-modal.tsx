@@ -539,7 +539,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md"
-        style={{ fontFamily: "'Open Sans', sans-serif" }}
+       
       >
         <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
           <div className="flex items-center justify-between">

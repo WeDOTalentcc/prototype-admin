@@ -195,7 +195,7 @@ export function CandidateCard({
         >
           <div className="flex items-center gap-1">
             <Zap className="w-2 h-2 animate-pulse text-gray-500" />
-            <span className="text-micro font-bold text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <span className="text-micro font-bold text-gray-500">
               Ação Necessária
             </span>
           </div>
@@ -218,7 +218,7 @@ export function CandidateCard({
               <DropdownMenuItem 
                 onClick={handleQuickAction('email')} 
                 className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 <Mail className="w-3.5 h-3.5 mr-2 text-gray-500" />
                 Enviar Email
@@ -226,7 +226,7 @@ export function CandidateCard({
               <DropdownMenuItem 
                 onClick={handleQuickAction('whatsapp')} 
                 className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 <MessageCircle className="w-3.5 h-3.5 mr-2 text-gray-500" />
                 Enviar WhatsApp
@@ -234,7 +234,7 @@ export function CandidateCard({
               <DropdownMenuItem 
                 onClick={handleQuickAction('schedule_interview')} 
                 className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 <Calendar className="w-3.5 h-3.5 mr-2 text-gray-500" />
                 Agendar Entrevista
@@ -242,7 +242,7 @@ export function CandidateCard({
               <DropdownMenuItem 
                 onClick={handleQuickAction('wsi_screening')} 
                 className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 <ClipboardList className="w-3.5 h-3.5 mr-2 text-gray-500" />
                 Triagem WSI
@@ -250,7 +250,7 @@ export function CandidateCard({
               <DropdownMenuItem 
                 onClick={handleQuickAction('feedback')} 
                 className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 <MessageSquareText className="w-3.5 h-3.5 mr-2 text-gray-500" />
                 Enviar Feedback
@@ -259,7 +259,7 @@ export function CandidateCard({
               <DropdownMenuItem 
                 onClick={handleQuickAction('toggle_favorite')} 
                 className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
                 {isFavorite ? 'Remover dos Favoritos' : 'Adicionar a Favoritos'}
@@ -267,7 +267,7 @@ export function CandidateCard({
               <DropdownMenuItem 
                 onClick={handleQuickAction('hide')} 
                 className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
-                style={{ fontFamily: 'Open Sans, sans-serif' }}
+               
               >
                 <EyeOff className="w-3.5 h-3.5 mr-2 text-gray-500" />
                 Ocultar Candidato
@@ -308,7 +308,7 @@ export function CandidateCard({
           </div>
 
           <div className="flex items-center gap-1 flex-1 min-w-0">
-            <h4 className="font-medium text-xs truncate text-gray-950 dark:text-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <h4 className="font-medium text-xs truncate text-gray-950 dark:text-gray-50">
               {candidate.name}
             </h4>
           </div>
@@ -330,16 +330,16 @@ export function CandidateCard({
         </div>
 
         <div className="space-y-0 mb-1.5">
-          <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <div className="flex items-center gap-1 text-xs">
             <Briefcase className="w-2.5 h-2.5 flex-shrink-0" />
             <span className="truncate">{candidate.role || 'Cargo não informado'}</span>
           </div>
-          <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <div className="flex items-center gap-1 text-xs">
             <Building className="w-2.5 h-2.5 flex-shrink-0" />
             <span className="truncate">{candidate.currentCompany || candidate.company || 'Não informado'}</span>
           </div>
           {candidate.location && (
-            <div className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            <div className="flex items-center gap-1 text-xs">
               <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
               <span className="truncate">{candidate.location}</span>
             </div>
