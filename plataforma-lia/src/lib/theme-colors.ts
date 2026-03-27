@@ -86,43 +86,6 @@ export function getPageTheme(pageName: string): typeof themeColors[PageTheme] {
   return themeColors[pageName as PageTheme] || themeColors['Tarefas']
 }
 
-// Função para gerar classes CSS dinâmicas
-export function getThemeClasses(pageName: string) {
-  const theme = getPageTheme(pageName)
-
-  return {
-    // Backgrounds
-    primaryBg: `bg-[${theme.primary}]`,
-    lightBg: `bg-[${theme.light}]`,
-    mediumBg: `bg-[${theme.medium}]`,
-
-    // Text colors
-    primaryText: `text-[${theme.primary}]`,
-    darkText: `text-[${theme.dark}]`,
-    textColor: `text-[${theme.text}]`,
-
-    // Borders
-    primaryBorder: `border-[${theme.primary}]`,
-    lightBorder: `border-[${theme.border}]`,
-
-    // Hover states
-    hoverBg: `hover:bg-[${theme.hover}]`,
-
-    // CSS variables for dynamic styling
-    cssVars: {
-      '--theme-primary': theme.primary,
-      '--theme-light': theme.light,
-      '--theme-medium': theme.medium,
-      '--theme-dark': theme.dark,
-      '--theme-accent': theme.accent,
-      '--theme-text': theme.text,
-      '--theme-bg': theme.bg,
-      '--theme-border': theme.border,
-      '--theme-hover': theme.hover
-    } as React.CSSProperties
-  }
-}
-
 // CSS personalizado para ser injetado dinamicamente
 export function generateThemeCSS(pageName: string) {
   const theme = getPageTheme(pageName)

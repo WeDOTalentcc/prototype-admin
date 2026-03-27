@@ -152,7 +152,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       'offer_sent': '#B3A8B5',
       'approval_pending': '#9E9E9E',
       'voice_screening': '#B89BA0',
-      'rubric_evaluation': '#6B7280',
+      'rubric_evaluation': 'var(--gray-400)',
       'screening_analysis': '#9B7B6B',
     }
     return typeMap[activityType] || '#9E9E9E'

@@ -666,7 +666,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
                     className="relative w-10 h-5 rounded-full transition-colors disabled:opacity-60"
-                    style={{ backgroundColor: alert.enabled ? '#111827' : '#d1d5db' }}
+                    style={{ backgroundColor: alert.enabled ? 'var(--gray-950)' : 'var(--gray-200)' }}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 bg-white dark:bg-gray-200 rounded-full transition-transform ${
                       alert.enabled ? 'left-5' : 'left-0.5'

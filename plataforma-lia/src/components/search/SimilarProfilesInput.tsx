@@ -224,8 +224,8 @@ export function SimilarProfilesInput({
         disabled={!hasSource}
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
-          backgroundColor: hasSource ? "#111827" : "#E5E5E5",
-          color: hasSource ? "white" : "#999",
+          backgroundColor: hasSource ? "var(--gray-950)" : "#E5E5E5",
+          color: hasSource ? "white" : "var(--gray-400)",
         }}
       >
         <Search className="w-4 h-4" />

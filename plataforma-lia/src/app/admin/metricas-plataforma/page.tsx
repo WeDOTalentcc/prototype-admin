@@ -77,7 +77,7 @@ function MetricCard({
         >
           <Icon
             className="w-4 h-4"
-            style={{ color: accentColor || "#6B7280" }}
+            style={{ color: accentColor || "var(--gray-400)" }}
           />
         </div>
       </CardHeader>
@@ -236,14 +236,14 @@ export default function MetricasPlataformaPage() {
                   icon={DollarSign}
                   trend={metrics.revenue.growthRate}
                   trendLabel="vs mês anterior"
-                  accentColor="#6B7280"
+                  accentColor="var(--gray-400)"
                 />
                 <MetricCard
                   title="ARR (Receita Recorrente Anual)"
                   value={formatCurrency(metrics.revenue.arr)}
                   icon={TrendingUp}
                   subtitle="MRR × 12"
-                  accentColor="#6B7280"
+                  accentColor="var(--gray-400)"
                 />
                 <MetricCard
                   title="Crescimento MRR"
@@ -251,14 +251,14 @@ export default function MetricasPlataformaPage() {
                   icon={TrendingUp}
                   trend={metrics.revenue.growthRate}
                   trendLabel="taxa de crescimento"
-                  accentColor="#22C55E"
+                  accentColor="var(--status-success)"
                 />
                 <MetricCard
                   title="Taxa de Crescimento"
                   value={`${metrics.revenue.growthRate.toFixed(1)}%`}
                   icon={Activity}
                   subtitle="mês sobre mês"
-                  accentColor="#22C55E"
+                  accentColor="var(--status-success)"
                 />
               </div>
             </div>
@@ -281,14 +281,14 @@ export default function MetricasPlataformaPage() {
                   value={metrics.clients.trialClients}
                   icon={Users}
                   subtitle="período de avaliação"
-                  accentColor="#8B5CF6"
+                  accentColor="var(--wedo-purple)"
                 />
                 <MetricCard
                   title="Clientes Churned"
                   value={metrics.clients.churnedClients}
                   icon={TrendingDown}
                   subtitle="últimos 30 dias"
-                  accentColor="#EF4444"
+                  accentColor="var(--status-error)"
                 />
                 <MetricCard
                   title="Taxa de Churn"
@@ -296,7 +296,7 @@ export default function MetricasPlataformaPage() {
                   icon={Activity}
                   trend={-metrics.clients.churnRate}
                   trendLabel="mensal"
-                  accentColor="#EF4444"
+                  accentColor="var(--status-error)"
                 />
               </div>
             </div>

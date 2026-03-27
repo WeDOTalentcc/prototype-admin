@@ -287,7 +287,7 @@ export function PoliciesSection({
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <Shield className="w-4 h-4" style={{ color: policy.isActive ? '#111827' : 'var(--eleven-text-tertiary)' }} />
+                            <Shield className="w-4 h-4" style={{ color: policy.isActive ? 'var(--gray-950)' : 'var(--eleven-text-tertiary)' }} />
                             <h4 className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
                               {policy.name}
                             </h4>

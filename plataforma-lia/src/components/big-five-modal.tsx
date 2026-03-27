@@ -283,7 +283,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 </div>
                 <div 
                   className="text-lg font-semibold"
-                  style={{ color: fitScore >= 70 ? '#10B981' : fitScore >= 50 ? '#111827' : '#F59E0B' }}
+                  style={{ color: fitScore >= 70 ? 'var(--status-success)' : fitScore >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
                 >
                   {fitScore}%
                 </div>
@@ -358,9 +358,9 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                         const y = 100 + distance * Math.sin(angle)
                         return `${x},${y}`
                       }).join(' ')}
-                      fill="#8B5CF6"
+                      fill="var(--wedo-purple)"
                       fillOpacity="0.3"
-                      stroke="#8B5CF6"
+                      stroke="var(--wedo-purple)"
                       strokeWidth="2"
                     />
 
@@ -377,7 +377,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                           cy={y}
                           r="4"
                           fill="white"
-                          stroke="#8B5CF6"
+                          stroke="var(--wedo-purple)"
                           strokeWidth="2"
                         />
                       )

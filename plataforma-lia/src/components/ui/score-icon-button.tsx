@@ -36,8 +36,8 @@ export function ScoreIconButton({
   const displayValue = formattedValue || (hasScore ? String(value) : null)
   
   const isLiaScore = LIA_SCORE_IDS.includes(id)
-  const activeColor = isLiaScore ? '#111827' : '#374151'
-  const inactiveColor = '#9CA3AF'
+  const activeColor = isLiaScore ? 'var(--gray-950)' : 'var(--gray-600)'
+  const inactiveColor = 'var(--gray-400)'
 
   const tooltipText = hasScore 
     ? `${label}: ${displayValue}` 

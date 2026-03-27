@@ -122,7 +122,7 @@ const commands: Command[] = [
 ]
 
 const categories = [
-  { value: 'all', label: 'Todos', icon: Brain, color: '#60BED1' },
+  { value: 'all', label: 'Todos', icon: Brain, color: 'var(--wedo-cyan)' },
   { value: 'candidates', label: 'Candidatos', icon: Users, color: '#7C9885' },
   { value: 'jobs', label: 'Vagas', icon: Target, color: '#C4A484' },
   { value: 'indicators', label: 'Indicadores', icon: BarChart3, color: '#8B7355' },
@@ -326,7 +326,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     >
                       <Star 
                         className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`}
-                        style={{ color: isFavorite ? '#D4A574' : '#9CA3AF' }}
+                        style={{ color: isFavorite ? '#D4A574' : 'var(--gray-400)' }}
                       />
                     </button>
                   </div>

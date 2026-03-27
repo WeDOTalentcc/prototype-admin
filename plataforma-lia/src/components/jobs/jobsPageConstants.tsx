@@ -48,20 +48,20 @@ export function getEstimatedTime(questionType: string): string {
 
 export function getStatusColor(status: JobStatus): string {
   const statusColors: Record<JobStatus, string> = {
-    'Ativa': '#A8D5B7',
-    'Aprovada': '#B8E0D2',
-    'Aguardando aprovação': '#F5E6B3',
-    'Reaberta': '#F5D6A8',
-    'Paralisada': '#D5BFA8',
-    'Interna': '#C5D9ED',
-    'Fechada (preenchida)': '#B8C5D0',
-    'Fechada (expirada)': '#E8B8B8',
-    'Cancelada': '#E5C5C5',
-    'Rascunho': '#E8E4E0',
-    'Arquivada': '#E5E7EB',
-    'Concluída': '#A8CED5'
+    'Ativa': 'var(--status-success)',
+    'Aprovada': 'var(--status-success)',
+    'Aguardando aprovação': 'var(--status-warning)',
+    'Reaberta': 'var(--status-warning)',
+    'Paralisada': 'var(--gray-400)',
+    'Interna': 'var(--gray-300)',
+    'Fechada (preenchida)': 'var(--gray-600)',
+    'Fechada (expirada)': 'var(--gray-400)',
+    'Cancelada': 'var(--status-error)',
+    'Rascunho': 'var(--gray-200)',
+    'Arquivada': 'var(--gray-200)',
+    'Concluída': 'var(--gray-600)'
   }
-  return statusColors[status] || '#E5E7EB'
+  return statusColors[status] || 'var(--gray-200)'
 }
 
 export const priorityColors = {

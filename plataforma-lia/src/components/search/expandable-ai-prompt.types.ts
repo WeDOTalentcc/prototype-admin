@@ -132,15 +132,15 @@ export const CONTEXT_COLORS: Record<string, {
   headerBg: string
 }> = {
   candidates: {
-    border: '#7BC29A',
+    border: 'var(--wedo-green-light)',
     bg: 'rgba(123, 194, 154, 0.1)',
     headerText: '#5aa078',
     headerBg: 'rgba(123, 194, 154, 0.15)',
   },
   jobs: {
-    border: '#6B7280',
+    border: 'var(--gray-400)',
     bg: 'rgba(107, 114, 128, 0.05)',
-    headerText: '#374151',
+    headerText: 'var(--gray-600)',
     headerBg: 'rgba(107, 114, 128, 0.1)',
   },
 }

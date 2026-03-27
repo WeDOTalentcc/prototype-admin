@@ -247,7 +247,7 @@ export default function JornadaRecrutamentoPage() {
                 onClick={handleSave}
                 disabled={!hasChanges || isSaving}
                 className="text-white"
-                style={{ backgroundColor: hasChanges ? '#111827' : '#d1d5db' }}
+                style={{ backgroundColor: hasChanges ? 'var(--gray-950)' : 'var(--gray-200)' }}
               >
                 {isSaving ? (
                   <>

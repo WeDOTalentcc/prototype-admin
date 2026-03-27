@@ -42,28 +42,28 @@ const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
       border: 'border-gray-200 dark:border-gray-700',
       dot: 'bg-gray-700 dark:bg-gray-300',
       header: 'text-gray-800 dark:text-gray-200',
-      accentColor: '#374151'
+      accentColor: 'var(--gray-600)'
     },
     hired: {
       bg: 'bg-white dark:bg-gray-900',
       border: 'border-gray-200 dark:border-gray-700',
       dot: 'bg-gray-700 dark:bg-gray-300',
       header: 'text-gray-800 dark:text-gray-200',
-      accentColor: '#374151'
+      accentColor: 'var(--gray-600)'
     },
     rejected: {
       bg: 'bg-white dark:bg-gray-900',
       border: 'border-gray-200 dark:border-gray-700',
       dot: 'bg-gray-300 dark:bg-gray-600',
       header: 'text-gray-800 dark:text-gray-200',
-      accentColor: '#D1D5DB'
+      accentColor: 'var(--gray-200)'
     },
     offer_declined: {
       bg: 'bg-white dark:bg-gray-900',
       border: 'border-gray-200 dark:border-gray-700',
       dot: 'bg-gray-300 dark:bg-gray-600',
       header: 'text-gray-800 dark:text-gray-200',
-      accentColor: '#D1D5DB'
+      accentColor: 'var(--gray-200)'
     }
   }
 
@@ -76,7 +76,7 @@ const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
     border: 'border-gray-200 dark:border-gray-700',
     dot: 'bg-gray-500 dark:bg-gray-400',
     header: 'text-gray-800 dark:text-gray-200',
-    accentColor: stageColor || '#6B7280'
+    accentColor: stageColor || 'var(--gray-400)'
   }
 }
 

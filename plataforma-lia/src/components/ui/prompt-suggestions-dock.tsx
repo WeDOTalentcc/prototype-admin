@@ -16,9 +16,9 @@ interface PromptSuggestion {
 
 const CATEGORY_COLORS = {
   vagas: {
-    icon: '#374151',
-    bg: '#F3F4F6',
-    border: '#D1D5DB',
+    icon: 'var(--gray-600)',
+    bg: 'var(--gray-50)',
+    border: 'var(--gray-200)',
     hoverBg: '#D0EFF5'
   },
   candidatos: {
@@ -28,15 +28,15 @@ const CATEGORY_COLORS = {
     hoverBg: '#D5EFE0'
   },
   entrevistas: {
-    icon: '#E5A853',
+    icon: 'var(--wedo-orange)',
     bg: '#FDF4E8',
-    border: '#E5A853',
+    border: 'var(--wedo-orange)',
     hoverBg: '#FAECD8'
   },
   relatorios: {
-    icon: '#8B5CF6',
+    icon: 'var(--wedo-purple)',
     bg: '#F3EAFF',
-    border: '#8B5CF6',
+    border: 'var(--wedo-purple)',
     hoverBg: '#EBE0FF'
   }
 }
@@ -227,7 +227,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#FFFFFF'
+                  e.currentTarget.style.backgroundColor = 'var(--lia-bg-primary)'
                   e.currentTarget.style.borderColor = colors.bg
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
@@ -322,8 +322,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             className="px-4 py-3 flex items-center justify-between border-b"
             onMouseDown={handleMouseDown}
             style={{ 
-              backgroundColor: '#FAFAFA', 
-              borderColor: '#EEEEEE',
+              backgroundColor: 'var(--gray-50)', 
+              borderColor: 'var(--gray-200)',
               cursor: isDragging ? 'grabbing' : 'grab',
               borderRadius: '16px 16px 0 0'
             }}
@@ -377,7 +377,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     e.currentTarget.style.borderColor = colors.border
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#FFFFFF'
+                    e.currentTarget.style.backgroundColor = 'var(--lia-bg-primary)'
                     e.currentTarget.style.borderColor = colors.bg
                   }}
                 >

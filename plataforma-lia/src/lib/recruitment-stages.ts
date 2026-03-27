@@ -99,7 +99,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'sourcing',
     displayName: 'Funil',
     stageOrder: 1,
-    color: '#E5E7EB',  // --gray-200 — entrada no funil
+    color: 'var(--gray-200)',  // --gray-200 — entrada no funil
     icon: 'search',
     stageType: 'active',
     isInitial: true,
@@ -111,7 +111,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'screening',
     displayName: 'Triagem',
     stageOrder: 2,
-    color: '#E5E7EB',  // --gray-200 — triagem inicial
+    color: 'var(--gray-200)',  // --gray-200 — triagem inicial
     icon: 'file-text',
     stageType: 'active',
     isInitial: false,
@@ -123,7 +123,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'long_list',
     displayName: 'Long List',
     stageOrder: 3,
-    color: '#D1D5DB',  // gray-300 equivalente — qualificação inicial
+    color: 'var(--gray-300)',  // gray-300 equivalente — qualificação inicial
     icon: 'list',
     stageType: 'active',
     isInitial: false,
@@ -135,7 +135,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'short_list',
     displayName: 'Short List',
     stageOrder: 4,
-    color: '#D1D5DB',  // gray-300 equivalente — qualificação refinada
+    color: 'var(--gray-300)',  // gray-300 equivalente — qualificação refinada
     icon: 'list-checks',
     stageType: 'active',
     isInitial: false,
@@ -147,7 +147,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_hr',
     displayName: 'Entrevista RH',
     stageOrder: 5,
-    color: '#9CA3AF',  // --gray-400 — entrevistas iniciam
+    color: 'var(--gray-400)',  // --gray-400 — entrevistas iniciam
     icon: 'users',
     stageType: 'active',
     isInitial: false,
@@ -159,7 +159,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'technical_test',
     displayName: 'Teste Técnico',
     stageOrder: 6,
-    color: '#9CA3AF',  // --gray-400
+    color: 'var(--gray-400)',  // --gray-400
     icon: 'code-2',
     stageType: 'active',
     isInitial: false,
@@ -171,7 +171,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'english_test',
     displayName: 'Teste de Inglês',
     stageOrder: 7,
-    color: '#9CA3AF',  // --gray-400
+    color: 'var(--gray-400)',  // --gray-400
     icon: 'languages',
     stageType: 'active',
     isInitial: false,
@@ -183,7 +183,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_technical',
     displayName: 'Entrevista Técnica',
     stageOrder: 8,
-    color: '#6B7280',  // gray-500 equivalente — progresso avançado
+    color: 'var(--gray-500)',  // gray-500 equivalente — progresso avançado
     icon: 'code',
     stageType: 'active',
     isInitial: false,
@@ -195,7 +195,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_manager',
     displayName: 'Entrevista Gestor',
     stageOrder: 9,
-    color: '#6B7280',  // gray-500 equivalente
+    color: 'var(--gray-500)',  // gray-500 equivalente
     icon: 'briefcase',
     stageType: 'active',
     isInitial: false,
@@ -207,7 +207,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_manager2',
     displayName: 'Entrevista Gestor 2',
     stageOrder: 10,
-    color: '#6B7280',  // gray-500 equivalente
+    color: 'var(--gray-500)',  // gray-500 equivalente
     icon: 'briefcase',
     stageType: 'active',
     isInitial: false,
@@ -219,7 +219,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_final',
     displayName: 'Entrevista Final',
     stageOrder: 11,
-    color: '#4B5563',  // --gray-600 — decisão final se aproxima
+    color: 'var(--gray-600)',  // --gray-600 — decisão final se aproxima
     icon: 'award',
     stageType: 'active',
     isInitial: false,
@@ -231,7 +231,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'references',
     displayName: 'Referências',
     stageOrder: 12,
-    color: '#4B5563',  // --gray-600
+    color: 'var(--gray-600)',  // --gray-600
     icon: 'phone',
     stageType: 'active',
     isInitial: false,
@@ -243,7 +243,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'offer',
     displayName: 'Proposta',
     stageOrder: 13,
-    color: '#1F2937',  // --gray-800 — quase lá, alta relevância
+    color: 'var(--gray-800)',  // --gray-800 — quase lá, alta relevância
     icon: 'file-check',
     stageType: 'active',
     isInitial: false,
@@ -268,7 +268,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'rejected',
     displayName: 'Reprovado',
     stageOrder: 15,
-    color: '#E5E7EB',  // --gray-200 — faded, encerrado sem progressão
+    color: 'var(--gray-200)',  // --gray-200 — faded, encerrado sem progressão
     icon: 'x-circle',
     stageType: 'final',
     isInitial: false,
@@ -281,7 +281,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'offer_declined',
     displayName: 'Proposta Recusada',
     stageOrder: 16,
-    color: '#E5E7EB',  // --gray-200 — faded, terminal
+    color: 'var(--gray-200)',  // --gray-200 — faded, terminal
     icon: 'x',
     stageType: 'final',
     isInitial: false,
@@ -293,7 +293,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'standby',
     displayName: 'Stand By',
     stageOrder: 17,
-    color: '#D1D5DB',  // gray-300 equivalente — parado, aguardando
+    color: 'var(--gray-300)',  // gray-300 equivalente — parado, aguardando
     icon: 'pause-circle',
     stageType: 'standby',
     isInitial: false,
@@ -875,9 +875,9 @@ export const CANDIDATE_SOURCES: CandidateSource[] = [
   { id: 'ats_gupy', name: 'ats_gupy', displayName: 'Gupy', icon: 'database', color: '#FF6B35' },
   { id: 'ats_greenhouse', name: 'ats_greenhouse', displayName: 'Greenhouse', icon: 'database', color: '#24A148' },
   { id: 'ats_lever', name: 'ats_lever', displayName: 'Lever', icon: 'database', color: '#4D4D4D' },
-  { id: 'pearch', name: 'pearch', displayName: 'Pearch AI', icon: 'search', color: '#60BED1' },
-  { id: 'manual', name: 'manual', displayName: 'Manual', icon: 'edit', color: '#6B7280' },
-  { id: 'other', name: 'other', displayName: 'Outro', icon: 'more-horizontal', color: '#9CA3AF' },
+  { id: 'pearch', name: 'pearch', displayName: 'Pearch AI', icon: 'search', color: 'var(--wedo-cyan)' },
+  { id: 'manual', name: 'manual', displayName: 'Manual', icon: 'edit', color: 'var(--gray-500)' },
+  { id: 'other', name: 'other', displayName: 'Outro', icon: 'more-horizontal', color: 'var(--gray-400)' },
 ]
 
 // ==================== HELPER FUNCTIONS ====================

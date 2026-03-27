@@ -3052,7 +3052,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                         ? '#4A90E2'
                                         : job.funnel.total >= 20 
                                         ? '#E17B75'
-                                        : '#F59E0B'
+                                        : 'var(--status-warning)'
                                     }}
                                   />
                                   <span className="text-sm font-normal text-gray-800 dark:text-gray-50">
@@ -3145,7 +3145,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                     <div 
                                       className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
                                       style={{ 
-                                        backgroundColor: '#A8CED5',
+                                        backgroundColor: 'var(--gray-200)',
                                         width: `${getCardWidth(liaTriages.pipeline)}px`,
                                         minWidth: '24px'
                                       }}>
@@ -3210,7 +3210,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                     <div 
                                       className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
                                       style={{ 
-                                        backgroundColor: '#BFA8D5',
+                                        backgroundColor: 'var(--gray-200)',
                                         width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
                                         minWidth: '24px'
                                       }}>
@@ -3258,18 +3258,18 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             completed: 'Concluída',
                           }
                           const screeningColors: Record<string, string> = {
-                            not_configured: '#E5E7EB',
+                            not_configured: 'var(--gray-200)',
                             not_started: '#E8E4E0',
-                            active: '#A8D5B7',
+                            active: 'var(--status-success)',
                             paused: '#D5BFA8',
-                            completed: '#A8CED5',
+                            completed: 'var(--gray-400)',
                           }
                           return (
                             <td key={columnId} className="py-2 px-3" style={{ width: `${width}px` }}>
                               <Badge
                                 variant="outline"
                                 className="border-0 text-micro font-normal px-2 py-0.5 text-gray-950 dark:text-gray-50 cursor-pointer hover:opacity-80 transition-opacity"
-                                style={{ backgroundColor: screeningColors[status] || '#E5E7EB' }}
+                                style={{ backgroundColor: screeningColors[status] || 'var(--gray-200)' }}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleJobPreview(job)
@@ -3756,8 +3756,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                   onChange={(e) => setLiaPromptValue(e.target.value)}
                   className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
                   style={{ 
-                    backgroundColor: "#FFFFFF",
-                    color: "#1a1a1a",
+                    backgroundColor: "var(--lia-bg-primary)",
+                    color: "var(--gray-950)",
                     fontFamily: '"Open Sans", sans-serif'
                   }}
                   onFocus={(e) => {
@@ -3766,7 +3766,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     setShowExpandedLIA(true)
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#E5E7EB"
+                    e.currentTarget.style.borderColor = "var(--gray-200)"
                     e.currentTarget.style.boxShadow = "none"
                   }}
                   onKeyDown={(e) => {
@@ -4273,8 +4273,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         <Button
                           className="w-full h-9 !text-xs font-medium rounded-md"
                           style={{
-                            backgroundColor: jobDescriptionText.trim() ? '#1f2937' : '#F3F4F6',
-                            color: jobDescriptionText.trim() ? '#FFFFFF' : '#9CA3AF',
+                            backgroundColor: jobDescriptionText.trim() ? 'var(--gray-800)' : 'var(--gray-50)',
+                            color: jobDescriptionText.trim() ? '#FFFFFF' : 'var(--gray-400)',
                             fontFamily: 'Open Sans, sans-serif'
                           }}
                           onClick={() => {
@@ -4318,8 +4318,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   setLiaPromptValue(`Criar vaga ${template.title}`)
                                   setActiveSearchTab('ia-natural')
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#F3F4F6'}
+                                onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--gray-400)'}
+                                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--gray-50)'}
                               >
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-sm">{template.icon}</span>
@@ -4355,8 +4355,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               type="text"
                               placeholder="Buscar vaga por título ou ID..."
                               className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors text-gray-800 border border-gray-100" style={{ fontFamily: '"Open Sans", sans-serif', backgroundColor: 'var(--gray-50)' }}
-                              onFocus={(e) => e.target.style.borderColor = '#9ca3af'}
-                              onBlur={(e) => e.target.style.borderColor = '#F3F4F6'}
+                              onFocus={(e) => e.target.style.borderColor = 'var(--gray-400)'}
+                              onBlur={(e) => e.target.style.borderColor = 'var(--gray-50)'}
                             />
                           </div>
                           
@@ -4374,8 +4374,8 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   setLiaPromptValue(`Duplicar vaga ${job.id} - ${job.title}`)
                                   setActiveSearchTab('ia-natural')
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.borderColor = '#9ca3af'}
-                                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#F3F4F6'}
+                                onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--gray-400)'}
+                                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--gray-50)'}
                               >
                                 <span className="text-micro px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--gray-50)' }}>{job.id}</span>
                                 <span className="text-xs truncate flex-1 text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
@@ -5175,16 +5175,16 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                               completed: 'Triagem: Concluída',
                             }
                             const scrColors: Record<string, string> = {
-                              not_configured: '#E5E7EB',
+                              not_configured: 'var(--gray-200)',
                               not_started: '#E8E4E0',
-                              active: '#A8D5B7',
+                              active: 'var(--status-success)',
                               paused: '#D5BFA8',
-                              completed: '#A8CED5',
+                              completed: 'var(--gray-400)',
                             }
                             return (
                               <Badge 
                                 className="text-micro px-1.5 py-0 h-4 font-medium text-gray-800"
-                                style={{ backgroundColor: scrColors[scrStatus] || '#E5E7EB' }}
+                                style={{ backgroundColor: scrColors[scrStatus] || 'var(--gray-200)' }}
                               >
                                 {scrLabels[scrStatus] || 'Triagem: N/C'}
                               </Badge>

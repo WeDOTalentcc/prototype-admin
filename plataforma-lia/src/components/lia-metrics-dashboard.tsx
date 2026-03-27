@@ -367,7 +367,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <LiaMetricsChart
                 data={scoreDistribution}
                 title="Distribuição de Scores"
-                color="#10b981"
+                color="var(--status-success)"
               />
             </div>
           </CardContent>
@@ -389,7 +389,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <LiaMetricsChart
                 data={generateTimeSeriesData(contactRate)}
                 title=""
-                color="#374151"
+                color="var(--gray-600)"
               />
             </div>
           </CardContent>
@@ -408,7 +408,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <LiaMetricsChart
                 data={generateTimeSeriesData(triageConversionRate)}
                 title=""
-                color="#10b981"
+                color="var(--status-success)"
               />
             </div>
           </CardContent>
@@ -677,13 +677,13 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <LiaMetricsChart
               data={generateTimeSeriesData(contactRate)}
               title="Taxa de Contato"
-              color="#374151"
+              color="var(--gray-600)"
               targetValue={80}
             />
             <LiaMetricsChart
               data={generateTimeSeriesData(triageConversionRate)}
               title="Taxa de Conversão (Triagem)"
-              color="#10b981"
+              color="var(--status-success)"
               targetValue={70}
             />
             <LiaMetricsChart
@@ -695,7 +695,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <LiaMetricsChart
               data={generateTimeSeriesData(interviewConversionRate)}
               title="Taxa de Entrevista"
-              color="#f59e0b"
+              color="var(--status-warning)"
               targetValue={50}
             />
           </div>

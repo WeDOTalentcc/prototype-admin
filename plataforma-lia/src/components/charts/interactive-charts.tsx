@@ -241,8 +241,8 @@ export function InteractiveChart({
           enabled: true,
           backgroundColor: '#F9FAFB',
           titleColor: '#030712',
-          bodyColor: '#4B5563',
-          borderColor: '#E5E7EB',
+          bodyColor: 'var(--gray-600)',
+          borderColor: 'var(--gray-200)',
           borderWidth: 1,
           padding: 12,
           displayColors: true,
@@ -302,14 +302,14 @@ export function InteractiveChart({
         x: {
           grid: {
             display: true,
-            color: '#E5E7EB',
+            color: 'var(--gray-200)',
           },
         },
         y: {
           beginAtZero: true,
           grid: {
             display: true,
-            color: '#E5E7EB',
+            color: 'var(--gray-200)',
           },
         },
       },

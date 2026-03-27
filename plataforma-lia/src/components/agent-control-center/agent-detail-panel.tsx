@@ -78,19 +78,19 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
 
   const getHealthTierColor = (tier: string) => {
     switch (tier) {
-      case 'excellent': return '#374151'
+      case 'excellent': return 'var(--gray-600)'
       case 'good': return '#60D186'
-      case 'watch': return '#F59E0B'
-      case 'critical': return '#EF4444'
-      default: return '#9CA3AF'
+      case 'watch': return 'var(--status-warning)'
+      case 'critical': return 'var(--status-error)'
+      default: return 'var(--gray-400)'
     }
   }
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'positive': return '#60D186'
-      case 'negative': return '#EF4444'
-      default: return '#9CA3AF'
+      case 'negative': return 'var(--status-error)'
+      default: return 'var(--gray-400)'
     }
   }
 
@@ -129,7 +129,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   <div className="flex items-center gap-2">
                     <span 
                       className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: agent.status === 'online' ? '#111827' : agent.status === 'idle' ? '#F59E0B' : '#EF4444' }}
+                      style={{ backgroundColor: agent.status === 'online' ? 'var(--gray-950)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)' }}
                     />
                     <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                       {agent.status === 'online' ? 'Online' : agent.status === 'idle' ? 'Idle' : 'Atenção'}
@@ -151,7 +151,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               <div className="text-center">
                 <div 
                   className="text-xl font-bold"
-                  style={{ color: agent.progress >= 80 ? '#60D186' : agent.progress >= 50 ? '#111827' : '#F59E0B' }}
+                  style={{ color: agent.progress >= 80 ? '#60D186' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
                 >
                   {agent.progress}%
                 </div>
@@ -181,14 +181,14 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   )}
                   <span 
                     className="text-xs"
-                    style={{ color: agent.delta > 0 ? '#60D186' : agent.delta < 0 ? '#EF4444' : 'var(--eleven-text-tertiary)' }}
+                    style={{ color: agent.delta > 0 ? '#60D186' : agent.delta < 0 ? 'var(--status-error)' : 'var(--eleven-text-tertiary)' }}
                   >
                     {agent.delta > 0 ? '+' : ''}{agent.delta}% vs ontem
                   </span>
                 </div>
               </div>
               <div className="h-16">
-                <Sparkline data={agent.sparkline} color="#374151" height={64} />
+                <Sparkline data={agent.sparkline} color="var(--gray-600)" height={64} />
               </div>
             </div>
 
@@ -204,7 +204,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
                   className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors"
                   style={{
-                    color: activeTab === tab.id ? '#111827' : 'var(--eleven-text-secondary)',
+                    color: activeTab === tab.id ? 'var(--gray-950)' : 'var(--eleven-text-secondary)',
                     backgroundColor: activeTab === tab.id ? 'rgba(229, 231, 235, 0.2)' : 'transparent',
                     borderBottom: activeTab === tab.id ? '2px solid #D1D5DB' : '2px solid transparent'
                   }}

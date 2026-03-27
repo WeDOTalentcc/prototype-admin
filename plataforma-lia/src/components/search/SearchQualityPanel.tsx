@@ -22,7 +22,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
   const score = searchAnalysis.completeness_score
 
   const scoreColor =
-    score >= 60 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444'
+    score >= 60 ? 'var(--status-success)' : score >= 40 ? 'var(--status-warning)' : 'var(--status-error)'
 
   return (
     <div className="space-y-2 pt-2 mt-2 border-t" style={{ borderColor: 'var(--eleven-border)' }}>

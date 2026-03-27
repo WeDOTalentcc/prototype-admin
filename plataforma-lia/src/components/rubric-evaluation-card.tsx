@@ -43,7 +43,7 @@ interface RubricEvaluationCardProps {
   onScheduleInterview?: () => void
 }
 
-const ACCENT_COLOR = '#374151'
+const ACCENT_COLOR = 'var(--gray-600)'
 
 export function RubricEvaluationCard({
   data,
@@ -69,10 +69,10 @@ export function RubricEvaluationCard({
   }
 
   const getScoreColor = (scoreValue: number) => {
-    if (scoreValue >= 80) return '#10B981'
-    if (scoreValue >= 60) return '#374151'
-    if (scoreValue >= 40) return '#F59E0B'
-    return '#EF4444'
+    if (scoreValue >= 80) return 'var(--status-success)'
+    if (scoreValue >= 60) return 'var(--gray-600)'
+    if (scoreValue >= 40) return 'var(--status-warning)'
+    return 'var(--status-error)'
   }
 
   const getEvaluationLevel = (req: RubricRequirement): string => {

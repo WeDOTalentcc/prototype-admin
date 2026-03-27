@@ -63,12 +63,12 @@ import {
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 
 const LIST_COLORS = [
-  { value: '#374151', name: 'Cyan' },
-  { value: '#6B7280', name: 'Cinza' },
-  { value: '#10B981', name: 'Verde' },
-  { value: '#F59E0B', name: 'Amarelo' },
-  { value: '#EF4444', name: 'Vermelho' },
-  { value: '#8B5CF6', name: 'Roxo' },
+  { value: 'var(--gray-600)', name: 'Cyan' },
+  { value: 'var(--gray-400)', name: 'Cinza' },
+  { value: 'var(--status-success)', name: 'Verde' },
+  { value: 'var(--status-warning)', name: 'Amarelo' },
+  { value: 'var(--status-error)', name: 'Vermelho' },
+  { value: 'var(--wedo-purple)', name: 'Roxo' },
   { value: '#EC4899', name: 'Rosa' },
   { value: '#3B82F6', name: 'Azul' },
 ]
@@ -457,7 +457,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                 <List className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 <div
                   className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800"
-                  style={{ backgroundColor: list.color || '#6B7280' }}
+                  style={{ backgroundColor: list.color || 'var(--gray-400)' }}
                 />
               </div>
 

@@ -101,7 +101,7 @@ export function CandidatePage({
       id: 'lia-eval-1',
       type: 'lia-evaluation',
       icon: Brain,
-      iconColor: '#374151', // Ciano WeDo - automação LIA
+      iconColor: 'var(--gray-600)', // Ciano WeDo - automação LIA
       title: 'Avaliação da LIA - UX Designer Sênior',
       author: 'LIA AI',
       authorRole: 'Sistema',
@@ -179,7 +179,7 @@ export function CandidatePage({
       id: 'whatsapp-screening',
       type: 'lia-screening',
       icon: Bot,
-      iconColor: '#374151', // Ciano WeDo - automação LIA
+      iconColor: 'var(--gray-600)', // Ciano WeDo - automação LIA
       title: 'Triagem via WhatsApp - LIA',
       author: 'LIA Bot',
       authorRole: 'AI Assistant',
@@ -238,7 +238,7 @@ export function CandidatePage({
       id: 'hiring-manager-note',
       type: 'interview-note',
       icon: UserCircle,
-      iconColor: '#D19960', // Laranja WeDo - tempo/processos
+      iconColor: 'var(--wedo-orange)', // Laranja WeDo - tempo/processos
       title: 'Feedback do Hiring Manager',
       author: 'Roberto Silva',
       authorRole: 'VP de Produto',
@@ -1137,7 +1137,7 @@ export function CandidatePage({
                       <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                         Inglês
                       </span>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: '#6B9BD1', color: 'white' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--gray-400)', color: 'white' }}>
                         Fluente
                       </Badge>
                     </div>
@@ -1498,7 +1498,7 @@ export function CandidatePage({
                     <div className="flex items-center gap-2">
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       <CardTitle className="text-sm">Previsão de Próximas Etapas - IA</CardTitle>
-                      <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: '#8B5CF6', color: 'white' }}>
+                      <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: 'var(--wedo-purple)', color: 'white' }}>
                         Análise Preditiva
                       </Badge>
                     </div>

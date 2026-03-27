@@ -171,7 +171,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </div>
             </div>
             <div className="flex items-center gap-2 justify-center mt-4">
-              <Zap className="w-4 h-4" style={{ color: '#0094c6' }} />
+              <Zap className="w-4 h-4" style={{ color: 'var(--wedo-cyan)' }} />
               <span className="text-sm text-gray-800 dark:text-gray-200">Powered by LIA</span>
             </div>
           </div>
@@ -243,7 +243,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                           onChange={(e) => handleInputChange("name", e.target.value)}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 transition-all duration-200"
                           style={{
-                            '--tw-ring-color': '#0094c6',
+                            '--tw-ring-color': 'var(--wedo-cyan)',
                             '--tw-ring-opacity': '0.5'
                           } as React.CSSProperties}
                           placeholder="Seu nome completo"
@@ -266,7 +266,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                         onChange={(e) => handleInputChange("email", e.target.value)}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 transition-all duration-200"
                         style={{
-                          '--tw-ring-color': '#0094c6',
+                          '--tw-ring-color': 'var(--wedo-cyan)',
                           '--tw-ring-opacity': '0.5'
                         } as React.CSSProperties}
                         placeholder="seu@email.com"
@@ -289,7 +289,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                           onChange={(e) => handleInputChange("company", e.target.value)}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 transition-all duration-200"
                           style={{
-                            '--tw-ring-color': '#0094c6',
+                            '--tw-ring-color': 'var(--wedo-cyan)',
                             '--tw-ring-opacity': '0.5'
                           } as React.CSSProperties}
                           placeholder="Nome da empresa"
@@ -310,7 +310,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                         onChange={(e) => handleInputChange("role", e.target.value)}
                         className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 transition-all duration-200"
                         style={{
-                          '--tw-ring-color': '#0094c6',
+                          '--tw-ring-color': 'var(--wedo-cyan)',
                           '--tw-ring-opacity': '0.5'
                         } as React.CSSProperties}
                       >
@@ -335,7 +335,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                         onChange={(e) => handleInputChange("password", e.target.value)}
                         className="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 transition-all duration-200"
                         style={{
-                          '--tw-ring-color': '#0094c6',
+                          '--tw-ring-color': 'var(--wedo-cyan)',
                           '--tw-ring-opacity': '0.5'
                         } as React.CSSProperties}
                         placeholder="Sua senha"
@@ -386,7 +386,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                       variant="ghost"
                       size="sm"
                       className="p-0 h-auto micro-scale"
-                      style={{ color: '#0094c6' }}
+                      style={{ color: 'var(--wedo-cyan)' }}
                     >
                       Esqueceu a senha?
                     </Button>
@@ -404,7 +404,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   size="sm"
                   onClick={() => setIsLogin(!isLogin)}
                   className="ml-1 p-0 h-auto font-medium micro-scale"
-                  style={{ color: '#0094c6' }}
+                  style={{ color: 'var(--wedo-cyan)' }}
                 >
                   {isLogin ? "Cadastre-se" : "Faça login"}
                 </Button>
@@ -422,7 +422,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
-                  <p className="text-sm font-medium" style={{ color: '#0094c6' }}>
+                  <p className="text-sm font-medium" style={{ color: 'var(--wedo-cyan)' }}>
                     Credenciais de demonstração
                   </p>
                 </div>

@@ -99,7 +99,7 @@ export function AlertsSection({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <AlertTriangle className="w-4 h-4" style={{ color: alert.enabled ? '#F97316' : 'var(--eleven-text-tertiary)' }} />
+                      <AlertTriangle className="w-4 h-4" style={{ color: alert.enabled ? 'var(--status-warning)' : 'var(--eleven-text-tertiary)' }} />
                       <h4 className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
                         {alert.name}
                       </h4>

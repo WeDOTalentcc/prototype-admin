@@ -3355,10 +3355,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         
         // Cores baseadas no score (paleta harmonizada)
         const getMatchRingColor = (score: number) => {
-          if (score >= 85) return '#374151' // teal - excelente
-          if (score >= 70) return '#7BC29A' // verde claro - bom
+          if (score >= 85) return 'var(--gray-600)' // teal - excelente
+          if (score >= 70) return 'var(--wedo-green-light)' // verde claro - bom
           if (score >= 50) return '#E8A07C' // coral - moderado
-          return '#9CA3AF' // gray-400 - baixo
+          return 'var(--gray-400)' // gray-400 - baixo
         }
         
         const ringColor = getMatchRingColor(matchScore)
@@ -3718,8 +3718,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           <Badge
             className="text-xs"
             style={{
-              backgroundColor: workModel === 'remoto' ? '#E5E7EB' : workModel === 'híbrido' ? '#E5E7EB' : '#E5E7EB',
-              color: workModel === 'remoto' ? '#374151' : workModel === 'híbrido' ? '#374151' : '#374151'
+              backgroundColor: workModel === 'remoto' ? 'var(--gray-200)' : workModel === 'híbrido' ? 'var(--gray-200)' : 'var(--gray-200)',
+              color: workModel === 'remoto' ? 'var(--gray-600)' : workModel === 'híbrido' ? 'var(--gray-600)' : 'var(--gray-600)'
             }}
           >
             {workModel === 'remoto' ? '🏠 Remoto' : workModel === 'híbrido' ? '🔄 Híbrido' : workModel === 'presencial' ? '🏢 Presencial' : workModel || ''}
@@ -6826,12 +6826,12 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
 
             {/* ✨ Banner Visualizando Lista */}
             {viewingList && (
-              <Card className="bg-gray-50 dark:bg-gray-800 border-l-4" style={{ borderLeftColor: viewingList.color || '#374151' }}>
+              <Card className="bg-gray-50 dark:bg-gray-800 border-l-4" style={{ borderLeftColor: viewingList.color || 'var(--gray-600)' }}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div 
                       className="w-10 h-10 rounded-md flex items-center justify-center"
-                      style={{ backgroundColor: viewingList.color || '#374151' }}
+                      style={{ backgroundColor: viewingList.color || 'var(--gray-600)' }}
                     >
                       <List className="w-5 h-5 text-white" />
                     </div>
@@ -6895,7 +6895,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                         // Focus state: borda cyan + shadow
                         const container = e.target.parentElement
                         if (container) {
-                          container.style.borderColor = '#D1D5DB'
+                          container.style.borderColor = 'var(--gray-200)'
                           container.style.boxShadow = '0 0 0 2px rgba(96, 190, 209, 0.12)'
                         }
                         // Expandir LIA sidebar ao focar
@@ -6906,7 +6906,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                       onBlur={(e) => {
                         const container = e.target.parentElement
                         if (container) {
-                          container.style.borderColor = '#E5E7EB'
+                          container.style.borderColor = 'var(--gray-200)'
                           container.style.boxShadow = 'none'
                         }
                       }}
@@ -7593,8 +7593,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                 onClick={() => handleAICommand('Top 5 candidatos')}
                                 className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-all"
                                 style={{ fontFamily: 'Open Sans, sans-serif' }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E5E7EB'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-200)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-50)'}
                               >
                                 <Star className="w-2.5 h-2.5 text-gray-500" />
                                 Top 5
@@ -7603,8 +7603,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                 onClick={() => handleAICommand('Resumir esta busca')}
                                 className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-all"
                                 style={{ fontFamily: 'Open Sans, sans-serif' }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E5E7EB'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-200)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-50)'}
                               >
                                 <FileText className="w-2.5 h-2.5 text-gray-500" />
                                 Resumir busca
@@ -7633,8 +7633,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                               value={jobDescriptionText}
                               onChange={(e) => setJobDescriptionText(e.target.value)}
                               className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-all resize-none bg-white dark:bg-gray-800 text-gray-950 dark:text-gray-50 border border-gray-100" style={{ fontFamily: 'Open Sans, sans-serif' }}
-                              onFocus={(e) => e.target.style.borderColor = '#D1D5DB'}
-                              onBlur={(e) => e.target.style.borderColor = '#F3F4F6'}
+                              onFocus={(e) => e.target.style.borderColor = 'var(--gray-200)'}
+                              onBlur={(e) => e.target.style.borderColor = 'var(--gray-50)'}
                             />
                             {/* Botões de Anexo e Áudio */}
                             <div className="absolute bottom-3 right-3 flex gap-2">
@@ -7706,7 +7706,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                           <Button
                             className="w-full h-11 !text-sm font-semibold gap-2"
                             style={{
-                              backgroundColor: isSearchingJD ? '#9CA3AF' : '#1a1a1a',
+                              backgroundColor: isSearchingJD ? 'var(--gray-400)' : 'var(--gray-950)',
                               color: 'var(--gray-50)',
                               fontFamily: 'Open Sans, sans-serif'
                             }}
@@ -8187,7 +8187,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                           <Button
                             className="w-full h-12 !text-sm font-semibold"
                             style={{
-                              backgroundColor: showTableFiltersPanel ? '#1F2937' : '#374151',
+                              backgroundColor: showTableFiltersPanel ? 'var(--gray-800)' : 'var(--gray-600)',
                               color: 'var(--gray-50)',
                               fontFamily: 'Open Sans, sans-serif'
                             }}
@@ -8618,7 +8618,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                   className="text-xs px-2 py-0.5 rounded-full"
                                   style={{ 
                                     backgroundColor: visibleCount > 0 ? '#f3f4f6' : '#f3f4f6',
-                                    color: visibleCount > 0 ? '#374151' : '#9ca3af',
+                                    color: visibleCount > 0 ? 'var(--gray-600)' : 'var(--gray-400)',
                                     fontFamily: 'Open Sans, sans-serif'
                                   }}
                                 >
@@ -8644,7 +8644,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                     <div 
                                       className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
                                       style={{ 
-                                        backgroundColor: col.visible ? '#374151' : 'transparent',
+                                        backgroundColor: col.visible ? 'var(--gray-600)' : 'transparent',
                                         border: col.visible ? 'none' : '2px solid #d1d5db'
                                       }}
                                     >
@@ -8655,7 +8655,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                     <span 
                                       className="text-xs flex-1 flex items-center gap-1.5"
                                       style={{ 
-                                        color: col.visible ? '#1f2937' : '#6b7280',
+                                        color: col.visible ? 'var(--gray-800)' : '#6b7280',
                                         fontFamily: 'Open Sans, sans-serif',
                                         fontWeight: col.visible ? 500 : 400
                                       }}

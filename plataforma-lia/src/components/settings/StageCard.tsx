@@ -332,7 +332,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
             >
               <span
                 className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: ss.color || '#9CA3AF' }}
+                style={{ backgroundColor: ss.color || 'var(--gray-400)' }}
               />
               <span className={`flex-1 text-xs font-medium ${ss.is_active ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
                 {ss.display_name}

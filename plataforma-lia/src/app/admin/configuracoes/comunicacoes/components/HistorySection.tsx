@@ -184,11 +184,11 @@ export function HistorySection({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>Taxa Sucesso</p>
-                <p className="text-2xl font-semibold" style={{ color: successRate >= 90 ? '#10b981' : successRate >= 70 ? '#f59e0b' : '#ef4444' }}>
+                <p className="text-2xl font-semibold" style={{ color: successRate >= 90 ? 'var(--status-success)' : successRate >= 70 ? 'var(--status-warning)' : 'var(--status-error)' }}>
                   {successRate}%
                 </p>
               </div>
-              <AlertCircle className="w-8 h-8" style={{ color: successRate >= 90 ? '#10b981' : successRate >= 70 ? '#f59e0b' : '#ef4444' }} />
+              <AlertCircle className="w-8 h-8" style={{ color: successRate >= 90 ? 'var(--status-success)' : successRate >= 70 ? 'var(--status-warning)' : 'var(--status-error)' }} />
             </div>
           </CardContent>
         </Card>

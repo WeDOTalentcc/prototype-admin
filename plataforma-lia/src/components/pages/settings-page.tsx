@@ -1309,7 +1309,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
           <Button
             onClick={submitWizard}
             disabled={isSubmitting || submitSuccess}
-            style={{ backgroundColor: isSubmitting ? '#999' : '#374151' }}
+            style={{ backgroundColor: isSubmitting ? 'var(--gray-400)' : 'var(--gray-600)' }}
           >
             {isSubmitting ? (
               <>

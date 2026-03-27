@@ -116,12 +116,12 @@ const generateRealisticData = () => {
 }
 
 const COLORS = {
-  primary: ['#3B82F6', '#1D4ED8', '#1E40AF', '#1E3A8A'],
-  secondary: ['#10B981', '#059669', '#047857', '#065F46'],
-  tertiary: ['#F59E0B', '#D97706', '#B45309', '#92400E'],
-  quaternary: ['#EF4444', '#DC2626', '#B91C1C', '#991B1B'],
-  neutral: ['#6B7280', '#4B5563', '#374151', '#1F2937'],
-  rainbow: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316']
+  primary: ['rgba(3,7,18,1.00)', 'rgba(3,7,18,0.75)', 'rgba(3,7,18,0.55)', 'rgba(3,7,18,0.40)'],
+  secondary: ['rgba(3,7,18,0.60)', 'rgba(3,7,18,0.45)', 'rgba(3,7,18,0.30)', 'rgba(3,7,18,0.20)'],
+  tertiary: ['rgba(3,7,18,0.35)', 'rgba(3,7,18,0.25)', 'rgba(3,7,18,0.18)', 'rgba(3,7,18,0.12)'],
+  quaternary: ['rgba(3,7,18,0.15)', 'rgba(3,7,18,0.12)', 'rgba(3,7,18,0.08)', 'rgba(3,7,18,0.05)'],
+  neutral: ['rgba(3,7,18,0.60)', 'rgba(3,7,18,0.45)', 'rgba(3,7,18,0.30)', 'rgba(3,7,18,0.15)'],
+  rainbow: ['rgba(3,7,18,1.00)', 'rgba(3,7,18,0.75)', 'rgba(3,7,18,0.55)', 'rgba(3,7,18,0.40)', 'rgba(3,7,18,0.30)', 'rgba(3,7,18,0.20)', 'rgba(3,7,18,0.12)', 'rgba(3,7,18,0.08)']
 }
 
 interface AdvancedChartProps {
@@ -186,7 +186,7 @@ export function AdvancedInteractiveChart({
         datasets: [{
           data: data.map((item: any) => item[valueKey]),
           backgroundColor: COLORS.rainbow,
-          borderColor: '#fff',
+          borderColor: 'var(--lia-bg-primary)',
           borderWidth: 2,
         }]
       }
@@ -202,8 +202,8 @@ export function AdvancedInteractiveChart({
           borderColor: COLORS.primary[index % COLORS.primary.length],
           borderWidth: 2,
           pointBackgroundColor: COLORS.primary[index % COLORS.primary.length],
-          pointBorderColor: '#fff',
-          pointHoverBackgroundColor: '#fff',
+          pointBorderColor: 'var(--lia-bg-primary)',
+          pointHoverBackgroundColor: 'var(--lia-bg-primary)',
           pointHoverBorderColor: COLORS.primary[index % COLORS.primary.length],
         }))
       }
@@ -313,10 +313,10 @@ export function AdvancedInteractiveChart({
         },
         tooltip: {
           enabled: chartConfig.showTooltip,
-          backgroundColor: '#fff',
-          titleColor: '#111',
-          bodyColor: '#555',
-          borderColor: '#ddd',
+          backgroundColor: 'var(--gray-50)',
+          titleColor: 'var(--gray-950)',
+          bodyColor: 'var(--gray-600)',
+          borderColor: 'var(--gray-200)',
           borderWidth: 1,
           padding: 12,
           displayColors: true,
@@ -375,7 +375,7 @@ export function AdvancedInteractiveChart({
             beginAtZero: true,
             grid: {
               display: chartConfig.showGrid,
-              color: '#f0f0f0',
+              color: 'var(--gray-200)',
             },
           },
           y: {
@@ -394,7 +394,7 @@ export function AdvancedInteractiveChart({
           x: {
             grid: {
               display: chartConfig.showGrid,
-              color: '#f0f0f0',
+              color: 'var(--gray-200)',
             },
           },
           y: {
@@ -404,7 +404,7 @@ export function AdvancedInteractiveChart({
             beginAtZero: true,
             grid: {
               display: chartConfig.showGrid,
-              color: '#f0f0f0',
+              color: 'var(--gray-200)',
             },
           },
           y1: {
@@ -425,14 +425,14 @@ export function AdvancedInteractiveChart({
         x: {
           grid: {
             display: chartConfig.showGrid,
-            color: '#f0f0f0',
+            color: 'var(--gray-200)',
           },
         },
         y: {
           beginAtZero: true,
           grid: {
             display: chartConfig.showGrid,
-            color: '#f0f0f0',
+            color: 'var(--gray-200)',
           },
         },
       },

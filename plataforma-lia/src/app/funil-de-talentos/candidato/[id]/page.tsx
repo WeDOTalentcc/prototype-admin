@@ -494,15 +494,15 @@ export default function CandidateProfilePage() {
 
   const getCategoryColor = (fileType: string) => {
     const colors: Record<string, { bg: string, text: string }> = {
-      'cv': { bg: '#10B98120', text: '#10B981' },
-      'photo': { bg: '#E5E7EB', text: '#374151' },
-      'portfolio': { bg: '#E5E7EB', text: '#374151' },
-      'video': { bg: '#EF444420', text: '#EF4444' },
-      'certificate': { bg: '#F59E0B20', text: '#F59E0B' },
-      'document': { bg: '#6B728020', text: '#6B7280' },
-      'screening': { bg: '#F9731620', text: '#F97316' },
-      'interview': { bg: '#8B5CF620', text: '#8B5CF6' },
-      'transcript': { bg: '#8B5CF620', text: '#8B5CF6' },
+      'cv': { bg: '#10B98120', text: 'var(--status-success)' },
+      'photo': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
+      'portfolio': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
+      'video': { bg: '#EF444420', text: 'var(--status-error)' },
+      'certificate': { bg: '#F59E0B20', text: 'var(--status-warning)' },
+      'document': { bg: '#6B728020', text: 'var(--gray-400)' },
+      'screening': { bg: '#F9731620', text: 'var(--status-warning)' },
+      'interview': { bg: '#8B5CF620', text: 'var(--wedo-purple)' },
+      'transcript': { bg: '#8B5CF620', text: 'var(--wedo-purple)' },
     }
     return colors[fileType] || colors['document']
   }
@@ -814,7 +814,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${candidate.linkedin_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.linkedin_url && e.preventDefault()}
                         >
-                          <Linkedin className="w-5 h-5" style={{ color: candidate.linkedin_url ? '#0A66C2' : '#9CA3AF' }} />
+                          <Linkedin className="w-5 h-5" style={{ color: candidate.linkedin_url ? '#0A66C2' : 'var(--gray-400)' }} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>LinkedIn</TooltipContent>
@@ -828,7 +828,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${candidate.github_url ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.github_url && e.preventDefault()}
                         >
-                          <Github className="w-5 h-5" style={{ color: candidate.github_url ? '#181717' : '#9CA3AF' }} />
+                          <Github className="w-5 h-5" style={{ color: candidate.github_url ? '#181717' : 'var(--gray-400)' }} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>GitHub</TooltipContent>
@@ -842,7 +842,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${(candidate as any).stackoverflow_url ? 'hover:bg-orange-50' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !(candidate as any).stackoverflow_url && e.preventDefault()}
                         >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate as any).stackoverflow_url ? '#F48024' : '#9CA3AF'}><path d="M15 21H3v-8h2v6h10v-6h2v8z"/><path d="M5 15h10v-2H5v2zm0-3.5h10v-2H5v2zm.05-3.45l9.85 2.05.4-1.95L5.45 6l-.4 1.95zM7.15 4.55l8.95 4.55.85-1.7L8 2.85l-.85 1.7z"/></svg>
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate as any).stackoverflow_url ? '#F48024' : 'var(--gray-400)'}><path d="M15 21H3v-8h2v6h10v-6h2v8z"/><path d="M5 15h10v-2H5v2zm0-3.5h10v-2H5v2zm.05-3.45l9.85 2.05.4-1.95L5.45 6l-.4 1.95zM7.15 4.55l8.95 4.55.85-1.7L8 2.85l-.85 1.7z"/></svg>
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>StackOverflow</TooltipContent>
@@ -856,7 +856,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${((candidate as any).twitter_url || (candidate as any).x_url) ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !((candidate as any).twitter_url || (candidate as any).x_url) && e.preventDefault()}
                         >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={((candidate as any).twitter_url || (candidate as any).x_url) ? '#000000' : '#9CA3AF'}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={((candidate as any).twitter_url || (candidate as any).x_url) ? '#000000' : 'var(--gray-400)'}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>X / Twitter</TooltipContent>
@@ -870,7 +870,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${(candidate as any).behance_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !(candidate as any).behance_url && e.preventDefault()}
                         >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate as any).behance_url ? '#1769FF' : '#9CA3AF'}><path d="M7.5 11c1.5 0 2.5-.8 2.5-2.2S9 6.5 7.5 6.5H4v4.5h3.5zm.5 1H4v5h4c1.8 0 3-1.1 3-2.5S9.8 12 8 12zm8.5-1c-1.5 0-2.5.8-2.5 2h5c0-1.2-1-2-2.5-2z"/><path d="M22.5 6H14v1.5h8.5V6zm-.5 5c0-2.5-2-4.5-4.5-4.5S13 8.5 13 11s2 4.5 4.5 4.5c1.5 0 3-.8 3.8-2h-1.8c-.5.6-1.2 1-2 1-1.5 0-2.5-1-2.5-2.5h6.5v-.5c0-.2 0-.3-.5-.5z"/></svg>
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate as any).behance_url ? '#1769FF' : 'var(--gray-400)'}><path d="M7.5 11c1.5 0 2.5-.8 2.5-2.2S9 6.5 7.5 6.5H4v4.5h3.5zm.5 1H4v5h4c1.8 0 3-1.1 3-2.5S9.8 12 8 12zm8.5-1c-1.5 0-2.5.8-2.5 2h5c0-1.2-1-2-2.5-2z"/><path d="M22.5 6H14v1.5h8.5V6zm-.5 5c0-2.5-2-4.5-4.5-4.5S13 8.5 13 11s2 4.5 4.5 4.5c1.5 0 3-.8 3.8-2h-1.8c-.5.6-1.2 1-2 1-1.5 0-2.5-1-2.5-2.5h6.5v-.5c0-.2 0-.3-.5-.5z"/></svg>
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>Behance</TooltipContent>
@@ -884,7 +884,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors ${candidate.portfolio_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.portfolio_url && e.preventDefault()}
                         >
-                          <Globe className="w-5 h-5" style={{ color: candidate.portfolio_url ? '#111827' : '#9CA3AF' }} />
+                          <Globe className="w-5 h-5" style={{ color: candidate.portfolio_url ? 'var(--gray-950)' : 'var(--gray-400)' }} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>Portfolio</TooltipContent>

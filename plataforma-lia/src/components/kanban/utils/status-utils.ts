@@ -65,24 +65,24 @@ export function getScoreColor(score: number | null | undefined): string {
 }
 
 export function getScoreBgColor(score: number | null | undefined): string {
-  if (score == null) return '#E5E7EB'
-  if (score >= 80) return '#A8D5B7'
-  if (score >= 60) return '#A8CED5'
-  if (score >= 40) return '#BFA8D5'
-  return '#D5A8C6'
+  if (score == null) return 'var(--gray-200)'
+  if (score >= 80) return 'var(--status-success)'
+  if (score >= 60) return 'var(--status-warning)'
+  if (score >= 40) return 'var(--gray-400)'
+  return 'var(--gray-600)'
 }
 
 export function getStageColor(stageName: string): string {
   const stage = stageName?.toLowerCase() || ''
+
+  if (stage === 'funil' || stage === 'sourcing') return 'var(--gray-200)'
+  if (stage === 'triagem' || stage === 'screening') return 'var(--gray-300)'
+  if (stage.includes('entrevista') || stage.includes('interview')) return 'var(--gray-400)'
+  if (stage === 'final' || stage === 'offer') return 'var(--gray-600)'
+  if (stage === 'aprovados' || stage === 'hired') return 'var(--status-success)'
+  if (stage === 'reprovados' || stage === 'rejected') return 'var(--gray-200)'
   
-  if (stage === 'funil' || stage === 'sourcing') return '#E5E7EB'
-  if (stage === 'triagem' || stage === 'screening') return '#A8CED5'
-  if (stage.includes('entrevista') || stage.includes('interview')) return '#BFA8D5'
-  if (stage === 'final' || stage === 'offer') return '#D5BFA8'
-  if (stage === 'aprovados' || stage === 'hired') return '#A8D5B7'
-  if (stage === 'reprovados' || stage === 'rejected') return '#E5E7EB'
-  
-  return '#E5E7EB'
+  return 'var(--gray-200)'
 }
 
 export function calculateGeneralScore(candidate: {

@@ -121,7 +121,7 @@ export function CandidateTableRow({
               <Badge 
                 variant="secondary" 
                 className="text-xs px-2 py-0.5 font-semibold border-0 text-gray-950 dark:text-gray-50"
-                style={{ backgroundColor: '#A8CED5' }}
+                style={{ backgroundColor: 'var(--gray-300)' }}
               >
                 {formatScorePercent(candidate.liaScore ?? candidate.score, 0)}
               </Badge>
@@ -138,7 +138,7 @@ export function CandidateTableRow({
           <Badge 
             variant="secondary" 
             className="text-xs px-2 py-0.5 font-semibold border-0 text-gray-950 dark:text-gray-50"
-            style={{ backgroundColor: '#BFA8D5' }}
+            style={{ backgroundColor: 'var(--gray-400)' }}
           >
             {formatScorePercent(candidate.skillsMatch || candidate.fitScore || 0, 0)}
           </Badge>
@@ -152,10 +152,10 @@ export function CandidateTableRow({
               variant="secondary"
               className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity text-gray-950 dark:text-gray-50"
               style={{
-                backgroundColor: candidate.technicalTestScore >= 80 ? '#A8D5B7' :
-                                 candidate.technicalTestScore >= 60 ? '#A8CED5' :
-                                 candidate.technicalTestScore >= 40 ? '#BFA8D5' :
-                                 '#D5A8C6'
+                backgroundColor: candidate.technicalTestScore >= 80 ? 'var(--status-success)' :
+                                 candidate.technicalTestScore >= 60 ? 'var(--status-warning)' :
+                                 candidate.technicalTestScore >= 40 ? 'var(--gray-400)' :
+                                 'var(--gray-600)'
               }}
               onClick={(e) => {
                 e.stopPropagation()
@@ -178,10 +178,10 @@ export function CandidateTableRow({
               variant="secondary"
               className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity text-gray-950 dark:text-gray-50"
               style={{
-                backgroundColor: candidate.englishTestScore >= 80 ? '#A8D5B7' :
-                                 candidate.englishTestScore >= 60 ? '#A8CED5' :
-                                 candidate.englishTestScore >= 40 ? '#BFA8D5' :
-                                 '#D5A8C6'
+                backgroundColor: candidate.englishTestScore >= 80 ? 'var(--status-success)' :
+                                 candidate.englishTestScore >= 60 ? 'var(--status-warning)' :
+                                 candidate.englishTestScore >= 40 ? 'var(--gray-400)' :
+                                 'var(--gray-600)'
               }}
               onClick={(e) => {
                 e.stopPropagation()
@@ -218,9 +218,9 @@ export function CandidateTableRow({
                 <div 
                   className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity group-hover:opacity-80 text-gray-950 dark:text-gray-50"
                   style={{
-                    backgroundColor: value >= 70 ? (index === 0 ? '#A8D5B7' : index === 1 ? '#BFA8D5' : '#A8CED5') :
-                                     value >= 40 ? (index === 0 ? '#D5BFA8' : index === 1 ? '#A8CED5' : '#D5BFA8') :
-                                     '#D5A8C6'
+                    backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--gray-400)' : 'var(--gray-300)') :
+                                     value >= 40 ? (index === 0 ? 'var(--gray-500)' : index === 1 ? 'var(--gray-300)' : 'var(--gray-500)') :
+                                     'var(--gray-600)'
                   }}
                 >
                   {value}
@@ -307,13 +307,13 @@ export function CandidateTableRow({
           className="text-xs font-semibold border-0 whitespace-nowrap text-gray-950 dark:text-gray-50"
           style={{
             backgroundColor: 
-              candidate.stage === 'Funil' ? '#E5E7EB' :
-              candidate.stage === 'Triagem' ? '#A8CED5' :
-              candidate.stage === 'Entrevista' ? '#BFA8D5' :
-              candidate.stage === 'Final' ? '#D5BFA8' :
-              candidate.stage === 'Aprovados' ? '#A8D5B7' :
-              candidate.stage === 'Reprovados' ? '#E5E7EB' :
-              '#E5E7EB'
+              candidate.stage === 'Funil' ? 'var(--gray-200)' :
+              candidate.stage === 'Triagem' ? 'var(--gray-300)' :
+              candidate.stage === 'Entrevista' ? 'var(--gray-400)' :
+              candidate.stage === 'Final' ? 'var(--gray-500)' :
+              candidate.stage === 'Aprovados' ? 'var(--status-success)' :
+              candidate.stage === 'Reprovados' ? 'var(--gray-200)' :
+              'var(--gray-200)'
           }}
         >
           {candidate.stage}

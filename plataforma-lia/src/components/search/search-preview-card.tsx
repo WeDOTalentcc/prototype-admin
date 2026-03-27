@@ -113,7 +113,7 @@ export function SearchPreviewCard({
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
                       style={{ 
                         backgroundColor: hasLocalResults ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
-                        color: hasLocalResults ? "#10B981" : "#EF4444"
+                        color: hasLocalResults ? "var(--status-success)" : "var(--status-error)"
                       }}
                     >
                       {data.localCount} encontrados
@@ -181,7 +181,7 @@ export function SearchPreviewCard({
                 {hasPearchResults && (
                   <div 
                     className="flex items-center gap-1 mt-2 text-xs"
-                    style={{ color: canAffordPearch ? "#111827" : "#EF4444" }}
+                    style={{ color: canAffordPearch ? "var(--gray-950)" : "var(--status-error)" }}
                   >
                     <Zap className="w-3 h-3" />
                     <span>

@@ -71,10 +71,10 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
   const levelInfo = LEVEL_CONFIG[testData.level] ?? LEVEL_CONFIG['B1']
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#10B981'
+    if (score >= 80) return 'var(--status-success)'
     if (score >= 60) return '#3B82F6'
-    if (score >= 40) return '#F59E0B'
-    return '#EF4444'
+    if (score >= 40) return 'var(--status-warning)'
+    return 'var(--status-error)'
   }
 
   const getSkillLevel = (score: number) => {
@@ -248,8 +248,8 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                               className="text-micro px-1.5 py-0.5 rounded-full font-medium"
                               style={{ 
                                 fontFamily: "'Open Sans', sans-serif", 
-                                color: LEVEL_CONFIG[skillLevel]?.color ?? '#6B7280',
-                                backgroundColor: `${LEVEL_CONFIG[skillLevel]?.color ?? '#6B7280'}15`
+                                color: LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)',
+                                backgroundColor: `${LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)'}15`
                               }}
                             >
                               {skillLevel}

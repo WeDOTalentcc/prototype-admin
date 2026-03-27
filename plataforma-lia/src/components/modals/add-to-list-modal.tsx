@@ -20,12 +20,12 @@ import { cn } from "@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 
 const LIST_COLORS = [
-  { value: '#6B7280', name: 'Cinza' },
-  { value: '#374151', name: 'Cyan (LIA)' },
-  { value: '#10B981', name: 'Verde' },
-  { value: '#F59E0B', name: 'Amarelo' },
-  { value: '#EF4444', name: 'Vermelho' },
-  { value: '#8B5CF6', name: 'Roxo' },
+  { value: 'var(--gray-400)', name: 'Cinza' },
+  { value: 'var(--gray-600)', name: 'Cyan (LIA)' },
+  { value: 'var(--status-success)', name: 'Verde' },
+  { value: 'var(--status-warning)', name: 'Amarelo' },
+  { value: 'var(--status-error)', name: 'Vermelho' },
+  { value: 'var(--wedo-purple)', name: 'Roxo' },
 ]
 
 interface AddToListModalProps {
@@ -48,7 +48,7 @@ export function AddToListModal({
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const [newListName, setNewListName] = useState('')
-  const [newListColor, setNewListColor] = useState('#6B7280')
+  const [newListColor, setNewListColor] = useState('var(--gray-400)')
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -58,7 +58,7 @@ export function AddToListModal({
       setSelectedListId(null)
       setIsCreatingNew(false)
       setNewListName('')
-      setNewListColor('#6B7280')
+      setNewListColor('var(--gray-400)')
     }
   }, [isOpen])
 
@@ -191,7 +191,7 @@ export function AddToListModal({
                         <RadioGroupItem value={list.id} id={list.id} />
                         <div
                           className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: list.color || '#6B7280' }}
+                          style={{ backgroundColor: list.color || 'var(--gray-400)' }}
                         />
                         <div className="flex-1 min-w-0">
                           <Label
@@ -245,7 +245,7 @@ export function AddToListModal({
                         onClick={() => {
                           setIsCreatingNew(false)
                           setNewListName('')
-                          setNewListColor('#6B7280')
+                          setNewListColor('var(--gray-400)')
                         }}
                       >
                         <X className="w-3 h-3 mr-1" />

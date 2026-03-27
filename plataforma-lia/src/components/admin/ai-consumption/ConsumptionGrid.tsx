@@ -39,7 +39,7 @@ export function ConsumptionGrid({ summary }: ConsumptionGridProps) {
         value={`${(summary.creditsRemaining / 1000).toFixed(0)}K`}
         icon={Zap}
         subtitle={`De ${(summary.monthlyLimit / 1000).toFixed(0)}K mensais`}
-        valueColor={summary.creditsRemaining < 50000 ? '#ef4444' : undefined}
+        valueColor={summary.creditsRemaining < 50000 ? 'var(--status-error)' : undefined}
       />
     </div>
   )

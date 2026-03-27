@@ -312,7 +312,7 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className="border border-gray-200" style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 4, backgroundColor: confirmReset ? "#f3f4f6" : "transparent", color: confirmReset ? "#374151" : "#6B7280", borderColor: confirmReset ? "#06B6D4" : "#e5e7eb", fontSize: 11, fontFamily: "Inter, sans-serif", cursor: "pointer", transition: "all 0.15s" }}
+                className="border border-gray-200" style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 4, backgroundColor: confirmReset ? "#f3f4f6" : "transparent", color: confirmReset ? "var(--gray-600)" : "var(--gray-400)", borderColor: confirmReset ? "#06B6D4" : "var(--gray-200)", fontSize: 11, fontFamily: "Inter, sans-serif", cursor: "pointer", transition: "all 0.15s" }}
               >
                 <Trash2 style={{ width: 12, height: 12 }} />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}

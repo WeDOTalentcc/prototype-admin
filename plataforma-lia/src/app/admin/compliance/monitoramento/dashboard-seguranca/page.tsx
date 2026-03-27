@@ -53,8 +53,8 @@ const eventsByDay = [
 
 const severityDistribution = [
   { severity: 'Crítico', count: 8, color: 'var(--status-error)', percentage: 0.5 },
-  { severity: 'Alto', count: 52, color: '#f97316', percentage: 3.2 },
-  { severity: 'Médio', count: 283, color: '#eab308', percentage: 17.7 },
+  { severity: 'Alto', count: 52, color: 'var(--status-warning)', percentage: 3.2 },
+  { severity: 'Médio', count: 283, color: 'var(--status-warning)', percentage: 17.7 },
   { severity: 'Baixo', count: 1268, color: 'var(--status-success)', percentage: 78.6 },
 ]
 
@@ -366,8 +366,8 @@ export default function DashboardSegurancaPage() {
                   <div key={idx} className="flex flex-col items-center flex-1">
                     <div className="w-full flex flex-col-reverse rounded-t overflow-hidden" style={{ height: `${(item.count / maxDayCount) * 100}%`, minHeight: '20px' }}>
                       <div style={{ height: `${(item.low / item.count) * 100}%`, backgroundColor: 'var(--status-success)' }} />
-                      <div style={{ height: `${(item.medium / item.count) * 100}%`, backgroundColor: '#eab308' }} />
-                      <div style={{ height: `${(item.high / item.count) * 100}%`, backgroundColor: '#f97316' }} />
+                      <div style={{ height: `${(item.medium / item.count) * 100}%`, backgroundColor: 'var(--status-warning)' }} />
+                      <div style={{ height: `${(item.high / item.count) * 100}%`, backgroundColor: 'var(--status-warning)' }} />
                       <div style={{ height: `${(item.critical / item.count) * 100}%`, backgroundColor: 'var(--status-error)' }} />
                     </div>
                     <span className="text-xs font-medium mt-2" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -385,11 +385,11 @@ export default function DashboardSegurancaPage() {
                   <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Crítico</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#f97316' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
                   <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Alto</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#eab308' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
                   <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Médio</span>
                 </div>
                 <div className="flex items-center gap-2">

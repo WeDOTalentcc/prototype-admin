@@ -220,7 +220,7 @@ function DashboardVersaoAtual() {
                 <Line 
                   type="monotone" 
                   dataKey="candidatos" 
-                  stroke="#374151" 
+                  stroke="var(--gray-600)" 
                   strokeWidth={2}
                   name="Candidatos"
                   dot={{ r: 4 }}
@@ -229,7 +229,7 @@ function DashboardVersaoAtual() {
                 <Line 
                   type="monotone" 
                   dataKey="contratacoes" 
-                  stroke="#10b981" 
+                  stroke="var(--status-success)" 
                   strokeWidth={2}
                   name="Contratações"
                   dot={{ r: 4 }}
@@ -375,7 +375,7 @@ function DashboardVersaoOtimizada() {
                   {
                     label: 'Contratações',
                     data: chartData.map(d => d.contratacoes),
-                    borderColor: '#10b981',
+                    borderColor: 'var(--status-success)',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
                     borderWidth: 2,
                     pointRadius: 4,
@@ -398,8 +398,8 @@ function DashboardVersaoOtimizada() {
                   },
                   tooltip: {
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    titleColor: '#111827',
-                    bodyColor: '#111827',
+                    titleColor: 'var(--gray-950)',
+                    bodyColor: 'var(--gray-950)',
                     borderWidth: 1,
                     padding: 12,
                     displayColors: true,

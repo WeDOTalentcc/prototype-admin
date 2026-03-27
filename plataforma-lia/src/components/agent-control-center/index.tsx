@@ -79,10 +79,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return '#374151'
-      case 'idle': return '#F59E0B'
-      case 'warning': return '#EF4444'
-      default: return '#9CA3AF'
+      case 'online': return 'var(--gray-600)'
+      case 'idle': return 'var(--status-warning)'
+      case 'warning': return 'var(--status-error)'
+      default: return 'var(--gray-400)'
     }
   }
 
@@ -173,13 +173,13 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             label="Ações Hoje"
             value={globalMetrics.actions_today}
             delta={globalMetrics.actions_delta}
-            color="#374151"
+            color="var(--gray-600)"
           />
           <MetricCard
             icon={<Users className="w-4 h-4" />}
             label="Agentes Ativos"
             value={`${globalMetrics.active_agents}/${globalMetrics.total_agents}`}
-            color="#374151"
+            color="var(--gray-600)"
           />
           <MetricCard
             icon={<Target className="w-4 h-4" />}
@@ -191,13 +191,13 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             icon={<Clock className="w-4 h-4" />}
             label="Tempo Médio"
             value={`${globalMetrics.avg_response_time}s`}
-            color="#374151"
+            color="var(--gray-600)"
           />
           <MetricCard
             icon={<AlertTriangle className="w-4 h-4" />}
             label="Alertas"
             value={globalMetrics.proactive_alerts}
-            color={globalMetrics.proactive_alerts > 0 ? '#F59E0B' : '#60D186'}
+            color={globalMetrics.proactive_alerts > 0 ? 'var(--status-warning)' : '#60D186'}
           />
         </div>
 
@@ -225,10 +225,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       variant="outline" 
                       className="text-xs"
                       style={{ 
-                        borderColor: alert.severity === 'high' ? '#EF4444' : 
-                                    alert.severity === 'medium' ? '#F59E0B' : '#374151',
-                        color: alert.severity === 'high' ? '#EF4444' : 
-                               alert.severity === 'medium' ? '#F59E0B' : '#374151'
+                        borderColor: alert.severity === 'high' ? 'var(--status-error)' : 
+                                    alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--gray-600)',
+                        color: alert.severity === 'high' ? 'var(--status-error)' : 
+                               alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--gray-600)'
                       }}
                     >
                       {alert.severity}
@@ -260,7 +260,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               className="border transition-all duration-200 hover:scale-[1.02] hover:cursor-pointer group"
               style={{ 
                 backgroundColor: 'var(--eleven-bg-card)',
-                borderColor: selectedAgent?.id === agent.id ? '#111827' : 'var(--eleven-border-subtle)'
+                borderColor: selectedAgent?.id === agent.id ? 'var(--gray-950)' : 'var(--eleven-border-subtle)'
               }}
             >
               <CardContent className="p-4">
@@ -288,7 +288,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
                 {/* Sparkline */}
                 <div className="mb-3 h-8">
-                  <Sparkline data={agent.sparkline} color="#374151" />
+                  <Sparkline data={agent.sparkline} color="var(--gray-600)" />
                 </div>
 
                 {/* Metrics Row */}
@@ -319,7 +319,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     </span>
                     <span 
                       className="text-lg font-bold"
-                      style={{ color: agent.progress >= 80 ? '#60D186' : agent.progress >= 50 ? '#111827' : '#F59E0B' }}
+                      style={{ color: agent.progress >= 80 ? '#60D186' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
                     >
                       {agent.progress}%
                     </span>
@@ -374,7 +374,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   className="text-xs"
                   onClick={() => setFilterPeriod('today')}
                   style={{ 
-                    color: filterPeriod === 'today' ? '#111827' : 'var(--eleven-text-secondary)',
+                    color: filterPeriod === 'today' ? 'var(--gray-950)' : 'var(--eleven-text-secondary)',
                     backgroundColor: filterPeriod === 'today' ? 'rgba(229, 231, 235, 0.3)' : 'transparent'
                   }}
                 >
@@ -386,7 +386,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   className="text-xs"
                   onClick={() => setFilterPeriod('week')}
                   style={{ 
-                    color: filterPeriod === 'week' ? '#111827' : 'var(--eleven-text-secondary)',
+                    color: filterPeriod === 'week' ? 'var(--gray-950)' : 'var(--eleven-text-secondary)',
                     backgroundColor: filterPeriod === 'week' ? 'rgba(229, 231, 235, 0.3)' : 'transparent'
                   }}
                 >
@@ -408,8 +408,8 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     className="px-2 py-1 rounded-full text-xs transition-all"
                     style={{
                       backgroundColor: selectedAgentFilter.includes(agent.id) ? 'rgba(96, 190, 209, 0.15)' : 'var(--eleven-bg-message)',
-                      color: selectedAgentFilter.includes(agent.id) ? '#111827' : 'var(--eleven-text-secondary)',
-                      border: `1px solid ${selectedAgentFilter.includes(agent.id) ? '#111827' : 'transparent'}`
+                      color: selectedAgentFilter.includes(agent.id) ? 'var(--gray-950)' : 'var(--eleven-text-secondary)',
+                      border: `1px solid ${selectedAgentFilter.includes(agent.id) ? 'var(--gray-950)' : 'transparent'}`
                     }}
                   >
                     {agent.icon} {agent.name.split(' ')[0]}
@@ -429,10 +429,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                         (status === 'success' ? 'rgba(96, 209, 134, 0.15)' : status === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)') : 
                         'var(--eleven-bg-message)',
                       color: selectedStatusFilter.includes(status) ? 
-                        (status === 'success' ? '#60D186' : status === 'error' ? '#EF4444' : '#F59E0B') : 
+                        (status === 'success' ? '#60D186' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') : 
                         'var(--eleven-text-secondary)',
                       border: `1px solid ${selectedStatusFilter.includes(status) ? 
-                        (status === 'success' ? '#60D186' : status === 'error' ? '#EF4444' : '#F59E0B') : 'transparent'}`
+                        (status === 'success' ? '#60D186' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') : 'transparent'}`
                     }}
                   >
                     {status === 'success' && <CheckCircle className="w-2.5 h-2.5" />}

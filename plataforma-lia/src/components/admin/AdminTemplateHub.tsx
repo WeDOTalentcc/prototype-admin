@@ -355,7 +355,7 @@ export function AdminTemplateHub() {
       </div>
 
       {successMessage && (
-        <div className="px-3 py-2 rounded-md flex items-center gap-2" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', borderColor: 'rgba(96, 190, 209, 0.3)', color: '#0d7a8c', border: '1px solid' }}>
+        <div className="px-3 py-2 rounded-md flex items-center gap-2" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', borderColor: 'rgba(96, 190, 209, 0.3)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
           <CheckCircle className="w-4 h-4 text-gray-700" />
           <span>{successMessage}</span>
         </div>
@@ -692,7 +692,7 @@ export function AdminTemplateHub() {
                           onClick={handleAdjustWithAI}
                           disabled={isGenerating || !aiPrompt.trim()}
                           className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px]"
-                          style={{ backgroundColor: isGenerating ? '#a3d9e3' : '#374151', color: 'white' }}
+                          style={{ backgroundColor: isGenerating ? '#a3d9e3' : 'var(--gray-600)', color: 'white' }}
                         >
                           {isGenerating ? (
                             <>
@@ -714,7 +714,7 @@ export function AdminTemplateHub() {
                             <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '150ms' }}></span>
                             <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{ animationDelay: '300ms' }}></span>
                           </div>
-                          <span className="text-xs" style={{ color: '#0d7a8c', fontFamily: 'Open Sans, sans-serif' }}>
+                          <span className="text-xs" style={{ color: 'var(--wedo-cyan-dark)', fontFamily: 'Open Sans, sans-serif' }}>
                             A LIA está analisando e ajustando o template...
                           </span>
                         </div>
@@ -753,7 +753,7 @@ export function AdminTemplateHub() {
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
-                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#0d7a8c' }}>
+                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: 'var(--wedo-cyan-dark)' }}>
                                 <Check className="w-3 h-3 mr-1" />
                                 {change}
                               </Badge>

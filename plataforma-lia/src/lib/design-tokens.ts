@@ -29,7 +29,7 @@
 export const colors = {
   primary: {
     DEFAULT: '#111827', // v4: gray-900 (preto) para ações primárias
-    hover: '#1F2937',   // v4: gray-800
+    hover: 'var(--gray-800)',   // v4: gray-800
     active: '#030712',  // v4: gray-950
     light: '#F3F4F6',   // v4: gray-100
     // Aliases para compatibilidade com v3
@@ -46,13 +46,13 @@ export const colors = {
   gray: {
     50: '#F9FAFB',
     100: '#F3F4F6',
-    200: '#E5E7EB',
-    300: '#D1D5DB',
-    400: '#9CA3AF',
-    500: '#6B7280',
-    600: '#4B5563',
+    200: 'var(--gray-200)',
+    300: 'var(--gray-300)',
+    400: 'var(--gray-400)',
+    500: 'var(--gray-500)',
+    600: 'var(--gray-600)',
     700: '#374151',
-    800: '#1F2937',
+    800: 'var(--gray-800)',
     900: '#111827',
     950: '#030712',
   },
@@ -60,15 +60,15 @@ export const colors = {
   text: {
     light: {
       title: '#111827',       // v4: gray-900 - Títulos principais
-      body: '#1F2937',        // gray-800 - Texto principal, labels
-      secondary: '#4B5563',   // gray-600 - Descrições, captions
-      muted: '#6B7280',       // gray-500 - Placeholders, disabled
+      body: 'var(--gray-800)',        // gray-800 - Texto principal, labels
+      secondary: 'var(--gray-600)',   // gray-600 - Descrições, captions
+      muted: 'var(--gray-500)',       // gray-500 - Placeholders, disabled
     },
     dark: {
       title: '#F9FAFB',       // gray-50 - Títulos principais
-      body: '#E5E7EB',        // gray-200 - Texto principal, labels
-      secondary: '#9CA3AF',   // gray-400 - Descrições, captions
-      muted: '#6B7280',       // gray-500 - Placeholders, disabled
+      body: 'var(--gray-200)',        // gray-200 - Texto principal, labels
+      secondary: 'var(--gray-400)',   // gray-400 - Descrições, captions
+      muted: 'var(--gray-500)',       // gray-500 - Placeholders, disabled
     },
   },
   
@@ -114,9 +114,9 @@ export const colors = {
   
   border: {
     light: '#F3F4F6',    // gray-100
-    default: '#E5E7EB',  // gray-200
-    medium: '#D1D5DB',   // gray-300
-    dark: '#9CA3AF',     // gray-400
+    default: 'var(--gray-200)',  // gray-200
+    medium: 'var(--gray-300)',   // gray-300
+    dark: 'var(--gray-400)',     // gray-400
   },
 } as const
 

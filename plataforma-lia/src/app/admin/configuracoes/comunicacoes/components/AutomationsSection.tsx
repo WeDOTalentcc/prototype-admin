@@ -138,7 +138,7 @@ export function AutomationsSection({
                       >
                         <IconComponent 
                           className="w-4 h-4" 
-                          style={{ color: automation.isActive ? '#F97316' : 'var(--eleven-text-tertiary)' }} 
+                          style={{ color: automation.isActive ? 'var(--status-warning)' : 'var(--eleven-text-tertiary)' }} 
                         />
                       </div>
                       <div>

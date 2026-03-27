@@ -233,7 +233,7 @@ export function AiCreditsPage({ companyId }: Props) {
                     name === 'tokens' ? 'Tokens' : 'Custo',
                   ]}
                 />
-                <Bar dataKey="tokens" fill="#111827" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="tokens" fill="var(--gray-950)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}

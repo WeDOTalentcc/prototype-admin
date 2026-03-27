@@ -4584,7 +4584,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 <TabsTrigger 
                   value="conversa" 
                   className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-all"
-                  style={{ color: activeTab === 'conversa' ? '#111827' : 'var(--eleven-text-secondary)' }}
+                  style={{ color: activeTab === 'conversa' ? 'var(--gray-950)' : 'var(--eleven-text-secondary)' }}
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Conversa
@@ -4592,7 +4592,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                 <TabsTrigger 
                   value="controle" 
                   className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-all"
-                  style={{ color: activeTab === 'controle' ? '#111827' : 'var(--eleven-text-secondary)' }}
+                  style={{ color: activeTab === 'controle' ? 'var(--gray-950)' : 'var(--eleven-text-secondary)' }}
                 >
                   <Cpu className="w-4 h-4 mr-2" />
                   Centro de Controle
@@ -4919,20 +4919,20 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                             color: 'var(--gray-800)',
                             borderColor: '#CCCCCC'
                           }
-                          let iconColor = '#6B7280'
+                          let iconColor = 'var(--gray-400)'
                           
                           if (isApproveAction) {
-                            buttonStyle = { backgroundColor: '#E5F5EB', color: '#5DA47A', borderColor: '#5DA47A' }
-                            iconColor = '#5DA47A'
+                            buttonStyle = { backgroundColor: 'var(--gray-50)', color: 'var(--wedo-green)', borderColor: 'var(--wedo-green)' }
+                            iconColor = 'var(--wedo-green)'
                           } else if (isScheduleAction) {
-                            buttonStyle = { backgroundColor: '#FDF4E8', color: '#E5A853', borderColor: '#E5A853' }
-                            iconColor = '#E5A853'
+                            buttonStyle = { backgroundColor: '#FDF4E8', color: 'var(--wedo-orange)', borderColor: 'var(--wedo-orange)' }
+                            iconColor = 'var(--wedo-orange)'
                           } else if (isCandidateAction) {
                             buttonStyle = { backgroundColor: 'var(--gray-50)' }
-                            iconColor = '#374151'
+                            iconColor = 'var(--gray-600)'
                           } else if (isRejectAction) {
-                            buttonStyle = { backgroundColor: '#FEE2E2', color: 'var(--status-error)', borderColor: '#DC2626' }
-                            iconColor = '#DC2626'
+                            buttonStyle = { backgroundColor: '#FEE2E2', color: 'var(--status-error)', borderColor: 'var(--status-error)' }
+                            iconColor = 'var(--status-error)'
                           }
                           
                           return (

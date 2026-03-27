@@ -111,7 +111,7 @@ export function LiaVacancyQueriesGuide({
               className
             )}
             style={{ 
-              borderColor: isOpen ? '#111827' : '#E0E0E0', 
+              borderColor: isOpen ? 'var(--gray-950)' : '#E0E0E0', 
               fontFamily: '"Open Sans", sans-serif', 
               fontWeight: 500
             }}
@@ -132,7 +132,7 @@ export function LiaVacancyQueriesGuide({
           border: '1px solid #E8E8E8'
         }}
       >
-        <div className="px-3 py-2.5 border-b" style={{ borderColor: '#EEEEEE' }}>
+        <div className="px-3 py-2.5 border-b" style={{ borderColor: 'var(--gray-200)' }}>
           <div 
             className="flex items-center gap-2 px-2.5 py-2 rounded-md"
             style={{ 
@@ -161,7 +161,7 @@ export function LiaVacancyQueriesGuide({
           </div>
         </div>
 
-        <div className="px-3 py-2 border-b flex gap-1.5 overflow-x-auto" style={{ borderColor: '#EEEEEE' }}>
+        <div className="px-3 py-2 border-b flex gap-1.5 overflow-x-auto" style={{ borderColor: 'var(--gray-200)' }}>
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
@@ -200,16 +200,16 @@ export function LiaVacancyQueriesGuide({
                 onClick={() => handleSelectQuery(query.question)}
                 className="w-full px-2.5 py-2 text-left transition-all rounded-md group flex items-center gap-2"
                 style={{ 
-                  backgroundColor: '#FAFAFA',
+                  backgroundColor: 'var(--gray-50)',
                   border: '1px solid #EEEEEE'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#F0FAFB'
-                  e.currentTarget.style.borderColor = '#D1D5DB'
+                  e.currentTarget.style.borderColor = 'var(--gray-200)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#FAFAFA'
-                  e.currentTarget.style.borderColor = '#EEEEEE'
+                  e.currentTarget.style.backgroundColor = 'var(--gray-50)'
+                  e.currentTarget.style.borderColor = 'var(--gray-200)'
                 }}
               >
                 <div 
@@ -255,8 +255,8 @@ export function LiaVacancyQueriesGuide({
         <div 
           className="px-3 py-2 border-t rounded-b-xl"
           style={{ 
-            borderColor: '#EEEEEE',
-            backgroundColor: '#FAFAFA'
+            borderColor: 'var(--gray-200)',
+            backgroundColor: 'var(--gray-50)'
           }}
         >
           <p 

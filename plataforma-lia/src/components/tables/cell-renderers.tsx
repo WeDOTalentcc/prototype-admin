@@ -141,7 +141,7 @@ export function ScoreCell({ score, showIcon = true }: { score: number; showIcon?
     if (score >= 90) return { backgroundColor: 'rgba(123, 194, 154, 0.15)', color: '#5aa078' }
     if (score >= 80) return { backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#50a3b8' }
     if (score >= 70) return { backgroundColor: 'rgba(232, 168, 124, 0.15)', color: '#c58a5e' }
-    return { color: '#1f2937' }
+    return { color: 'var(--gray-800)' }
   }
 
   if (!score || score <= 0) return null
@@ -239,8 +239,8 @@ export function SourceCell({ source }: { source?: string }) {
     if (lower.includes('linkedin')) return { label: 'LinkedIn', style: { backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#50a3b8' } }
     if (lower.includes('pearch')) return { label: 'Pearch', style: { backgroundColor: 'rgba(201, 160, 220, 0.15)', color: '#a078b0' } }
     if (lower.includes('local') || lower.includes('base')) return { label: 'Base Local', style: { backgroundColor: 'rgba(123, 194, 154, 0.15)', color: '#5aa078' } }
-    if (lower.includes('manual') || lower.includes('recruiter')) return { label: 'Manual', style: { color: '#1f2937' } }
-    return { label: src, style: { color: '#1f2937' } }
+    if (lower.includes('manual') || lower.includes('recruiter')) return { label: 'Manual', style: { color: 'var(--gray-800)' } }
+    return { label: src, style: { color: 'var(--gray-800)' } }
   }
 
   const config = getSourceConfig(source)
@@ -322,7 +322,7 @@ export function WorkModelCell({ model }: { model?: string }) {
     if (lower === 'remoto') return { label: 'Remoto', style: { backgroundColor: 'rgba(123, 194, 154, 0.15)', color: '#5aa078' } }
     if (lower === 'híbrido') return { label: 'Híbrido', style: { backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#50a3b8' } }
     if (lower === 'presencial') return { label: 'Presencial', style: { backgroundColor: 'rgba(232, 168, 124, 0.15)', color: '#c58a5e' } }
-    return { label: m, style: { color: '#1f2937' } }
+    return { label: m, style: { color: 'var(--gray-800)' } }
   }
 
   const config = getModelConfig(model)
@@ -389,11 +389,11 @@ export function NoteCell({
 
 // Helper to get sub-status color based on properties
 function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgStyle: string; textStyle: string } {
-  if (!status) return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: '#E5E7EB', textStyle: '#6B7280' }
- if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'rgba(96, 190, 209, 0.15)', textStyle: '#374151' }
-  if (status.isRejection) return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', bgStyle: 'rgba(239, 68, 68, 0.15)', textStyle: '#EF4444' }
-  if (status.isWaiting) return { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', bgStyle: 'rgba(245, 158, 11, 0.15)', textStyle: '#F59E0B' }
-  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'rgba(107, 114, 128, 0.15)', textStyle: '#6B7280' }
+  if (!status) return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
+ if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'rgba(96, 190, 209, 0.15)', textStyle: 'var(--gray-600)' }
+  if (status.isRejection) return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', bgStyle: 'rgba(239, 68, 68, 0.15)', textStyle: 'var(--status-error)' }
+  if (status.isWaiting) return { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', bgStyle: 'rgba(245, 158, 11, 0.15)', textStyle: 'var(--status-warning)' }
+  return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'rgba(107, 114, 128, 0.15)', textStyle: 'var(--gray-400)' }
 }
 
 export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?: string }) {
@@ -579,7 +579,7 @@ export function InteractiveStageCell({
     return (
       <Badge 
         className="text-micro px-1.5 py-0.5 font-medium"
-        style={{ backgroundColor: currentStageInfo?.color || '#E5E7EB' }}
+        style={{ backgroundColor: currentStageInfo?.color || 'var(--gray-200)' }}
       >
         {stageDisplayName}
       </Badge>
@@ -597,7 +597,7 @@ export function InteractiveStageCell({
       >
         <Badge 
           className="text-micro px-1.5 py-0.5 flex items-center gap-0.5 font-medium"
-          style={{ backgroundColor: currentStageInfo?.color || '#E5E7EB' }}
+          style={{ backgroundColor: currentStageInfo?.color || 'var(--gray-200)' }}
         >
           {stageDisplayName}
           <ChevronDown className="w-2.5 h-2.5" />
@@ -704,7 +704,7 @@ export function StageCell({ stage }: { stage?: string }) {
   return (
     <Badge 
       className="text-micro px-1.5 py-0.5"
-      style={{ backgroundColor: stageInfo?.color || '#6B7280', color: 'var(--gray-50)' }}
+      style={{ backgroundColor: stageInfo?.color || 'var(--gray-400)', color: 'var(--gray-50)' }}
     >
       {displayName}
     </Badge>

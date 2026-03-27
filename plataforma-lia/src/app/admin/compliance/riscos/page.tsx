@@ -44,8 +44,8 @@ const riskStats = {
 
 const risksByCategory = [
   { category: 'Segurança', count: risks.filter(r => r.category === 'Segurança').length, color: 'var(--status-error)' },
-  { category: 'Operacional', count: risks.filter(r => r.category === 'Operacional').length, color: '#f97316' },
-  { category: 'Compliance', count: risks.filter(r => r.category === 'Compliance').length, color: '#eab308' },
+  { category: 'Operacional', count: risks.filter(r => r.category === 'Operacional').length, color: 'var(--status-warning)' },
+  { category: 'Compliance', count: risks.filter(r => r.category === 'Compliance').length, color: 'var(--status-warning)' },
   { category: 'Privacidade', count: risks.filter(r => r.category === 'Privacidade').length, color: '#8b5cf6' },
   { category: 'Legal', count: risks.filter(r => r.category === 'Legal').length },
   { category: 'Financeiro', count: risks.filter(r => r.category === 'Financeiro').length, color: '#06b6d4' },
@@ -60,10 +60,10 @@ const riskMatrix = [
 ]
 
 const getMatrixCellColor = (value: number) => {
-  if (value >= 15) return { bg: '#ef4444', text: 'white' }
-  if (value >= 10) return { bg: '#f97316', text: 'white' }
-  if (value >= 5) return { bg: '#eab308', text: 'white' }
-  return { bg: '#22c55e', text: 'white' }
+  if (value >= 15) return { bg: 'var(--status-error)', text: 'white' }
+  if (value >= 10) return { bg: 'var(--status-warning)', text: 'white' }
+  if (value >= 5) return { bg: 'var(--status-warning)', text: 'white' }
+  return { bg: 'var(--status-success)', text: 'white' }
 }
 
 const getStatusLabel = (status: string) => {
@@ -111,10 +111,10 @@ const subpages = [
 ]
 
 const getScoreColor = (score: number) => {
-  if (score >= 12) return { bg: 'rgba(239, 68, 68, 0.1)', text: '#ef4444', label: 'Crítico' }
-  if (score >= 8) return { bg: 'rgba(249, 115, 22, 0.1)', text: '#f97316', label: 'Alto' }
-  if (score >= 4) return { bg: 'rgba(234, 179, 8, 0.1)', text: '#eab308', label: 'Médio' }
-  return { bg: 'rgba(34, 197, 94, 0.1)', text: '#22c55e', label: 'Baixo' }
+  if (score >= 12) return { bg: 'rgba(239, 68, 68, 0.1)', text: 'var(--status-error)', label: 'Crítico' }
+  if (score >= 8) return { bg: 'rgba(249, 115, 22, 0.1)', text: 'var(--status-warning)', label: 'Alto' }
+  if (score >= 4) return { bg: 'rgba(234, 179, 8, 0.1)', text: 'var(--status-warning)', label: 'Médio' }
+  return { bg: 'rgba(34, 197, 94, 0.1)', text: 'var(--status-success)', label: 'Baixo' }
 }
 
 
@@ -339,11 +339,11 @@ export default function RiscosPage() {
                   <span>Baixo (1-4)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#eab308' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
                   <span>Médio (5-9)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#f97316' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'var(--status-warning)' }} />
                   <span>Alto (10-14)</span>
                 </div>
                 <div className="flex items-center gap-1">

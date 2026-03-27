@@ -23,10 +23,10 @@ import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
 
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
-  vagas: { icon: '#374151', bg: '#F3F4F6', border: '#D1D5DB', hoverBg: '#D0EFF5' },
+  vagas: { icon: 'var(--gray-600)', bg: 'var(--gray-50)', border: 'var(--gray-200)', hoverBg: '#D0EFF5' },
   candidatos: { icon: '#5DA47A', bg: '#E5F5EB', border: '#5DA47A', hoverBg: '#D5EFE0' },
-  entrevistas: { icon: '#E5A853', bg: '#FDF4E8', border: '#E5A853', hoverBg: '#FAECD8' },
-  relatorios: { icon: '#8B5CF6', bg: '#F3EAFF', border: '#8B5CF6', hoverBg: '#EBE0FF' }
+  entrevistas: { icon: 'var(--wedo-orange)', bg: '#FDF4E8', border: 'var(--wedo-orange)', hoverBg: '#FAECD8' },
+  relatorios: { icon: 'var(--wedo-purple)', bg: '#F3EAFF', border: 'var(--wedo-purple)', hoverBg: '#EBE0FF' }
 }
 
 export function LiaSuperPrompt() {
@@ -223,7 +223,7 @@ export function LiaSuperPrompt() {
               height: "95vh",
               maxWidth: "1400px",
               maxHeight: "900px",
-              borderColor: "#E5E7EB"
+              borderColor: "var(--gray-200)"
             }}
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -246,13 +246,13 @@ export function LiaSuperPrompt() {
                   </span>
                 </div>
 
-                <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: "#E5E7EB" }}>
+                <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: "var(--gray-200)" }}>
                   <button
                     onClick={() => setActiveTab("conversa")}
                     className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors"
                     style={{
                       backgroundColor: activeTab === "conversa" ? "#F0FDFF" : "transparent",
-                      color: activeTab === "conversa" ? "#00B8B8" : "#6B7280",
+                      color: activeTab === "conversa" ? "#00B8B8" : "var(--gray-400)",
                       borderRight: "1px solid #E5E7EB"
                     }}
                   >
@@ -264,7 +264,7 @@ export function LiaSuperPrompt() {
                     className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors"
                     style={{
                       backgroundColor: activeTab === "controle" ? "#F0FDFF" : "transparent",
-                      color: activeTab === "controle" ? "#00B8B8" : "#6B7280"
+                      color: activeTab === "controle" ? "#00B8B8" : "var(--gray-400)"
                     }}
                   >
                     <LayoutDashboard className="w-3.5 h-3.5" />
@@ -549,7 +549,7 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
           <div className="flex flex-col items-end gap-1">
             <div
               className="rounded-[14px] rounded-br-[4px] px-4 py-3"
-              style={{ backgroundColor: "#F3F4F6" }}
+              style={{ backgroundColor: "var(--gray-50)" }}
             >
               <div
                 className="text-base-ui leading-relaxed text-gray-700"

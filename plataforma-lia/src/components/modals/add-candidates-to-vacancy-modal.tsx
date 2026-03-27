@@ -329,7 +329,7 @@ export function AddCandidatesToVacancyModal({
                 <Check className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
               )}
               {isOwn && (
-                <Star className="w-3 h-3 text-amber-500 flex-shrink-0" fill="#F59E0B" />
+                <Star className="w-3 h-3 text-amber-500 flex-shrink-0" fill="var(--status-warning)" />
               )}
             </div>
             <div className={`flex items-center gap-3 mt-1 ${textStyles.bodySmall}`}>
@@ -459,7 +459,7 @@ export function AddCandidatesToVacancyModal({
                 {recruiterVacancies.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                      <Star className="w-3 h-3 text-amber-500" fill="#F59E0B" />
+                      <Star className="w-3 h-3 text-amber-500" fill="var(--status-warning)" />
                       <span className={`${textStyles.caption} font-medium uppercase tracking-wider`}>
                         Suas Vagas
                       </span>

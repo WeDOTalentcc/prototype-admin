@@ -20,22 +20,22 @@ export interface PipelineStagesCarouselProps {
 }
 
 const STAGE_COLORS: Record<string, string> = {
-  sourcing: '#A8CED5',
-  screening: '#BFA8D5',
-  long_list: '#C5D9ED',
-  short_list: '#B8C5D0',
-  interview_hr: '#A8D5B7',
-  interview_technical: '#B8E0D2',
-  interview_manager: '#F5E6B3',
-  interview_manager2: '#F5D6A8',
-  interview_final: '#D5BFA8',
-  technical_test: '#E8B8B8',
-  english_test: '#E5C5C5',
-  references: '#E8E4E0',
-  offer: '#F5D6A8',
-  hired: '#A8D5B7',
-  rejected: '#E5E7EB',
-  offer_declined: '#B8C5D0',
+  sourcing: 'var(--gray-200)',
+  screening: 'var(--gray-200)',
+  long_list: 'var(--gray-300)',
+  short_list: 'var(--gray-300)',
+  interview_hr: 'var(--gray-400)',
+  interview_technical: 'var(--gray-400)',
+  interview_manager: 'var(--gray-500)',
+  interview_manager2: 'var(--gray-500)',
+  interview_final: 'var(--gray-600)',
+  technical_test: 'var(--gray-400)',
+  english_test: 'var(--gray-400)',
+  references: 'var(--gray-600)',
+  offer: 'var(--gray-800)',
+  hired: 'var(--status-success)',
+  rejected: 'var(--gray-200)',
+  offer_declined: 'var(--gray-200)',
 }
 
 export function PipelineStagesCarousel({
@@ -84,7 +84,7 @@ export function PipelineStagesCarousel({
   }
 
   const getStageColor = (stageId: string): string => {
-    return STAGE_COLORS[stageId] || '#6B7280'
+    return STAGE_COLORS[stageId] || 'var(--gray-400)'
   }
 
   return (

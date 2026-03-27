@@ -411,7 +411,7 @@ export function SmartSearchInput({
         case 'location':
           return { backgroundColor: '#F3EAFF', color: '#7C3AED', borderRadius: '3px', padding: '0 2px' }
         case 'skills':
-          return { backgroundColor: '#E5F5EB', color: '#2D6A4F', borderRadius: '3px', padding: '0 2px' }
+          return { backgroundColor: 'var(--gray-50)', color: 'var(--status-success)', borderRadius: '3px', padding: '0 2px' }
         case 'experience':
           return { backgroundColor: '#FDF4E8', color: '#B8860B', borderRadius: '3px', padding: '0 2px' }
         case 'industry':
@@ -1522,7 +1522,7 @@ export function SmartSearchInput({
                   ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                   : "hover:bg-gray-100"
               )}
-              style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+              style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
             >
               <Home className="w-4 h-4" />
             </button>
@@ -1547,7 +1547,7 @@ export function SmartSearchInput({
                     ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
                     : "hover:bg-gray-100"
                 )}
-                style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
               >
                 <Zap className="w-4 h-4" />
               </button>
@@ -1573,7 +1573,7 @@ export function SmartSearchInput({
                     ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                     : "hover:bg-gray-100"
                 )}
-                style={{ color: searchSource === 'global' ? '#111827' : '#6B7280' }}
+                style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
               >
                 <Globe className="w-4 h-4" />
               </button>
@@ -1602,7 +1602,7 @@ export function SmartSearchInput({
                       ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                       : "hover:bg-gray-100"
                   )}
-                  style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                  style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                 >
                   <Mail className="w-3.5 h-3.5" />
                 </button>
@@ -1626,7 +1626,7 @@ export function SmartSearchInput({
                       ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                       : "hover:bg-gray-100"
                   )}
-                  style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                  style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                 >
                   <Phone className="w-3.5 h-3.5" />
                 </button>
@@ -1650,7 +1650,7 @@ export function SmartSearchInput({
             size="sm"
             className="h-8 w-8 p-0 rounded-md transition-all hover:scale-105"
             style={{ 
-              backgroundColor: canSubmit() ? "#111827" : "var(--eleven-bg-tertiary)",
+              backgroundColor: canSubmit() ? "var(--gray-950)" : "var(--eleven-bg-tertiary)",
               color: canSubmit() ? "white" : "var(--eleven-text-secondary)"
             }}
           >
@@ -1721,13 +1721,13 @@ export function SmartSearchInput({
       <div 
         className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700"
         style={{ 
-          backgroundColor: "#FFFFFF"
+          backgroundColor: "var(--lia-bg-primary)"
         }}
       >
         {/* Mode tabs - Estilo pill/tag elegante */}
         <div 
           className="flex items-center gap-2 px-4 py-3 overflow-x-auto border-b border-gray-200"
-          style={{ backgroundColor: "#FFFFFF" }}
+          style={{ backgroundColor: "var(--lia-bg-primary)" }}
         >
           {modes.map((m) => (
             <button
@@ -1762,7 +1762,7 @@ export function SmartSearchInput({
                 (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-gray-900/20"
               )}
               style={{ 
-                color: (activeFiltersCount > 0 || filledCount > 0) ? "#111827" : "#374151",
+                color: (activeFiltersCount > 0 || filledCount > 0) ? "var(--gray-950)" : "var(--gray-600)",
                 backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "rgba(229, 231, 235, 0.3)" : "transparent"
               }}
             >
@@ -1800,7 +1800,7 @@ export function SmartSearchInput({
         </div>
 
         {/* Content area - changes based on mode */}
-        <div className="p-4" style={{ backgroundColor: "#FFFFFF" }}>
+        <div className="p-4" style={{ backgroundColor: "var(--lia-bg-primary)" }}>
           {/* Natural search mode */}
           {mode === "natural" && (
             <div className="space-y-3">
@@ -1837,8 +1837,8 @@ export function SmartSearchInput({
                   className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border relative"
                   style={{ 
                     backgroundColor: ghostTextSuffix && !showAutocomplete ? "transparent" : "#FFFFFF",
-                    color: "#1a1a1a",
-                    caretColor: "#1a1a1a",
+                    color: "var(--gray-950)",
+                    caretColor: "var(--gray-950)",
                     fontFamily: '"Open Sans", sans-serif',
                     zIndex: 2,
                   }}
@@ -1847,7 +1847,7 @@ export function SmartSearchInput({
                     e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#E5E7EB"
+                    e.currentTarget.style.borderColor = "var(--gray-200)"
                     e.currentTarget.style.boxShadow = "none"
                     setTimeout(() => setShowAutocomplete(false), 200)
                   }}
@@ -1870,7 +1870,7 @@ export function SmartSearchInput({
                                 ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                 : "hover:bg-gray-100"
                             )}
-                            style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+                            style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                           >
                             <Home className="w-4 h-4" />
                           </button>
@@ -1895,7 +1895,7 @@ export function SmartSearchInput({
                                   ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
                                   : "hover:bg-gray-100"
                               )}
-                              style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                              style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                             >
                               <Zap className="w-4 h-4" />
                             </button>
@@ -1921,7 +1921,7 @@ export function SmartSearchInput({
                                   ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                   : "hover:bg-gray-100"
                               )}
-                              style={{ color: searchSource === 'global' ? '#111827' : '#6B7280' }}
+                              style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                             >
                               <Globe className="w-4 h-4" />
                             </button>
@@ -1950,7 +1950,7 @@ export function SmartSearchInput({
                                     ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
                                 )}
-                                style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                                style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Mail className="w-3.5 h-3.5" />
                               </button>
@@ -1974,7 +1974,7 @@ export function SmartSearchInput({
                                     ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
                                 )}
-                                style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                                style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Phone className="w-3.5 h-3.5" />
                               </button>
@@ -2015,7 +2015,7 @@ export function SmartSearchInput({
                   size="sm"
                   className="absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-md transition-all hover:scale-105"
                   style={{ 
-                    backgroundColor: canSubmit() ? "#111827" : "var(--eleven-bg-tertiary)",
+                    backgroundColor: canSubmit() ? "var(--gray-950)" : "var(--eleven-bg-tertiary)",
                     color: canSubmit() ? "white" : "var(--eleven-text-secondary)",
                     zIndex: 10
                   }}
@@ -2028,7 +2028,7 @@ export function SmartSearchInput({
                 <div 
                   className="absolute top-full left-0 right-0 mt-0.5 rounded-md border border-gray-200 flex flex-col gap-0 z-10 max-h-52 overflow-hidden"
                   style={{
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: "var(--lia-bg-primary)",
                     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.07)"
                   }}
                 >
@@ -2093,16 +2093,16 @@ export function SmartSearchInput({
                     const getCategoryColor = (category: string) => {
                       const cat = category.toLowerCase()
                       if (cat.includes('cargo') || cat.includes('título') || cat.includes('job')) 
-                        return { bg: '#F3F4F6', accent: '#374151' }
+                        return { bg: 'var(--gray-50)', accent: 'var(--gray-600)' }
                       if (cat.includes('local') || cat.includes('cidade') || cat.includes('região')) 
-                        return { bg: '#F3EAFF', accent: '#8B5CF6' }
+                        return { bg: '#F3EAFF', accent: 'var(--wedo-purple)' }
                       if (cat.includes('skill') || cat.includes('tecnologia') || cat.includes('ferramenta')) 
-                        return { bg: '#E5F5EB', accent: '#5DA47A' }
+                        return { bg: 'var(--gray-50)', accent: 'var(--wedo-green)' }
                       if (cat.includes('experiência') || cat.includes('senioridade') || cat.includes('anos')) 
-                        return { bg: '#FDF4E8', accent: '#E5A853' }
+                        return { bg: '#FDF4E8', accent: 'var(--wedo-orange)' }
                       if (cat.includes('setor') || cat.includes('indústria') || cat.includes('área')) 
                         return { bg: '#E8F1FD', accent: '#3B82F6' }
-                      return { bg: '#F5F8FA', accent: '#374151' }
+                      return { bg: '#F5F8FA', accent: 'var(--gray-600)' }
                     }
                     const catColor = getCategoryColor(item.category)
                     const isSelected = selectedAutocompleteIndex === index
@@ -2186,20 +2186,20 @@ export function SmartSearchInput({
               <div className="flex flex-wrap items-center gap-1.5">
                 {tags.map((tag) => {
                   const getTagColors = (key: string, filled: boolean) => {
-                    if (!filled) return { bg: '#F3F4F6', text: '#1F2937', iconBg: '#6B7280' }
+                    if (!filled) return { bg: 'var(--gray-50)', text: 'var(--gray-800)', iconBg: 'var(--gray-400)' }
                     switch (key) {
                       case 'job_title':
-                        return { bg: '#F3F4F6', text: '#374151', iconBg: '#374151' }
+                        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
                       case 'location':
-                        return { bg: '#F3EAFF', text: '#7C3AED', iconBg: '#8B5CF6' }
+                        return { bg: '#F3EAFF', text: '#7C3AED', iconBg: 'var(--wedo-purple)' }
                       case 'skills':
-                        return { bg: '#E5F5EB', text: '#2D6A4F', iconBg: '#5DA47A' }
+                        return { bg: 'var(--gray-50)', text: 'var(--status-success)', iconBg: 'var(--wedo-green)' }
                       case 'years_experience':
-                        return { bg: '#FDF4E8', text: '#B8860B', iconBg: '#E5A853' }
+                        return { bg: '#FDF4E8', text: '#B8860B', iconBg: 'var(--wedo-orange)' }
                       case 'industry':
                         return { bg: '#E8F1FD', text: '#2563EB', iconBg: '#3B82F6' }
                       default:
-                        return { bg: '#F3F4F6', text: '#374151', iconBg: '#374151' }
+                        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
                     }
                   }
                   const colors = getTagColors(tag.key, tag.filled)
@@ -2261,13 +2261,13 @@ export function SmartSearchInput({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4 text-wedo-cyan" />
-                            <span className="font-semibold text-sm" style={{ color: autocompleteEnabled ? '#22C55E' : '#EF4444' }}>
+                            <span className="font-semibold text-sm" style={{ color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)' }}>
                               {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                             </span>
                           </div>
                           <span className="text-micro px-2 py-0.5 rounded-full" style={{ 
                             backgroundColor: autocompleteEnabled ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                            color: autocompleteEnabled ? '#22C55E' : '#EF4444'
+                            color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'
                           }}>
                             {autocompleteEnabled ? 'ON' : 'OFF'}
                           </span>
@@ -2333,10 +2333,10 @@ export function SmartSearchInput({
                           className="text-xs font-bold"
                           style={{ 
                             color: searchAnalysis.completeness_score >= 60 
-                              ? "#22c55e" 
+                              ? "var(--status-success)" 
                               : searchAnalysis.completeness_score >= 40 
-                                ? "#f59e0b" 
-                                : "#ef4444" 
+                                ? "var(--status-warning)" 
+                                : "var(--status-error)" 
                           }}
                         >
                           {searchAnalysis.completeness_score}%
@@ -2351,10 +2351,10 @@ export function SmartSearchInput({
                           style={{ 
                             width: `${searchAnalysis.completeness_score}%`,
                             backgroundColor: searchAnalysis.completeness_score >= 60 
-                              ? "#22c55e" 
+                              ? "var(--status-success)" 
                               : searchAnalysis.completeness_score >= 40 
-                                ? "#f59e0b" 
-                                : "#ef4444"
+                                ? "var(--status-warning)" 
+                                : "var(--status-error)"
                           }}
                         />
                       </div>
@@ -2425,7 +2425,7 @@ export function SmartSearchInput({
                               onClick={() => onChange(value + ", " + item)}
                               className="px-2 py-0.5 rounded-full text-xs font-medium transition-all hover:scale-105 border border-gray-200 whitespace-nowrap flex-shrink-0"
                               style={{ 
-                                backgroundColor: "#FFFFFF",
+                                backgroundColor: "var(--lia-bg-primary)",
                                 fontFamily: '"Open Sans", sans-serif'
                               }}
                             >
@@ -2480,8 +2480,8 @@ export function SmartSearchInput({
                     placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
                     className="w-full rounded-md pl-9 pr-20 py-2.5 text-base-ui focus:outline-none transition-all border"
                     style={{ 
-                      backgroundColor: "#FFFFFF",
-                      color: "#1a1a1a",
+                      backgroundColor: "var(--lia-bg-primary)",
+                      color: "var(--gray-950)",
                       fontFamily: "'Open Sans', sans-serif"
                     }}
                     onFocus={(e) => {
@@ -2489,7 +2489,7 @@ export function SmartSearchInput({
                       e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                     }}
                     onBlur={(e) => {
-                      e.currentTarget.style.borderColor = "#E5E7EB"
+                      e.currentTarget.style.borderColor = "var(--gray-200)"
                       e.currentTarget.style.boxShadow = "none"
                     }}
                     disabled={isLoading}
@@ -2562,7 +2562,7 @@ export function SmartSearchInput({
                       <button
                         onClick={() => cvFileInputRef.current?.click()}
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors border"
-                        style={{ backgroundColor: "#FFFFFF", fontFamily: "'Open Sans', sans-serif" }}
+                        style={{ backgroundColor: "var(--lia-bg-primary)", fontFamily: "'Open Sans', sans-serif" }}
                       >
                         <Upload className="w-3 h-3" />
                         + CV
@@ -2665,8 +2665,8 @@ export function SmartSearchInput({
                       placeholder="Descreva o perfil que deseja buscar..."
                       className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border"
                       style={{ 
-                        backgroundColor: "#FFFFFF",
-                        color: "#1a1a1a",
+                        backgroundColor: "var(--lia-bg-primary)",
+                        color: "var(--gray-950)",
                         fontFamily: "'Open Sans', sans-serif"
                       }}
                       onFocus={(e) => {
@@ -2674,7 +2674,7 @@ export function SmartSearchInput({
                         e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                       }}
                       onBlur={(e) => {
-                        e.currentTarget.style.borderColor = "#E5E7EB"
+                        e.currentTarget.style.borderColor = "var(--gray-200)"
                         e.currentTarget.style.boxShadow = "none"
                       }}
                       rows={2}
@@ -2695,7 +2695,7 @@ export function SmartSearchInput({
                                       ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                       : "hover:bg-gray-100"
                                   )}
-                                  style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+                                  style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                 >
                                   <Home className="w-4 h-4" />
                                 </button>
@@ -2720,7 +2720,7 @@ export function SmartSearchInput({
                                         ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
                                         : "hover:bg-gray-100"
                                     )}
-                                    style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                                    style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                                   >
                                     <Zap className="w-4 h-4" />
                                   </button>
@@ -2746,7 +2746,7 @@ export function SmartSearchInput({
                                         ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                         : "hover:bg-gray-100"
                                     )}
-                                    style={{ color: searchSource === 'global' ? '#111827' : '#6B7280' }}
+                                    style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                                   >
                                     <Globe className="w-4 h-4" />
                                   </button>
@@ -2774,7 +2774,7 @@ export function SmartSearchInput({
                                           ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                           : "hover:bg-gray-100"
                                       )}
-                                      style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                                      style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                     >
                                       <Mail className="w-3.5 h-3.5" />
                                     </button>
@@ -2798,7 +2798,7 @@ export function SmartSearchInput({
                                           ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                           : "hover:bg-gray-100"
                                       )}
-                                      style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                                      style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                     >
                                       <Phone className="w-3.5 h-3.5" />
                                     </button>
@@ -2824,7 +2824,7 @@ export function SmartSearchInput({
                                     "flex items-center justify-center p-1.5 rounded-md transition-all",
                                     canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
                                   )}
-                                  style={{ color: canSubmit() ? '#6B7280' : '#D1D5DB' }}
+                                  style={{ color: canSubmit() ? 'var(--gray-400)' : 'var(--gray-200)' }}
                                 >
                                   {isLoading ? (
                                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -2857,8 +2857,8 @@ export function SmartSearchInput({
                     placeholder="Edite o prompt de busca ou adicione perfis acima..."
                     className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border"
                     style={{ 
-                      backgroundColor: "#FFFFFF",
-                      color: "#1a1a1a",
+                      backgroundColor: "var(--lia-bg-primary)",
+                      color: "var(--gray-950)",
                       fontFamily: "'Open Sans', sans-serif"
                     }}
                     onFocus={(e) => {
@@ -2866,7 +2866,7 @@ export function SmartSearchInput({
                       e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                     }}
                     onBlur={(e) => {
-                      e.currentTarget.style.borderColor = "#E5E7EB"
+                      e.currentTarget.style.borderColor = "var(--gray-200)"
                       e.currentTarget.style.boxShadow = "none"
                     }}
                     rows={2}
@@ -2887,7 +2887,7 @@ export function SmartSearchInput({
                                     ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
                                 )}
-                                style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+                                style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Home className="w-4 h-4" />
                               </button>
@@ -2912,7 +2912,7 @@ export function SmartSearchInput({
                                       ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
                                       : "hover:bg-gray-100"
                                   )}
-                                  style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                                  style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                                 >
                                   <Zap className="w-4 h-4" />
                                 </button>
@@ -2938,7 +2938,7 @@ export function SmartSearchInput({
                                       ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                       : "hover:bg-gray-100"
                                   )}
-                                  style={{ color: searchSource === 'global' ? '#111827' : '#6B7280' }}
+                                  style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                                 >
                                   <Globe className="w-4 h-4" />
                                 </button>
@@ -2966,7 +2966,7 @@ export function SmartSearchInput({
                                         ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                         : "hover:bg-gray-100"
                                     )}
-                                    style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                                    style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                   >
                                     <Mail className="w-3.5 h-3.5" />
                                   </button>
@@ -2990,7 +2990,7 @@ export function SmartSearchInput({
                                         ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                         : "hover:bg-gray-100"
                                     )}
-                                    style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                                    style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                   >
                                     <Phone className="w-3.5 h-3.5" />
                                   </button>
@@ -3016,7 +3016,7 @@ export function SmartSearchInput({
                                   "flex items-center justify-center p-1.5 rounded-md transition-all",
                                   canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
                                 )}
-                                style={{ color: canSubmit() ? '#6B7280' : '#D1D5DB' }}
+                                style={{ color: canSubmit() ? 'var(--gray-400)' : 'var(--gray-200)' }}
                               >
                                 {isLoading ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -3116,7 +3116,7 @@ export function SmartSearchInput({
                         e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                       }}
                       onBlur={(e) => {
-                        e.currentTarget.style.borderColor = "#E5E7EB"
+                        e.currentTarget.style.borderColor = "var(--gray-200)"
                         e.currentTarget.style.boxShadow = "none"
                       }}
                     />
@@ -3141,8 +3141,8 @@ export function SmartSearchInput({
                                     variant="outline" 
                                     className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
                                     style={{ 
-                                      borderColor: vacancy.status === 'Ativa' ? '#22c55e' : '#9ca3af',
-                                      color: vacancy.status === 'Ativa' ? '#22c55e' : '#6b7280'
+                                      borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : '#9ca3af',
+                                      color: vacancy.status === 'Ativa' ? 'var(--status-success)' : '#6b7280'
                                     }}
                                   >
                                     {vacancy.status}
@@ -3226,8 +3226,8 @@ export function SmartSearchInput({
                   placeholder={getPlaceholder()}
                   className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-all border"
                   style={{ 
-                    backgroundColor: "#FFFFFF",
-                    color: "#1a1a1a",
+                    backgroundColor: "var(--lia-bg-primary)",
+                    color: "var(--gray-950)",
                     fontFamily: "'Open Sans', sans-serif"
                   }}
                   onFocus={(e) => {
@@ -3235,7 +3235,7 @@ export function SmartSearchInput({
                     e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "#E5E7EB"
+                    e.currentTarget.style.borderColor = "var(--gray-200)"
                     e.currentTarget.style.boxShadow = "none"
                   }}
                   disabled={isLoading}
@@ -3256,7 +3256,7 @@ export function SmartSearchInput({
                                   ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                   : "hover:bg-gray-100"
                               )}
-                              style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+                              style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                             >
                               <Home className="w-4 h-4" />
                             </button>
@@ -3281,7 +3281,7 @@ export function SmartSearchInput({
                                     ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
                                     : "hover:bg-gray-100"
                                 )}
-                                style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                                style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                               >
                                 <Zap className="w-4 h-4" />
                               </button>
@@ -3307,7 +3307,7 @@ export function SmartSearchInput({
                                     ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                     : "hover:bg-gray-100"
                                 )}
-                                style={{ color: searchSource === 'global' ? '#111827' : '#6B7280' }}
+                                style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                               >
                                 <Globe className="w-4 h-4" />
                               </button>
@@ -3335,7 +3335,7 @@ export function SmartSearchInput({
                                       ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                       : "hover:bg-gray-100"
                                   )}
-                                  style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                                  style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                 >
                                   <Mail className="w-3.5 h-3.5" />
                                 </button>
@@ -3359,7 +3359,7 @@ export function SmartSearchInput({
                                       ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                       : "hover:bg-gray-100"
                                   )}
-                                  style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                                  style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                 >
                                   <Phone className="w-3.5 h-3.5" />
                                 </button>
@@ -3385,7 +3385,7 @@ export function SmartSearchInput({
                                 "flex items-center justify-center p-1.5 rounded-md transition-all",
                                 canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
                               )}
-                              style={{ color: canSubmit() ? '#6B7280' : '#D1D5DB' }}
+                              style={{ color: canSubmit() ? 'var(--gray-400)' : 'var(--gray-200)' }}
                             >
                               {isLoading ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -3465,16 +3465,16 @@ export function SmartSearchInput({
                     booleanError && "ring-2 ring-red-300"
                   )}
                   style={{ 
-                    borderColor: booleanError ? "#fca5a5" : "#E5E7EB",
-                    backgroundColor: "#FFFFFF",
-                    color: "#1a1a1a"
+                    borderColor: booleanError ? "#fca5a5" : "var(--gray-200)",
+                    backgroundColor: "var(--lia-bg-primary)",
+                    color: "var(--gray-950)"
                   }}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "#D1D5DB"
                     e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = booleanError ? "#fca5a5" : "#E5E7EB"
+                    e.currentTarget.style.borderColor = booleanError ? "#fca5a5" : "var(--gray-200)"
                     e.currentTarget.style.boxShadow = "none"
                   }}
                   rows={2}
@@ -3495,7 +3495,7 @@ export function SmartSearchInput({
                                 ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                 : "hover:bg-gray-100"
                             )}
-                            style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+                            style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                           >
                             <Home className="w-4 h-4" />
                           </button>
@@ -3520,7 +3520,7 @@ export function SmartSearchInput({
                                   ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
                                   : "hover:bg-gray-100"
                               )}
-                              style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                              style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                             >
                               <Zap className="w-4 h-4" />
                             </button>
@@ -3546,7 +3546,7 @@ export function SmartSearchInput({
                                   ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                   : "hover:bg-gray-100"
                               )}
-                              style={{ color: searchSource === 'global' ? '#111827' : '#6B7280' }}
+                              style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                             >
                               <Globe className="w-4 h-4" />
                             </button>
@@ -3574,7 +3574,7 @@ export function SmartSearchInput({
                                     ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
                                 )}
-                                style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                                style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Mail className="w-3.5 h-3.5" />
                               </button>
@@ -3598,7 +3598,7 @@ export function SmartSearchInput({
                                     ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                     : "hover:bg-gray-100"
                                 )}
-                                style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                                style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                               >
                                 <Phone className="w-3.5 h-3.5" />
                               </button>
@@ -3621,7 +3621,7 @@ export function SmartSearchInput({
                         "flex items-center justify-center p-1.5 rounded-md transition-all",
                         canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
                       )}
-                      style={{ color: canSubmit() ? '#6B7280' : '#D1D5DB' }}
+                      style={{ color: canSubmit() ? 'var(--gray-400)' : 'var(--gray-200)' }}
                     >
                       {isLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -3683,7 +3683,7 @@ export function SmartSearchInput({
                       : "bg-white ring-1 ring-[#E5E7EB] hover:bg-gray-50"
                   )}
                   style={{ 
-                    color: archetypeTab === "list" ? "#1a1a1a" : "#6B7280",
+                    color: archetypeTab === "list" ? "var(--gray-950)" : "var(--gray-400)",
                     fontFamily: "'Open Sans', sans-serif"
                   }}
                 >
@@ -3980,7 +3980,7 @@ export function SmartSearchInput({
                                       onClick={(e) => deleteArchetype(arch.id, e)}
                                       disabled={isDeletingArchetype === arch.id}
                                       className="text-xs px-2"
-                                      style={{ color: "#ef4444" }}
+                                      style={{ color: "var(--status-error)" }}
                                     >
                                       {isDeletingArchetype === arch.id ? (
                                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -4017,8 +4017,8 @@ export function SmartSearchInput({
                           placeholder="Descreva o perfil do arquétipo..."
                           className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border"
                           style={{ 
-                            backgroundColor: "#FFFFFF",
-                            color: "#1a1a1a",
+                            backgroundColor: "var(--lia-bg-primary)",
+                            color: "var(--gray-950)",
                             fontFamily: "'Open Sans', sans-serif"
                           }}
                           onFocus={(e) => {
@@ -4026,7 +4026,7 @@ export function SmartSearchInput({
                             e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                           }}
                           onBlur={(e) => {
-                            e.currentTarget.style.borderColor = "#E5E7EB"
+                            e.currentTarget.style.borderColor = "var(--gray-200)"
                             e.currentTarget.style.boxShadow = "none"
                           }}
                           rows={2}
@@ -4047,7 +4047,7 @@ export function SmartSearchInput({
                                           ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                           : "hover:bg-gray-100"
                                       )}
-                                      style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+                                      style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                     >
                                       <Home className="w-4 h-4" />
                                     </button>
@@ -4072,7 +4072,7 @@ export function SmartSearchInput({
                                             ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
                                             : "hover:bg-gray-100"
                                         )}
-                                        style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                                        style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                                       >
                                         <Zap className="w-4 h-4" />
                                       </button>
@@ -4098,7 +4098,7 @@ export function SmartSearchInput({
                                             ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                             : "hover:bg-gray-100"
                                         )}
-                                        style={{ color: searchSource === 'global' ? '#111827' : '#6B7280' }}
+                                        style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                                       >
                                         <Globe className="w-4 h-4" />
                                       </button>
@@ -4126,7 +4126,7 @@ export function SmartSearchInput({
                                               ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                               : "hover:bg-gray-100"
                                           )}
-                                          style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                                          style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                         >
                                           <Mail className="w-3.5 h-3.5" />
                                         </button>
@@ -4150,7 +4150,7 @@ export function SmartSearchInput({
                                               ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                               : "hover:bg-gray-100"
                                           )}
-                                          style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                                          style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                         >
                                           <Phone className="w-3.5 h-3.5" />
                                         </button>
@@ -4176,7 +4176,7 @@ export function SmartSearchInput({
                                         "flex items-center justify-center p-1.5 rounded-md transition-all",
                                         selectedArchetype ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
                                       )}
-                                      style={{ color: selectedArchetype ? '#6B7280' : '#D1D5DB' }}
+                                      style={{ color: selectedArchetype ? 'var(--gray-400)' : 'var(--gray-200)' }}
                                     >
                                       {isLoading ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -4209,8 +4209,8 @@ export function SmartSearchInput({
                         placeholder={selectedArchetype ? `Buscar perfis similares a "${selectedArchetype.title}"...` : "Selecione um arquétipo acima para buscar..."}
                         className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border"
                         style={{ 
-                          backgroundColor: "#FFFFFF",
-                          color: "#1a1a1a",
+                          backgroundColor: "var(--lia-bg-primary)",
+                          color: "var(--gray-950)",
                           fontFamily: "'Open Sans', sans-serif"
                         }}
                         onFocus={(e) => {
@@ -4218,7 +4218,7 @@ export function SmartSearchInput({
                           e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                         }}
                         onBlur={(e) => {
-                          e.currentTarget.style.borderColor = "#E5E7EB"
+                          e.currentTarget.style.borderColor = "var(--gray-200)"
                           e.currentTarget.style.boxShadow = "none"
                         }}
                         rows={2}
@@ -4240,7 +4240,7 @@ export function SmartSearchInput({
                                         ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                         : "hover:bg-gray-100"
                                     )}
-                                    style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+                                    style={{ color: searchSource === 'local' ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                   >
                                     <Home className="w-4 h-4" />
                                   </button>
@@ -4265,7 +4265,7 @@ export function SmartSearchInput({
                                           ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-wedo-orange" 
                                           : "hover:bg-gray-100"
                                       )}
-                                      style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                                      style={{ color: searchSource === 'hybrid' ? 'var(--wedo-orange)' : 'var(--gray-400)' }}
                                     >
                                       <Zap className="w-4 h-4" />
                                     </button>
@@ -4291,7 +4291,7 @@ export function SmartSearchInput({
                                           ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                                           : "hover:bg-gray-100"
                                       )}
-                                      style={{ color: searchSource === 'global' ? '#111827' : '#6B7280' }}
+                                      style={{ color: searchSource === 'global' ? 'var(--gray-950)' : 'var(--gray-400)' }}
                                     >
                                       <Globe className="w-4 h-4" />
                                     </button>
@@ -4319,7 +4319,7 @@ export function SmartSearchInput({
                                             ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                             : "hover:bg-gray-100"
                                         )}
-                                        style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                                        style={{ color: requireEmails ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                       >
                                         <Mail className="w-3.5 h-3.5" />
                                       </button>
@@ -4343,7 +4343,7 @@ export function SmartSearchInput({
                                             ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-wedo-green" 
                                             : "hover:bg-gray-100"
                                         )}
-                                        style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                                        style={{ color: requirePhoneNumbers ? 'var(--wedo-green)' : 'var(--gray-400)' }}
                                       >
                                         <Phone className="w-3.5 h-3.5" />
                                       </button>
@@ -4369,7 +4369,7 @@ export function SmartSearchInput({
                                       "flex items-center justify-center p-1.5 rounded-md transition-all",
                                       selectedArchetype ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
                                     )}
-                                    style={{ color: selectedArchetype ? '#6B7280' : '#D1D5DB' }}
+                                    style={{ color: selectedArchetype ? 'var(--gray-400)' : 'var(--gray-200)' }}
                                   >
                                     {isLoading ? (
                                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -4417,7 +4417,7 @@ export function SmartSearchInput({
                           ? "bg-gray-100 ring-1 ring-gray-400" 
                           : "bg-white hover:bg-gray-50"
                       )}
-                      style={{ color: archetypeCreateMode === "job" ? "#1F2937" : "var(--eleven-text-secondary)" }}
+                      style={{ color: archetypeCreateMode === "job" ? "var(--gray-800)" : "var(--eleven-text-secondary)" }}
                     >
                       <Briefcase className="w-3.5 h-3.5 inline mr-1.5" />
                       A partir de Vaga
@@ -4430,7 +4430,7 @@ export function SmartSearchInput({
                           ? "bg-gray-100 ring-1 ring-gray-400" 
                           : "bg-white hover:bg-gray-50"
                       )}
-                      style={{ color: archetypeCreateMode === "description" ? "#1F2937" : "var(--eleven-text-secondary)" }}
+                      style={{ color: archetypeCreateMode === "description" ? "var(--gray-800)" : "var(--eleven-text-secondary)" }}
                     >
                       <FileText className="w-3.5 h-3.5 inline mr-1.5" />
                       A partir de Descrição
@@ -4446,7 +4446,7 @@ export function SmartSearchInput({
                       
                       {/* Input de busca */}
                       <div className="relative">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#999" }} />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--gray-400)" }} />
                         <input
                           type="text"
                           value={jobSearchQuery}
@@ -4475,7 +4475,7 @@ export function SmartSearchInput({
                           ) : jobSearchResults.length === 0 ? (
                             <div className="text-center py-4 px-3">
                               <Briefcase className="w-5 h-5 mx-auto mb-1.5" style={{ color: "#ccc" }} />
-                              <p className="text-xs" style={{ color: "#999" }}>
+                              <p className="text-xs" style={{ color: "var(--gray-400)" }}>
                                 Nenhuma vaga encontrada para "{jobSearchQuery}"
                               </p>
                             </div>
@@ -4490,7 +4490,7 @@ export function SmartSearchInput({
                                   <Briefcase className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-600" />
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                      <p className="font-medium text-xs truncate" style={{ color: "#1a1a1a", fontFamily: "'Open Sans', sans-serif" }}>
+                                      <p className="font-medium text-xs truncate" style={{ color: "var(--gray-950)", fontFamily: "'Open Sans', sans-serif" }}>
                                         {job.title}
                                       </p>
                                       <span 
@@ -4500,7 +4500,7 @@ export function SmartSearchInput({
                                                           job.status === "Encerrada" ? "rgba(156, 163, 175, 0.2)" : 
                                                           "rgba(245, 158, 11, 0.15)",
                                           color: job.status === "Publicada" ? "#16a34a" : 
-                                                job.status === "Encerrada" ? "#6B7280" : 
+                                                job.status === "Encerrada" ? "var(--gray-400)" : 
                                                 "#D97706"
                                         }}
                                       >
@@ -4508,27 +4508,27 @@ export function SmartSearchInput({
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                      <span className="text-micro" style={{ color: "#666" }}>
+                                      <span className="text-micro" style={{ color: "var(--gray-400)" }}>
                                         ID: {job.id.slice(0, 8)}...
                                       </span>
                                       {job.department && (
                                         <>
                                           <span className="text-micro" style={{ color: "#ccc" }}>•</span>
-                                          <span className="text-micro" style={{ color: "#666" }}>{job.department}</span>
+                                          <span className="text-micro" style={{ color: "var(--gray-400)" }}>{job.department}</span>
                                         </>
                                       )}
                                       {job.seniority_level && (
                                         <>
                                           <span className="text-micro" style={{ color: "#ccc" }}>•</span>
-                                          <span className="text-micro" style={{ color: "#666" }}>{job.seniority_level}</span>
+                                          <span className="text-micro" style={{ color: "var(--gray-400)" }}>{job.seniority_level}</span>
                                         </>
                                       )}
                                     </div>
-                                    <p className="text-micro mt-0.5" style={{ color: "#999" }}>
+                                    <p className="text-micro mt-0.5" style={{ color: "var(--gray-400)" }}>
                                       Criada em {new Date(job.created_at).toLocaleDateString('pt-BR')}
                                     </p>
                                     {job.description && (
-                                      <p className="text-micro mt-1 line-clamp-2" style={{ color: "#666" }}>
+                                      <p className="text-micro mt-1 line-clamp-2" style={{ color: "var(--gray-400)" }}>
                                         {job.description.slice(0, 120)}{job.description.length > 120 ? "..." : ""}
                                       </p>
                                     )}
@@ -4545,7 +4545,7 @@ export function SmartSearchInput({
                       {!jobSearchQuery.trim() && (
                         <div className="text-center py-4 px-3 rounded-md border border-dashed border-gray-200">
                           <Search className="w-5 h-5 mx-auto mb-1.5" style={{ color: "#ccc" }} />
-                          <p className="text-xs" style={{ color: "#999" }}>
+                          <p className="text-xs" style={{ color: "var(--gray-400)" }}>
                             Digite o nome ou ID da vaga para buscar
                           </p>
                         </div>
@@ -4587,7 +4587,7 @@ export function SmartSearchInput({
                         size="sm"
                         className="w-full"
                         style={{ 
-                          backgroundColor: archetypeDescription.length >= 20 ? "#111827" : "var(--eleven-bg-tertiary)",
+                          backgroundColor: archetypeDescription.length >= 20 ? "var(--gray-950)" : "var(--eleven-bg-tertiary)",
                           color: archetypeDescription.length >= 20 ? "white" : "var(--eleven-text-secondary)"
                         }}
                       >
@@ -4652,7 +4652,7 @@ export function SmartSearchInput({
                 <Target className="w-5 h-5 text-gray-700" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold" style={{ color: "#1a1a1a" }}>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--gray-950)" }}>
                   {editingArchetype?.id ? "Editar Arquétipo" : "Criar Arquétipo"}
                 </h3>
                 <p className="text-xs truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>
@@ -4780,12 +4780,12 @@ export function SmartSearchInput({
                     onClick={() => setIsIndustryDropdownOpen(!isIndustryDropdownOpen)}
                     className="w-full rounded px-2 py-1.5 text-xs text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
                   >
-                    <span style={{ color: editArchetypeIndustry ? "#1a1a1a" : "#999" }}>
+                    <span style={{ color: editArchetypeIndustry ? "var(--gray-950)" : "var(--gray-400)" }}>
                       {editArchetypeIndustry 
                         ? (INDUSTRIES.find(i => i.key === editArchetypeIndustry)?.labelPt || editArchetypeIndustry)
                         : "Selecionar..."}
                     </span>
-                    <ChevronDown className="w-3 h-3" style={{ color: "#999" }} />
+                    <ChevronDown className="w-3 h-3" style={{ color: "var(--gray-400)" }} />
                   </button>
                   {isIndustryDropdownOpen && (
                     <div className="absolute z-10 mt-1 w-full bg-white rounded-md border border-gray-200 max-h-[200px] overflow-hidden">
@@ -4808,7 +4808,7 @@ export function SmartSearchInput({
                             setIndustrySearchQuery("")
                           }}
                           className="w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50"
-                          style={{ color: "#999" }}
+                          style={{ color: "var(--gray-400)" }}
                         >
                           - Nenhum -
                         </button>
@@ -5047,7 +5047,7 @@ export function SmartSearchInput({
                       }}
                       disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
                       className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
-                      style={{ backgroundColor: editArchetypeSkills.length > 0 ? "rgba(96, 190, 209, 0.15)" : "#F5F5F5", color: editArchetypeSkills.length > 0 ? "#111827" : "#999" }}
+                      style={{ backgroundColor: editArchetypeSkills.length > 0 ? "rgba(96, 190, 209, 0.15)" : "#F5F5F5", color: editArchetypeSkills.length > 0 ? "var(--gray-950)" : "var(--gray-400)" }}
                       title="Buscar skills similares com IA"
                     >
                       {isFindingSimilarSkills ? <Loader2 className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3 text-wedo-cyan" />}
@@ -5077,7 +5077,7 @@ export function SmartSearchInput({
                           }}
                         >
                           <Code className="w-3 h-3 text-gray-400" />
-                          <span style={{ color: "#1a1a1a" }}>{suggestion.term}</span>
+                          <span style={{ color: "var(--gray-950)" }}>{suggestion.term}</span>
                           {suggestion.is_synonym && (
                             <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">sinônimo</span>
                           )}
@@ -5244,7 +5244,7 @@ export function SmartSearchInput({
                       }}
                       disabled={editArchetypeTags.length === 0 || isFindingSimilarTags}
                       className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
-                      style={{ backgroundColor: editArchetypeTags.length > 0 ? "rgba(96, 190, 209, 0.15)" : "#F5F5F5", color: editArchetypeTags.length > 0 ? "#111827" : "#999" }}
+                      style={{ backgroundColor: editArchetypeTags.length > 0 ? "rgba(96, 190, 209, 0.15)" : "#F5F5F5", color: editArchetypeTags.length > 0 ? "var(--gray-950)" : "var(--gray-400)" }}
                       title="Buscar tags similares com IA"
                     >
                       {isFindingSimilarTags ? <Loader2 className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3 text-wedo-cyan" />}
@@ -5274,7 +5274,7 @@ export function SmartSearchInput({
                           }}
                         >
                           <Tag className="w-3 h-3 text-gray-400" />
-                          <span style={{ color: "#1a1a1a" }}>{suggestion.term}</span>
+                          <span style={{ color: "var(--gray-950)" }}>{suggestion.term}</span>
                           {suggestion.is_synonym && (
                             <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">sinônimo</span>
                           )}
@@ -5366,8 +5366,8 @@ export function SmartSearchInput({
                   disabled={isSavingArchetype || !editArchetypeName || !editArchetypeQuery}
                   className="px-4 py-2 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50"
                   style={{ 
-                    backgroundColor: editArchetypeName && editArchetypeQuery ? "#1F2937" : "#E5E7EB",
-                    color: editArchetypeName && editArchetypeQuery ? "white" : "#9CA3AF"
+                    backgroundColor: editArchetypeName && editArchetypeQuery ? "var(--gray-800)" : "var(--gray-200)",
+                    color: editArchetypeName && editArchetypeQuery ? "white" : "var(--gray-400)"
                   }}
                 >
                   {isSavingArchetype ? (

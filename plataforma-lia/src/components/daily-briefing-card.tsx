@@ -352,7 +352,7 @@ export function DailyBriefingCard({
                 <AlertCircle className="w-3.5 h-3.5 text-gray-700" />
                 <span className="text-xs font-medium text-gray-700">Urgentes</span>
               </div>
-              <p className="text-lg font-bold" style={{ color: '#0d7a8c' }}>
+              <p className="text-lg font-bold" style={{ color: 'var(--wedo-cyan-dark)' }}>
                 {briefing.summary.urgent_count}
               </p>
             </div>
@@ -367,7 +367,7 @@ export function DailyBriefingCard({
                 <Target className="w-3.5 h-3.5 text-gray-700" />
                 <span className="text-xs font-medium text-gray-700">Tarefas Hoje</span>
               </div>
-              <p className="text-lg font-bold" style={{ color: '#0d7a8c' }}>
+              <p className="text-lg font-bold" style={{ color: 'var(--wedo-cyan-dark)' }}>
                 {briefing.summary.tasks_today}
               </p>
             </div>
@@ -382,7 +382,7 @@ export function DailyBriefingCard({
                 <Calendar className="w-3.5 h-3.5 text-gray-700" />
                 <span className="text-xs font-medium text-gray-700">Entrevistas</span>
               </div>
-              <p className="text-lg font-bold" style={{ color: '#0d7a8c' }}>
+              <p className="text-lg font-bold" style={{ color: 'var(--wedo-cyan-dark)' }}>
                 {briefing.summary.interviews_today}
               </p>
             </div>
@@ -397,7 +397,7 @@ export function DailyBriefingCard({
                 <Bell className="w-3.5 h-3.5 text-gray-700" />
                 <span className="text-xs font-medium text-gray-700">Alertas</span>
               </div>
-              <p className="text-lg font-bold" style={{ color: '#0d7a8c' }}>
+              <p className="text-lg font-bold" style={{ color: 'var(--wedo-cyan-dark)' }}>
                 {briefing.summary.alerts_active}
               </p>
             </div>
@@ -405,7 +405,7 @@ export function DailyBriefingCard({
 
           {briefing.urgent_actions.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: '#0d7a8c' }}>
+              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: 'var(--wedo-cyan-dark)' }}>
                 <Zap className="w-4 h-4 text-gray-700" />
                 Ações Urgentes
               </h4>
@@ -420,7 +420,7 @@ export function DailyBriefingCard({
                     }}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate" style={{ color: '#0d7a8c' }}>
+                      <p className="text-xs font-medium truncate" style={{ color: 'var(--wedo-cyan-dark)' }}>
                         {action.title}
                       </p>
                       <p className="text-xs truncate text-gray-700">
@@ -444,7 +444,7 @@ export function DailyBriefingCard({
 
           {briefing.schedule.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: '#0d7a8c' }}>
+              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: 'var(--wedo-cyan-dark)' }}>
                 <Calendar className="w-4 h-4 text-gray-700" />
                 Agenda do Dia
               </h4>
@@ -463,7 +463,7 @@ export function DailyBriefingCard({
                       <Clock className="w-4 h-4 text-gray-700" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium" style={{ color: '#0d7a8c' }}>
+                      <p className="text-xs font-medium" style={{ color: 'var(--wedo-cyan-dark)' }}>
                         {item.time}
                       </p>
                       <p className="text-xs truncate text-gray-700">
@@ -483,7 +483,7 @@ export function DailyBriefingCard({
 
           {briefing.insights.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: '#0d7a8c' }}>
+              <h4 className="text-xs font-medium flex items-center gap-2" style={{ color: 'var(--wedo-cyan-dark)' }}>
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Insights LIA
               </h4>

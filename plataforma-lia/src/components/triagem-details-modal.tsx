@@ -32,7 +32,7 @@ const WSI_CLASSIFICATION_COLORS: Record<string, { bg: string; text: string; labe
 }
 
 const getClassificationColor = (classification: string) =>
-  WSI_CLASSIFICATION_COLORS[classification] ?? { bg: 'rgba(96, 190, 209, 0.12)', text: '#374151', label: classification }
+  WSI_CLASSIFICATION_COLORS[classification] ?? { bg: 'rgba(96, 190, 209, 0.12)', text: 'var(--gray-600)', label: classification }
 
 const getClassificationLabel = (classification: string) =>
   WSI_CLASSIFICATION_COLORS[classification]?.label ?? classification
@@ -50,7 +50,7 @@ const getDecisionDisplay = (decision?: string) => {
     case 'REPROVADO':
     case 'nao_aprovado':
       return { label: 'Não Aprovado', icon: ThumbsDown, color: '#991B1B', bg: 'rgba(239, 68, 68, 0.12)' }
-    default: return { label: 'Pendente', icon: Clock, color: 'var(--gray-400)', bg: '#F3F4F6' }
+    default: return { label: 'Pendente', icon: Clock, color: 'var(--gray-400)', bg: 'var(--gray-50)' }
   }
 }
 
@@ -415,7 +415,7 @@ export function TriagemDetailsModal({
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className="px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 rounded-full hover:bg-gray-100"
-                style={{ ...font, backgroundColor: activeTab === tab.key ? '#1F2937' : 'transparent', color: activeTab === tab.key ? '#FFFFFF' : '#6B7280' }}
+                style={{ ...font, backgroundColor: activeTab === tab.key ? 'var(--gray-800)' : 'transparent', color: activeTab === tab.key ? '#FFFFFF' : 'var(--gray-400)' }}
               >
                 <tab.icon className="w-3 h-3" />
                 {tab.label}
@@ -923,8 +923,8 @@ export function TriagemDetailsModal({
                     className="flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                       ...font,
-                      backgroundColor: feedbackAlreadySent ? '#E5E7EB' : '#1F2937',
-                      color: feedbackAlreadySent ? '#6B7280' : '#FFFFFF',
+                      backgroundColor: feedbackAlreadySent ? 'var(--gray-200)' : 'var(--gray-800)',
+                      color: feedbackAlreadySent ? 'var(--gray-400)' : '#FFFFFF',
                     }}
                   >
                     {sendingFeedback ? (

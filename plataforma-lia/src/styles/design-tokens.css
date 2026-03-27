@@ -304,12 +304,14 @@
   /* ========================================
      GRAY SCALE — 6 tons core (fonte de verdade)
      Substitui os 11 tons espalhados no código.
-     Regra: usar apenas estes 6. Tons intermediários
-     (100, 300, 500, 700, 900) não são tokens canônicos.
+     Escala de 8 stops. gray-300 e gray-500 são utility tokens
+     para hierarquia visual do pipeline (não usar em texto).
      ======================================== */
   --gray-50:  #F9FAFB;   /* bg page, hover muito sutil */
   --gray-200: #E5E7EB;   /* border padrão, divisores, bg cards */
+  --gray-300: #D1D5DB;   /* pipeline early stages, bg sutil */
   --gray-400: #9CA3AF;   /* text disabled, placeholder, border médio */
+  --gray-500: #6B7280;   /* pipeline mid stages, icon muted */
   --gray-600: #4B5563;   /* text secondary, labels */
   --gray-800: #1F2937;   /* text primary forte, headings */
   --gray-950: #030712;   /* text máxima ênfase, botão primário bg */

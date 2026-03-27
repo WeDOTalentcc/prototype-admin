@@ -190,13 +190,13 @@ const createStageSlug = (stageName: string): string => {
 
 // Cores para etapas dinâmicas (ciclo de cores monocromáticas)
 const DYNAMIC_STAGE_COLORS = [
-  '#374151', // gray-700
-  '#4B5563', // gray-600
-  '#6B7280', // gray-500
-  '#9CA3AF', // gray-400
-  '#6B7280', // gray-500
-  '#4B5563', // gray-600
-  '#374151', // gray-700
+  'var(--gray-600)', // gray-700
+  'var(--gray-600)', // gray-600
+  'var(--gray-400)', // gray-500
+  'var(--gray-400)', // gray-400
+  'var(--gray-400)', // gray-500
+  'var(--gray-600)', // gray-600
+  'var(--gray-600)', // gray-700
 ]
 
 const inferActionBehavior = (slug: string, stageType?: string): string => {
@@ -240,7 +240,7 @@ const mapInterviewStagesToKanban = (
         const displayName = stage.stageName || stage.displayName || stage.name || 'Sem nome'
         const stageId = stage.name || createStageSlug(displayName)
         const isIntermediate = !stage.isInitial && !stage.isFinal && stage.stageType === 'active'
-        const color = stage.color || (isIntermediate ? DYNAMIC_STAGE_COLORS[colorIndex++ % DYNAMIC_STAGE_COLORS.length] : '#374151')
+        const color = stage.color || (isIntermediate ? DYNAMIC_STAGE_COLORS[colorIndex++ % DYNAMIC_STAGE_COLORS.length] : 'var(--gray-600)')
         return {
           id: stageId,
           name: stageId,
@@ -4038,28 +4038,28 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         border: 'border-gray-200 dark:border-gray-700',
         dot: 'bg-gray-700 dark:bg-gray-300',
         header: 'text-gray-800 dark:text-gray-200',
-        accentColor: '#374151'
+        accentColor: 'var(--gray-600)'
       },
       hired: {
         bg: 'bg-white dark:bg-gray-900',
         border: 'border-gray-200 dark:border-gray-700',
         dot: 'bg-gray-700 dark:bg-gray-300',
         header: 'text-gray-800 dark:text-gray-200',
-        accentColor: '#374151'
+        accentColor: 'var(--gray-600)'
       },
       rejected: {
         bg: 'bg-white dark:bg-gray-900',
         border: 'border-gray-200 dark:border-gray-700',
         dot: 'bg-gray-300 dark:bg-gray-600',
         header: 'text-gray-800 dark:text-gray-200',
-        accentColor: '#D1D5DB'
+        accentColor: 'var(--gray-200)'
       },
       offer_declined: {
         bg: 'bg-white dark:bg-gray-900',
         border: 'border-gray-200 dark:border-gray-700',
         dot: 'bg-gray-300 dark:bg-gray-600',
         header: 'text-gray-800 dark:text-gray-200',
-        accentColor: '#D1D5DB'
+        accentColor: 'var(--gray-200)'
       }
     }
     
@@ -4070,7 +4070,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
     
     // Para etapas dinâmicas, buscar a cor da etapa
     const dynamicStage = dynamicStages.find(s => s.id === columnId)
-    const stageColor = dynamicStage?.color || '#6B7280'
+    const stageColor = dynamicStage?.color || 'var(--gray-400)'
     
     // Gerar estilo baseado na cor da etapa
     return {
@@ -4203,15 +4203,15 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   }, [toast])
 
   const STAGE_PASTEL_COLORS: Record<string, string> = {
-    'sourcing': '#DCE4DB',      // Verde Menta - Funil
-    'screening': '#E3DADC',     // Rosa Antigo - Triagem
-    'interview_hr': '#DDE1E9',  // Azul Acinzentado - Entrevista
-    'interview_technical': '#DDE1E9',
-    'interview_manager': '#DDE1E9',
-    'offer': '#E5E0E2',         // Lilás Acinzentado - Final
-    'hired': '#E5E0E2',
-    'rejected': '#E5E0E2',
-    'offer_declined': '#E5E0E2'
+    'sourcing': 'var(--gray-200)',      // Verde Menta - Funil
+    'screening': 'var(--gray-200)',     // Rosa Antigo - Triagem
+    'interview_hr': 'var(--gray-300)',  // Azul Acinzentado - Entrevista
+    'interview_technical': 'var(--gray-300)',
+    'interview_manager': 'var(--gray-300)',
+    'offer': 'var(--gray-300)',         // Lilás Acinzentado - Final
+    'hired': 'var(--gray-300)',
+    'rejected': 'var(--gray-300)',
+    'offer_declined': 'var(--gray-300)'
   }
 
   const renderKanbanColumn = (stageId: string, candidates: any[], colorClass: string, bgClass: string) => {
@@ -5628,12 +5628,12 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           fontFamily: '"Open Sans", sans-serif'
                         }}
                         onFocus={(e) => {
-                          e.currentTarget.style.borderColor = '#1f2937'
+                          e.currentTarget.style.borderColor = 'var(--gray-800)'
                           e.currentTarget.style.boxShadow = '0 0 0 2px rgba(31, 41, 55, 0.12)'
                           setShowExpandedLIA(true)
                         }}
                         onBlur={(e) => {
-                          e.currentTarget.style.borderColor = '#E5E7EB'
+                          e.currentTarget.style.borderColor = 'var(--gray-200)'
                           e.currentTarget.style.boxShadow = 'none'
                         }}
                         onKeyDown={(e) => {
@@ -6609,7 +6609,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                       display_name: newColumnName,
                                       stage_order: maxOrder + 1,
                                       action_behavior: inferredBehavior?.suggested_behavior || 'passive',
-                                      color: '#94A3B8',
+                                      color: 'var(--gray-400)',
                                       is_system: false,
                                     })
                                   })
@@ -6620,7 +6620,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                     name: stageName,
                                     displayName: newColumnName,
                                     order: maxOrder + 1,
-                                    color: '#94A3B8',
+                                    color: 'var(--gray-400)',
                                     stageType: 'active',
                                     isHired: false,
                                     isRejection: false,
@@ -6643,7 +6643,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                     name: stageName,
                                     displayName: newColumnName,
                                     order: maxOrder + 1,
-                                    color: '#94A3B8',
+                                    color: 'var(--gray-400)',
                                     stageType: 'active',
                                     isHired: false,
                                     isRejection: false,
@@ -6663,7 +6663,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }
                               }}
                               className="w-full py-2.5 rounded text-sm font-medium text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                              style={{ backgroundColor: newColumnName.length >= 2 && !isAddingColumn ? '#171717' : '#a3a3a3', fontFamily: 'Open Sans, sans-serif' }}
+                              style={{ backgroundColor: newColumnName.length >= 2 && !isAddingColumn ? 'var(--gray-950)' : 'var(--gray-400)', fontFamily: 'Open Sans, sans-serif' }}
                             >
                               {isAddingColumn ? 'Adicionando...' : 'Adicionar Coluna'}
                             </button>
@@ -6672,14 +6672,14 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                               <label className="text-xs font-medium text-neutral-500 mb-2 block" style={{ fontFamily: 'Open Sans, sans-serif' }}>Ou escolha do catálogo:</label>
                               <div className="grid grid-cols-2 gap-2">
                                 {[
-                                  { name: 'Teste Técnico', behavior: 'evaluation', color: '#E8B8B8' },
-                                  { name: 'Teste de Inglês', behavior: 'evaluation', color: '#E5C5C5' },
+                                  { name: 'Teste Técnico', behavior: 'evaluation', color: 'var(--gray-300)' },
+                                  { name: 'Teste de Inglês', behavior: 'evaluation', color: 'var(--gray-300)' },
                                   { name: 'Entrevista Técnica', behavior: 'scheduling', color: 'var(--status-warning)' },
                                   { name: 'Entrevista Gestor', behavior: 'scheduling', color: 'var(--status-success)' },
-                                  { name: 'Entrevista Final', behavior: 'scheduling', color: '#D5BFA8' },
-                                  { name: 'Dinâmica de Grupo', behavior: 'scheduling', color: '#A78BFA' },
-                                  { name: 'Referências', behavior: 'verification', color: '#E8E4E0' },
-                                  { name: 'Case / Estudo', behavior: 'evaluation', color: '#D4A8A8' },
+                                  { name: 'Entrevista Final', behavior: 'scheduling', color: 'var(--gray-200)' },
+                                  { name: 'Dinâmica de Grupo', behavior: 'scheduling', color: 'var(--wedo-purple)' },
+                                  { name: 'Referências', behavior: 'verification', color: 'var(--gray-200)' },
+                                  { name: 'Case / Estudo', behavior: 'evaluation', color: 'var(--gray-300)' },
                                 ].filter(cat => !dynamicStages.some(ds => ds.displayName === cat.name)).map(cat => (
                                   <button
                                     key={cat.name}
@@ -7053,7 +7053,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 title={hasNotaGeral ? 'Clique para ver detalhes' : 'Não avaliado'}
                               >
-                                <Gauge className="w-3.5 h-3.5" style={{ color: hasNotaGeral ? '#111827' : '#9CA3AF' }} strokeWidth={2} />
+                                <Gauge className="w-3.5 h-3.5" style={{ color: hasNotaGeral ? 'var(--gray-950)' : 'var(--gray-400)' }} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
                                   {hasNotaGeral ? ranking : '—'}
                                 </span>
@@ -7095,7 +7095,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 title={hasFitScore ? 'Clique para ver Análise CV vs Vaga' : 'Não avaliado'}
                               >
-                                <Target className="w-3.5 h-3.5" style={{ color: hasFitScore ? '#111827' : '#9CA3AF' }} strokeWidth={2} />
+                                <Target className="w-3.5 h-3.5" style={{ color: hasFitScore ? 'var(--gray-950)' : 'var(--gray-400)' }} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasFitScore ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
                                   {hasFitScore ? formatScorePercent(fitValue, 0) : '—'}
                                 </span>
@@ -7116,7 +7116,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 title={hasTechnical ? 'Clique para ver detalhes' : 'Não realizado'}
                               >
-                                <Code className="w-3.5 h-3.5" style={{ color: hasTechnical ? '#374151' : '#9CA3AF' }} strokeWidth={2} />
+                                <Code className="w-3.5 h-3.5" style={{ color: hasTechnical ? 'var(--gray-600)' : 'var(--gray-400)' }} strokeWidth={2} />
                                 {hasTechnical && (
                                   <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                                     {formatScorePercent(candidate.technicalTestScore, 0)}
@@ -7139,7 +7139,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 title={hasEnglish ? 'Clique para ver detalhes' : 'Não realizado'}
                               >
-                                <Globe className="w-3.5 h-3.5" style={{ color: hasEnglish ? '#374151' : '#9CA3AF' }} strokeWidth={2} />
+                                <Globe className="w-3.5 h-3.5" style={{ color: hasEnglish ? 'var(--gray-600)' : 'var(--gray-400)' }} strokeWidth={2} />
                                 {hasEnglish && (
                                   <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                                     {formatScorePercent(candidate.englishTestScore, 0)}
@@ -7165,7 +7165,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 }}
                                 title={hasBigFive ? 'Clique para ver relatório Big Five completo' : 'Não realizado'}
                               >
-                                <Fingerprint className="w-3.5 h-3.5" style={{ color: hasBigFive ? '#374151' : '#9CA3AF' }} strokeWidth={2} />
+                                <Fingerprint className="w-3.5 h-3.5" style={{ color: hasBigFive ? 'var(--gray-600)' : 'var(--gray-400)' }} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasBigFive ? 'text-gray-950' : 'text-gray-400 dark:text-gray-600'}`}>
                                   {hasBigFive && bigFiveAvg !== null ? bigFiveAvg : '—'}
                                 </span>
@@ -7301,7 +7301,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                   <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
                                     <Badge
                                       className="text-xs font-semibold border-0 whitespace-nowrap text-gray-950 dark:text-gray-50 cursor-pointer"
-                                      style={{ backgroundColor: currentStageObj?.color || '#E5E7EB' }}
+                                      style={{ backgroundColor: currentStageObj?.color || 'var(--gray-200)' }}
                                     >
                                       {currentStageObj?.displayName || candidate.stage}
                                     </Badge>
@@ -7765,14 +7765,14 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       getStageBorderColor={(candidate: any) => {
                         const stage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
                         const stageColors: Record<string, string> = {
-                          'funil': '#374151',
-                          'triagem': '#F59E0B',
-                          'entrevista': '#8B5CF6',
-                          'final': '#3B82F6',
-                          'aprovados': '#10B981',
-                          'reprovados': '#E16162'
+                          'funil': 'var(--gray-600)',
+                          'triagem': 'var(--status-warning)',
+                          'entrevista': 'var(--wedo-purple)',
+                          'final': 'var(--gray-600)',
+                          'aprovados': 'var(--status-success)',
+                          'reprovados': 'var(--status-error)'
                         }
-                        return stageColors[stage] || '#111827'
+                        return stageColors[stage] || 'var(--gray-950)'
                       }}
                       className="max-h-[calc(100vh-22rem)]"
                     />
@@ -8016,8 +8016,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 <span 
                                   className="text-xs px-2 py-0.5 rounded-full"
                                   style={{ 
-                                    backgroundColor: visibleCount > 0 ? 'rgba(31,41,55,0.1)' : '#f3f4f6',
-                                    color: visibleCount > 0 ? '#1f2937' : '#9ca3af',
+                                    backgroundColor: visibleCount > 0 ? 'rgba(31,41,55,0.1)' : 'var(--gray-200)',
+                                    color: visibleCount > 0 ? 'var(--gray-800)' : 'var(--gray-400)',
                                     fontFamily: 'Open Sans, sans-serif'
                                   }}
                                 >
@@ -8035,14 +8035,14 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                     }}
                                     className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-all"
                                     style={{ 
-                                      backgroundColor: col.visible ? 'rgba(31,41,55,0.05)' : '#fafafa',
+                                      backgroundColor: col.visible ? 'rgba(31,41,55,0.05)' : 'var(--gray-50)',
                                       border: col.visible ? '1px solid rgba(31,41,55,0.2)' : '1px solid #e5e7eb'
                                     }}
                                   >
                                     <div 
                                       className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
                                       style={{ 
-                                        backgroundColor: col.visible ? '#1f2937' : 'transparent',
+                                        backgroundColor: col.visible ? 'var(--gray-800)' : 'transparent',
                                         border: col.visible ? 'none' : '2px solid #d1d5db'
                                       }}
                                     >
@@ -8053,7 +8053,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                     <span 
                                       className="text-xs flex-1"
                                       style={{ 
-                                        color: col.visible ? '#1f2937' : '#6b7280',
+                                        color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)',
                                         fontFamily: 'Open Sans, sans-serif',
                                         fontWeight: col.visible ? 500 : 400
                                       }}
@@ -10009,7 +10009,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   <div className="text-center py-6">
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{ backgroundColor: '#A8CED5' }}
+                      style={{ backgroundColor: 'var(--gray-100)' }}
                     >
                       <span className="text-3xl font-bold text-gray-950 dark:text-gray-50">
                         {formatScorePercent(selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score, 0)}
@@ -10035,10 +10035,10 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
                       style={{ 
-                        backgroundColor: selectedCandidateForModal.technicalTestScore >= 80 ? '#A8D5B7' :
-                                         selectedCandidateForModal.technicalTestScore >= 60 ? '#A8CED5' :
-                                         selectedCandidateForModal.technicalTestScore >= 40 ? '#BFA8D5' :
-                                         '#D5A8C6'
+                        backgroundColor: selectedCandidateForModal.technicalTestScore >= 80 ? 'var(--status-success)' :
+                                         selectedCandidateForModal.technicalTestScore >= 60 ? 'var(--status-warning)' :
+                                         selectedCandidateForModal.technicalTestScore >= 40 ? 'var(--gray-400)' :
+                                         'var(--gray-400)'
                       }}
                     >
                       <span className="text-3xl font-bold text-gray-950 dark:text-gray-50">
@@ -10065,10 +10065,10 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
                       style={{ 
-                        backgroundColor: selectedCandidateForModal.englishTestScore >= 80 ? '#A8D5B7' :
-                                         selectedCandidateForModal.englishTestScore >= 60 ? '#A8CED5' :
-                                         selectedCandidateForModal.englishTestScore >= 40 ? '#BFA8D5' :
-                                         '#D5A8C6'
+                        backgroundColor: selectedCandidateForModal.englishTestScore >= 80 ? 'var(--status-success)' :
+                                         selectedCandidateForModal.englishTestScore >= 60 ? 'var(--gray-300)' :
+                                         selectedCandidateForModal.englishTestScore >= 40 ? 'var(--gray-400)' :
+                                         'var(--gray-400)'
                       }}
                     >
                       <span className="text-3xl font-bold text-gray-950 dark:text-gray-50">

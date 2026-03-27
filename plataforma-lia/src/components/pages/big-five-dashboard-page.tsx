@@ -91,7 +91,7 @@ const successPrediction = [
   { range: "12+ meses", tradicional: 59, bigFive: 78, diferenca: 19 }
 ]
 
-const COLORS = ['#6B9BD1', '#B8E6D3', '#F4D03F', '#A8CCE8', '#E85A5A']
+const COLORS = ['rgba(3,7,18,0.8)', 'var(--wedo-green-pastel)', 'var(--status-warning)', 'rgba(3,7,18,0.4)', 'var(--status-error)']
 
 export function BigFiveDashboardPage() {
   const [selectedDepartment, setSelectedDepartment] = useState<string>("Todos")
@@ -162,15 +162,15 @@ export function BigFiveDashboardPage() {
       {
         label: 'Performance (1-10)',
         data: performanceCorrelation.map(d => d.performance),
-        backgroundColor: '#B8E6D3',
-        borderColor: '#B8E6D3',
+        backgroundColor: 'var(--wedo-green-pastel)',
+        borderColor: 'var(--wedo-green-pastel)',
         borderWidth: 1
       },
       {
         label: 'Correlação (0-1)',
         data: performanceCorrelation.map(d => d.correlation),
-        backgroundColor: '#6B9BD1',
-        borderColor: '#6B9BD1',
+        backgroundColor: 'var(--gray-400)',
+        borderColor: 'var(--gray-400)',
         borderWidth: 1
       }
     ]
@@ -210,7 +210,7 @@ export function BigFiveDashboardPage() {
       {
         label: 'Performance',
         data: hiringOutcomes.map(d => d.performance),
-        borderColor: '#B8E6D3',
+        borderColor: 'var(--wedo-green-pastel)',
         backgroundColor: 'rgba(184, 230, 211, 0.1)',
         borderWidth: 3,
         tension: 0.4,
@@ -219,7 +219,7 @@ export function BigFiveDashboardPage() {
       {
         label: 'Fit Cultural %',
         data: hiringOutcomes.map(d => d.fit),
-        borderColor: '#6B9BD1',
+        borderColor: 'var(--gray-400)',
         backgroundColor: 'rgba(107, 155, 209, 0.1)',
         borderWidth: 3,
         tension: 0.4,
@@ -278,8 +278,8 @@ export function BigFiveDashboardPage() {
       {
         label: 'Big Five + IA',
         data: successPrediction.map(d => d.bigFive),
-        backgroundColor: '#6B9BD1',
-        borderColor: '#6B9BD1',
+        backgroundColor: 'var(--gray-400)',
+        borderColor: 'var(--gray-400)',
         borderWidth: 1
       }
     ]
@@ -292,14 +292,14 @@ export function BigFiveDashboardPage() {
       {
         label: 'Abertura',
         data: departmentData.map(d => d.openness),
-        borderColor: '#6B9BD1',
+        borderColor: 'var(--gray-400)',
         backgroundColor: 'rgba(107, 155, 209, 0.2)',
         borderWidth: 2
       },
       {
         label: 'Conscienciosidade',
         data: departmentData.map(d => d.conscientiousness),
-        borderColor: '#B8E6D3',
+        borderColor: 'var(--wedo-green-pastel)',
         backgroundColor: 'rgba(184, 230, 211, 0.2)',
         borderWidth: 2
       },
@@ -359,7 +359,7 @@ export function BigFiveDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-950 dark:text-gray-50 flex items-center gap-3">
-            <BarChart3 className="w-8 h-8" style={{ color: '#6B9BD1' }} />
+            <BarChart3 className="w-8 h-8" style={{ color: 'var(--gray-400)' }} />
             Dashboard Analytics Big Five
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -407,7 +407,7 @@ export function BigFiveDashboardPage() {
 
       {/* KPIs Principais */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card style={{ borderColor: '#6B9BD1' }} className="dark:border-gray-600">
+        <Card style={{ borderColor: 'var(--gray-400)' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -418,12 +418,12 @@ export function BigFiveDashboardPage() {
                   +15% vs anterior
                 </p>
               </div>
-              <UserCheck className="w-8 h-8" style={{ color: '#6B9BD1' }} />
+              <UserCheck className="w-8 h-8" style={{ color: 'var(--gray-400)' }} />
             </div>
           </CardContent>
         </Card>
 
-        <Card style={{ borderColor: '#B8E6D3' }} className="dark:border-gray-600">
+        <Card style={{ borderColor: 'var(--wedo-green-pastel)' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -434,7 +434,7 @@ export function BigFiveDashboardPage() {
                   +0.8 vs tradicional
                 </p>
               </div>
-              <Star className="w-8 h-8" style={{ color: '#B8E6D3' }} />
+              <Star className="w-8 h-8" style={{ color: 'var(--wedo-green-pastel)' }} />
             </div>
           </CardContent>
         </Card>
@@ -510,7 +510,7 @@ export function BigFiveDashboardPage() {
         <Card className="dark:border-gray-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="w-5 h-5" style={{ color: '#6B9BD1' }} />
+              <PieChart className="w-5 h-5" style={{ color: 'var(--gray-400)' }} />
               Distribuição Big Five - Empresa
             </CardTitle>
           </CardHeader>
@@ -525,7 +525,7 @@ export function BigFiveDashboardPage() {
         <Card className="dark:border-gray-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" style={{ color: '#B8E6D3' }} />
+              <BarChart3 className="w-5 h-5" style={{ color: 'var(--wedo-green-pastel)' }} />
               Correlação Performance x Big Five
             </CardTitle>
           </CardHeader>
@@ -587,10 +587,10 @@ export function BigFiveDashboardPage() {
 
       {/* Insights Executivos */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card style={{ borderColor: '#6B9BD1' }} className="dark:border-gray-600">
+        <Card style={{ borderColor: 'var(--gray-400)' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 mt-1" style={{ color: '#B8E6D3' }} />
+              <CheckCircle className="w-5 h-5 mt-1" style={{ color: 'var(--wedo-green-pastel)' }} />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   💡 Insight Principal
@@ -606,7 +606,7 @@ export function BigFiveDashboardPage() {
         <Card style={{ borderColor: '#F4D03F' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 mt-1" style={{ color: '#B8E6D3' }} />
+              <TrendingUp className="w-5 h-5 mt-1" style={{ color: 'var(--wedo-green-pastel)' }} />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   📈 Tendência Detectada

@@ -119,9 +119,9 @@ export function RubricEvaluationModal({
   const displayName = candidateName || evaluation.candidate_name || 'Candidato'
 
   const getScoreColor = (scoreValue: number) => {
-    if (scoreValue >= 85) return '#374151'
-    if (scoreValue >= 70) return '#374151'
-    if (scoreValue >= 50) return '#F59E0B'
+    if (scoreValue >= 85) return 'var(--gray-600)'
+    if (scoreValue >= 70) return 'var(--gray-600)'
+    if (scoreValue >= 50) return 'var(--status-warning)'
     return '#E16162'
   }
 
@@ -168,15 +168,15 @@ export function RubricEvaluationModal({
   const getRubricStyle = (level: string) => {
     switch (level?.toLowerCase()) {
       case 'exceeds':
-        return { bg: 'rgba(96, 190, 209, 0.08)', border: '#F3F4F6' }
+        return { bg: 'rgba(96, 190, 209, 0.08)', border: 'var(--gray-50)' }
       case 'meets':
-        return { bg: 'rgba(96, 190, 209, 0.04)', border: '#F3F4F6' }
+        return { bg: 'rgba(96, 190, 209, 0.04)', border: 'var(--gray-50)' }
       case 'partial':
-        return { bg: 'rgba(245, 158, 11, 0.08)', border: '#F3F4F6', color: 'var(--status-warning)' }
+        return { bg: 'rgba(245, 158, 11, 0.08)', border: 'var(--gray-50)', color: 'var(--status-warning)' }
       case 'missing':
-        return { bg: 'rgba(225, 97, 98, 0.08)', border: '#F3F4F6', color: '#E16162' }
+        return { bg: 'rgba(225, 97, 98, 0.08)', border: 'var(--gray-50)', color: '#E16162' }
       default:
-        return { bg: '#F9FAFB', border: '#F3F4F6' }
+        return { bg: 'var(--gray-50)', border: 'var(--gray-50)' }
     }
   }
 
@@ -215,9 +215,9 @@ export function RubricEvaluationModal({
       case 'important':
         return { bg: 'rgba(245, 158, 11, 0.12)', color: 'var(--status-warning)' }
       case 'nice-to-have':
-        return { bg: '#F3F4F6' }
+        return { bg: 'var(--gray-50)' }
       default:
-        return { bg: '#F3F4F6' }
+        return { bg: 'var(--gray-50)' }
     }
   }
 
@@ -392,7 +392,7 @@ export function RubricEvaluationModal({
                 style={{
                   fontFamily: "'Open Sans', sans-serif",
                   backgroundColor: activeSection === tab.id ? 'rgba(96, 190, 209, 0.12)' : 'transparent',
-                  color: activeSection === tab.id ? '#111827' : '#6B7280',
+                  color: activeSection === tab.id ? 'var(--gray-950)' : 'var(--gray-400)',
                 }}
               >
                 <TabIcon className="w-3.5 h-3.5" />
@@ -456,7 +456,7 @@ export function RubricEvaluationModal({
                 <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-t-gray-100">
                   <div className="text-center">
                     <div className="text-micro mb-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Essenciais</div>
-                    <div className="text-base-ui font-semibold" style={{ fontFamily: "'Open Sans', sans-serif", color: essentialMet === essentialReqs.length ? '#111827' : '#F59E0B' }}>
+                    <div className="text-base-ui font-semibold" style={{ fontFamily: "'Open Sans', sans-serif", color: essentialMet === essentialReqs.length ? 'var(--gray-950)' : 'var(--status-warning)' }}>
                       {essentialMet}/{essentialReqs.length}
                     </div>
                   </div>
@@ -536,7 +536,7 @@ export function RubricEvaluationModal({
                     </div>
                     <div className="space-y-1.5 pl-5">
                       {mockParecer.riscos_mitigacoes.map((rm, idx) => {
-                        const nivelColor = rm.nivel === 'alto' ? '#E16162' : rm.nivel === 'medio' ? '#F59E0B' : '#6B7280'
+                        const nivelColor = rm.nivel === 'alto' ? '#E16162' : rm.nivel === 'medio' ? 'var(--status-warning)' : 'var(--gray-400)'
                         return (
                           <div 
                             key={idx} 
@@ -578,10 +578,10 @@ export function RubricEvaluationModal({
                 {mockParecer.recomendacao_final && (
                   <div>
                     <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : 'rgba(96, 190, 209, 0.12)', color: decisionBadge ? decisionBadge.color : '#374151' }}>4</span>
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : 'rgba(96, 190, 209, 0.12)', color: decisionBadge ? decisionBadge.color : 'var(--gray-600)' }}>4</span>
                       Recomendação Final
                     </div>
-                    <div className="pl-5 p-2.5 rounded-md border border-gray-100" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : '#F9FAFB' }}>
+                    <div className="pl-5 p-2.5 rounded-md border border-gray-100" style={{ backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--gray-50)' }}>
                       <p className="text-xs leading-relaxed mb-2 text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                         {mockParecer.recomendacao_final.justificativa}
                       </p>
@@ -712,7 +712,7 @@ export function RubricEvaluationModal({
                 <div className="space-y-1.5">
                   {mockRedFlags.map((flag, idx) => {
                     const statusIcon = flag.status === 'ok' ? CheckCircle : flag.status === 'warning' ? AlertTriangle : XCircle
-                    const statusColor = flag.status === 'ok' ? '#111827' : flag.status === 'warning' ? '#F59E0B' : '#E16162'
+                    const statusColor = flag.status === 'ok' ? 'var(--gray-950)' : flag.status === 'warning' ? 'var(--status-warning)' : '#E16162'
                     return (
                       <div 
                         key={idx} 
@@ -764,13 +764,13 @@ export function RubricEvaluationModal({
                       </div>
                       <div className="p-2 rounded-md bg-gray-50">
                         <div className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Red Flags</div>
-                        <div className="text-sm font-bold" style={{ fontFamily: "'Open Sans', sans-serif", color: mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? '#F59E0B' : '#374151' }}>
+                        <div className="text-sm font-bold" style={{ fontFamily: "'Open Sans', sans-serif", color: mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? 'var(--status-warning)' : 'var(--gray-600)' }}>
                           {mockRedFlags.filter(f => f.status !== 'ok').length}
                         </div>
                       </div>
                       <div className="p-2 rounded-md bg-gray-50">
                         <div className="text-micro text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Taxa Essenciais</div>
-                        <div className="text-sm font-bold" style={{ fontFamily: "'Open Sans', sans-serif", color: essentialMet === essentialReqs.length ? '#111827' : '#F59E0B' }}>
+                        <div className="text-sm font-bold" style={{ fontFamily: "'Open Sans', sans-serif", color: essentialMet === essentialReqs.length ? 'var(--gray-950)' : 'var(--status-warning)' }}>
                           {essentialReqs.length > 0 ? Math.round((essentialMet / essentialReqs.length) * 100) : 100}%
                         </div>
                       </div>

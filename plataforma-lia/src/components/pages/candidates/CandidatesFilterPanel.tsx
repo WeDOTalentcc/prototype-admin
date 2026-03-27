@@ -799,7 +799,7 @@ export function CandidatesFilterPanel({
                       className="px-2 py-1.5 text-micro rounded-md transition-all"
                       style={{
                         backgroundColor:
-                          tableFilters.availabilityWindow === opt.value ? "#111827" : "#f9fafb",
+                          tableFilters.availabilityWindow === opt.value ? "var(--gray-950)" : "#f9fafb",
                         color: tableFilters.availabilityWindow === opt.value ? "white" : "#6b7280",
                         border:
                           tableFilters.availabilityWindow === opt.value
@@ -1038,7 +1038,7 @@ function CheckableItem({ label, checked, onClick }: CheckableItemProps) {
       <div
         className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
         style={{
-          backgroundColor: checked ? "#111827" : "transparent",
+          backgroundColor: checked ? "var(--gray-950)" : "transparent",
           border: checked ? "none" : "2px solid #d1d5db",
         }}
       >
@@ -1110,7 +1110,7 @@ function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
           onClick={() => onChange(opt.value)}
           className="flex-1 px-2 py-1.5 text-micro rounded-md transition-all"
           style={{
-            backgroundColor: value === opt.value ? "#111827" : "#f9fafb",
+            backgroundColor: value === opt.value ? "var(--gray-950)" : "#f9fafb",
             color: value === opt.value ? "white" : "#6b7280",
             border: value === opt.value ? "none" : "1px solid #e5e7eb",
             fontFamily: "Open Sans, sans-serif",

@@ -1014,7 +1014,17 @@
       "Bash(xargs sed:*)",
       "Bash(npm run:*)",
       "Bash(grep -roh \"#[0-9a-fA-F]\\\\{3,8\\\\}\" plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")",
-      "Bash(awk 'NR>80')"
+      "Bash(awk 'NR>80')",
+      "Bash(grep \"#[0-9A-Fa-f]\\\\{3,6\\\\}\")",
+      "Bash(git stash:*)",
+      "Bash(sed -i \"s/backgroundColor: ''#BFA8D5''/backgroundColor: ''var\\(--gray-400\\)''/g\" /home/runner/workspace/plataforma-lia/src/components/kanban/components/CandidateTableRow.tsx)",
+      "Bash(__NEW_LINE_bc4f1200e0cfda69__ sed:*)",
+      "Bash(sed -i \"s/''#D5A8C6''/''var\\(--gray-600\\)''/g\" /home/runner/workspace/plataforma-lia/src/components/kanban/components/CandidateTableRow.tsx)",
+      "Bash(__NEW_LINE_4af2127a5bbc1e33__ sed:*)",
+      "Bash(grep -n \"#[A-Fa-f0-9]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/kanban/components/CandidateTableRow.tsx)",
+      "Bash(grep -rl \"''#3B82F6''\" /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -rl \"''#E16162''\\\\|''#60D186''\\\\|''#E85A5A''\" /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(echo \"=== Arbitrary Tailwind [#hex] \\(non-exempt\\) ===\" grep -roh 'text-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]\\\\|bg-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]\\\\|border-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]' /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")"
     ]
   }
 }

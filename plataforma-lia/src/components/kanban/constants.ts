@@ -1,13 +1,13 @@
 import type { DynamicStage } from "./types"
 
 export const DYNAMIC_STAGE_COLORS = [
-  '#374151', // gray-700
-  '#4B5563', // gray-600
-  '#6B7280', // gray-500
-  '#9CA3AF', // gray-400
-  '#6B7280', // gray-500
-  '#4B5563', // gray-600
-  '#374151', // gray-700
+  'var(--gray-600)', // gray-700
+  'var(--gray-600)', // gray-600
+  'var(--gray-400)', // gray-500
+  'var(--gray-400)', // gray-400
+  'var(--gray-400)', // gray-500
+  'var(--gray-600)', // gray-600
+  'var(--gray-600)', // gray-700
 ] as const
 
 export const SYSTEM_INITIAL_STAGES: DynamicStage[] = [

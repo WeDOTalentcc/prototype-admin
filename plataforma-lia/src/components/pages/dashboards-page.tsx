@@ -2881,7 +2881,7 @@ const agentsData: AgentInfo[] = [
     actionsToday: 34,
     successRate: 99,
     avgResponseTime: 1.5,
-    color: '#D19960'
+    color: 'var(--wedo-orange)'
   },
   {
     id: 'communication',
@@ -3216,7 +3216,7 @@ function AgentActivityDashboard() {
                       </td>
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: agent?.color || '#111827' }}></div>
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: agent?.color || 'var(--gray-950)' }}></div>
                           <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-200">{action.agentName}</span>
                         </div>
                       </td>

@@ -38,14 +38,14 @@ const quickActions: QuickAction[] = [
   {
     href: "/admin/clientes",
     icon: Building,
-    iconColor: "#374151",
+    iconColor: "var(--gray-600)",
     title: "Adicionar Cliente",
     subtitle: "Nova organização",
   },
   {
     href: "/admin/configuracoes",
     icon: Zap,
-    iconColor: "#374151",
+    iconColor: "var(--gray-600)",
     title: "Configurar Integração",
     subtitle: "Pearch, OpenMic, ATS",
   },
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
   const serviceItems: ServiceItem[] = [
     {
       icon: Zap,
-      iconColor: "#374151",
+      iconColor: "var(--gray-600)",
       title: "Consumo de IA (Claude + Gemini)",
       subtitle: "1.2M tokens este mês",
       value: "R$ 850",
@@ -276,7 +276,7 @@ export default function AdminDashboard() {
         <Card className="p-6" style={{ backgroundColor: 'var(--eleven-surface-1, white)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5" style={{ color: "#f59e0b" }} />
+              <Clock className="w-5 h-5" style={{ color: "var(--status-warning)" }} />
               <h3 className="font-semibold text-gray-950 dark:text-gray-50">Clientes em Trial</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">

@@ -45,21 +45,21 @@ const CATEGORY_COLORS: Record<string, {
     badgeVariant: 'secondary'
   },
   entrevistas: {
-    borderColor: '#E5A853',
+    borderColor: 'var(--wedo-orange)',
     backgroundColor: '#FFFBEB',
     iconBg: '#FEF3C7',
     textColor: '#92400E',
     badgeVariant: 'default'
   },
   relatorios: {
-    borderColor: '#8B5CF6',
+    borderColor: 'var(--wedo-purple)',
     backgroundColor: '#FAF5FF',
     iconBg: '#F3E8FF',
     textColor: '#6B21A8',
     badgeVariant: 'secondary'
   },
   localizacao: {
-    borderColor: '#8B5CF6',
+    borderColor: 'var(--wedo-purple)',
     backgroundColor: '#FAF5FF',
     iconBg: '#F3E8FF',
     textColor: '#6B21A8',

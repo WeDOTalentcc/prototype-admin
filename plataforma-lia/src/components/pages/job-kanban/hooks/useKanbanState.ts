@@ -53,10 +53,10 @@ export function useKanbanState(options: UseKanbanStateOptions): UseKanbanStateRe
       const defaultStages: KanbanStage[] = [
         { id: "applied", name: "Inscritos", color: "var(--gray-400)", order: 0, candidates: [], candidateCount: 0 },
         { id: "screening", name: "Triagem", color: "#3B82F6", order: 1, candidates: [], candidateCount: 0 },
-        { id: "interview", name: "Entrevista", color: "#8B5CF6", order: 2, candidates: [], candidateCount: 0 },
+        { id: "interview", name: "Entrevista", color: "var(--wedo-purple)", order: 2, candidates: [], candidateCount: 0 },
         { id: "technical", name: "Teste Técnico", color: "var(--status-warning)", order: 3, candidates: [], candidateCount: 0 },
         { id: "offer", name: "Proposta", color: "var(--status-success)", order: 4, candidates: [], candidateCount: 0 },
-        { id: "hired", name: "Contratado", color: "#059669", order: 5, candidates: [], candidateCount: 0 },
+        { id: "hired", name: "Contratado", color: "var(--status-success)", order: 5, candidates: [], candidateCount: 0 },
       ]
       
       const jobData: KanbanJob = {

@@ -70,10 +70,10 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
   const finalScore = candidate?.score ?? calculateWeightedScore()
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#10B981'
-    if (score >= 60) return '#6B7280'
-    if (score >= 40) return '#F59E0B'
-    return '#EF4444'
+    if (score >= 80) return 'var(--status-success)'
+    if (score >= 60) return 'var(--gray-400)'
+    if (score >= 40) return 'var(--status-warning)'
+    return 'var(--status-error)'
   }
 
   const getScoreLabel = (score: number) => {
@@ -209,7 +209,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                         className="text-xs font-bold"
                         style={{ 
                           fontFamily: "'Open Sans', sans-serif", 
-                          color: hasScore ? getScoreColor(score) : '#9CA3AF'
+                          color: hasScore ? getScoreColor(score) : 'var(--gray-400)'
                         }}
                       >
                         {hasScore ? `${score}` : 'N/A'}
@@ -217,7 +217,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                     </div>
                     <Progress 
                       value={hasScore ? score : 0} 
-                      className="h-1.5 bg-gray-200" style={{ ['--progress-color' as any]: hasScore ? getScoreColor(score) : '#D1D5DB' }}
+                      className="h-1.5 bg-gray-200" style={{ ['--progress-color' as any]: hasScore ? getScoreColor(score) : 'var(--gray-200)' }}
                     />
                     <p 
                       className="text-micro mt-1.5 text-gray-600"

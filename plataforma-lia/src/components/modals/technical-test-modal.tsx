@@ -57,10 +57,10 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
   const StatusIcon = statusConfig.icon
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#10B981'
-    if (score >= 60) return '#6B7280'
-    if (score >= 40) return '#F59E0B'
-    return '#EF4444'
+    if (score >= 80) return 'var(--status-success)'
+    if (score >= 60) return 'var(--gray-400)'
+    if (score >= 40) return 'var(--status-warning)'
+    return 'var(--status-error)'
   }
 
   const getComparisonIcon = (candidateScore: number, avgScore: number) => {
@@ -217,7 +217,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   className="text-xs font-semibold ml-auto"
                   style={{ 
                     fontFamily: "'Open Sans', sans-serif", 
-                    color: testData.score >= testData.averageScore ? '#10B981' : '#EF4444' 
+                    color: testData.score >= testData.averageScore ? 'var(--status-success)' : 'var(--status-error)' 
                   }}
                 >
                   {getComparisonLabel(testData.score, testData.averageScore)}
@@ -275,7 +275,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                           className="text-micro"
                           style={{ 
                             fontFamily: "'Open Sans', sans-serif", 
-                            color: category.score >= category.avgScore ? '#10B981' : '#EF4444' 
+                            color: category.score >= category.avgScore ? 'var(--status-success)' : 'var(--status-error)' 
                           }}
                         >
                           {category.score >= category.avgScore ? '+' : ''}{category.score - category.avgScore}

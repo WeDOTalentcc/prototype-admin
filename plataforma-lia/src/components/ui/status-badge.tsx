@@ -38,46 +38,49 @@ import { SUB_STATUSES, type SubStatus } from '@/lib/recruitment-stages'
  * Border Radius: 9999px (rounded-full)
  */
 
-// Cores pastel por etapa para badges Accent (light mode)
+// Cores por etapa para badges Accent — escala cinza monocromática (Fase 2 — 2026-03-27)
+// Antes: 17 pastéis coloridos únicos. Depois: gray scale hierárquico.
+// Tom = progresso no funil (mais claro = início, mais escuro = final).
+// Consistente com RECRUITMENT_STAGES.color em recruitment-stages.ts.
 export const STAGE_PASTEL_COLORS: Record<string, string> = {
-  sourcing: '#DCE4DB',      // Verde Menta
-  screening: '#E3DADC',     // Rosa Antigo
-  long_list: '#E3DADC',
-  short_list: '#E3DADC',
-  interview_hr: '#DDE1E9',  // Azul Acinzentado
-  interview_technical: '#DDE1E9',
-  interview_manager: '#DDE1E9',
-  interview_manager2: '#DDE1E9',
-  interview_final: '#DDE1E9',
-  technical_test: '#DDE1E9',
-  english_test: '#DDE1E9',
-  references: '#E5E0E2',
-  offer: '#E5E0E2',         // Lilás Acinzentado
-  hired: '#EAEAEA',         // Cinza Gelo
-  rejected: '#F5F5F5',      // Neutro
-  offer_declined: '#F5F5F5',
-  standby: '#F5F5F5',
+  sourcing: 'var(--gray-200)',
+  screening: 'var(--gray-200)',
+  long_list: 'var(--gray-300)',          // gray-300 equiv (entre gray-200 e gray-400)
+  short_list: 'var(--gray-300)',
+  interview_hr: 'var(--gray-400)',
+  technical_test: 'var(--gray-400)',
+  english_test: 'var(--gray-400)',
+  interview_technical: 'var(--gray-500)', // gray-500 equiv
+  interview_manager: 'var(--gray-500)',
+  interview_manager2: 'var(--gray-500)',
+  interview_final: 'var(--gray-600)',
+  references: 'var(--gray-600)',
+  offer: 'var(--gray-800)',
+  hired: 'var(--status-success)',  // único verde semântico
+  rejected: 'var(--gray-200)',     // faded
+  offer_declined: 'var(--gray-200)',
+  standby: 'var(--gray-300)',
 }
 
-// Cores escuras por etapa para badges Accent (dark mode)
+// Dark mode — inversão da escala (claro vira escuro, escuro vira claro)
 export const STAGE_PASTEL_COLORS_DARK: Record<string, string> = {
-  sourcing: '#3D4A3C',      // Verde Menta escuro
-  screening: '#4A3D40',     // Rosa Antigo escuro
-  long_list: '#4A3D40',
-  short_list: '#4A3D40',
-  interview_hr: '#3D414A',  // Azul Acinzentado escuro
-  interview_technical: '#3D414A',
-  interview_manager: '#3D414A',
-  interview_manager2: '#3D414A',
-  interview_final: '#3D414A',
-  technical_test: '#3D414A',
-  english_test: '#3D414A',
-  references: '#454043',
-  offer: '#454043',         // Lilás Acinzentado escuro
-  hired: '#3A3A3A',         // Cinza escuro
-  rejected: '#404040',      // Neutro escuro
-  offer_declined: '#404040',
-  standby: '#404040',
+  sourcing: '#374151',
+  screening: '#374151',
+  long_list: 'var(--gray-600)',
+  short_list: 'var(--gray-600)',
+  interview_hr: 'var(--gray-500)',
+  technical_test: 'var(--gray-500)',
+  english_test: 'var(--gray-500)',
+  interview_technical: 'var(--gray-400)',
+  interview_manager: 'var(--gray-400)',
+  interview_manager2: 'var(--gray-400)',
+  interview_final: 'var(--gray-300)',
+  references: 'var(--gray-300)',
+  offer: 'var(--gray-200)',
+  hired: '#15803D',               // status-success dark
+  rejected: '#374151',
+  offer_declined: '#374151',
+  standby: 'var(--gray-600)',
 }
 
 // Tipos de badge
@@ -187,7 +190,9 @@ function getDefaultIcon(subStatus: SubStatus | undefined, variant: BadgeVariant)
   return FileText
 }
 
-// Estilos por variante
+// Estilos por variante — tokens CSS vars (Fase 2 — 2026-03-27)
+// Antes: 90 hex hardcoded. Depois: CSS vars de design-tokens.css.
+// Valores são CSS strings pois são injetados em custom properties via style={}.
 const variantStyles: Record<BadgeVariant, {
   bg: string
   text: string
@@ -200,83 +205,83 @@ const variantStyles: Record<BadgeVariant, {
   darkBorder?: string
 }> = {
   standard: {
-    bg: '#F9FAFB',
-    text: '#4B5563',
-    icon: '#6B7280',
+    bg: 'var(--gray-50)',
+    text: 'var(--gray-600)',
+    icon: 'var(--gray-400)',
     fontWeight: '500',
-    darkBg: '#374151',
-    darkText: '#D1D5DB',
-    darkIcon: '#9CA3AF',
+    darkBg: 'var(--gray-600)',
+    darkText: 'var(--gray-200)',
+    darkIcon: 'var(--gray-400)',
   },
   dark: {
-    bg: '#111827',
+    bg: 'var(--gray-950)',
     text: '#FFFFFF',
     icon: '#FFFFFF',
     fontWeight: '700',
-    darkBg: '#F3F4F6',
-    darkText: '#111827',
-    darkIcon: '#111827',
+    darkBg: 'var(--gray-50)',
+    darkText: 'var(--gray-950)',
+    darkIcon: 'var(--gray-950)',
   },
   accent: {
-    bg: '', // Será preenchido dinamicamente com cor pastel da etapa
-    text: '#111827',
-    icon: '#111827',
+    bg: '', // preenchido dinamicamente com STAGE_PASTEL_COLORS[stageId]
+    text: 'var(--gray-950)',
+    icon: 'var(--gray-800)',
     fontWeight: '600',
-    darkBg: '#374151', // Fallback for dark mode - stage colors will be darkened
-    darkText: '#E5E7EB',
-    darkIcon: '#E5E7EB',
+    darkBg: 'var(--gray-600)',
+    darkText: 'var(--gray-200)',
+    darkIcon: 'var(--gray-200)',
   },
   outlined: {
-    bg: '#F9FAFB',
-    text: '#374151',
-    icon: '#374151',
-    border: '#E5E7EB',
+    bg: 'var(--gray-50)',
+    text: 'var(--gray-600)',
+    icon: 'var(--gray-600)',
+    border: 'var(--gray-200)',
     fontWeight: '400',
-    darkBg: '#1F2937',
-    darkText: '#D1D5DB',
-    darkIcon: '#D1D5DB',
-    darkBorder: '#374151',
+    darkBg: 'var(--gray-800)',
+    darkText: 'var(--gray-200)',
+    darkIcon: 'var(--gray-200)',
+    darkBorder: 'var(--gray-600)',
   },
   channel: {
-    bg: '#F3F4F6',
-    text: '#1F2937',
-    icon: '#1F2937',
-    border: '#D1D5DB',
+    bg: 'var(--gray-50)',
+    text: 'var(--gray-800)',
+    icon: 'var(--gray-800)',
+    border: 'var(--gray-200)',
     fontWeight: '400',
-    darkBg: '#374151',
-    darkText: '#E5E7EB',
-    darkIcon: '#E5E7EB',
-    darkBorder: '#4B5563',
+    darkBg: 'var(--gray-600)',
+    darkText: 'var(--gray-200)',
+    darkIcon: 'var(--gray-200)',
+    darkBorder: 'var(--gray-400)',
   },
   scheduled: {
-    bg: '#1F2937',
+    bg: 'var(--gray-800)',
     text: '#FFFFFF',
-    icon: '#22D3EE',
-    border: '#374151',
+    icon: 'var(--wedo-cyan)',   // ícone de calendário: único uso cyan não-LIA justificado
+    border: 'var(--gray-600)', // (scheduled = ação pendente de alta relevância)
     fontWeight: '600',
-    darkBg: '#E5E7EB',
-    darkText: '#111827',
-    darkIcon: '#0891B2',
+    darkBg: 'var(--gray-200)',
+    darkText: 'var(--gray-950)',
+    darkIcon: 'var(--wedo-cyan-dark)',
   },
   hired: {
-    bg: '#111827',
+    bg: 'var(--gray-950)',
     text: '#FFFFFF',
-    icon: '#10B981',
+    icon: 'var(--status-success)',   // Trophy verde = único indicador de contratação
     fontWeight: '700',
-    darkBg: '#F3F4F6',
-    darkText: '#111827',
-    darkIcon: '#059669',
+    darkBg: 'var(--gray-50)',
+    darkText: 'var(--gray-950)',
+    darkIcon: 'var(--status-success)',
   },
   rejected: {
-    bg: '#F9FAFB',
-    text: '#4B5563',
-    icon: '#6B7280',
-    border: '#E5E7EB',
+    bg: 'var(--gray-50)',
+    text: 'var(--gray-600)',
+    icon: 'var(--gray-400)',
+    border: 'var(--gray-200)',
     fontWeight: '500',
-    darkBg: '#374151',
-    darkText: '#D1D5DB',
-    darkIcon: '#9CA3AF',
-    darkBorder: '#4B5563',
+    darkBg: 'var(--gray-600)',
+    darkText: 'var(--gray-200)',
+    darkIcon: 'var(--gray-400)',
+    darkBorder: 'var(--gray-400)',
   },
 }
 

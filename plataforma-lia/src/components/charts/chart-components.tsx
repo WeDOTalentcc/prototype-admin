@@ -126,7 +126,7 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
             cy="18"
             r="15.5"
             fill="transparent"
-            stroke="#e5e7eb"
+            stroke="var(--gray-200)"
             strokeWidth="3"
             className="dark:stroke-gray-600"
           />

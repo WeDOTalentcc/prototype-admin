@@ -9,7 +9,7 @@ interface SparklineProps {
   showArea?: boolean
 }
 
-export function Sparkline({ data, color = '#374151', height = 32, showArea = true }: SparklineProps) {
+export function Sparkline({ data, color = 'var(--gray-600)', height = 32, showArea = true }: SparklineProps) {
   const pathData = useMemo(() => {
     if (!data.length) return { line: '', area: '' }
 

@@ -473,7 +473,7 @@ export default function ClientFaturamentoPage({
                 <div 
                   key={method.id}
                   className="flex items-center justify-between p-3 rounded-md border"
-                  style={{ borderColor: method.is_default ? '#111827' : 'var(--eleven-border-subtle)' }}
+                  style={{ borderColor: method.is_default ? 'var(--gray-950)' : 'var(--eleven-border-subtle)' }}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">

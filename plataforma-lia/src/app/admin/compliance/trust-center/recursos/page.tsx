@@ -126,7 +126,7 @@ export default function RecursosPage() {
                   >
                     <IconComponent 
                       className="w-5 h-5" 
-                      style={{ color: resource.requestRequired ? '#F59E0B' : '#374151' }}
+                      style={{ color: resource.requestRequired ? 'var(--status-warning)' : 'var(--gray-600)' }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -159,7 +159,7 @@ export default function RecursosPage() {
                       <button 
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border hover:bg-gray-50 transition-colors"
                         style={{ 
-                          borderColor: '#F59E0B',
+                          borderColor: 'var(--status-warning)',
                           color: 'var(--status-warning)'
                         }}
                         onClick={() => handleRequest(resource.name)}

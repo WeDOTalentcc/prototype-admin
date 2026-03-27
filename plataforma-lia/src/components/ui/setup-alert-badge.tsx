@@ -137,9 +137,9 @@ export function SetupAlertBadge() {
   }
 
   const getProgressColor = () => {
-    if (overallCompletion >= 80) return '#374151'
+    if (overallCompletion >= 80) return 'var(--gray-600)'
     if (overallCompletion >= 50) return '#4BA8BA'
-    return '#F59E0B'
+    return 'var(--status-warning)'
   }
 
   return (

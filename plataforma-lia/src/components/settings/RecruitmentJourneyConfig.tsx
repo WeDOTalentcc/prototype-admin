@@ -44,7 +44,7 @@ interface CatalogStage {
 
 export const DEFAULT_STAGES: RecruitmentStage[] = [
   { id: "1",  name: "sourcing",            display_name: "Funil",             order: 1,  isActive: true, notes: "", sla: 0, type: "system",  color: "#6366F1", icon: "search",      action_behavior: "intake",               default_channel: "email",         stage_category: "system"  },
-  { id: "2",  name: "screening",           display_name: "Triagem",           order: 2,  isActive: true, notes: "", sla: 0, type: "system",  color: "#8B5CF6", icon: "file-text",   action_behavior: "screening",            default_channel: "email",         stage_category: "system"  },
+  { id: "2",  name: "screening",           display_name: "Triagem",           order: 2,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--wedo-purple)", icon: "file-text",   action_behavior: "screening",            default_channel: "email",         stage_category: "system"  },
   { id: "3",  name: "long_list",           display_name: "Long List",         order: 3,  isActive: true, notes: "", sla: 3, type: "custom",  color: "#C5D9ED", icon: "list",        action_behavior: "passive",              default_channel: "email",         stage_category: "custom"  },
   { id: "4",  name: "short_list",          display_name: "Short List",        order: 4,  isActive: true, notes: "", sla: 3, type: "custom",  color: "#B8C5D0", icon: "list-checks", action_behavior: "passive",              default_channel: "email",         stage_category: "custom"  },
   { id: "5",  name: "interview_hr",        display_name: "Entrevista RH",     order: 5,  isActive: true, notes: "", sla: 0, type: "system",  color: "#EC4899", icon: "users",       action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "system"  },
@@ -55,7 +55,7 @@ export const DEFAULT_STAGES: RecruitmentStage[] = [
   { id: "10", name: "interview_final",     display_name: "Entrevista Final",  order: 10, isActive: true, notes: "", sla: 5, type: "custom",  color: "#D5BFA8", icon: "award",       action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
   { id: "11", name: "references",          display_name: "Referências",       order: 11, isActive: true, notes: "", sla: 3, type: "custom",  color: "#E8E4E0", icon: "phone",       action_behavior: "verification",         default_channel: "email",         stage_category: "custom"  },
   { id: "12", name: "offer",               display_name: "Proposta",          order: 12, isActive: true, notes: "", sla: 3, type: "default", color: "#3B82F6", icon: "file-check",  action_behavior: "offer",                default_channel: "email",         stage_category: "catalog" },
-  { id: "13", name: "offer_declined",      display_name: "Proposta Recusada", order: 13, isActive: true, notes: "", sla: 0, type: "default", color: "#F97316", icon: "x",           action_behavior: "conclusion_declined",  default_channel: "email",         stage_category: "catalog" },
+  { id: "13", name: "offer_declined",      display_name: "Proposta Recusada", order: 13, isActive: true, notes: "", sla: 0, type: "default", color: "var(--status-warning)", icon: "x",           action_behavior: "conclusion_declined",  default_channel: "email",         stage_category: "catalog" },
   { id: "14", name: "hired",               display_name: "Contratado",        order: 14, isActive: true, notes: "", sla: 0, type: "system",  color: "var(--status-success)", icon: "check-circle",action_behavior: "conclusion_hired",     default_channel: "email",         stage_category: "system"  },
   { id: "15", name: "rejected",            display_name: "Reprovado",         order: 15, isActive: true, notes: "", sla: 0, type: "system",  color: "var(--status-error)", icon: "x-circle",   action_behavior: "conclusion_rejected",  default_channel: "email",         stage_category: "system"  },
 ]
@@ -227,7 +227,7 @@ export function RecruitmentJourneyConfig({
                         onClick={() => handleAddFromCatalog(cs)}
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left"
                       >
-                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cs.color || '#9CA3AF' }} />
+                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cs.color || 'var(--gray-400)' }} />
                         <span className={`flex-1 ${textStyles.body} text-gray-800 dark:text-gray-200`}>{cs.display_name}</span>
                         {cs.action_behavior && (
                           <span className="text-micro text-gray-400">{getActionBehaviorShort(cs.action_behavior)}</span>

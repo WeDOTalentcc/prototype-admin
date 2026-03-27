@@ -600,11 +600,11 @@ Qualquer dúvida, estamos à disposição! 💬`,
 ]
 
 export const screeningTemplateCategories: Record<ScreeningTemplateType, { label: string; color: string; icon: string }> = {
-  screening: { label: 'Triagem', color: '#60BED1', icon: '🎤' },
-  interview: { label: 'Entrevista', color: '#60BED1', icon: '🎥' },
-  feedback: { label: 'Feedback', color: '#60BED1', icon: '✉️' },
-  reminder: { label: 'Lembrete', color: '#60BED1', icon: '⏰' },
-  offer: { label: 'Proposta', color: '#60BED1', icon: '💼' }
+  screening: { label: 'Triagem', color: 'var(--wedo-cyan)', icon: '🎤' },
+  interview: { label: 'Entrevista', color: 'var(--wedo-cyan)', icon: '🎥' },
+  feedback: { label: 'Feedback', color: 'var(--wedo-cyan)', icon: '✉️' },
+  reminder: { label: 'Lembrete', color: 'var(--wedo-cyan)', icon: '⏰' },
+  offer: { label: 'Proposta', color: 'var(--wedo-cyan)', icon: '💼' }
 }
 
 export function getTemplateByEvent(event: TriggerEvent): ScreeningDefaultTemplate | undefined {

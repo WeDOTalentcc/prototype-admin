@@ -92,14 +92,14 @@ export default function CoberturaPage() {
       name: 'SOC 2 Type II',
       icon: <Shield className="w-5 h-5" />,
       stats: dashboard?.byFramework?.['SOC2'] || null,
-      color: '#7BC29A'
+      color: 'var(--wedo-green-light)'
     },
     {
       key: 'SOX',
       name: 'SOX',
       icon: <Scale className="w-5 h-5" />,
       stats: dashboard?.byFramework?.['SOX'] || null,
-      color: '#C9A0DC'
+      color: 'var(--wedo-purple)'
     }
   ]
 

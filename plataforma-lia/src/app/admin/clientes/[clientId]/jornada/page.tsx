@@ -34,9 +34,9 @@ const DEFAULT_STAGES: RecruitmentStage[] = [
   { id: 'applied', name: 'Candidatura', color: 'var(--gray-400)', isActive: true, order: 1 },
   { id: 'screening', name: 'Triagem', isActive: true, order: 2 },
   { id: 'interview', name: 'Entrevista', color: 'var(--status-warning)', isActive: true, order: 3 },
-  { id: 'technical', name: 'Avaliação Técnica', color: '#8B5CF6', isActive: true, order: 4 },
+  { id: 'technical', name: 'Avaliação Técnica', color: 'var(--wedo-purple)', isActive: true, order: 4 },
   { id: 'offer', name: 'Proposta', color: 'var(--status-success)', isActive: true, order: 5 },
-  { id: 'hired', name: 'Contratado', color: '#059669', isActive: true, order: 6 }
+  { id: 'hired', name: 'Contratado', color: 'var(--status-success)', isActive: true, order: 6 }
 ]
 
 export default function ClientJornadaPage({

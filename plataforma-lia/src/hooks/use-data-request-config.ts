@@ -116,7 +116,7 @@ export const DEFAULT_STAGE_CONFIGS: StageConfig[] = [
 
 const DEFAULT_BRANDING: PortalBranding = {
   logoUrl: null,
-  primaryColor: '#60BED1',
+  primaryColor: 'var(--wedo-cyan)',
   welcomeMessage: 'Olá! Precisamos de algumas informações adicionais para dar continuidade ao seu processo seletivo.',
   thankYouMessage: 'Obrigado! Suas informações foram recebidas com sucesso. Entraremos em contato em breve.',
 }

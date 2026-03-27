@@ -119,14 +119,14 @@ export function BigFiveRadar({
 
           <defs>
             <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#374151" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="var(--gray-600)" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#3BA5B8" stopOpacity="0.4" />
             </linearGradient>
           </defs>
           <polygon
             points={polygonPoints}
             fill="url(#radarGradient)"
-            stroke="#374151"
+            stroke="var(--gray-600)"
             strokeWidth="2"
             className="transition-all duration-300"
           />
@@ -139,7 +139,7 @@ export function BigFiveRadar({
                 cx={point.x}
                 cy={point.y}
                 r="4"
-                fill="#374151"
+                fill="var(--gray-600)"
                 stroke="white"
                 strokeWidth="2"
                 className="transition-all duration-300"

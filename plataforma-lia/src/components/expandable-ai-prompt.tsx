@@ -94,15 +94,15 @@ const CONTEXT_COLORS: Record<string, {
   headerBg: string
 }> = {
   candidates: {
-    border: '#7BC29A',
+    border: 'var(--wedo-green-light)',
     bg: 'rgba(123, 194, 154, 0.1)',
     headerText: '#5aa078',
     headerBg: 'rgba(123, 194, 154, 0.15)'
   },
   jobs: {
-    border: '#6B7280',
+    border: 'var(--gray-400)',
     bg: 'rgba(107, 114, 128, 0.05)',
-    headerText: '#374151',
+    headerText: 'var(--gray-600)',
     headerBg: 'rgba(107, 114, 128, 0.1)'
   }
 }
@@ -1266,20 +1266,20 @@ export function ExpandableAIPrompt({
   
   // Helper function for tag colors (ElevenLabs/WedoTalent pattern)
   const getTagColors = useCallback((key: string, filled: boolean) => {
-    if (!filled) return { bg: '#F3F4F6', text: '#6B7280', iconBg: '#9CA3AF' }
+    if (!filled) return { bg: 'var(--gray-50)', text: 'var(--gray-400)', iconBg: 'var(--gray-400)' }
     switch (key) {
       case 'job_title':
-        return { bg: '#F3F4F6', text: '#374151', iconBg: '#374151' }
+        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
       case 'location':
-        return { bg: '#F3EAFF', text: '#7C3AED', iconBg: '#8B5CF6' }
+        return { bg: '#F3EAFF', text: '#7C3AED', iconBg: 'var(--wedo-purple)' }
       case 'skills':
-        return { bg: '#E5F5EB', text: '#2D6A4F', iconBg: '#7BC29A' }
+        return { bg: '#E5F5EB', text: '#2D6A4F', iconBg: 'var(--wedo-green-light)' }
       case 'years_experience':
-        return { bg: '#FDF4E8', text: '#B8860B', iconBg: '#E5A853' }
+        return { bg: '#FDF4E8', text: '#B8860B', iconBg: 'var(--wedo-orange)' }
       case 'industry':
         return { bg: '#E8F1FD', text: '#2563EB', iconBg: '#3B82F6' }
       default:
-        return { bg: '#F3F4F6', text: '#374151', iconBg: '#374151' }
+        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
     }
   }, [])
   
@@ -2987,13 +2987,13 @@ export function ExpandableAIPrompt({
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Brain className="w-4 h-4 text-wedo-cyan" />
-                                  <span className="font-semibold text-sm" style={{ color: autocompleteEnabled ? '#22C55E' : '#EF4444' }}>
+                                  <span className="font-semibold text-sm" style={{ color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)' }}>
                                     {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                                   </span>
                                 </div>
                                 <span className="text-micro px-2 py-0.5 rounded-full" style={{ 
                                   backgroundColor: autocompleteEnabled ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                  color: autocompleteEnabled ? '#22C55E' : '#EF4444'
+                                  color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'
                                 }}>
                                   {autocompleteEnabled ? 'ON' : 'OFF'}
                                 </span>
@@ -3069,10 +3069,10 @@ export function ExpandableAIPrompt({
                                 className="text-xs font-bold"
                                 style={{ 
                                   color: searchAnalysis.completeness_score >= 60 
-                                    ? '#22c55e' 
+                                    ? 'var(--status-success)' 
                                     : searchAnalysis.completeness_score >= 40 
-                                      ? '#f59e0b' 
-                                      : '#ef4444' 
+                                      ? 'var(--status-warning)' 
+                                      : 'var(--status-error)' 
                                 }}
                               >
                                 {searchAnalysis.completeness_score}%
@@ -3084,10 +3084,10 @@ export function ExpandableAIPrompt({
                                 style={{ 
                                   width: `${searchAnalysis.completeness_score}%`,
                                   backgroundColor: searchAnalysis.completeness_score >= 60 
-                                    ? '#22c55e' 
+                                    ? 'var(--status-success)' 
                                     : searchAnalysis.completeness_score >= 40 
-                                      ? '#f59e0b' 
-                                      : '#ef4444'
+                                      ? 'var(--status-warning)' 
+                                      : 'var(--status-error)'
                                 }}
                               />
                             </div>
@@ -3346,8 +3346,8 @@ export function ExpandableAIPrompt({
                       disabled={similarUrls.filter(u => u.trim()).length === 0 && similarCvFiles.length === 0}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ 
-                        backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "#111827" : "#E5E5E5",
-                        color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "white" : "#999"
+                        backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--gray-950)" : "#E5E5E5",
+                        color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "white" : "var(--gray-400)"
                       }}
                     >
                       <Search className="w-4 h-4" />
@@ -4038,21 +4038,21 @@ export function ExpandableAIPrompt({
             className="border border-gray-200"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold" style={{ color: "#1a1a1a" }}>
+              <h3 className="text-lg font-semibold" style={{ color: "var(--gray-950)" }}>
                 Editar Arquétipo
               </h3>
               <button
                 onClick={closeEditArchetype}
                 className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
               >
-                <X className="w-4 h-4" style={{ color: "#666" }} />
+                <X className="w-4 h-4" style={{ color: "var(--gray-400)" }} />
               </button>
             </div>
 
             <div className="space-y-3">
               <div className="flex gap-2">
                 <div className="w-16">
-                  <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Emoji</label>
+                  <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Emoji</label>
                   <input
                     type="text"
                     value={editArchetypeEmoji}
@@ -4062,7 +4062,7 @@ export function ExpandableAIPrompt({
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Nome</label>
+                  <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Nome</label>
                   <input
                     type="text"
                     value={editArchetypeName}
@@ -4074,7 +4074,7 @@ export function ExpandableAIPrompt({
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Query de Busca</label>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Query de Busca</label>
                 <textarea
                   value={editArchetypeQuery}
                   onChange={(e) => setEditArchetypeQuery(e.target.value)}
@@ -4085,7 +4085,7 @@ export function ExpandableAIPrompt({
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Descrição (opcional)</label>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Descrição (opcional)</label>
                 <textarea
                   value={editArchetypeDescription}
                   onChange={(e) => setEditArchetypeDescription(e.target.value)}
@@ -4097,7 +4097,7 @@ export function ExpandableAIPrompt({
 
               {/* Tags Section */}
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Tags</label>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--gray-400)" }}>Tags</label>
                 
                 {/* Existing tags as removable chips */}
                 {editArchetypeTags.length > 0 && (
@@ -4151,7 +4151,7 @@ export function ExpandableAIPrompt({
                 onClick={closeEditArchetype}
                 variant="outline"
                 className="flex-1"
-                style={{ color: "#666" }}
+                style={{ color: "var(--gray-400)" }}
               >
                 Cancelar
               </Button>
@@ -4160,8 +4160,8 @@ export function ExpandableAIPrompt({
                 disabled={isSavingArchetype || !editArchetypeName}
                 className="flex-1"
                 style={{ 
-                  backgroundColor: editArchetypeName ? "#1a1a1a" : "#E5E7EB",
-                  color: editArchetypeName ? "white" : "#999"
+                  backgroundColor: editArchetypeName ? "var(--gray-950)" : "var(--gray-200)",
+                  color: editArchetypeName ? "white" : "var(--gray-400)"
                 }}
               >
                 {isSavingArchetype ? (

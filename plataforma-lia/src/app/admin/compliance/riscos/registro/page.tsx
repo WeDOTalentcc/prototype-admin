@@ -142,10 +142,10 @@ const risks = [
 ]
 
 const getScoreColor = (score: number) => {
-  if (score >= 15) return { bg: 'rgba(239, 68, 68, 0.1)', text: '#ef4444', label: 'Crítico' }
-  if (score >= 10) return { bg: 'rgba(249, 115, 22, 0.1)', text: '#f97316', label: 'Alto' }
-  if (score >= 5) return { bg: 'rgba(234, 179, 8, 0.1)', text: '#eab308', label: 'Médio' }
-  return { bg: 'rgba(34, 197, 94, 0.1)', text: '#22c55e', label: 'Baixo' }
+  if (score >= 15) return { bg: 'rgba(239, 68, 68, 0.1)', text: 'var(--status-error)', label: 'Crítico' }
+  if (score >= 10) return { bg: 'rgba(249, 115, 22, 0.1)', text: 'var(--status-warning)', label: 'Alto' }
+  if (score >= 5) return { bg: 'rgba(234, 179, 8, 0.1)', text: 'var(--status-warning)', label: 'Médio' }
+  return { bg: 'rgba(34, 197, 94, 0.1)', text: 'var(--status-success)', label: 'Baixo' }
 }
 
 const getStatusConfig = (status: string) => {

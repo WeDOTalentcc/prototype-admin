@@ -542,7 +542,7 @@ export default function CandidatePortalPage() {
     }
   }
 
-  const primaryColor = portalData?.branding.primary_color || "#111827"
+  const primaryColor = portalData?.branding.primary_color || "var(--gray-950)"
 
   const renderField = (field: FieldConfig) => {
     const value = formValues[field.name] || ""
