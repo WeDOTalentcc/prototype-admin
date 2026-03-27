@@ -116,7 +116,7 @@ function CompanyDefaultQuestions({
                     {q.question}
                   </span>
                   {q.is_eliminatory && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error">
                       eliminatória
                     </span>
                   )}
@@ -572,7 +572,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     <div className={`${textStyles.description} 2xl:text-xs`}>{section.description}</div>
                   </div>
                   {sectionDone && (
-                    <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
                   )}
                 </button>
               )
@@ -719,7 +719,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         />
                       </button>
                     ) : job.screeningStatus === 'completed' ? (
-                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                         Concluída
                       </span>
                     ) : (
@@ -737,7 +737,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           }
                         }}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${
-                          job.screeningStatus === 'active' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                          job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-gray-300 dark:bg-gray-600'
                         }`}
                       >
                         <span
@@ -790,11 +790,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 <div className="rounded-md p-3 mb-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                   <div className="flex items-start gap-2.5">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                      showScreeningToggleConfirm === 'activate' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
+                      showScreeningToggleConfirm === 'activate' ? 'bg-status-success/15 dark:bg-status-success/30' : 'bg-status-warning/15 dark:bg-status-warning/30'
                     }`}>
                       {showScreeningToggleConfirm === 'activate'
-                        ? <Play className="w-3 h-3 text-green-600" />
-                        : <Pause className="w-3 h-3 text-amber-600" />
+                        ? <Play className="w-3 h-3 text-status-success" />
+                        : <Pause className="w-3 h-3 text-status-warning" />
                       }
                     </div>
                     <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -841,23 +841,23 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
-                          (job.screeningStatus || 'not_configured') === 'active' ? 'bg-green-100 dark:bg-green-900/30' :
-                          (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-amber-100 dark:bg-amber-900/30' :
-                          (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-blue-100 dark:bg-blue-900/30' :
+                          (job.screeningStatus || 'not_configured') === 'active' ? 'bg-status-success/15 dark:bg-status-success/30' :
+                          (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-status-warning/15 dark:bg-status-warning/30' :
+                          (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-wedo-cyan/15' :
                           'bg-gray-100 dark:bg-gray-800'
                         }`}>
-                          {(job.screeningStatus || 'not_configured') === 'active' && <Play className="w-3.5 h-3.5 text-green-600" />}
-                          {(job.screeningStatus || 'not_configured') === 'paused' && <Pause className="w-3.5 h-3.5 text-amber-600" />}
-                          {(job.screeningStatus || 'not_configured') === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-blue-600" />}
+                          {(job.screeningStatus || 'not_configured') === 'active' && <Play className="w-3.5 h-3.5 text-status-success" />}
+                          {(job.screeningStatus || 'not_configured') === 'paused' && <Pause className="w-3.5 h-3.5 text-status-warning" />}
+                          {(job.screeningStatus || 'not_configured') === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-dark" />}
                           {(job.screeningStatus || 'not_configured') === 'not_started' && <Clock className="w-3.5 h-3.5 text-gray-500" />}
                           {(job.screeningStatus || 'not_configured') === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-gray-400" />}
                         </div>
                         <div>
                           <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">Status da Triagem</span>
                           <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
-                            (job.screeningStatus || 'not_configured') === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                            (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                            (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                            (job.screeningStatus || 'not_configured') === 'active' ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
+                            (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' :
+                            (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark' :
                             (job.screeningStatus || 'not_configured') === 'not_started' ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' :
                             'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500'
                           }`}>
@@ -875,7 +875,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             {job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}
                           </span>
                           <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${
-                            job.screeningStatus === 'active' ? 'bg-green-400' : 'bg-gray-200 dark:bg-gray-700'
+                            job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-gray-200 dark:bg-gray-700'
                           }`}>
                             <span
                               className="inline-block h-3.5 w-3.5 transform rounded-full bg-white"
@@ -1016,14 +1016,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           </div>
                           <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-1">
                             <div
-                              className={`h-1.5 rounded-full transition-all ${(screeningConfig?.settings?.auto_approvals_count ?? 0) >= (screeningConfig?.settings?.auto_approval_limit ?? 10) ? 'bg-amber-400' : 'bg-gray-300 dark:bg-gray-600'}`}
+                              className={`h-1.5 rounded-full transition-all ${(screeningConfig?.settings?.auto_approvals_count ?? 0) >= (screeningConfig?.settings?.auto_approval_limit ?? 10) ? 'bg-status-warning' : 'bg-gray-300 dark:bg-gray-600'}`}
                               style={{ width: `${Math.min(100, ((screeningConfig?.settings?.auto_approvals_count ?? 0) / (screeningConfig?.settings?.auto_approval_limit ?? 10)) * 100)}%` }}
                             />
                           </div>
                         </div>
                       )}
                       {screeningConfig?.settings?.auto_approval_paused && (
-                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-amber-50/50 dark:bg-amber-900/10 rounded text-amber-600 dark:text-amber-500">
+                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10/50 dark:bg-status-warning/10 rounded text-status-warning dark:text-status-warning">
                           <AlertTriangle className="w-3 h-3" />
                           <span className="text-micro font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Triagem pausada — limite atingido, aguardando revisão humana</span>
                         </div>
@@ -1103,23 +1103,23 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
-                          (job.screeningStatus || 'not_configured') === 'active' ? 'bg-green-100 dark:bg-green-900/30' :
-                          (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-amber-100 dark:bg-amber-900/30' :
-                          (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-blue-100 dark:bg-blue-900/30' :
+                          (job.screeningStatus || 'not_configured') === 'active' ? 'bg-status-success/15 dark:bg-status-success/30' :
+                          (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-status-warning/15 dark:bg-status-warning/30' :
+                          (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-wedo-cyan/15' :
                           'bg-gray-100 dark:bg-gray-800'
                         }`}>
-                          {(job.screeningStatus || 'not_configured') === 'active' && <Play className="w-3.5 h-3.5 text-green-600" />}
-                          {(job.screeningStatus || 'not_configured') === 'paused' && <Pause className="w-3.5 h-3.5 text-amber-600" />}
-                          {(job.screeningStatus || 'not_configured') === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-blue-600" />}
+                          {(job.screeningStatus || 'not_configured') === 'active' && <Play className="w-3.5 h-3.5 text-status-success" />}
+                          {(job.screeningStatus || 'not_configured') === 'paused' && <Pause className="w-3.5 h-3.5 text-status-warning" />}
+                          {(job.screeningStatus || 'not_configured') === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-dark" />}
                           {(job.screeningStatus || 'not_configured') === 'not_started' && <Clock className="w-3.5 h-3.5 text-gray-500" />}
                           {(job.screeningStatus || 'not_configured') === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-gray-400" />}
                         </div>
                         <div>
                           <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">Status da Triagem</span>
                           <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
-                            (job.screeningStatus || 'not_configured') === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                            (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                            (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                            (job.screeningStatus || 'not_configured') === 'active' ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
+                            (job.screeningStatus || 'not_configured') === 'paused' ? 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' :
+                            (job.screeningStatus || 'not_configured') === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark' :
                             (job.screeningStatus || 'not_configured') === 'not_started' ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' :
                             'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500'
                           }`}>
@@ -1145,7 +1145,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               }
                             }}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${
-                              job.screeningStatus === 'active' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                              job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-gray-300 dark:bg-gray-600'
                             }`}
                           >
                             <span
@@ -1269,14 +1269,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           </div>
                           <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-1">
                             <div
-                              className={`h-1.5 rounded-full transition-all ${(screeningConfig?.settings?.auto_approvals_count ?? 0) >= approvalPresetToLimit(editAutoApprovalPreset) ? 'bg-amber-500' : 'bg-gray-400 dark:bg-gray-500'}`}
+                              className={`h-1.5 rounded-full transition-all ${(screeningConfig?.settings?.auto_approvals_count ?? 0) >= approvalPresetToLimit(editAutoApprovalPreset) ? 'bg-status-warning' : 'bg-gray-400 dark:bg-gray-500'}`}
                               style={{ width: `${Math.min(100, ((screeningConfig?.settings?.auto_approvals_count ?? 0) / approvalPresetToLimit(editAutoApprovalPreset)) * 100)}%` }}
                             />
                           </div>
                         </div>
                       )}
                       {screeningConfig?.settings?.auto_approval_paused && (
-                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded text-amber-700 dark:text-amber-400">
+                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10 dark:bg-status-warning/20 rounded text-status-warning dark:text-status-warning">
                           <AlertTriangle className="w-3 h-3" />
                           <span className="text-micro font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Triagem pausada — limite atingido</span>
                           <button onClick={() => {}} className="ml-auto text-micro font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 underline" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -1599,12 +1599,12 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     const showFullDisabled = techSkillsCount < 5
                     if (showTechWarning || showBehavWarning) {
                       return (
-                        <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-3 py-2.5">
+                        <div className="mb-3 rounded-md border border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/30 dark:border-status-warning/30 px-3 py-2.5">
                           <div className="flex items-start gap-2">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                            <AlertTriangle className="w-3.5 h-3.5 text-status-warning dark:text-status-warning mt-0.5 shrink-0" />
                             <div className="space-y-1">
                               {showTechWarning && (
-                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                                <p className="text-xs text-status-warning dark:text-status-warning leading-relaxed">
                                   {techSkillsCount === 0
                                     ? 'Nenhuma competência técnica cadastrada — adicione competências na seção Job Description para gerar perguntas de triagem.'
                                     : `Apenas ${techSkillsCount} competência${techSkillsCount === 1 ? '' : 's'} técnica${techSkillsCount === 1 ? '' : 's'} cadastrada${techSkillsCount === 1 ? '' : 's'}. Para triagem completa, recomendamos pelo menos 9.`
@@ -1612,7 +1612,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </p>
                               )}
                               {showBehavWarning && (
-                                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                                <p className="text-xs text-status-warning dark:text-status-warning leading-relaxed">
                                   {behavCompCount === 0
                                     ? 'Nenhuma competência comportamental cadastrada — a triagem usará avaliação padrão.'
                                     : `${behavCompCount} competência${behavCompCount === 1 ? '' : 's'} comportamental${behavCompCount === 1 ? '' : 's'} (recomendado: 5 para cobertura completa).`
@@ -1620,7 +1620,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 </p>
                               )}
                               {showFullDisabled && (
-                                <p className="text-micro text-amber-600 dark:text-amber-500 italic">
+                                <p className="text-micro text-status-warning dark:text-status-warning italic">
                                   Modo Completo requer pelo menos 5 competências técnicas.
                                 </p>
                               )}
@@ -1909,7 +1909,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                     </div>
                                     {wsiGenerationContext.companyStandardFound && (
                                       <div className="flex items-center gap-1.5 pt-1">
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
                                         <span className="text-xs text-gray-600">Perguntas padrão da empresa incluídas</span>
                                       </div>
                                     )}
@@ -1987,14 +1987,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             <div className="flex items-center gap-2">
                               {block.editable && blockQuestions.length > 0 && (
                                 <>
-                                  {eliminatoryCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-red-50 text-red-600 border border-red-200">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Badge>}
+                                  {eliminatoryCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-status-error/10 text-status-error border border-status-error/30">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Badge>}
                                   {informativeCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-gray-100 text-gray-800">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Badge>}
                                 </>
                               )}
                               {blockGenerated.length > 0 && (
                                 <>
                                   <Badge className="text-micro px-2 py-0.5 bg-gray-100 text-gray-700 border border-gray-200">{acceptedCountForBlock}/{blockGenerated.length} aceitas</Badge>
-                                  {acceptedCountForBlock < blockGenerated.length && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>}
+                                  {acceptedCountForBlock < blockGenerated.length && <span className="w-2 h-2 rounded-full bg-status-warning animate-pulse"></span>}
                                 </>
                               )}
                               {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-600" /> : <ChevronDown className="w-4 h-4 text-gray-600" />}
@@ -2067,11 +2067,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                             <div className="flex items-start gap-3">
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'Comportamental' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' : item.category === 'technical' || item.category === 'Técnica' ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' : 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'}`}>
+                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'Comportamental' ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'Técnica' ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' : 'bg-status-success/15 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30'}`}>
                                                     {item.category === 'behavioral' ? 'Comportamental' : item.category === 'technical' ? 'Técnica' : item.category === 'cultural' ? 'Cultural' : item.category || 'Geral'}
                                                   </Badge>
                                                   {(item.type === 'eliminatory' || item.required) && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Eliminatória</Badge>
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-error/10 text-status-error border border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">Eliminatória</Badge>
                                                   )}
                                                   <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full border ${complexity.color}`}>
                                                     <Gauge className="w-3 h-3 mr-0.5" />{complexity.label}
@@ -2092,14 +2092,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                     </Badge>
                                                   )}
                                                   {(item.weight || 0) >= 1.5 && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">
                                                       <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
                                                     </Badge>
                                                   )}
                                                   {isDeactivated ? (
                                                     <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">Inativa</Badge>
                                                   ) : (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30">
                                                       <CheckCircle className="w-3 h-3 mr-1" />Aceita
                                                     </Badge>
                                                   )}
@@ -2131,14 +2131,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                 )}
                                               </div>
                                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className={`p-1.5 rounded transition-colors ${isDeactivated ? 'hover:bg-green-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => {
+                                                <button className={`p-1.5 rounded transition-colors ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => {
                                                   setDeactivatedQuestions(prev => {
                                                     const next = new Set(prev)
                                                     if (next.has(item.id)) { next.delete(item.id); toast.success('Pergunta reativada') } else { next.add(item.id); toast.success('Pergunta arquivada') }
                                                     return next
                                                   })
                                                 }} title={isDeactivated ? 'Reativar pergunta' : 'Arquivar pergunta'}>
-                                                  <Archive className={`w-3.5 h-3.5 ${isDeactivated ? 'text-green-500' : 'text-gray-400'}`} />
+                                                  <Archive className={`w-3.5 h-3.5 ${isDeactivated ? 'text-status-success' : 'text-gray-400'}`} />
                                                 </button>
                                               </div>
                                             </div>
@@ -2156,11 +2156,11 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                             <div className="flex items-start gap-3">
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' : item.category === 'technical' || item.category === 'técnica' ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
+                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'técnica' ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
                                                     {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
                                                   </Badge>
                                                   {(item.type === 'eliminatory' || item.is_eliminatory) && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Eliminatória</Badge>
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-error/10 text-status-error border border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">Eliminatória</Badge>
                                                   )}
                                                   <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full border ${genComplexity.color}`}>
                                                     <Gauge className="w-3 h-3 mr-0.5" />{genComplexity.label}
@@ -2181,12 +2181,12 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                     </Badge>
                                                   )}
                                                   {(item.weight || 0) >= 1.5 && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">
                                                       <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
                                                     </Badge>
                                                   )}
                                                   {isAccepted && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30">
                                                       <CheckCircle className="w-3 h-3 mr-1" />Aceita
                                                     </Badge>
                                                   )}
@@ -2219,7 +2219,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                               </div>
                                               <div className="flex items-center gap-1.5 shrink-0">
                                                 {isAccepted ? (
-                                                  <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-red-50 transition-colors" onClick={() => {
+                                                  <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors" onClick={() => {
                                                     if (confirm('Remover pergunta aceita?')) {
                                                       setAcceptedQuestions(prev => { const next = new Set(prev); next.delete(item.id); return next })
                                                       setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: any) => q.id !== item.id) }))
@@ -2228,7 +2228,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                 ) : (
                                                   <>
                                                     <button className="bg-gray-900 text-white text-micro px-2 py-1 rounded-full hover:bg-gray-800 transition-colors" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
-                                                    <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-red-50 transition-colors" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: any) => q.id !== item.id) }))}>Descartar</button>
+                                                    <button className="border border-gray-200 text-gray-500 text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: any) => q.id !== item.id) }))}>Descartar</button>
                                                   </>
                                                 )}
                                               </div>
@@ -2311,7 +2311,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       Salvar Alterações
                     </Button>
                     {(job.screeningStatus !== 'active') && (
-                      <Button size="sm" className="h-7 text-micro px-4 bg-green-600 hover:bg-green-700 text-white" onClick={async () => {
+                      <Button size="sm" className="h-7 text-micro px-4 bg-status-success hover:bg-status-success text-white" onClick={async () => {
                         const existingCount = (job.screeningQuestions || []).length
                         const acceptedCount = Object.values(generatedQuestions).flat().filter((q: any) => acceptedQuestions.has(q.id)).length
                         const totalQuestions = existingCount + acceptedCount
@@ -2374,9 +2374,9 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
           )}
 
           {(job.liaMetrics?.triagens_realizadas ?? 0) > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-md dark:bg-amber-900/10 dark:border-amber-800">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              <p className="text-xs text-amber-700 dark:text-amber-300">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-status-warning/10 border border-status-warning/30 rounded-md dark:bg-status-warning/10 dark:border-status-warning/30">
+              <AlertTriangle className="w-3.5 h-3.5 text-status-warning dark:text-status-warning shrink-0" />
+              <p className="text-xs text-status-warning dark:text-status-warning">
                 <span className="font-bold">Triagem em andamento</span> — <span className="font-semibold">{job.liaMetrics?.triagens_realizadas} candidatos</span> já triados. Alterar perguntas pode afetar a comparabilidade entre candidatos.
               </p>
             </div>

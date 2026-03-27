@@ -122,7 +122,7 @@ export function WorkModelAnalyticsPage() {
   // Função para gerar cores das barras
   const getWorkModelColor = (modelo: string) => {
     switch (modelo) {
-      case 'remoto': return 'bg-green-500'
+      case 'remoto': return 'bg-status-success'
       case 'híbrido': return 'bg-gray-700 dark:bg-gray-300'
       case 'presencial': return 'bg-gray-500'
       default: return 'bg-gray-400'
@@ -216,13 +216,13 @@ export function WorkModelAnalyticsPage() {
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 capitalize flex items-center gap-2">
-                        {item.modelo === 'remoto' && <Home className="w-4 h-4 text-green-600" />}
+                        {item.modelo === 'remoto' && <Home className="w-4 h-4 text-status-success" />}
                         {item.modelo === 'híbrido' && <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />}
                         {item.modelo === 'presencial' && <Building className="w-4 h-4 text-gray-600" />}
                         {item.modelo}
                       </CardTitle>
                       <div className={`flex items-center gap-1 text-xs ${
-                        item.crescimento > 0 ? 'text-green-600' : 'text-red-600'
+                        item.crescimento > 0 ? 'text-status-success' : 'text-status-error'
                       }`}>
                         {item.crescimento > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
                         {Math.abs(item.crescimento)}%
@@ -249,7 +249,7 @@ export function WorkModelAnalyticsPage() {
               <Card className="border-l-4 border-l-purple-500">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-purple-600" />
+                    <Users className="w-4 h-4 text-wedo-purple" />
                     Total Geral
                   </CardTitle>
                 </CardHeader>
@@ -294,7 +294,7 @@ export function WorkModelAnalyticsPage() {
                         </div>
                         <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
                           <div
-                            className="bg-green-500"
+                            className="bg-status-success"
                             style={{ width: `${(cargo.remoto / cargo.total) * 100}%` }}
                             title={`Remoto: ${cargo.remoto}`}
                           />
@@ -311,7 +311,7 @@ export function WorkModelAnalyticsPage() {
                         </div>
                         <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <div className="w-2 h-2 bg-status-success rounded-full"></div>
                             Remoto: {cargo.remoto}
                           </div>
                           <div className="flex items-center gap-1">
@@ -333,7 +333,7 @@ export function WorkModelAnalyticsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                    <TrendingUp className="w-5 h-5 text-wedo-purple" />
                     Distribuição por Senioridade
                   </CardTitle>
                 </CardHeader>
@@ -354,14 +354,14 @@ export function WorkModelAnalyticsPage() {
                             <div className="text-xs text-gray-800 dark:text-gray-200">
                               {level.total} candidatos
                             </div>
-                            <div className="text-xs font-medium text-green-600">
+                            <div className="text-xs font-medium text-status-success">
                               R$ {level.salarioMedio.toLocaleString()}
                             </div>
                           </div>
                         </div>
                         <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-gray-700">
                           <div
-                            className="bg-green-500"
+                            className="bg-status-success"
                             style={{ width: `${(level.remoto / level.total) * 100}%` }}
                             title={`Remoto: ${level.remoto}`}
                           />
@@ -378,7 +378,7 @@ export function WorkModelAnalyticsPage() {
                         </div>
                         <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <div className="w-2 h-2 bg-status-success rounded-full"></div>
                             {level.remoto} ({Math.round((level.remoto / level.total) * 100)}%)
                           </div>
                           <div className="flex items-center gap-1">
@@ -401,7 +401,7 @@ export function WorkModelAnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-orange-600" />
+                  <MapPin className="w-5 h-5 text-wedo-orange" />
                   Distribuição Regional
                 </CardTitle>
               </CardHeader>
@@ -424,7 +424,7 @@ export function WorkModelAnalyticsPage() {
                       <div className="space-y-2">
                         <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
                           <div
-                            className="bg-green-500"
+                            className="bg-status-success"
                             style={{ width: `${(region.remoto / region.total) * 100}%` }}
                           />
                           <div
@@ -439,7 +439,7 @@ export function WorkModelAnalyticsPage() {
 
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div className="text-center">
-                            <div className="font-medium text-green-600">{region.remoto}</div>
+                            <div className="font-medium text-status-success">{region.remoto}</div>
                             <div className="text-gray-800 dark:text-gray-200">Remoto</div>
                           </div>
                           <div className="text-center">
@@ -465,17 +465,17 @@ export function WorkModelAnalyticsPage() {
               <Card className="border-l-4 border-l-green-500">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-green-600" />
+                    <Zap className="w-5 h-5 text-status-success" />
                     Insights Principais
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
-                      <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-1">
+                    <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                      <h4 className="text-sm font-medium text-status-success dark:text-status-success mb-1">
                         🏆 Modelo Híbrido Dominante
                       </h4>
-                      <p className="text-xs text-green-700 dark:text-green-400">
+                      <p className="text-xs text-status-success dark:text-status-success">
                         48.9% dos candidatos preferem modelo híbrido, com crescimento de 8.3%
                       </p>
                     </div>
@@ -489,20 +489,20 @@ export function WorkModelAnalyticsPage() {
                       </p>
                     </div>
 
-                    <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-md">
-                      <h4 className="text-sm font-medium text-orange-800 dark:text-orange-300 mb-1">
+                    <div className="p-3 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md">
+                      <h4 className="text-sm font-medium text-wedo-orange dark:text-wedo-orange mb-1">
                         📍 Concentração em SP/RJ
                       </h4>
-                      <p className="text-xs text-orange-700 dark:text-orange-400">
+                      <p className="text-xs text-wedo-orange dark:text-wedo-orange">
                         71% dos candidatos estão concentrados em São Paulo e Rio de Janeiro
                       </p>
                     </div>
 
-                    <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-md">
-                      <h4 className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-1">
+                    <div className="p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
+                      <h4 className="text-sm font-medium text-wedo-purple dark:text-wedo-purple mb-1">
                         🚀 Desenvolvedores Preferem Remoto
                       </h4>
-                      <p className="text-xs text-purple-700 dark:text-purple-400">
+                      <p className="text-xs text-wedo-purple dark:text-wedo-purple">
                         Full Stack e Frontend lideram preferência por trabalho remoto
                       </p>
                     </div>
@@ -514,7 +514,7 @@ export function WorkModelAnalyticsPage() {
               <Card className="border-l-4 border-l-purple-500">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-purple-600" />
+                    <Target className="w-5 h-5 text-wedo-purple" />
                     Recomendações Estratégicas
                   </CardTitle>
                 </CardHeader>

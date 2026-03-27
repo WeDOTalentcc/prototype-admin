@@ -105,12 +105,12 @@ export function TimelineSection() {
                     <Badge
                       variant="outline"
                       className={`text-xs ${
-                        item.type === 'feedback' ? 'border-green-200 text-green-700' :
+                        item.type === 'feedback' ? 'border-status-success/30 text-status-success' :
                         item.type === 'evaluation' ? 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400' :
-                        item.type === 'screening' ? 'border-purple-200 text-purple-700' :
-                        item.type === 'analysis' ? 'border-orange-200 text-orange-700' :
+                        item.type === 'screening' ? 'border-wedo-purple/30 text-wedo-purple' :
+                        item.type === 'analysis' ? 'border-wedo-orange/30 text-wedo-orange' :
                         item.type === 'status_update' ? 'border-gray-200 text-gray-800 dark:text-gray-200' :
-                        'border-yellow-200 text-yellow-700'
+                        'border-status-warning/30 text-status-warning'
                       }`}
                     >
                       {item.type === 'feedback' ? 'Feedback' :

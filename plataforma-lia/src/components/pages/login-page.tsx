@@ -299,8 +299,8 @@ export function LoginPage() {
 
               {/* Error Message */}
               {error && (
-                <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                  <p className="text-red-600 text-sm font-medium">{error}</p>
+                <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                  <p className="text-status-error text-sm font-medium">{error}</p>
                 </div>
               )}
 
@@ -381,7 +381,7 @@ export function LoginPage() {
                     type="button"
                     onClick={() => window.location.href = '/demo-onboarding'}
                     variant="outline"
-                    className="w-full py-3 border-2 border-purple-200 hover:border-purple-300 rounded-md transition-all flex items-center justify-center gap-3 bg-purple-50 hover:bg-purple-100 font-medium text-purple-700"
+                    className="w-full py-3 border-2 border-wedo-purple/30 hover:border-wedo-purple/30 rounded-md transition-all flex items-center justify-center gap-3 bg-wedo-purple/10 hover:bg-wedo-purple/15 font-medium text-wedo-purple"
                   >
                     <span className="text-lg">🌟</span>
                     Tour de Onboarding Completo
@@ -420,15 +420,15 @@ export function LoginPage() {
                       })
                     }}
                     variant="outline"
-                    className="w-full py-3 border-2 border-green-200 hover:border-green-300 rounded-md transition-all flex items-center justify-center gap-3 bg-green-50 hover:bg-green-100 font-medium text-green-700"
+                    className="w-full py-3 border-2 border-status-success/30 hover:border-status-success/30 rounded-md transition-all flex items-center justify-center gap-3 bg-status-success/10 hover:bg-status-success/15 font-medium text-status-success"
                   >
                     <span className="text-lg">🔄</span>
                     Login + Replay Onboarding
                   </Button>
                 </div>
 
-                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                  <p className="text-xs text-yellow-700 text-center">
+                <div className="mt-4 p-3 bg-status-warning/10 border border-status-warning/30 rounded-md">
+                  <p className="text-xs text-status-warning text-center">
                     💡 <strong>Dica:</strong> Use estes botões para testar o sistema de onboarding completo da plataforma LIA
                   </p>
                 </div>
@@ -569,8 +569,8 @@ export function LoginPage() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                <p className="text-red-600 text-sm">{error}</p>
+              <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                <p className="text-status-error text-sm">{error}</p>
               </div>
             )}
 

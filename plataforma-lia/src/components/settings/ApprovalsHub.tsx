@@ -56,9 +56,9 @@ const REQUEST_TYPE_LABELS: Record<string, string> = {
 }
 
 const STATUS_CONFIG: Record<string, { label: string, color: string, icon: React.ComponentType<any> }> = {
-  pending: { label: 'Pendente', color: 'bg-amber-100 text-amber-700', icon: Clock },
-  approved: { label: 'Aprovado', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-  rejected: { label: 'Rejeitado', color: 'bg-red-100 text-red-700', icon: XCircle },
+  pending: { label: 'Pendente', color: 'bg-status-warning/15 text-status-warning', icon: Clock },
+  approved: { label: 'Aprovado', color: 'bg-status-success/15 text-status-success', icon: CheckCircle },
+  rejected: { label: 'Rejeitado', color: 'bg-status-error/15 text-status-error', icon: XCircle },
   cancelled: { label: 'Cancelado', color: 'bg-gray-100 text-gray-500', icon: AlertCircle }
 }
 
@@ -66,7 +66,7 @@ const PRIORITY_CONFIG: Record<string, { label: string, color: string }> = {
   low: { label: 'Baixa', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
   normal: { label: 'Normal', color: 'bg-gray-50 text-gray-600' },
   high: { label: 'Alta', color: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' },
-  urgent: { label: 'Urgente', color: 'bg-red-50 text-red-600' }
+  urgent: { label: 'Urgente', color: 'bg-status-error/10 text-status-error' }
 }
 
 interface ApprovalsHubProps {
@@ -214,7 +214,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
         </div>
         <div className="flex items-center gap-2">
           {pendingCount > 0 && (
-            <Badge className="bg-amber-100 text-amber-700 text-micro px-2 py-0.5">
+            <Badge className="bg-status-warning/15 text-status-warning text-micro px-2 py-0.5">
               {pendingCount} pendente{pendingCount > 1 ? 's' : ''}
             </Badge>
           )}
@@ -266,7 +266,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
-              <AlertCircle className="w-8 h-8 text-red-400 mb-3" />
+              <AlertCircle className="w-8 h-8 text-status-error mb-3" />
               <p className="text-xs text-gray-600">{error}</p>
               <Button variant="outline" onClick={fetchApprovals} className="mt-3 text-xs">
                 Tentar novamente
@@ -274,7 +274,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
             </div>
           ) : filteredApprovals.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
-              <CheckCircle className="w-8 h-8 text-green-400 mb-3" />
+              <CheckCircle className="w-8 h-8 text-status-success mb-3" />
               <p className="text-xs text-gray-600">Nenhuma aprovação encontrada</p>
               <p className="text-xs text-gray-400 mt-1">
                 {statusFilter === 'pending' 
@@ -355,7 +355,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
                           <>
                             <Button
                               size="sm"
-                              className="bg-green-500 hover:bg-green-600 text-white text-xs h-7 px-2"
+                              className="bg-status-success hover:bg-status-success text-white text-xs h-7 px-2"
                               onClick={() => openActionDialog(approval, 'approve')}
                             >
                               <CheckCircle className="w-3.5 h-3.5 mr-1" />
@@ -364,7 +364,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-red-200 text-red-600 hover:bg-red-50 text-xs h-7 px-2"
+                              className="border-status-error/30 text-status-error hover:bg-status-error/10 text-xs h-7 px-2"
                               onClick={() => openActionDialog(approval, 'reject')}
                             >
                               <XCircle className="w-3.5 h-3.5 mr-1" />
@@ -444,7 +444,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
               {selectedApproval.rejection_reason && (
                 <div>
                   <label className="text-micro font-medium text-gray-600">Motivo da Rejeição</label>
-                  <p className="text-xs text-red-600 mt-0.5">{selectedApproval.rejection_reason}</p>
+                  <p className="text-xs text-status-error mt-0.5">{selectedApproval.rejection_reason}</p>
                 </div>
               )}
             </div>
@@ -499,8 +499,8 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
               disabled={isSubmitting}
               className={`text-xs ${
                 actionType === 'approve' 
-                  ? 'bg-green-500 hover:bg-green-600' 
-                  : 'bg-red-500 hover:bg-red-600'
+                  ? 'bg-status-success hover:bg-status-success' 
+                  : 'bg-status-error hover:bg-status-error'
               }`}
             >
               {isSubmitting ? (

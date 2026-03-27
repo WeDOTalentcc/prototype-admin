@@ -45,7 +45,7 @@ function SuggestionBadge({ isNew }: { isNew: boolean }) {
 function AlertBadge({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <Badge variant="outline" className="ml-2 bg-amber-500/10 text-amber-600 border-amber-500/30 text-xs">
+    <Badge variant="outline" className="ml-2 bg-status-warning/10 text-status-warning border-status-warning/30/30 text-xs">
       <AlertTriangle className="w-3 h-3 mr-1" />
       {message}
     </Badge>
@@ -97,13 +97,13 @@ function CompletenessIndicator({ score }: { score: number }) {
   return (
     <div className="flex items-center gap-2">
       {isComplete ? (
-        <CheckCircle2 className="w-4 h-4 text-green-500" />
+        <CheckCircle2 className="w-4 h-4 text-status-success" />
       ) : (
-        <Circle className="w-4 h-4 text-amber-500" />
+        <Circle className="w-4 h-4 text-status-warning" />
       )}
       <span className={cn(
         "text-sm font-medium",
-        isComplete ? "text-green-600" : "text-amber-600"
+        isComplete ? "text-status-success" : "text-status-warning"
       )}>
         {percentage}% completo
       </span>
@@ -150,7 +150,7 @@ export function JobDescriptionPreview({
         </div>
         
         {data.is_affirmative && (
-          <Badge className="w-fit mt-2 bg-purple-500/10 text-purple-600 border-purple-500/30">
+          <Badge className="w-fit mt-2 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30/30">
             🏳️‍🌈 {data.affirmative_type || "Vaga Afirmativa"}
           </Badge>
         )}
@@ -305,7 +305,7 @@ export function JobDescriptionPreview({
               {data.compensation.market_comparison && (
                 <p className="flex items-center gap-2">
                   <strong>Comparativa de Mercado:</strong>
-                  <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30">
+                  <Badge variant="outline" className="text-xs bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30/30">
                     {data.compensation.market_comparison}
                   </Badge>
                 </p>
@@ -356,7 +356,7 @@ export function JobDescriptionPreview({
             = Sugerido pela LIA
           </span>
           <span className="flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3 text-amber-500" />
+            <AlertTriangle className="w-3 h-3 text-status-warning" />
             = Alerta
           </span>
           <span>✏️ = Editado</span>

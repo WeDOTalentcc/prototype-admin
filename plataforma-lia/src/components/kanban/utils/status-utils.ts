@@ -58,10 +58,10 @@ export function getUrgencyLevel(score: number): UrgencyLevel {
 
 export function getScoreColor(score: number | null | undefined): string {
   if (score == null) return 'bg-gray-100'
-  if (score >= 80) return 'bg-green-100 text-green-800'
-  if (score >= 60) return 'bg-yellow-100 text-yellow-800'
-  if (score >= 40) return 'bg-orange-100 text-orange-800'
-  return 'bg-red-100 text-red-800'
+  if (score >= 80) return 'bg-status-success/15 text-status-success'
+  if (score >= 60) return 'bg-status-warning/15 text-status-warning'
+  if (score >= 40) return 'bg-wedo-orange/15 text-wedo-orange'
+  return 'bg-status-error/15 text-status-error'
 }
 
 export function getScoreBgColor(score: number | null | undefined): string {

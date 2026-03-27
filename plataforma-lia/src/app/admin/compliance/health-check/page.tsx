@@ -151,18 +151,18 @@ function getStatusBadge(status: string) {
 
 function getComplianceStatusIcon(percentage: number) {
   if (percentage >= 90) {
-    return <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+    return <CheckCircle2 className="w-5 h-5 text-status-success" />
   } else if (percentage >= 70) {
-    return <AlertCircle className="w-5 h-5 text-amber-500" />
+    return <AlertCircle className="w-5 h-5 text-status-warning" />
   } else {
-    return <XCircle className="w-5 h-5 text-red-500" />
+    return <XCircle className="w-5 h-5 text-status-error" />
   }
 }
 
 function getComplianceStatusColor(percentage: number): string {
-  if (percentage >= 90) return 'text-emerald-500'
-  if (percentage >= 70) return 'text-amber-500'
-  return 'text-red-500'
+  if (percentage >= 90) return 'text-status-success'
+  if (percentage >= 70) return 'text-status-warning'
+  return 'text-status-error'
 }
 
 export default function HealthCheckPage() {
@@ -549,15 +549,15 @@ export default function HealthCheckPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-1 text-micro" style={{ color: 'var(--eleven-text-tertiary)' }}>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <div className="w-2 h-2 rounded-full bg-status-success" />
                     <span>{fw.implemented} impl.</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-amber-500" />
+                    <div className="w-2 h-2 rounded-full bg-status-warning" />
                     <span>{fw.partial} parc.</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-red-500" />
+                    <div className="w-2 h-2 rounded-full bg-status-error" />
                     <span>{fw.pending} pend.</span>
                   </div>
                   <div className="flex items-center gap-1">

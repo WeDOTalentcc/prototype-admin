@@ -59,22 +59,22 @@ const CATEGORY_CONFIG: Record<ActionCategoryUI, { label: string; icon: React.Ele
   data_access: {
     label: 'Acesso a Dados',
     icon: Eye,
-    color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400',
+    color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success',
   },
   configuration: {
     label: 'Configurações',
     icon: Settings,
-    color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400',
+    color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning',
   },
   ai_decision: {
     label: 'Decisões IA',
     icon: Brain,
-    color: 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400',
+    color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple',
   },
   financial: {
     label: 'Financeiro',
     icon: DollarSign,
-    color: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400',
+    color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success',
   },
   user_management: {
     label: 'Gestão de Usuários',
@@ -668,31 +668,31 @@ export default function AuditLogsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-md">
-                      <Eye className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                      <Eye className="w-5 h-5 text-status-success dark:text-status-success mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                        <p className="text-sm font-medium text-status-success dark:text-status-success">
                           Logs de Acesso a Dados
                         </p>
-                        <p className="text-xs text-emerald-600 dark:text-emerald-300 mt-1">
+                        <p className="text-xs text-status-success dark:text-status-success mt-1">
                           Retenção: <strong>24 meses</strong>
                         </p>
-                        <p className="text-xs text-emerald-600 dark:text-emerald-300">
+                        <p className="text-xs text-status-success dark:text-status-success">
                           Próxima purga agendada: {formatNextPurgeDate(24)}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-md">
-                      <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
+                      <Brain className="w-5 h-5 text-wedo-purple dark:text-wedo-purple mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                        <p className="text-sm font-medium text-wedo-purple dark:text-wedo-purple">
                           Decisões de IA (Explainability)
                         </p>
-                        <p className="text-xs text-purple-600 dark:text-purple-300 mt-1">
+                        <p className="text-xs text-wedo-purple dark:text-wedo-purple mt-1">
                           Retenção: <strong>36 meses</strong>
                         </p>
-                        <p className="text-xs text-purple-600 dark:text-purple-300">
+                        <p className="text-xs text-wedo-purple dark:text-wedo-purple">
                           Próxima purga agendada: {formatNextPurgeDate(36)}
                         </p>
                       </div>
@@ -724,18 +724,18 @@ export default function AuditLogsPage() {
 
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-500" />
+                    <AlertTriangle className="w-4 h-4 text-status-warning" />
                     <span className="text-sm text-gray-800 dark:text-gray-200">Ações com Falha</span>
                   </div>
-                  <span className="text-lg font-semibold text-amber-600">{failedActions}</span>
+                  <span className="text-lg font-semibold text-status-warning">{failedActions}</span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <div className="flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-purple-500" />
+                    <Brain className="w-4 h-4 text-wedo-purple" />
                     <span className="text-sm text-gray-800 dark:text-gray-200">Decisões IA Auditáveis</span>
                   </div>
-                  <span className="text-lg font-semibold text-purple-600">
+                  <span className="text-lg font-semibold text-wedo-purple">
                     {stats?.aiDecisionsCount || categoryStats.ai_decision}
                   </span>
                 </div>

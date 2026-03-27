@@ -75,8 +75,8 @@ const stateConfig: Record<LIAProcessingState, {
   },
   completed: {
     icon: Check,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50',
+    color: 'text-status-success',
+    bgColor: 'bg-status-success/10',
     label: 'Concluído'
   }
 }
@@ -110,7 +110,7 @@ export function LIATaskStepItem({
         <div className={cn(
           "w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
           step.isCompleted 
-            ? "bg-emerald-100 dark:bg-emerald-900/30" 
+            ? "bg-status-success/15" 
             : config.bgColor
         )}>
           {isActive && !step.isCompleted ? (
@@ -118,7 +118,7 @@ export function LIATaskStepItem({
           ) : (
             <Icon className={cn(
               "w-4 h-4",
-              step.isCompleted ? "text-emerald-600 dark:text-emerald-400" : config.color
+              step.isCompleted ? "text-status-success dark:text-status-success" : config.color
             )} />
           )}
         </div>
@@ -134,7 +134,7 @@ export function LIATaskStepItem({
               {step.label}
             </span>
             {step.isCompleted && (
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+              <span className="text-xs text-status-success dark:text-status-success font-medium">
                 Concluído
               </span>
             )}
@@ -196,7 +196,7 @@ export function LIAProcessingCard({
     <div className={cn(
       "rounded-2xl border transition-all",
       allCompleted 
-        ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10" 
+        ? "border-status-success/30 dark:border-status-success/30 bg-status-success/10/50" 
         : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900",
       className
     )}>
@@ -208,10 +208,10 @@ export function LIAProcessingCard({
           <div className="flex items-center gap-3">
             <div className={cn(
               "w-8 h-8 rounded-md flex items-center justify-center",
-              allCompleted ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-gray-100 dark:bg-gray-800"
+              allCompleted ? "bg-status-success/15" : "bg-gray-100 dark:bg-gray-800"
             )}>
               {allCompleted ? (
-                <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <Check className="w-5 h-5 text-status-success dark:text-status-success" />
               ) : (
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               )}
@@ -225,7 +225,7 @@ export function LIAProcessingCard({
                   <div 
                     className={cn(
                       "h-full rounded-full transition-all duration-500",
-                      allCompleted ? "bg-emerald-500" : "bg-gray-900 dark:bg-gray-50"
+                      allCompleted ? "bg-status-success" : "bg-gray-900 dark:bg-gray-50"
                     )}
                     style={{ width: `${(completedCount / steps.length) * 100}%` }}
                   />
@@ -292,7 +292,7 @@ export function LIAFeedbackButtons({
         className={cn(
           "p-1.5 rounded-md transition-all",
           feedback === 'positive'
-            ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+            ? "bg-status-success/15 text-status-success dark:text-status-success"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
         )}
         title="Resposta útil"
@@ -304,7 +304,7 @@ export function LIAFeedbackButtons({
         className={cn(
           "p-1.5 rounded-md transition-all",
           feedback === 'negative'
-            ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+            ? "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
         )}
         title="Resposta não útil"
@@ -335,7 +335,7 @@ export function LIACommandBadge({
         <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-gray-400" />
       )}
       {status === 'completed' && (
-        <Check className="w-3 h-3 text-emerald-600" />
+        <Check className="w-3 h-3 text-status-success" />
       )}
       <span className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate max-w-[300px]">
         {command}
@@ -388,7 +388,7 @@ export function LIAFileBadge({
         </div>
       </div>
       {status === 'finished' && (
-        <Check className="w-5 h-5 text-emerald-500" />
+        <Check className="w-5 h-5 text-status-success" />
       )}
       {status === 'processing' && (
         <Loader2 className="w-5 h-5 text-gray-600 dark:text-gray-400 animate-spin" />

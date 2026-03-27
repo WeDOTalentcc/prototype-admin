@@ -194,7 +194,7 @@ export function DailyBriefingCard({
 
   const getGreetingIcon = () => {
     const hour = new Date().getHours()
-    if (hour < 12) return <Sun className="w-5 h-5 text-yellow-500" />
+    if (hour < 12) return <Sun className="w-5 h-5 text-status-warning" />
     if (hour < 18) return <Cloud className="w-5 h-5 text-gray-600 dark:text-gray-400" />
     return <Moon className="w-5 h-5 text-indigo-400" />
   }
@@ -251,13 +251,13 @@ export function DailyBriefingCard({
   const getInsightStyle = (type: string) => {
     switch (type) {
       case 'attention':
-        return 'bg-amber-50 border-amber-200 text-amber-800'
+        return 'bg-status-warning/10 border-status-warning/30 text-status-warning'
       case 'opportunity':
-        return 'bg-emerald-50 border-emerald-200 text-emerald-800'
+        return 'bg-status-success/10 border-status-success/30 text-status-success'
       case 'suggestion':
         return 'bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-wedo-cyan-dark'
       case 'success':
-        return 'bg-green-50 border-green-200 text-green-800'
+        return 'bg-status-success/10 border-status-success/30 text-status-success'
       default:
         return 'bg-gray-50 border-gray-200 text-gray-800'
     }

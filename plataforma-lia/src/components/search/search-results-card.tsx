@@ -147,9 +147,9 @@ export function SearchResultsCard({
 
   const getScoreColor = (score?: number) => {
     if (!score) return "text-gray-600"
-    if (score >= 80) return "text-green-600"
-    if (score >= 60) return "text-yellow-600"
-    return "text-orange-600"
+    if (score >= 80) return "text-status-success"
+    if (score >= 60) return "text-status-warning"
+    return "text-wedo-orange"
   }
 
   return (
@@ -204,7 +204,7 @@ export function SearchResultsCard({
           )}
         </div>
         {warningMessage && (
-          <p className="text-xs text-amber-600 mt-1">{warningMessage}</p>
+          <p className="text-xs text-status-warning mt-1">{warningMessage}</p>
         )}
       </CardHeader>
 
@@ -275,7 +275,7 @@ export function SearchResultsCard({
                     {candidate.is_open_to_work && (
                       <Tooltip>
                         <TooltipTrigger>
-                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <CheckCircle className="h-4 w-4 text-status-success" />
                         </TooltipTrigger>
                         <TooltipContent>Aberto a oportunidades</TooltipContent>
                       </Tooltip>
@@ -314,7 +314,7 @@ export function SearchResultsCard({
                         <TooltipTrigger>
                           <Badge 
                             variant="outline" 
-                            className="text-xs border-amber-300 bg-amber-50 text-amber-700"
+                            className="text-xs border-status-warning/30 bg-status-warning/10 text-status-warning"
                           >
                             <Eye className="h-3 w-3 mr-1" />
                             Descoberto

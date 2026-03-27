@@ -143,7 +143,7 @@ export function ScreeningMediaModal({
             {type === 'audio' ? (
               <Mic className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             ) : (
-              <Video className="w-5 h-5 text-purple-500" />
+              <Video className="w-5 h-5 text-wedo-purple" />
             )}
             <DialogTitle className={`${textStyles.titleLarge} flex items-center gap-2`}>
               {title}
@@ -177,7 +177,7 @@ export function ScreeningMediaModal({
                 {type === 'audio' ? (
                   <Mic className="w-10 h-10 text-gray-600 dark:text-gray-400" />
                 ) : (
-                  <Video className="w-10 h-10 text-purple-500" />
+                  <Video className="w-10 h-10 text-wedo-purple" />
                 )}
               </div>
               <p className={`${textStyles.body} text-gray-600 mb-1`}>Clique para reproduzir</p>

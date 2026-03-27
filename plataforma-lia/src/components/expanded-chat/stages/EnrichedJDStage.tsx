@@ -94,8 +94,8 @@ const sourceLabels: Record<SuggestionSource, string> = {
 }
 
 const impactColors: Record<SuggestionImpact, string> = {
-  high: 'bg-green-100 text-green-700 border-green-200',
-  medium: 'bg-amber-100 text-amber-700 border-amber-200',
+  high: 'bg-status-success/15 text-status-success border-status-success/30',
+  medium: 'bg-status-warning/15 text-status-warning border-status-warning/30',
   low: 'bg-gray-100 text-gray-600 border-gray-200'
 }
 
@@ -244,14 +244,14 @@ export function EnrichedJDStage({
       </div>
 
       {enrichedData.wsiQualityScore < 70 && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800">
+        <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 rounded-md border border-status-warning/30 dark:border-status-warning/30">
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
+            <AlertCircle className="w-4 h-4 text-status-warning mt-0.5" />
             <div>
-              <p className={cn(textStyles.bodySmall, "text-amber-800 dark:text-amber-200 font-medium")}>
+              <p className={cn(textStyles.bodySmall, "text-status-warning dark:text-status-warning font-medium")}>
                 Qualidade abaixo do ideal para triagem WSI
               </p>
-              <p className={cn(textStyles.caption, "text-amber-600 dark:text-amber-400 mt-0.5")}>
+              <p className={cn(textStyles.caption, "text-status-warning dark:text-status-warning mt-0.5")}>
                 Aceite as sugestões destacadas para melhorar as perguntas de triagem
               </p>
             </div>
@@ -285,7 +285,7 @@ export function EnrichedJDStage({
                   </span>
                 )}
                 {acceptedCount > 0 && (
-                  <span className="px-1.5 py-0.5 text-micro font-medium bg-green-100 text-green-700 rounded-full flex items-center gap-1">
+                  <span className="px-1.5 py-0.5 text-micro font-medium bg-status-success/15 text-status-success rounded-full flex items-center gap-1">
                     <Check className="w-2.5 h-2.5" />
                     {acceptedCount}
                   </span>
@@ -327,7 +327,7 @@ export function EnrichedJDStage({
                           key={suggestion.id}
                           className={cn(
                             "p-3 rounded-md border transition-all",
-                            state === 'accepted' && "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800",
+                            state === 'accepted' && "bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30",
                             state === 'rejected' && "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-600 opacity-50",
                             state === 'pending' && "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-gray-900 dark:hover:border-gray-50"
                           )}
@@ -380,11 +380,11 @@ export function EnrichedJDStage({
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => handleAccept(suggestion.id)}
-                                  className="w-7 h-7 rounded-md bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
+                                  className="w-7 h-7 rounded-md bg-status-success/15 hover:bg-status-success/20 dark:bg-status-success/30 dark:hover:bg-status-success/50 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
                                   title="Aceitar sugestão"
                                   aria-label="Aceitar sugestão"
                                 >
-                                  <Check className="w-3.5 h-3.5 text-green-600" />
+                                  <Check className="w-3.5 h-3.5 text-status-success" />
                                 </button>
                                 <button
                                   onClick={() => handleReject(suggestion.id)}
@@ -398,7 +398,7 @@ export function EnrichedJDStage({
                             )}
 
                             {state === 'accepted' && (
-                              <div className="w-7 h-7 rounded-md bg-green-500 flex items-center justify-center">
+                              <div className="w-7 h-7 rounded-md bg-status-success flex items-center justify-center">
                                 <Check className="w-4 h-4 text-white" />
                               </div>
                             )}
@@ -458,9 +458,9 @@ export function EnrichedJDStage({
               {enrichedData.compensation.marketPosition && (
                 <div className={cn(
                   "text-xs font-medium text-center py-1.5 rounded-md",
-                  enrichedData.compensation.marketPosition === 'competitive' && "bg-green-100 text-green-700",
-                  enrichedData.compensation.marketPosition === 'below' && "bg-amber-100 text-amber-700",
-                  enrichedData.compensation.marketPosition === 'above' && "bg-blue-100 text-blue-700"
+                  enrichedData.compensation.marketPosition === 'competitive' && "bg-status-success/15 text-status-success",
+                  enrichedData.compensation.marketPosition === 'below' && "bg-status-warning/15 text-status-warning",
+                  enrichedData.compensation.marketPosition === 'above' && "bg-wedo-cyan/15 text-wedo-cyan-dark"
                 )}>
                   {enrichedData.compensation.marketPosition === 'competitive' && 'Competitivo com o mercado'}
                   {enrichedData.compensation.marketPosition === 'below' && 'Abaixo do mercado - considere ajustar'}

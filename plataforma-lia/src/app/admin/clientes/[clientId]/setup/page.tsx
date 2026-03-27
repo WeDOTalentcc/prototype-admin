@@ -138,9 +138,9 @@ export default function ClientSetupPage({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'complete':
-        return <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+        return <CheckCircle2 className="w-5 h-5 text-status-success" />
       case 'partial':
-        return <Clock className="w-5 h-5 text-amber-500" />
+        return <Clock className="w-5 h-5 text-status-warning" />
       case 'pending':
         return <Clock className="w-5 h-5 text-gray-400" />
       default:
@@ -164,12 +164,12 @@ export default function ClientSetupPage({
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20 max-w-md">
+        <Card className="border-status-error/30 bg-status-error/10/50 dark:border-status-error/30 dark:bg-status-error/20 max-w-md">
           <CardContent className="p-6 text-center">
-            <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+            <p className="text-sm font-medium text-status-error dark:text-status-error mb-2">
               Erro ao carregar dados
             </p>
-            <p className="text-xs text-red-700 dark:text-red-300">
+            <p className="text-xs text-status-error dark:text-status-error">
               {error}
             </p>
             <Button 
@@ -211,15 +211,15 @@ export default function ClientSetupPage({
         </Link>
       </div>
 
-      <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20">
+      <Card className="border-status-warning/30 bg-status-warning/10/50 dark:border-status-warning/30 dark:bg-status-warning/20">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Bell className="w-5 h-5 text-amber-600 mt-0.5" />
+            <Bell className="w-5 h-5 text-status-warning mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                 Contexto do Cliente: {clientId}
               </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+              <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                 Estas configurações são específicas para este cliente.
                 Todas as chamadas de API utilizarão o header X-Company-ID: {clientId}
               </p>

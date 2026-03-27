@@ -99,7 +99,7 @@ const detectedConflicts: DetectedConflict[] = [
 const getStatusBadge = (status: 'mitigated' | 'pending' | 'ok') => {
   switch (status) {
     case 'mitigated':
-      return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 gap-1"><ShieldCheck className="w-3 h-3" />Mitigado</Badge>
+      return <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/20 dark:text-status-warning gap-1"><ShieldCheck className="w-3 h-3" />Mitigado</Badge>
     case 'pending':
       return <Badge variant="destructive" className="gap-1"><Clock className="w-3 h-3" />Pendente</Badge>
     case 'ok':
@@ -112,7 +112,7 @@ const getRiskBadge = (type: string) => {
     case 'Alto Risco':
       return <Badge variant="destructive">{type}</Badge>
     case 'Médio Risco':
-      return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">{type}</Badge>
+      return <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/20 dark:text-status-warning">{type}</Badge>
     case 'Baixo Risco':
       return <Badge variant="secondary">{type}</Badge>
     default:
@@ -165,22 +165,22 @@ export default function SoDPage() {
           </Button>
         </div>
 
-        <Card className="mb-6 border-amber-300 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-700">
+        <Card className="mb-6 border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/10 dark:border-status-warning/30">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-md">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div className="p-2 bg-status-warning/15 dark:bg-status-warning/30 rounded-md">
+                <AlertTriangle className="w-5 h-5 text-status-warning" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                   Matriz de Segregação de Funções - Em implementação
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                   <strong>Gap crítico identificado para SOX Section 404.</strong> Esta funcionalidade está em processo de implementação 
                   para garantir conformidade total com os requisitos de controle interno. Revisão e aprovação pendentes pelo comitê de compliance.
                 </p>
               </div>
-              <Badge className="bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200">Em Implementação</Badge>
+              <Badge className="bg-status-warning/20 text-status-warning dark:bg-status-warning dark:text-status-warning">Em Implementação</Badge>
             </div>
           </CardContent>
         </Card>
@@ -224,8 +224,8 @@ export default function SoDPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                <div className="p-2 bg-status-error/10 dark:bg-status-error/20 rounded-md">
+                  <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Pendentes</p>
@@ -238,8 +238,8 @@ export default function SoDPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-md">
-                  <ShieldCheck className="w-5 h-5 text-amber-600" />
+                <div className="p-2 bg-status-warning/10 dark:bg-status-warning/20 rounded-md">
+                  <ShieldCheck className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Mitigados</p>
@@ -252,8 +252,8 @@ export default function SoDPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-md">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <div className="p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Status Geral</p>
@@ -297,11 +297,11 @@ export default function SoDPage() {
                       <td className="px-4 py-4 text-center">
                         {item.conflict ? (
                           <div className="flex items-center justify-center">
-                            <AlertTriangle className="w-5 h-5 text-red-500" />
+                            <AlertTriangle className="w-5 h-5 text-status-error" />
                           </div>
                         ) : (
                           <div className="flex items-center justify-center">
-                            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                            <CheckCircle2 className="w-5 h-5 text-status-success" />
                           </div>
                         )}
                       </td>
@@ -375,19 +375,19 @@ export default function SoDPage() {
           <CardContent>
             <div className="flex flex-wrap gap-6">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <CheckCircle2 className="w-5 h-5 text-status-success" />
                 <span className="text-sm text-gray-800 dark:text-gray-200">Sem Conflito / OK</span>
               </div>
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-500" />
+                <AlertTriangle className="w-5 h-5 text-status-error" />
                 <span className="text-sm text-gray-800 dark:text-gray-200">Conflito Identificado</span>
               </div>
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-amber-500" />
+                <ShieldCheck className="w-5 h-5 text-status-warning" />
                 <span className="text-sm text-gray-800 dark:text-gray-200">Mitigado</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-red-500" />
+                <Clock className="w-5 h-5 text-status-error" />
                 <span className="text-sm text-gray-800 dark:text-gray-200">Pendente</span>
               </div>
             </div>

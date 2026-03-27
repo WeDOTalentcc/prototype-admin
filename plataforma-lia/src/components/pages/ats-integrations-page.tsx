@@ -241,29 +241,29 @@ export function ATSIntegrationsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'connected': return <CheckCircle className="w-4 h-4 text-green-600" />
+      case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
       case 'connecting': return <RotateCw className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
-      case 'error': return <XCircle className="w-4 h-4 text-red-600" />
+      case 'error': return <XCircle className="w-4 h-4 text-status-error" />
       case 'disabled': return <Minus className="w-4 h-4 text-gray-600" />
-      default: return <AlertTriangle className="w-4 h-4 text-yellow-600" />
+      default: return <AlertTriangle className="w-4 h-4 text-status-warning" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'connected': return 'bg-green-50 text-green-700 border-green-200'
+      case 'connected': return 'bg-status-success/10 text-status-success border-status-success/30'
       case 'connecting': return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-      case 'error': return 'bg-red-50 text-red-700 border-red-200'
+      case 'error': return 'bg-status-error/10 text-status-error border-status-error/30'
       case 'disabled': return 'bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200'
-      default: return 'bg-yellow-50 text-yellow-700 border-yellow-200'
+      default: return 'bg-status-warning/10 text-status-warning border-status-warning/30'
     }
   }
 
   const getSyncStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-green-600" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-600" />
-      case 'error': return <XCircle className="w-4 h-4 text-red-600" />
+      case 'success': return <CheckCircle2 className="w-4 h-4 text-status-success" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-status-warning" />
+      case 'error': return <XCircle className="w-4 h-4 text-status-error" />
       default: return <Info className="w-4 h-4 text-gray-600 dark:text-gray-400" />
     }
   }
@@ -282,8 +282,8 @@ export function ATSIntegrationsPage() {
                 </p>
                 <p className={textStyles.caption}>de {atsystems.length} configurados</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-md flex items-center justify-center">
-                <Link2 className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
+                <Link2 className="w-6 h-6 text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -297,7 +297,7 @@ export function ATSIntegrationsPage() {
                 <p className={`${textStyles.titleXl} text-2xl text-gray-700 dark:text-gray-300`}>
                   {atsystems.reduce((acc, sys) => acc + sys.syncedRecords, 0).toLocaleString()}
                 </p>
-                <p className={`${textStyles.caption} text-green-600`}>+47 hoje</p>
+                <p className={`${textStyles.caption} text-status-success`}>+47 hoje</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                 <Database className="w-6 h-6 text-gray-600 dark:text-gray-400" />
@@ -311,13 +311,13 @@ export function ATSIntegrationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className={textStyles.label}>Integrações Ativas</p>
-                <p className={`${textStyles.titleXl} text-2xl text-purple-900`}>
+                <p className={`${textStyles.titleXl} text-2xl text-wedo-purple`}>
                   {integrations.filter(i => i.isActive).length}
                 </p>
                 <p className={textStyles.caption}>de {integrations.length} total</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-md flex items-center justify-center">
-                <Zap className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
+                <Zap className="w-6 h-6 text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -328,11 +328,11 @@ export function ATSIntegrationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className={textStyles.label}>Uptime Médio</p>
-                <p className={`${textStyles.titleXl} text-2xl text-orange-900`}>99.7%</p>
-                <p className={`${textStyles.caption} text-orange-600`}>últimos 30 dias</p>
+                <p className={`${textStyles.titleXl} text-2xl text-wedo-orange`}>99.7%</p>
+                <p className={`${textStyles.caption} text-wedo-orange`}>últimos 30 dias</p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-md flex items-center justify-center">
-                <Activity className="w-6 h-6 text-orange-600" />
+              <div className="w-12 h-12 bg-wedo-orange/15 rounded-md flex items-center justify-center">
+                <Activity className="w-6 h-6 text-wedo-orange" />
               </div>
             </div>
           </CardContent>
@@ -363,7 +363,7 @@ export function ATSIntegrationsPage() {
               className="h-auto p-4 justify-start gap-3"
               onClick={() => setSelectedView('integrations')}
             >
-              <Settings className="w-5 h-5 text-purple-600" />
+              <Settings className="w-5 h-5 text-wedo-purple" />
               <div className="text-left">
                 <div className="font-medium">Configurar Sync</div>
                 <div className="text-sm text-gray-600">Gerenciar integrações</div>
@@ -375,7 +375,7 @@ export function ATSIntegrationsPage() {
               className="h-auto p-4 justify-start gap-3"
               onClick={() => setSelectedView('logs')}
             >
-              <FileText className="w-5 h-5 text-orange-600" />
+              <FileText className="w-5 h-5 text-wedo-orange" />
               <div className="text-left">
                 <div className="font-medium">Ver Logs</div>
                 <div className="text-sm text-gray-600">Histórico de operações</div>
@@ -425,7 +425,7 @@ export function ATSIntegrationsPage() {
                         <p className={textStyles.caption}>Registros</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-medium text-green-600">
+                        <p className="font-medium text-status-success">
                           {Math.round((system.syncedRecords / system.totalRecords) * 100)}%
                         </p>
                         <p className="text-gray-600">Sincronizado</p>
@@ -569,15 +569,15 @@ export function ATSIntegrationsPage() {
                     {system.errorCount > 0 && (
                       <div>
                         <p className="text-gray-600">Erros:</p>
-                        <p className="font-medium text-red-600">{system.errorCount}</p>
+                        <p className="font-medium text-status-error">{system.errorCount}</p>
                       </div>
                     )}
                   </div>
                 )}
 
                 {system.status === 'error' && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-700">
+                  <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+                    <p className="text-sm text-status-error">
                       <AlertTriangle className="w-4 h-4 inline mr-1" />
                       Token de acesso expirado - requer renovação manual
                     </p>
@@ -648,10 +648,10 @@ export function ATSIntegrationsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-md flex items-center justify-center ${
-                    integration.isActive ? 'bg-green-100' : 'bg-gray-100'
+                    integration.isActive ? 'bg-status-success/15' : 'bg-gray-100'
                   }`}>
                     <Database className={`w-6 h-6 ${
-                      integration.isActive ? 'text-green-600' : 'text-gray-600'
+                      integration.isActive ? 'text-status-success' : 'text-gray-600'
                     }`} />
                   </div>
 
@@ -758,9 +758,9 @@ export function ATSIntegrationsPage() {
                       <div className="flex items-center gap-2">
                         {getSyncStatusIcon(log.status)}
                         <span className={`text-xs px-2 py-1 rounded-full ${
-                          log.status === 'success' ? 'bg-green-100 text-green-700' :
-                          log.status === 'warning' ? 'bg-yellow-100 text-yellow-700' :
-                          log.status === 'error' ? 'bg-red-100 text-red-700' :
+                          log.status === 'success' ? 'bg-status-success/15 text-status-success' :
+                          log.status === 'warning' ? 'bg-status-warning/15 text-status-warning' :
+                          log.status === 'error' ? 'bg-status-error/15 text-status-error' :
                           'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                         }`}>
                           {log.status === 'success' ? 'Sucesso' :
@@ -1069,9 +1069,9 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 90) return 'text-green-600 bg-green-50'
-    if (confidence >= 70) return 'text-yellow-600 bg-yellow-50'
-    return 'text-red-600 bg-red-50'
+    if (confidence >= 90) return 'text-status-success bg-status-success/10'
+    if (confidence >= 70) return 'text-status-warning bg-status-warning/10'
+    return 'text-status-error bg-status-error/10'
   }
 
   const renderConnectionTab = () => (
@@ -1212,8 +1212,8 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
         <div className="flex items-center gap-3">
           {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-gray-600" />}
           {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-gray-600 dark:text-gray-400 animate-spin" />}
-          {connectionStatus === 'success' && <CheckCircle className="w-5 h-5 text-green-600" />}
-          {connectionStatus === 'error' && <XCircle className="w-5 h-5 text-red-600" />}
+          {connectionStatus === 'success' && <CheckCircle className="w-5 h-5 text-status-success" />}
+          {connectionStatus === 'error' && <XCircle className="w-5 h-5 text-status-error" />}
 
           <div>
             <p className="font-medium text-gray-950 dark:text-gray-50">
@@ -1296,7 +1296,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                     onDragStart={() => handleDragStart(field)}
                     className={`p-3 border rounded-md cursor-move transition-all ${
                       isMapped
-                        ? 'border-green-200 bg-green-50'
+                        ? 'border-status-success/30 bg-status-success/10'
                         : 'border-gray-200 bg-white hover:border-gray-900 dark:hover:border-gray-50 hover:'
                     }`}
                   >
@@ -1310,12 +1310,12 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                       </div>
                       <div className="flex items-center gap-1">
                         {field.required && (
-                          <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">
+                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded">
                             Obrigatório
                           </span>
                         )}
                         {isMapped && (
-                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <CheckCircle className="w-4 h-4 text-status-success" />
                         )}
                       </div>
                     </div>
@@ -1360,7 +1360,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                       </div>
                       <div className="flex items-center gap-2">
                         {field.required && (
-                          <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">
+                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded">
                             Obrigatório
                           </span>
                         )}
@@ -1373,9 +1373,9 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                               size="sm"
                               variant="ghost"
                               onClick={() => removeMapping(mapping.id)}
-                              className="h-6 w-6 p-0 hover:bg-red-100"
+                              className="h-6 w-6 p-0 hover:bg-status-error/15"
                             >
-                              <XCircle className="w-3 h-3 text-red-600" />
+                              <XCircle className="w-3 h-3 text-status-error" />
                             </Button>
                           </div>
                         )}
@@ -1399,13 +1399,13 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
               <p className="text-sm text-gray-600">Campos Mapeados</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-status-success">
                 {mappings.filter(m => m.confidence >= 90).length}
               </p>
               <p className="text-sm text-gray-600">Alta Confiança (≥90%)</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">
+              <p className="text-2xl font-bold text-wedo-orange">
                 {liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}
               </p>
               <p className="text-sm text-gray-600">Obrigatórios Pendentes</p>

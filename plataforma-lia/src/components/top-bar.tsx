@@ -186,7 +186,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
               <div className="p-1">
                 <DropdownMenuItem 
-                  className="cursor-pointer text-red-600 dark:text-red-400"
+                  className="cursor-pointer text-status-error dark:text-status-error"
                   onClick={() => onNavigate?.("Sair")}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
@@ -213,10 +213,10 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
           {passwordSuccess ? (
             <div className="flex flex-col items-center justify-center py-8">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                <Check className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 rounded-full bg-status-success/15 flex items-center justify-center mb-4">
+                <Check className="w-8 h-8 text-status-success" />
               </div>
-              <p className="text-lg font-medium text-green-600">Senha alterada com sucesso!</p>
+              <p className="text-lg font-medium text-status-success">Senha alterada com sucesso!</p>
             </div>
           ) : (
             <>
@@ -303,7 +303,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                 </div>
 
                 {passwordError && (
-                  <div className="flex items-center gap-2 text-red-600 text-sm">
+                  <div className="flex items-center gap-2 text-status-error text-sm">
                     <X className="w-4 h-4" />
                     {passwordError}
                   </div>

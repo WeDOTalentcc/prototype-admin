@@ -40,8 +40,8 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       icon: Lightbulb,
       color: 'var(--status-error)', // Vermelho vibrante
       colorName: 'red-600',
-      bgColor: 'bg-red-50',
-      barColor: 'bg-red-500',
+      bgColor: 'bg-status-error/10',
+      barColor: 'bg-status-error',
       description: 'Pessoas criativas, apreciadoras da arte e da beleza e que gostam do novo.',
       detailedDescription: 'Disposição para novas experiências, criatividade, curiosidade intelectual e pensamento abstrato.',
       traits: {
@@ -88,8 +88,8 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       icon: Users,
       color: 'var(--status-warning)', // Laranja
       colorName: 'orange-600',
-      bgColor: 'bg-orange-50',
-      barColor: 'bg-orange-500',
+      bgColor: 'bg-wedo-orange/10',
+      barColor: 'bg-wedo-orange',
       description: 'A extroversão é marcada pela sociabilidade, engajamento com o mundo externo.',
       detailedDescription: 'Nível de energia social, assertividade, busca por estímulos e emoções positivas.',
       traits: {
@@ -112,8 +112,8 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       icon: Heart,
       color: 'var(--wedo-purple)', // Roxo
       colorName: 'purple-600',
-      bgColor: 'bg-purple-50',
-      barColor: 'bg-purple-500',
+      bgColor: 'bg-wedo-purple/10',
+      barColor: 'bg-wedo-purple',
       description: 'Pessoas agradáveis são outras, simpáticas. Se preocupam com a cooperação e a harmonia social e facilitam se dão bem com outras pessoas.',
       detailedDescription: 'Cooperação, confiança, empatia, altruísmo e consideração pelos outros.',
       traits: {
@@ -136,8 +136,8 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       icon: Target,
       color: 'var(--status-success)', // Verde mar
       colorName: 'green-600',
-      bgColor: 'bg-green-50',
-      barColor: 'bg-green-500',
+      bgColor: 'bg-status-success/10',
+      barColor: 'bg-status-success',
       description: 'Diz respeito à forma como controlamos, conduzimos e direcionamos nossos impulsos.',
       detailedDescription: 'Organização, disciplina, responsabilidade, persistência e orientação para objetivos.',
       traits: {
@@ -253,7 +253,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
         {showInsights && (
           <div className="space-y-2">
             {/* Insight comportamental minimalista */}
-            <div className="p-2 bg-purple-50 dark:bg-purple-900/10 rounded-md border border-purple-200 dark:border-purple-800">
+            <div className="p-2 bg-wedo-purple/10 dark:bg-wedo-purple/10 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div className="flex items-start gap-1.5">
                 <Brain className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div className="space-y-1">

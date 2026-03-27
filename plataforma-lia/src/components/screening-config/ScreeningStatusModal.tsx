@@ -59,9 +59,9 @@ interface ScreeningStatusModalProps {
 const STATUS_CONFIG: Record<ScreeningStatus, { label: string; color: string; bgColor: string; darkBgColor: string; icon: React.ElementType }> = {
   not_configured: { label: 'Não Configurada', color: 'text-gray-600', bgColor: 'bg-gray-100', darkBgColor: 'dark:bg-gray-800', icon: AlertCircle },
   not_started: { label: 'Não Iniciada', color: 'text-gray-700', bgColor: 'bg-gray-200', darkBgColor: 'dark:bg-gray-700', icon: Clock },
-  active: { label: 'Ativa', color: 'text-green-700', bgColor: 'bg-green-100', darkBgColor: 'dark:bg-green-900/30', icon: Play },
-  paused: { label: 'Pausada', color: 'text-amber-700', bgColor: 'bg-amber-100', darkBgColor: 'dark:bg-amber-900/30', icon: Pause },
-  completed: { label: 'Concluída', color: 'text-blue-700', bgColor: 'bg-blue-100', darkBgColor: 'dark:bg-blue-900/30', icon: CheckCircle2 },
+  active: { label: 'Ativa', color: 'text-status-success', bgColor: 'bg-status-success/15', darkBgColor: 'dark:bg-status-success/30', icon: Play },
+  paused: { label: 'Pausada', color: 'text-status-warning', bgColor: 'bg-status-warning/15', darkBgColor: 'dark:bg-status-warning/30', icon: Pause },
+  completed: { label: 'Concluída', color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15', darkBgColor: 'dark:bg-wedo-cyan/10/30', icon: CheckCircle2 },
 }
 
 export function ScreeningStatusModal({
@@ -248,18 +248,18 @@ export function ScreeningStatusModal({
 
           {screeningStatus === 'paused' && !showPauseForm && (
             <div className="space-y-4">
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-4">
+              <div className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-4">
                 <div className="flex items-start gap-2">
-                  <Pause className="w-4 h-4 text-amber-600 mt-0.5" />
+                  <Pause className="w-4 h-4 text-status-warning mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-amber-800 dark:text-amber-200">Triagem Pausada</p>
+                    <p className="text-xs font-medium text-status-warning dark:text-status-warning">Triagem Pausada</p>
                     {screeningConfig?.status?.pause_reason && (
-                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                         Motivo: {screeningConfig.status.pause_reason}
                       </p>
                     )}
                     {screeningConfig?.status?.paused_at && (
-                      <p className="text-micro text-amber-500 dark:text-amber-500 mt-1">
+                      <p className="text-micro text-status-warning dark:text-status-warning mt-1">
                         Pausada em {new Date(screeningConfig.status.paused_at).toLocaleDateString('pt-BR')}
                       </p>
                     )}
@@ -271,13 +271,13 @@ export function ScreeningStatusModal({
 
           {screeningStatus === 'completed' && (
             <div className="space-y-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+              <div className="bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30 rounded-md p-4">
                 <div className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-wedo-cyan-dark mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-blue-800 dark:text-blue-200">Triagem Concluída</p>
+                    <p className="text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">Triagem Concluída</p>
                     {screeningConfig?.status?.completed_at && (
-                      <p className="text-micro text-blue-500 mt-1">
+                      <p className="text-micro text-wedo-cyan-dark mt-1">
                         Concluída em {new Date(screeningConfig.status.completed_at).toLocaleDateString('pt-BR')}
                       </p>
                     )}
@@ -327,7 +327,7 @@ export function ScreeningStatusModal({
                 <Button
                   onClick={handlePauseConfirm}
                   disabled={isUpdating}
-                  className="flex-1 h-8 text-xs bg-amber-600 hover:bg-amber-700 text-white"
+                  className="flex-1 h-8 text-xs bg-status-warning hover:bg-status-warning text-white"
                 >
                   {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Confirmar Pausa'}
                 </Button>
@@ -343,7 +343,7 @@ export function ScreeningStatusModal({
                 variant="outline"
                 onClick={() => handleStatusChange('paused')}
                 disabled={isUpdating}
-                className="flex-1 h-9 text-xs font-medium border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/20 gap-1.5"
+                className="flex-1 h-9 text-xs font-medium border-status-warning/30 text-status-warning hover:bg-status-warning/10 dark:border-status-warning/30 dark:text-status-warning dark:hover:bg-status-warning/20 gap-1.5"
               >
                 <Pause className="w-3.5 h-3.5" />
                 Pausar
@@ -352,7 +352,7 @@ export function ScreeningStatusModal({
                 variant="outline"
                 onClick={() => handleStatusChange('completed')}
                 disabled={isUpdating}
-                className="flex-1 h-9 text-xs font-medium border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 gap-1.5"
+                className="flex-1 h-9 text-xs font-medium border-wedo-cyan/30 text-wedo-cyan-dark hover:bg-wedo-cyan/10 dark:border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:hover:bg-wedo-cyan/10/20 gap-1.5"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Concluir

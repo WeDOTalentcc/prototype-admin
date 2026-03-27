@@ -28,8 +28,8 @@ export function AdjustmentCounter({
         </span>
         {isAtLimit && (
           <div className="flex items-center gap-1">
-            <AlertCircle className="h-3 w-3 text-amber-500" />
-            <span className="text-micro text-amber-600 font-medium">Limite atingido</span>
+            <AlertCircle className="h-3 w-3 text-status-warning" />
+            <span className="text-micro text-status-warning font-medium">Limite atingido</span>
           </div>
         )}
       </div>
@@ -38,7 +38,7 @@ export function AdjustmentCounter({
         className="h-1.5"
       />
       {isNearLimit && !isAtLimit && (
-        <p className="text-micro text-amber-600">
+        <p className="text-micro text-status-warning">
           Último ajuste disponível para este bloco
         </p>
       )}

@@ -123,7 +123,7 @@ export function CandidateCell({
             <Pin className="w-2.5 h-2.5 text-gray-600 dark:text-gray-400 fill-current flex-shrink-0" />
           )}
           {isFavorite && (
-            <Star className="w-2.5 h-2.5 text-orange-500 fill-current flex-shrink-0" />
+            <Star className="w-2.5 h-2.5 text-wedo-orange fill-current flex-shrink-0" />
           )}
         </div>
         {candidate.email && (
@@ -375,14 +375,14 @@ export function NoteCell({
     <Button
       variant="ghost"
       size="sm"
-      className="h-6 w-6 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/20"
+      className="h-6 w-6 p-0 hover:bg-status-warning/15 dark:hover:bg-status-warning/20"
       onClick={(e) => {
         e.stopPropagation()
         onViewNote?.(e)
       }}
       title="Ver nota"
     >
-      <StickyNote className="w-3.5 h-3.5 text-amber-600" />
+      <StickyNote className="w-3.5 h-3.5 text-status-warning" />
     </Button>
   )
 }
@@ -391,8 +391,8 @@ export function NoteCell({
 function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgStyle: string; textStyle: string } {
   if (!status) return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
  if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-gray-900 dark:text-gray-300', bgStyle: 'rgba(96, 190, 209, 0.15)', textStyle: 'var(--gray-600)' }
-  if (status.isRejection) return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', bgStyle: 'rgba(239, 68, 68, 0.15)', textStyle: 'var(--status-error)' }
-  if (status.isWaiting) return { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', bgStyle: 'rgba(245, 158, 11, 0.15)', textStyle: 'var(--status-warning)' }
+  if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'rgba(239, 68, 68, 0.15)', textStyle: 'var(--status-error)' }
+  if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'rgba(245, 158, 11, 0.15)', textStyle: 'var(--status-warning)' }
   return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', bgStyle: 'rgba(107, 114, 128, 0.15)', textStyle: 'var(--gray-400)' }
 }
 
@@ -749,8 +749,8 @@ export function ActionButtons({
           <Button
             variant="ghost"
             size="sm"
-            className={`h-7 w-7 p-0 hover:bg-orange-100 dark:hover:bg-orange-900/20 ${
-              isFavorite ? 'text-orange-500' : 'text-gray-600'
+            className={`h-7 w-7 p-0 hover:bg-wedo-orange/15 dark:hover:bg-wedo-orange/10/20 ${
+              isFavorite ? 'text-wedo-orange' : 'text-gray-600'
             }`}
             onClick={onToggleFavorite}
             title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
@@ -763,7 +763,7 @@ export function ActionButtons({
           <Button
             variant="ghost"
             size="sm"
-            className={`h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/20 ${
+            className={`h-7 w-7 p-0 hover:bg-wedo-cyan/15 dark:hover:bg-wedo-cyan/10/20 ${
               isPinned ? 'text-gray-600 dark:text-gray-400' : 'text-gray-600'
             }`}
             onClick={onTogglePin}

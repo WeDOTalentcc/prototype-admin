@@ -166,7 +166,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-status-success">
                     {scheduledReports.filter(r => r.isActive).length}
                   </div>
                   <div className="text-sm text-gray-600">Ativos</div>
@@ -174,7 +174,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-orange-600">
+                  <div className="text-2xl font-bold text-wedo-orange">
                     {scheduledReports.filter(r => r.frequency === 'daily').length}
                   </div>
                   <div className="text-sm text-gray-600">Diários</div>
@@ -182,7 +182,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-2xl font-bold text-wedo-purple">
                     {scheduledReports.filter(r => {
                       const nextSend = new Date(r.nextSend)
                       const today = new Date()
@@ -207,7 +207,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                           <h4 className="text-lg font-medium text-gray-950 dark:text-gray-50">{report.name}</h4>
                           <Badge
                             variant={report.isActive ? "default" : "secondary"}
-                            className={report.isActive ? "bg-green-100 text-green-700" : ""}
+                            className={report.isActive ? "bg-status-success/15 text-status-success" : ""}
                           >
                             {report.isActive ? 'Ativo' : 'Pausado'}
                           </Badge>
@@ -306,7 +306,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                           variant="outline"
                           size="sm"
                           onClick={() => deleteReport(report.id)}
-                          className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="gap-2 text-status-error hover:text-status-error hover:bg-status-error/10"
                         >
                           <Trash2 className="w-4 h-4" />
                           Excluir

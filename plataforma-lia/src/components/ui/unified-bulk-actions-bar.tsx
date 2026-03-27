@@ -79,7 +79,7 @@ const BULK_ACTIONS: BulkAction[] = [
   {
     id: 'favorites',
     label: 'Favoritos',
-    icon: <Star className="w-3.5 h-3.5 text-amber-500" />,
+    icon: <Star className="w-3.5 h-3.5 text-status-warning" />,
     contexts: ['funnel', 'vacancy'],
   },
   {
@@ -168,7 +168,7 @@ export function UnifiedBulkActionsBar({
                 disabled={isDisabled || isLoading}
                 className={`h-7 px-2.5 text-xs gap-1 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 ${
                   isDestructive 
-                    ? 'border-red-200 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20' 
+                    ? 'border-status-error/30 text-status-error hover:bg-status-error/10 dark:text-status-error dark:hover:bg-status-error/20' 
                     : 'border-gray-200 text-gray-700 dark:text-gray-200'
                 }`}
                 title={action.label}

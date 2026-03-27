@@ -416,7 +416,7 @@ export function InterviewNoteCard({
             <Bot className="h-4 w-4 text-wedo-cyan" />
             <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">Parecer LIA</h3>
             {note.liaParecerEditado && (
-              <span className="text-micro text-amber-600">(editado)</span>
+              <span className="text-micro text-status-warning">(editado)</span>
             )}
           </div>
           {note.liaParecer ? (
@@ -461,7 +461,7 @@ export function InterviewNoteCard({
           <Button
             onClick={() => onApprove(note.nextStage || "")}
             disabled={isLoading}
-            className="gap-2 bg-green-600 hover:bg-green-700"
+            className="gap-2 bg-status-success hover:bg-status-success/10"
           >
             <CheckCircle className="h-4 w-4" />
             Aprovar e Avançar

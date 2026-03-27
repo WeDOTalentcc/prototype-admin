@@ -160,12 +160,12 @@ const approvedCandidates: ApprovedCandidate[] = [
 
 const kanbanStages = [
   { id: 'welcome', name: 'Boas-vindas', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', description: 'Email de boas-vindas enviado' },
-  { id: 'documentation', name: 'Documentação', color: 'bg-yellow-100 text-yellow-700', description: 'Coleta de documentos' },
-  { id: 'equipment', name: 'Equipamentos', color: 'bg-orange-100 text-orange-700', description: 'Entrega de equipamentos' },
-  { id: 'systems', name: 'Sistemas', color: 'bg-purple-100 text-purple-700', description: 'Criação de acessos' },
+  { id: 'documentation', name: 'Documentação', color: 'bg-status-warning/15 text-status-warning', description: 'Coleta de documentos' },
+  { id: 'equipment', name: 'Equipamentos', color: 'bg-wedo-orange/15 text-wedo-orange', description: 'Entrega de equipamentos' },
+  { id: 'systems', name: 'Sistemas', color: 'bg-wedo-purple/15 text-wedo-purple', description: 'Criação de acessos' },
   { id: 'medical', name: 'Médico', color: 'bg-pink-100 text-pink-700', description: 'Exames ocupacionais' },
   { id: 'integration', name: 'Integração', color: 'bg-indigo-100 text-indigo-700', description: 'Primeiro dia' },
-  { id: 'completed', name: 'Concluído', color: 'bg-green-100 text-green-700', description: 'Onboarding finalizado' }
+  { id: 'completed', name: 'Concluído', color: 'bg-status-success/15 text-status-success', description: 'Onboarding finalizado' }
 ]
 
 const messageTemplates = [
@@ -301,13 +301,13 @@ export function OnboardingPremiumPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Em Andamento</p>
-                <p className="text-2xl font-bold text-yellow-900">
+                <p className="text-2xl font-bold text-status-warning">
                   {approvedCandidates.filter(c => c.stage !== 'completed').length}
                 </p>
                 <p className="text-xs text-gray-800 dark:text-gray-200">processos ativos</p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-md flex items-center justify-center">
-                <Clock className="w-6 h-6 text-yellow-600" />
+              <div className="w-12 h-12 bg-status-warning/15 rounded-md flex items-center justify-center">
+                <Clock className="w-6 h-6 text-status-warning" />
               </div>
             </div>
           </CardContent>
@@ -318,13 +318,13 @@ export function OnboardingPremiumPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Concluídos</p>
-                <p className="text-2xl font-bold text-green-900">
+                <p className="text-2xl font-bold text-status-success">
                   {approvedCandidates.filter(c => c.stage === 'completed').length}
                 </p>
                 <p className="text-xs text-gray-800 dark:text-gray-200">este mês</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-md flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -335,11 +335,11 @@ export function OnboardingPremiumPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Tempo Médio</p>
-                <p className="text-2xl font-bold text-purple-900">12d</p>
+                <p className="text-2xl font-bold text-wedo-purple">12d</p>
                 <p className="text-xs text-gray-800 dark:text-gray-200">para conclusão</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-md flex items-center justify-center">
-                <Timer className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
+                <Timer className="w-6 h-6 text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -658,13 +658,13 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
         {/* Indicators */}
         <div className="flex gap-1 mt-3">
           {candidate.documents.length > 0 && (
-            <div className="w-2 h-2 bg-yellow-500 rounded-full" title="Documentos pendentes" />
+            <div className="w-2 h-2 bg-status-warning rounded-full" title="Documentos pendentes" />
           )}
           {candidate.medicalExams.length > 0 && (
             <div className="w-2 h-2 bg-pink-500 rounded-full" title="Exames médicos" />
           )}
           {candidate.communications.length > 0 && (
-            <div className="w-2 h-2 bg-green-500 rounded-full" title="Comunicações enviadas" />
+            <div className="w-2 h-2 bg-status-success rounded-full" title="Comunicações enviadas" />
           )}
         </div>
       </CardContent>
@@ -795,7 +795,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                             <CheckCircle
                               className={`w-4 h-4 ${
                                 kanbanStages.findIndex(s => s.id === candidate.stage) >= kanbanStages.findIndex(s => s.id === stage.id)
-                                  ? 'text-green-600'
+                                  ? 'text-status-success'
                                   : 'text-gray-600'
                               }`}
                             />
@@ -838,8 +838,8 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 p-2 bg-yellow-50 rounded">
-                        <Clock className="w-4 h-4 text-yellow-600" />
+                      <div className="flex items-center gap-3 p-2 bg-status-warning/10 rounded">
+                        <Clock className="w-4 h-4 text-status-warning" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Solicitar comprovante de residência</p>
                           <p className="text-xs text-gray-600">Vence hoje</p>

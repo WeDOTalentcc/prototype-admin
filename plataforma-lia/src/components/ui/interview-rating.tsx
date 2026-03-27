@@ -63,8 +63,8 @@ const StarRating = React.forwardRef<HTMLDivElement, StarRatingProps>(
             className={cn(
               "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900/20 rounded-sm disabled:pointer-events-none disabled:opacity-50",
               value !== null && star <= value
-                ? "text-yellow-400 dark:text-yellow-300"
-                : "text-gray-300 dark:text-gray-600 hover:text-yellow-300 dark:hover:text-yellow-400"
+                ? "text-status-warning dark:text-status-warning"
+                : "text-gray-300 dark:text-gray-600 hover:text-status-warning dark:hover:text-status-warning"
             )}
           >
             <Star

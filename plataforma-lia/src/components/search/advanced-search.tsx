@@ -26,9 +26,9 @@ interface AdvancedSearchProps {
 
 const filterCategories = [
   { id: 'recrutamento', label: 'Recrutamento', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-  { id: 'triagem', label: 'Triagem', color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' },
-  { id: 'entrevistas', label: 'Entrevistas', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300' },
-  { id: 'onboarding', label: 'Onboarding', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' },
+  { id: 'triagem', label: 'Triagem', color: 'bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success' },
+  { id: 'entrevistas', label: 'Entrevistas', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
+  { id: 'onboarding', label: 'Onboarding', color: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange' },
   { id: 'analytics', label: 'Analytics', color: 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300' },
   { id: 'integracao', label: 'Integração', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300' }
 ]
@@ -193,7 +193,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
             variant="ghost"
             size="sm"
             onClick={clearAllFilters}
-            className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+            className="h-8 text-status-error hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
           >
             <X className="w-3 h-3 mr-1" />
             Limpar
@@ -273,7 +273,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                       "px-2 py-1 rounded text-xs font-medium transition-all",
                       "hover:scale-[1.05] active:scale-[0.95]",
                       filters.tags.includes(tag)
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+                        ? "bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
                     )}
                   >

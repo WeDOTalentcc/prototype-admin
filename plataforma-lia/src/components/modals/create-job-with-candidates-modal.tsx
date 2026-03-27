@@ -208,7 +208,7 @@ export function CreateJobWithCandidatesModal({
                       <span className="text-xs text-gray-200 truncate flex-1">
                         {name}
                       </span>
-                      <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                      <Check className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
                     </div>
                   ))}
                   {remainingCount > 0 && (

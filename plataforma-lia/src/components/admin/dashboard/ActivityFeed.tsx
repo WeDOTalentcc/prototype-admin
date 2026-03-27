@@ -20,10 +20,10 @@ export interface ActivityFeedProps {
 }
 
 const activityIcons: Record<ActivityType, { icon: LucideIcon; color: string }> = {
-  success: { icon: CheckCircle, color: "text-green-600" },
+  success: { icon: CheckCircle, color: "text-status-success" },
   upgrade: { icon: TrendingUp, color: "text-gray-600 dark:text-gray-400" },
-  warning: { icon: AlertCircle, color: "text-orange-600" },
-  integration: { icon: Database, color: "text-purple-600" },
+  warning: { icon: AlertCircle, color: "text-wedo-orange" },
+  integration: { icon: Database, color: "text-wedo-purple" },
   info: { icon: Info, color: "text-gray-600" },
 }
 

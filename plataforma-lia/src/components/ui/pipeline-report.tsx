@@ -79,17 +79,17 @@ const getUrgencyStyles = (urgency: string) => {
   switch (urgency) {
     case "critical":
       return {
-        bg: "bg-red-50 dark:bg-red-900/20",
-        border: "border-red-200 dark:border-red-800",
-        badge: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-        icon: "text-red-500"
+        bg: "bg-status-error/10 dark:bg-status-error/20",
+        border: "border-status-error/30 dark:border-status-error/30",
+        badge: "bg-status-error/15 text-status-error dark:bg-status-error dark:text-status-error",
+        icon: "text-status-error"
       }
     case "high":
       return {
-        bg: "bg-amber-50 dark:bg-amber-900/20",
-        border: "border-amber-200 dark:border-amber-800",
-        badge: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-        icon: "text-amber-500"
+        bg: "bg-status-warning/10 dark:bg-status-warning/20",
+        border: "border-status-warning/30 dark:border-status-warning/30",
+        badge: "bg-status-warning/15 text-status-warning dark:bg-status-warning dark:text-status-warning",
+        icon: "text-status-warning"
       }
     default:
       return {
@@ -140,7 +140,7 @@ const CandidateCard = ({
           {candidate.stale_message}
         </span>
         {candidate.urgency === "critical" && (
-          <AlertTriangle className="w-4 h-4 text-red-500" />
+          <AlertTriangle className="w-4 h-4 text-status-error" />
         )}
       </div>
       
@@ -156,7 +156,7 @@ const CandidateCard = ({
               variant={isDestructive ? "outline" : "default"}
               className={`h-8 text-xs ${
                 isDestructive 
-                  ? "border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30" 
+                  ? "border-status-error/30 text-status-error hover:bg-status-error/10 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30" 
                   : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0"
               }`}
               onClick={() => onAction(candidate.id, action.id, candidate.name)}
@@ -231,11 +231,11 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
   const getSummaryStyles = () => {
     switch (data.summary.urgency) {
       case "high":
-        return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+        return "bg-status-error/10 dark:bg-status-error/20 border-status-error/30 dark:border-status-error/30"
       case "medium":
-        return "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
+        return "bg-status-warning/10 dark:bg-status-warning/20 border-status-warning/30 dark:border-status-warning/30"
       default:
-        return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+        return "bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30"
     }
   }
 
@@ -258,9 +258,9 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
           </div>
           {data.critical_count > 0 && (
             <div className="flex items-center gap-1">
-              <AlertTriangle className="w-4 h-4 text-red-500" />
+              <AlertTriangle className="w-4 h-4 text-status-error" />
               <span className="text-gray-800 dark:text-gray-200">Críticos:</span>
-              <span className="font-semibold text-red-600 dark:text-red-400">{data.critical_count}</span>
+              <span className="font-semibold text-status-error dark:text-status-error">{data.critical_count}</span>
             </div>
           )}
         </div>
@@ -279,7 +279,7 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
 
       {data.total_stale === 0 && (
         <div className="text-center py-8">
-          <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+          <CheckCircle className="w-12 h-12 text-status-success mx-auto mb-3" />
           <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-1">
             Pipeline em dia!
           </h3>

@@ -241,7 +241,7 @@ export function ExcludedUniversitiesInput({
                 )}
               >
                 {item.type === 'ai' ? (
-                  <div className="flex items-center gap-2 text-purple-600">
+                  <div className="flex items-center gap-2 text-wedo-purple">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     <span>{item.label}</span>
                   </div>
@@ -259,12 +259,12 @@ export function ExcludedUniversitiesInput({
           {value.map(university => (
             <Badge
               key={university}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-status-warning/10 text-status-warning border border-status-warning/30"
             >
               <span>{university}</span>
               <button
                 onClick={() => removeUniversity(university)}
-                className="hover:bg-amber-100 rounded p-0.5 transition-colors ml-1"
+                className="hover:bg-status-warning/15 rounded p-0.5 transition-colors ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

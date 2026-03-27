@@ -119,7 +119,7 @@ export function JobDescriptionFinal({
         </div>
         
         {data.is_affirmative && (
-          <Badge className="w-fit mt-2 bg-purple-500/10 text-purple-600 border-purple-500/30">
+          <Badge className="w-fit mt-2 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30/30">
             🏳️‍🌈 {data.affirmative_type || "Vaga Afirmativa"}
           </Badge>
         )}

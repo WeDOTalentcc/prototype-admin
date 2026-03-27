@@ -191,9 +191,9 @@ export function FileUploadButton({
               key={uf.id}
               className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
-                uf.status === "uploading" && "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
-                uf.status === "success" && "bg-green-50 text-green-600",
-                uf.status === "error" && "bg-red-50 text-red-600",
+                uf.status === "uploading" && "bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark",
+                uf.status === "success" && "bg-status-success/10 text-status-success",
+                uf.status === "error" && "bg-status-error/10 text-status-error",
                 uf.status === "pending" && "bg-gray-50 text-gray-600"
               )}
             >
@@ -205,7 +205,7 @@ export function FileUploadButton({
               <span className="max-w-[100px] truncate">{uf.file.name}</span>
               <button
                 onClick={() => removeFile(uf.id)}
-                className="hover:text-red-500"
+                className="hover:text-status-error"
               >
                 <X className="h-3 w-3" />
               </button>

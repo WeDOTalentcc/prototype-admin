@@ -27,7 +27,7 @@ function formatCost(cents: number): string {
 function UsageAlert({ percentage }: { percentage: number }) {
   if (percentage >= 100) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+      <div className="flex items-center gap-2 rounded-md border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Limite atingido:</strong> O consumo de IA atingiu 100% do limite mensal. Contate o suporte ou atualize seu plano.
@@ -37,7 +37,7 @@ function UsageAlert({ percentage }: { percentage: number }) {
   }
   if (percentage >= 80) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="flex items-center gap-2 rounded-md border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Atenção:</strong> {percentage.toFixed(0)}% do limite mensal de IA utilizado. Monitore o consumo para evitar interrupções.
@@ -66,7 +66,7 @@ export function AiCreditsPage({ companyId }: Props) {
 
   if (balanceError) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-red-500">
+      <div className="flex h-64 items-center justify-center text-sm text-status-error">
         {balanceError}
       </div>
     )
@@ -178,9 +178,9 @@ export function AiCreditsPage({ companyId }: Props) {
               <div
                 className={`h-full rounded-full transition-all ${
                   usagePct >= 100
-                    ? 'bg-red-500'
+                    ? 'bg-status-error'
                     : usagePct >= 80
-                    ? 'bg-amber-400'
+                    ? 'bg-status-warning'
                     : 'bg-gray-900'
                 }`}
                 style={{ width: `${Math.min(usagePct, 100)}%` }}

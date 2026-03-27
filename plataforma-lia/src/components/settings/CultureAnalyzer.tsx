@@ -381,7 +381,7 @@ export function CultureAnalyzer({
             Analisar Empresa com IA
           </Button>
           {!websiteUrl && (
-            <p className={`${textStyles.caption} text-amber-600 dark:text-amber-400 mt-3`}>
+            <p className={`${textStyles.caption} text-status-warning dark:text-status-warning mt-3`}>
               Informe o website da empresa acima para habilitar a análise
             </p>
           )}
@@ -450,14 +450,14 @@ export function CultureAnalyzer({
                         ? "bg-gray-100 dark:bg-gray-800 ring-2 ring-gray-900/20 scale-105"
                         : "bg-gray-100 dark:bg-gray-800 ring-2 ring-gray-400 scale-105"
                       : isCompleted
-                        ? "bg-emerald-50 dark:bg-emerald-900/30"
+                        ? "bg-status-success/10 dark:bg-status-success/30"
                         : "bg-gray-50 dark:bg-gray-800/50 opacity-60"
                   }`}
                 >
                   <div 
                     className={`w-7 h-7 rounded-md flex items-center justify-center mb-1.5 transition-all duration-300 ${
                       isCompleted
-                        ? "bg-emerald-500 text-white"
+                        ? "bg-status-success text-white"
                         : isActive
                           ? isLia
                             ? "bg-gray-900 dark:bg-gray-50 text-white"
@@ -480,7 +480,7 @@ export function CultureAnalyzer({
                           ? "text-wedo-cyan-dark dark:text-gray-400"
                           : "text-gray-700 dark:text-gray-300"
                         : isCompleted
-                          ? "text-emerald-700 dark:text-emerald-300"
+                          ? "text-status-success dark:text-status-success"
                           : "text-gray-400 dark:text-gray-500"
                     }`}
                   >
@@ -514,7 +514,7 @@ export function CultureAnalyzer({
         <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
           <AlertDialogContent className="max-w-md">
             <AlertDialogHeader>
-              <AlertDialogTitle className={`flex items-center gap-2 text-red-600 ${textStyles.h3}`}>
+              <AlertDialogTitle className={`flex items-center gap-2 text-status-error ${textStyles.h3}`}>
                 <AlertCircle className="w-5 h-5" />
                 Não foi possível analisar automaticamente
               </AlertDialogTitle>
@@ -522,7 +522,7 @@ export function CultureAnalyzer({
                 <span className="block">
                   {errorMessage || "O website não pôde ser analisado automaticamente."}
                 </span>
-                <span className={`block ${textStyles.caption} bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800`}>
+                <span className={`block ${textStyles.caption} bg-status-warning/10 border border-status-warning/30 rounded-md p-3 text-status-warning`}>
                   <strong>Por que isso acontece?</strong><br />
                   Sites modernos de grandes empresas frequentemente têm proteção anti-bot ou carregamento dinâmico (JavaScript/SPA), 
                   o que impede a extração automática de dados.
@@ -556,15 +556,15 @@ export function CultureAnalyzer({
           </AlertDialogContent>
         </AlertDialog>
 
-        <Card className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20 backdrop-blur-sm">
+        <Card className="rounded-2xl border border-status-error/30 dark:border-status-error/30 bg-status-error/10/50 dark:bg-status-error/20 backdrop-blur-sm">
           <CardContent className="p-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-7 h-7 text-red-500" />
+            <div className="w-14 h-14 rounded-2xl bg-status-error/15 dark:bg-status-error/50 flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-7 h-7 text-status-error" />
             </div>
             <h3 className={`${textStyles.h3} mb-2`}>
               Análise Falhou
             </h3>
-            <p className={`${textStyles.caption} text-red-600 dark:text-red-400 mb-2`}>
+            <p className={`${textStyles.caption} text-status-error dark:text-status-error mb-2`}>
               {errorMessage || "Não foi possível analisar o website. Verifique a URL e tente novamente."}
             </p>
             <p className={`${textStyles.caption} text-gray-500 mb-4`}>
@@ -574,7 +574,7 @@ export function CultureAnalyzer({
               <Button
                 onClick={() => startAnalysis(true)}
                 variant="outline"
-                className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                className="gap-2 border-status-error/30 text-status-error hover:bg-status-error/10"
               >
                 <RefreshCw className="w-4 h-4" />
                 Tentar Novamente

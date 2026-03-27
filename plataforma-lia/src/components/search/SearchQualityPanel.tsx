@@ -72,7 +72,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
               }}
             >
               {alert.severity === 'warning' ? (
-                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500" />
+                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
               ) : (
                 <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
               )}

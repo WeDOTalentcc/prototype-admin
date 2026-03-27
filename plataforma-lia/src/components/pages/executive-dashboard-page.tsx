@@ -193,12 +193,12 @@ export function ExecutiveDashboardPage() {
             <div className="space-y-6">
               {/* Ações Pendentes - Centro de Ação */}
               {data.pendingActions.length > 0 && (
-                <Card className="bg-amber-50/50 dark:bg-amber-900/10">
+                <Card className="bg-status-warning/10/50 dark:bg-status-warning/10">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base font-sans flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                    <CardTitle className="text-base font-sans flex items-center gap-2 text-status-warning dark:text-status-warning">
                       <AlertTriangle className="w-5 h-5" />
                       Ações Pendentes
-                      <Badge className="bg-amber-100 text-amber-800 ml-2">
+                      <Badge className="bg-status-warning/15 text-status-warning ml-2">
                         {data.pendingActions.reduce((acc, a) => acc + a.count, 0)} itens
                       </Badge>
                     </CardTitle>
@@ -210,9 +210,9 @@ export function ExecutiveDashboardPage() {
                           key={index}
                           className={`p-3 rounded-md ${
                             action.priority === 'crítica'
-                              ? 'bg-red-50 dark:bg-red-900/20'
+                              ? 'bg-status-error/10 dark:bg-status-error/20'
                               : action.priority === 'alta'
-                              ? 'bg-amber-50 dark:bg-amber-900/20'
+                              ? 'bg-status-warning/10 dark:bg-status-warning/20'
                               : 'bg-gray-50 dark:bg-gray-800'
                           }`}
                         >
@@ -241,7 +241,7 @@ export function ExecutiveDashboardPage() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <Briefcase className="w-8 h-8 text-gray-600" />
-                      <div className={`flex items-center text-xs font-medium ${data.trends.jobs.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                      <div className={`flex items-center text-xs font-medium ${data.trends.jobs.trend === 'up' ? 'text-status-success' : 'text-status-error'}`}>
                         {data.trends.jobs.trend === 'up' ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                         {data.trends.jobs.change > 0 ? '+' : ''}{data.trends.jobs.change}%
                       </div>
@@ -249,17 +249,17 @@ export function ExecutiveDashboardPage() {
                     <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.activeJobs}</div>
                     <div className="text-xs text-gray-800 dark:text-gray-200">Vagas Ativas</div>
                     <div className="text-xs text-gray-600 mt-1">
-                      <span className="text-amber-600 font-medium">{data.summary.urgentJobs}</span> urgentes,{" "}
-                      <span className="text-red-600 font-medium">{data.summary.criticalJobs}</span> críticas
+                      <span className="text-status-warning font-medium">{data.summary.urgentJobs}</span> urgentes,{" "}
+                      <span className="text-status-error font-medium">{data.summary.criticalJobs}</span> críticas
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-green-50 dark:bg-green-900/20">
+                <Card className="bg-status-success/10 dark:bg-status-success/20">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Users className="w-8 h-8 text-green-600" />
-                      <div className={`flex items-center text-xs font-medium ${data.trends.candidates.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                      <Users className="w-8 h-8 text-status-success" />
+                      <div className={`flex items-center text-xs font-medium ${data.trends.candidates.trend === 'up' ? 'text-status-success' : 'text-status-error'}`}>
                         {data.trends.candidates.trend === 'up' ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                         {data.trends.candidates.change > 0 ? '+' : ''}{data.trends.candidates.change}%
                       </div>
@@ -269,11 +269,11 @@ export function ExecutiveDashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-purple-50 dark:bg-purple-900/20">
+                <Card className="bg-wedo-purple/10 dark:bg-wedo-purple/20">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <UserCheck className="w-8 h-8 text-purple-600" />
-                      <div className={`flex items-center text-xs font-medium ${data.trends.hires.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                      <UserCheck className="w-8 h-8 text-wedo-purple" />
+                      <div className={`flex items-center text-xs font-medium ${data.trends.hires.trend === 'up' ? 'text-status-success' : 'text-status-error'}`}>
                         {data.trends.hires.trend === 'up' ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                         {data.trends.hires.change > 0 ? '+' : ''}{data.trends.hires.change}%
                       </div>
@@ -281,16 +281,16 @@ export function ExecutiveDashboardPage() {
                     <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.totalHires}</div>
                     <div className="text-xs text-gray-800 dark:text-gray-200">Contratações</div>
                     <div className="text-xs text-gray-600 mt-1">
-                      <span className="text-green-600 font-medium">{data.summary.conversionRate}%</span> taxa de conversão
+                      <span className="text-status-success font-medium">{data.summary.conversionRate}%</span> taxa de conversão
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-orange-50 dark:bg-orange-900/20">
+                <Card className="bg-wedo-orange/10 dark:bg-wedo-orange/20">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Clock className="w-8 h-8 text-orange-600" />
-                      <div className={`flex items-center text-xs font-medium ${data.trends.timeToHire.change < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <Clock className="w-8 h-8 text-wedo-orange" />
+                      <div className={`flex items-center text-xs font-medium ${data.trends.timeToHire.change < 0 ? 'text-status-success' : 'text-status-error'}`}>
                         {data.trends.timeToHire.change < 0 ? <TrendingDown className="w-3 h-3 mr-1" /> : <TrendingUp className="w-3 h-3 mr-1" />}
                         {Math.abs(data.trends.timeToHire.change)}%
                       </div>
@@ -319,9 +319,9 @@ export function ExecutiveDashboardPage() {
                       {[
                         { stage: "Candidatos", count: data.recruitmentFunnel.total, color: "bg-gray-700 dark:bg-gray-300", pct: 100 },
                         { stage: "Triagem", count: data.recruitmentFunnel.screening, color: "bg-gray-50 dark:bg-gray-9000", pct: Math.round((data.recruitmentFunnel.screening / data.recruitmentFunnel.total) * 100) },
-                        { stage: "Entrevistas", count: data.recruitmentFunnel.interview, color: "bg-yellow-500", pct: Math.round((data.recruitmentFunnel.interview / data.recruitmentFunnel.total) * 100) },
-                        { stage: "Fase Final", count: data.recruitmentFunnel.final, color: "bg-orange-500", pct: Math.round((data.recruitmentFunnel.final / data.recruitmentFunnel.total) * 100) },
-                        { stage: "Contratados", count: data.recruitmentFunnel.hired, color: "bg-green-500", pct: Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100) }
+                        { stage: "Entrevistas", count: data.recruitmentFunnel.interview, color: "bg-status-warning", pct: Math.round((data.recruitmentFunnel.interview / data.recruitmentFunnel.total) * 100) },
+                        { stage: "Fase Final", count: data.recruitmentFunnel.final, color: "bg-wedo-orange", pct: Math.round((data.recruitmentFunnel.final / data.recruitmentFunnel.total) * 100) },
+                        { stage: "Contratados", count: data.recruitmentFunnel.hired, color: "bg-status-success", pct: Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100) }
                       ].map((stage, index) => (
                         <div key={index} className="flex items-center gap-3">
                           <div className="w-20 text-xs font-medium text-gray-600 dark:text-gray-400 text-right">{stage.stage}</div>
@@ -339,7 +339,7 @@ export function ExecutiveDashboardPage() {
                     </div>
                     <div className="mt-4 pt-3 flex justify-between text-sm">
                       <span className="text-gray-800 dark:text-gray-200">Taxa de Conversão:</span>
-                      <span className="font-bold text-green-600">
+                      <span className="font-bold text-status-success">
                         {Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100)}%
                       </span>
                     </div>
@@ -369,13 +369,13 @@ export function ExecutiveDashboardPage() {
                               <div className="text-gray-600">candidatos</div>
                             </div>
                             <div>
-                              <div className={`font-bold ${dept.avgTime <= 28 ? 'text-green-600' : dept.avgTime <= 35 ? 'text-yellow-600' : 'text-red-600'}`}>
+                              <div className={`font-bold ${dept.avgTime <= 28 ? 'text-status-success' : dept.avgTime <= 35 ? 'text-status-warning' : 'text-status-error'}`}>
                                 {dept.avgTime}d
                               </div>
                               <div className="text-gray-600">tempo</div>
                             </div>
                             <div>
-                              <div className={`font-bold ${dept.conversion >= 60 ? 'text-green-600' : dept.conversion >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                              <div className={`font-bold ${dept.conversion >= 60 ? 'text-status-success' : dept.conversion >= 40 ? 'text-status-warning' : 'text-status-error'}`}>
                                 {dept.conversion}%
                               </div>
                               <div className="text-gray-600">conversão</div>
@@ -392,7 +392,7 @@ export function ExecutiveDashboardPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base font-sans flex items-center gap-2">
-                    <Star className="w-5 h-5 text-yellow-500" />
+                    <Star className="w-5 h-5 text-status-warning" />
                     Vagas com Melhor Performance
                   </CardTitle>
                 </CardHeader>
@@ -406,7 +406,7 @@ export function ExecutiveDashboardPage() {
                             <Badge variant="outline" className="text-xs mt-1">{job.department}</Badge>
                           </div>
                           <div className="text-right">
-                            <div className="text-lg font-bold text-green-600">{job.conversion}%</div>
+                            <div className="text-lg font-bold text-status-success">{job.conversion}%</div>
                             <div className="text-xs text-gray-600">conversão</div>
                           </div>
                         </div>
@@ -444,24 +444,24 @@ export function ExecutiveDashboardPage() {
                     <div className="text-xs text-gray-600 mt-1">de 5.0</div>
                   </CardContent>
                 </Card>
-                <Card className="bg-green-50 dark:bg-green-900/20">
+                <Card className="bg-status-success/10 dark:bg-status-success/20">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-green-700">{data.strategicMetrics.retentionRate}%</div>
-                    <div className="text-xs text-green-600">Retenção</div>
+                    <div className="text-2xl font-bold text-status-success">{data.strategicMetrics.retentionRate}%</div>
+                    <div className="text-xs text-status-success">Retenção</div>
                     <div className="text-xs text-gray-600 mt-1">12 meses</div>
                   </CardContent>
                 </Card>
-                <Card className="bg-purple-50 dark:bg-purple-900/20">
+                <Card className="bg-wedo-purple/10 dark:bg-wedo-purple/20">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-purple-700">{data.strategicMetrics.diversityScore}%</div>
-                    <div className="text-xs text-purple-600">Diversidade</div>
+                    <div className="text-2xl font-bold text-wedo-purple">{data.strategicMetrics.diversityScore}%</div>
+                    <div className="text-xs text-wedo-purple">Diversidade</div>
                     <div className="text-xs text-gray-600 mt-1">meta: 75%</div>
                   </CardContent>
                 </Card>
-                <Card className="bg-orange-50 dark:bg-orange-900/20">
+                <Card className="bg-wedo-orange/10 dark:bg-wedo-orange/20">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-orange-700">{data.summary.npsScore}</div>
-                    <div className="text-xs text-orange-600">NPS Candidatos</div>
+                    <div className="text-2xl font-bold text-wedo-orange">{data.summary.npsScore}</div>
+                    <div className="text-xs text-wedo-orange">NPS Candidatos</div>
                     <div className="text-xs text-gray-600 mt-1">mercado: {data.benchmarks.industryAverages.nps}</div>
                   </CardContent>
                 </Card>
@@ -480,7 +480,7 @@ export function ExecutiveDashboardPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base font-sans flex items-center gap-2">
-                      <Trophy className="w-5 h-5 text-yellow-500" />
+                      <Trophy className="w-5 h-5 text-status-warning" />
                       Comparação com o Mercado
                     </CardTitle>
                   </CardHeader>
@@ -493,7 +493,7 @@ export function ExecutiveDashboardPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold">{data.summary.averageTimeToHire}d</div>
-                          <div className={`text-xs ${data.summary.averageTimeToHire < data.benchmarks.industryAverages.timeToHire ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`text-xs ${data.summary.averageTimeToHire < data.benchmarks.industryAverages.timeToHire ? 'text-status-success' : 'text-status-error'}`}>
                             {data.summary.averageTimeToHire < data.benchmarks.industryAverages.timeToHire ? '↑' : '↓'}
                             {Math.abs(data.summary.averageTimeToHire - data.benchmarks.industryAverages.timeToHire)}d vs mercado
                           </div>
@@ -502,12 +502,12 @@ export function ExecutiveDashboardPage() {
 
                       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                         <div className="flex items-center gap-3">
-                          <DollarSign className="w-5 h-5 text-green-600" />
+                          <DollarSign className="w-5 h-5 text-status-success" />
                           <span className="text-sm font-medium">Custo por Hire</span>
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold">R$ {data.summary.averageCostPerHire.toLocaleString()}</div>
-                          <div className={`text-xs ${data.summary.averageCostPerHire < data.benchmarks.industryAverages.costPerHire ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`text-xs ${data.summary.averageCostPerHire < data.benchmarks.industryAverages.costPerHire ? 'text-status-success' : 'text-status-error'}`}>
                             {data.summary.averageCostPerHire < data.benchmarks.industryAverages.costPerHire ? '↑' : '↓'}
                             R$ {Math.abs(data.summary.averageCostPerHire - data.benchmarks.industryAverages.costPerHire).toLocaleString()} vs mercado
                           </div>
@@ -516,12 +516,12 @@ export function ExecutiveDashboardPage() {
 
                       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                         <div className="flex items-center gap-3">
-                          <Percent className="w-5 h-5 text-purple-600" />
+                          <Percent className="w-5 h-5 text-wedo-purple" />
                           <span className="text-sm font-medium">Taxa de Conversão</span>
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold">{data.summary.conversionRate}%</div>
-                          <div className={`text-xs ${data.summary.conversionRate > data.benchmarks.industryAverages.conversionRate ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`text-xs ${data.summary.conversionRate > data.benchmarks.industryAverages.conversionRate ? 'text-status-success' : 'text-status-error'}`}>
                             {data.summary.conversionRate > data.benchmarks.industryAverages.conversionRate ? '↑' : '↓'}
                             {Math.abs(data.summary.conversionRate - data.benchmarks.industryAverages.conversionRate)}% vs mercado
                           </div>
@@ -529,9 +529,9 @@ export function ExecutiveDashboardPage() {
                       </div>
                     </div>
 
-                    <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-md text-center">
-                      <div className="text-sm font-medium text-green-700">Posição no Mercado</div>
-                      <div className="text-2xl font-bold text-green-600">Top 25%</div>
+                    <div className="mt-4 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md text-center">
+                      <div className="text-sm font-medium text-status-success">Posição no Mercado</div>
+                      <div className="text-2xl font-bold text-status-success">Top 25%</div>
                     </div>
                   </CardContent>
                 </Card>
@@ -540,7 +540,7 @@ export function ExecutiveDashboardPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base font-sans flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-green-600" />
+                      <DollarSign className="w-5 h-5 text-status-success" />
                       Saúde Financeira
                     </CardTitle>
                   </CardHeader>
@@ -564,15 +564,15 @@ export function ExecutiveDashboardPage() {
                       <div>
                         <div className="flex justify-between text-xs text-gray-600 mb-2">
                           <span>Utilização do Orçamento</span>
-                          <span className={data.financialMetrics.budgetUtilization > 90 ? 'text-red-600 font-medium' : ''}>
+                          <span className={data.financialMetrics.budgetUtilization > 90 ? 'text-status-error font-medium' : ''}>
                             {data.financialMetrics.budgetUtilization}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
                           <div
                             className={`h-3 rounded-full transition-all ${
-                              data.financialMetrics.budgetUtilization > 90 ? 'bg-red-500' :
-                              data.financialMetrics.budgetUtilization > 75 ? 'bg-yellow-500' : 'bg-green-500'
+                              data.financialMetrics.budgetUtilization > 90 ? 'bg-status-error' :
+                              data.financialMetrics.budgetUtilization > 75 ? 'bg-status-warning' : 'bg-status-success'
                             }`}
                             style={{ width: `${data.financialMetrics.budgetUtilization}%` }}
                           />
@@ -580,13 +580,13 @@ export function ExecutiveDashboardPage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-md text-center">
-                          <div className="text-2xl font-bold text-green-600">{data.financialMetrics.roi}%</div>
-                          <div className="text-xs text-green-700">ROI</div>
+                        <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md text-center">
+                          <div className="text-2xl font-bold text-status-success">{data.financialMetrics.roi}%</div>
+                          <div className="text-xs text-status-success">ROI</div>
                         </div>
-                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-md text-center">
-                          <div className="text-2xl font-bold text-green-600">R$ {(data.financialMetrics.costSavings / 1000).toFixed(0)}k</div>
-                          <div className="text-xs text-green-700">Economia</div>
+                        <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md text-center">
+                          <div className="text-2xl font-bold text-status-success">R$ {(data.financialMetrics.costSavings / 1000).toFixed(0)}k</div>
+                          <div className="text-xs text-status-success">Economia</div>
                         </div>
                       </div>
                     </div>
@@ -598,7 +598,7 @@ export function ExecutiveDashboardPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base font-sans flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-amber-500" />
+                    <AlertTriangle className="w-5 h-5 text-status-warning" />
                     Análise de Riscos
                   </CardTitle>
                 </CardHeader>
@@ -608,16 +608,16 @@ export function ExecutiveDashboardPage() {
                       <div
                         key={index}
                         className={`p-4 rounded-md ${
-                          risk.impact === 'High' ? 'bg-red-50 dark:bg-red-900/20' :
-                          risk.impact === 'Medium' ? 'bg-yellow-50 dark:bg-yellow-900/20' :
+                          risk.impact === 'High' ? 'bg-status-error/10 dark:bg-status-error/20' :
+                          risk.impact === 'Medium' ? 'bg-status-warning/10 dark:bg-status-warning/20' :
                           'bg-gray-100 dark:bg-gray-800'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium text-sm text-gray-950 dark:text-gray-50">{risk.factor}</span>
                           <Badge className={`text-xs ${
-                            risk.impact === 'High' ? 'bg-red-100 text-red-800' :
-                            risk.impact === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                            risk.impact === 'High' ? 'bg-status-error/15 text-status-error' :
+                            risk.impact === 'Medium' ? 'bg-status-warning/15 text-status-warning' :
                             'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                           }`}>
                             {risk.probability}%
@@ -626,8 +626,8 @@ export function ExecutiveDashboardPage() {
                         <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                           <div
                             className={`h-2 rounded-full ${
-                              risk.probability > 50 ? 'bg-red-500' :
-                              risk.probability > 30 ? 'bg-yellow-500' : 'bg-green-500'
+                              risk.probability > 50 ? 'bg-status-error' :
+                              risk.probability > 30 ? 'bg-status-warning' : 'bg-status-success'
                             }`}
                             style={{ width: `${risk.probability}%` }}
                           />

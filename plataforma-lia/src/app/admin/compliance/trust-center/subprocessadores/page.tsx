@@ -16,21 +16,21 @@ function getRiskBadge(risk: string) {
   switch (risk) {
     case 'low':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-success/15 text-status-success">
           <CheckCircle2 className="w-3.5 h-3.5" />
           Baixo
         </span>
       )
     case 'medium':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-warning/15 text-status-warning">
           <AlertTriangle className="w-3.5 h-3.5" />
           Médio
         </span>
       )
     case 'high':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-error/15 text-status-error">
           <Shield className="w-3.5 h-3.5" />
           Alto
         </span>

@@ -240,11 +240,11 @@ export function LIAActivityFeed() {
   const getActivityIcon = (type: LIAActivity['type']) => {
     switch (type) {
       case 'email': return <Mail className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-      case 'candidate': return <Users className="w-4 h-4 text-green-500" />
-      case 'interview': return <Calendar className="w-4 h-4 text-purple-500" />
-      case 'assessment': return <BarChart3 className="w-4 h-4 text-orange-500" />
+      case 'candidate': return <Users className="w-4 h-4 text-status-success" />
+      case 'interview': return <Calendar className="w-4 h-4 text-wedo-purple" />
+      case 'assessment': return <BarChart3 className="w-4 h-4 text-wedo-orange" />
       case 'report': return <FileText className="w-4 h-4 text-teal-500" />
-      case 'automation': return <Zap className="w-4 h-4 text-yellow-500" />
+      case 'automation': return <Zap className="w-4 h-4 text-status-warning" />
       default: return <CheckCircle className="w-4 h-4 text-gray-600" />
     }
   }
@@ -252,9 +252,9 @@ export function LIAActivityFeed() {
   // Status color
   const getStatusColor = (status: LIAActivity['status']) => {
     switch (status) {
-      case 'success': return 'text-green-600'
-      case 'error': return 'text-red-600'
-      case 'pending': return 'text-yellow-600'
+      case 'success': return 'text-status-success'
+      case 'error': return 'text-status-error'
+      case 'pending': return 'text-status-warning'
       default: return 'text-gray-600 dark:text-gray-400'
     }
   }
@@ -405,9 +405,9 @@ export function LIAActivityFeed() {
 
                       {/* Status indicator */}
                       <div className={`inline-block px-2 py-1 rounded text-xs mt-2 ${
-                        activity.status === 'success' ? 'bg-green-100 text-green-700' :
-                        activity.status === 'error' ? 'bg-red-100 text-red-700' :
-                        activity.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        activity.status === 'success' ? 'bg-status-success/15 text-status-success' :
+                        activity.status === 'error' ? 'bg-status-error/15 text-status-error' :
+                        activity.status === 'pending' ? 'bg-status-warning/15 text-status-warning' :
                         'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark'
                       }`}>
                         {activity.status === 'success' ? 'Concluído com sucesso' :

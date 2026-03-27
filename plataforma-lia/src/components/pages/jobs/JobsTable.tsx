@@ -39,11 +39,11 @@ export function JobsTable({
 
   const getStatusBadge = (status: JobVacancy['status']) => {
     const config = {
-      draft: { label: "Rascunho", className: "border-yellow-500/30 text-yellow-400" },
-      active: { label: "Ativa", className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-      paused: { label: "Pausada", className: "border-orange-500/30 text-orange-400" },
+      draft: { label: "Rascunho", className: "border-status-warning/30/30 text-status-warning" },
+      active: { label: "Ativa", className: "bg-status-success/20 text-status-success border-status-success/30/30" },
+      paused: { label: "Pausada", className: "border-wedo-orange/30/30 text-wedo-orange" },
       closed: { label: "Encerrada", className: "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400" },
-      cancelled: { label: "Cancelada", className: "border-red-500/30 text-red-400" },
+      cancelled: { label: "Cancelada", className: "border-status-error/30/30 text-status-error" },
     }
     const { label, className } = config[status] || config.draft
     return <Badge variant="outline" className={className}>{label}</Badge>
@@ -52,9 +52,9 @@ export function JobsTable({
   const getPriorityBadge = (priority: JobVacancy['priority']) => {
     const config = {
       low: { label: "Baixa", className: "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400" },
-      medium: { label: "Média", className: "border-blue-500/30 text-blue-400" },
-      high: { label: "Alta", className: "border-orange-500/30 text-orange-400" },
-      urgent: { label: "Urgente", className: "bg-red-500/20 text-red-400 border-red-500/30" },
+      medium: { label: "Média", className: "border-wedo-cyan/30/30 text-wedo-cyan-dark" },
+      high: { label: "Alta", className: "border-wedo-orange/30/30 text-wedo-orange" },
+      urgent: { label: "Urgente", className: "bg-status-error/20 text-status-error border-status-error/30/30" },
     }
     const { label, className } = config[priority] || config.medium
     return <Badge variant="outline" className={`text-xs ${className}`}>{label}</Badge>
@@ -232,7 +232,7 @@ export function JobsTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 dark:text-gray-500 hover:text-orange-400"
+                            className="h-8 w-8 text-gray-400 dark:text-gray-500 hover:text-wedo-orange"
                             onClick={() => onAction("pause", job)}
                           >
                             <Pause className="h-4 w-4" />
@@ -248,7 +248,7 @@ export function JobsTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 dark:text-gray-500 hover:text-red-400"
+                            className="h-8 w-8 text-gray-400 dark:text-gray-500 hover:text-status-error"
                             onClick={() => onAction("close", job)}
                           >
                             <XCircle className="h-4 w-4" />

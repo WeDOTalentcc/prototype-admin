@@ -98,11 +98,11 @@ export function BatchApprovalModal({
   const availableStages = [
     { id: 'triagem', name: 'Triagem Inicial', color: 'bg-gray-100 text-gray-800 dark:text-gray-200' },
     { id: 'entrevista_rh', name: 'Entrevista RH', color: 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-50' },
-    { id: 'teste_tecnico', name: 'Teste Técnico', color: 'bg-purple-100 text-purple-700' },
-    { id: 'entrevista_tecnica', name: 'Entrevista Técnica', color: 'bg-orange-100 text-orange-700' },
-    { id: 'entrevista_final', name: 'Entrevista Final', color: 'bg-yellow-100 text-yellow-700' },
-    { id: 'aprovado', name: 'Aprovado', color: 'bg-green-100 text-green-700' },
-    { id: 'rejeitado', name: 'Rejeitado', color: 'bg-red-100 text-red-700' }
+    { id: 'teste_tecnico', name: 'Teste Técnico', color: 'bg-wedo-purple/15 text-wedo-purple' },
+    { id: 'entrevista_tecnica', name: 'Entrevista Técnica', color: 'bg-wedo-orange/15 text-wedo-orange' },
+    { id: 'entrevista_final', name: 'Entrevista Final', color: 'bg-status-warning/15 text-status-warning' },
+    { id: 'aprovado', name: 'Aprovado', color: 'bg-status-success/15 text-status-success' },
+    { id: 'rejeitado', name: 'Rejeitado', color: 'bg-status-error/15 text-status-error' }
   ]
 
   // Batch action templates
@@ -113,7 +113,7 @@ export function BatchApprovalModal({
       type: 'approve' as const,
       description: 'Aprovar todos os candidatos selecionados',
       icon: CheckCircle,
-      color: 'bg-green-600 hover:bg-green-700',
+      color: 'bg-status-success hover:bg-status-success/10',
       defaultComment: 'Candidatos aprovados em lote após análise detalhada.'
     },
     {
@@ -122,7 +122,7 @@ export function BatchApprovalModal({
       type: 'reject' as const,
       description: 'Rejeitar todos os candidatos selecionados',
       icon: XCircle,
-      color: 'bg-red-600 hover:bg-red-700',
+      color: 'bg-status-error hover:bg-status-error',
       defaultComment: 'Candidatos não atendem aos critérios da vaga.'
     },
     {
@@ -178,25 +178,25 @@ export function BatchApprovalModal({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 85) return "text-green-600 bg-green-100"
+    if (score >= 85) return "text-status-success bg-status-success/15"
     if (score >= 70) return "text-gray-900 bg-gray-100 dark:text-gray-50 dark:bg-gray-700"
-    if (score >= 60) return "text-yellow-600 bg-yellow-100"
-    return "text-red-600 bg-red-100"
+    if (score >= 60) return "text-status-warning bg-status-warning/15"
+    return "text-status-error bg-status-error/15"
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'alta': return 'bg-red-100 text-red-700'
-      case 'média': return 'bg-orange-100 text-orange-700'
-      case 'baixa': return 'bg-green-100 text-green-700'
+      case 'alta': return 'bg-status-error/15 text-status-error'
+      case 'média': return 'bg-wedo-orange/15 text-wedo-orange'
+      case 'baixa': return 'bg-status-success/15 text-status-success'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200'
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'rejected': return <XCircle className="w-4 h-4 text-red-600" />
+      case 'approved': return <CheckCircle className="w-4 h-4 text-status-success" />
+      case 'rejected': return <XCircle className="w-4 h-4 text-status-error" />
       case 'moved': return <ArrowRight className="w-4 h-4 text-gray-900 dark:text-gray-50" />
       default: return <Clock className="w-4 h-4 text-gray-600" />
     }
@@ -592,7 +592,7 @@ export function BatchApprovalModal({
                           onChange={(e) => setBatchAction({...batchAction, sendEmail: e.target.checked})}
                           className="rounded border-gray-300"
                         />
-                        <Mail className="w-4 h-4 text-green-600" />
+                        <Mail className="w-4 h-4 text-status-success" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">Enviar email aos candidatos</span>
                       </label>
 
@@ -603,7 +603,7 @@ export function BatchApprovalModal({
                           onChange={(e) => setBatchAction({...batchAction, scheduleInterview: e.target.checked})}
                           className="rounded border-gray-300"
                         />
-                        <Calendar className="w-4 h-4 text-purple-600" />
+                        <Calendar className="w-4 h-4 text-wedo-purple" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">Agendar entrevistas automaticamente</span>
                       </label>
 
@@ -614,7 +614,7 @@ export function BatchApprovalModal({
                           onChange={(e) => setBatchAction({...batchAction, addToTalentPool: e.target.checked})}
                           className="rounded border-gray-300"
                         />
-                        <Star className="w-4 h-4 text-orange-600" />
+                        <Star className="w-4 h-4 text-wedo-orange" />
                         <span className="text-sm text-gray-800 dark:text-gray-200">Adicionar ao banco de talentos</span>
                       </label>
                     </div>
@@ -647,7 +647,7 @@ export function BatchApprovalModal({
 
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-green-600 mb-1">
+                      <div className="text-2xl font-bold text-status-success mb-1">
                         {batchAction.type === 'approve' ? selectedCount : 0}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Serão Aprovados</div>
@@ -656,7 +656,7 @@ export function BatchApprovalModal({
 
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-red-600 mb-1">
+                      <div className="text-2xl font-bold text-status-error mb-1">
                         {batchAction.type === 'reject' ? selectedCount : 0}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Serão Rejeitados</div>
@@ -665,7 +665,7 @@ export function BatchApprovalModal({
 
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-purple-600 mb-1">
+                      <div className="text-2xl font-bold text-wedo-purple mb-1">
                         {batchAction.type === 'move' ? selectedCount : 0}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Serão Movidos</div>
@@ -707,19 +707,19 @@ export function BatchApprovalModal({
                             </Badge>
                           )}
                           {batchAction.sendEmail && (
-                            <Badge className="bg-green-100 text-green-800 flex items-center gap-1">
+                            <Badge className="bg-status-success/15 text-status-success flex items-center gap-1">
                               <Mail className="w-3 h-3" />
                               Enviar emails
                             </Badge>
                           )}
                           {batchAction.scheduleInterview && (
-                            <Badge className="bg-purple-100 text-purple-800 flex items-center gap-1">
+                            <Badge className="bg-wedo-purple/15 text-wedo-purple flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
                               Agendar entrevistas
                             </Badge>
                           )}
                           {batchAction.addToTalentPool && (
-                            <Badge className="bg-orange-100 text-orange-800 flex items-center gap-1">
+                            <Badge className="bg-wedo-orange/15 text-wedo-orange flex items-center gap-1">
                               <Star className="w-3 h-3" />
                               Banco de talentos
                             </Badge>
@@ -804,8 +804,8 @@ export function BatchApprovalModal({
           {currentStep === 'complete' && results && (
             <div className="p-6 h-full overflow-y-auto">
               <div className="max-w-4xl mx-auto text-center">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+                <div className="w-16 h-16 bg-status-success/15 dark:bg-status-success/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-status-success" />
                 </div>
 
                 <h3 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-2">
@@ -827,21 +827,21 @@ export function BatchApprovalModal({
 
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <div className="text-3xl font-bold text-green-600 mb-2">{results.approved}</div>
+                      <div className="text-3xl font-bold text-status-success mb-2">{results.approved}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Aprovados</div>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <div className="text-3xl font-bold text-red-600 mb-2">{results.rejected}</div>
+                      <div className="text-3xl font-bold text-status-error mb-2">{results.rejected}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Rejeitados</div>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <div className="text-3xl font-bold text-purple-600 mb-2">{results.moved}</div>
+                      <div className="text-3xl font-bold text-wedo-purple mb-2">{results.moved}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Movidos</div>
                     </CardContent>
                   </Card>

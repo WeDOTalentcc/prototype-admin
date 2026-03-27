@@ -158,7 +158,7 @@ export default function ExportarPage() {
       case 'completed':
         return <Badge variant="success" className="gap-1"><CheckCircle2 className="w-3 h-3" />Concluído</Badge>
       case 'pending':
-        return <Badge className="bg-amber-100 text-amber-700 gap-1"><Clock className="w-3 h-3" />Gerando...</Badge>
+        return <Badge className="bg-status-warning/15 text-status-warning gap-1"><Clock className="w-3 h-3" />Gerando...</Badge>
       case 'failed':
         return <Badge variant="destructive" className="gap-1"><AlertTriangle className="w-3 h-3" />Falhou</Badge>
     }
@@ -195,23 +195,23 @@ export default function ExportarPage() {
           </div>
         </div>
 
-        <Card className="mb-6 border-amber-300 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-700">
+        <Card className="mb-6 border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/10 dark:border-status-warning/30">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-md">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div className="p-2 bg-status-warning/15 dark:bg-status-warning/30 rounded-md">
+                <AlertTriangle className="w-5 h-5 text-status-warning" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                   Gap Crítico Identificado - Facilitação de Auditorias
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                   Esta funcionalidade automatiza a geração de pacotes de evidências para auditores externos, 
                   reduzindo o tempo de preparação de auditorias de <strong>semanas para minutos</strong>. 
                   Requisito recomendado por ISO 27001 (A.18.2.1) e SOC 2.
                 </p>
               </div>
-              <Badge className="bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200">Novo</Badge>
+              <Badge className="bg-status-warning/20 text-status-warning dark:bg-status-warning dark:text-status-warning">Novo</Badge>
             </div>
           </CardContent>
         </Card>
@@ -440,7 +440,7 @@ export default function ExportarPage() {
                       )}
                     </Button>
                     {selectedCount === 0 && (
-                      <p className="text-xs text-amber-600 mt-2 text-center">
+                      <p className="text-xs text-status-warning mt-2 text-center">
                         Selecione pelo menos um tipo de evidência
                       </p>
                     )}

@@ -82,10 +82,10 @@ interface BiasAlert {
 
 
 const statusColors = {
-  implemented: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  partial: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  not_implemented: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  in_progress: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  implemented: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success',
+  partial: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
+  not_implemented: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
+  in_progress: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   not_started: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-200',
   verified: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
   not_applicable: 'bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500',
@@ -154,8 +154,8 @@ function ComplianceTab({ clientId }: { clientId: string }) {
   if (error) {
     return (
       <div className="p-6 text-center">
-        <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-        <p className="text-sm text-red-600">Erro ao carregar dados de compliance</p>
+        <AlertCircle className="w-8 h-8 text-status-error mx-auto mb-2" />
+        <p className="text-sm text-status-error">Erro ao carregar dados de compliance</p>
         <Button variant="outline" size="sm" onClick={refetch} className="mt-3">
           <RefreshCw className="w-4 h-4 mr-2" />
           Tentar novamente
@@ -188,17 +188,17 @@ function ComplianceTab({ clientId }: { clientId: string }) {
                 <Progress value={framework.progress} className="h-2 mb-4" />
                 
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-md bg-emerald-50 dark:bg-emerald-900/20">
-                    <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{framework.controlsImplemented}</p>
-                    <p className="text-micro text-emerald-600 dark:text-emerald-400">Implementado</p>
+                  <div className="p-2 rounded-md bg-status-success/10 dark:bg-status-success/20">
+                    <p className="text-lg font-semibold text-status-success dark:text-status-success">{framework.controlsImplemented}</p>
+                    <p className="text-micro text-status-success dark:text-status-success">Implementado</p>
                   </div>
-                  <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-900/20">
-                    <p className="text-lg font-semibold text-amber-600 dark:text-amber-400">{framework.controlsPartial}</p>
-                    <p className="text-micro text-amber-600 dark:text-amber-400">Parcial</p>
+                  <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
+                    <p className="text-lg font-semibold text-status-warning dark:text-status-warning">{framework.controlsPartial}</p>
+                    <p className="text-micro text-status-warning dark:text-status-warning">Parcial</p>
                   </div>
-                  <div className="p-2 rounded-md bg-red-50 dark:bg-red-900/20">
-                    <p className="text-lg font-semibold text-red-600 dark:text-red-400">{framework.controlsNotImplemented}</p>
-                    <p className="text-micro text-red-600 dark:text-red-400">Pendente</p>
+                  <div className="p-2 rounded-md bg-status-error/10 dark:bg-status-error/20">
+                    <p className="text-lg font-semibold text-status-error dark:text-status-error">{framework.controlsNotImplemented}</p>
+                    <p className="text-micro text-status-error dark:text-status-error">Pendente</p>
                   </div>
                 </div>
 
@@ -298,7 +298,7 @@ function ComplianceTab({ clientId }: { clientId: string }) {
                     {dashboard.upcomingReviews} revisões agendadas
                   </p>
                   {dashboard.overdueReviews > 0 && (
-                    <p className="text-xs text-red-600 mt-1">
+                    <p className="text-xs text-status-error mt-1">
                       {dashboard.overdueReviews} revisões em atraso
                     </p>
                   )}
@@ -379,12 +379,12 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Total Decisões IA</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{totalDecisionsCount.toLocaleString()}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">Últimos 30 dias</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">Últimos 30 dias</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div className="w-10 h-10 rounded-md bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center">
+                <Brain className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -397,12 +397,12 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Taxa de Override</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{overrideRate}%</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <ArrowDownRight className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">Revisão humana</span>
+                  <ArrowDownRight className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">Revisão humana</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                <RefreshCw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 rounded-md bg-status-warning/10 dark:bg-status-warning/20 flex items-center justify-center">
+                <RefreshCw className="w-5 h-5 text-status-warning dark:text-status-warning" />
               </div>
             </div>
           </CardContent>
@@ -415,8 +415,8 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Cobertura Explainability</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{explainabilityCoverage}%</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">Com explicação</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">Com explicação</span>
                 </div>
               </div>
  <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
@@ -483,13 +483,13 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
                 {biasAlerts.map((alert) => (
                   <div 
                     key={alert.id} 
-                    className={`p-4 rounded-md border ${alert.resolved ? 'bg-gray-50 dark:bg-gray-800/50' : alert.severity === 'high' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}
+                    className={`p-4 rounded-md border ${alert.resolved ? 'bg-gray-50 dark:bg-gray-800/50' : alert.severity === 'high' ? 'bg-status-error/10 dark:bg-status-error/20 border-status-error/30 dark:border-status-error/30' : 'bg-status-warning/10 dark:bg-status-warning/20 border-status-warning/30 dark:border-status-warning/30'}`}
                     style={{ borderColor: alert.resolved ? 'var(--eleven-border-subtle)' : undefined }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${alert.severity === 'high' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
-                          <AlertTriangle className={`w-4 h-4 ${alert.severity === 'high' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`} />
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${alert.severity === 'high' ? 'bg-status-error/15 dark:bg-status-error/30' : 'bg-status-warning/15 dark:bg-status-warning/30'}`}>
+                          <AlertTriangle className={`w-4 h-4 ${alert.severity === 'high' ? 'text-status-error dark:text-status-error' : 'text-status-warning dark:text-status-warning'}`} />
                         </div>
                         <div>
                           <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -512,7 +512,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
               </div>
             ) : (
               <div className="text-center py-6">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Nenhum alerta de bias detectado</p>
               </div>
             )}
@@ -578,7 +578,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
                         </td>
                         <td className="py-3 px-2">
                           {decision.explainability ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                            <CheckCircle2 className="w-4 h-4 text-status-success" />
                           ) : (
                             <XCircle className="w-4 h-4 text-gray-400" />
                           )}
@@ -671,12 +671,12 @@ function LGPDTab({ clientId }: { clientId: string }) {
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Consentimentos Ativos</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{activeConsents}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">+8 esta semana</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">+8 esta semana</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-10 h-10 rounded-md bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-status-success dark:text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -692,13 +692,13 @@ function LGPDTab({ clientId }: { clientId: string }) {
                 </p>
                 {stats && stats.breachesPendingAnpd > 0 && (
                   <div className="flex items-center gap-1 mt-1">
-                    <AlertCircle className="w-3 h-3 text-amber-500" />
-                    <span className="text-xs text-amber-600">{stats.breachesPendingAnpd} pendentes ANPD</span>
+                    <AlertCircle className="w-3 h-3 text-status-warning" />
+                    <span className="text-xs text-status-warning">{stats.breachesPendingAnpd} pendentes ANPD</span>
                   </div>
                 )}
               </div>
-              <div className="w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 rounded-md bg-status-warning/10 dark:bg-status-warning/20 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-status-warning dark:text-status-warning" />
               </div>
             </div>
           </CardContent>
@@ -711,12 +711,12 @@ function LGPDTab({ clientId }: { clientId: string }) {
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Dados Expirados</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{expiredData}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <AlertCircle className="w-3 h-3 text-red-500" />
-                  <span className="text-xs text-red-600">Requer ação</span>
+                  <AlertCircle className="w-3 h-3 text-status-error" />
+                  <span className="text-xs text-status-error">Requer ação</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <div className="w-10 h-10 rounded-md bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-status-error dark:text-status-error" />
               </div>
             </div>
           </CardContent>
@@ -740,7 +740,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
               {breaches.slice(0, 5).map((breach) => (
                 <div 
                   key={breach.id}
-                  className={`p-4 rounded-md border ${breach.severity === 'critical' || breach.severity === 'high' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}
+                  className={`p-4 rounded-md border ${breach.severity === 'critical' || breach.severity === 'high' ? 'bg-status-error/10 dark:bg-status-error/20 border-status-error/30 dark:border-status-error/30' : 'bg-status-warning/10 dark:bg-status-warning/20 border-status-warning/30 dark:border-status-warning/30'}`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -752,7 +752,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
                           {breach.severity.toUpperCase()}
                         </Badge>
                         {!breach.notificationSentToAnpd && breach.hoursUntilDeadline !== undefined && (
-                          <span className="text-xs text-red-600">
+                          <span className="text-xs text-status-error">
                             {breach.hoursUntilDeadline}h para notificar ANPD
                           </span>
                         )}
@@ -830,16 +830,16 @@ function LGPDTab({ clientId }: { clientId: string }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="p-4 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+          <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <div className="w-8 h-8 rounded-full bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-status-warning dark:text-status-warning" />
               </div>
               <div>
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                   {expiredData} registros com período de retenção expirado
                 </p>
-                <p className="text-xs mt-1 text-amber-600 dark:text-amber-400">
+                <p className="text-xs mt-1 text-status-warning dark:text-status-warning">
                   Estes dados devem ser excluídos ou ter seu consentimento renovado de acordo com a LGPD.
                 </p>
                 <Button variant="outline" size="sm" className="mt-3">
@@ -870,8 +870,8 @@ function HealthTab() {
                   <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Aguardando dados</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                <Server className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-10 h-10 rounded-md bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
+                <Server className="w-5 h-5 text-status-success dark:text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -884,12 +884,12 @@ function HealthTab() {
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Incidentes Abertos</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>0</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">Nenhum incidente</span>
+                  <CheckCircle2 className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">Nenhum incidente</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 rounded-md bg-status-warning/10 dark:bg-status-warning/20 flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-status-warning dark:text-status-warning" />
               </div>
             </div>
           </CardContent>
@@ -950,7 +950,7 @@ function HealthTab() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <CheckCircle2 className="w-8 h-8 mb-3 text-emerald-500" />
+            <CheckCircle2 className="w-8 h-8 mb-3 text-status-success" />
             <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
               Nenhum incidente registrado
             </p>

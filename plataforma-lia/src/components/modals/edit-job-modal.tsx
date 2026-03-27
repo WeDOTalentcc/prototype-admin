@@ -811,10 +811,10 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      'Linguagens': 'bg-blue-50 text-blue-700 border-blue-200',
-      'Frameworks': 'bg-green-50 text-green-700 border-green-200',
-      'Banco de Dados': 'bg-orange-50 text-orange-700 border-orange-200',
-      'Cloud': 'bg-purple-50 text-purple-700 border-purple-200',
+      'Linguagens': 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30',
+      'Frameworks': 'bg-status-success/10 text-status-success border-status-success/30',
+      'Banco de Dados': 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30',
+      'Cloud': 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30',
       'Containers': 'bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600',
       'CI/CD': 'bg-pink-50 text-pink-700 border-pink-200',
       'Outros': 'bg-gray-50 text-gray-700 border-gray-200',
@@ -824,9 +824,9 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
 
   const getWeightColor = (weight: string) => {
     const colors: Record<string, string> = {
-      'Essencial': 'bg-red-50 text-red-700 border-red-200',
-      'Importante': 'bg-amber-50 text-amber-700 border-amber-200',
-      'Desejável': 'bg-green-50 text-green-700 border-green-200',
+      'Essencial': 'bg-status-error/10 text-status-error border-status-error/30',
+      'Importante': 'bg-status-warning/10 text-status-warning border-status-warning/30',
+      'Desejável': 'bg-status-success/10 text-status-success border-status-success/30',
     }
     return colors[weight] || 'bg-gray-50 text-gray-700 border-gray-200'
   }
@@ -1034,10 +1034,10 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   
                   <div className="relative pl-4 border-l-2 border-gray-300 space-y-4">
                     <div className="relative">
-                      <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
+                      <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-status-success border-2 border-white" />
                       <div className="ml-4">
                         <Label className="text-xs font-medium text-gray-800 mb-1 block flex items-center gap-1.5">
-                          <span className="text-green-600 font-medium">1.</span> Data de Abertura
+                          <span className="text-status-success font-medium">1.</span> Data de Abertura
                         </Label>
                         <Input
                           type="date"
@@ -1049,10 +1049,10 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </div>
                     
                     <div className="relative">
-                      <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-blue-500 border-2 border-white" />
+                      <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-wedo-cyan border-2 border-white" />
                       <div className="ml-4">
                         <Label className="text-xs font-medium text-gray-800 mb-1 block flex items-center gap-1.5">
-                          <span className="text-blue-600 font-medium">2.</span> Prazo Screening
+                          <span className="text-wedo-cyan-dark font-medium">2.</span> Prazo Screening
                           <span className="text-micro text-gray-400">(triagem inicial)</span>
                         </Label>
                         <Input
@@ -1065,10 +1065,10 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </div>
                     
                     <div className="relative">
-                      <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-purple-500 border-2 border-white" />
+                      <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-wedo-purple border-2 border-white" />
                       <div className="ml-4">
                         <Label className="text-xs font-medium text-gray-800 mb-1 block flex items-center gap-1.5">
-                          <span className="text-purple-600 font-medium">3.</span> Prazo Shortlist
+                          <span className="text-wedo-purple font-medium">3.</span> Prazo Shortlist
                           <span className="text-micro text-gray-400">(lista curta)</span>
                         </Label>
                         <Input
@@ -1081,11 +1081,11 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </div>
                     
                     <div className="relative">
-                      <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-orange-500 border-2 border-white" />
+                      <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-wedo-orange border-2 border-white" />
                       <div className="ml-4">
                         <Label className="text-xs font-medium text-gray-800 mb-1 block flex items-center gap-1.5">
-                          <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />
-                          <span className="text-orange-600 font-medium">4.</span> Prazo Final
+                          <AlertTriangle className="w-3.5 h-3.5 text-wedo-orange" />
+                          <span className="text-wedo-orange font-medium">4.</span> Prazo Final
                         </Label>
                         <Input
                           type="date"
@@ -1192,7 +1192,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           >
                             <button
                               onClick={() => removeBenefit(idx)}
-                              className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 mr-0.5"
+                              className="text-gray-600 dark:text-gray-400 hover:text-status-error dark:hover:text-status-error mr-0.5"
                               type="button"
                             >
                               ×
@@ -1355,10 +1355,10 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 hover:bg-red-50"
+                            className="h-8 w-8 p-0 hover:bg-status-error/10"
                             onClick={() => removeInterviewStage(idx)}
                           >
-                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                            <Trash2 className="w-3.5 h-3.5 text-status-error" />
                           </Button>
                         </div>
                       </div>
@@ -1440,8 +1440,8 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </div>
 
                     {!(formData.confidentialityConfig as any)?.can_reveal_company_name && (
-                      <div className="ml-4 p-2 bg-amber-50 rounded-md border border-amber-100">
-                        <Label className="text-xs text-amber-700 mb-1.5 block">
+                      <div className="ml-4 p-2 bg-status-warning/10 rounded-md border border-status-warning/30">
+                        <Label className="text-xs text-status-warning mb-1.5 block">
                           Apresentação mascarada para candidatos:
                         </Label>
                         <Input
@@ -1452,7 +1452,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                               masked_intro: e.target.value
                             } as any)
                           }}
-                          className="h-8 text-xs bg-white border-amber-200"
+                          className="h-8 text-xs bg-white border-status-warning/30"
                           placeholder="Uma empresa líder no segmento de pagamentos"
                         />
                       </div>
@@ -1560,7 +1560,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <div className="p-4 bg-gray-50 rounded-md border border-gray-100 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Shield className="w-4 h-4 text-orange-500" />
+                          <Shield className="w-4 h-4 text-wedo-orange" />
                           <span className="text-sm text-gray-700">Vaga Confidencial</span>
                         </div>
                         <Switch
@@ -1579,7 +1579,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                         />
                       </div>
                       {formData.isAffirmative && (
-                        <div className="space-y-3 mt-3 p-4 bg-purple-50 rounded-md border border-purple-200">
+                        <div className="space-y-3 mt-3 p-4 bg-wedo-purple/10 rounded-md border border-wedo-purple/30">
                           <div>
                             <Label className="text-xs font-medium text-gray-800 mb-2 block">Tipo de Ação Afirmativa</Label>
                             <div className="grid grid-cols-2 gap-2">
@@ -1595,8 +1595,8 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                                   className={cn(
                                     "p-2.5 rounded-md border cursor-pointer transition-all",
                                     formData.affirmativeType === option.value
-                                      ? "border-purple-400 bg-purple-100"
-                                      : "border-purple-200 bg-white hover:border-purple-300"
+                                      ? "border-wedo-purple/30 bg-wedo-purple/15"
+                                      : "border-wedo-purple/30 bg-white hover:border-wedo-purple/30"
                                   )}
                                   onClick={() => updateField('affirmativeType', formData.affirmativeType === option.value ? undefined : option.value as Job['affirmativeType'])}
                                 >
@@ -1612,7 +1612,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </div>
 
                     {formData.isConfidential && (
-                      <div className="space-y-4 mt-4 p-4 bg-orange-50 rounded-md border border-orange-200">
+                      <div className="space-y-4 mt-4 p-4 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
                         <div>
                           <Label className="text-xs font-medium text-gray-800 mb-1 block">Nome Mascarado da Empresa</Label>
                           <Input
@@ -1650,7 +1650,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                                 {email}
                                 <button
                                   onClick={() => removeAccessEmail(idx)}
-                                  className="ml-1.5 text-gray-400 hover:text-red-500"
+                                  className="ml-1.5 text-gray-400 hover:text-status-error"
                                 >
                                   <X className="w-3 h-3" />
                                 </button>
@@ -1685,7 +1685,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-green-600" />
+                        <Globe className="w-4 h-4 text-status-success" />
                         <span className="text-sm text-gray-700">Website Corporativo</span>
                       </div>
                       <Switch
@@ -1695,7 +1695,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <ExternalLink className="w-4 h-4 text-purple-600" />
+                        <ExternalLink className="w-4 h-4 text-wedo-purple" />
                         <span className="text-sm text-gray-700">Indeed</span>
                       </div>
                       <Switch
@@ -1832,11 +1832,11 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {(formData.languages || []).map((lang, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs py-1 px-2 bg-purple-50 text-purple-700 border border-purple-200">
+                      <Badge key={idx} variant="secondary" className="text-xs py-1 px-2 bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30">
                         {lang.language} ({lang.level})
                         <button
                           onClick={() => removeLanguage(idx)}
-                          className="ml-1.5 text-purple-400 hover:text-red-500"
+                          className="ml-1.5 text-wedo-purple hover:text-status-error"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -1881,7 +1881,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
           <div className="bg-white dark:bg-gray-800 rounded-md max-w-lg w-full max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2">
-                <Download className="w-4 h-4 text-amber-500" />
+                <Download className="w-4 h-4 text-status-warning" />
                 <h3 className="text-base-ui font-semibold text-gray-950">Importar Perguntas Padrão</h3>
               </div>
               <button
@@ -1895,7 +1895,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
             <div className="flex-1 overflow-y-auto p-5">
               {isLoadingDefaultQuestions ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+                  <Loader2 className="w-6 h-6 animate-spin text-status-warning" />
                   <span className="ml-2 text-sm text-gray-600">Carregando perguntas...</span>
                 </div>
               ) : companyDefaultQuestions.length === 0 ? (
@@ -1911,14 +1911,14 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       key={q.id}
                       className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
                         selectedDefaultQuestions.has(q.id)
-                          ? 'bg-amber-50 border-amber-300'
+                          ? 'bg-status-warning/10 border-status-warning/30'
                           : 'bg-white border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className="mt-0.5">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                           selectedDefaultQuestions.has(q.id)
-                            ? 'bg-amber-500 border-amber-500'
+                            ? 'bg-status-warning border-status-warning/30'
                             : 'border-gray-300'
                         }`}>
                           {selectedDefaultQuestions.has(q.id) && (
@@ -1938,14 +1938,14 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Badge variant="outline" className="text-micro bg-gray-50 text-gray-600 border-gray-200">
                             {getCategoryLabel(q.category)}
                           </Badge>
-                          <Badge variant="outline" className="text-micro bg-blue-50 text-blue-600 border-blue-200">
+                          <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
                             {q.question_type === 'yes_no' ? 'Sim/Não' : 
                              q.question_type === 'single_choice' ? 'Escolha única' : 
                              q.question_type === 'multiple_choice' ? 'Múltipla escolha' : 
                              q.question_type === 'scale' ? 'Escala' : 'Texto'}
                           </Badge>
                           {q.is_required && (
-                            <Badge variant="outline" className="text-micro bg-red-50 text-red-600 border-red-200">
+                            <Badge variant="outline" className="text-micro bg-status-error/10 text-status-error border-status-error/30">
                               Obrigatória
                             </Badge>
                           )}
@@ -1974,7 +1974,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   size="sm"
                   onClick={importSelectedQuestions}
                   disabled={selectedDefaultQuestions.size === 0}
-                  className="h-9 px-4 bg-amber-500 hover:bg-amber-600 text-white"
+                  className="h-9 px-4 bg-status-warning hover:bg-status-warning text-white"
                 >
                   <Download className="w-3.5 h-3.5 mr-1.5" />
                   Importar ({selectedDefaultQuestions.size})

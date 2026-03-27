@@ -53,21 +53,21 @@ export function WSIScoreCard({
   const percentage = Math.round((data.overall_score / data.max_score) * 100)
 
   const getClassification = (pct: number) => {
-    if (pct >= 90) return { label: "Excepcional", color: "text-emerald-700", bg: "bg-emerald-100" }
-    if (pct >= 80) return { label: "Excelente", color: "text-green-600", bg: "bg-green-100" }
-    if (pct >= 70) return { label: "Alto", color: "text-blue-600", bg: "bg-blue-100" }
-    if (pct >= 60) return { label: "Médio", color: "text-amber-600", bg: "bg-amber-100" }
-    if (pct >= 45) return { label: "Abaixo da média", color: "text-orange-600", bg: "bg-orange-100" }
-    return { label: "Regular / Baixo", color: "text-red-600", bg: "bg-red-100" }
+    if (pct >= 90) return { label: "Excepcional", color: "text-status-success", bg: "bg-status-success/15" }
+    if (pct >= 80) return { label: "Excelente", color: "text-status-success", bg: "bg-status-success/15" }
+    if (pct >= 70) return { label: "Alto", color: "text-wedo-cyan-dark", bg: "bg-wedo-cyan/15" }
+    if (pct >= 60) return { label: "Médio", color: "text-status-warning", bg: "bg-status-warning/15" }
+    if (pct >= 45) return { label: "Abaixo da média", color: "text-wedo-orange", bg: "bg-wedo-orange/15" }
+    return { label: "Regular / Baixo", color: "text-status-error", bg: "bg-status-error/15" }
   }
 
   const getScoreDisplay = (score: number) => {
-    if (score >= 90) return { text: "text-emerald-700", icon: TrendingUp }
-    if (score >= 80) return { text: "text-green-600", icon: TrendingUp }
-    if (score >= 70) return { text: "text-blue-600", icon: TrendingUp }
-    if (score >= 60) return { text: "text-amber-600", icon: Minus }
-    if (score >= 45) return { text: "text-orange-600", icon: TrendingDown }
-    return { text: "text-red-600", icon: TrendingDown }
+    if (score >= 90) return { text: "text-status-success", icon: TrendingUp }
+    if (score >= 80) return { text: "text-status-success", icon: TrendingUp }
+    if (score >= 70) return { text: "text-wedo-cyan-dark", icon: TrendingUp }
+    if (score >= 60) return { text: "text-status-warning", icon: Minus }
+    if (score >= 45) return { text: "text-wedo-orange", icon: TrendingDown }
+    return { text: "text-status-error", icon: TrendingDown }
   }
 
   const getRecommendationBadge = (recommendation: string) => {
@@ -112,12 +112,12 @@ export function WSIScoreCard({
 
   const getDimensionIcon = (score: number) => {
     const percent = score * 100
-    if (percent >= 90) return <TrendingUp className="h-3 w-3 text-emerald-700" />
-    if (percent >= 80) return <TrendingUp className="h-3 w-3 text-green-600" />
-    if (percent >= 70) return <TrendingUp className="h-3 w-3 text-blue-600" />
-    if (percent >= 60) return <Minus className="h-3 w-3 text-amber-600" />
-    if (percent >= 45) return <TrendingDown className="h-3 w-3 text-orange-600" />
-    return <TrendingDown className="h-3 w-3 text-red-600" />
+    if (percent >= 90) return <TrendingUp className="h-3 w-3 text-status-success" />
+    if (percent >= 80) return <TrendingUp className="h-3 w-3 text-status-success" />
+    if (percent >= 70) return <TrendingUp className="h-3 w-3 text-wedo-cyan-dark" />
+    if (percent >= 60) return <Minus className="h-3 w-3 text-status-warning" />
+    if (percent >= 45) return <TrendingDown className="h-3 w-3 text-wedo-orange" />
+    return <TrendingDown className="h-3 w-3 text-status-error" />
   }
 
   const scoreDisplay = getScoreDisplay(percentage)

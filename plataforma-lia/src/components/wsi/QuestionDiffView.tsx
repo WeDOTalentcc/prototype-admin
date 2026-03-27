@@ -36,9 +36,9 @@ export function QuestionDiffView({
       case "modified":
         return { label: "Modificada", className: "text-micro px-1.5 py-0 h-4 border" , style: { backgroundColor: "rgba(96,190,209,0.1)", borderColor: "rgba(96,190,209,0.3)" }}
       case "added":
-        return { label: "Nova", className: "text-micro px-1.5 py-0 h-4 bg-green-50 text-green-600 border border-green-200" , style: {} }
+        return { label: "Nova", className: "text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border border-status-success/30" , style: {} }
       case "removed":
-        return { label: "Removida", className: "text-micro px-1.5 py-0 h-4 bg-red-50 text-red-600 border border-red-200", style: {} }
+        return { label: "Removida", className: "text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30", style: {} }
       default:
         return { label: action, className: "text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-600 border border-gray-200", style: {} }
     }

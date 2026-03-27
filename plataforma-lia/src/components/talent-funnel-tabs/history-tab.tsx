@@ -201,7 +201,7 @@ export function HistoryTab({
         <Button 
           variant="ghost" 
           size="sm"
-          className="text-xs text-gray-800 dark:text-gray-200 hover:text-red-600"
+          className="text-xs text-gray-800 dark:text-gray-200 hover:text-status-error"
           onClick={() => setShowClearConfirm(true)}
         >
           <Trash2 className="w-3.5 h-3.5 mr-1" />
@@ -281,7 +281,7 @@ export function HistoryTab({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 hover:text-red-600 hover:bg-red-50"
+                        className="h-8 w-8 p-0 hover:text-status-error hover:bg-status-error/10"
                         onClick={(e) => handleDeleteClick(item.id, e)}
                         title="Remover do histórico"
                       >
@@ -379,7 +379,7 @@ export function HistoryTab({
                 onClearAll()
                 setShowClearConfirm(false)
               }}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-status-error hover:bg-status-error"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Limpar Tudo

@@ -222,19 +222,19 @@ export function PredictiveAnalyticsTab() {
 
   const getRiskColor = (level: string) => {
     switch (level) {
-      case "critical": return "text-red-600 bg-red-100"
-      case "high": return "text-orange-600 bg-orange-100"
-      case "medium": return "text-yellow-600 bg-yellow-100"
-      case "low": return "text-green-600 bg-green-100"
+      case "critical": return "text-status-error bg-status-error/15"
+      case "high": return "text-wedo-orange bg-wedo-orange/15"
+      case "medium": return "text-status-warning bg-status-warning/15"
+      case "low": return "text-status-success bg-status-success/15"
       default: return "text-gray-600 bg-gray-100"
     }
   }
 
   const getProbabilityColor = (prob: number) => {
-    if (prob >= 80) return "text-green-600"
+    if (prob >= 80) return "text-status-success"
     if (prob >= 60) return "text-gray-600 dark:text-gray-400"
-    if (prob >= 40) return "text-yellow-600"
-    return "text-red-600"
+    if (prob >= 40) return "text-status-warning"
+    return "text-status-error"
   }
 
   return (
@@ -286,7 +286,7 @@ export function PredictiveAnalyticsTab() {
           </CardContent>
         </Card>
 
-        <Card className="bg-amber-50 dark:bg-amber-900/20">
+        <Card className="bg-status-warning/10 dark:bg-status-warning/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -298,7 +298,7 @@ export function PredictiveAnalyticsTab() {
           </CardContent>
         </Card>
 
-        <Card className="bg-red-50 dark:bg-red-900/20">
+        <Card className="bg-status-error/10 dark:bg-status-error/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -310,7 +310,7 @@ export function PredictiveAnalyticsTab() {
           </CardContent>
         </Card>
 
-        <Card className="bg-green-50 dark:bg-green-900/20">
+        <Card className="bg-status-success/10 dark:bg-status-success/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -361,16 +361,16 @@ export function PredictiveAnalyticsTab() {
                 <div
                   key={index}
                   className={`p-3 rounded-md ${
-                    insight.type === "warning" ? "bg-orange-50 dark:bg-orange-900/20" :
-                    insight.type === "success" ? "bg-green-50 dark:bg-green-900/20" :
+                    insight.type === "warning" ? "bg-wedo-orange/10 dark:bg-wedo-orange/10/20" :
+                    insight.type === "success" ? "bg-status-success/10 dark:bg-status-success/20" :
                     "bg-gray-100 dark:bg-gray-800"
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     {insight.type === "warning" ? (
-                      <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5" />
+                      <AlertTriangle className="w-5 h-5 text-wedo-orange mt-0.5" />
                     ) : insight.type === "success" ? (
-                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-status-success mt-0.5" />
                     ) : (
                       <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
                     )}
@@ -390,7 +390,7 @@ export function PredictiveAnalyticsTab() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-sans flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-600" />
+                <TrendingUp className="w-4 h-4 text-status-success" />
                 Previsão de Pipeline (4 semanas)
               </CardTitle>
             </CardHeader>
@@ -424,7 +424,7 @@ export function PredictiveAnalyticsTab() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-sans flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
+                <AlertTriangle className="w-4 h-4 text-status-error" />
                 Candidatos em Risco de Desistência
               </CardTitle>
             </CardHeader>
@@ -445,7 +445,7 @@ export function PredictiveAnalyticsTab() {
                   </div>
                   <div className="space-y-1 mb-2">
                     {candidate.risk_factors.map((factor, idx) => (
-                      <p key={idx} className="text-xs text-red-600 flex items-center gap-1">
+                      <p key={idx} className="text-xs text-status-error flex items-center gap-1">
                         <XCircle className="w-3 h-3" /> {factor}
                       </p>
                     ))}
@@ -465,7 +465,7 @@ export function PredictiveAnalyticsTab() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-sans flex items-center gap-2">
-                <Clock className="w-4 h-4 text-orange-600" />
+                <Clock className="w-4 h-4 text-wedo-orange" />
                 Vagas em Risco de Atraso
               </CardTitle>
             </CardHeader>
@@ -481,12 +481,12 @@ export function PredictiveAnalyticsTab() {
                       <p className="text-xs text-gray-600">{job.current_stage}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-orange-600">{job.estimated_days} dias</p>
+                      <p className="font-medium text-wedo-orange">{job.estimated_days} dias</p>
                       <p className="text-xs text-gray-600">{job.confidence}% confiança</p>
                     </div>
                   </div>
                   {job.bottleneck && (
-                    <p className="text-xs text-orange-600 flex items-center gap-1">
+                    <p className="text-xs text-wedo-orange flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" />
                       Gargalo: {job.bottleneck}
                     </p>
@@ -511,7 +511,7 @@ export function PredictiveAnalyticsTab() {
               {data.predictions.quick_wins.map((candidate) => (
                 <div
                   key={candidate.candidate_id}
-                  className="p-4 rounded-md bg-green-50 dark:bg-green-900/10"
+                  className="p-4 rounded-md bg-status-success/10 dark:bg-status-success/10"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -530,7 +530,7 @@ export function PredictiveAnalyticsTab() {
                     <p className="text-xs text-gray-600 mb-1">Pontos Fortes</p>
                     <div className="flex flex-wrap gap-1">
                       {candidate.top_strengths.map((strength, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs bg-green-100 text-green-700 border-green-200">
+                        <Badge key={idx} variant="outline" className="text-xs bg-status-success/15 text-status-success border-status-success/30">
                           {strength.factor}: {typeof strength.value === 'number' ? `${strength.value}%` : strength.value}
                         </Badge>
                       ))}

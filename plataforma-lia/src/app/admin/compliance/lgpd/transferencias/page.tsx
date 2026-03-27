@@ -69,11 +69,11 @@ export default function TransferenciasPage() {
   const getRiskBadge = (riskLevel: string) => {
     switch (riskLevel) {
       case 'low':
-        return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Baixo</Badge>
+        return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Baixo</Badge>
       case 'medium':
-        return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Médio</Badge>
+        return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Médio</Badge>
       case 'high':
-        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Alto</Badge>
+        return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">Alto</Badge>
       default:
         return <Badge>{riskLevel}</Badge>
     }
@@ -82,13 +82,13 @@ export default function TransferenciasPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'compliant':
-        return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Conforme</Badge>
+        return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Conforme</Badge>
       case 'pending_review':
-        return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Revisão Pendente</Badge>
+        return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Revisão Pendente</Badge>
       case 'under_review':
  return <Badge className="text-gray-600 dark:text-gray-400 hover:bg-gray-100">Em Análise</Badge>
       case 'non_compliant':
-        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Não Conforme</Badge>
+        return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">Não Conforme</Badge>
       default:
         return <Badge>{status}</Badge>
     }
@@ -180,10 +180,10 @@ export default function TransferenciasPage() {
                   <Label htmlFor="data-types">Tipos de Dados Transferidos</Label>
                   <Input id="data-types" placeholder="Ex: Dados de candidatos, currículos" />
                 </div>
-                <div className="p-3 rounded-md bg-amber-50 border border-amber-200">
+                <div className="p-3 rounded-md bg-status-warning/10 border border-status-warning/30">
                   <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5" />
-                    <p className="text-xs text-amber-700">
+                    <AlertTriangle className="w-4 h-4 text-status-warning mt-0.5" />
+                    <p className="text-xs text-status-warning">
                       Para países sem decisão de adequação, é obrigatório o uso de mecanismos de proteção 
                       como SCCs ou BCRs, conforme Art. 33 da LGPD.
                     </p>
@@ -205,7 +205,7 @@ export default function TransferenciasPage() {
         <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderColor: 'rgba(245, 158, 11, 0.3)', backgroundColor: 'rgba(245, 158, 11, 0.05)' }}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-status-warning mt-0.5" />
               <div>
                 <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                   Aviso sobre Adequação de Países (Art. 33 LGPD)
@@ -239,7 +239,7 @@ export default function TransferenciasPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <Shield className="w-5 h-5 text-emerald-500" />
+                  <Shield className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{compliantTransfers}</p>
@@ -253,7 +253,7 @@ export default function TransferenciasPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
-                  <Calendar className="w-5 h-5 text-amber-500" />
+                  <Calendar className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{pendingReviews}</p>
@@ -350,13 +350,13 @@ export default function TransferenciasPage() {
                     <TableCell>
                       {isAdequateCountry(transfer.country) ? (
                         <div className="flex items-center gap-1">
-                          <Shield className="w-4 h-4 text-emerald-500" />
-                          <span className="text-xs text-emerald-600">País Adequado</span>
+                          <Shield className="w-4 h-4 text-status-success" />
+                          <span className="text-xs text-status-success">País Adequado</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1">
-                          <Info className="w-4 h-4 text-amber-500" />
-                          <span className="text-xs text-amber-600">Requer SCCs</span>
+                          <Info className="w-4 h-4 text-status-warning" />
+                          <span className="text-xs text-status-warning">Requer SCCs</span>
                         </div>
                       )}
                     </TableCell>
@@ -371,7 +371,7 @@ export default function TransferenciasPage() {
                           <DropdownMenuItem>Ver detalhes</DropdownMenuItem>
                           <DropdownMenuItem>Editar</DropdownMenuItem>
                           <DropdownMenuItem>Agendar revisão</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">Desativar</DropdownMenuItem>
+                          <DropdownMenuItem className="text-status-error">Desativar</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -394,7 +394,7 @@ export default function TransferenciasPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {paisesAdequados.map((pais) => (
-                <Badge key={pais} variant="outline" className="bg-emerald-50 border-emerald-200 text-emerald-700">
+                <Badge key={pais} variant="outline" className="bg-status-success/10 border-status-success/30 text-status-success">
                   <Shield className="w-3 h-3 mr-1" />
                   {pais}
                 </Badge>

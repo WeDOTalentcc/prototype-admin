@@ -34,9 +34,9 @@ export function SearchResultsHeader({
   const pillStyles: Record<string, { pill: string; icon: string }> = {
     job_title:        { pill: 'bg-gray-100 text-gray-700',      icon: 'text-gray-600' },
     location:         { pill: 'bg-violet-50 text-violet-700',   icon: 'text-violet-500' },
-    years_experience: { pill: 'bg-amber-50 text-amber-700',     icon: 'text-amber-500' },
-    skill:            { pill: 'bg-emerald-50 text-emerald-800', icon: 'text-emerald-500' },
-    industry:         { pill: 'bg-blue-50 text-blue-600',       icon: 'text-blue-500' },
+    years_experience: { pill: 'bg-status-warning/10 text-status-warning',     icon: 'text-status-warning' },
+    skill:            { pill: 'bg-status-success/10 text-status-success', icon: 'text-status-success' },
+    industry:         { pill: 'bg-wedo-cyan/10 text-wedo-cyan-dark',       icon: 'text-wedo-cyan-dark' },
   }
 
   const getIcon = (type: string, iconClass: string) => {

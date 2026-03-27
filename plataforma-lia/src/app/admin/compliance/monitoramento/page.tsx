@@ -89,11 +89,11 @@ const integrationStatus = [
 const getSystemStatusConfig = (status: SystemStatus) => {
   switch (status) {
     case 'ok':
-      return { label: 'Operacional', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2, iconColor: 'text-emerald-500', bgColor: 'rgba(16, 185, 129, 0.1)' }
+      return { label: 'Operacional', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2, iconColor: 'text-status-success', bgColor: 'rgba(16, 185, 129, 0.1)' }
     case 'degraded':
-      return { label: 'Degradado', color: 'bg-amber-100 text-amber-700', icon: AlertCircle, iconColor: 'text-amber-500', bgColor: 'rgba(251, 191, 36, 0.1)' }
+      return { label: 'Degradado', color: 'bg-status-warning/15 text-status-warning', icon: AlertCircle, iconColor: 'text-status-warning', bgColor: 'rgba(251, 191, 36, 0.1)' }
     case 'critical':
-      return { label: 'Crítico', color: 'bg-red-100 text-red-700', icon: AlertCircle, iconColor: 'text-red-500', bgColor: 'rgba(239, 68, 68, 0.1)' }
+      return { label: 'Crítico', color: 'bg-status-error/15 text-status-error', icon: AlertCircle, iconColor: 'text-status-error', bgColor: 'rgba(239, 68, 68, 0.1)' }
   }
 }
 
@@ -129,13 +129,13 @@ const subPages = [
 const getSeverityConfig = (severity: string) => {
   switch (severity) {
     case 'critical':
-      return { color: 'bg-red-100 text-red-700 border-red-200', dot: 'bg-red-500' }
+      return { color: 'bg-status-error/15 text-status-error border-status-error/30', dot: 'bg-status-error' }
     case 'high':
-      return { color: 'bg-orange-100 text-orange-700 border-orange-200', dot: 'bg-orange-500' }
+      return { color: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30', dot: 'bg-wedo-orange' }
     case 'medium':
-      return { color: 'bg-amber-100 text-amber-700 border-amber-200', dot: 'bg-amber-500' }
+      return { color: 'bg-status-warning/15 text-status-warning border-status-warning/30', dot: 'bg-status-warning' }
     case 'low':
-      return { color: 'bg-green-100 text-green-700 border-green-200', dot: 'bg-green-500' }
+      return { color: 'bg-status-success/15 text-status-success border-status-success/30', dot: 'bg-status-success' }
     default:
       return { color: 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200', dot: 'bg-gray-500' }
   }
@@ -144,9 +144,9 @@ const getSeverityConfig = (severity: string) => {
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'resolved':
-      return { label: 'Resolvido', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 }
+      return { label: 'Resolvido', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2 }
     case 'investigating':
-      return { label: 'Investigando', color: 'bg-amber-100 text-amber-700', icon: Clock }
+      return { label: 'Investigando', color: 'bg-status-warning/15 text-status-warning', icon: Clock }
     case 'mitigating':
       return { label: 'Mitigando', color: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50', icon: Activity }
     default:
@@ -219,13 +219,13 @@ export default function MonitoramentoPage() {
                     {systemOverview.openIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-micro bg-amber-100 text-amber-700 hover:bg-amber-100">
+                    <Badge className="text-micro bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
                       Em investigação
                     </Badge>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(251, 146, 60, 0.1)' }}>
-                  <AlertCircle className="w-5 h-5 text-orange-500" />
+                  <AlertCircle className="w-5 h-5 text-wedo-orange" />
                 </div>
               </div>
             </CardContent>
@@ -242,7 +242,7 @@ export default function MonitoramentoPage() {
                     {systemOverview.alerts24h}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-amber-600">2 alta prioridade</span>
+                    <span className="text-xs text-status-warning">2 alta prioridade</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
@@ -263,12 +263,12 @@ export default function MonitoramentoPage() {
                     {systemOverview.avgUptime}%
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <TrendingUp className="w-3 h-3 text-emerald-500" />
-                    <span className="text-xs text-emerald-600">Últimos 30 dias</span>
+                    <TrendingUp className="w-3 h-3 text-status-success" />
+                    <span className="text-xs text-status-success">Últimos 30 dias</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <Server className="w-5 h-5 text-emerald-500" />
+                  <Server className="w-5 h-5 text-status-success" />
                 </div>
               </div>
               <div className="mt-3">
@@ -285,7 +285,7 @@ export default function MonitoramentoPage() {
                 <Server className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 Status dos Serviços Principais
               </CardTitle>
-              <Badge className="bg-emerald-100 text-emerald-700">
+              <Badge className="bg-status-success/15 text-status-success">
                 {mainServices.filter(s => s.status === 'ok').length}/{mainServices.length} operacionais
               </Badge>
             </div>
@@ -308,7 +308,7 @@ export default function MonitoramentoPage() {
                           {service.name}
                         </span>
                       </div>
-                      <Badge className={isOk ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
+                      <Badge className={isOk ? 'bg-status-success/15 text-status-success' : 'bg-status-warning/15 text-status-warning'}>
                         {isOk ? 'Operacional' : 'Degradado'}
                       </Badge>
                     </div>
@@ -408,9 +408,9 @@ export default function MonitoramentoPage() {
                   >
                     <div className="flex items-center gap-3">
                       {integration.status === 'connected' ? (
-                        <Wifi className="w-4 h-4 text-emerald-500" />
+                        <Wifi className="w-4 h-4 text-status-success" />
                       ) : (
-                        <WifiOff className="w-4 h-4 text-amber-500" />
+                        <WifiOff className="w-4 h-4 text-status-warning" />
                       )}
                       <div>
                         <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -426,8 +426,8 @@ export default function MonitoramentoPage() {
                     <Badge 
                       className={
                         integration.status === 'connected' 
-                          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' 
-                          : 'bg-amber-100 text-amber-700 hover:bg-amber-100'
+                          ? 'bg-status-success/15 text-status-success hover:bg-status-success/15' 
+                          : 'bg-status-warning/15 text-status-warning hover:bg-status-warning/15'
                       }
                     >
                       {integration.status === 'connected' ? 'Conectado' : 'Pendente'}
@@ -483,7 +483,7 @@ export default function MonitoramentoPage() {
                   className="w-10 h-10 rounded-md flex items-center justify-center"
                   style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}
                 >
-                  <Radio className="w-5 h-5 text-purple-500" />
+                  <Radio className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <ExternalLink className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
               </div>

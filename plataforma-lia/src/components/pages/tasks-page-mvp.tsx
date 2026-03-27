@@ -84,8 +84,8 @@ function getGreeting(): string {
 
 function getGreetingIcon() {
   const hour = new Date().getHours()
-  if (hour < 12) return <Sun className="w-5 h-5 text-yellow-500" />
-  if (hour < 18) return <Sunset className="w-5 h-5 text-orange-400" />
+  if (hour < 12) return <Sun className="w-5 h-5 text-status-warning" />
+  if (hour < 18) return <Sunset className="w-5 h-5 text-wedo-orange" />
   return <Moon className="w-5 h-5 text-indigo-400" />
 }
 
@@ -422,7 +422,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
     return (
       <button
         onClick={() => handleOpenJob(interview)}
-        className="text-xs font-[Open_Sans,sans-serif] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline truncate cursor-pointer"
+        className="text-xs font-[Open_Sans,sans-serif] font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark hover:underline truncate cursor-pointer"
         title="Abrir vaga no kanban"
       >
         {interview.jobCode && <span className="font-[Inter,sans-serif] mr-0.5">{interview.jobCode}</span>}
@@ -541,7 +541,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
               <div className="space-y-2">
                 {morningInterviews.length > 0 && (
                   <div className="flex items-center gap-2 pt-1 pb-0.5 px-1">
-                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                    <Sun className="w-3.5 h-3.5 text-status-warning" />
                     <span className="text-xs font-[Inter,sans-serif] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Manhã</span>
                     <div className="flex-1 border-t border-gray-100 dark:border-gray-800" />
                   </div>
@@ -578,7 +578,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                 className="ml-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                 title={copiedId === interview.id ? 'Link copiado!' : 'Copiar link da reunião'}
                               >
-                                {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
+                                {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-status-success stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
                               </button>
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
@@ -609,7 +609,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               size="sm"
                               variant="outline"
                               onClick={() => handleReject(interview)}
-                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20 rounded-md"
+                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-status-error border-status-error/30 hover:bg-status-error/10 hover:border-status-error/30 dark:text-status-error dark:border-status-error/30 dark:hover:bg-status-error/20 rounded-md"
                             >
                               <XCircleIcon className="w-3 h-3" />
                               Cancelar
@@ -624,7 +624,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                 ))}
                 {afternoonInterviews.length > 0 && (
                   <div className="flex items-center gap-2 pt-2 pb-0.5 px-1">
-                    <Sunset className="w-3.5 h-3.5 text-orange-400" />
+                    <Sunset className="w-3.5 h-3.5 text-wedo-orange" />
                     <span className="text-xs font-[Inter,sans-serif] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tarde</span>
                     <div className="flex-1 border-t border-gray-100 dark:border-gray-800" />
                   </div>
@@ -661,7 +661,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                 className="ml-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                 title={copiedId === interview.id ? 'Link copiado!' : 'Copiar link da reunião'}
                               >
-                                {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
+                                {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-status-success stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
                               </button>
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
@@ -692,7 +692,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               size="sm"
                               variant="outline"
                               onClick={() => handleReject(interview)}
-                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20 rounded-md"
+                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-status-error border-status-error/30 hover:bg-status-error/10 hover:border-status-error/30 dark:text-status-error dark:border-status-error/30 dark:hover:bg-status-error/20 rounded-md"
                             >
                               <XCircleIcon className="w-3 h-3" />
                               Cancelar
@@ -750,7 +750,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                       className="ml-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                       title={copiedId === interview.id ? 'Link copiado!' : 'Copiar link da reunião'}
                                     >
-                                      {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
+                                      {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-status-success stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
                                     </button>
                                   </span>
                                   <span className="text-gray-300 dark:text-gray-600">·</span>
@@ -781,7 +781,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleReject(interview)}
-                                    className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20 rounded-md"
+                                    className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-status-error border-status-error/30 hover:bg-status-error/10 hover:border-status-error/30 dark:text-status-error dark:border-status-error/30 dark:hover:bg-status-error/20 rounded-md"
                                   >
                                     <XCircleIcon className="w-3 h-3" />
                                     Cancelar
@@ -841,7 +841,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                 className="ml-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                 title={copiedId === interview.id ? 'Link copiado!' : 'Copiar link da reunião'}
                               >
-                                {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
+                                {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-status-success stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
                               </button>
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>

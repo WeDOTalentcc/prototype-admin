@@ -46,20 +46,20 @@ const levelStyles: Record<ConfidenceLevel, {
 }> = {
   high: {
     icon: CheckCircle,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-100 dark:bg-green-950/30',
+    color: 'text-status-success dark:text-status-success',
+    bgColor: 'bg-status-success/15 dark:bg-status-success/30',
     label: 'Alta confiança'
   },
   medium: {
     icon: AlertCircle,
-    color: 'text-yellow-600 dark:text-yellow-400',
-    bgColor: 'bg-yellow-100 dark:bg-yellow-950/30',
+    color: 'text-status-warning dark:text-status-warning',
+    bgColor: 'bg-status-warning/15',
     label: 'Média confiança'
   },
   low: {
     icon: HelpCircle,
-    color: 'text-red-600 dark:text-red-400',
-    bgColor: 'bg-red-100 dark:bg-red-950/30',
+    color: 'text-status-error dark:text-status-error',
+    bgColor: 'bg-status-error/15 dark:bg-status-error/30',
     label: 'Baixa confiança'
   }
 }

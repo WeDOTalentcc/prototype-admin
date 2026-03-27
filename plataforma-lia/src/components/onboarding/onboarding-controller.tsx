@@ -369,9 +369,9 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
               </div>
             </div>
 
-            <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-md p-4">
-              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-800">
+            <div className="flex items-start gap-3 bg-status-warning/10 border border-status-warning/30 rounded-md p-4">
+              <AlertTriangle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-status-warning">
                 Preencher essas informações é extremamente importante para que a plataforma seja configurada e customizada de forma adequada.
               </p>
             </div>

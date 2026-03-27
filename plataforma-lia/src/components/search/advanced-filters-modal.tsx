@@ -1122,7 +1122,7 @@ export function AdvancedFiltersModal({
             <div className="flex items-center gap-3">
               <button 
                 onClick={handleClearAllJobFilters}
-                className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors"
+                className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors"
               >
                 <RotateCcw className="w-3 h-3" />
                 Limpar tudo
@@ -1215,11 +1215,11 @@ export function AdvancedFiltersModal({
                     className={cn(
                       "pl-2 pr-1 py-1 flex items-center gap-1",
                       isAiSuggested 
-                        ? "bg-purple-50 border border-purple-200 text-purple-700" 
+                        ? "bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple" 
                         : "bg-gray-100 text-gray-800 dark:text-gray-200"
                     )}
                   >
-                    {isAiSuggested && <Brain className="w-3 h-3 text-purple-500" />}
+                    {isAiSuggested && <Brain className="w-3 h-3 text-wedo-purple" />}
                     <span className="text-xs">{title}</span>
                     <button
                       onClick={() => removeFromArray("job", "titles", title)}
@@ -1237,7 +1237,7 @@ export function AdvancedFiltersModal({
                 disabled={isLoadingSimilar || (filters.job?.titles?.length || 0) === 0}
                 className={cn(
                   "px-3 py-1 rounded-full text-xs border flex items-center gap-1.5 transition-all",
-                  "border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100",
+                  "border-wedo-purple/30 bg-wedo-purple/10 text-wedo-purple hover:bg-wedo-purple/15",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
               >
@@ -1253,12 +1253,12 @@ export function AdvancedFiltersModal({
 
           {/* AI Suggestions with Multi-Select */}
           {aiSuggestedTitles.length > 0 && (
-            <div className="p-3 rounded-md border border-purple-100 bg-purple-50/50">
+            <div className="p-3 rounded-md border border-wedo-purple/30 bg-wedo-purple/10/50">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-purple-600" />
-                  <span className="text-xs font-medium text-purple-700">Sugestões da LIA</span>
-                  <span className="text-micro text-purple-500">
+                  <Brain className="w-4 h-4 text-wedo-purple" />
+                  <span className="text-xs font-medium text-wedo-purple">Sugestões da LIA</span>
+                  <span className="text-micro text-wedo-purple">
                     (clique para selecionar múltiplos)
                   </span>
                 </div>
@@ -1282,12 +1282,12 @@ export function AdvancedFiltersModal({
                       className={cn(
                         "px-2 py-1 rounded text-xs border transition-colors flex items-center gap-1",
                         isSelected
-                          ? "border-purple-500 bg-purple-100 text-purple-800 font-medium"
-                          : "border-purple-200 bg-white text-purple-700 hover:bg-purple-50"
+                          ? "border-wedo-purple/30 bg-wedo-purple/15 text-wedo-purple font-medium"
+                          : "border-wedo-purple/30 bg-white text-wedo-purple hover:bg-wedo-purple/10"
                       )}
                     >
                       {isSelected && <Check className="w-3 h-3" />}
-                      {!isSelected && <span className="text-purple-400">+</span>}
+                      {!isSelected && <span className="text-wedo-purple">+</span>}
                       {title}
                     </button>
                   )
@@ -1403,7 +1403,7 @@ export function AdvancedFiltersModal({
               <button 
                 onClick={() => updateFilter("job", "pastTitles", [] as any)}
                 disabled={(filters.job?.pastTitles?.length || 0) === 0}
-                className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RotateCcw className="w-3 h-3" />
                 Limpar tudo
@@ -1493,11 +1493,11 @@ export function AdvancedFiltersModal({
                     className={cn(
                       "pl-2 pr-1 py-1 flex items-center gap-1",
                       isAiSuggested 
-                        ? "bg-purple-50 border border-purple-200 text-purple-700" 
+                        ? "bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple" 
                         : "bg-gray-100 text-gray-800 dark:text-gray-200"
                     )}
                   >
-                    {isAiSuggested && <Brain className="w-3 h-3 text-purple-500" />}
+                    {isAiSuggested && <Brain className="w-3 h-3 text-wedo-purple" />}
                     <span className="text-xs">{title}</span>
                     <button
                       onClick={() => removeFromArray("job", "pastTitles", title)}
@@ -1514,7 +1514,7 @@ export function AdvancedFiltersModal({
                 disabled={isLoadingSimilarPastTitles || (filters.job?.pastTitles?.length || 0) === 0}
                 className={cn(
                   "px-3 py-1 rounded-full text-xs border flex items-center gap-1.5 transition-all",
-                  "border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100",
+                  "border-wedo-purple/30 bg-wedo-purple/10 text-wedo-purple hover:bg-wedo-purple/15",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
               >
@@ -1529,12 +1529,12 @@ export function AdvancedFiltersModal({
           )}
 
           {aiSuggestedPastTitles.length > 0 && (
-            <div className="p-3 rounded-md border border-purple-100 bg-purple-50/50">
+            <div className="p-3 rounded-md border border-wedo-purple/30 bg-wedo-purple/10/50">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-purple-600" />
-                  <span className="text-xs font-medium text-purple-700">Sugestões da LIA</span>
-                  <span className="text-micro text-purple-500">
+                  <Brain className="w-4 h-4 text-wedo-purple" />
+                  <span className="text-xs font-medium text-wedo-purple">Sugestões da LIA</span>
+                  <span className="text-micro text-wedo-purple">
                     (clique para selecionar múltiplos)
                   </span>
                 </div>
@@ -1558,12 +1558,12 @@ export function AdvancedFiltersModal({
                       className={cn(
                         "px-2 py-1 rounded text-xs border transition-colors flex items-center gap-1",
                         isSelected
-                          ? "border-purple-500 bg-purple-100 text-purple-800 font-medium"
-                          : "border-purple-200 bg-white text-purple-700 hover:bg-purple-50"
+                          ? "border-wedo-purple/30 bg-wedo-purple/15 text-wedo-purple font-medium"
+                          : "border-wedo-purple/30 bg-white text-wedo-purple hover:bg-wedo-purple/10"
                       )}
                     >
                       {isSelected && <Check className="w-3 h-3" />}
-                      {!isSelected && <span className="text-purple-400">+</span>}
+                      {!isSelected && <span className="text-wedo-purple">+</span>}
                       {title}
                     </button>
                   )
@@ -1693,12 +1693,12 @@ export function AdvancedFiltersModal({
                   <Badge
                     key={role}
                     variant="secondary"
-                    className="bg-purple-50 border border-purple-200 text-purple-700 pl-2 pr-1 py-0.5 flex items-center gap-1"
+                    className="bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple pl-2 pr-1 py-0.5 flex items-center gap-1"
                   >
                     <span className="text-xs">{role}</span>
                     <button
                       onClick={() => removeFromArray("job", "roles", role)}
-                      className="ml-1 hover:bg-purple-200 rounded p-0.5"
+                      className="ml-1 hover:bg-wedo-purple/20 rounded p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -1798,29 +1798,29 @@ export function AdvancedFiltersModal({
                             <button
                               key={preset.id}
                               onClick={() => setSelectedPreset(preset)}
-                              className="w-full text-left p-3 rounded-md border border-purple-100 hover:border-purple-200 hover:bg-purple-50/50 transition-colors"
+                              className="w-full text-left p-3 rounded-md border border-wedo-purple/30 hover:border-wedo-purple/30 hover:bg-wedo-purple/10/50 transition-colors"
                             >
                               <div className="flex items-center justify-between">
                                 <div>
                                   <div className="font-medium text-xs text-gray-800 flex items-center gap-1.5">
-                                    <Save className="w-3.5 h-3.5 text-purple-500" />
+                                    <Save className="w-3.5 h-3.5 text-wedo-purple" />
                                     {preset.name}
                                   </div>
                                   <div className="text-xs text-gray-500 mt-0.5">{preset.description}</div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs text-purple-500">+{preset.titles.length} cargos</span>
+                                  <span className="text-xs text-wedo-purple">+{preset.titles.length} cargos</span>
                                   <ChevronRight className="w-4 h-4 text-gray-400" />
                                 </div>
                               </div>
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {preset.titles.slice(0, 3).map(title => (
-                                  <span key={title} className="text-micro px-1.5 py-0.5 bg-purple-100 rounded-full text-purple-700">
+                                  <span key={title} className="text-micro px-1.5 py-0.5 bg-wedo-purple/15 rounded-full text-wedo-purple">
                                     {title}
                                   </span>
                                 ))}
                                 {preset.titles.length > 3 && (
-                                  <span className="text-micro text-purple-400">...</span>
+                                  <span className="text-micro text-wedo-purple">...</span>
                                 )}
                               </div>
                             </button>
@@ -2239,7 +2239,7 @@ export function AdvancedFiltersModal({
                 {(searchSource === "local" || searchSource === "hybrid") && (
                   <div className="mt-4 flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white">
                     <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-amber-600" />
+                      <Eye className="w-4 h-4 text-status-warning" />
                       <div>
                         <span className={textStyles.subtitle}>
                           Incluir candidatos descobertos
@@ -2318,7 +2318,7 @@ export function AdvancedFiltersModal({
                       </div>
                     )}
                     {creditEstimate.phone_cost > 0 && (
-                      <div className="flex justify-between text-xs text-amber-600">
+                      <div className="flex justify-between text-xs text-status-warning">
                         <span className="flex items-center gap-1">
                           <AlertCircle className="w-3 h-3" />
                           Opções de Telefone
@@ -2339,9 +2339,9 @@ export function AdvancedFiltersModal({
                   </div>
 
                   {creditEstimate.warnings.length > 0 && (
-                    <div className="mt-3 p-2 bg-amber-50 rounded border border-amber-200">
+                    <div className="mt-3 p-2 bg-status-warning/10 rounded border border-status-warning/30">
                       {creditEstimate.warnings.map((warning, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-amber-700">
+                        <div key={idx} className="flex items-start gap-2 text-xs text-status-warning">
                           <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
                           <span>{warning}</span>
                         </div>
@@ -2567,9 +2567,9 @@ export function AdvancedFiltersModal({
                 <SectionHeader icon={UserCheck} title="Perfil Profissional" description="Indicadores de perfil" />
               <div className="space-y-3">
                 {isLocalSearch && (
-                  <div className="flex items-center gap-2 p-2.5 rounded-md bg-amber-50 border border-amber-200 mb-3">
-                    <Info className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                    <p className="text-xs text-amber-700">
+                  <div className="flex items-center gap-2 p-2.5 rounded-md bg-status-warning/10 border border-status-warning/30 mb-3">
+                    <Info className="w-4 h-4 text-status-warning flex-shrink-0" />
+                    <p className="text-xs text-status-warning">
                       Estes filtros estão disponíveis apenas em busca Híbrida ou Global
                     </p>
                   </div>
@@ -2582,7 +2582,7 @@ export function AdvancedFiltersModal({
                         isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
                       )}>
                         <div className="flex items-center gap-3">
-                          <Briefcase className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-green-600")} />
+                          <Briefcase className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-status-success")} />
                           <div>
                             <div className={cn("text-xs font-medium", isLocalSearch && "text-gray-400")}>Aberto a Oportunidades</div>
                             <div className="text-xs text-gray-500">
@@ -2613,7 +2613,7 @@ export function AdvancedFiltersModal({
                         isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
                       )}>
                         <div className="flex items-center gap-3">
-                          <Crown className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-amber-600")} />
+                          <Crown className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-status-warning")} />
                           <div>
                             <div className={cn("text-xs font-medium", isLocalSearch && "text-gray-400")}>Decisor / Líder</div>
                             <div className="text-xs text-gray-500">
@@ -2675,7 +2675,7 @@ export function AdvancedFiltersModal({
                         isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
                       )}>
                         <div className="flex items-center gap-3">
-                          <Rocket className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-purple-600")} />
+                          <Rocket className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-wedo-purple")} />
                           <div>
                             <div className={cn("text-xs font-medium", isLocalSearch && "text-gray-400")}>Experiência em Startup</div>
                             <div className="text-xs text-gray-500">
@@ -2754,7 +2754,7 @@ export function AdvancedFiltersModal({
                     onTimeFilterChange={(excludedTimeFilter) => updateFilter("company", "excludedTimeFilter", excludedTimeFilter)}
                     placeholder="Empresas para NÃO incluir nos resultados"
                   />
-                  <p className="text-xs mt-1 text-amber-600">
+                  <p className="text-xs mt-1 text-status-warning">
                     Filtro aplicado localmente após Busca Global
                   </p>
                 </div>
@@ -2802,7 +2802,7 @@ export function AdvancedFiltersModal({
                         <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
                           <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-gray-400")}>
                             Sede da Empresa
-                            {isLocalSearch && <span className="ml-1 text-amber-600">(apenas busca global)</span>}
+                            {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                           </Label>
                           <CompanyHQLocationsInput
                             value={filters.company?.companyHQLocations || []}
@@ -2837,7 +2837,7 @@ export function AdvancedFiltersModal({
                         <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
                           <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-gray-400")}>
                             Porte da Empresa
-                            {isLocalSearch && <span className="ml-1 text-amber-600">(apenas busca global)</span>}
+                            {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                           </Label>
                           <div className={cn("flex flex-wrap gap-2", isLocalSearch && "pointer-events-none")}>
                             {companySizes.map(size => {
@@ -2886,7 +2886,7 @@ export function AdvancedFiltersModal({
                         <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
                           <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-gray-400")}>
                             Empresa Fundada Após
-                            {isLocalSearch && <span className="ml-1 text-amber-600">(apenas busca global)</span>}
+                            {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                           </Label>
                           <div className="relative">
                             <Input
@@ -2931,7 +2931,7 @@ export function AdvancedFiltersModal({
                         <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
                           <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-gray-400")}>
                             Estágio de Funding
-                            {isLocalSearch && <span className="ml-1 text-amber-600">(apenas busca global)</span>}
+                            {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                           </Label>
                           <FundingStagesInput
                             value={filters.company?.fundingStages || []}
@@ -3170,19 +3170,19 @@ export function AdvancedFiltersModal({
                 {filters.general?.minExperience && (
                   <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
                     Exp. mín: {filters.general.minExperience}a
-                    <button onClick={() => updateFilter("general", "minExperience", undefined)} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
+                    <button onClick={() => updateFilter("general", "minExperience", undefined)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 )}
                 {filters.general?.maxExperience && (
                   <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
                     Exp. máx: {filters.general.maxExperience}a
-                    <button onClick={() => updateFilter("general", "maxExperience", undefined)} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
+                    <button onClick={() => updateFilter("general", "maxExperience", undefined)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 )}
                 {filters.job?.titles?.map(t => (
                   <Badge key={t} variant="outline" className="text-micro py-0 h-5 gap-1">
                     {t}
-                    <button onClick={() => removeFromArray("job", "titles", t)} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
+                    <button onClick={() => removeFromArray("job", "titles", t)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 ))}
                 {filters.skills?.skillItems?.map(s => (
@@ -3191,7 +3191,7 @@ export function AdvancedFiltersModal({
                     <button onClick={() => {
                       const items = filters.skills?.skillItems?.filter(i => i.name !== s.name) || []
                       setFilters(prev => ({ ...prev, skills: { ...prev.skills, skillItems: items } }))
-                    }} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
+                    }} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 ))}
                 {filters.company?.companyItems?.map(c => (
@@ -3200,13 +3200,13 @@ export function AdvancedFiltersModal({
                     <button onClick={() => {
                       const items = filters.company?.companyItems?.filter(i => i.name !== c.name) || []
                       setFilters(prev => ({ ...prev, company: { ...prev.company, companyItems: items } }))
-                    }} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
+                    }} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 ))}
                 {filters.languages?.languages?.map(l => (
                   <Badge key={l} variant="outline" className="text-micro py-0 h-5 gap-1">
                     {l}
-                    <button onClick={() => removeFromArray("languages", "languages", l)} className="ml-0.5 hover:text-red-500"><X className="h-2.5 w-2.5" /></button>
+                    <button onClick={() => removeFromArray("languages", "languages", l)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 ))}
               </div>

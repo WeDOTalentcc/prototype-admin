@@ -252,7 +252,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   Habilitar Busca Global
                 </span>
                 {settings.globalSearchEnabled ? (
-                  <Badge className="bg-green-100 text-green-700 text-xs">Ativo</Badge>
+                  <Badge className="bg-status-success/15 text-status-success text-xs">Ativo</Badge>
                 ) : (
                   <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs">Desativado</Badge>
                 )}
@@ -262,7 +262,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
               </p>
               
               {/* Detailed explanation */}
-              <div className={`p-3 rounded-md border ${settings.globalSearchEnabled ? 'bg-gray-50 border-gray-200 dark:bg-gray-900/20 dark:border-gray-800' : 'bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800'}`}>
+              <div className={`p-3 rounded-md border ${settings.globalSearchEnabled ? 'bg-gray-50 border-gray-200 dark:bg-gray-900/20 dark:border-gray-800' : 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/20 dark:border-status-warning/30'}`}>
                 <div className="flex items-start gap-1.5">
                   <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
                   <div className="text-micro text-gray-800 dark:text-gray-200 space-y-1.5">
@@ -287,7 +287,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                           <li><strong>Sourcing Automático:</strong> Desabilitado - sem expansão para base externa</li>
                           <li><strong>Economia:</strong> Nenhum crédito de busca global será consumido</li>
                         </ul>
-                        <p className="mt-2 text-amber-700 dark:text-amber-400 font-medium">
+                        <p className="mt-2 text-status-warning dark:text-status-warning font-medium">
                           Você pode reativar a busca global a qualquer momento.
                         </p>
                       </>
@@ -395,7 +395,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                           {option.label}
                         </Label>
                         {option.recommended && (
-                          <Badge className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-micro px-1.5 py-0.5">
+                          <Badge className="bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success text-micro px-1.5 py-0.5">
                             Recomendado
                           </Badge>
                         )}
@@ -617,10 +617,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                 </table>
               </div>
 
-              <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-md">
+              <div className="mt-3 p-3 bg-status-warning/10 dark:bg-status-warning/20 rounded-md">
                 <div className="flex items-start gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-micro text-amber-700 dark:text-amber-300">
+                  <AlertCircle className="w-3.5 h-3.5 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
+                  <div className="text-micro text-status-warning dark:text-status-warning">
                     <strong>Nota:</strong> Os custos são estimativas baseadas no limite configurado. 
                     O custo real pode variar dependendo dos filtros aplicados e disponibilidade de candidatos.
                   </div>
@@ -757,13 +757,13 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <tr className="bg-gray-50/50 dark:bg-gray-800/50">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <Shield className="w-3.5 h-3.5 text-green-500" />
+                          <Shield className="w-3.5 h-3.5 text-status-success" />
                           <span className="font-medium text-gray-950 dark:text-gray-50">Mostrar Emails (revelar)</span>
                         </div>
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-green-100 text-green-700 text-micro">
+                        <Badge className="bg-status-success/15 text-status-success text-micro">
                           +2 créditos
                         </Badge>
                       </td>
@@ -786,16 +786,16 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     </tr>
 
                     {/* Mostrar Telefones - CUSTO ALTO */}
-                    <tr className="bg-amber-50/50 dark:bg-amber-900/20">
+                    <tr className="bg-status-warning/10/50 dark:bg-status-warning/20">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                          <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
                           <span className="font-medium text-gray-950 dark:text-gray-50">Mostrar Telefones (revelar)</span>
                         </div>
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-amber-100 text-amber-700 text-micro">
+                        <Badge className="bg-status-warning/15 text-status-warning text-micro">
                           +14 créditos
                         </Badge>
                       </td>
@@ -829,7 +829,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
                     <div className="text-micro text-gray-500 dark:text-gray-400">Custo Mínimo</div>
-                    <div className="text-sm font-bold text-green-600">1 crédito</div>
+                    <div className="text-sm font-bold text-status-success">1 crédito</div>
                     <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
@@ -837,9 +837,9 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <div className="text-sm font-bold text-gray-900 dark:text-gray-50">3-5 créditos</div>
                     <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>
                   </div>
-                  <div className="p-2 bg-white dark:bg-gray-900 rounded border border-amber-200 dark:border-amber-700">
+                  <div className="p-2 bg-white dark:bg-gray-900 rounded border border-status-warning/30 dark:border-status-warning/30">
                     <div className="text-micro text-gray-500 dark:text-gray-400">Custo Máximo</div>
-                    <div className="text-sm font-bold text-amber-600">19 créditos</div>
+                    <div className="text-sm font-bold text-status-warning">19 créditos</div>
                     <div className="text-micro text-gray-400 dark:text-gray-500">por candidato</div>
                   </div>
                 </div>
@@ -849,10 +849,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
               </div>
 
               {/* Aviso sobre busca local */}
-              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
+              <div className="mt-3 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
                 <div className="flex items-start gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-micro text-green-700 dark:text-green-300">
+                  <CheckCircle className="w-3.5 h-3.5 text-status-success dark:text-status-success mt-0.5 flex-shrink-0" />
+                  <div className="text-micro text-status-success dark:text-status-success">
                     <strong>Busca Local é gratuita!</strong> Buscas na base local (candidatos já cadastrados) 
                     não consomem créditos. As opções acima são cobradas apenas em buscas Híbridas ou Globais.
                   </div>
@@ -902,7 +902,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
       {successMessage && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">
+          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success text-xs rounded-full">
             <CheckCircle className="w-3.5 h-3.5" />
             {successMessage}
           </div>
@@ -911,7 +911,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
       {errorMessage && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs rounded-full">
+          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error text-xs rounded-full">
             <AlertCircle className="w-3.5 h-3.5" />
             {errorMessage}
           </div>

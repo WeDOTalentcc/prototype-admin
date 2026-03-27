@@ -438,13 +438,13 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
     return (
       <div className="space-y-6">
         {error && (
-          <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-red-50 border border-red-200 text-red-600">
+          <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
             <AlertCircle className="w-4 h-4" />
             <span className={textStyles.body}>{error}</span>
           </div>
         )}
         {successMessage && (
-          <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-green-50 border border-green-200 text-green-600 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
+          <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
             <CheckCircle className="w-4 h-4" />
             <span className={textStyles.body}>{successMessage}</span>
           </div>
@@ -515,13 +515,13 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
   const renderScreening = () => (
     <div className="space-y-6">
       {error && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-red-50 border border-red-200 text-red-600">
+        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
           <AlertCircle className="w-4 h-4" />
           <span className={textStyles.body}>{error}</span>
         </div>
       )}
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-green-50 border border-green-200 text-green-600 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
+        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-4 h-4" />
           <span className={textStyles.body}>{successMessage}</span>
         </div>
@@ -684,7 +684,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                                       {q.contextHint}
                                     </span>
                                     {isAdded && (
-                                      <Badge className="text-micro py-0 px-1 bg-green-100 text-green-700">
+                                      <Badge className="text-micro py-0 px-1 bg-status-success/15 text-status-success">
                                         Já adicionada
                                       </Badge>
                                     )}
@@ -751,20 +751,20 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       />
                       Obrigatória
                     </label>
-                    <label className={`flex items-center gap-2 ${textStyles.description} text-red-600`}>
+                    <label className={`flex items-center gap-2 ${textStyles.description} text-status-error`}>
                       <input
                         type="checkbox"
                         checked={newQuestion.is_eliminatory}
                         onChange={(e) => setNewQuestion(prev => ({ ...prev, is_eliminatory: e.target.checked }))}
-                        className="rounded border-red-300"
+                        className="rounded border-status-error/30"
                       />
                       Eliminatória
                     </label>
                   </div>
                 </div>
                 {newQuestion.is_eliminatory && newQuestion.type === 'yesno' && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                    <label className={`block mb-1.5 ${textStyles.labelSmall} text-red-700`}>
+                  <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+                    <label className={`block mb-1.5 ${textStyles.labelSmall} text-status-error`}>
                       Resposta esperada (candidato será avisado se não atender)
                     </label>
                     <div className="flex gap-3">
@@ -791,7 +791,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                         Não
                       </label>
                     </div>
-                    <p className={`${textStyles.caption} text-red-500 mt-2`}>
+                    <p className={`${textStyles.caption} text-status-error mt-2`}>
                       Se o candidato responder diferente, será avisado e poderá reconsiderar ou ir para o banco de talentos.
                     </p>
                   </div>
@@ -836,7 +836,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       <Badge className={`text-micro py-0 px-1.5 bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
                     )}
                     {q.is_eliminatory && (
-                      <Badge className={`text-micro py-0 px-1.5 bg-red-100 text-red-700 border border-red-200 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
+                      <Badge className={`text-micro py-0 px-1.5 bg-status-error/15 text-status-error border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
                         Eliminatória {q.expected_answer && `(${q.expected_answer})`}
                       </Badge>
                     )}
@@ -858,7 +858,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 hover:text-red-500"
+                      className="h-7 w-7 p-0 hover:text-status-error"
                       onClick={() => handleDeleteQuestion(q.id)}
                       disabled={q.isDefault}
                     >

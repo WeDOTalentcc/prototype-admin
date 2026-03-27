@@ -239,7 +239,7 @@ export function JobPublishModal({
                         </div>
                       </div>
                       {job.is_published ? (
-                        <span className="text-micro font-medium text-green-600 flex items-center gap-0.5 flex-shrink-0 ml-2">
+                        <span className="text-micro font-medium text-status-success flex items-center gap-0.5 flex-shrink-0 ml-2">
                           <Check className="w-2.5 h-2.5" />
                           Publicada
                         </span>
@@ -309,7 +309,7 @@ export function JobPublishModal({
               {(mode === 'unpublish' || mode === 'mixed') && (
                 <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
                   <div className="flex items-center gap-2 text-gray-800 mb-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                    <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
                     <span className="text-xs font-semibold text-gray-950">Opções ao despublicar</span>
                   </div>
                   
@@ -404,34 +404,34 @@ export function JobPublishModal({
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2 text-xs">
                       {jobsWithoutWSI.length === 0 ? (
-                        <Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-status-warning flex-shrink-0" />
                       )}
-                      <span className={cn("font-medium", jobsWithoutWSI.length === 0 ? "text-green-800" : "text-amber-800")}>
+                      <span className={cn("font-medium", jobsWithoutWSI.length === 0 ? "text-status-success" : "text-status-warning")}>
                         Perguntas WSI geradas
                       </span>
-                      <span className={cn("text-micro", jobsWithoutWSI.length === 0 ? "text-green-600" : "text-amber-600")}>
+                      <span className={cn("text-micro", jobsWithoutWSI.length === 0 ? "text-status-success" : "text-status-warning")}>
                         {jobsWithoutWSI.length === 0 ? '— todas as vagas' : `— ${jobsWithoutWSI.length} pendente${jobsWithoutWSI.length > 1 ? 's' : ''}`}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
                       {jobsWithoutScreening.length === 0 ? (
-                        <Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-status-warning flex-shrink-0" />
                       )}
-                      <span className={cn("font-medium", jobsWithoutScreening.length === 0 ? "text-green-800" : "text-amber-800")}>
+                      <span className={cn("font-medium", jobsWithoutScreening.length === 0 ? "text-status-success" : "text-status-warning")}>
                         Triagem WSI configurada
                       </span>
-                      <span className={cn("text-micro", jobsWithoutScreening.length === 0 ? "text-green-600" : "text-amber-600")}>
+                      <span className={cn("text-micro", jobsWithoutScreening.length === 0 ? "text-status-success" : "text-status-warning")}>
                         {jobsWithoutScreening.length === 0 ? '— todas as vagas' : `— ${jobsWithoutScreening.length} pendente${jobsWithoutScreening.length > 1 ? 's' : ''}`}
                       </span>
                     </div>
                   </div>
                   {needsWSIWarning && (
-                    <div className="mt-2 pt-2 border-t border-amber-200 bg-amber-50 -mx-3 -mb-3 px-3 pb-3 rounded-b-md">
-                      <p className="text-micro text-amber-800 leading-relaxed mb-2">
+                    <div className="mt-2 pt-2 border-t border-status-warning/30 bg-status-warning/10 -mx-3 -mb-3 px-3 pb-3 rounded-b-md">
+                      <p className="text-micro text-status-warning leading-relaxed mb-2">
                         {jobsWithoutWSI.length === 1
                           ? `A vaga "${jobsWithoutWSI[0].title}" não tem perguntas WSI geradas. Candidatos serão recebidos sem triagem automática.`
                           : `${jobsWithoutWSI.length} vagas não têm perguntas WSI geradas. Candidatos serão recebidos sem triagem automática.`
@@ -442,9 +442,9 @@ export function JobPublishModal({
                           id="wsiWarningConfirmed"
                           checked={wsiWarningConfirmed}
                           onCheckedChange={(checked) => setWsiWarningConfirmed(!!checked)}
-                          className="data-[state=checked]:bg-amber-700 data-[state=checked]:border-amber-700"
+                          className="data-[state=checked]:bg-status-warning data-[state=checked]:border-status-warning/30"
                         />
-                        <Label htmlFor="wsiWarningConfirmed" className="text-micro font-medium text-amber-900 cursor-pointer">
+                        <Label htmlFor="wsiWarningConfirmed" className="text-micro font-medium text-status-warning cursor-pointer">
                           Entendo — publicar mesmo assim
                         </Label>
                       </div>

@@ -217,9 +217,9 @@ export function SharedSearchDetailsModal({
   const getStatusBadge = (status: 'active' | 'expired' | 'revoked') => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-micro">Ativo</Badge>
+        return <Badge className="bg-status-success/20 text-status-success border-status-success/30/30 text-micro">Ativo</Badge>
       case 'expired':
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-micro">Expirado</Badge>
+        return <Badge className="bg-status-error/20 text-status-error border-status-error/30/30 text-micro">Expirado</Badge>
       case 'revoked':
         return <Badge className="bg-zinc-600/50 text-zinc-400 border-zinc-500/30 text-micro">Revogado</Badge>
     }
@@ -237,21 +237,21 @@ export function SharedSearchDetailsModal({
     switch (feedback.decision) {
       case 'approved':
         return (
-          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-micro gap-1">
+          <Badge className="bg-status-success/20 text-status-success border-status-success/30/30 text-micro gap-1">
             <ThumbsUp className="w-3 h-3" />
             Interessado
           </Badge>
         )
       case 'maybe':
         return (
-          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-micro gap-1">
+          <Badge className="bg-status-warning/20 text-status-warning border-status-warning/30/30 text-micro gap-1">
             <HelpCircle className="w-3 h-3" />
             Talvez
           </Badge>
         )
       case 'rejected':
         return (
-          <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-micro gap-1">
+          <Badge className="bg-status-error/20 text-status-error border-status-error/30/30 text-micro gap-1">
             <ThumbsDown className="w-3 h-3" />
             Não Interessado
           </Badge>
@@ -352,17 +352,17 @@ export function SharedSearchDetailsModal({
                 <div className="grid grid-cols-4 gap-3">
                   <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
                     <div className="text-2xl mb-1">👍</div>
-                    <p className="text-2xl font-bold text-emerald-400">{feedbackCounts.approved}</p>
+                    <p className="text-2xl font-bold text-status-success">{feedbackCounts.approved}</p>
                     <p className="text-xs text-zinc-400">Interessados</p>
                   </div>
                   <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
                     <div className="text-2xl mb-1">🤔</div>
-                    <p className="text-2xl font-bold text-amber-400">{feedbackCounts.maybe}</p>
+                    <p className="text-2xl font-bold text-status-warning">{feedbackCounts.maybe}</p>
                     <p className="text-xs text-zinc-400">Talvez</p>
                   </div>
                   <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
                     <div className="text-2xl mb-1">👎</div>
-                    <p className="text-2xl font-bold text-red-400">{feedbackCounts.rejected}</p>
+                    <p className="text-2xl font-bold text-status-error">{feedbackCounts.rejected}</p>
                     <p className="text-xs text-zinc-400">Não Interessados</p>
                   </div>
                   <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
@@ -388,7 +388,7 @@ export function SharedSearchDetailsModal({
                       className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
                     >
                       Interessados
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-emerald-500/20 text-emerald-400">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-success/20 text-status-success">
                         {feedbackCounts.approved}
                       </Badge>
                     </TabsTrigger>
@@ -397,7 +397,7 @@ export function SharedSearchDetailsModal({
                       className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
                     >
                       Talvez
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-amber-500/20 text-amber-400">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-warning/20 text-status-warning">
                         {feedbackCounts.maybe}
                       </Badge>
                     </TabsTrigger>
@@ -406,7 +406,7 @@ export function SharedSearchDetailsModal({
                       className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
                     >
                       Não
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-red-500/20 text-red-400">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-error/20 text-status-error">
                         {feedbackCounts.rejected}
                       </Badge>
                     </TabsTrigger>
@@ -486,7 +486,7 @@ export function SharedSearchDetailsModal({
                                         className={cn(
                                           "w-3 h-3",
                                           i < candidate.feedback!.rating!
-                                            ? "text-amber-400 fill-amber-400"
+                                            ? "text-status-warning fill-amber-400"
                                             : "text-zinc-600"
                                         )}
                                       />

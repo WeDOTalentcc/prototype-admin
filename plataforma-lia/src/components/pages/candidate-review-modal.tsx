@@ -263,9 +263,9 @@ const EditCriteriaPopup: React.FC<{
               />
               <button
                 onClick={() => handleRemove(criterion.id)}
-                className="p-1 rounded hover:bg-red-50 transition-colors"
+                className="p-1 rounded hover:bg-status-error/10 transition-colors"
               >
-                <XIcon className="w-4 h-4 text-red-400" />
+                <XIcon className="w-4 h-4 text-status-error" />
               </button>
             </div>
           ))}
@@ -580,7 +580,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                               <div className="flex items-center gap-2 mt-1">
                                 <p className="text-sm text-gray-800 dark:text-gray-200">{exp.title}</p>
                                 {exp.isPromotion && (
-                                  <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                  <Badge className="text-xs px-1.5 py-0.5 bg-status-success/10 text-status-success border-status-success/30">
                                     Promotion
                                   </Badge>
                                 )}
@@ -680,8 +680,8 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       <div className="flex items-start gap-3">
                         <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
                           reason.isGoodMatch 
-                            ? 'bg-green-50 text-green-700' 
-                            : 'bg-yellow-50 text-yellow-700'
+                            ? 'bg-status-success/10 text-status-success' 
+                            : 'bg-status-warning/10 text-status-warning'
                         }`}>
                           {reason.isGoodMatch ? (
                             <CheckCircle2 className="w-3 h-3" />
@@ -761,7 +761,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   }}
                 >
                   Approve
-                  <span className="ml-2 text-xs opacity-70 bg-green-50 px-1.5 py-0.5 rounded">A</span>
+                  <span className="ml-2 text-xs opacity-70 bg-status-success/10 px-1.5 py-0.5 rounded">A</span>
                 </Button>
 
                 <Button
@@ -779,7 +779,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   }}
                 >
                   Reject
-                  <span className="ml-2 text-xs opacity-70 bg-red-50 px-1.5 py-0.5 rounded">R</span>
+                  <span className="ml-2 text-xs opacity-70 bg-status-error/10 px-1.5 py-0.5 rounded">R</span>
                 </Button>
 
                 <p className="text-xs text-gray-600 text-center mt-4 leading-relaxed">

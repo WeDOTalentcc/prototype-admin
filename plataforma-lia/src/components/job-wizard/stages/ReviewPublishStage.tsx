@@ -249,7 +249,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
             <span className="text-micro font-semibold text-gray-500 uppercase">Técnicas ({technicalSkills.length})</span>
             <div className="flex flex-wrap gap-1 mt-1">
               {technicalSkills.slice(0, 8).map(s => (
-                <span key={s.id} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-micro rounded-full">
+                <span key={s.id} className="px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark text-micro rounded-full">
                   {s.name}
                 </span>
               ))}
@@ -264,7 +264,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
             <span className="text-micro font-semibold text-gray-500 uppercase">Comportamentais ({enabledBehavioral.length})</span>
             <div className="flex flex-wrap gap-1 mt-1">
               {enabledBehavioral.map(c => (
-                <span key={c.id} className="px-1.5 py-0.5 bg-purple-50 text-purple-700 text-micro rounded-full">
+                <span key={c.id} className="px-1.5 py-0.5 bg-wedo-purple/10 text-wedo-purple text-micro rounded-full">
                   {c.name}
                 </span>
               ))}

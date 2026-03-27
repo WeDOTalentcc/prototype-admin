@@ -81,9 +81,9 @@ export function FastTrackSuggestions({
   }
   
   const getMatchBadgeColor = (score: number) => {
-    if (score >= 0.9) return 'bg-green-500/20 text-green-400 border-green-500/30'
+    if (score >= 0.9) return 'bg-status-success/20 text-status-success border-status-success/30/30'
     if (score >= 0.8) return 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-    return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+    return 'bg-status-warning/20 text-status-warning border-status-warning/30/30'
   }
   
   return (
@@ -151,7 +151,7 @@ export function FastTrackSuggestions({
                     </div>
                     
                     {job.time_to_fill_days && job.outcome_status === 'hired' && (
-                      <div className="flex items-center gap-1 mt-1 text-xs text-green-400">
+                      <div className="flex items-center gap-1 mt-1 text-xs text-status-success">
                         <CheckCircle2 className="w-3 h-3" />
                         Contratado em {job.time_to_fill_days} dias
                       </div>

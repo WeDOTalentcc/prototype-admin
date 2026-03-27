@@ -112,7 +112,7 @@ export function InputBar({
               onClick={onEndConversation}
               disabled={isDisabled}
               aria-label="Finalizar conversa"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-['Open_Sans',sans-serif]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error hover:bg-status-error/15 dark:hover:bg-status-error/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-['Open_Sans',sans-serif]"
             >
               <PhoneOff className="w-3.5 h-3.5" />
               Finalizar Conversa

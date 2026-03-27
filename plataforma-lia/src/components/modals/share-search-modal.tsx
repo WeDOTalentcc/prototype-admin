@@ -380,7 +380,7 @@ export function ShareSearchModal({
                       className={cn(
                         "flex items-center gap-2 p-2.5 rounded-md border transition-all text-left",
                         channel === 'whatsapp'
-                          ? "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                          ? "border-status-success/30 bg-status-success/10 dark:bg-status-success/20 text-status-success dark:text-status-success"
                           : "border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400"
                       )}
                     >
@@ -457,7 +457,7 @@ export function ShareSearchModal({
                           </span>
                           {recipient.phone && (
                             <>
-                              <Phone className="w-3 h-3 text-green-500 flex-shrink-0" />
+                              <Phone className="w-3 h-3 text-status-success flex-shrink-0" />
                               <span className="text-micro text-gray-500 truncate">
                                 {recipient.phone}
                               </span>
@@ -467,7 +467,7 @@ export function ShareSearchModal({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="h-5 w-5 flex-shrink-0 hover:text-red-600 hover:bg-red-50"
+                            className="h-5 w-5 flex-shrink-0 hover:text-status-error hover:bg-status-error/10"
                             onClick={() => handleRemoveRecipient(recipient.id)}
                           >
                             <X className="w-3 h-3" />
@@ -476,7 +476,7 @@ export function ShareSearchModal({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-micro text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-2">
+                    <p className="text-micro text-status-warning bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-2">
                       Adicione pelo menos um email de gestor para compartilhar
                     </p>
                   )}
@@ -695,18 +695,18 @@ export function ShareSearchModal({
                 {channel === 'both' && (
                   <div className="mt-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <MessageSquare className="w-3 h-3 text-green-600" />
+                      <MessageSquare className="w-3 h-3 text-status-success" />
                       <span className="text-micro font-medium text-gray-500">Preview WhatsApp</span>
                     </div>
                     <div className="flex justify-end">
                       <div className="max-w-[85%]">
-                        <div className="bg-[#DCF8C6] dark:bg-green-900/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
+                        <div className="bg-[#DCF8C6] dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
                           <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                             {message ? renderPreview(message) : (
                               <span className="italic text-gray-500 text-micro">Mensagem...</span>
                             )}
                           </p>
-                          <div className="mt-1.5 pt-1.5 border-t border-green-200 dark:border-green-800 text-micro text-gray-600 dark:text-gray-400 space-y-0.5">
+                          <div className="mt-1.5 pt-1.5 border-t border-status-success/30 dark:border-status-success/30 text-micro text-gray-600 dark:text-gray-400 space-y-0.5">
                             <p>📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} · 🔗 Link · 🔑 OTP</p>
                           </div>
                         </div>
@@ -719,7 +719,7 @@ export function ShareSearchModal({
                 <div className="space-y-3">
                   <div className="flex justify-end">
                     <div className="max-w-[85%]">
-                      <div className="bg-[#DCF8C6] dark:bg-green-900/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
+                      <div className="bg-[#DCF8C6] dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
                         <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                           {message ? renderPreview(message) : (
                             <span className="italic text-gray-500">
@@ -729,7 +729,7 @@ export function ShareSearchModal({
                         </p>
                         {message && (
                           <>
-                            <div className="mt-2 pt-2 border-t border-green-200 dark:border-green-800">
+                            <div className="mt-2 pt-2 border-t border-status-success/30 dark:border-status-success/30">
                               <p className="text-micro text-gray-600 dark:text-gray-400">
                                 📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} para avaliar
                               </p>

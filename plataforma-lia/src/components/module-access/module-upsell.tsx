@@ -40,7 +40,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'premium': return 'bg-gray-700 dark:bg-gray-300'
-      case 'enterprise': return 'bg-purple-600'
+      case 'enterprise': return 'bg-wedo-purple/10'
       default: return 'bg-gray-600'
     }
   }
@@ -85,8 +85,8 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   <div className="space-y-3">
                     {moduleInfo.features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                          <Check className="w-4 h-4 text-green-600" />
+                        <div className="w-6 h-6 bg-status-success/10 rounded-full flex items-center justify-center">
+                          <Check className="w-4 h-4 text-status-success" />
                         </div>
                         <span className="text-gray-800 dark:text-gray-200">{feature}</span>
                       </div>
@@ -161,19 +161,19 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                     </h4>
                     <ul className="text-sm text-gray-800 dark:text-gray-200 space-y-2">
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-600" />
+                        <Check className="w-4 h-4 text-status-success" />
                         Implementação dedicada
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-600" />
+                        <Check className="w-4 h-4 text-status-success" />
                         Suporte prioritário 24/7
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-600" />
+                        <Check className="w-4 h-4 text-status-success" />
                         Customizações personalizadas
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-600" />
+                        <Check className="w-4 h-4 text-status-success" />
                         Treinamento da equipe
                       </li>
                     </ul>
@@ -203,15 +203,15 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   <div className="text-2xl font-bold mb-4">R$ 99/mês</div>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-status-success" />
                       Recrutamento Core
                     </li>
                     <li className="flex items-center gap-2">
-                      <X className="w-4 h-4 text-red-500" />
+                      <X className="w-4 h-4 text-status-error" />
                       Onboarding Automatizado
                     </li>
                     <li className="flex items-center gap-2">
-                      <X className="w-4 h-4 text-red-500" />
+                      <X className="w-4 h-4 text-status-error" />
                       Analytics ML
                     </li>
                   </ul>
@@ -227,15 +227,15 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   <div className="text-2xl font-bold mb-4">R$ 299/mês</div>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-status-success" />
                       Recrutamento Core
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-status-success" />
                       Onboarding Automatizado
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-status-success" />
                       Analytics Avançado
                     </li>
                   </ul>
@@ -251,15 +251,15 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   <div className="text-2xl font-bold mb-4">R$ 699/mês</div>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-status-success" />
                       Todos os módulos
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-status-success" />
                       Analytics ML
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-status-success" />
                       Integrações ATS
                     </li>
                   </ul>

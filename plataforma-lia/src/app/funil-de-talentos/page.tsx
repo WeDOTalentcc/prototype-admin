@@ -241,7 +241,7 @@ export default function FunilDeTalentosPage() {
 
             {/* Error state */}
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md text-xs text-red-700 dark:text-red-400">
+              <div className="flex items-center gap-2 p-3 bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-md text-xs text-status-error dark:text-status-error">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
                 {error}
               </div>

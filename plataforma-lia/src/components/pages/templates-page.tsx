@@ -239,9 +239,9 @@ export function TemplatesPage() {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'search': return 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600'
-      case 'communication': return 'bg-green-100 text-green-700 border-green-200'
-      case 'workflow': return 'bg-purple-100 text-purple-700 border-purple-200'
-      case 'analysis': return 'bg-orange-100 text-orange-700 border-orange-200'
+      case 'communication': return 'bg-status-success/15 text-status-success border-status-success/30'
+      case 'workflow': return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
+      case 'analysis': return 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
     }
   }
@@ -285,7 +285,7 @@ export function TemplatesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-green-600" />
+              <TrendingUp className="w-4 h-4 text-status-success" />
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Execuções</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.totalUsage}</p>
@@ -297,7 +297,7 @@ export function TemplatesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-purple-600" />
+              <Target className="w-4 h-4 text-wedo-purple" />
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Taxa Sucesso</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.avgSuccessRate}%</p>
@@ -309,7 +309,7 @@ export function TemplatesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-orange-600" />
+              <Clock className="w-4 h-4 text-wedo-orange" />
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Tempo Poupado</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.totalTimeSaved}h</p>
@@ -415,7 +415,7 @@ export function TemplatesPage() {
                   <p className="text-xs text-gray-800 dark:text-gray-200">Usos</p>
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-green-600">{template.successRate}%</p>
+                  <p className="text-lg font-semibold text-status-success">{template.successRate}%</p>
                   <p className="text-xs text-gray-800 dark:text-gray-200">Sucesso</p>
                 </div>
                 <div>

@@ -51,11 +51,11 @@ import {
 } from "lucide-react"
 
 const BENEFIT_CATEGORIES = [
-  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-red-500" },
-  { id: "food", name: "Alimentação", icon: Utensils, color: "text-orange-500" },
+  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error" },
+  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
   { id: "transport", name: "Transporte", icon: Car, color: "text-gray-600 dark:text-gray-400" },
-  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-purple-500" },
-  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-green-500" },
+  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple" },
+  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success" },
   { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-gray-300" },
   { id: "family", name: "Família", icon: Baby, color: "text-pink-500" },
   { id: "security", name: "Segurança", icon: Shield, color: "text-gray-500" },
@@ -359,7 +359,7 @@ function BenefitsContent({
                                 {benefit.name}
                               </span>
                               {benefit.is_highlighted && (
-                                <Badge className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                <Badge className="text-xs bg-status-warning/15 text-status-warning dark:bg-status-warning dark:text-status-warning">
                                   Destaque
                                 </Badge>
                               )}
@@ -405,7 +405,7 @@ function BenefitsContent({
                             variant="ghost"
                             size="sm"
                             onClick={() => benefit.id && handleDeleteBenefit(benefit.id)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-status-error hover:text-status-error"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -1190,8 +1190,8 @@ function SetupEmpresaContent() {
                 </div>
 
                 {enrichmentError && (
-                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-                    <p className="text-sm text-red-700 dark:text-red-300">{enrichmentError}</p>
+                  <div className="bg-status-error/10 dark:bg-status-error/20 border border-status-error/30 dark:border-status-error/30 rounded-md p-3">
+                    <p className="text-sm text-status-error dark:text-status-error">{enrichmentError}</p>
                   </div>
                 )}
 
@@ -1270,8 +1270,8 @@ function SetupEmpresaContent() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {evpError && (
-                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-                    <p className="text-sm text-red-700 dark:text-red-300">{evpError}</p>
+                  <div className="bg-status-error/10 dark:bg-status-error/20 border border-status-error/30 dark:border-status-error/30 rounded-md p-3">
+                    <p className="text-sm text-status-error dark:text-status-error">{evpError}</p>
                   </div>
                 )}
 
@@ -1696,7 +1696,7 @@ function SetupEmpresaContent() {
               />
               {importFile ? (
                 <div className="flex items-center justify-center gap-3">
-                  <FileSpreadsheet className="w-8 h-8 text-green-500" />
+                  <FileSpreadsheet className="w-8 h-8 text-status-success" />
                   <div className="text-left">
                     <p className="font-medium">{importFile.name}</p>
                     <p className="text-xs text-gray-500">{(importFile.size / 1024).toFixed(1)} KB</p>

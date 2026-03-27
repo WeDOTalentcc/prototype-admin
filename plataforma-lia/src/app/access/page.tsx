@@ -98,12 +98,12 @@ export default function AccessPage() {
           </Card>
 
           {/* Admin Portal */}
-          <Card className="group hover:border-purple-600 transition-all duration-300 cursor-pointer">
+          <Card className="group hover:border-wedo-purple/30 transition-all duration-300 cursor-pointer">
             <CardContent className="p-8">
               <div className="flex flex-col items-center text-center space-y-6">
                 {/* Icon */}
-                <div className="w-20 h-20 rounded-full bg-purple-600/10 flex items-center justify-center group-hover:bg-purple-600/20 transition-colors">
-                  <Shield className="w-10 h-10 text-purple-600" />
+                <div className="w-20 h-20 rounded-full bg-wedo-purple/10 flex items-center justify-center group-hover:bg-wedo-purple/20 transition-colors">
+                  <Shield className="w-10 h-10 text-wedo-purple" />
                 </div>
 
                 {/* Title */}
@@ -122,7 +122,7 @@ export default function AccessPage() {
                 {/* Features */}
                 <div className="space-y-3 w-full text-left">
                   <div className="flex items-start gap-3">
-                    <Building className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <Building className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                         Gestão de Clientes
@@ -134,7 +134,7 @@ export default function AccessPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <Zap className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <Zap className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                         Configurações
@@ -146,7 +146,7 @@ export default function AccessPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <ArrowRight className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <ArrowRight className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                         Métricas SaaS

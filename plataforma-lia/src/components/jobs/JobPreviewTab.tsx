@@ -164,7 +164,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {behavioralItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {behavioralItems.map((item: any, idx: number) => (
-              <Badge key={idx} className="bg-purple-50 text-purple-700 border border-purple-200 text-micro px-2 py-0.5 h-5 font-medium">
+              <Badge key={idx} className="bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30 text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
               </Badge>
             ))}
@@ -194,7 +194,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                   </Badge>
                 )}
                 {lang.required && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-red-50 text-red-600 border border-red-200">
+                  <Badge className="text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30">
                     Obrigatorio
                   </Badge>
                 )}
@@ -303,11 +303,11 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             <Heart className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
             Acoes Afirmativas
           </h5>
-          <div className="p-2 bg-purple-50 border border-purple-100 rounded-lg">
+          <div className="p-2 bg-wedo-purple/10 border border-wedo-purple/30 rounded-lg">
             {job.affirmativeType && (
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-micro text-gray-600 dark:text-gray-400">Tipo:</span>
-                <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-100 text-purple-700 border border-purple-200">
+                <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30">
                   {job.affirmativeType}
                 </Badge>
               </div>

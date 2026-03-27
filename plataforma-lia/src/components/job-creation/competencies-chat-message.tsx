@@ -51,12 +51,12 @@ const SOURCE_CONFIG: Record<'market_benchmark' | 'company_history' | 'platform_c
   market_benchmark: {
     icon: BarChart3,
     label: '📊 benchmark de mercado',
-    className: 'text-blue-600 dark:text-blue-400'
+    className: 'text-wedo-cyan-dark dark:text-wedo-cyan-dark'
   },
   company_history: {
     icon: Building2,
     label: '🏢 histórico da empresa',
-    className: 'text-purple-600 dark:text-purple-400'
+    className: 'text-wedo-purple dark:text-wedo-purple'
   },
   platform_config: {
     icon: Settings,
@@ -72,18 +72,18 @@ const LEVEL_CONFIG: Record<'Básico' | 'Intermediário' | 'Avançado', {
 }> = {
   'Básico': {
     label: 'Básico',
-    className: 'text-green-700 dark:text-green-400',
-    bgClassName: 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
+    className: 'text-status-success dark:text-status-success',
+    bgClassName: 'bg-status-success/10 dark:bg-status-success/30 border-status-success/30 dark:border-status-success/30'
   },
   'Intermediário': {
     label: 'Intermediário',
-    className: 'text-amber-700 dark:text-amber-400',
-    bgClassName: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
+    className: 'text-status-warning dark:text-status-warning',
+    bgClassName: 'bg-status-warning/10 dark:bg-status-warning/30 border-status-warning/30 dark:border-status-warning/30'
   },
   'Avançado': {
     label: 'Avançado',
-    className: 'text-red-700 dark:text-red-400',
-    bgClassName: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+    className: 'text-status-error dark:text-status-error',
+    bgClassName: 'bg-status-error/10 dark:bg-status-error/30 border-status-error/30 dark:border-status-error/30'
   }
 }
 
@@ -96,7 +96,7 @@ function WeightStars({ weight }: { weight: number }) {
           className={cn(
             "h-3 w-3",
             i <= weight 
-              ? "fill-amber-400 text-amber-400" 
+              ? "fill-amber-400 text-status-warning" 
               : "text-gray-300 dark:text-gray-600"
           )}
         />
@@ -116,7 +116,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
           <Code className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
           <span className="text-xs font-medium truncate">{skill.name}</span>
           {skill.required && (
-            <Badge variant="outline" className="text-micro h-4 px-1.5 border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950/30 dark:text-red-400">
+            <Badge variant="outline" className="text-micro h-4 px-1.5 border-status-error/30 bg-status-error/10 text-status-error dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
               Obrigatório
             </Badge>
           )}
@@ -155,7 +155,7 @@ function BehavioralCompetencyCard({ competency }: { competency: BehavioralCompet
     <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <Brain className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />
+          <Brain className="h-3.5 w-3.5 text-wedo-purple flex-shrink-0" />
           <span className="text-xs font-medium truncate">{competency.name}</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -172,7 +172,7 @@ function BehavioralCompetencyCard({ competency }: { competency: BehavioralCompet
       
       <div className="flex items-center justify-between gap-2">
         {competency.weightJustification && (
-          <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-purple-300/50 flex-1">
+          <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-wedo-purple/30/50 flex-1">
             {competency.weightJustification}
           </p>
         )}
@@ -249,7 +249,7 @@ export function CompetenciesChatMessage({
           {behavioralCompetencies.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Brain className="h-3.5 w-3.5 text-purple-500" />
+                <Brain className="h-3.5 w-3.5 text-wedo-purple" />
                 <span>Competências Comportamentais</span>
                 <Badge variant="secondary" className="text-micro h-4 px-1.5">
                   {behavioralCompetencies.length}

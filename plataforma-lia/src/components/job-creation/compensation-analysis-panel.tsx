@@ -105,22 +105,22 @@ const DATA_SOURCE_CONFIG: Record<DataSource, {
   company_policy: {
     icon: '🏢',
     label: 'Política da Empresa',
-    className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-700'
+    className: 'bg-wedo-cyan/15 text-wedo-cyan-dark border-wedo-cyan/30 dark:bg-wedo-cyan/10 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30'
   },
   market_benchmark: {
     icon: '📊',
     label: 'Benchmark de Mercado',
-    className: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-700'
+    className: 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30 dark:bg-wedo-purple/10 dark:text-wedo-purple dark:border-wedo-purple/30'
   },
   internal_history: {
     icon: '📈',
     label: 'Histórico Interno',
-    className: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-700'
+    className: 'bg-status-success/15 text-status-success border-status-success/30 dark:bg-status-success dark:text-status-success dark:border-status-success/30'
   },
   inference: {
     icon: '🤖',
     label: 'Inferência IA',
-    className: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-700'
+    className: 'bg-status-warning/15 text-status-warning border-status-warning/30 dark:bg-status-warning dark:text-status-warning dark:border-status-warning/30'
   },
   user_input: {
     icon: '✏️',
@@ -140,22 +140,22 @@ const STATUS_CONFIG: Record<CompetitivenessStatus, {
     icon: CheckCircle2,
     label: 'Competitivo',
     description: 'A remuneração está alinhada com o mercado',
-    className: 'text-green-600 dark:text-green-400',
-    bgClassName: 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800'
+    className: 'text-status-success dark:text-status-success',
+    bgClassName: 'bg-status-success/10 border-status-success/30 dark:bg-status-success/30 dark:border-status-success/30'
   },
   below_market: {
     icon: AlertTriangle,
     label: 'Abaixo do Mercado',
     description: 'A remuneração pode dificultar atração de talentos',
-    className: 'text-amber-600 dark:text-amber-400',
-    bgClassName: 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800'
+    className: 'text-status-warning dark:text-status-warning',
+    bgClassName: 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/30 dark:border-status-warning/30'
   },
   above_market: {
     icon: TrendingUp,
     label: 'Acima do Mercado',
     description: 'A remuneração está acima da média de mercado',
-    className: 'text-blue-600 dark:text-blue-400',
-    bgClassName: 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800'
+    className: 'text-wedo-cyan-dark dark:text-wedo-cyan-dark',
+    bgClassName: 'bg-wedo-cyan/10 border-wedo-cyan/30 dark:border-wedo-cyan/30'
   }
 }
 
@@ -203,7 +203,7 @@ function SalaryComparisonBar({
       <div className="absolute inset-x-0 top-6 h-2 bg-gray-100 dark:bg-gray-800 rounded-full" />
       
       <div 
-        className="absolute top-6 h-2 bg-purple-200 dark:bg-purple-900 rounded-full"
+        className="absolute top-6 h-2 bg-wedo-purple/20 dark:bg-wedo-purple rounded-full"
         style={{
           left: `${getPosition(market.min)}%`,
           width: `${getPosition(market.max) - getPosition(market.min)}%`
@@ -212,7 +212,7 @@ function SalaryComparisonBar({
       
       {policy && (
         <div 
-          className="absolute top-6 h-2 bg-blue-200 dark:bg-blue-900 rounded-full opacity-60"
+          className="absolute top-6 h-2 bg-wedo-cyan/20 dark:bg-wedo-cyan/10 rounded-full opacity-60"
           style={{
             left: `${getPosition(policy.min)}%`,
             width: `${getPosition(policy.max) - getPosition(policy.min)}%`
@@ -221,7 +221,7 @@ function SalaryComparisonBar({
       )}
       
       <div 
-        className="absolute top-5 h-4 bg-green-500 dark:bg-green-600 rounded-full"
+        className="absolute top-5 h-4 bg-status-success dark:bg-status-success rounded-full"
         style={{
           left: `${getPosition(proposed.min)}%`,
           width: `${getPosition(proposed.max) - getPosition(proposed.min)}%`
@@ -237,16 +237,16 @@ function SalaryComparisonBar({
 
       <div className="flex justify-center gap-4 absolute top-0 inset-x-0">
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-green-500" />
+          <div className="w-2 h-2 rounded-full bg-status-success" />
           <span className="text-micro text-muted-foreground">Proposto</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-purple-300" />
+          <div className="w-2 h-2 rounded-full bg-wedo-purple/10" />
           <span className="text-micro text-muted-foreground">Mercado</span>
         </div>
         {policy && (
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-blue-300" />
+            <div className="w-2 h-2 rounded-full bg-wedo-cyan/10" />
             <span className="text-micro text-muted-foreground">Política</span>
           </div>
         )}
@@ -265,9 +265,9 @@ function CompensationBreakdownChart({
   }
 }) {
   const segments = [
-    { label: 'Salário', percentage: breakdown.salaryPercentage, color: 'bg-blue-500' },
-    { label: 'Bônus', percentage: breakdown.bonusPercentage, color: 'bg-green-500' },
-    { label: 'Benefícios', percentage: breakdown.benefitsPercentage, color: 'bg-purple-500' }
+    { label: 'Salário', percentage: breakdown.salaryPercentage, color: 'bg-wedo-cyan' },
+    { label: 'Bônus', percentage: breakdown.bonusPercentage, color: 'bg-status-success' },
+    { label: 'Benefícios', percentage: breakdown.benefitsPercentage, color: 'bg-wedo-purple' }
   ]
 
   return (
@@ -376,22 +376,22 @@ export function CompensationAnalysisPanel({
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+            <div className="p-2 rounded-md bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
               <p className="text-micro text-muted-foreground mb-1">Proposto</p>
-              <p className="text-xs font-semibold text-green-700 dark:text-green-400">
+              <p className="text-xs font-semibold text-status-success dark:text-status-success">
                 {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
               </p>
             </div>
-            <div className="p-2 rounded-md bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
+            <div className="p-2 rounded-md bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
               <p className="text-micro text-muted-foreground mb-1">Mercado</p>
-              <p className="text-xs font-semibold text-purple-700 dark:text-purple-400">
+              <p className="text-xs font-semibold text-wedo-purple dark:text-wedo-purple">
                 {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
               </p>
             </div>
             {analysis.salary.policy && (
-              <div className="p-2 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+              <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política</p>
-                <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                <p className="text-xs font-semibold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                   {formatCurrency(analysis.salary.policy.min)} - {formatCurrency(analysis.salary.policy.max)}
                 </p>
               </div>
@@ -408,16 +408,16 @@ export function CompensationAnalysisPanel({
             <span className="text-muted-foreground">Posição vs. Mercado:</span>
             <span className={cn(
               'font-medium',
-              analysis.salary.percentileVsMarket >= 50 ? 'text-green-600' : 'text-amber-600'
+              analysis.salary.percentileVsMarket >= 50 ? 'text-status-success' : 'text-status-warning'
             )}>
               Percentil {analysis.salary.percentileVsMarket}
             </span>
           </div>
 
           {analysis.salary.suggestion && (
-            <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center gap-2">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
-              <p className="text-micro text-amber-700 dark:text-amber-400">
+            <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-center gap-2">
+              <AlertTriangle className="h-3.5 w-3.5 text-status-warning flex-shrink-0" />
+              <p className="text-micro text-status-warning dark:text-status-warning">
                 Sugestão: Ajustar para {formatCurrency(analysis.salary.suggestion.min)} - {formatCurrency(analysis.salary.suggestion.max)}
               </p>
             </div>
@@ -439,9 +439,9 @@ export function CompensationAnalysisPanel({
               <p className="text-sm font-semibold">{analysis.bonus.proposedPercentage}%</p>
             </div>
             {analysis.bonus.policyPercentage !== undefined && (
-              <div className="p-2 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+              <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política da Empresa</p>
-                <p className="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                <p className="text-sm font-semibold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                   {analysis.bonus.policyPercentage}%
                 </p>
               </div>
@@ -455,9 +455,9 @@ export function CompensationAnalysisPanel({
           )}
 
           {analysis.bonus.suggestion !== undefined && analysis.bonus.suggestion !== analysis.bonus.proposedPercentage && (
-            <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center gap-2">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
-              <p className="text-micro text-amber-700 dark:text-amber-400">
+            <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-center gap-2">
+              <AlertTriangle className="h-3.5 w-3.5 text-status-warning flex-shrink-0" />
+              <p className="text-micro text-status-warning dark:text-status-warning">
                 Sugestão: Ajustar bônus para {analysis.bonus.suggestion}%
               </p>
             </div>
@@ -502,7 +502,7 @@ export function CompensationAnalysisPanel({
 
           {analysis.benefits.missingFromStandard.length > 0 && (
             <div className="space-y-2">
-              <p className="text-micro text-amber-600 dark:text-amber-400 font-medium">
+              <p className="text-micro text-status-warning dark:text-status-warning font-medium">
                 Benefícios Padrão Não Incluídos:
               </p>
               <div className="flex flex-wrap gap-1">
@@ -510,7 +510,7 @@ export function CompensationAnalysisPanel({
                   <Badge 
                     key={benefit.id} 
                     variant="outline" 
-                    className="text-micro gap-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
+                    className="text-micro gap-1 border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning"
                   >
                     <X className="h-3 w-3" />
                     {benefit.name}
@@ -544,17 +544,17 @@ export function CompensationAnalysisPanel({
               </p>
             </div>
             {analysis.totalCompensation.marketAnnual && (
-              <div className="p-2 rounded-md bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
+              <div className="p-2 rounded-md bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
                 <p className="text-micro text-muted-foreground mb-1">Mercado</p>
-                <p className="text-xs font-semibold text-purple-700 dark:text-purple-400">
+                <p className="text-xs font-semibold text-wedo-purple dark:text-wedo-purple">
                   {formatCurrency(analysis.totalCompensation.marketAnnual)}
                 </p>
               </div>
             )}
             {analysis.totalCompensation.policyAnnual && (
-              <div className="p-2 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+              <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política</p>
-                <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                <p className="text-xs font-semibold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                   {formatCurrency(analysis.totalCompensation.policyAnnual)}
                 </p>
               </div>

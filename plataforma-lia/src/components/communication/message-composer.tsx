@@ -218,7 +218,7 @@ export function MessageComposer({
       )}
       
       {errorMessage && (
-        <div className="mb-3 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md flex items-center gap-2">
+        <div className="mb-3 bg-status-error/10 border border-status-error/30 text-status-error px-3 py-2 rounded-md flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span className="text-xs">{errorMessage}</span>
         </div>
@@ -469,10 +469,10 @@ export function MessageComposer({
                 </div>
               </div>
 
-              <div className="p-3 rounded-md border border-amber-200 bg-amber-50">
+              <div className="p-3 rounded-md border border-status-warning/30 bg-status-warning/10">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-800">
+                  <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-status-warning">
                     Os ajustes serão aplicados apenas a esta mensagem. O template original permanece inalterado.
                   </p>
                 </div>

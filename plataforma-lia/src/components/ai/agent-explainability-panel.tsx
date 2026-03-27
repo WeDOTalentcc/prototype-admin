@@ -55,26 +55,26 @@ const PHASE_CONFIG: Record<
 > = {
   reasoning: {
     label: "Raciocínio",
-    color: "text-blue-400",
-    bgColor: "bg-blue-400/15",
+    color: "text-wedo-cyan-dark",
+    bgColor: "bg-wedo-cyan/10/15",
     icon: Brain,
   },
   action: {
     label: "Ação",
-    color: "text-amber-400",
-    bgColor: "bg-amber-400/15",
+    color: "text-status-warning",
+    bgColor: "bg-status-warning/15",
     icon: Zap,
   },
   observation: {
     label: "Observação",
-    color: "text-green-400",
-    bgColor: "bg-green-400/15",
+    color: "text-status-success",
+    bgColor: "bg-status-success/15",
     icon: Eye,
   },
   decision: {
     label: "Decisão",
-    color: "text-purple-400",
-    bgColor: "bg-purple-400/15",
+    color: "text-wedo-purple",
+    bgColor: "bg-wedo-purple/10/15",
     icon: Target,
   },
 }
@@ -189,7 +189,7 @@ export function AgentExplainabilityPanel({
 
           {error && !loading && (
             <div className="flex items-center justify-center py-8">
-              <span className="text-sm text-red-400">{error}</span>
+              <span className="text-sm text-status-error">{error}</span>
             </div>
           )}
 
@@ -294,7 +294,7 @@ export function AgentExplainabilityPanel({
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <Wrench className="h-4 w-4 text-amber-400" />
+                <Wrench className="h-4 w-4 text-status-warning" />
                 <span className="text-micro text-zinc-500 font-[Inter]">
                   Ferramentas
                 </span>
@@ -303,7 +303,7 @@ export function AgentExplainabilityPanel({
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <Clock className="h-4 w-4 text-green-400" />
+                <Clock className="h-4 w-4 text-status-success" />
                 <span className="text-micro text-zinc-500 font-[Inter]">
                   Tempo Total
                 </span>
@@ -312,7 +312,7 @@ export function AgentExplainabilityPanel({
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <Target className="h-4 w-4 text-purple-400" />
+                <Target className="h-4 w-4 text-wedo-purple" />
                 <span className="text-micro text-zinc-500 font-[Inter]">
                   Confiança
                 </span>

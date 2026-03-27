@@ -1221,8 +1221,8 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'recruitment': return 'bg-gray-100 text-gray-700 border-gray-300'
-      case 'quality': return 'bg-amber-50 text-amber-700 border-amber-200'
-      case 'efficiency': return 'bg-green-50 text-green-700 border-green-200'
+      case 'quality': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
+      case 'efficiency': return 'bg-status-success/10 text-status-success border-status-success/30'
       case 'satisfaction': return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
     }
@@ -1230,9 +1230,9 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'achieved': return 'bg-green-100 text-green-700 border-green-200'
-      case 'in_progress': return 'bg-amber-50 text-amber-700 border-amber-200'
-      case 'overdue': return 'bg-red-100 text-red-700 border-red-200'
+      case 'achieved': return 'bg-status-success/15 text-status-success border-status-success/30'
+      case 'in_progress': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
+      case 'overdue': return 'bg-status-error/15 text-status-error border-status-error/30'
       case 'pending': return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
     }
@@ -1257,14 +1257,14 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-4 py-3 rounded-md flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           {error}
         </div>
       )}
 
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md flex items-center gap-2">
+        <div className="bg-status-success/10 border border-status-success/30 text-status-success px-4 py-3 rounded-md flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
           {successMessage}
         </div>
@@ -1335,19 +1335,19 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         </Card>
         <Card className="border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-lg !text-green-600`}>{goalStats.achieved}</div>
+            <div className={`${textStyles.metricLarge} !text-lg !text-status-success`}>{goalStats.achieved}</div>
             <div className={textStyles.caption}>Atingidas</div>
           </CardContent>
         </Card>
         <Card className="border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-lg !text-amber-600`}>{goalStats.inProgress}</div>
+            <div className={`${textStyles.metricLarge} !text-lg !text-status-warning`}>{goalStats.inProgress}</div>
             <div className={textStyles.caption}>Em Progresso</div>
           </CardContent>
         </Card>
         <Card className="border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-lg !text-red-600`}>{goalStats.overdue}</div>
+            <div className={`${textStyles.metricLarge} !text-lg !text-status-error`}>{goalStats.overdue}</div>
             <div className={textStyles.caption}>Atrasadas</div>
           </CardContent>
         </Card>
@@ -1691,15 +1691,15 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
             </div>
 
             {hiddenTemplates.size > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 mb-4 flex items-center justify-between">
-                <span className={`${textStyles.bodySmall} !text-amber-800`}>
+              <div className="bg-status-warning/10 border border-status-warning/30 rounded-md px-3 py-1.5 mb-4 flex items-center justify-between">
+                <span className={`${textStyles.bodySmall} !text-status-warning`}>
                   {hiddenTemplates.size} template(s) oculto(s)
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setHiddenTemplates(new Set())}
-                  className="text-xs text-amber-700 hover:text-amber-900 hover:bg-amber-100 h-7 font-['Open_Sans',sans-serif]"
+                  className="text-xs text-status-warning hover:text-status-warning hover:bg-status-warning/15 h-7 font-['Open_Sans',sans-serif]"
                 >
                   Restaurar Todos
                 </Button>
@@ -1723,11 +1723,11 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   onClick={() => !isAppliedToAll && toggleTemplateSelection(template.id)}
                   className={`border rounded-md p-3 transition-all cursor-pointer ${
                     isAppliedToAll 
-                      ? 'border-green-300 bg-green-50 opacity-60 cursor-not-allowed' 
+                      ? 'border-status-success/30 bg-status-success/10 opacity-60 cursor-not-allowed' 
                       : isSelected
                         ? 'border-gray-900 bg-gray-50 ring-2 ring-gray-400'
                         : isPartiallyApplied 
-                          ? 'border-amber-300 bg-amber-50 hover:border-gray-400' 
+                          ? 'border-status-warning/30 bg-status-warning/10 hover:border-gray-400' 
                           : 'border-gray-200 hover:border-gray-400 hover:bg-gray-50'
                   }`}
                 >
@@ -1735,7 +1735,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     <div className="flex items-center gap-2">
                       <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
                         isAppliedToAll 
-                          ? 'bg-green-500 border-green-500'
+                          ? 'bg-status-success border-status-success/30'
                           : isSelected 
                             ? 'bg-gray-900 border-gray-900 dark:bg-gray-50 dark:border-gray-50' 
                             : 'border-gray-300 bg-white'
@@ -1753,13 +1753,13 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                         {template.category}
                       </Badge>
                       {isAppliedToAll && (
-                        <Badge className="text-micro px-1.5 py-0.5 bg-green-100 text-green-700 border-green-300 font-['Open_Sans',sans-serif]">
+                        <Badge className="text-micro px-1.5 py-0.5 bg-status-success/15 text-status-success border-status-success/30 font-['Open_Sans',sans-serif]">
                           <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
                           Aplicado a Todos
                         </Badge>
                       )}
                       {isPartiallyApplied && (
-                        <Badge className="text-micro px-1.5 py-0.5 bg-amber-100 text-amber-700 border-amber-300 font-['Open_Sans',sans-serif]">
+                        <Badge className="text-micro px-1.5 py-0.5 bg-status-warning/15 text-status-warning border-status-warning/30 font-['Open_Sans',sans-serif]">
                           {appliedCount}/{users.length} usuários
                         </Badge>
                       )}
@@ -1810,7 +1810,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             e.stopPropagation()
                             setHiddenTemplates(prev => new Set([...prev, template.id]))
                           }}
-                          className="h-5 w-5 p-0 hover:bg-red-50 hover:text-red-600"
+                          className="h-5 w-5 p-0 hover:bg-status-error/10 hover:text-status-error"
                           title="Ocultar template"
                         >
                           <X className="w-2.5 h-2.5" />
@@ -2113,10 +2113,10 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       {deleteConfirmGoal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-md w-full max-w-md mx-4 overflow-hidden">
-            <div className="bg-red-50 px-6 py-4 border-b border-red-100">
+            <div className="bg-status-error/10 px-6 py-4 border-b border-status-error/30">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                  <Trash2 className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 rounded-full bg-status-error/15 flex items-center justify-center">
+                  <Trash2 className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-950">Excluir Meta</h3>
@@ -2155,7 +2155,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 <Button 
                   onClick={confirmDeleteGoal}
                   disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-status-error hover:bg-status-error text-white"
                 >
                   {isDeleting ? (
                     <>

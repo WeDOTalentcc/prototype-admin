@@ -31,9 +31,9 @@ interface CandidateCompareModalProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return "text-emerald-600"
-  if (score >= 60) return "text-amber-600"
-  return "text-red-500"
+  if (score >= 80) return "text-status-success"
+  if (score >= 60) return "text-status-warning"
+  return "text-status-error"
 }
 
 function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) {
@@ -45,7 +45,7 @@ function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) 
         <div
           className={cn(
             "h-1.5 rounded-full",
-            pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-amber-500" : "bg-red-500"
+            pct >= 80 ? "bg-status-success" : pct >= 60 ? "bg-status-warning" : "bg-status-error"
           )}
           style={{ width: `${pct}%` }}
         />
@@ -98,7 +98,7 @@ export function CandidateCompareModal({
 
         {error && !loading && (
           <div className="flex items-center gap-2 py-4 text-sm text-gray-500">
-            <AlertCircle className="h-4 w-4 text-amber-500" />
+            <AlertCircle className="h-4 w-4 text-status-warning" />
             <span>{error}</span>
           </div>
         )}
@@ -107,13 +107,13 @@ export function CandidateCompareModal({
           <div className="space-y-4">
             {/* Winner banner */}
             {data.winner && (
-              <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                <Trophy className="h-4 w-4 text-emerald-600" />
+              <div className="flex items-center gap-2 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-lg border border-status-success/30 dark:border-status-success/30">
+                <Trophy className="h-4 w-4 text-status-success" />
                 <div>
-                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                  <span className="text-xs font-semibold text-status-success dark:text-status-success">
                     Candidato indicado: {data.winner_name || nameById[data.winner] || data.winner}
                   </span>
-                  <span className="ml-2 text-micro text-emerald-600 opacity-70">
+                  <span className="ml-2 text-micro text-status-success opacity-70">
                     Confiança: {Math.round(data.confidence * 100)}%
                   </span>
                 </div>

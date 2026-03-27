@@ -145,10 +145,10 @@ export function InterviewSchedulingModal({
 
         <div className="space-y-6 mt-4">
           {scheduledInterview ? (
-            <div className="p-4 rounded-md border border-green-200 bg-green-50">
+            <div className="p-4 rounded-md border border-status-success/30 bg-status-success/10">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-xs font-medium text-green-700">
+                <div className="w-2 h-2 bg-status-success rounded-full animate-pulse" />
+                <span className="text-xs font-medium text-status-success">
                   Entrevista agendada com sucesso!
                 </span>
               </div>
@@ -198,7 +198,7 @@ export function InterviewSchedulingModal({
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-red-500">Erro ao gerar template de email</p>
+                  <p className="text-xs text-status-error">Erro ao gerar template de email</p>
                 )}
               </div>
 
@@ -225,14 +225,14 @@ export function InterviewSchedulingModal({
               </div>
 
               {error && (
-                <div className="p-3 rounded-md border border-red-200 bg-red-50">
+                <div className="p-3 rounded-md border border-status-error/30 bg-status-error/10">
                   <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-status-error mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-xs font-medium text-red-700">
+                      <p className="text-xs font-medium text-status-error">
                         Erro ao agendar
                       </p>
-                      <p className="text-xs text-red-600 mt-1">
+                      <p className="text-xs text-status-error mt-1">
                         {error}
                       </p>
                     </div>

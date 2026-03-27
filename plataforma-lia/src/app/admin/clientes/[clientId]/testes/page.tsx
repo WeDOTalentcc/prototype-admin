@@ -66,9 +66,9 @@ interface DisplayTest {
 
 const categoryConfig: Record<TestCategory, { label: string, icon: React.ComponentType<{ className?: string }>, color: string, bgColor: string }> = {
   coding: { label: 'Coding', icon: Code2, color: 'text-gray-600 dark:text-gray-400', bgColor: 'bg-gray-100 dark:bg-gray-800' },
-  logic: { label: 'Lógica/Raciocínio', icon: Brain, color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
-  domain: { label: 'Específico', icon: FileSpreadsheet, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30' },
-  personality: { label: 'Personalidade/Cultura', icon: Users, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' }
+  logic: { label: 'Lógica/Raciocínio', icon: Brain, color: 'text-wedo-purple', bgColor: 'bg-wedo-purple/15 dark:bg-wedo-purple/30' },
+  domain: { label: 'Específico', icon: FileSpreadsheet, color: 'text-status-warning', bgColor: 'bg-status-warning/15 dark:bg-status-warning/30' },
+  personality: { label: 'Personalidade/Cultura', icon: Users, color: 'text-status-success', bgColor: 'bg-status-success/15 dark:bg-status-success/30' }
 }
 
 const statusConfig: Record<TestStatus, { label: string, variant: 'success' | 'warning' | 'default' }> = {
@@ -78,9 +78,9 @@ const statusConfig: Record<TestStatus, { label: string, variant: 'success' | 'wa
 }
 
 const difficultyConfig: Record<TestDifficulty, { label: string, color: string }> = {
-  easy: { label: 'Fácil', color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30' },
-  medium: { label: 'Médio', color: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30' },
-  hard: { label: 'Difícil', color: 'text-red-600 bg-red-100 dark:bg-red-900/30' }
+  easy: { label: 'Fácil', color: 'text-status-success bg-status-success/15 dark:bg-status-success/30' },
+  medium: { label: 'Médio', color: 'text-status-warning bg-status-warning/15 dark:bg-status-warning/30' },
+  hard: { label: 'Difícil', color: 'text-status-error bg-status-error/15 dark:bg-status-error/30' }
 }
 
 function mapClientTestToDisplay(clientTest: ClientTest): DisplayTest {
@@ -220,7 +220,7 @@ export default function ClientTestesPage({
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-status-error" />
           <p className="text-sm mb-4" style={{ color: 'var(--eleven-text-tertiary)' }}>
             Erro ao carregar testes técnicos
           </p>
@@ -302,13 +302,13 @@ export default function ClientTestesPage({
                   {totalTestsTaken.toLocaleString()}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-md bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-md bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-wedo-purple" />
               </div>
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <TrendingUp className="w-3 h-3 text-emerald-500" />
-              <span className="text-xs text-emerald-600">+{testsTakenThisWeek} esta semana</span>
+              <TrendingUp className="w-3 h-3 text-status-success" />
+              <span className="text-xs text-status-success">+{testsTakenThisWeek} esta semana</span>
             </div>
           </CardContent>
         </Card>
@@ -324,8 +324,8 @@ export default function ClientTestesPage({
                   {avgCompletionRate.toFixed(0)}%
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 rounded-md bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-status-success" />
               </div>
             </div>
             <p className="text-xs mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -373,7 +373,7 @@ export default function ClientTestesPage({
         <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Brain className="w-5 h-5 text-purple-600" />
+              <Brain className="w-5 h-5 text-wedo-purple" />
               <div>
                 <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Lógica</p>
                 <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -386,7 +386,7 @@ export default function ClientTestesPage({
         <Card className="border-l-4 border-l-amber-500">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <FileSpreadsheet className="w-5 h-5 text-amber-600" />
+              <FileSpreadsheet className="w-5 h-5 text-status-warning" />
               <div>
                 <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Específico</p>
                 <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -399,7 +399,7 @@ export default function ClientTestesPage({
         <Card className="border-l-4 border-l-emerald-500">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-emerald-600" />
+              <Users className="w-5 h-5 text-status-success" />
               <div>
                 <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>Personalidade</p>
                 <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -576,7 +576,7 @@ export default function ClientTestesPage({
                               </p>
                             </div>
                             <div className="text-center min-w-[60px]">
-                              <p className="text-lg font-semibold text-emerald-600">
+                              <p className="text-lg font-semibold text-status-success">
                                 {test.completionRate}%
                               </p>
                               <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -746,7 +746,7 @@ export default function ClientTestesPage({
                           </span>
                         )}
                         <span style={{ color: 'var(--eleven-text-tertiary)' }}>
-                          Conclusão: <span className="font-medium text-emerald-600">{avgCompletion.toFixed(0)}%</span>
+                          Conclusão: <span className="font-medium text-status-success">{avgCompletion.toFixed(0)}%</span>
                         </span>
                       </div>
                     </div>

@@ -40,14 +40,14 @@ function SectionHeader({
     <div className="flex items-center justify-between mb-2">
       <div className="flex items-center gap-2">
         {filled ? (
-          <span className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <svg className="w-2.5 h-2.5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <span className="w-4 h-4 rounded-full bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
+            <svg className="w-2.5 h-2.5 text-status-success dark:text-status-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </span>
         ) : (
-          <span className="w-4 h-4 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-            <svg className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <span className="w-4 h-4 rounded-full bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
+            <svg className="w-2.5 h-2.5 text-status-warning dark:text-status-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01" />
             </svg>
           </span>
@@ -100,13 +100,13 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className={textStyles.h3}>Resumo da Vaga</span>
-          <span className={`${textStyles.metricSmall} ${percentage >= 80 ? 'text-green-600 dark:text-green-400' : percentage >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
+          <span className={`${textStyles.metricSmall} ${percentage >= 80 ? 'text-status-success dark:text-status-success' : percentage >= 50 ? 'text-status-warning dark:text-status-warning' : 'text-status-error dark:text-status-error'}`}>
             {percentage}%
           </span>
         </div>
         <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${percentage >= 80 ? 'bg-green-500' : percentage >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+            className={`h-full rounded-full transition-all duration-500 ${percentage >= 80 ? 'bg-status-success' : percentage >= 50 ? 'bg-status-warning' : 'bg-status-error'}`}
             style={{ width: `${Math.min(percentage, 100)}%` }}
           />
         </div>

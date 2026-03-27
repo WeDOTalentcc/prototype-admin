@@ -611,8 +611,8 @@ export default function PublicVacancyPage() {
           <section className="mb-12" ref={formRef}>
             {applicationResult && applicationResult.status !== "error" ? (
               <div className="border border-neutral-200 rounded-md p-6 sm:p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-500" />
+                <div className="w-16 h-16 rounded-full bg-status-success/10 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-status-success" />
                 </div>
                 <h3 className="text-xl font-semibold text-neutral-900 mb-2">
                   {applicationResult.status === "applied" ? "Candidatura Enviada!" : 
@@ -639,8 +639,8 @@ export default function PublicVacancyPage() {
                 </div>
 
                 {applicationResult?.status === "error" && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-700">{applicationResult.message}</p>
+                  <div className="mb-4 p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+                    <p className="text-sm text-status-error">{applicationResult.message}</p>
                   </div>
                 )}
 
@@ -654,12 +654,12 @@ export default function PublicVacancyPage() {
                       value={form.name}
                       onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
                       className={`w-full px-3 py-2 border rounded-md text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent ${
-                        formErrors.name ? "border-red-300" : "border-neutral-200"
+                        formErrors.name ? "border-status-error/30" : "border-neutral-200"
                       }`}
                       placeholder="Seu nome completo"
                     />
                     {formErrors.name && (
-                      <p className="text-xs text-red-500 mt-1">{formErrors.name}</p>
+                      <p className="text-xs text-status-error mt-1">{formErrors.name}</p>
                     )}
                   </div>
 
@@ -672,12 +672,12 @@ export default function PublicVacancyPage() {
                       value={form.email}
                       onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))}
                       className={`w-full px-3 py-2 border rounded-md text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent ${
-                        formErrors.email ? "border-red-300" : "border-neutral-200"
+                        formErrors.email ? "border-status-error/30" : "border-neutral-200"
                       }`}
                       placeholder="seu@email.com"
                     />
                     {formErrors.email && (
-                      <p className="text-xs text-red-500 mt-1">{formErrors.email}</p>
+                      <p className="text-xs text-status-error mt-1">{formErrors.email}</p>
                     )}
                   </div>
 
@@ -690,12 +690,12 @@ export default function PublicVacancyPage() {
                       value={form.phone}
                       onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))}
                       className={`w-full px-3 py-2 border rounded-md text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent ${
-                        formErrors.phone ? "border-red-300" : "border-neutral-200"
+                        formErrors.phone ? "border-status-error/30" : "border-neutral-200"
                       }`}
                       placeholder="+55 (11) 99999-9999"
                     />
                     {formErrors.phone && (
-                      <p className="text-xs text-red-500 mt-1">{formErrors.phone}</p>
+                      <p className="text-xs text-status-error mt-1">{formErrors.phone}</p>
                     )}
                   </div>
 
@@ -716,7 +716,7 @@ export default function PublicVacancyPage() {
                     <div
                       onClick={() => fileInputRef.current?.click()}
                       className={`w-full px-3 py-4 border-2 border-dashed rounded-md text-center cursor-pointer transition-colors hover:border-neutral-400 hover:bg-neutral-50 ${
-                        formErrors.cvFile ? "border-red-300" : form.cvFile ? "border-neutral-400 bg-neutral-50" : "border-neutral-200"
+                        formErrors.cvFile ? "border-status-error/30" : form.cvFile ? "border-neutral-400 bg-neutral-50" : "border-neutral-200"
                       }`}
                     >
                       {form.cvFile ? (
@@ -745,7 +745,7 @@ export default function PublicVacancyPage() {
                       )}
                     </div>
                     {formErrors.cvFile && (
-                      <p className="text-xs text-red-500 mt-1">{formErrors.cvFile}</p>
+                      <p className="text-xs text-status-error mt-1">{formErrors.cvFile}</p>
                     )}
                   </div>
 
@@ -757,14 +757,14 @@ export default function PublicVacancyPage() {
                         onChange={(e) => setForm(prev => ({ ...prev, lgpdConsent: e.target.checked }))}
                         className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
                       />
-                      <span className={`text-xs leading-relaxed ${formErrors.lgpdConsent ? "text-red-500" : "text-neutral-500"}`}>
+                      <span className={`text-xs leading-relaxed ${formErrors.lgpdConsent ? "text-status-error" : "text-neutral-500"}`}>
                         Autorizo a coleta e tratamento dos meus dados pessoais para fins deste processo seletivo, 
                         conforme a Lei Geral de Proteção de Dados (LGPD). Entendo que posso solicitar a exclusão 
                         dos meus dados a qualquer momento. *
                       </span>
                     </label>
                     {formErrors.lgpdConsent && (
-                      <p className="text-xs text-red-500 mt-1">{formErrors.lgpdConsent}</p>
+                      <p className="text-xs text-status-error mt-1">{formErrors.lgpdConsent}</p>
                     )}
                   </div>
 

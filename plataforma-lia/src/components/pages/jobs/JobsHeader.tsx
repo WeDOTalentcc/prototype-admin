@@ -38,10 +38,10 @@ export function JobsHeader({
               <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400">
                 {metrics.totalJobs} total
               </Badge>
-              <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+              <Badge className="bg-status-success/20 text-status-success dark:text-status-success border-status-success/30/30">
                 {metrics.activeJobs} ativas
               </Badge>
-              <Badge variant="outline" className="border-yellow-500/30 text-yellow-600 dark:text-yellow-400">
+              <Badge variant="outline" className="border-status-warning/30/30 text-status-warning dark:text-status-warning">
                 {metrics.draftJobs} rascunhos
               </Badge>
             </div>

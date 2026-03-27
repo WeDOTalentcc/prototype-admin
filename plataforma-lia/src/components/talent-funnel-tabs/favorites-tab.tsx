@@ -234,7 +234,7 @@ export function FavoritesTab({
         <div className="flex items-center gap-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2">
-              <Star className="w-5 h-5 text-orange-500" />
+              <Star className="w-5 h-5 text-wedo-orange" />
               Candidatos Favoritos
             </h2>
             <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
@@ -293,7 +293,7 @@ export function FavoritesTab({
                       <span className="text-xs text-gray-800 dark:text-gray-200 block mb-1.5">Localizações</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.map(c => ((c.location || '') as string).split(',')[0]).filter(Boolean))).slice(0, 3).map((loc, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200">
+                          <Badge key={idx} variant="secondary" className="text-xs bg-status-success/15 text-status-success dark:bg-status-success/10 dark:text-status-success">
                             <MapPin className="w-2.5 h-2.5 mr-0.5" />
                             {loc}
                           </Badge>
@@ -397,8 +397,8 @@ export function FavoritesTab({
             <div className="p-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                    <Star className="w-4 h-4 text-orange-500" />
+                  <div className="w-8 h-8 rounded-full bg-wedo-orange/15 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-wedo-orange" />
                   </div>
                   <h3 className="text-base-ui font-semibold text-gray-800 dark:text-gray-100 font-['Open_Sans']">
                     Adicionar aos Favoritos
@@ -478,8 +478,8 @@ export function FavoritesTab({
             <div className="p-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                    <StickyNote className="w-4 h-4 text-amber-600" />
+                  <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center">
+                    <StickyNote className="w-4 h-4 text-status-warning" />
                   </div>
                   <h3 className="text-base-ui font-semibold text-gray-800 dark:text-gray-100 font-['Open_Sans']">
                     Nota do Candidato

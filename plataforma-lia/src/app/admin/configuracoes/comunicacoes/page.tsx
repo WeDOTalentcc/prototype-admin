@@ -717,7 +717,7 @@ export default function AdminComunicacoesPage() {
       )}
 
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md flex items-center gap-2">
+        <div className="mb-4 bg-status-error/10 border border-status-error/30 text-status-error px-3 py-2 rounded-md flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span className="text-sm">{error}</span>
         </div>

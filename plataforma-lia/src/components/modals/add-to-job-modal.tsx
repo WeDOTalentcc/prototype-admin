@@ -367,13 +367,13 @@ export function AddToJobModal({
 
         <div className="p-4 space-y-4 flex-1 overflow-hidden flex flex-col">
           {isOverLimit && (
-            <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
+              <AlertTriangle className="w-4 h-4 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                <p className="text-xs font-medium text-status-warning dark:text-status-warning">
                   Limite de {MAX_BULK_CANDIDATES} candidatos por operação
                 </p>
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                <p className="text-xs text-status-warning dark:text-status-warning mt-0.5">
                   Você selecionou {candidateIds.length}. Apenas os primeiros {MAX_BULK_CANDIDATES} serão adicionados.
                 </p>
               </div>
@@ -490,10 +490,10 @@ export function AddToJobModal({
           </ScrollArea>
 
           {duplicateIds.length > 0 && selectedJobId && (
-            <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
+              <AlertTriangle className="w-4 h-4 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                <p className="text-xs font-medium text-status-warning dark:text-status-warning">
                   {duplicateIds.length} candidato{duplicateIds.length > 1 ? 's' : ''} já {duplicateIds.length > 1 ? 'estão' : 'está'} nesta vaga
                 </p>
                 <div className="flex items-center gap-2 mt-2">
@@ -504,7 +504,7 @@ export function AddToJobModal({
                   />
                   <Label
                     htmlFor="skip-duplicates"
-                    className="text-xs text-amber-700 dark:text-amber-300 cursor-pointer"
+                    className="text-xs text-status-warning dark:text-status-warning cursor-pointer"
                   >
                     Ignorar duplicados e adicionar apenas os novos ({effectiveCandidateIds.length - duplicateIds.length})
                   </Label>

@@ -223,7 +223,7 @@ export function UniversityLocationsInput({
                 return (
                   <div
                     key={`header-${item.label}`}
-                    className="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-gray-50 uppercase tracking-wider"
+                    className="px-3 py-1.5 text-xs font-semibold text-wedo-purple bg-gray-50 uppercase tracking-wider"
                   >
                     {item.label}
                   </div>

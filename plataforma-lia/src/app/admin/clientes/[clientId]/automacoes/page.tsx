@@ -97,11 +97,11 @@ export default function ClientAutomacoesPage({
       case 'send_email':
         return <Mail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
       case 'send_whatsapp':
-        return <MessageSquare className="w-5 h-5 text-green-600" />
+        return <MessageSquare className="w-5 h-5 text-status-success" />
       case 'send_notification':
-        return <BellRing className="w-5 h-5 text-purple-600" />
+        return <BellRing className="w-5 h-5 text-wedo-purple" />
       case 'webhook':
-        return <Webhook className="w-5 h-5 text-orange-600" />
+        return <Webhook className="w-5 h-5 text-wedo-orange" />
       default:
         return <Zap className="w-5 h-5 text-gray-600" />
     }
@@ -112,11 +112,11 @@ export default function ClientAutomacoesPage({
       case 'send_email':
         return 'bg-gray-100 dark:bg-gray-800'
       case 'send_whatsapp':
-        return 'bg-green-100 dark:bg-green-900/30'
+        return 'bg-status-success/15 dark:bg-status-success/30'
       case 'send_notification':
-        return 'bg-purple-100 dark:bg-purple-900/30'
+        return 'bg-wedo-purple/15 dark:bg-wedo-purple/30'
       case 'webhook':
-        return 'bg-orange-100 dark:bg-orange-900/30'
+        return 'bg-wedo-orange/15 dark:bg-wedo-orange/30'
       default:
         return 'bg-gray-100 dark:bg-gray-900/30'
     }
@@ -151,15 +151,15 @@ export default function ClientAutomacoesPage({
         </Button>
       </div>
 
-      <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20">
+      <Card className="border-status-warning/30 bg-status-warning/10/50 dark:border-status-warning/30 dark:bg-status-warning/20">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Bell className="w-5 h-5 text-amber-600 mt-0.5" />
+            <Bell className="w-5 h-5 text-status-warning mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                 Contexto do Cliente: {clientId}
               </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+              <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                 Estas automações são específicas para este cliente.
               </p>
             </div>
@@ -180,7 +180,7 @@ export default function ClientAutomacoesPage({
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-emerald-600">
+            <p className="text-2xl font-semibold text-status-success">
               {loading ? '-' : activeCount}
             </p>
             <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -190,7 +190,7 @@ export default function ClientAutomacoesPage({
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-purple-600">
+            <p className="text-2xl font-semibold text-wedo-purple">
               {loading ? '-' : totalExecutions}
             </p>
             <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -208,9 +208,9 @@ export default function ClientAutomacoesPage({
           </span>
         </div>
       ) : error ? (
-        <Card className="border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20">
+        <Card className="border-status-error/30 bg-status-error/10/50 dark:border-status-error/30 dark:bg-status-error/20">
           <CardContent className="p-6 text-center">
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-sm text-status-error dark:text-status-error">{error}</p>
             <Button 
               variant="outline" 
               size="sm" 

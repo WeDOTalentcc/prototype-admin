@@ -105,9 +105,9 @@ export const SOURCE_LABELS: Record<DataSource, string> = {
 };
 
 export const SOURCE_COLORS: Record<DataSource, string> = {
-  'company_settings': 'bg-blue-100 text-blue-800',
-  'lia_history': 'bg-green-100 text-green-800',
-  'imported_ats': 'bg-purple-100 text-purple-800',
-  'workforce_planning': 'bg-orange-100 text-orange-800',
+  'company_settings': 'bg-wedo-cyan/15 text-wedo-cyan-dark',
+  'lia_history': 'bg-status-success/15 text-status-success',
+  'imported_ats': 'bg-wedo-purple/15 text-wedo-purple',
+  'workforce_planning': 'bg-wedo-orange/15 text-wedo-orange',
   'curated_templates': 'bg-gray-100 text-gray-800'
 };

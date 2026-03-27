@@ -36,8 +36,8 @@ function ErrorCard({ code, message }: { code: string; message: string }) {
     TOKEN_INVALID: <Link2Off className="w-8 h-8 text-gray-400 dark:text-gray-500" />,
     TOKEN_EXPIRED: <Clock className="w-8 h-8 text-gray-400 dark:text-gray-500" />,
     SESSION_COMPLETED: <ShieldAlert className="w-8 h-8 text-gray-400 dark:text-gray-500" />,
-    RATE_LIMITED: <AlertTriangle className="w-8 h-8 text-yellow-500" />,
-    SERVER_ERROR: <ServerCrash className="w-8 h-8 text-red-400" />,
+    RATE_LIMITED: <AlertTriangle className="w-8 h-8 text-status-warning" />,
+    SERVER_ERROR: <ServerCrash className="w-8 h-8 text-status-error" />,
   }
 
   const titleMap: Record<string, string> = {

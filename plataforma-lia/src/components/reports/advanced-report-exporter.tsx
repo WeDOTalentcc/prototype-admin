@@ -229,9 +229,9 @@ export function AdvancedReportExporter({
 
   const getTemplateIcon = (type: string) => {
     switch (type) {
-      case 'executive': return <Target className="w-5 h-5 text-purple-600" />
+      case 'executive': return <Target className="w-5 h-5 text-wedo-purple" />
       case 'operational': return <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-      case 'analytical': return <PieChart className="w-5 h-5 text-green-600" />
+      case 'analytical': return <PieChart className="w-5 h-5 text-status-success" />
       default: return <FileText className="w-5 h-5 text-gray-600" />
     }
   }

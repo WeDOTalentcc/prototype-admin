@@ -100,7 +100,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold text-gray-950 dark:text-gray-50 flex items-center gap-2">
-                <Star className="w-5 h-5 text-purple-600" />
+                <Star className="w-5 h-5 text-wedo-purple" />
                 Criar Nova Persona
               </h2>
               <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">
@@ -175,7 +175,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                         key={avatar}
                         onClick={() => setPersonaData(prev => ({ ...prev, avatar }))}
                         className={`text-2xl p-2 rounded-md hover:bg-gray-50 transition-all ${
-                          personaData.avatar === avatar ? 'bg-blue-50' : 'bg-white'
+                          personaData.avatar === avatar ? 'bg-wedo-cyan/10' : 'bg-white'
                         }`}
                       >
                         {avatar}
@@ -345,15 +345,15 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                         <p className="text-xs text-gray-600">Candidatos Estimados</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-green-600">{preview.estimatedTimeToHire}d</p>
+                        <p className="text-lg font-semibold text-status-success">{preview.estimatedTimeToHire}d</p>
                         <p className="text-xs text-gray-600">Tempo Médio</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-purple-600">{preview.estimatedSuccessRate}%</p>
+                        <p className="text-lg font-semibold text-wedo-purple">{preview.estimatedSuccessRate}%</p>
                         <p className="text-xs text-gray-600">Taxa Sucesso</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-orange-600">R$ {(preview.estimatedCostPerHire/1000).toFixed(0)}k</p>
+                        <p className="text-lg font-semibold text-wedo-orange">R$ {(preview.estimatedCostPerHire/1000).toFixed(0)}k</p>
                         <p className="text-xs text-gray-600">Custo/Hire</p>
                       </div>
                     </div>
@@ -382,7 +382,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Brain className="w-5 h-5 text-purple-600" />
+                      <Brain className="w-5 h-5 text-wedo-purple" />
                       Configurações Inteligentes
                     </CardTitle>
                   </CardHeader>
@@ -437,20 +437,20 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
           <div className="w-80 border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
             <div className="sticky top-0">
               <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-3 flex items-center gap-2">
-                <Brain className="w-4 h-4 text-purple-600" />
+                <Brain className="w-4 h-4 text-wedo-purple" />
                 Sugestões da LIA
               </h3>
 
               <div className="space-y-3">
                 <div className="bg-white dark:bg-gray-900 rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-4 h-4 text-green-600" />
+                    <TrendingUp className="w-4 h-4 text-status-success" />
                     <span className="text-sm font-medium">Mercado Aquecido</span>
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                     Detectei alta demanda por {personaData.name.toLowerCase()} no mercado
                   </p>
-                  <Badge className="bg-green-100 text-green-700 text-xs">
+                  <Badge className="bg-status-success/15 text-status-success text-xs">
                     +23% vagas este mês
                   </Badge>
                 </div>
@@ -470,7 +470,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
 
                 <div className="bg-white dark:bg-gray-900 rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-4 h-4 text-orange-600" />
+                    <Target className="w-4 h-4 text-wedo-orange" />
                     <span className="text-sm font-medium">Otimização</span>
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">

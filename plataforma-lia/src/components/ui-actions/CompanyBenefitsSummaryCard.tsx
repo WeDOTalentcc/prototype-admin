@@ -21,11 +21,11 @@ import {
 import type { CompanyBenefit } from "@/types/benefits"
 
 const CATEGORY_MAP: Record<string, { name: string; icon: LucideIcon; color: string }> = {
-  health: { name: "Saúde", icon: Stethoscope, color: "text-red-500" },
-  food: { name: "Alimentação", icon: Utensils, color: "text-orange-500" },
+  health: { name: "Saúde", icon: Stethoscope, color: "text-status-error" },
+  food: { name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
   transport: { name: "Transporte", icon: Car, color: "text-gray-600 dark:text-gray-400" },
-  education: { name: "Educação", icon: GraduationCap, color: "text-purple-500" },
-  financial: { name: "Financeiro", icon: Wallet, color: "text-green-500" },
+  education: { name: "Educação", icon: GraduationCap, color: "text-wedo-purple" },
+  financial: { name: "Financeiro", icon: Wallet, color: "text-status-success" },
   quality_life: { name: "Qualidade", icon: Home, color: "text-gray-700 dark:text-gray-300" },
   family: { name: "Família", icon: Baby, color: "text-pink-500" },
   security: { name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200" },
@@ -72,13 +72,13 @@ export function CompanyBenefitsSummaryCard({
   }
 
   return (
-    <Card className="w-full max-w-md bg-purple-50 dark:bg-purple-950/20">
+    <Card className="w-full max-w-md bg-wedo-purple/10">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
-          <Gift className="w-4 h-4 text-purple-600" />
+          <Gift className="w-4 h-4 text-wedo-purple" />
           <span>Benefícios da Empresa</span>
           {highlighted_count && highlighted_count > 0 && (
-            <Badge variant="outline" className="ml-auto text-xs text-purple-700">
+            <Badge variant="outline" className="ml-auto text-xs text-wedo-purple">
               <Star className="w-3 h-3 mr-1 fill-current" />
               {highlighted_count} em destaque
             </Badge>
@@ -107,13 +107,13 @@ export function CompanyBenefitsSummaryCard({
                   </span>
                 )}
                 {benefit.is_highlighted && (
-                  <Star className="w-2.5 h-2.5 text-yellow-500 fill-current" />
+                  <Star className="w-2.5 h-2.5 text-status-warning fill-current" />
                 )}
                 {benefit.is_mandatory && (
                   <span className="text-micro px-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">obr.</span>
                 )}
                 {benefit.is_discount && (
-                  <span className="text-micro px-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">desc.</span>
+                  <span className="text-micro px-0.5 rounded bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error">desc.</span>
                 )}
               </Badge>
             )
@@ -121,7 +121,7 @@ export function CompanyBenefitsSummaryCard({
           {remainingCount > 0 && (
             <Badge
               variant="outline"
-              className="py-1 px-2 text-xs bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 cursor-pointer hover:bg-purple-100"
+              className="py-1 px-2 text-xs bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple cursor-pointer hover:bg-wedo-purple/15"
               onClick={onViewAll}
             >
               +{remainingCount} mais
@@ -134,7 +134,7 @@ export function CompanyBenefitsSummaryCard({
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+              className="text-xs text-wedo-purple hover:text-wedo-purple hover:bg-wedo-purple/10"
               onClick={() => onAction?.("view_all", data) || onViewAll?.()}
             >
               Ver todos os benefícios

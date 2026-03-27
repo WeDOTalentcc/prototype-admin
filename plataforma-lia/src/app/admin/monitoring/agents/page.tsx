@@ -44,9 +44,9 @@ interface HealthResponse {
 }
 
 const STATUS_CONFIG = {
-  healthy:  { label: "Saudável",  color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400", icon: CheckCircle2 },
-  warning:  { label: "Atenção",   color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400", icon: AlertTriangle },
-  degraded: { label: "Degradado", color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400", icon: TrendingDown },
+  healthy:  { label: "Saudável",  color: "bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success", icon: CheckCircle2 },
+  warning:  { label: "Atenção",   color: "bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning", icon: AlertTriangle },
+  degraded: { label: "Degradado", color: "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error", icon: TrendingDown },
   stale:    { label: "Inativo",   color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400", icon: Clock },
 }
 
@@ -140,9 +140,9 @@ export default function AgentHealthDashboardPage() {
       {/* Resumo */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: "Saudáveis",  value: healthyCnt,  color: "text-green-600 dark:text-green-400" },
-          { label: "Atenção",    value: warningCnt,  color: "text-yellow-600 dark:text-yellow-400" },
-          { label: "Degradados", value: degradedCnt, color: "text-red-600 dark:text-red-400" },
+          { label: "Saudáveis",  value: healthyCnt,  color: "text-status-success dark:text-status-success" },
+          { label: "Atenção",    value: warningCnt,  color: "text-status-warning dark:text-status-warning" },
+          { label: "Degradados", value: degradedCnt, color: "text-status-error dark:text-status-error" },
           { label: "Inativos",   value: staleCnt,    color: "text-gray-500 dark:text-gray-400" },
         ].map((item) => (
           <Card key={item.label} className="rounded-md border border-gray-200 dark:border-gray-700 shadow-none">
@@ -162,7 +162,7 @@ export default function AgentHealthDashboardPage() {
       )}
 
       {error && !loading && (
-        <div className="rounded-md border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 p-4 text-xs text-red-700 dark:text-red-400">
+        <div className="rounded-md border border-status-error/30 bg-status-error/10 dark:bg-status-error/20 dark:border-status-error/30 p-4 text-xs text-status-error dark:text-status-error">
           {error}
         </div>
       )}
@@ -218,12 +218,12 @@ export default function AgentHealthDashboardPage() {
                         {domain.total_executions.toLocaleString("pt-BR")}
                       </td>
                       <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                        <span className={domain.avg_confidence < 0.5 ? "text-red-600 dark:text-red-400" : ""}>
+                        <span className={domain.avg_confidence < 0.5 ? "text-status-error dark:text-status-error" : ""}>
                           {(domain.avg_confidence * 100).toFixed(1)}%
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                        <span className={domain.tool_failure_rate > 0.1 ? "text-yellow-600 dark:text-yellow-400" : ""}>
+                        <span className={domain.tool_failure_rate > 0.1 ? "text-status-warning dark:text-status-warning" : ""}>
                           {(domain.tool_failure_rate * 100).toFixed(1)}%
                         </span>
                       </td>

@@ -91,10 +91,10 @@ type ScreeningStep = 'loading' | 'questions' | 'processing' | 'completed' | 'err
 const BLOOM_COLORS: Record<number, string> = {
   1: 'bg-gray-100 text-gray-800 dark:text-gray-200',
   2: 'bg-gray-200 text-gray-800 dark:text-gray-200',
-  3: 'bg-green-100 text-green-700',
-  4: 'bg-yellow-100 text-yellow-700',
-  5: 'bg-orange-100 text-orange-700',
-  6: 'bg-purple-100 text-purple-700'
+  3: 'bg-status-success/15 text-status-success',
+  4: 'bg-status-warning/15 text-status-warning',
+  5: 'bg-wedo-orange/15 text-wedo-orange',
+  6: 'bg-wedo-purple/15 text-wedo-purple'
 }
 
 const BLOOM_NAMES: Record<number, string> = {
@@ -438,9 +438,9 @@ export function WSITextScreeningModal({
 
           {step === 'error' && (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <AlertCircle className="w-12 h-12 text-red-500" />
+              <AlertCircle className="w-12 h-12 text-status-error" />
               <div className="text-center">
-                <p className="font-medium text-red-600">Erro na triagem</p>
+                <p className="font-medium text-status-error">Erro na triagem</p>
                 <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">{error}</p>
               </div>
               <Button 
@@ -504,7 +504,7 @@ export function WSITextScreeningModal({
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <div className="relative">
                 <Loader2 className="w-12 h-12 text-gray-600 dark:text-gray-400 animate-spin" />
-                <Brain className="w-5 h-5 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+                <Brain className="w-5 h-5 text-status-warning absolute -top-1 -right-1 animate-pulse" />
               </div>
               <div className="text-center">
                 <p className="font-medium text-gray-800 dark:text-gray-200">Analisando com Claude AI...</p>
@@ -518,7 +518,7 @@ export function WSITextScreeningModal({
           {step === 'completed' && result && (
             <div className="space-y-4">
               <div className="text-center py-4">
-                <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                <CheckCircle className="w-12 h-12 text-status-success mx-auto mb-3" />
                 <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">Triagem WSI Concluída</h3>
               </div>
 
@@ -526,18 +526,18 @@ export function WSITextScreeningModal({
                 <CardContent className="p-4 space-y-4">
                   <div className="text-center">
                     <div className={`text-5xl font-bold ${
-                      result.overall_score >= 4 ? 'text-green-600' :
-                      result.overall_score >= 3 ? 'text-yellow-600' :
-                      'text-red-600'
+                      result.overall_score >= 4 ? 'text-status-success' :
+                      result.overall_score >= 3 ? 'text-status-warning' :
+                      'text-status-error'
                     }`}>
                       {result.overall_score.toFixed(1)}
                     </div>
                     <Badge className={`mt-2 ${
                       result.classification === 'excelente' || result.classification === 'alto' 
-                        ? 'bg-green-100 text-green-700 border-green-200' :
+                        ? 'bg-status-success/15 text-status-success border-status-success/30' :
                       result.classification === 'medio' 
-                        ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                      'bg-red-100 text-red-700 border-red-200'
+                        ? 'bg-status-warning/15 text-status-warning border-status-warning/30' :
+                      'bg-status-error/15 text-status-error border-status-error/30'
                     }`}>
                       {result.classification.charAt(0).toUpperCase() + result.classification.slice(1)}
                     </Badge>

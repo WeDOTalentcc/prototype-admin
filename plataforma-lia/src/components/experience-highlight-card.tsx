@@ -180,7 +180,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
     return (
       <Card className="bg-white border border-gray-100 p-4 mb-4">
         <div className="flex items-center gap-3 text-gray-500">
-          <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-500" />
+          <AlertCircle className="h-5 w-5 flex-shrink-0 text-status-warning" />
           <span className="text-sm">{error}</span>
           <Button
             variant="ghost"

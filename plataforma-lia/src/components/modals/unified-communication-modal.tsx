@@ -547,7 +547,7 @@ export function UnifiedCommunicationModal({
                     onClick={() => setChannel('whatsapp')}
                     className={`flex items-center gap-2 p-3 rounded-md border transition-all ${
                       channel === 'whatsapp'
-                        ? 'border-green-500 bg-green-50 text-green-600'
+                        ? 'border-status-success/30 bg-status-success/10 text-status-success'
                         : 'border-gray-200 hover:border-gray-300 text-gray-800'
                     }`}
                     aria-label="Enviar por WhatsApp"
@@ -768,15 +768,15 @@ export function UnifiedCommunicationModal({
                     
                     {/* WSI Screening - Link on Completion Option */}
                     {type === 'triagem' && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                      <div className="bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Clock className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                            <Clock className="w-3.5 h-3.5 text-status-warning flex-shrink-0" />
                             <div>
-                              <span className="text-xs font-medium text-amber-800">
+                              <span className="text-xs font-medium text-status-warning">
                                 Vincular após completar triagem
                               </span>
-                              <p className="text-micro text-amber-600 mt-0.5">
+                              <p className="text-micro text-status-warning mt-0.5">
                                 Candidato só entra na vaga se responder a triagem
                               </p>
                             </div>
@@ -791,14 +791,14 @@ export function UnifiedCommunicationModal({
                     
                     {/* Confirmation Message */}
                     {selectedVacancyId && (
-                      <div className={`${type === 'triagem' && linkOnCompletionOnly ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'} border rounded-md p-2.5`}>
+                      <div className={`${type === 'triagem' && linkOnCompletionOnly ? 'bg-status-warning/10 border-status-warning/30' : 'bg-status-success/10 border-status-success/30'} border rounded-md p-2.5`}>
                         <div className="flex items-center gap-2">
                           {type === 'triagem' && linkOnCompletionOnly ? (
-                            <Clock className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                            <Clock className="w-3.5 h-3.5 text-status-warning flex-shrink-0" />
                           ) : (
-                            <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                            <CheckCircle className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
                           )}
-                          <span className={`text-micro ${type === 'triagem' && linkOnCompletionOnly ? 'text-amber-700' : 'text-green-700'}`}>
+                          <span className={`text-micro ${type === 'triagem' && linkOnCompletionOnly ? 'text-status-warning' : 'text-status-success'}`}>
                             {type === 'triagem' && linkOnCompletionOnly ? (
                               isBulkMode 
                                 ? `${selectedCandidates.length} candidato(s) serão vinculados à vaga "${PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}" somente após completarem a triagem`
@@ -890,10 +890,10 @@ export function UnifiedCommunicationModal({
 
               {/* Additional Info based on type */}
               {type === 'triagem' && (
-                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-md p-3">
+                <div className="mt-4 bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
                   <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-micro text-amber-700">
+                    <Info className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
+                    <div className="text-micro text-status-warning">
                       <strong>Fluxo de Triagem:</strong>
                       <ul className="mt-1 space-y-0.5 ml-2">
                         <li>• Candidato recebe a mensagem com link</li>
@@ -923,10 +923,10 @@ export function UnifiedCommunicationModal({
               )}
 
               {type === 'feedback' && (
-                <div className="mt-4 bg-green-50 border border-green-200 rounded-md p-3">
+                <div className="mt-4 bg-status-success/10 border border-status-success/30 rounded-md p-3">
                   <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-micro text-green-700">
+                    <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" />
+                    <div className="text-micro text-status-success">
                       <strong>Dica:</strong> Um feedback bem estruturado fortalece a marca empregadora e mantém bom relacionamento com candidatos.
                     </div>
                   </div>

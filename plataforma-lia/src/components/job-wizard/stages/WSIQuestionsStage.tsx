@@ -156,9 +156,9 @@ export function WSIQuestionsStage() {
               {/* Category badge */}
               <span className={cn(
                 "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro font-medium",
-                question.category === 'technical' ? "bg-blue-50 text-blue-600" :
-                question.category === 'behavioral' ? "bg-purple-50 text-purple-600" :
-                question.category === 'situacional' ? "bg-amber-50 text-amber-600" :
+                question.category === 'technical' ? "bg-wedo-cyan/10 text-wedo-cyan-dark" :
+                question.category === 'behavioral' ? "bg-wedo-purple/10 text-wedo-purple" :
+                question.category === 'situacional' ? "bg-status-warning/10 text-status-warning" :
                 "bg-gray-50 text-gray-600"
               )}>
                 <CategoryIcon className="w-2.5 h-2.5" />
@@ -192,7 +192,7 @@ export function WSIQuestionsStage() {
           {/* Delete button */}
           <button
             onClick={() => deleteQuestion(question.id)}
-            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+            className="p-1 text-gray-400 hover:text-status-error transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -235,7 +235,7 @@ export function WSIQuestionsStage() {
           className={cn(
             "h-full transition-all duration-300",
             selectedCount >= 5 ? "bg-status-success" : 
-            selectedCount >= 3 ? "bg-gray-900 dark:bg-gray-50" : "bg-amber-400"
+            selectedCount >= 3 ? "bg-gray-900 dark:bg-gray-50" : "bg-status-warning"
           )}
           style={{ width: `${(selectedCount / 5) * 100}%` }}
         />
@@ -262,8 +262,8 @@ export function WSIQuestionsStage() {
             </button>
           </div>
           {/* Business Rule Note: These questions are ADDITIONAL to the 5-question limit */}
-          <div className="mb-2 p-2 bg-blue-50 rounded border border-blue-200">
-            <p className="text-micro text-blue-700">
+          <div className="mb-2 p-2 bg-wedo-cyan/10 rounded border border-wedo-cyan/30">
+            <p className="text-micro text-wedo-cyan-dark">
               💡 <strong>Nota:</strong> Estas perguntas são <strong>adicionais</strong> às 5 perguntas WSI. Elas não contam no limite.
             </p>
           </div>
@@ -385,8 +385,8 @@ export function WSIQuestionsStage() {
 
       {/* Instructions */}
       {wsiCandidates.length === 0 && !isGeneratingWSI && (
-        <div className="p-4 bg-amber-50 rounded-md border border-amber-200 text-center">
-          <p className="text-xs text-amber-700">
+        <div className="p-4 bg-status-warning/10 rounded-md border border-status-warning/30 text-center">
+          <p className="text-xs text-status-warning">
             Complete as etapas anteriores para que a LIA gere perguntas de triagem personalizadas para esta vaga.
           </p>
         </div>

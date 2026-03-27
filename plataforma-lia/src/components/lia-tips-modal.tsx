@@ -230,7 +230,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
             size="sm"
             variant="ghost"
             onClick={() => handleUseInLibrary(tip)}
-            className="h-6 px-2 text-xs text-green-600 hover:text-green-700"
+            className="h-6 px-2 text-xs text-status-success hover:text-status-success"
             title="Usar na biblioteca"
           >
             <BookOpen className="w-3 h-3" />
@@ -242,7 +242,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
         size="sm"
         variant="ghost"
         onClick={() => handleApplyFilter(tip)}
-        className="h-6 px-2 text-xs text-purple-600 hover:text-purple-700"
+        className="h-6 px-2 text-xs text-wedo-purple hover:text-wedo-purple"
         title="Aplicar como filtro"
       >
         <Filter className="w-3 h-3" />
@@ -377,10 +377,10 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
 
               {/* Integration info */}
               {activeCategory === "integration" && (
-                <Card className="mt-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                <Card className="mt-4 bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30">
                   <CardHeader className="pb-2 pt-3 px-3">
                     <CardTitle className="text-xs flex items-center gap-2 font-medium">
-                      <Database className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                      <Database className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
                       Canais de Comunicação
                     </CardTitle>
                   </CardHeader>
@@ -428,11 +428,11 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                       <span className="text-gray-600 dark:text-gray-400">Testar no chat</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <BookOpen className="w-3 h-3 text-green-500" />
+                      <BookOpen className="w-3 h-3 text-status-success" />
                       <span className="text-gray-600 dark:text-gray-400">Usar na biblioteca</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Filter className="w-3 h-3 text-purple-500" />
+                      <Filter className="w-3 h-3 text-wedo-purple" />
                       <span className="text-gray-600 dark:text-gray-400">Aplicar como filtro</span>
                     </div>
                   </div>

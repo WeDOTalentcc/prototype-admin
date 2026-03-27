@@ -204,7 +204,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
         <div className="flex items-center gap-2">
           {/* Validation warnings */}
           {validation.warnings.length > 0 && (
-            <div className="flex items-center gap-1 text-amber-500">
+            <div className="flex items-center gap-1 text-status-warning">
               <AlertTriangle className="w-3.5 h-3.5" />
               <span className="text-micro">{validation.warnings[0]}</span>
             </div>

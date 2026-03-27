@@ -135,9 +135,9 @@ export function IntelligenceNotifications({
     switch (priority) {
       case 'high':
       case 'urgent':
-        return 'bg-red-100 text-red-700 border-red-200'
+        return 'bg-status-error/15 text-status-error border-status-error/30'
       case 'medium':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+        return 'bg-status-warning/15 text-status-warning border-status-warning/30'
       case 'low':
         return 'bg-wedo-cyan/15 text-wedo-cyan-dark border-gray-300 dark:border-gray-600'
       default:
@@ -233,7 +233,7 @@ export function IntelligenceNotifications({
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <div className={`absolute -top-1 -right-1 w-5 h-5 text-white text-xs rounded-full flex items-center justify-center ${urgentCount > 0 ? 'bg-red-600 animate-pulse' : 'bg-red-500'}`}>
+          <div className={`absolute -top-1 -right-1 w-5 h-5 text-white text-xs rounded-full flex items-center justify-center ${urgentCount > 0 ? 'bg-status-error animate-pulse' : 'bg-status-error'}`}>
             {unreadCount > 99 ? '99+' : unreadCount}
           </div>
         )}
@@ -278,7 +278,7 @@ export function IntelligenceNotifications({
               </div>
             </div>
             {urgentCount > 0 && (
-              <div className="mt-2 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+              <div className="mt-2 text-xs text-status-error dark:text-status-error flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" />
                 {urgentCount} notificação(ões) urgente(s)
               </div>
@@ -293,8 +293,8 @@ export function IntelligenceNotifications({
               </div>
             ) : error ? (
               <div className="p-6 text-center">
-                <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                <p className="text-sm text-red-500 mb-2">{error}</p>
+                <AlertTriangle className="w-8 h-8 text-status-error mx-auto mb-2" />
+                <p className="text-sm text-status-error mb-2">{error}</p>
                 <Button
                   variant="outline"
                   size="sm"

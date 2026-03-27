@@ -59,11 +59,11 @@ import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
 import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
 
 const BENEFIT_CATEGORIES = [
-  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-red-500", bgColor: "bg-red-50 dark:bg-red-900/20" },
-  { id: "food", name: "Alimentação", icon: Utensils, color: "text-orange-500", bgColor: "bg-orange-50 dark:bg-orange-900/20" },
+  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
+  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
   { id: "transport", name: "Transporte", icon: Car, color: "text-gray-700 dark:text-gray-300", bgColor: "bg-gray-100 dark:bg-gray-800" },
-  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-purple-500", bgColor: "bg-purple-50 dark:bg-purple-900/20" },
-  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-green-500", bgColor: "bg-green-50 dark:bg-green-900/20" },
+  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
   { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-100 dark:bg-gray-800" },
   { id: "family", name: "Família", icon: Baby, color: "text-pink-500", bgColor: "bg-pink-50 dark:bg-pink-900/20" },
   { id: "security", name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200", bgColor: "bg-gray-50 dark:bg-gray-800/50" },
@@ -698,13 +698,13 @@ export function BenefitsTab() {
                                 {benefit.name}
                               </h4>
                               {benefit.is_highlighted && (
-                                <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                                <Star className="w-3.5 h-3.5 text-status-warning fill-yellow-500" />
                               )}
                               {benefit.is_mandatory && (
                                 <Badge variant="secondary" className="text-micro">Obrigatório</Badge>
                               )}
                               {benefit.is_discount && (
-                                <Badge variant="outline" className="text-micro text-red-600 border-red-200">Desconto</Badge>
+                                <Badge variant="outline" className="text-micro text-status-error border-status-error/30">Desconto</Badge>
                               )}
                             </div>
                             <p className={`${textStyles.description} truncate mb-1.5`}>
@@ -753,7 +753,7 @@ export function BenefitsTab() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                                  className="h-7 w-7 text-status-error hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20 dark:hover:text-status-error"
                                   onClick={() => benefit.id && handleDeleteBenefit(benefit.id)}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -1136,7 +1136,7 @@ export function BenefitsTab() {
                             key={template.id}
                             className={`p-2 border rounded-md cursor-pointer transition-all ${
                               alreadyAdded 
-                                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                                ? 'bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30' 
                                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 hover:'
                             }`}
                             onClick={() => !alreadyAdded && handleSelectTemplate(template)}
@@ -1148,7 +1148,7 @@ export function BenefitsTab() {
                                     {template.name}
                                   </h4>
                                   {template.is_popular && (
-                                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                                    <Star className="w-3 h-3 text-status-warning fill-yellow-500 flex-shrink-0" />
                                   )}
                                 </div>
                                 <p className={`${textStyles.caption} truncate`}>
@@ -1156,7 +1156,7 @@ export function BenefitsTab() {
                                 </p>
                               </div>
                               {alreadyAdded ? (
-                                <div className="flex items-center gap-0.5 text-green-600 text-micro flex-shrink-0">
+                                <div className="flex items-center gap-0.5 text-status-success text-micro flex-shrink-0">
                                   <Check className="w-3.5 h-3.5" />
                                 </div>
                               ) : (

@@ -167,26 +167,26 @@ const notificationChannels = [
 const getTypeConfig = (type: AlertType) => {
   switch (type) {
     case 'security':
-      return { label: 'Segurança', icon: Shield, color: 'bg-red-100 text-red-700', iconBg: 'rgba(239, 68, 68, 0.1)', iconColor: 'text-red-500' }
+      return { label: 'Segurança', icon: Shield, color: 'bg-status-error/15 text-status-error', iconBg: 'rgba(239, 68, 68, 0.1)', iconColor: 'text-status-error' }
     case 'performance':
  return { label: 'Performance', icon: Activity, color: 'bg-gray-100 dark:bg-gray-800 text-gray-600', iconBg: 'rgba(229, 231, 235, 0.3)', iconColor: 'dark:text-gray-400' }
     case 'compliance':
-      return { label: 'Compliance', icon: FileText, color: 'bg-purple-100 text-purple-700', iconBg: 'rgba(139, 92, 246, 0.1)', iconColor: 'text-purple-500' }
+      return { label: 'Compliance', icon: FileText, color: 'bg-wedo-purple/15 text-wedo-purple', iconBg: 'rgba(139, 92, 246, 0.1)', iconColor: 'text-wedo-purple' }
     case 'integration':
-      return { label: 'Integração', icon: Globe, color: 'bg-amber-100 text-amber-700', iconBg: 'rgba(251, 191, 36, 0.1)', iconColor: 'text-amber-500' }
+      return { label: 'Integração', icon: Globe, color: 'bg-status-warning/15 text-status-warning', iconBg: 'rgba(251, 191, 36, 0.1)', iconColor: 'text-status-warning' }
   }
 }
 
 const getSeverityConfig = (severity: AlertSeverity) => {
   switch (severity) {
     case 'critical':
-      return { label: 'Crítico', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
+      return { label: 'Crítico', color: 'bg-status-error/15 text-status-error', dot: 'bg-status-error' }
     case 'high':
-      return { label: 'Alto', color: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500' }
+      return { label: 'Alto', color: 'bg-wedo-orange/15 text-wedo-orange', dot: 'bg-wedo-orange' }
     case 'medium':
-      return { label: 'Médio', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }
+      return { label: 'Médio', color: 'bg-status-warning/15 text-status-warning', dot: 'bg-status-warning' }
     case 'low':
-      return { label: 'Baixo', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' }
+      return { label: 'Baixo', color: 'bg-status-success/15 text-status-success', dot: 'bg-status-success' }
   }
 }
 
@@ -195,9 +195,9 @@ const getStatusConfig = (status: AlertStatus) => {
     case 'new':
       return { label: 'Novo', color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400', icon: Bell }
     case 'acknowledged':
-      return { label: 'Reconhecido', color: 'bg-amber-100 text-amber-700', icon: Eye }
+      return { label: 'Reconhecido', color: 'bg-status-warning/15 text-status-warning', icon: Eye }
     case 'resolved':
-      return { label: 'Resolvido', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 }
+      return { label: 'Resolvido', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2 }
   }
 }
 
@@ -305,7 +305,7 @@ export default function AlertasPage() {
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                  <Zap className="w-5 h-5 text-red-500" />
+                  <Zap className="w-5 h-5 text-status-error" />
                 </div>
               </div>
             </CardContent>
@@ -323,7 +323,7 @@ export default function AlertasPage() {
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <Settings className="w-5 h-5 text-emerald-500" />
+                  <Settings className="w-5 h-5 text-status-success" />
                 </div>
               </div>
             </CardContent>
@@ -501,7 +501,7 @@ export default function AlertasPage() {
                             className="w-8 h-8 rounded-md flex items-center justify-center"
                             style={{ backgroundColor: channel.enabled ? 'rgba(16, 185, 129, 0.1)' : 'rgba(107, 114, 128, 0.1)' }}
                           >
-                            <Icon className={`w-4 h-4 ${channel.enabled ? 'text-emerald-500' : 'text-gray-400'}`} />
+                            <Icon className={`w-4 h-4 ${channel.enabled ? 'text-status-success' : 'text-gray-400'}`} />
                           </div>
                           <div>
                             <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>

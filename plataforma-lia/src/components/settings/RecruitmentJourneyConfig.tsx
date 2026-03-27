@@ -262,11 +262,11 @@ export function RecruitmentJourneyConfig({
             <span><strong>Sistema:</strong> SLA, ação e canal configuráveis — nome e exclusão bloqueados</span>
           </div>
           <div className="flex items-center gap-1">
-            <Shield className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+            <Shield className="h-3 w-3 text-wedo-cyan-dark dark:text-wedo-cyan-dark" />
             <span><strong>Padrão:</strong> Totalmente editável</span>
           </div>
           <div className="flex items-center gap-1">
-            <Settings className="h-3 w-3 text-purple-500" />
+            <Settings className="h-3 w-3 text-wedo-purple" />
             <span><strong>Custom:</strong> Totalmente editável</span>
           </div>
         </div>

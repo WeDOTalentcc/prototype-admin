@@ -177,9 +177,9 @@ export function AsyncJobProgress({
           {status === "processing" || status === "queued" ? (
             <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
           ) : status === "completed" ? (
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <CheckCircle2 className="h-4 w-4 text-status-success" />
           ) : (
-            <XCircle className="h-4 w-4 text-red-500" />
+            <XCircle className="h-4 w-4 text-status-error" />
           )}
           <span className="text-sm font-medium text-gray-800">{label}</span>
         </div>
@@ -195,9 +195,9 @@ export function AsyncJobProgress({
             variant="outline"
             className={`text-xs px-1.5 py-0 ${
               status === "completed"
-                ? "text-green-600 border-green-200"
+                ? "text-status-success border-status-success/30"
                 : status === "failed"
-                ? "text-red-500 border-red-200"
+                ? "text-status-error border-status-error/30"
                 : "text-gray-500"
             }`}
           >

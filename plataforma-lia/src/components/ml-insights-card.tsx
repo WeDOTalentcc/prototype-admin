@@ -40,8 +40,8 @@ function formatCurrency(value: number): string {
 }
 
 function confidenceColor(level: string): string {
-  if (level === "high") return "text-emerald-700 dark:text-emerald-400"
-  if (level === "medium") return "text-amber-600 dark:text-amber-400"
+  if (level === "high") return "text-status-success dark:text-status-success"
+  if (level === "medium") return "text-status-warning dark:text-status-warning"
   return "text-gray-500 dark:text-gray-400"
 }
 
@@ -100,7 +100,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
       {isOpen && (
         <div className="border-t border-gray-200 dark:border-gray-700 px-3 py-2.5 space-y-2.5">
           {error && (
-            <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
+            <div className="flex items-center gap-1.5 text-xs text-status-error dark:text-status-error">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
               <span>{error}</span>
               <button

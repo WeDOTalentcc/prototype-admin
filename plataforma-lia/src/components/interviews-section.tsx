@@ -51,11 +51,11 @@ const candidates = [
 const getStatusIcon = (status: string) => {
   switch (status) {
     case "Aprovado":
-      return <CheckCircle className="w-4 h-4 text-green-600" />
+      return <CheckCircle className="w-4 h-4 text-status-success" />
     case "Em análise":
-      return <AlertCircle className="w-4 h-4 text-orange-600" />
+      return <AlertCircle className="w-4 h-4 text-wedo-orange" />
     case "Rejeitado":
-      return <XCircle className="w-4 h-4 text-red-600" />
+      return <XCircle className="w-4 h-4 text-status-error" />
     default:
       return <Clock className="w-4 h-4 text-gray-600" />
   }
@@ -64,11 +64,11 @@ const getStatusIcon = (status: string) => {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "Aprovado":
-      return "bg-green-50 text-green-700 border-green-200"
+      return "bg-status-success/10 text-status-success border-status-success/30"
     case "Em análise":
-      return "bg-orange-50 text-orange-700 border-orange-200"
+      return "bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30"
     case "Rejeitado":
-      return "bg-red-50 text-red-700 border-red-200"
+      return "bg-status-error/10 text-status-error border-status-error/30"
     default:
       return "bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200"
   }
@@ -133,7 +133,7 @@ export function InterviewsSection() {
               {/* Score */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                  <Star className="w-4 h-4 text-status-warning fill-current" />
                   <span className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                     {candidate.score}
                   </span>
@@ -144,9 +144,9 @@ export function InterviewsSection() {
                   <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        candidate.score >= 8 ? 'bg-green-500' :
-                        candidate.score >= 7 ? 'bg-yellow-500' :
-                        candidate.score >= 6 ? 'bg-orange-500' : 'bg-red-500'
+                        candidate.score >= 8 ? 'bg-status-success' :
+                        candidate.score >= 7 ? 'bg-status-warning' :
+                        candidate.score >= 6 ? 'bg-wedo-orange' : 'bg-status-error'
                       }`}
                       style={{ width: `${(candidate.score / 10) * 100}%` }}
                     />

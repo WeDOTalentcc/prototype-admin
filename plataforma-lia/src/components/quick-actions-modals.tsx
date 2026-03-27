@@ -433,7 +433,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 onClick={() => setActiveTab('whatsapp')}
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-all ${
                   activeTab === 'whatsapp'
-                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    ? 'bg-status-success/10 text-status-success border border-status-success/30'
                     : 'hover:bg-gray-50 text-gray-800 dark:text-gray-200 border border-transparent'
                 }`}
               >
@@ -448,7 +448,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 onClick={() => setActiveTab('phone')}
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-all ${
                   activeTab === 'phone'
-                    ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                    ? 'bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30'
                     : 'hover:bg-gray-50 text-gray-800 dark:text-gray-200 border border-transparent'
                 }`}
               >
@@ -711,14 +711,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
       name: 'Videoconferência',
       icon: Video,
       description: 'Reunião online por vídeo',
-      color: 'bg-green-50 text-green-700 border-green-200'
+      color: 'bg-status-success/10 text-status-success border-status-success/30'
     },
     {
       id: 'presential',
       name: 'Presencial',
       icon: Building,
       description: 'Encontro no escritório',
-      color: 'bg-purple-50 text-purple-700 border-purple-200'
+      color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30'
     }
   ]
 
@@ -1142,8 +1142,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                         </div>
                         {liaRecommendations.attentionPoints.concerns.length > 0 && (
                           <div>
-                            <span className="text-micro font-medium text-amber-700">Pontos de Atenção:</span>
-                            <ul className="text-micro text-amber-600 ml-2">
+                            <span className="text-micro font-medium text-status-warning">Pontos de Atenção:</span>
+                            <ul className="text-micro text-status-warning ml-2">
                               {liaRecommendations.attentionPoints.concerns.slice(0, 2).map((concern: string, idx: number) => (
                                 <li key={idx}>• {concern}</li>
                               ))}
@@ -1297,12 +1297,12 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           </div>
 
           {/* Status Info */}
-          <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-            <div className="flex items-center gap-2 text-amber-800">
+          <div className="bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
+            <div className="flex items-center gap-2 text-status-warning">
               <Info className="w-4 h-4" />
               <span className="text-xs font-medium">Funcional - Aguardando Configuração Calendar</span>
             </div>
-            <p className="text-micro text-amber-700 mt-1">
+            <p className="text-micro text-status-warning mt-1">
               Entrevistas são salvas no banco de dados. Para sincronização automática com calendários, configure Microsoft Graph ou Google Calendar.
             </p>
           </div>
@@ -1485,7 +1485,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 {candidate.role} • {candidate.experience} • {candidate.location}
               </p>
               <div className="flex items-center gap-3 mt-2">
-                <Badge variant="outline" className="bg-green-50 text-green-700">
+                <Badge variant="outline" className="bg-status-success/10 text-status-success">
                   {candidate.matchPercentage}% Match
                 </Badge>
                 <Badge variant="outline">
@@ -1513,17 +1513,17 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
         {/* Content */}
         <div className="p-6">
           {/* LIA Insights Section */}
-          <div className="mb-6 border border-green-200 rounded-md p-4 bg-green-50">
+          <div className="mb-6 border border-status-success/30 rounded-md p-4 bg-status-success/10">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium text-green-900 flex items-center gap-2">
-                <Brain className="w-4 h-4 text-green-600" />
+              <h4 className="text-sm font-medium text-status-success flex items-center gap-2">
+                <Brain className="w-4 h-4 text-status-success" />
                 Insights Instantâneos da LIA
               </h4>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowLiaInsights(!showLiaInsights)}
-                className="text-xs text-green-600 hover:bg-green-100"
+                className="text-xs text-status-success hover:bg-status-success/15"
               >
                 {showLiaInsights ? 'Ocultar' : 'Mostrar'}
               </Button>
@@ -1534,40 +1534,40 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 {isLiaAnalyzing ? (
                   <div className="flex items-center justify-center py-4">
                     <div className="text-center">
-                      <RefreshCw className="w-6 h-6 animate-spin text-green-600 mx-auto mb-2" />
-                      <p className="text-xs text-green-700">LIA analisando perfil...</p>
+                      <RefreshCw className="w-6 h-6 animate-spin text-status-success mx-auto mb-2" />
+                      <p className="text-xs text-status-success">LIA analisando perfil...</p>
                     </div>
                   </div>
                 ) : liaInsights && (
                   <div className="space-y-4">
                     {/* Executive Summary */}
-                    <div className="bg-white rounded-md p-3 border border-green-200">
-                      <h5 className="text-xs font-medium text-green-900 mb-2">Resumo Executivo:</h5>
-                      <p className="text-xs text-green-800">{liaInsights.executiveSummary}</p>
+                    <div className="bg-white rounded-md p-3 border border-status-success/30">
+                      <h5 className="text-xs font-medium text-status-success mb-2">Resumo Executivo:</h5>
+                      <p className="text-xs text-status-success">{liaInsights.executiveSummary}</p>
                     </div>
 
                     {/* Status and Next Steps */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white rounded-md p-3 border border-green-200">
-                        <h5 className="text-xs font-medium text-green-900 mb-2">Status:</h5>
+                      <div className="bg-white rounded-md p-3 border border-status-success/30">
+                        <h5 className="text-xs font-medium text-status-success mb-2">Status:</h5>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
                             <span>Prioridade:</span>
                             <Badge className={`text-xs ${
-                              liaInsights.candidateStatus.priority === 'alta' ? 'bg-red-100 text-red-700' :
-                              liaInsights.candidateStatus.priority === 'média' ? 'bg-yellow-100 text-yellow-700' :
+                              liaInsights.candidateStatus.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
+                              liaInsights.candidateStatus.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
                               'bg-gray-100 text-gray-800 dark:text-gray-200'
                             }`}>
                               {liaInsights.candidateStatus.priority.toUpperCase()}
                             </Badge>
                           </div>
-                          <div className="text-xs text-green-700">{liaInsights.candidateStatus.readiness}</div>
+                          <div className="text-xs text-status-success">{liaInsights.candidateStatus.readiness}</div>
                         </div>
                       </div>
 
-                      <div className="bg-white rounded-md p-3 border border-green-200">
-                        <h5 className="text-xs font-medium text-green-900 mb-2">Estratégia:</h5>
-                        <div className="space-y-1 text-xs text-green-700">
+                      <div className="bg-white rounded-md p-3 border border-status-success/30">
+                        <h5 className="text-xs font-medium text-status-success mb-2">Estratégia:</h5>
+                        <div className="space-y-1 text-xs text-status-success">
                           <div><strong>Tom:</strong> {liaInsights.approachStrategy.tone}</div>
                           <div><strong>Urgência:</strong> {liaInsights.approachStrategy.urgency}</div>
                         </div>
@@ -1575,22 +1575,22 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     </div>
 
                     {/* Next Steps */}
-                    <div className="bg-white rounded-md p-3 border border-green-200">
-                      <h5 className="text-xs font-medium text-green-900 mb-2">Próximos Passos Recomendados:</h5>
+                    <div className="bg-white rounded-md p-3 border border-status-success/30">
+                      <h5 className="text-xs font-medium text-status-success mb-2">Próximos Passos Recomendados:</h5>
                       <div className="space-y-2">
                         {liaInsights.nextSteps.slice(0, 3).map((step: any, idx: number) => (
                           <div key={idx} className="flex items-center justify-between">
                             <div className="flex-1">
-                              <span className="text-xs text-green-800">{step.action}</span>
+                              <span className="text-xs text-status-success">{step.action}</span>
                               <div className="flex items-center gap-2 mt-1">
                                 <Badge className={`text-xs ${
-                                  step.priority === 'alta' ? 'bg-red-100 text-red-600' :
-                                  step.priority === 'média' ? 'bg-yellow-100 text-yellow-600' :
+                                  step.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
+                                  step.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
                                   'bg-gray-100 text-gray-800 dark:text-gray-200'
                                 }`}>
                                   {step.priority}
                                 </Badge>
-                                <span className="text-xs text-green-600">{step.timeframe}</span>
+                                <span className="text-xs text-status-success">{step.timeframe}</span>
                               </div>
                             </div>
                           </div>
@@ -1600,24 +1600,24 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
 
                     {/* Analysis Summary */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white rounded-md p-3 border border-green-200">
-                        <h5 className="text-xs font-medium text-green-900 mb-2 flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3 text-green-600" />
+                      <div className="bg-white rounded-md p-3 border border-status-success/30">
+                        <h5 className="text-xs font-medium text-status-success mb-2 flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3 text-status-success" />
                           Pontos Fortes:
                         </h5>
-                        <ul className="text-xs text-green-700 space-y-1">
+                        <ul className="text-xs text-status-success space-y-1">
                           {liaInsights.analysis.strengths.slice(0, 3).map((strength: string, idx: number) => (
                             <li key={idx}>• {strength}</li>
                           ))}
                         </ul>
                       </div>
 
-                      <div className="bg-white rounded-md p-3 border border-orange-200">
-                        <h5 className="text-xs font-medium text-orange-900 mb-2 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3 text-orange-600" />
+                      <div className="bg-white rounded-md p-3 border border-wedo-orange/30">
+                        <h5 className="text-xs font-medium text-wedo-orange mb-2 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 text-wedo-orange" />
                           Pontos de Atenção:
                         </h5>
-                        <ul className="text-xs text-orange-700 space-y-1">
+                        <ul className="text-xs text-wedo-orange space-y-1">
                           {liaInsights.analysis.concerns.slice(0, 3).map((concern: string, idx: number) => (
                             <li key={idx}>• {concern}</li>
                           ))}
@@ -1626,26 +1626,26 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     </div>
 
                     {/* Quick Data Insights */}
-                    <div className="bg-white rounded-md p-3 border border-green-200">
-                      <h5 className="text-xs font-medium text-green-900 mb-2">Métricas da LIA:</h5>
+                    <div className="bg-white rounded-md p-3 border border-status-success/30">
+                      <h5 className="text-xs font-medium text-status-success mb-2">Métricas da LIA:</h5>
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center">
-                          <div className="font-semibold text-green-700">{liaInsights.dataInsights.compatibilityScore}%</div>
-                          <div className="text-green-600">Match</div>
+                          <div className="font-semibold text-status-success">{liaInsights.dataInsights.compatibilityScore}%</div>
+                          <div className="text-status-success">Match</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-semibold text-green-700">{liaInsights.dataInsights.successProbability}</div>
-                          <div className="text-green-600">Sucesso</div>
+                          <div className="font-semibold text-status-success">{liaInsights.dataInsights.successProbability}</div>
+                          <div className="text-status-success">Sucesso</div>
                         </div>
                         <div className="text-center">
                           <div className={`font-semibold ${
-                            liaInsights.dataInsights.riskLevel === 'Baixo' ? 'text-green-700' :
-                            liaInsights.dataInsights.riskLevel === 'Médio' ? 'text-yellow-700' :
-                            'text-red-700'
+                            liaInsights.dataInsights.riskLevel === 'Baixo' ? 'text-status-success' :
+                            liaInsights.dataInsights.riskLevel === 'Médio' ? 'text-status-warning' :
+                            'text-status-error'
                           }`}>
                             {liaInsights.dataInsights.riskLevel}
                           </div>
-                          <div className="text-green-600">Risco</div>
+                          <div className="text-status-success">Risco</div>
                         </div>
                       </div>
                     </div>
@@ -1719,7 +1719,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     <div className="flex items-center gap-2">
                       <div className="w-16 bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-green-500 h-2 rounded-full"
+                          className="bg-status-success h-2 rounded-full"
                           style={{ width: `${candidate.technicalMatch}%` }}
                         ></div>
                       </div>
@@ -1743,9 +1743,9 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     <Badge
                       variant="outline"
                       className={
-                        candidate.riskLevel === 'Baixo' ? 'text-green-700 border-green-200' :
-                        candidate.riskLevel === 'Médio' ? 'text-yellow-700 border-yellow-200' :
-                        'text-red-700 border-red-200'
+                        candidate.riskLevel === 'Baixo' ? 'text-status-success border-status-success/30' :
+                        candidate.riskLevel === 'Médio' ? 'text-status-warning border-status-warning/30' :
+                        'text-status-error border-status-error/30'
                       }
                     >
                       {candidate.riskLevel}
@@ -1783,7 +1783,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <div className="w-2 h-2 bg-status-success rounded-full mt-2"></div>
                     <div>
                       <div className="text-sm font-medium">Candidatura enviada</div>
                       <div className="text-xs text-gray-800 dark:text-gray-200">{candidate.lastActivity}</div>

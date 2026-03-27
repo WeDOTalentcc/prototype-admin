@@ -172,7 +172,7 @@ export default function ClientMetricasPage({
   const TrendIndicator = ({ change, trend }: { change: number, trend: string }) => {
     const isPositive = trend === 'up'
     return (
-      <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+      <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-status-success' : 'text-status-error'}`}>
         {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
         <span>{Math.abs(change)}{typeof change === 'number' && change < 1 ? '%' : ''}</span>
       </div>
@@ -218,9 +218,9 @@ export default function ClientMetricasPage({
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600" />
-          <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
+        <div className="p-4 bg-status-error/10 dark:bg-status-error/20 border border-status-error/30 dark:border-status-error/30 rounded-md flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-status-error" />
+          <span className="text-sm text-status-error dark:text-status-error">{error}</span>
         </div>
       )}
 
@@ -252,13 +252,13 @@ export default function ClientMetricasPage({
                         <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>
                           R$ {saasMetrics.revenue.mrr.toLocaleString('pt-BR')}
                         </p>
-                        <div className="flex items-center gap-1 text-xs text-emerald-600">
+                        <div className="flex items-center gap-1 text-xs text-status-success">
                           <TrendingUp className="w-3 h-3" />
                           <span>+R$ {saasMetrics.revenue.mrrChange}</span>
                         </div>
                       </div>
-                      <div className="w-10 h-10 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                        <DollarSign className="w-5 h-5 text-emerald-600" />
+                      <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
+                        <DollarSign className="w-5 h-5 text-status-success" />
                       </div>
                     </div>
                   </CardContent>
@@ -299,8 +299,8 @@ export default function ClientMetricasPage({
                           {saasMetrics.revenue.ltvMonths} meses projetados
                         </p>
                       </div>
-                      <div className="w-10 h-10 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-purple-600" />
+                      <div className="w-10 h-10 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5 text-wedo-purple" />
                       </div>
                     </div>
                   </CardContent>
@@ -320,8 +320,8 @@ export default function ClientMetricasPage({
                           Payback: {saasMetrics.acquisition.paybackMonths} meses
                         </p>
                       </div>
-                      <div className="w-10 h-10 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                        <Target className="w-5 h-5 text-amber-600" />
+                      <div className="w-10 h-10 rounded-md bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
+                        <Target className="w-5 h-5 text-status-warning" />
                       </div>
                     </div>
                   </CardContent>
@@ -380,9 +380,9 @@ export default function ClientMetricasPage({
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
                       {saasMetrics.health.churnRisk === 'low' ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <CheckCircle className="w-4 h-4 text-status-success" />
                       ) : (
-                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                        <AlertTriangle className="w-4 h-4 text-status-warning" />
                       )}
                       Saúde do Cliente
                     </CardTitle>
@@ -396,9 +396,9 @@ export default function ClientMetricasPage({
                       <div className="flex justify-between text-sm">
                         <span style={{ color: 'var(--eleven-text-tertiary)' }}>Risco de Churn</span>
                         <Badge className={
-                          saasMetrics.health.churnRisk === 'low' ? 'bg-emerald-100 text-emerald-700' :
-                          saasMetrics.health.churnRisk === 'medium' ? 'bg-amber-100 text-amber-700' :
-                          'bg-red-100 text-red-700'
+                          saasMetrics.health.churnRisk === 'low' ? 'bg-status-success/15 text-status-success' :
+                          saasMetrics.health.churnRisk === 'medium' ? 'bg-status-warning/15 text-status-warning' :
+                          'bg-status-error/15 text-status-error'
                         }>
                           {saasMetrics.health.churnRisk === 'low' ? 'Baixo' : 
                            saasMetrics.health.churnRisk === 'medium' ? 'Médio' : 'Alto'}
@@ -457,9 +457,9 @@ export default function ClientMetricasPage({
                             </td>
                             <td className="py-3">
                               <Badge className={
-                                payment.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                                payment.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                payment.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                                payment.status === 'paid' ? 'bg-status-success/15 text-status-success' :
+                                payment.status === 'pending' ? 'bg-status-warning/15 text-status-warning' :
+                                payment.status === 'overdue' ? 'bg-status-error/15 text-status-error' :
                                 'bg-gray-100 text-gray-800 dark:text-gray-200'
                               }>
                                 {payment.status === 'paid' ? 'Pago' :
@@ -519,8 +519,8 @@ export default function ClientMetricasPage({
                     </p>
                     <TrendIndicator change={metrics.trends.vacancies.change} trend={metrics.trends.vacancies.trend} />
                   </div>
-                  <div className="w-10 h-10 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Briefcase className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center">
+                    <Briefcase className="w-5 h-5 text-wedo-purple" />
                   </div>
                 </div>
               </CardContent>
@@ -558,8 +558,8 @@ export default function ClientMetricasPage({
                     </p>
                     <TrendIndicator change={metrics.trends.timeToHire.change} trend={metrics.trends.timeToHire.trend} />
                   </div>
-                  <div className="w-10 h-10 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-amber-600" />
+                  <div className="w-10 h-10 rounded-md bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-status-warning" />
                   </div>
                 </div>
               </CardContent>
@@ -577,8 +577,8 @@ export default function ClientMetricasPage({
                     </p>
                     <TrendIndicator change={metrics.trends.conversion.change} trend={metrics.trends.conversion.trend} />
                   </div>
-                  <div className="w-10 h-10 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-emerald-600" />
+                  <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
+                    <Target className="w-5 h-5 text-status-success" />
                   </div>
                 </div>
               </CardContent>
@@ -648,7 +648,7 @@ export default function ClientMetricasPage({
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <p className="text-4xl font-semibold text-purple-600">
+                  <p className="text-4xl font-semibold text-wedo-purple">
                     {metrics.overview.interviewsScheduled}
                   </p>
                   <p className="text-sm mt-2" style={{ color: 'var(--eleven-text-tertiary)' }}>

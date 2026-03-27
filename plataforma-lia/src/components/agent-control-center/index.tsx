@@ -208,7 +208,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             borderColor: 'rgba(245, 158, 11, 0.3)' 
           }}>
             <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              <AlertTriangle className="w-4 h-4 text-status-warning" />
               <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                 Atenção Necessária
               </span>

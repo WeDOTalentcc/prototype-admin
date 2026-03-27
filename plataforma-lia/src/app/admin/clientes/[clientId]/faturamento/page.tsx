@@ -275,8 +275,8 @@ export default function ClientFaturamentoPage({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-red-500" />
+        <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
         <h3 className="text-lg font-medium mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
           Erro ao carregar dados
@@ -322,8 +322,8 @@ export default function ClientFaturamentoPage({
         <Card className="border-gray-100">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-status-success" />
               </div>
               <div>
                 <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>MRR</p>
@@ -352,8 +352,8 @@ export default function ClientFaturamentoPage({
         <Card className="border-gray-100">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-wedo-purple" />
               </div>
               <div>
                 <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>LTV Estimado</p>
@@ -367,8 +367,8 @@ export default function ClientFaturamentoPage({
         <Card className="border-gray-100">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 rounded-md bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-status-warning" />
               </div>
               <div>
                 <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Total Faturas</p>
@@ -424,7 +424,7 @@ export default function ClientFaturamentoPage({
                 <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--eleven-text-tertiary)' }}>
                   Total Pago
                 </p>
-                <p className="text-sm font-medium mt-1 text-emerald-600">
+                <p className="text-sm font-medium mt-1 text-status-success">
                   {formatCurrency(billingData.summary.total_paid)}
                 </p>
               </div>
@@ -446,7 +446,7 @@ export default function ClientFaturamentoPage({
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-status-error hover:text-status-error hover:bg-status-error/10"
                 onClick={handleCancelSubscription}
                 disabled={actionLoading === 'cancel' || billingData.subscription.status === 'cancelled'}
               >
@@ -480,7 +480,7 @@ export default function ClientFaturamentoPage({
                       {method.type === 'credit_card' ? (
                         <CreditCard className="w-4 h-4 text-gray-600" />
                       ) : method.type === 'pix' ? (
-                        <Wallet className="w-4 h-4 text-green-600" />
+                        <Wallet className="w-4 h-4 text-status-success" />
                       ) : (
                         <FileText className="w-4 h-4 text-gray-600" />
                       )}
@@ -546,7 +546,7 @@ export default function ClientFaturamentoPage({
                           {formatDate(invoice.date)}
                         </p>
                         {invoice.status === 'overdue' && (
-                          <span className="text-xs text-red-500">
+                          <span className="text-xs text-status-error">
                             Venceu em {formatDate(invoice.due_date)}
                           </span>
                         )}

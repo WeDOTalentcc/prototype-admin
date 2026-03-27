@@ -14,9 +14,9 @@ import type { GlobalPolicy, PolicyType, PolicyScope } from './types'
 
 const policyTypeLabels: Record<string, { label: string; color: string }> = {
   rate_limit: { label: 'Rate Limit', color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' },
-  blacklist: { label: 'Blacklist', color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' },
-  whitelist: { label: 'Whitelist', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
-  content_filter: { label: 'Filtro de Conteúdo', color: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' }
+  blacklist: { label: 'Blacklist', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
+  whitelist: { label: 'Whitelist', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
+  content_filter: { label: 'Filtro de Conteúdo', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' }
 }
 
 const formatPolicyValue = (value: Record<string, unknown>, type: string): string => {
@@ -293,7 +293,7 @@ export function PoliciesSection({
                             </h4>
                             <Badge 
                               variant="outline" 
-                              className={`text-xs ${policy.scope === 'platform' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}
+                              className={`text-xs ${policy.scope === 'platform' ? 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' : 'bg-gray-50 text-gray-600 border-gray-200'}`}
                             >
                               {policy.scope === 'platform' ? (
                                 <><Globe className="w-3 h-3 mr-1" />Global</>
@@ -316,7 +316,7 @@ export function PoliciesSection({
                           <Button 
                             size="sm" 
                             variant="ghost" 
-                            className="text-red-600 hover:text-red-700"
+                            className="text-status-error hover:text-status-error"
                             onClick={() => handleDeletePolicy(policy.id)}
                             title="Excluir"
                           >

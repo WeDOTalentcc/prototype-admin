@@ -83,17 +83,17 @@ const objectives = {
 const getResultBadge = (result: string) => {
   switch (result) {
     case 'Sucesso':
-      return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+      return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
         <CheckCircle2 className="w-3 h-3 mr-1" />
         Sucesso
       </Badge>
     case 'Parcial':
-      return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+      return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
         <AlertTriangle className="w-3 h-3 mr-1" />
         Parcial
       </Badge>
     case 'Falha':
-      return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+      return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">
         <AlertCircle className="w-3 h-3 mr-1" />
         Falha
       </Badge>
@@ -105,9 +105,9 @@ const getResultBadge = (result: string) => {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'approved':
-      return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Aprovado</Badge>
+      return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Aprovado</Badge>
     case 'review':
-      return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Em Revisão</Badge>
+      return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Em Revisão</Badge>
     case 'draft':
       return <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-100">Rascunho</Badge>
     default:
@@ -118,22 +118,22 @@ const getStatusBadge = (status: string) => {
 const getSystemStatusBadge = (status: string) => {
   switch (status) {
     case 'ok':
-      return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+      return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
         <CheckCircle2 className="w-3 h-3 mr-1" />
         OK
       </Badge>
     case 'pending':
-      return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+      return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
         <Clock className="w-3 h-3 mr-1" />
         Pendente
       </Badge>
     case 'attention':
-      return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+      return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
         <AlertTriangle className="w-3 h-3 mr-1" />
         Atenção
       </Badge>
     case 'critical':
-      return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+      return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">
         <AlertCircle className="w-3 h-3 mr-1" />
         Crítico
       </Badge>
@@ -192,13 +192,13 @@ export default function ContinuidadePage() {
         <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderLeft: '4px solid #ef4444' }}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-status-error mt-0.5" />
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="font-medium text-sm text-red-700">
+                  <p className="font-medium text-sm text-status-error">
                     Gap de Compliance - BCB 498/2025
                   </p>
-                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-micro">
+                  <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15 text-micro">
                     Em implementação
                   </Badge>
                 </div>
@@ -238,7 +238,7 @@ export default function ContinuidadePage() {
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <Database className="w-5 h-5 text-emerald-500" />
+                  <Database className="w-5 h-5 text-status-success" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
@@ -261,7 +261,7 @@ export default function ContinuidadePage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -277,7 +277,7 @@ export default function ContinuidadePage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)' }}>
-                  <Calendar className="w-5 h-5 text-amber-500" />
+                  <Calendar className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-lg font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{daysUntilTest > 0 ? `${daysUntilTest} dias` : 'Hoje'}</p>
@@ -297,7 +297,7 @@ export default function ContinuidadePage() {
                   Sistemas Críticos - RTO/RPO
                 </CardTitle>
               </div>
-              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+              <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
                 {systemsOk}/{systems.length} OK
               </Badge>
             </div>
@@ -370,7 +370,7 @@ export default function ContinuidadePage() {
                     Histórico de Testes de DR
                   </CardTitle>
                 </div>
-                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
                   {passedTests}/{totalTests} aprovados
                 </Badge>
               </div>
@@ -454,10 +454,10 @@ export default function ContinuidadePage() {
                 ))}
               </div>
               
-              <div className="mt-4 p-3 rounded-md bg-emerald-50 border border-emerald-200">
+              <div className="mt-4 p-3 rounded-md bg-status-success/10 border border-status-success/30">
                 <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-emerald-600" />
-                  <span className="text-sm font-medium text-emerald-700">
+                  <Shield className="w-4 h-4 text-status-success" />
+                  <span className="text-sm font-medium text-status-success">
                     {continuityPlans.filter(p => p.status === 'approved').length} de {continuityPlans.length} planos aprovados
                   </span>
                 </div>

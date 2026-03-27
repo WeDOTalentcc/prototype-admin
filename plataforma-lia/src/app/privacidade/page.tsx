@@ -197,23 +197,23 @@ export default function PrivacidadePage() {
         {activeTab === 'request' && (
           <>
             {submitted ? (
-              <Card className="border-emerald-200 bg-emerald-50">
+              <Card className="border-status-success/30 bg-status-success/10">
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                    <div className="w-16 h-16 rounded-full bg-status-success/15 flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-status-success" />
                     </div>
-                    <h3 className="text-xl font-semibold text-emerald-800 mb-2">
+                    <h3 className="text-xl font-semibold text-status-success mb-2">
                       Solicitação Enviada com Sucesso!
                     </h3>
-                    <p className="text-emerald-700 mb-4">
+                    <p className="text-status-success mb-4">
                       Sua solicitação foi registrada e será analisada em até 15 dias úteis.
                     </p>
                     <div className="bg-white rounded-md p-4 inline-block mb-4">
                       <p className="text-sm text-gray-600 mb-1">Código de Acompanhamento:</p>
                       <p className="text-2xl font-mono font-bold text-gray-900 dark:text-gray-50">{submittedId}</p>
                     </div>
-                    <p className="text-sm text-emerald-600 mb-6">
+                    <p className="text-sm text-status-success mb-6">
                       Guarde este código para acompanhar o status da sua solicitação.
                     </p>
                     <div className="flex gap-3 justify-center">
@@ -353,9 +353,9 @@ export default function PrivacidadePage() {
                     </div>
 
                     {error && (
-                      <div className="p-4 rounded-md bg-red-50 border border-red-200 flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-700">{error}</p>
+                      <div className="p-4 rounded-md bg-status-error/10 border border-status-error/30 flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-status-error flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-status-error">{error}</p>
                       </div>
                     )}
 
@@ -423,11 +423,11 @@ export default function PrivacidadePage() {
             </Card>
 
             {trackingError && (
-              <Card className="border-red-200 bg-red-50">
+              <Card className="border-status-error/30 bg-status-error/10">
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                    <p className="text-red-700">{trackingError}</p>
+                    <AlertCircle className="w-5 h-5 text-status-error flex-shrink-0" />
+                    <p className="text-status-error">{trackingError}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -445,10 +445,10 @@ export default function PrivacidadePage() {
                       const status = getStatusDisplay(trackingResult.status)
                       const Icon = status.icon
                       const colorClasses: Record<string, string> = {
-                        'amber': 'bg-amber-100 text-amber-700',
+                        'amber': 'bg-status-warning/15 text-status-warning',
                         'cyan': 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50',
-                        'emerald': 'bg-emerald-100 text-emerald-700',
-                        'red': 'bg-red-100 text-red-700',
+                        'emerald': 'bg-status-success/15 text-status-success',
+                        'red': 'bg-status-error/15 text-status-error',
                         'gray': 'bg-gray-100 text-gray-800 dark:text-gray-200',
                       }
                       return (
@@ -486,7 +486,7 @@ export default function PrivacidadePage() {
                       {trackingResult.completed_at && (
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Data de Conclusão</p>
-                          <p className="font-medium text-emerald-600">
+                          <p className="font-medium text-status-success">
                             {new Date(trackingResult.completed_at).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
@@ -494,9 +494,9 @@ export default function PrivacidadePage() {
                     </div>
 
                     {trackingResult.response && (
-                      <div className="mt-4 p-4 bg-emerald-50 rounded-md border border-emerald-200">
-                        <p className="text-xs text-emerald-600 mb-2 font-medium">Resposta:</p>
-                        <p className="text-sm text-emerald-800">{trackingResult.response}</p>
+                      <div className="mt-4 p-4 bg-status-success/10 rounded-md border border-status-success/30">
+                        <p className="text-xs text-status-success mb-2 font-medium">Resposta:</p>
+                        <p className="text-sm text-status-success">{trackingResult.response}</p>
                       </div>
                     )}
 

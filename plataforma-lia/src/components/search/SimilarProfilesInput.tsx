@@ -75,9 +75,9 @@ export function SimilarProfilesInput({
             {index > 0 && (
               <button
                 onClick={() => onRemoveSimilarUrl(index)}
-                className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-50 transition-colors"
+                className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-status-error/10 transition-colors"
               >
-                <X className="w-3.5 h-3.5 text-red-400" />
+                <X className="w-3.5 h-3.5 text-status-error" />
               </button>
             )}
             {index === similarUrls.length - 1 && similarUrls.length < MAX_SIMILAR_URLS && (
@@ -128,7 +128,7 @@ export function SimilarProfilesInput({
               >
                 <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                 <span className="max-w-[150px] truncate">{file.name}</span>
-                <button onClick={() => onRemoveCvFile(index)} className="hover:text-red-500">
+                <button onClick={() => onRemoveCvFile(index)} className="hover:text-status-error">
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -205,7 +205,7 @@ export function SimilarProfilesInput({
                 <span className="text-gray-700">{keyword}</span>
                 <button
                   onClick={() => onRemoveSuggestion(keyword)}
-                  className="opacity-50 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                  className="opacity-50 group-hover:opacity-100 hover:text-status-error transition-opacity"
                 >
                   <X className="w-3 h-3" />
                 </button>

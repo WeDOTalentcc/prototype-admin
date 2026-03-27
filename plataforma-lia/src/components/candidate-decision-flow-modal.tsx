@@ -254,10 +254,10 @@ Equipe de Recrutamento`
       case 'request_urgency':
         return {
           title: 'Solicitar Urgência',
-          icon: <AlertCircle className="w-5 h-5 text-amber-500" />,
+          icon: <AlertCircle className="w-5 h-5 text-status-warning" />,
           steps: [],
           confirmLabel: 'Enviar Solicitação Urgente',
-          confirmColor: 'bg-amber-500 hover:bg-amber-600',
+          confirmColor: 'bg-status-warning hover:bg-status-warning',
           description: 'A LIA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.',
         }
       case 'reschedule_interview':
@@ -379,7 +379,7 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'reject_pre_triage' && (
-            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-md p-3 mb-4">
+            <div className="bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-wedo-coral/10 flex items-center justify-center flex-shrink-0">
                   <AlertCircle className="w-3.5 h-3.5 text-wedo-coral" />
@@ -397,7 +397,7 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'reject_post_triage' && (
-            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-md p-3 mb-4">
+            <div className="bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-wedo-coral/10 flex items-center justify-center flex-shrink-0">
                   <MessageSquare className="w-3.5 h-3.5 text-wedo-coral" />
@@ -415,10 +415,10 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'request_urgency' && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-md p-3 mb-4">
+            <div className="bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                <div className="w-7 h-7 rounded-full bg-status-warning/10 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
                 </div>
                 <div className="flex-1">
                   <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">

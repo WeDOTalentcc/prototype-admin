@@ -281,9 +281,9 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
   const getStatusBadge = (status: 'active' | 'expired' | 'revoked') => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-700 border-green-200 text-micro">Ativo</Badge>
+        return <Badge className="bg-status-success/15 text-status-success border-status-success/30 text-micro">Ativo</Badge>
       case 'expired':
-        return <Badge className="bg-red-100 text-red-700 border-red-200 text-micro">Expirado</Badge>
+        return <Badge className="bg-status-error/15 text-status-error border-status-error/30 text-micro">Expirado</Badge>
       case 'revoked':
         return <Badge className="bg-gray-100 text-gray-600 border-gray-200 text-micro">Revogado</Badge>
     }
@@ -528,7 +528,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:text-red-600 hover:bg-red-50"
+                  className="h-8 w-8 p-0 hover:text-status-error hover:bg-status-error/10"
                   onClick={(e) => { e.stopPropagation(); setListToDelete(list) }}
                   title="Excluir lista"
                 >
@@ -568,7 +568,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={(e) => { e.stopPropagation(); setListToDelete(list) }}
-                      className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                      className="text-status-error focus:text-status-error focus:bg-status-error/10"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Excluir lista
@@ -660,8 +660,8 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                   <p className="text-xs flex items-center gap-1">
                     {shared.first_accessed_at ? (
                       <>
-                        <Eye className="w-3 h-3 text-green-600" />
-                        <span className="text-green-600">Acessado</span>
+                        <Eye className="w-3 h-3 text-status-success" />
+                        <span className="text-status-success">Acessado</span>
                       </>
                     ) : (
                       <>
@@ -725,7 +725,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                       {shared.status === 'active' && (
                         <DropdownMenuItem
                           onClick={() => handleRevokeShare(shared.id)}
-                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          className="text-status-error focus:text-status-error focus:bg-status-error/10"
                         >
                           <XCircle className="w-4 h-4 mr-2" />
                           Encerrar
@@ -760,7 +760,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                Nome da lista <span className="text-red-500">*</span>
+                Nome da lista <span className="text-status-error">*</span>
               </label>
               <Input
                 placeholder="Ex: Candidatos para entrevista"
@@ -847,7 +847,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             <AlertDialogDescription>
               Tem certeza que deseja excluir a lista <strong>"{listToDelete?.name}"</strong>?
               {listToDelete && listToDelete.candidate_count > 0 && (
-                <span className="block mt-2 text-amber-600">
+                <span className="block mt-2 text-status-warning">
                   Esta lista contém {listToDelete.candidate_count} {listToDelete.candidate_count === 1 ? 'candidato' : 'candidatos'}.
                   Os candidatos não serão excluídos, apenas a associação com esta lista.
                 </span>
@@ -859,7 +859,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-status-error hover:bg-status-error"
             >
               {deleting ? (
                 <>

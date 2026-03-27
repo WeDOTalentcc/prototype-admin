@@ -100,17 +100,17 @@ const SOURCE_LABELS: Record<string, { label: string; icon: typeof Building; colo
   company_history: {
     label: "Histórico da empresa",
     icon: TrendingUp,
-    color: "text-blue-600",
+    color: "text-wedo-cyan-dark",
   },
   company_defaults: {
     label: "Configuração padrão",
     icon: Building,
-    color: "text-purple-600",
+    color: "text-wedo-purple",
   },
   market_benchmark: {
     label: "Benchmark de mercado",
     icon: Brain,
-    color: "text-amber-600",
+    color: "text-status-warning",
   },
 }
 
@@ -298,9 +298,9 @@ export function FinalReviewPanel({
   }
 
   const getScoreColor = () => {
-    if (completeness_score >= 80) return "bg-green-500"
-    if (completeness_score >= 60) return "bg-amber-500"
-    return "bg-red-500"
+    if (completeness_score >= 80) return "bg-status-success"
+    if (completeness_score >= 60) return "bg-status-warning"
+    return "bg-status-error"
   }
 
   return (
@@ -312,7 +312,7 @@ export function FinalReviewPanel({
             variant="outline"
             className={cn(
               "text-sm font-semibold",
-              can_publish ? "border-green-500 text-green-600" : "border-red-500 text-red-600"
+              can_publish ? "border-status-success/30 text-status-success" : "border-status-error/30 text-status-error"
             )}
           >
             {can_publish ? "Pronto para publicar" : "Campos obrigatórios pendentes"}
@@ -336,17 +336,17 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("critical")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-error/10 dark:bg-status-error/30 hover:bg-status-error/15 dark:hover:bg-status-error/50 transition-colors">
                 <div className="flex items-center gap-2">
-                  <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  <span className="font-medium text-red-800 dark:text-red-300">
+                  <XCircle className="h-4 w-4 text-status-error dark:text-status-error" />
+                  <span className="font-medium text-status-error dark:text-status-error">
                     Campos Críticos Faltantes ({missing_critical.length})
                   </span>
                 </div>
                 {expandedSections.critical ? (
-                  <ChevronDown className="h-4 w-4 text-red-600" />
+                  <ChevronDown className="h-4 w-4 text-status-error" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-red-600" />
+                  <ChevronRight className="h-4 w-4 text-status-error" />
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2 space-y-2">
@@ -370,17 +370,17 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("important")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 hover:bg-status-warning/15 dark:hover:bg-status-warning/50 transition-colors">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  <span className="font-medium text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="h-4 w-4 text-status-warning dark:text-status-warning" />
+                  <span className="font-medium text-status-warning dark:text-status-warning">
                     Campos Importantes Faltantes ({missing_important.length})
                   </span>
                 </div>
                 {expandedSections.important ? (
-                  <ChevronDown className="h-4 w-4 text-amber-600" />
+                  <ChevronDown className="h-4 w-4 text-status-warning" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-amber-600" />
+                  <ChevronRight className="h-4 w-4 text-status-warning" />
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2 space-y-2">
@@ -404,17 +404,17 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("filled")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-green-50 dark:bg-green-950/30 hover:bg-green-100 dark:hover:bg-green-950/50 transition-colors">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-success/10 dark:bg-status-success/30 hover:bg-status-success/15 dark:hover:bg-status-success/50 transition-colors">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  <span className="font-medium text-green-800 dark:text-green-300">
+                  <CheckCircle2 className="h-4 w-4 text-status-success dark:text-status-success" />
+                  <span className="font-medium text-status-success dark:text-status-success">
                     Campos Preenchidos ({filled_fields.length})
                   </span>
                 </div>
                 {expandedSections.filled ? (
-                  <ChevronDown className="h-4 w-4 text-green-600" />
+                  <ChevronDown className="h-4 w-4 text-status-success" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-green-600" />
+                  <ChevronRight className="h-4 w-4 text-status-success" />
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
@@ -488,7 +488,7 @@ export function FinalReviewPanel({
           </Button>
           
           {!can_publish && (
-            <p className="text-xs text-center text-red-500 dark:text-red-400 mt-2">
+            <p className="text-xs text-center text-status-error dark:text-status-error mt-2">
               Preencha todos os campos críticos para publicar a vaga
             </p>
           )}

@@ -116,28 +116,28 @@ const COLOR_CLASSES = {
     selectedBorder: 'border-gray-900 dark:border-gray-300',
   },
   green: {
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    text: 'text-emerald-700',
-    icon: 'text-emerald-600',
-    selectedBg: 'bg-emerald-100',
-    selectedBorder: 'border-emerald-400',
+    bg: 'bg-status-success/10',
+    border: 'border-status-success/30',
+    text: 'text-status-success',
+    icon: 'text-status-success',
+    selectedBg: 'bg-status-success/15',
+    selectedBorder: 'border-status-success/30',
   },
   amber: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    text: 'text-amber-700',
-    icon: 'text-amber-600',
-    selectedBg: 'bg-amber-100',
-    selectedBorder: 'border-amber-400',
+    bg: 'bg-status-warning/10',
+    border: 'border-status-warning/30',
+    text: 'text-status-warning',
+    icon: 'text-status-warning',
+    selectedBg: 'bg-status-warning/15',
+    selectedBorder: 'border-status-warning/30',
   },
   red: {
-    bg: 'bg-red-50',
-    border: 'border-red-200',
-    text: 'text-red-700',
-    icon: 'text-red-600',
-    selectedBg: 'bg-red-100',
-    selectedBorder: 'border-red-400',
+    bg: 'bg-status-error/10',
+    border: 'border-status-error/30',
+    text: 'text-status-error',
+    icon: 'text-status-error',
+    selectedBg: 'bg-status-error/15',
+    selectedBorder: 'border-status-error/30',
   },
   gray: {
     bg: 'bg-gray-50',
@@ -355,12 +355,12 @@ function generateDefaultMessage(
 function getWsiClassificationColor(classification: string): { bg: string; text: string } {
   const lower = classification.toLowerCase()
   if (lower === 'excelente' || lower === 'alto') {
-    return { bg: 'bg-emerald-100', text: 'text-emerald-700' }
+    return { bg: 'bg-status-success/15', text: 'text-status-success' }
   }
   if (lower === 'medio' || lower === 'médio') {
-    return { bg: 'bg-amber-100', text: 'text-amber-700' }
+    return { bg: 'bg-status-warning/15', text: 'text-status-warning' }
   }
-  return { bg: 'bg-red-100', text: 'text-red-700' }
+  return { bg: 'bg-status-error/15', text: 'text-status-error' }
 }
 
 export function StageTransitionActionsModal({
@@ -564,11 +564,11 @@ export function StageTransitionActionsModal({
           <div className="flex items-center gap-3">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center",
-              headerColor === 'red' ? 'bg-red-100' : 'bg-gray-100'
+              headerColor === 'red' ? 'bg-status-error/15' : 'bg-gray-100'
             )}>
               <ArrowRight className={cn(
                 "w-4 h-4",
-                headerColor === 'red' ? 'text-red-600' : 'text-gray-600'
+                headerColor === 'red' ? 'text-status-error' : 'text-gray-600'
               )} />
             </div>
             <div>
@@ -614,7 +614,7 @@ export function StageTransitionActionsModal({
                   <ChevronRight className="h-4 w-4 text-gray-400" />
                   <Badge className={cn(
                     "text-white",
-                    headerColor === 'red' ? 'bg-red-500' : 'bg-gray-900'
+                    headerColor === 'red' ? 'bg-status-error' : 'bg-gray-900'
                   )}>
                     {getStageDisplayName(newStage)}
                   </Badge>
@@ -716,7 +716,7 @@ export function StageTransitionActionsModal({
                       className={cn(
                         "flex items-center gap-2 p-3 rounded-md border transition-all",
                         channel === 'whatsapp'
-                          ? 'border-green-500 bg-green-50 text-green-600'
+                          ? 'border-status-success/30 bg-status-success/10 text-status-success'
                           : 'border-gray-200 hover:border-gray-300 text-gray-800'
                       )}
                     >
@@ -773,9 +773,9 @@ export function StageTransitionActionsModal({
 
               {/* Contact Info Alert */}
               {needsMessageComposition && (
-                <div className="flex items-center gap-2 p-2 bg-amber-50 rounded-md border border-amber-100">
-                  <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-                  <p className="text-xs text-amber-700">
+                <div className="flex items-center gap-2 p-2 bg-status-warning/10 rounded-md border border-status-warning/30">
+                  <AlertCircle className="h-4 w-4 text-status-warning shrink-0" />
+                  <p className="text-xs text-status-warning">
                     {channel === 'both' && candidate.email && candidate.phone
                       ? `Email para: ${candidate.email} + WhatsApp para: ${candidate.phone}`
                       : channel === 'both'
@@ -820,9 +820,9 @@ export function StageTransitionActionsModal({
                       {channel === 'both' ? (
                         <span className="flex items-center -space-x-1">
                           <Mail className="h-4 w-4 text-gray-500" />
-                          <MessageSquare className="h-4 w-4 text-green-500" />
+                          <MessageSquare className="h-4 w-4 text-status-success" />
                         </span>
-                      ) : channel === 'email' ? <Mail className="h-4 w-4 text-gray-500" /> : <MessageSquare className="h-4 w-4 text-green-500" />}
+                      ) : channel === 'email' ? <Mail className="h-4 w-4 text-gray-500" /> : <MessageSquare className="h-4 w-4 text-status-success" />}
                       Preview da Mensagem
                     </p>
                     <Button
@@ -912,7 +912,7 @@ export function StageTransitionActionsModal({
             className={cn(
               "gap-2 h-9 px-4 text-xs font-medium",
               selectedActionData?.color === 'red'
-                ? "bg-red-500 hover:bg-red-600 text-white"
+                ? "bg-status-error hover:bg-status-error text-white"
                 : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
             )}
           >

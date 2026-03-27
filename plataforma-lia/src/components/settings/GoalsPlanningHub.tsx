@@ -978,7 +978,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                     onClick={() => deletePosition(dept.id, pos.id)}
                                     className="p-1 h-6 w-6"
                                   >
-                                    <Trash2 className="w-3 h-3 text-red-500" />
+                                    <Trash2 className="w-3 h-3 text-status-error" />
                                   </Button>
                                 )}
                               </td>

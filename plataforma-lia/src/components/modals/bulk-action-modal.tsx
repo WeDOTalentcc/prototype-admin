@@ -78,7 +78,7 @@ const ACTION_CONFIG: Record<BulkActionType, { title: string; description: string
   reject: {
     title: 'Reprovar Candidatos',
     description: 'Informe o motivo da reprovação para os candidatos selecionados.',
-    icon: <XCircle className="w-4 h-4 text-red-500" />
+    icon: <XCircle className="w-4 h-4 text-status-error" />
   },
   request_data: {
     title: 'Solicitar Dados',
@@ -268,8 +268,8 @@ export function BulkActionModal({
                       key={candidate.id}
                       className={cn(
                         "flex items-center gap-2 p-2 rounded-md",
-                        result?.success && "bg-green-50 dark:bg-green-900/10",
-                        result?.success === false && "bg-red-50 dark:bg-red-900/10",
+                        result?.success && "bg-status-success/10 dark:bg-status-success/10",
+                        result?.success === false && "bg-status-error/10 dark:bg-status-error/10",
                         !result && "bg-gray-50 dark:bg-gray-800/50"
                       )}
                     >
@@ -287,9 +287,9 @@ export function BulkActionModal({
                       </div>
                       {result && (
                         result.success ? (
-                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0" />
                         ) : (
-                          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                          <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0" />
                         )
                       )}
                     </div>
@@ -379,12 +379,12 @@ export function BulkActionModal({
               
               {isComplete && (
                 <div className="flex items-center gap-4 text-xs pt-2">
-                  <div className="flex items-center gap-1 text-green-600">
+                  <div className="flex items-center gap-1 text-status-success">
                     <CheckCircle className="w-4 h-4" />
                     <span>{progress.successful} sucesso</span>
                   </div>
                   {progress.failed > 0 && (
-                    <div className="flex items-center gap-1 text-red-600">
+                    <div className="flex items-center gap-1 text-status-error">
                       <AlertCircle className="w-4 h-4" />
                       <span>{progress.failed} erro{progress.failed !== 1 && 's'}</span>
                     </div>
@@ -407,7 +407,7 @@ export function BulkActionModal({
                 className={cn(
                   "h-9 px-4 text-xs font-medium",
                   actionType === 'reject' 
-                    ? "bg-red-600 hover:bg-red-700 text-white" 
+                    ? "bg-status-error hover:bg-status-error text-white" 
                     : "bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
                 )}
               >

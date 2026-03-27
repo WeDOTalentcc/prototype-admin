@@ -218,11 +218,11 @@ export default function ConsentimentosPage() {
   const getEventStatusBadge = (eventType: string) => {
     switch (eventType) {
       case 'granted':
-        return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Concedido</Badge>
+        return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Concedido</Badge>
       case 'revoked':
-        return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Revogado</Badge>
+        return <Badge className="bg-wedo-purple/15 text-wedo-purple hover:bg-wedo-purple/15">Revogado</Badge>
       case 'expired':
-        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Expirado</Badge>
+        return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">Expirado</Badge>
       case 'renewed':
  return <Badge className="text-gray-900 dark:text-gray-50 hover:bg-gray-100">Renovado</Badge>
       default:
@@ -319,7 +319,7 @@ export default function ConsentimentosPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckSquare className="w-5 h-5 text-emerald-500" />
+                  <CheckSquare className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -335,7 +335,7 @@ export default function ConsentimentosPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
-                  <RefreshCw className="w-5 h-5 text-amber-500" />
+                  <RefreshCw className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -351,7 +351,7 @@ export default function ConsentimentosPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                  <XCircle className="w-5 h-5 text-red-500" />
+                  <XCircle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -367,7 +367,7 @@ export default function ConsentimentosPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)' }}>
-                  <Ban className="w-5 h-5 text-purple-500" />
+                  <Ban className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -480,17 +480,17 @@ export default function ConsentimentosPage() {
                             <span style={{ color: 'var(--eleven-text-secondary)' }}>{version.title}</span>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                            <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
                               {(version.activeConsentsCount || 0).toLocaleString('pt-BR')}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                            <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
                               {version.pendingRenewalCount || 0}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+                            <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">
                               {version.expiredCount || 0}
                             </Badge>
                           </TableCell>
@@ -501,7 +501,7 @@ export default function ConsentimentosPage() {
                           </TableCell>
                           <TableCell className="text-center">
                             {version.isCurrent ? (
-                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Atual</Badge>
+                              <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Atual</Badge>
                             ) : version.isActive ? (
  <Badge className="text-gray-900 dark:text-gray-50 hover:bg-gray-100">Ativo</Badge>
                             ) : (
@@ -662,7 +662,7 @@ export default function ConsentimentosPage() {
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="text-status-error hover:text-status-error hover:bg-status-error/10"
                                   onClick={() => handleRevokeConsent(event)}
                                 >
                                   <Ban className="w-3 h-3 mr-1" />
@@ -738,36 +738,36 @@ export default function ConsentimentosPage() {
                     </div>
                   ) : stats ? (
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 rounded-md bg-emerald-50">
+                      <div className="flex items-center justify-between p-3 rounded-md bg-status-success/10">
                         <div className="flex items-center gap-3">
-                          <CheckSquare className="w-5 h-5 text-emerald-500" />
+                          <CheckSquare className="w-5 h-5 text-status-success" />
                           <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
                             Consentimentos Hoje
                           </span>
                         </div>
-                        <span className="text-lg font-semibold text-emerald-600">
+                        <span className="text-lg font-semibold text-status-success">
                           {stats.recentActivity.grantsToday}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between p-3 rounded-md bg-purple-50">
+                      <div className="flex items-center justify-between p-3 rounded-md bg-wedo-purple/10">
                         <div className="flex items-center gap-3">
-                          <Ban className="w-5 h-5 text-purple-500" />
+                          <Ban className="w-5 h-5 text-wedo-purple" />
                           <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
                             Revogações Hoje
                           </span>
                         </div>
-                        <span className="text-lg font-semibold text-purple-600">
+                        <span className="text-lg font-semibold text-wedo-purple">
                           {stats.recentActivity.revokesToday}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between p-3 rounded-md bg-amber-50">
+                      <div className="flex items-center justify-between p-3 rounded-md bg-status-warning/10">
                         <div className="flex items-center gap-3">
-                          <Clock className="w-5 h-5 text-amber-500" />
+                          <Clock className="w-5 h-5 text-status-warning" />
                           <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
                             Expirando Esta Semana
                           </span>
                         </div>
-                        <span className="text-lg font-semibold text-amber-600">
+                        <span className="text-lg font-semibold text-status-warning">
                           {stats.recentActivity.expiringThisWeek}
                         </span>
                       </div>
@@ -801,7 +801,7 @@ export default function ConsentimentosPage() {
                       </p>
                     </div>
                     <div className="text-center p-4 rounded-md bg-gray-50">
-                      <p className="text-3xl font-bold text-emerald-600">
+                      <p className="text-3xl font-bold text-status-success">
                         {stats?.activeVersions || 0}
                       </p>
                       <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -844,8 +844,8 @@ export default function ConsentimentosPage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               {selectedVersion && (
-                <div className="p-3 rounded-md bg-amber-50 border border-amber-200">
-                  <p className="text-xs text-amber-700">
+                <div className="p-3 rounded-md bg-status-warning/10 border border-status-warning/30">
+                  <p className="text-xs text-status-warning">
                     <strong>Atenção:</strong> Ao criar uma nova versão, todos os titulares com consentimento ativo 
                     serão notificados para aceitar o novo termo.
                   </p>
@@ -964,10 +964,10 @@ export default function ConsentimentosPage() {
                           <div className="flex items-center gap-2">
                             <Badge className={
                               consent.status === 'active' 
-                                ? 'bg-emerald-100 text-emerald-700' 
+                                ? 'bg-status-success/15 text-status-success' 
                                 : consent.status === 'revoked'
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-red-100 text-red-700'
+                                ? 'bg-wedo-purple/15 text-wedo-purple'
+                                : 'bg-status-error/15 text-status-error'
                             }>
                               {consent.status === 'active' ? 'Ativo' : consent.status === 'revoked' ? 'Revogado' : 'Expirado'}
                             </Badge>

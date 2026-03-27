@@ -108,7 +108,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+        return 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30'
       case 'normal':
         return 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'
       case 'low':
@@ -182,21 +182,21 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
   }
 
   const getScoreBadge = (score: number) => {
-    if (score >= 80) return { label: 'Forte', className: 'bg-emerald-100 text-emerald-700 border-emerald-200' }
+    if (score >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
     if (score >= 60) return { label: 'Bom', className: 'bg-gray-100 text-gray-700 border-gray-300' }
-    if (score >= 40) return { label: 'Moderado', className: 'bg-amber-100 text-amber-700 border-amber-200' }
-    return { label: 'Fraco', className: 'bg-red-100 text-red-700 border-red-200' }
+    if (score >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
+    return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
   }
 
   const getRubricIcon = (evaluation: string) => {
     switch (evaluation?.toLowerCase()) {
       case 'exceeds':
       case 'meets':
-        return <Check className="w-3 h-3 text-emerald-600" />
+        return <Check className="w-3 h-3 text-status-success" />
       case 'partial':
-        return <AlertTriangle className="w-3 h-3 text-amber-600" />
+        return <AlertTriangle className="w-3 h-3 text-status-warning" />
       case 'missing':
-        return <X className="w-3 h-3 text-red-600" />
+        return <X className="w-3 h-3 text-status-error" />
       default:
         return <AlertCircle className="w-3 h-3 text-gray-400" />
     }
@@ -205,13 +205,13 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
   const getRubricColor = (evaluation: string) => {
     switch (evaluation?.toLowerCase()) {
       case 'exceeds':
-        return 'text-emerald-700'
+        return 'text-status-success'
       case 'meets':
         return 'text-wedo-cyan-dark'
       case 'partial':
-        return 'text-amber-700'
+        return 'text-status-warning'
       case 'missing':
-        return 'text-red-700'
+        return 'text-status-error'
       default:
         return 'text-gray-600'
     }
@@ -427,14 +427,14 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                   {/* Red Flags */}
                   {Array.isArray(activity.extra_data.red_flags) && activity.extra_data.red_flags.length > 0 && (
                     <div className="flex items-center gap-1 flex-wrap">
-                      <span className={`${textStyles.label} text-amber-700`}>Atenção:</span>
+                      <span className={`${textStyles.label} text-status-warning`}>Atenção:</span>
                       {activity.extra_data.red_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 text-micro">
+                        <Badge key={idx} variant="secondary" className="bg-status-warning/10 text-status-warning border-status-warning/30 text-micro">
                           {flag}
                         </Badge>
                       ))}
                       {activity.extra_data.red_flags.length > 2 && (
-                        <span className={`${textStyles.label} text-amber-600`}>
+                        <span className={`${textStyles.label} text-status-warning`}>
                           +{activity.extra_data.red_flags.length - 2}
                         </span>
                       )}
@@ -444,14 +444,14 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                   {/* Green Flags */}
                   {Array.isArray(activity.extra_data.green_flags) && activity.extra_data.green_flags.length > 0 && (
                     <div className="flex items-center gap-1 flex-wrap">
-                      <span className={`${textStyles.label} text-emerald-700`}>Pontos fortes:</span>
+                      <span className={`${textStyles.label} text-status-success`}>Pontos fortes:</span>
                       {activity.extra_data.green_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-micro">
+                        <Badge key={idx} variant="secondary" className="bg-status-success/10 text-status-success border-status-success/30 text-micro">
                           {flag}
                         </Badge>
                       ))}
                       {activity.extra_data.green_flags.length > 2 && (
-                        <span className={`${textStyles.label} text-emerald-600`}>
+                        <span className={`${textStyles.label} text-status-success`}>
                           +{activity.extra_data.green_flags.length - 2}
                         </span>
                       )}

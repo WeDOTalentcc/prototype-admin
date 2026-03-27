@@ -136,13 +136,13 @@ const recentEvents = [
 const getSeverityConfig = (severity: string) => {
   switch (severity) {
     case 'critical':
-      return { label: 'Crítico', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
+      return { label: 'Crítico', color: 'bg-status-error/15 text-status-error', dot: 'bg-status-error' }
     case 'high':
-      return { label: 'Alto', color: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500' }
+      return { label: 'Alto', color: 'bg-wedo-orange/15 text-wedo-orange', dot: 'bg-wedo-orange' }
     case 'medium':
-      return { label: 'Médio', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }
+      return { label: 'Médio', color: 'bg-status-warning/15 text-status-warning', dot: 'bg-status-warning' }
     case 'low':
-      return { label: 'Baixo', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' }
+      return { label: 'Baixo', color: 'bg-status-success/15 text-status-success', dot: 'bg-status-success' }
     default:
       return { label: severity, color: 'bg-gray-100 text-gray-800 dark:text-gray-200', dot: 'bg-gray-500' }
   }
@@ -151,13 +151,13 @@ const getSeverityConfig = (severity: string) => {
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'investigating':
-      return { label: 'Investigando', color: 'bg-amber-100 text-amber-700', icon: Eye }
+      return { label: 'Investigando', color: 'bg-status-warning/15 text-status-warning', icon: Eye }
     case 'acknowledged':
       return { label: 'Reconhecido', color: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50', icon: CheckCircle2 }
     case 'resolved':
-      return { label: 'Resolvido', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 }
+      return { label: 'Resolvido', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2 }
     case 'open':
-      return { label: 'Aberto', color: 'bg-red-100 text-red-700', icon: AlertCircle }
+      return { label: 'Aberto', color: 'bg-status-error/15 text-status-error', icon: AlertCircle }
     default:
       return { label: status, color: 'bg-gray-100 text-gray-800 dark:text-gray-200', icon: Clock }
   }
@@ -205,8 +205,8 @@ export default function DashboardSegurancaPage() {
                     {securityMetrics.totalEvents.toLocaleString('pt-BR')}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <TrendingUp className="w-3 h-3 text-emerald-500" />
-                    <span className="text-xs text-emerald-600">+12% vs semana anterior</span>
+                    <TrendingUp className="w-3 h-3 text-status-success" />
+                    <span className="text-xs text-status-success">+12% vs semana anterior</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
@@ -227,12 +227,12 @@ export default function DashboardSegurancaPage() {
                     {securityMetrics.criticalAlerts}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <TrendingDown className="w-3 h-3 text-emerald-500" />
-                    <span className="text-xs text-emerald-600">-2 vs ontem</span>
+                    <TrendingDown className="w-3 h-3 text-status-success" />
+                    <span className="text-xs text-status-success">-2 vs ontem</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                  <ShieldAlert className="w-5 h-5 text-red-500" />
+                  <ShieldAlert className="w-5 h-5 text-status-error" />
                 </div>
               </div>
             </CardContent>
@@ -249,13 +249,13 @@ export default function DashboardSegurancaPage() {
                     {securityMetrics.avgResponseTime}ms
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-micro bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <Badge className="text-micro bg-status-success/15 text-status-success hover:bg-status-success/15">
                       Dentro do SLA
                     </Badge>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <Clock className="w-5 h-5 text-emerald-500" />
+                  <Clock className="w-5 h-5 text-status-success" />
                 </div>
               </div>
             </CardContent>
@@ -272,7 +272,7 @@ export default function DashboardSegurancaPage() {
                     {securityMetrics.securityScore}/100
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-micro bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <Badge className="text-micro bg-status-success/15 text-status-success hover:bg-status-success/15">
                       Excelente
                     </Badge>
                   </div>
@@ -321,21 +321,21 @@ export default function DashboardSegurancaPage() {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex items-center gap-3 p-3 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>SSO</p>
                   <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Ativo</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>SCIM</p>
                   <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Ativo</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-md border" style={{ borderColor: 'var(--eleven-border-subtle)' }}>
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>MFA</p>
                   <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Habilitado</p>
@@ -479,7 +479,7 @@ export default function DashboardSegurancaPage() {
                       <span className="text-sm font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
                         {event.count}
                       </span>
-                      <div className={`flex items-center gap-1 ${event.trend > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                      <div className={`flex items-center gap-1 ${event.trend > 0 ? 'text-status-error' : 'text-status-success'}`}>
                         {event.trend > 0 ? (
                           <TrendingUp className="w-3 h-3" />
                         ) : (

@@ -167,9 +167,9 @@ const getDefaultSections = (): SettingsSection[] => [
 const settingsSections: SettingsSection[] = getDefaultSections()
 
 const getCompletionBadgeColor = (percentage: number): string => {
-  if (percentage >= 80) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-  if (percentage >= 50) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-  return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+  if (percentage >= 80) return 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success'
+  if (percentage >= 50) return 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
+  return 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error'
 }
 
 export default function SettingsPageEnhanced() {
@@ -559,9 +559,9 @@ export default function SettingsPageEnhanced() {
                             >
                               <div className="flex items-center gap-1.5">
                                 {isComplete ? (
-                                  <Check className="w-3 h-3 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                  <Check className="w-3 h-3 text-status-success dark:text-status-success flex-shrink-0" />
                                 ) : (
-                                  <Circle className="w-2.5 h-2.5 fill-amber-500 text-amber-500 flex-shrink-0" />
+                                  <Circle className="w-2.5 h-2.5 fill-amber-500 text-status-warning flex-shrink-0" />
                                 )}
                                 <span className={activeSubsection === subsection.id ? textStyles.sidebarItemActive : textStyles.sidebarItem}>
                                   {subsection.title}

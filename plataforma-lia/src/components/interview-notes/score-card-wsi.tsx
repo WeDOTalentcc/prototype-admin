@@ -114,11 +114,11 @@ function calculateWSILocally(blocks: QuestionBlock[]): WSIScore {
 function getDecisionBadgeStyles(decision: WSIScore["decision"]): string {
   switch (decision) {
     case "approved":
-      return "bg-green-100 text-green-800 border-green-200"
+      return "bg-status-success/15 text-status-success border-status-success/30"
     case "human_review":
-      return "bg-amber-100 text-amber-800 border-amber-200"
+      return "bg-status-warning/15 text-status-warning border-status-warning/30"
     case "rejected":
-      return "bg-red-100 text-red-800 border-red-200"
+      return "bg-status-error/15 text-status-error border-status-error/30"
     default:
       return "bg-gray-100 text-gray-800 border-gray-200"
   }
@@ -182,9 +182,9 @@ function BlockSection({
                 question.skipped
                   ? "text-gray-400"
                   : question.starRating && question.starRating >= 4
-                    ? "text-green-600"
+                    ? "text-status-success"
                     : question.starRating && question.starRating >= 3
-                      ? "text-amber-600"
+                      ? "text-status-warning"
                       : "text-gray-600"
               )}
             >
@@ -374,7 +374,7 @@ export function ScoreCardWSI({
           <Button
             onClick={onApprove}
             disabled={isLoading}
-            className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+            className="gap-2 bg-status-success hover:bg-status-success/10 text-white"
           >
             <CheckCircle className="h-4 w-4" />
             Aprovar
@@ -398,7 +398,7 @@ export function ScoreCardWSI({
             onClick={onEscalate}
             disabled={isLoading}
             variant="outline"
-            className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+            className="gap-2 border-status-warning/30 text-status-warning hover:bg-status-warning/10"
           >
             <AlertTriangle className="h-4 w-4" />
             Escalar p/ Gestor

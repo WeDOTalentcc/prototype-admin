@@ -3531,7 +3531,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 e.stopPropagation()
                 openRevealModal(candidate, 'phone')
               }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-status-success/10 text-status-success hover:bg-status-success/15 transition-colors"
               title="Clique para revelar telefone (14 créditos)"
             >
               <Phone className="w-3 h-3" />
@@ -3558,7 +3558,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 e.stopPropagation()
                 openRevealModal(candidate, 'phone')
               }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-status-success/10 text-status-success hover:bg-status-success/15 transition-colors"
               title="Clique para revelar celular (14 créditos)"
             >
               <Phone className="w-3 h-3" />
@@ -3595,7 +3595,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         ) : <span className="text-xs text-gray-800">N/A</span>
       case 'portfolio_url':
         return candidate.portfolio_url ? (
-          <a href={candidate.portfolio_url} target="_blank" rel="noopener" className="text-purple-600 hover:underline text-xs flex items-center gap-1">
+          <a href={candidate.portfolio_url} target="_blank" rel="noopener" className="text-wedo-purple hover:underline text-xs flex items-center gap-1">
             <Globe className="w-3 h-3" /> Portfólio
           </a>
         ) : <span className="text-xs text-gray-800">N/A</span>
@@ -3704,7 +3704,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       // Preferências
       case 'is_remote':
         return (
-          <Badge variant="outline" className={`text-xs ${candidate.is_remote ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
+          <Badge variant="outline" className={`text-xs ${candidate.is_remote ? 'bg-status-success/10 text-status-success border-status-success/30' : ''}`}>
             {formatBoolean(candidate.is_remote)}
           </Badge>
         )
@@ -3778,11 +3778,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       case 'is_open_to_work':
         const isOpenToWork = candidate.is_opentowork || candidate.is_open_to_work
         return isOpenToWork ? (
-          <Badge className="text-xs bg-green-100 text-green-800">Open to Work</Badge>
+          <Badge className="text-xs bg-status-success/15 text-status-success">Open to Work</Badge>
         ) : <span className="text-xs text-gray-500">—</span>
       case 'is_decision_maker':
         return candidate.is_decision_maker ? (
-          <Badge className="text-xs bg-purple-100 text-purple-800">Decision Maker</Badge>
+          <Badge className="text-xs bg-wedo-purple/15 text-wedo-purple">Decision Maker</Badge>
         ) : <span className="text-xs text-gray-500">—</span>
       case 'is_top_universities':
         return candidate.is_top_universities ? (
@@ -3790,7 +3790,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         ) : <span className="text-xs text-gray-500">—</span>
       case 'is_hiring':
         return candidate.is_hiring ? (
-          <Badge className="text-xs bg-orange-100 text-orange-800">Contratando</Badge>
+          <Badge className="text-xs bg-wedo-orange/15 text-wedo-orange">Contratando</Badge>
         ) : <span className="text-xs text-gray-500">—</span>
       case 'headline':
         return <span className="text-xs text-gray-800 truncate">{candidate.headline || ''}</span>
@@ -3864,9 +3864,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             {queryInsights.slice(0, 2).map((insight, idx) => (
               <div key={idx} className="flex items-center gap-1">
                 <Badge className={`text-micro px-1 py-0 ${
-                  insight.match_level === 'Exceeds' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                  insight.match_level === 'Exceeds' ? 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success' :
                   insight.match_level === 'Meets' ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' :
-                  insight.match_level === 'Partial' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                  insight.match_level === 'Partial' ? 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning' :
                   'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
                 }`}>
                   {insight.match_level}
@@ -3937,21 +3937,21 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       case 'status':
         const statusColors: Record<string, string> = {
           'novo': 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-          'triagem': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
-          'entrevista': 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300',
-          'aprovado': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
-          'reprovado': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+          'triagem': 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning',
+          'entrevista': 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple',
+          'aprovado': 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success',
+          'reprovado': 'bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error'
         }
         return <Badge className={`text-xs ${statusColors[candidate.status || ''] || 'bg-gray-100 text-gray-800'}`}>{candidate.status || ''}</Badge>
       case 'is_active':
         return (
-          <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success' : 'bg-status-error/10 text-status-error'}`}>
             {formatBoolean(candidate.is_active)}
           </Badge>
         )
       case 'is_blacklisted':
         return candidate.is_blacklisted ? (
-          <Badge className="text-xs bg-red-100 text-red-800">Sim</Badge>
+          <Badge className="text-xs bg-status-error/15 text-status-error">Sim</Badge>
         ) : <span className="text-xs text-gray-800">Não</span>
       case 'blacklist_reason':
         return <span className="text-xs text-gray-800 truncate">{candidate.blacklist_reason || ''}</span>
@@ -3962,7 +3962,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       case 'best_time_to_contact':
         return <span className="text-xs text-gray-800">{candidate.best_time_to_contact || ''}</span>
       case 'communication_consent':
-        return <Badge variant="outline" className={`text-xs ${candidate.communication_consent ? 'bg-green-50 text-green-700' : ''}`}>{formatBoolean(candidate.communication_consent)}</Badge>
+        return <Badge variant="outline" className={`text-xs ${candidate.communication_consent ? 'bg-status-success/10 text-status-success' : ''}`}>{formatBoolean(candidate.communication_consent)}</Badge>
 
       // Cadastro
       case 'completed_register':
@@ -4004,10 +4004,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
 
   // Funções utilitárias
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800"
+    if (score >= 90) return "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30"
     if (score >= 80) return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700"
-    if (score >= 70) return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800"
-    return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800"
+    if (score >= 70) return "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning border-status-warning/30 dark:border-status-warning/30"
+    return "bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30"
   }
 
   const saveCurrentSearch = () => {
@@ -4584,7 +4584,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">Backend</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Node.js', 'Python', 'PostgreSQL', 'MongoDB'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-green-100 text-green-700 border-0">
+                        <Badge key={index} className="text-xs bg-status-success/15 text-status-success border-0">
                           {skill}
                         </Badge>
                       ))}
@@ -4594,7 +4594,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">Soft Skills</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Liderança', 'Comunicação', 'Trabalho em equipe', 'Resolução de problemas'].map((skill, index) => (
-                        <Badge key={index} className="text-xs bg-purple-100 text-purple-700 border-0">
+                        <Badge key={index} className="text-xs bg-wedo-purple/15 text-wedo-purple border-0">
                           {skill}
                         </Badge>
                       ))}
@@ -4641,7 +4641,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-800 rounded">
                     📧 Email enviado há 2 dias
                   </div>
-                  <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                  <div className="text-xs text-gray-800 dark:text-gray-400 p-2 bg-status-success/10 dark:bg-status-success/20 rounded">
                     📞 Ligação agendada para amanhã às 14h
                   </div>
                 </div>
@@ -4690,16 +4690,16 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             </div>
             <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
               <div className="font-semibold text-gray-950 dark:text-gray-50 flex items-center justify-center gap-1">
-                <Star className="w-3 h-3 text-yellow-500" />
+                <Star className="w-3 h-3 text-status-warning" />
                 4.8
               </div>
               <div className="text-gray-800">Avaliação</div>
             </div>
             <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
               <Badge className={`text-xs ${
-                candidate.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                candidate.status === 'active' ? 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success' :
                 candidate.status === 'prospect' ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' :
-                candidate.status === 'interview' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300' :
+                candidate.status === 'interview' ? 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning' :
                 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
               }`}>
                 {candidate.status === 'active' ? 'Ativo' :
@@ -7173,7 +7173,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                       </p>
                                       <div className="flex items-center gap-3 text-xs mb-2">
                                         {searchResults.localCount > 0 && (
-                                          <div className="flex items-center gap-1 text-emerald-600">
+                                          <div className="flex items-center gap-1 text-status-success">
                                             <Home className="w-3 h-3" />
                                             <span className="font-medium">{searchResults.localCount} base local</span>
                                           </div>
@@ -7224,7 +7224,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                           <div className="flex items-center gap-2">
                                             <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                             <div>
-                                              <p className="text-xs font-medium text-blue-900 dark:text-blue-300">
+                                              <p className="text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                                                 Expandir para Busca Global?
                                               </p>
                                               <p className="text-xs text-gray-600 dark:text-gray-400">
@@ -7335,7 +7335,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                       {/* Progress steps */}
                                       <div className="space-y-2">
                                         <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
-                                          <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                                          <div className="w-4 h-4 rounded-full bg-status-success flex items-center justify-center">
                                             <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                             </svg>
@@ -7879,7 +7879,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                           </Button>
                           
                           {jobDescriptionText.length > 0 && jobDescriptionText.length < 50 && (
-                            <p className="text-xs text-amber-600">
+                            <p className="text-xs text-status-warning">
                               A descrição precisa ter pelo menos 50 caracteres para análise adequada.
                             </p>
                           )}
@@ -8157,8 +8157,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                             <div className="p-3 rounded-md border" style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <Check className="w-4 h-4 text-emerald-500" />
-                                  <span className="text-xs font-medium text-emerald-700">
+                                  <Check className="w-4 h-4 text-status-success" />
+                                  <span className="text-xs font-medium text-status-success">
                                     Filtros ativos
                                   </span>
                                 </div>
@@ -8173,7 +8173,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                     education: {},
                                     languages: {}
                                   })}
-                                  className="text-xs text-gray-800 hover:text-red-500 transition-colors"
+                                  className="text-xs text-gray-800 hover:text-status-error transition-colors"
                                  
                                 >
                                   Limpar todos
@@ -8312,7 +8312,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   {isLoading && (
                     <div className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-gray-900">
                       <div className="text-center">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-wedo-cyan/30 mx-auto mb-4"></div>
                         <p className="text-gray-800 text-sm">Carregando candidatos...</p>
                       </div>
                     </div>
@@ -9405,7 +9405,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-green-500" />
+                        <Phone className="w-4 h-4 text-status-success" />
                         <span className="text-sm text-gray-800">Apenas com Telefone</span>
                         <span className="text-xs text-gray-500">(+1 cr)</span>
                       </div>
@@ -9415,7 +9415,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                       />
                     </div>
                     {(pearchSearchOptions.requireEmails || pearchSearchOptions.requirePhoneNumbers) && (
-                      <p className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded">
+                      <p className="text-xs text-status-success dark:text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded">
                         Filtrando candidatos com contato disponível - você não gastará créditos com perfis sem dados de contato.
                       </p>
                     )}
@@ -9448,7 +9448,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 </div>
               )}
 
-              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-md">
+              <div className="flex items-center gap-2 text-xs text-status-warning dark:text-status-warning bg-status-warning/10 dark:bg-status-warning/20 p-2 rounded-md">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>O custo final pode variar dependendo dos resultados encontrados.</span>
               </div>
@@ -9505,7 +9505,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-md">
+              <div className="flex items-center gap-2 text-xs text-status-warning dark:text-status-warning bg-status-warning/10 dark:bg-status-warning/20 p-2 rounded-md">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>Você será cobrado apenas pelos candidatos que visualizar/revelar contatos.</span>
               </div>
@@ -9575,7 +9575,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-micro text-amber-600 bg-amber-50 p-2 rounded-md">
+            <div className="flex items-center gap-1.5 text-micro text-status-warning bg-status-warning/10 p-2 rounded-md">
               <AlertCircle className="w-3 h-3 flex-shrink-0" />
               <span>Cada candidato da base global consumirá 1 crédito.</span>
             </div>
@@ -9647,7 +9647,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 p-2 rounded-md">
+              <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 p-2 rounded-md">
                 <CheckCircle className="w-4 h-4 flex-shrink-0" />
                 <span>Você não gastará créditos com perfis sem dados de contato disponíveis.</span>
               </div>
@@ -10258,7 +10258,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-base">
-              <AlertCircle className="w-5 h-5 text-red-500" />
+              <AlertCircle className="w-5 h-5 text-status-error" />
               Excluir Arquétipo
             </AlertDialogTitle>
             <AlertDialogDescription className="text-base-ui text-gray-500">
@@ -10302,7 +10302,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   setArchetypeToDelete(null)
                 }
               }}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-status-error hover:bg-status-error"
              
               disabled={isDeletingArchetype}
             >

@@ -90,14 +90,14 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'excel' as const,
       label: 'Excel',
       description: 'Planilha com dados e gráficos',
-      color: 'bg-green-100 text-green-800 border-green-200',
+      color: 'bg-status-success/15 text-status-success border-status-success/30',
       recommended: true
     },
     {
       format: 'pdf' as const,
       label: 'PDF',
       description: 'Relatório executivo completo',
-      color: 'bg-red-100 text-red-800 border-red-200',
+      color: 'bg-status-error/15 text-status-error border-status-error/30',
       recommended: false
     },
     {
@@ -111,7 +111,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'png' as const,
       label: 'PNG',
       description: 'Imagem dos gráficos',
-      color: 'bg-purple-100 text-purple-800 border-purple-200',
+      color: 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30',
       recommended: false
     },
     {
@@ -153,7 +153,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                   }`}
                 >
                   {format.recommended && (
-                    <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs">
+                    <Badge className="absolute -top-2 -right-2 bg-wedo-orange text-white text-xs">
                       Recomendado
                     </Badge>
                   )}
@@ -290,9 +290,9 @@ export function ExportTools({ data, className }: ExportToolsProps) {
           {/* Status da última exportação */}
           {lastExport && (
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-green-800 dark:text-green-300">
+              <div className="flex items-center gap-2 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                <CheckCircle className="w-4 h-4 text-status-success" />
+                <span className="text-sm text-status-success dark:text-status-success">
                   {lastExport}
                 </span>
               </div>

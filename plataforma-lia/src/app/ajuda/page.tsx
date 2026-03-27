@@ -171,7 +171,7 @@ export default function AjudaPage() {
             <CardContent className="space-y-4">
               <div>
                 <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-status-success" />
                   Extraídos Diretamente do Currículo
                 </h4>
                 <p className="text-gray-600 mb-2">
@@ -179,7 +179,7 @@ export default function AjudaPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Nome", "Email", "Telefone", "Experiências profissionais", "Educação", "Certificações", "Idiomas"].map((field) => (
-                    <Badge key={field} variant="outline" className="text-xs border-green-300 bg-green-50 text-green-700">
+                    <Badge key={field} variant="outline" className="text-xs border-status-success/30 bg-status-success/10 text-status-success">
                       {field}
                     </Badge>
                   ))}
@@ -221,8 +221,8 @@ export default function AjudaPage() {
               <p>
                 O cálculo de anos de experiência é realizado a partir das <strong>datas reais de início e término</strong> de cada experiência profissional registrada no currículo.
               </p>
-              <div className="p-4 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                <p className="text-amber-800 dark:text-amber-200 flex items-start gap-2">
+              <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
+                <p className="text-status-warning dark:text-status-warning flex items-start gap-2">
                   <HelpCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <span>
                     <strong>Importante:</strong> Períodos sobrepostos (experiências paralelas) não são contabilizados em duplicidade. A LIA identifica automaticamente trabalhos simultâneos e calcula o tempo real de experiência profissional.
@@ -382,16 +382,16 @@ export default function AjudaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100 border-amber-200 dark:border-amber-800">
+          <Card className="border-gray-100 border-status-warning/30 dark:border-status-warning/30">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <AlertTriangle className="w-5 h-5 text-status-warning" />
                 <CardTitle className="text-lg font-semibold text-gray-800">Limitações Importantes</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                <p className="text-amber-800 dark:text-amber-200 text-sm">
+              <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
+                <p className="text-status-warning dark:text-status-warning text-sm">
                   <strong>Esta é uma inferência probabilística, não uma avaliação clínica.</strong> Os perfis gerados pela LIA são estimativas baseadas em padrões observáveis, não diagnósticos psicológicos formais.
                 </p>
               </div>
@@ -420,7 +420,7 @@ export default function AjudaPage() {
           <Card className="border-gray-100">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+                <CheckCircle className="w-5 h-5 text-status-success" />
                 <CardTitle className="text-lg font-semibold text-gray-800">Como Melhorar a Precisão com WSI</CardTitle>
               </div>
             </CardHeader>
@@ -430,15 +430,15 @@ export default function AjudaPage() {
               </p>
               
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="p-3 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                  <h4 className="font-semibold text-green-800 dark:text-green-200 text-sm mb-1">Antes do WSI</h4>
-                  <p className="text-xs text-green-700 dark:text-green-300">
+                <div className="p-3 rounded-md bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30">
+                  <h4 className="font-semibold text-status-success dark:text-status-success text-sm mb-1">Antes do WSI</h4>
+                  <p className="text-xs text-status-success dark:text-status-success">
                     Inferências baseadas apenas em dados estáticos do CV (precisão ~65%)
                   </p>
                 </div>
-                <div className="p-3 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                  <h4 className="font-semibold text-green-800 dark:text-green-200 text-sm mb-1">Após o WSI</h4>
-                  <p className="text-xs text-green-700 dark:text-green-300">
+                <div className="p-3 rounded-md bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30">
+                  <h4 className="font-semibold text-status-success dark:text-status-success text-sm mb-1">Após o WSI</h4>
+                  <p className="text-xs text-status-success dark:text-status-success">
                     Validação com comportamento real em situações simuladas (precisão ~85%)
                   </p>
                 </div>

@@ -117,13 +117,13 @@ export function SalaryStage({
   return (
     <div className="space-y-3">
       {!isFieldRequired && (
-        <div className="p-3 bg-gradient-to-r from-green-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-green-500/30">
+        <div className="p-3 bg-gradient-to-r from-green-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-status-success/30/30">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-              <Brain className="w-3.5 h-3.5 text-green-500" />
+            <div className="w-6 h-6 rounded-full bg-status-success/20 flex items-center justify-center flex-shrink-0">
+              <Brain className="w-3.5 h-3.5 text-status-success" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-green-800">
+              <span className="text-xs font-medium text-status-success">
                 Remuneração pré-configurada
               </span>
               <p className="text-micro text-gray-500 mt-0.5">
@@ -160,7 +160,7 @@ export function SalaryStage({
                   Benchmark de Mercado
                 </span>
                 {salaryBenchmark.market?.learning_adjusted && (
-                  <span className="px-1.5 py-0.5 bg-green-500/10 text-green-800 text-micro font-medium rounded-full">
+                  <span className="px-1.5 py-0.5 bg-status-success/10 text-status-success text-micro font-medium rounded-full">
                     Personalizado
                   </span>
                 )}
@@ -171,7 +171,7 @@ export function SalaryStage({
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-micro text-gray-500">Dados internos ({salaryBenchmark.internal.sample_size} vagas)</span>
                     {salaryBenchmark.internal.trend && salaryBenchmark.internal.trend !== 'stable' && (
-                      <span className={`text-micro ${salaryBenchmark.internal.trend === 'increasing' ? 'text-green-500' : 'text-red-500'}`}>
+                      <span className={`text-micro ${salaryBenchmark.internal.trend === 'increasing' ? 'text-status-success' : 'text-status-error'}`}>
                         {salaryBenchmark.internal.trend === 'increasing' ? '↑ Em alta' : '↓ Em queda'}
                       </span>
                     )}
@@ -189,9 +189,9 @@ export function SalaryStage({
                       Dados de mercado ({salaryBenchmark.market.sources?.slice(0, 2).join(', ')})
                     </span>
                     <span className={`text-micro px-1.5 py-0.5 rounded-full ${
-                      salaryBenchmark.market.confidence === 'high' ? 'bg-green-500/10 text-green-800' :
-                      salaryBenchmark.market.confidence === 'medium' ? 'bg-amber-500/10 text-amber-800' :
-                      'bg-red-500/10 text-red-800'
+                      salaryBenchmark.market.confidence === 'high' ? 'bg-status-success/10 text-status-success' :
+                      salaryBenchmark.market.confidence === 'medium' ? 'bg-status-warning/10 text-status-warning' :
+                      'bg-status-error/10 text-status-error'
                     }`}>
                       {salaryBenchmark.market.confidence === 'high' ? 'Alta confiança' :
                        salaryBenchmark.market.confidence === 'medium' ? 'Média confiança' : 'Baixa confiança'}

@@ -98,11 +98,11 @@ const vendors = [
 
 const getScoreColor = (score: string) => {
   switch (score) {
-    case 'A': return { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300' }
+    case 'A': return { bg: 'bg-status-success/15', text: 'text-status-success', border: 'border-status-success/30' }
     case 'B': return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-600 dark:text-gray-400', border: 'border-gray-300 dark:border-gray-600' }
-    case 'C': return { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300' }
-    case 'D': return { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300' }
-    case 'F': return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' }
+    case 'C': return { bg: 'bg-status-warning/15', text: 'text-status-warning', border: 'border-status-warning/30' }
+    case 'D': return { bg: 'bg-wedo-orange/15', text: 'text-wedo-orange', border: 'border-wedo-orange/30' }
+    case 'F': return { bg: 'bg-status-error/15', text: 'text-status-error', border: 'border-status-error/30' }
     default: return { bg: 'bg-gray-100', text: 'text-gray-800 dark:text-gray-200', border: 'border-gray-300' }
   }
 }
@@ -110,11 +110,11 @@ const getScoreColor = (score: string) => {
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'approved':
-      return { icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-100', label: 'Aprovado' }
+      return { icon: CheckCircle2, color: 'text-status-success', bg: 'bg-status-success/15', label: 'Aprovado' }
     case 'pending':
-      return { icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100', label: 'Pendente' }
+      return { icon: Clock, color: 'text-status-warning', bg: 'bg-status-warning/15', label: 'Pendente' }
     case 'rejected':
-      return { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-100', label: 'Rejeitado' }
+      return { icon: AlertTriangle, color: 'text-status-error', bg: 'bg-status-error/15', label: 'Rejeitado' }
     default:
       return { icon: Clock, color: 'text-gray-600', bg: 'bg-gray-100', label: status }
   }
@@ -123,11 +123,11 @@ const getStatusConfig = (status: string) => {
 const getCriticalityColor = (criticality: string) => {
   switch (criticality) {
     case 'Alta':
-      return 'bg-red-100 text-red-700'
+      return 'bg-status-error/15 text-status-error'
     case 'Média':
-      return 'bg-amber-100 text-amber-700'
+      return 'bg-status-warning/15 text-status-warning'
     case 'Baixa':
-      return 'bg-emerald-100 text-emerald-700'
+      return 'bg-status-success/15 text-status-success'
     default:
       return 'bg-gray-100 text-gray-800 dark:text-gray-200'
   }
@@ -136,9 +136,9 @@ const getCriticalityColor = (criticality: string) => {
 const getServiceTypeColor = (serviceType: string) => {
   const colors: Record<string, string> = {
     'Cloud Infrastructure': 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
-    'AI/LLM Provider': 'bg-purple-100 text-purple-700',
-    'Database as a Service': 'bg-emerald-100 text-emerald-700',
-    'Email Service Provider': 'bg-amber-100 text-amber-700',
+    'AI/LLM Provider': 'bg-wedo-purple/15 text-wedo-purple',
+    'Database as a Service': 'bg-status-success/15 text-status-success',
+    'Email Service Provider': 'bg-status-warning/15 text-status-warning',
     'Frontend Hosting': 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50',
     'Payment Processing': 'bg-pink-100 text-pink-700',
     'Talent Search Provider': 'bg-indigo-100 text-indigo-700',
@@ -195,13 +195,13 @@ export default function FornecedoresPage() {
         <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderLeft: '4px solid #f59e0b' }}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-status-warning mt-0.5" />
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="font-medium text-sm text-amber-700">
+                  <p className="font-medium text-sm text-status-warning">
                     Due Diligence Obrigatória - BCB 498/2025
                   </p>
-                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-micro">
+                  <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15 text-micro">
                     Obrigatório
                   </Badge>
                 </div>
@@ -234,7 +234,7 @@ export default function FornecedoresPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{approvedVendors}</p>
@@ -248,7 +248,7 @@ export default function FornecedoresPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{highCriticalityVendors}</p>
@@ -262,7 +262,7 @@ export default function FornecedoresPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <Award className="w-5 h-5 text-emerald-500" />
+                  <Award className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{scoreAVendors}</p>
@@ -408,7 +408,7 @@ export default function FornecedoresPage() {
                               <DropdownMenuItem>Iniciar avaliação</DropdownMenuItem>
                               <DropdownMenuItem>Ver histórico</DropdownMenuItem>
                               <DropdownMenuItem>Baixar relatório</DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">Remover</DropdownMenuItem>
+                              <DropdownMenuItem className="text-status-error">Remover</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

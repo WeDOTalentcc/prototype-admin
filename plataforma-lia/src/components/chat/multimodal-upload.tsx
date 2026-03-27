@@ -273,10 +273,10 @@ export function MultimodalUpload({
                 <span className={cn(
                   "inline-flex items-center gap-1 text-xs mt-1 px-2 py-0.5 rounded-full",
                   resultType === 'resume' 
-                    ? "bg-purple-100 text-purple-700"
+                    ? "bg-wedo-purple/15 text-wedo-purple"
                     : resultType === 'image'
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-amber-100 text-amber-700"
+                      ? "bg-wedo-cyan/15 text-wedo-cyan-dark"
+                      : "bg-status-warning/15 text-status-warning"
                 )}>
                   {resultType === 'resume' ? 'Currículo' : resultType === 'image' ? 'Imagem' : 'Documento'}
                 </span>
@@ -304,14 +304,14 @@ export function MultimodalUpload({
           )}
 
           {error && (
-            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md">
+            <div className="flex items-center gap-2 text-sm text-status-error bg-status-error/10 p-3 rounded-md">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {result && (
-            <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 p-3 rounded-md">
+            <div className="flex items-center gap-2 text-sm text-status-success bg-status-success/10 p-3 rounded-md">
               <Check className="h-4 w-4 flex-shrink-0" />
               <span>Análise concluída com sucesso!</span>
             </div>

@@ -60,17 +60,17 @@ export function ToolExecutionFeedback({
         aria-busy="true"
         aria-label={`Executando ${displayName}`}
         className={cn(
-          'flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-md border border-blue-200 dark:border-blue-800',
+          'flex items-center gap-3 p-3 bg-wedo-cyan/10 rounded-md border border-wedo-cyan/30 dark:border-wedo-cyan/30',
           'animate-in fade-in-0 duration-300',
           className
         )}
       >
-        <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin flex-shrink-0" aria-hidden="true" />
+        <Loader2 className="h-5 w-5 text-wedo-cyan-dark dark:text-wedo-cyan-dark animate-spin flex-shrink-0" aria-hidden="true" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+          <p className="text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">
             Executando {displayName}...
           </p>
-          <p className="text-xs text-blue-600 dark:text-blue-400">
+          <p className="text-xs text-wedo-cyan-dark dark:text-wedo-cyan-dark">
             Aguarde enquanto processo sua solicitação
           </p>
         </div>
@@ -89,21 +89,21 @@ export function ToolExecutionFeedback({
         aria-live="polite"
         aria-label={`${displayName} concluída com sucesso`}
         className={cn(
-          'flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-md border border-emerald-200 dark:border-emerald-800',
+          'flex items-start gap-3 p-3 bg-status-success/10 rounded-md border border-status-success/30 dark:border-status-success/30',
           'animate-in fade-in-0 slide-in-from-bottom-2 duration-300',
           className
         )}
       >
-        <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+        <CheckCircle2 className="h-5 w-5 text-status-success dark:text-status-success flex-shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+          <p className="text-sm font-medium text-status-success dark:text-status-success">
             {displayName} concluída com sucesso!
           </p>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+          <p className="text-xs text-status-success dark:text-status-success mt-0.5">
             {result.message}
           </p>
           {result.execution_time_ms > 0 && (
-            <div className="flex items-center gap-1 mt-1.5 text-xs text-emerald-500 dark:text-emerald-500" aria-label={`Tempo de execução: ${result.execution_time_ms} milissegundos`}>
+            <div className="flex items-center gap-1 mt-1.5 text-xs text-status-success dark:text-status-success" aria-label={`Tempo de execução: ${result.execution_time_ms} milissegundos`}>
               <Clock className="h-3 w-3" aria-hidden="true" />
               <span>Executado em {result.execution_time_ms}ms</span>
             </div>
@@ -114,7 +114,7 @@ export function ToolExecutionFeedback({
               variant="ghost"
               size="sm"
               aria-label="Desfazer ação"
-              className="mt-2 h-7 text-xs text-emerald-700 hover:text-emerald-800 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/50 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200"
+              className="mt-2 h-7 text-xs text-status-success hover:text-status-success hover:bg-status-success/15 dark:text-status-success dark:hover:bg-status-success/50 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200"
             >
               <RefreshCw className="h-3 w-3 mr-1" aria-hidden="true" />
               Desfazer
@@ -133,17 +133,17 @@ export function ToolExecutionFeedback({
       aria-live="assertive"
       aria-label={`Erro ao executar ${displayName}`}
       className={cn(
-        'flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-800',
+        'flex items-start gap-3 p-3 bg-status-error/10 dark:bg-status-error/30 rounded-md border border-status-error/30 dark:border-status-error/30',
         'animate-in fade-in-0 shake-x duration-300',
         className
       )}
     >
-      <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+      <XCircle className="h-5 w-5 text-status-error dark:text-status-error flex-shrink-0 mt-0.5" aria-hidden="true" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-red-800 dark:text-red-200">
+        <p className="text-sm font-medium text-status-error dark:text-status-error">
           Erro ao executar {displayName}
         </p>
-        <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+        <p className="text-xs text-status-error dark:text-status-error mt-0.5">
           {result.error || result.message}
         </p>
         {onRetry && (
@@ -153,7 +153,7 @@ export function ToolExecutionFeedback({
             variant="ghost"
             size="sm"
             aria-label="Tentar novamente"
-            className="mt-2 h-7 text-xs text-red-700 hover:text-red-800 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-900/50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
+            className="mt-2 h-7 text-xs text-status-error hover:text-status-error hover:bg-status-error/15 dark:text-status-error dark:hover:bg-status-error/50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
           >
             <RefreshCw className="h-3 w-3 mr-1" aria-hidden="true" />
             Tentar novamente

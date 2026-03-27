@@ -58,8 +58,8 @@ interface User {
 }
 
 const roleLabels: Record<string, { label: string, color: string }> = {
-  admin: { label: 'Administrador', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
-  manager: { label: 'Gestor', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
+  admin: { label: 'Administrador', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' },
+  manager: { label: 'Gestor', color: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
  recruiter: { label: 'Recrutador', color: 'bg-gray-100 text-gray-900 dark:text-gray-300' },
   viewer: { label: 'Visualizador', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' }
 }
@@ -399,21 +399,21 @@ export default function ClientUsuariosPage({
       </div>
 
       {isScimEnabled && (
-        <Card className="border-purple-200 bg-purple-50/50 dark:border-purple-800 dark:bg-purple-900/20">
+        <Card className="border-wedo-purple/30 bg-wedo-purple/10/50 dark:border-wedo-purple/30 dark:bg-wedo-purple/20">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-md bg-purple-100 dark:bg-purple-800/50">
-                <Shield className="w-5 h-5 text-purple-600 dark:text-purple-300" />
+              <div className="p-2 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/50">
+                <Shield className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-1">
+                <h4 className="font-medium text-wedo-purple dark:text-wedo-purple mb-1">
                   Usuários gerenciados via SSO/SCIM
                 </h4>
-                <p className="text-sm text-purple-700 dark:text-purple-300 mb-2">
+                <p className="text-sm text-wedo-purple dark:text-wedo-purple mb-2">
                   Este cliente possui provisionamento automático de usuários via {scimDirectoryName}. 
                   Para adicionar, editar ou remover usuários, utilize o portal do provedor de identidade (IdP).
                 </p>
-                <div className="flex items-center gap-2 text-xs text-purple-600 dark:text-purple-400">
+                <div className="flex items-center gap-2 text-xs text-wedo-purple dark:text-wedo-purple">
                   <Info className="w-3.5 h-3.5" />
                   <span>Alterações no IdP são sincronizadas automaticamente com a plataforma</span>
                 </div>
@@ -436,7 +436,7 @@ export default function ClientUsuariosPage({
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-emerald-600">{activeCount}</p>
+            <p className="text-2xl font-semibold text-status-success">{activeCount}</p>
             <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
               Ativos
             </p>
@@ -444,7 +444,7 @@ export default function ClientUsuariosPage({
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-amber-500">{pendingCount}</p>
+            <p className="text-2xl font-semibold text-status-warning">{pendingCount}</p>
             <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
               Pendentes
             </p>
@@ -563,7 +563,7 @@ export default function ClientUsuariosPage({
                         {status.label}
                       </Badge>
                       {user.is_scim_managed && (
-                        <Badge className="bg-purple-50 text-purple-700 border-purple-200 flex items-center gap-1">
+                        <Badge className="bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 flex items-center gap-1">
                           <Shield className="w-3 h-3" />
                           SSO
                         </Badge>
@@ -620,7 +620,7 @@ export default function ClientUsuariosPage({
                             )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
-                              className="text-red-600"
+                              className="text-status-error"
                               onClick={() => {
                                 setSelectedUser(user)
                                 setShowDeleteModal(true)
@@ -787,13 +787,13 @@ export default function ClientUsuariosPage({
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <div className="flex items-center gap-3 p-4 rounded-md bg-amber-50 dark:bg-amber-950/20">
-              <UserX className="w-5 h-5 text-amber-600" />
+            <div className="flex items-center gap-3 p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
+              <UserX className="w-5 h-5 text-status-warning" />
               <div>
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                   Tem certeza que deseja desativar {selectedUser?.name}?
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                   O usuário perderá acesso imediatamente, mas poderá ser reativado posteriormente.
                 </p>
               </div>
@@ -805,7 +805,7 @@ export default function ClientUsuariosPage({
             </Button>
             <Button 
               variant="default"
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-status-warning hover:bg-status-warning text-white"
               onClick={handleDeactivateUser} 
               disabled={isSaving}
             >
@@ -829,13 +829,13 @@ export default function ClientUsuariosPage({
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <div className="flex items-center gap-3 p-4 rounded-md bg-red-50 dark:bg-red-950/20">
-              <AlertCircle className="w-5 h-5 text-red-600" />
+            <div className="flex items-center gap-3 p-4 rounded-md bg-status-error/10 dark:bg-status-error/20">
+              <AlertCircle className="w-5 h-5 text-status-error" />
               <div>
-                <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                <p className="text-sm font-medium text-status-error dark:text-status-error">
                   Tem certeza que deseja remover {selectedUser?.name}?
                 </p>
-                <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                <p className="text-xs text-status-error dark:text-status-error mt-1">
                   O usuário será permanentemente removido e todos os dados associados serão perdidos.
                 </p>
               </div>

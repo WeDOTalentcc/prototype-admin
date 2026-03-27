@@ -257,7 +257,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <p className="text-micro text-gray-500">Conclusão</p>
           </div>
           <div className="text-center">
-            <div className="text-base-ui font-semibold text-green-600">
+            <div className="text-base-ui font-semibold text-status-success">
               {funnel.screening > 0 ? Math.round((funnel.interview / funnel.screening) * 100) : 0}%
             </div>
             <p className="text-micro text-gray-500">Aprovação</p>
@@ -392,7 +392,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                     {block.editable && blockQuestions.length > 0 && (
                       <>
                         {eliminatoryCount > 0 && (
-                          <Badge className="text-micro px-1.5 py-0 bg-red-50 text-red-600 border border-red-200">
+                          <Badge className="text-micro px-1.5 py-0 bg-status-error/10 text-status-error border border-status-error/30">
                             {eliminatoryCount} Elim.
                           </Badge>
                         )}
@@ -464,10 +464,10 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                   <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                                     <Badge className={`text-micro px-1.5 py-0 h-4 ${
                                       item.category === 'behavioral' || item.category === 'Comportamental'
-                                        ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                                        ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30'
                                         : item.category === 'technical' || item.category === 'Técnica'
                                         ? 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark border border-gray-300 dark:border-gray-600'
-                                        : 'bg-green-100 text-green-700 border border-green-200'
+                                        : 'bg-status-success/15 text-status-success border border-status-success/30'
                                     }`}>
                                       {item.category === 'behavioral' ? 'Comport.' 
                                         : item.category === 'technical' ? 'Técnica' 
@@ -475,7 +475,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                         : item.category || 'Geral'}
                                     </Badge>
                                     {(item.type === 'eliminatory' || item.required) && (
-                                      <Badge className="text-micro px-1.5 py-0 h-4 bg-red-50 text-red-600 border border-red-200">
+                                      <Badge className="text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30">
                                         Eliminatória
                                       </Badge>
                                     )}
@@ -509,17 +509,17 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-100">
           <span className="text-micro text-gray-500">Canais:</span>
           <div className="flex items-center gap-2">
-            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
               <MessageSquare className="w-3 h-3" />
               <span className="text-micro font-medium">WhatsApp</span>
               {(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
-            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
               <Globe className="w-3 h-3" />
               <span className="text-micro font-medium">Chat Web</span>
               {(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
-            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-400'}`}>
               <Phone className="w-3 h-3" />
               <span className="text-micro font-medium">Telefone</span>
               {(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
@@ -543,7 +543,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro text-gray-500">Fallback</span>
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Revisão Manual</Badge>
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Revisão Manual</Badge>
           </div>
         </div>
 
@@ -551,11 +551,11 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="flex items-center gap-3 mt-3 pt-2 border-t border-gray-100">
           <span className="text-micro text-gray-400">Integrações:</span>
           <div className="flex items-center gap-1 text-micro">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-status-success"></div>
             <span className="text-gray-600">OpenMic.ai</span>
           </div>
           <div className="flex items-center gap-1 text-micro">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-status-success"></div>
             <span className="text-gray-600">Deepgram</span>
           </div>
         </div>

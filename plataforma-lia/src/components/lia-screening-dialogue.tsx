@@ -482,7 +482,7 @@ Boa sorte com as triagens! 🚀`,
             <Card className="">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                  <MessageSquare className="w-4 h-4 text-green-600" />
+                  <MessageSquare className="w-4 h-4 text-status-success" />
                   Abordagem e Estrutura
                 </CardTitle>
               </CardHeader>
@@ -490,14 +490,14 @@ Boa sorte com as triagens! 🚀`,
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Tom da Conversa:</label>
-                    <p className="text-sm text-green-700 font-medium">{screeningData.approach.tone}</p>
+                    <p className="text-sm text-status-success font-medium">{screeningData.approach.tone}</p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Estrutura:</label>
                     <div className="space-y-2">
                       {screeningData.approach.structure.map((step, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
-                          <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xs font-bold">
+                          <div className="w-5 h-5 bg-status-success/15 rounded-full flex items-center justify-center text-status-success text-xs font-bold">
                             {index + 1}
                           </div>
                           <span>{step}</span>
@@ -517,7 +517,7 @@ Boa sorte com as triagens! 🚀`,
             <Card className="">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                  <Target className="w-4 h-4 text-purple-600" />
+                  <Target className="w-4 h-4 text-wedo-purple" />
                   Perguntas de Triagem
                 </CardTitle>
               </CardHeader>
@@ -553,8 +553,8 @@ Boa sorte com as triagens! 🚀`,
                       ]
                     }
                   ].map((section, index) => (
-                    <div key={index} className="border border-purple-200 rounded-md p-3">
-                      <h4 className="font-medium text-purple-800 text-sm mb-2">{section.category}</h4>
+                    <div key={index} className="border border-wedo-purple/30 rounded-md p-3">
+                      <h4 className="font-medium text-wedo-purple text-sm mb-2">{section.category}</h4>
                       <div className="space-y-1">
                         {section.questions.map((question, qIndex) => (
                           <div key={qIndex} className="text-xs text-gray-600">• {question}</div>
@@ -574,7 +574,7 @@ Boa sorte com as triagens! 🚀`,
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Star className="w-4 h-4 text-yellow-600" />
+                  <Star className="w-4 h-4 text-status-warning" />
                   Apresentação da Vaga
                 </CardTitle>
               </CardHeader>
@@ -582,19 +582,19 @@ Boa sorte com as triagens! 🚀`,
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs font-medium text-gray-600">Empresa:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-yellow-50 p-2 rounded">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded">
                       Líder em inovação tecnológica, focada em soluções impactantes
                     </p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600">Vaga:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-yellow-50 p-2 rounded">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded">
                       {jobData?.title} - Projetos desafiadores e de grande impacto
                     </p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600">Time:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-yellow-50 p-2 rounded">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded">
                       Equipe multidisciplinar, colaborativa e de excelência
                     </p>
                   </div>
@@ -625,15 +625,15 @@ Boa sorte com as triagens! 🚀`,
               <CardContent>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-green-50 rounded-md">
-                      <div className="text-xs font-medium text-green-800 mb-1">Aprovados</div>
-                      <div className="text-xs text-green-600">24 horas</div>
-                      <div className="text-xs text-green-700 mt-1">Tom positivo e próximos passos</div>
+                    <div className="p-3 bg-status-success/10 rounded-md">
+                      <div className="text-xs font-medium text-status-success mb-1">Aprovados</div>
+                      <div className="text-xs text-status-success">24 horas</div>
+                      <div className="text-xs text-status-success mt-1">Tom positivo e próximos passos</div>
                     </div>
-                    <div className="p-3 bg-orange-50 rounded-md">
-                      <div className="text-xs font-medium text-orange-800 mb-1">Não Selecionados</div>
-                      <div className="text-xs text-orange-600">48 horas</div>
-                      <div className="text-xs text-orange-700 mt-1">Feedback construtivo</div>
+                    <div className="p-3 bg-wedo-orange/10 rounded-md">
+                      <div className="text-xs font-medium text-wedo-orange mb-1">Não Selecionados</div>
+                      <div className="text-xs text-wedo-orange">48 horas</div>
+                      <div className="text-xs text-wedo-orange mt-1">Feedback construtivo</div>
                     </div>
                   </div>
                   <div>
@@ -699,16 +699,16 @@ Boa sorte com as triagens! 🚀`,
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-status-success" />
                   Roteiro Completo
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="text-center p-4 bg-green-50 rounded-md">
-                    <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                    <div className="text-sm font-medium text-green-800">Roteiro Criado!</div>
-                    <div className="text-xs text-green-600">Para {jobData?.title}</div>
+                  <div className="text-center p-4 bg-status-success/10 rounded-md">
+                    <CheckCircle className="w-8 h-8 text-status-success mx-auto mb-2" />
+                    <div className="text-sm font-medium text-status-success">Roteiro Criado!</div>
+                    <div className="text-xs text-status-success">Para {jobData?.title}</div>
                   </div>
                   <div className="space-y-2">
                     {[
@@ -751,9 +751,9 @@ Boa sorte com as triagens! 🚀`,
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-md w-full max-w-7xl h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20">
+        <div className="flex items-center justify-between p-4 bg-status-success/10 dark:bg-status-success/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-600 rounded-md flex items-center justify-center">
+            <div className="w-10 h-10 bg-status-success rounded-md flex items-center justify-center">
               <Brain className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -814,7 +814,7 @@ Boa sorte com as triagens! 🚀`,
                 <div className="flex justify-start">
                   <div className="bg-gray-100 dark:bg-gray-700 rounded-r-2xl rounded-tl-2xl p-3">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-green-600" />
+                      <Loader2 className="w-4 h-4 animate-spin text-status-success" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">LIA está digitando...</span>
                     </div>
                   </div>

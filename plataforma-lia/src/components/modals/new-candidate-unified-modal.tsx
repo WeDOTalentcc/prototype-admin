@@ -240,8 +240,8 @@ export function NewCandidateUnifiedModal({
 
   const getFileIcon = (filename: string) => {
     const ext = filename.split('.').pop()?.toLowerCase()
-    if (ext === 'pdf') return <FileText className="w-4 h-4 text-red-500" />
-    if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-blue-600" />
+    if (ext === 'pdf') return <FileText className="w-4 h-4 text-status-error" />
+    if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-dark" />
     return <File className="w-4 h-4 text-gray-500 dark:text-gray-400" />
   }
 
@@ -823,7 +823,7 @@ export function NewCandidateUnifiedModal({
           <div className="flex justify-between items-center">
             <span className={cn(
               "text-xs",
-              cvText.length < 50 ? "text-gray-500" : "text-green-600"
+              cvText.length < 50 ? "text-gray-500" : "text-status-success"
             )}>
               {cvText.length} caracteres (mín. 50)
             </span>
@@ -994,9 +994,9 @@ export function NewCandidateUnifiedModal({
       )}
 
       {error && (
-        <div className="flex items-center gap-2 p-2.5 bg-red-50 border border-red-200 rounded-md">
-          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-          <p className="text-xs text-red-700">{error}</p>
+        <div className="flex items-center gap-2 p-2.5 bg-status-error/10 border border-status-error/30 rounded-md">
+          <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0" />
+          <p className="text-xs text-status-error">{error}</p>
         </div>
       )}
     </div>
@@ -1005,8 +1005,8 @@ export function NewCandidateUnifiedModal({
   const renderDuplicateFound = () => (
     <div className="space-y-4">
       <div className="text-center">
-        <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-3">
-          <AlertCircle className="w-6 h-6 text-amber-600" />
+        <div className="w-12 h-12 rounded-full bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center mx-auto mb-3">
+          <AlertCircle className="w-6 h-6 text-status-warning" />
         </div>
         <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
           Candidato já existe
@@ -1017,7 +1017,7 @@ export function NewCandidateUnifiedModal({
       </div>
 
       {duplicateResult?.candidate && (
-        <Card className="border-amber-200 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/20 rounded-md">
+        <Card className="border-status-warning/30 dark:border-status-warning/30 bg-status-warning/10/50 dark:bg-status-warning/20 rounded-md">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-gray-600 dark:bg-gray-500 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
@@ -1047,7 +1047,7 @@ export function NewCandidateUnifiedModal({
                   )}
                 </div>
                 {duplicateResult.matchType && (
-                  <p className="text-micro text-amber-700 mt-2">
+                  <p className="text-micro text-status-warning mt-2">
                     Encontrado por: {
                       duplicateResult.matchType === 'email' ? 'E-mail' :
                       duplicateResult.matchType === 'phone' ? 'Telefone' :
@@ -1126,8 +1126,8 @@ export function NewCandidateUnifiedModal({
 
   const renderSuccess = () => (
     <div className="py-8 text-center">
-      <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-        <CheckCircle className="w-6 h-6 text-green-600" />
+      <div className="w-12 h-12 rounded-full bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center mx-auto mb-4">
+        <CheckCircle className="w-6 h-6 text-status-success" />
       </div>
       <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-2">
         Candidato cadastrado!

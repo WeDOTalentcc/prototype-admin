@@ -185,8 +185,8 @@ export function EventsSection() {
 
   const getPriorityBadge = (priority: string) => {
     const badges = {
-      high: <Badge variant="outline" className="text-xs border-red-200 text-red-700 dark:border-red-800 dark:text-red-400">Urgente</Badge>,
-      medium: <Badge variant="outline" className="text-xs border-yellow-200 text-yellow-700 dark:border-yellow-800 dark:text-yellow-400">Média</Badge>,
+      high: <Badge variant="outline" className="text-xs border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error">Urgente</Badge>,
+      medium: <Badge variant="outline" className="text-xs border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning">Média</Badge>,
       low: <Badge variant="outline" className="text-xs border-gray-200 text-gray-800 dark:border-gray-700 dark:text-gray-200">Baixa</Badge>
     }
     return badges[priority as keyof typeof badges]

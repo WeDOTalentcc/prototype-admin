@@ -87,7 +87,7 @@ const formatCurrency = (value: number) => {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'active':
-      return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+      return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
         <CheckCircle2 className="w-3 h-3 mr-1" />
         Ativo
       </Badge>
@@ -96,12 +96,12 @@ const getStatusBadge = (status: string) => {
         Expirado
       </Badge>
     case 'pending':
-      return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+      return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
         <Clock className="w-3 h-3 mr-1" />
         Pendente
       </Badge>
     case 'cancelled':
-      return <Badge className="bg-red-100 text-red-600 hover:bg-red-100">
+      return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">
         Cancelado
       </Badge>
     default:
@@ -114,13 +114,13 @@ const getClaimStatusBadge = (status: string) => {
     case 'open':
  return <Badge className="text-gray-600 dark:text-gray-400 hover:bg-gray-100">Aberto</Badge>
     case 'under_review':
-      return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Em Análise</Badge>
+      return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Em Análise</Badge>
     case 'approved':
-      return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Aprovado</Badge>
+      return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Aprovado</Badge>
     case 'denied':
-      return <Badge className="bg-red-100 text-red-600 hover:bg-red-100">Negado</Badge>
+      return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">Negado</Badge>
     case 'paid':
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Pago</Badge>
+      return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Pago</Badge>
     case 'closed':
       return <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-100">Encerrado</Badge>
     default:
@@ -131,9 +131,9 @@ const getClaimStatusBadge = (status: string) => {
 const getAlertSeverityStyle = (severity: string) => {
   switch (severity) {
     case 'critical':
-      return { bg: 'rgba(239, 68, 68, 0.1)', border: 'var(--status-error)', icon: 'text-red-500' }
+      return { bg: 'rgba(239, 68, 68, 0.1)', border: 'var(--status-error)', icon: 'text-status-error' }
     case 'high':
-      return { bg: 'rgba(234, 179, 8, 0.1)', border: 'var(--status-warning)', icon: 'text-amber-500' }
+      return { bg: 'rgba(234, 179, 8, 0.1)', border: 'var(--status-warning)', icon: 'text-status-warning' }
     case 'medium':
       return { bg: 'rgba(229, 231, 235, 0.3)', border: 'var(--gray-200)', icon: 'text-gray-600 dark:text-gray-400' }
     default:
@@ -451,10 +451,10 @@ export default function SeguroCiberneticoPage() {
             className="mb-6 p-4 rounded-md border-l-4 flex items-center gap-3"
             style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)', borderLeftColor: 'var(--status-warning)' }}
           >
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
+            <AlertTriangle className="w-5 h-5 text-status-warning" />
             <div>
-              <p className="font-medium text-amber-700">Alerta de Renovação</p>
-              <p className="text-sm text-amber-600">
+              <p className="font-medium text-status-warning">Alerta de Renovação</p>
+              <p className="text-sm text-status-warning">
                 A apólice vence em {daysRemaining} dias ({new Date(activePolicy.endDate).toLocaleDateString('pt-BR')}). Inicie o processo de renovação com antecedência.
               </p>
             </div>
@@ -466,10 +466,10 @@ export default function SeguroCiberneticoPage() {
             className="mb-6 p-4 rounded-md border-l-4 flex items-center gap-3"
             style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderLeftColor: 'var(--status-error)' }}
           >
-            <AlertTriangle className="w-5 h-5 text-red-500" />
+            <AlertTriangle className="w-5 h-5 text-status-error" />
             <div>
-              <p className="font-medium text-red-700">Apólice Expirada</p>
-              <p className="text-sm text-red-600">
+              <p className="font-medium text-status-error">Apólice Expirada</p>
+              <p className="text-sm text-status-error">
                 A apólice expirou em {new Date(activePolicy.endDate).toLocaleDateString('pt-BR')}. Renove imediatamente para manter a cobertura e conformidade com BCB 498.
               </p>
             </div>
@@ -480,8 +480,8 @@ export default function SeguroCiberneticoPage() {
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-emerald-100">
-                  <Shield className="w-5 h-5 text-emerald-600" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-success/15">
+                  <Shield className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Status da Apólice</p>
@@ -501,7 +501,7 @@ export default function SeguroCiberneticoPage() {
                 </div>
                 <div>
                   <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Dias até Vencimento</p>
-                  <p className={`font-medium ${isExpiringSoon ? 'text-amber-600' : isExpired ? 'text-red-600' : ''}`}
+                  <p className={`font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : ''}`}
                      style={!isExpiringSoon && !isExpired ? { color: 'var(--eleven-text-primary)' } : {}}>
                     {isExpired ? 'Expirado' : daysRemaining > 0 ? `${daysRemaining} dias` : 'N/A'}
                   </p>
@@ -513,12 +513,12 @@ export default function SeguroCiberneticoPage() {
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-100">
-                  <DollarSign className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-success/15">
+                  <DollarSign className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Valor Coberto</p>
-                  <p className="font-medium text-green-600">
+                  <p className="font-medium text-status-success">
                     {activePolicy ? formatCurrency(activePolicy.coverage) : 'R$ 0,00'}
                   </p>
                 </div>
@@ -529,8 +529,8 @@ export default function SeguroCiberneticoPage() {
           <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-purple-100">
-                  <FileCheck className="w-5 h-5 text-purple-600" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-wedo-purple/15">
+                  <FileCheck className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
                   <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Conformidade BCB</p>
@@ -582,17 +582,17 @@ export default function SeguroCiberneticoPage() {
                     </div>
 
                     <div className="flex items-start gap-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
-                      <DollarSign className="w-5 h-5 text-emerald-500 mt-0.5" />
+                      <DollarSign className="w-5 h-5 text-status-success mt-0.5" />
                       <div>
                         <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Valor de Cobertura</p>
-                        <p className="font-medium text-emerald-600 text-lg">{formatCurrency(activePolicy.coverage)}</p>
+                        <p className="font-medium text-status-success text-lg">{formatCurrency(activePolicy.coverage)}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-start gap-3 p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}>
-                      <DollarSign className="w-5 h-5 text-amber-500 mt-0.5" />
+                      <DollarSign className="w-5 h-5 text-status-warning mt-0.5" />
                       <div>
                         <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Franquia</p>
                         <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{formatCurrency(activePolicy.deductible)}</p>
@@ -615,7 +615,7 @@ export default function SeguroCiberneticoPage() {
                           <Clock className="w-4 h-4" style={{ color: 'var(--eleven-text-tertiary)' }} />
                           <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Tempo restante</span>
                         </div>
-                        <span className={`text-sm font-medium ${isExpiringSoon ? 'text-amber-600' : isExpired ? 'text-red-600' : ''}`} 
+                        <span className={`text-sm font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : ''}`} 
                               style={!isExpiringSoon && !isExpired ? { color: 'var(--eleven-text-primary)' } : {}}>
                           {isExpired ? 'Expirado' : `${daysRemaining} dias`}
                         </span>
@@ -706,7 +706,7 @@ export default function SeguroCiberneticoPage() {
                       style={{ backgroundColor: 'var(--eleven-bg-subtle)' }}
                     >
                       <div className="flex items-start gap-3">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5" />
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -722,7 +722,7 @@ export default function SeguroCiberneticoPage() {
                             </p>
                           )}
                           {coverage.coverageLimit && (
-                            <p className="text-xs mt-1 text-emerald-600">
+                            <p className="text-xs mt-1 text-status-success">
                               Limite: {formatCurrency(coverage.coverageLimit)}
                             </p>
                           )}
@@ -765,9 +765,9 @@ export default function SeguroCiberneticoPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         {item.isCovered ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          <CheckCircle2 className="w-4 h-4 text-status-success" />
                         ) : (
-                          <XCircle className="w-4 h-4 text-red-400" />
+                          <XCircle className="w-4 h-4 text-status-error" />
                         )}
                         <span className="text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
                           {item.name}
@@ -781,8 +781,8 @@ export default function SeguroCiberneticoPage() {
                       <Badge 
                         className={
                           item.isCovered 
-                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' 
-                            : 'bg-red-100 text-red-600 hover:bg-red-100'
+                            ? 'bg-status-success/15 text-status-success hover:bg-status-success/15' 
+                            : 'bg-status-error/15 text-status-error hover:bg-status-error/15'
                         }
                       >
                         {item.isCovered ? 'Coberto' : 'Não Coberto'}
@@ -839,7 +839,7 @@ export default function SeguroCiberneticoPage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-emerald-600 font-medium">
+                        <span className="text-sm text-status-success font-medium">
                           {formatCurrency(policy.coverage)}
                         </span>
                       </TableCell>
@@ -856,7 +856,7 @@ export default function SeguroCiberneticoPage() {
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditPolicy(policy)}>
                             <Edit2 className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDeletePolicy(policy.id)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-status-error" onClick={() => handleDeletePolicy(policy.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -925,7 +925,7 @@ export default function SeguroCiberneticoPage() {
                       </TableCell>
                       <TableCell>
                         {claim.claimAmount ? (
-                          <span className="text-sm text-amber-600 font-medium">
+                          <span className="text-sm text-status-warning font-medium">
                             {formatCurrency(claim.claimAmount)}
                           </span>
                         ) : (

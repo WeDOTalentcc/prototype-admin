@@ -24,22 +24,22 @@ const TEMPLATE_GROUPS: Record<string, { label: string; icon: string; situations:
 }
 
 const TRIGGER_TYPE_LABELS: Record<string, { label: string; color: string }> = {
-  'automatic': { label: 'Automático', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
-  'manual': { label: 'Manual', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
-  'both': { label: 'Ambos', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' }
+  'automatic': { label: 'Automático', color: 'bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark' },
+  'manual': { label: 'Manual', color: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' },
+  'both': { label: 'Ambos', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' }
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
-  'high': 'bg-red-500',
-  'medium': 'bg-yellow-500',
+  'high': 'bg-status-error',
+  'medium': 'bg-status-warning',
   'low': 'bg-gray-400'
 }
 
 const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
-  'email': { label: 'Email', color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' },
-  'whatsapp': { label: 'WhatsApp', color: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' },
-  'bell': { label: 'Bell', color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' },
-  'teams': { label: 'Teams', color: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' },
+  'email': { label: 'Email', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark' },
+  'whatsapp': { label: 'WhatsApp', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
+  'bell': { label: 'Bell', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
+  'teams': { label: 'Teams', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
  'briefing': { label: 'Briefing', color: 'bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-gray-300' },
   'parecer': { label: 'Parecer', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400' },
   'report': { label: 'Report', color: 'bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400' },
@@ -361,7 +361,7 @@ export function AdminTemplateHub() {
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-3 py-2 rounded-md flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span>{error}</span>
         </div>
@@ -781,10 +781,10 @@ export function AdminTemplateHub() {
                           </div>
                         </div>
 
-                        <div className="p-3 rounded-md border border-amber-200 bg-amber-50">
+                        <div className="p-3 rounded-md border border-status-warning/30 bg-status-warning/10">
                           <div className="flex items-start gap-2">
-                            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                            <p className="text-xs text-amber-800">
+                            <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-status-warning">
                               Ao aplicar os ajustes, o texto será atualizado no editor. Lembre-se de clicar em <strong>"Salvar"</strong> para confirmar as alterações definitivamente.
                             </p>
                           </div>

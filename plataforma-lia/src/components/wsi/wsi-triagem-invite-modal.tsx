@@ -678,10 +678,10 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               ) : (
                 <>
                   {/* Telefone/Script Preview */}
-                  <div className="p-4 border-b border-gray-100 bg-amber-50/50">
+                  <div className="p-4 border-b border-gray-100 bg-status-warning/10/50">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
-                        <Phone className="w-4 h-4 text-amber-600" />
+                      <div className="w-8 h-8 bg-status-warning/15 rounded-full flex items-center justify-center">
+                        <Phone className="w-4 h-4 text-status-warning" />
                       </div>
                       <div>
                         <div className={textStyles.subtitle}>Script de Ligação</div>
@@ -720,9 +720,9 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             )}
 
             {channel === 'whatsapp' && (
-              <div className={`mt-4 p-3 ${badgeStyles.success} rounded-md border border-green-200 bg-green-50`}>
+              <div className={`mt-4 p-3 ${badgeStyles.success} rounded-md border border-status-success/30 bg-status-success/10`}>
                 <div className="flex items-start gap-2">
-                  <MessageSquare className="w-4 h-4 text-green-600 mt-0.5" />
+                  <MessageSquare className="w-4 h-4 text-status-success mt-0.5" />
                   <div>
                     <div className={textStyles.label}>Fluxo WhatsApp:</div>
                     <ul className={`${textStyles.caption} mt-1 space-y-0.5`}>
@@ -737,9 +737,9 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             )}
 
             {channel === 'telefone' && (
-              <div className={`mt-4 p-3 ${badgeStyles.warning} rounded-md border border-amber-200 bg-amber-50`}>
+              <div className={`mt-4 p-3 ${badgeStyles.warning} rounded-md border border-status-warning/30 bg-status-warning/10`}>
                 <div className="flex items-start gap-2">
-                  <Phone className="w-4 h-4 text-amber-600 mt-0.5" />
+                  <Phone className="w-4 h-4 text-status-warning mt-0.5" />
                   <div>
                     <div className={textStyles.label}>Ligação com LIA:</div>
                     <ul className={`${textStyles.caption} mt-1 space-y-0.5`}>

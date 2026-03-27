@@ -28,14 +28,14 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 const PRIORITY_STYLES: Record<string, { bg: string; border: string; iconBg: string }> = {
   high: {
-    bg: "bg-red-50",
-    border: "border-red-200 hover:border-red-300",
-    iconBg: "bg-red-100 text-red-600",
+    bg: "bg-status-error/10",
+    border: "border-status-error/30 hover:border-status-error/30",
+    iconBg: "bg-status-error/15 text-status-error",
   },
   medium: {
-    bg: "bg-amber-50",
-    border: "border-amber-200 hover:border-amber-300",
-    iconBg: "bg-amber-100 text-amber-600",
+    bg: "bg-status-warning/10",
+    border: "border-status-warning/30 hover:border-status-warning/30",
+    iconBg: "bg-status-warning/15 text-status-warning",
   },
   low: {
     bg: "bg-gray-50",

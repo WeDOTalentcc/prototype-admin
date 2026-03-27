@@ -428,7 +428,7 @@ export function CompanyFilterInput({
         <button
           onClick={clearAll}
           disabled={value.length === 0}
-          className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-gray-500"
+          className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-gray-500"
         >
           <RotateCcw className="w-3 h-3" />
           Limpar tudo
@@ -496,7 +496,7 @@ export function CompanyFilterInput({
                 )}
               >
                 {item.type === 'ai' ? (
-                  <div className="flex items-center gap-2 text-purple-600">
+                  <div className="flex items-center gap-2 text-wedo-purple">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     <span>{item.label}</span>
                   </div>

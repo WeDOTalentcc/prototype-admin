@@ -259,7 +259,7 @@ export function Jobs2Page() {
                 <span className="text-sm font-mono text-gray-600 dark:text-gray-400">{job.jobId}</span>
               </div>
               {job.isConfidential && (
-                <Badge variant="outline" className="text-xs border-orange-200 text-orange-700">
+                <Badge variant="outline" className="text-xs border-wedo-orange/30 text-wedo-orange">
                   <Shield className="w-3 h-3 mr-1" />
                   Confidencial
                 </Badge>
@@ -366,7 +366,7 @@ export function Jobs2Page() {
                   <span className="text-xs">{job.publishedLinkedIn ? 'LinkedIn' : ''}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Globe className={`w-4 h-4 ${job.publishedWebsite ? 'text-green-600' : 'text-gray-600'}`} />
+                  <Globe className={`w-4 h-4 ${job.publishedWebsite ? 'text-status-success' : 'text-gray-600'}`} />
                   <span className="text-xs">{job.publishedWebsite ? 'Website' : ''}</span>
                 </div>
               </div>
@@ -437,7 +437,7 @@ export function Jobs2Page() {
                 Prazo para aplicações: {new Date(job.deadline).toLocaleDateString("pt-BR")}
               </span>
               <span className={`font-medium ${
-                new Date(job.deadline) < new Date() ? 'text-red-600' : 'text-green-600'
+                new Date(job.deadline) < new Date() ? 'text-status-error' : 'text-status-success'
               }`}>
                 {Math.ceil((new Date(job.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} dias restantes
               </span>

@@ -12,7 +12,7 @@ const buttonVariants = cva(
         default: "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         primary: "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         destructive:
-          "bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 focus:ring-2 focus:ring-red-600/20",
+          "bg-status-error text-white hover:bg-status-error dark:bg-status-error dark:hover:bg-status-error focus:ring-2 focus:ring-red-600/20",
         outline:
           "border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-950 dark:hover:text-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         secondary:

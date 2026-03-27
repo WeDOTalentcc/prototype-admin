@@ -49,9 +49,9 @@ export interface SavedCommandData {
 
 const categories = [
   { id: "candidates", name: "Candidatos", icon: Users, color: "text-gray-600 dark:text-gray-400" },
-  { id: "jobs", name: "Vagas", icon: Briefcase, color: "text-green-600" },
-  { id: "analytics", name: "Indicadores", icon: BarChart3, color: "text-purple-600" },
-  { id: "automation", name: "Automações", icon: Zap, color: "text-orange-600" },
+  { id: "jobs", name: "Vagas", icon: Briefcase, color: "text-status-success" },
+  { id: "analytics", name: "Indicadores", icon: BarChart3, color: "text-wedo-purple" },
+  { id: "automation", name: "Automações", icon: Zap, color: "text-wedo-orange" },
   { id: "reports", name: "Relatórios", icon: FileText, color: "text-teal-600" },
   { id: "communication", name: "Comunicação", icon: Mail, color: "text-pink-600" },
   { id: "custom", name: "Personalizado", icon: Brain, color: "text-indigo-600" }
@@ -168,8 +168,8 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
       <Card className="w-full max-w-3xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-md flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <div className="w-10 h-10 bg-wedo-purple/15 dark:bg-wedo-purple/20 rounded-md flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
             </div>
             <div>
               <CardTitle className="text-lg font-semibold text-gray-950 dark:text-gray-50">
@@ -250,8 +250,8 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                   onClick={() => setSelectedCategory(category.id)}
                   className={`p-3 rounded-md border transition-all ${
                     selectedCategory === category.id
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
+                      ? 'border-wedo-purple/30 bg-wedo-purple/10 dark:bg-wedo-purple/20'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-wedo-purple/30'
                   }`}
                 >
                   <category.icon className={`w-5 h-5 mb-1 mx-auto ${category.color}`} />
@@ -293,7 +293,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRemoveExample(index)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                      className="h-8 w-8 p-0 text-status-error hover:text-status-error"
                     >
                       <X className="w-3 h-3" />
                     </Button>
@@ -357,12 +357,12 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Resultado do Comando (se disponível) */}
           {commandResult && (
-            <div className="bg-green-50 dark:bg-green-900/10 rounded-md p-4 border border-green-200 dark:border-green-800">
+            <div className="bg-status-success/10 dark:bg-status-success/10 rounded-md p-4 border border-status-success/30 dark:border-status-success/30">
               <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-green-700 dark:text-green-400">Resultado:</span>
+                <CheckCircle className="w-4 h-4 text-status-success" />
+                <span className="text-sm font-medium text-status-success dark:text-status-success">Resultado:</span>
               </div>
-              <div className="text-sm text-green-900 dark:text-green-100">
+              <div className="text-sm text-status-success dark:text-status-success">
                 {commandResult}
               </div>
             </div>

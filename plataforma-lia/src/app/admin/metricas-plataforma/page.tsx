@@ -93,7 +93,7 @@ function MetricCard({
             {trend !== undefined && (
               <span
                 className={`flex items-center text-xs font-medium ${
-                  isPositiveTrend ? "text-green-600" : "text-red-600"
+                  isPositiveTrend ? "text-status-success" : "text-status-error"
                 }`}
               >
                 {isPositiveTrend ? (
@@ -214,9 +214,9 @@ export default function MetricasPlataformaPage() {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
+          <div className="mb-6 p-4 bg-status-error/10 dark:bg-status-error/20 border border-status-error/30 dark:border-status-error/30 rounded-md flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-status-error" />
+            <span className="text-sm text-status-error dark:text-status-error">{error}</span>
           </div>
         )}
 
@@ -440,14 +440,14 @@ export default function MetricasPlataformaPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-md text-center">
-                    <p className="text-sm font-medium text-green-700 dark:text-green-300 mb-1">
+                  <div className="p-4 bg-status-success/10 dark:bg-status-success/20 rounded-md text-center">
+                    <p className="text-sm font-medium text-status-success dark:text-status-success mb-1">
                       Margem Bruta
                     </p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-2xl font-bold text-status-success">
                       {(((metrics.revenue.mrr - metrics.costs.totalMonthlyCost) / metrics.revenue.mrr) * 100).toFixed(1)}%
                     </p>
-                    <p className="text-xs text-green-600/70 mt-1">
+                    <p className="text-xs text-status-success/70 mt-1">
                       {formatCurrency(metrics.revenue.mrr - metrics.costs.totalMonthlyCost)} lucro bruto
                     </p>
                   </div>
@@ -462,14 +462,14 @@ export default function MetricasPlataformaPage() {
                       média mensal por cliente
                     </p>
                   </div>
-                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-md text-center">
-                    <p className="text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                  <div className="p-4 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md text-center">
+                    <p className="text-sm font-medium text-wedo-purple dark:text-wedo-purple mb-1">
                       LTV Estimado (24 meses)
                     </p>
-                    <p className="text-2xl font-bold text-purple-600">
+                    <p className="text-2xl font-bold text-wedo-purple">
                       {formatCurrency((metrics.revenue.mrr / metrics.clients.activeClients) * 24)}
                     </p>
-                    <p className="text-xs text-purple-600/70 mt-1">
+                    <p className="text-xs text-wedo-purple/70 mt-1">
                       valor vitalício do cliente
                     </p>
                   </div>

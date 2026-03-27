@@ -36,10 +36,10 @@ const internalTabs: TabLink[] = [
 ]
 
 const statusColors: Record<string, string> = {
-  implemented: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  partial: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  not_implemented: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  in_progress: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  implemented: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success',
+  partial: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
+  not_implemented: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
+  in_progress: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   not_started: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-200',
   verified: 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50',
   not_applicable: 'bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500',
@@ -147,8 +147,8 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
           })}
         </div>
         <div className="p-6 text-center">
-          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-sm text-red-600">Erro ao carregar controles</p>
+          <AlertCircle className="w-8 h-8 text-status-error mx-auto mb-2" />
+          <p className="text-sm text-status-error">Erro ao carregar controles</p>
           <Button variant="outline" size="sm" onClick={refetch} className="mt-3">
             <RefreshCw className="w-4 h-4 mr-2" />
             Tentar novamente
@@ -207,17 +207,17 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                   <Progress value={stats.compliancePercentage} className="h-2 mb-4" />
                   
                   <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="p-2 rounded-md bg-emerald-50 dark:bg-emerald-900/20">
-                      <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{stats.implemented + stats.verified}</p>
-                      <p className="text-micro text-emerald-600 dark:text-emerald-400">Implementado</p>
+                    <div className="p-2 rounded-md bg-status-success/10 dark:bg-status-success/20">
+                      <p className="text-lg font-semibold text-status-success dark:text-status-success">{stats.implemented + stats.verified}</p>
+                      <p className="text-micro text-status-success dark:text-status-success">Implementado</p>
                     </div>
-                    <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-900/20">
-                      <p className="text-lg font-semibold text-amber-600 dark:text-amber-400">{stats.inProgress}</p>
-                      <p className="text-micro text-amber-600 dark:text-amber-400">Parcial</p>
+                    <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
+                      <p className="text-lg font-semibold text-status-warning dark:text-status-warning">{stats.inProgress}</p>
+                      <p className="text-micro text-status-warning dark:text-status-warning">Parcial</p>
                     </div>
-                    <div className="p-2 rounded-md bg-red-50 dark:bg-red-900/20">
-                      <p className="text-lg font-semibold text-red-600 dark:text-red-400">{stats.notStarted}</p>
-                      <p className="text-micro text-red-600 dark:text-red-400">Pendente</p>
+                    <div className="p-2 rounded-md bg-status-error/10 dark:bg-status-error/20">
+                      <p className="text-lg font-semibold text-status-error dark:text-status-error">{stats.notStarted}</p>
+                      <p className="text-micro text-status-error dark:text-status-error">Pendente</p>
                     </div>
                   </div>
                 </CardContent>
@@ -343,7 +343,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                     {dashboard.upcomingReviews} revisões agendadas
                   </p>
                   {dashboard.overdueReviews > 0 && (
-                    <p className="text-xs text-red-600 mt-1">
+                    <p className="text-xs text-status-error mt-1">
                       {dashboard.overdueReviews} revisões em atraso
                     </p>
                   )}

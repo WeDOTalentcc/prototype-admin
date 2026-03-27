@@ -560,7 +560,7 @@ export default function CandidatePortalPage() {
           <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
             {icon}
             {field.label}
-            {field.required && <span className="text-red-500">*</span>}
+            {field.required && <span className="text-status-error">*</span>}
           </Label>
           {field.description && (
             <p className="text-xs text-gray-500">{field.description}</p>
@@ -577,7 +577,7 @@ export default function CandidatePortalPage() {
                 <button
                   type="button"
                   onClick={() => handleFileChange(field.name, null)}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  className="absolute top-2 right-2 p-1 bg-status-error text-white rounded-full hover:bg-status-error"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -599,19 +599,19 @@ export default function CandidatePortalPage() {
                 <button
                   type="button"
                   onClick={() => handleFileChange(field.name, null)}
-                  className="p-1 text-gray-400 hover:text-red-500"
+                  className="p-1 text-gray-400 hover:text-status-error"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             ) : completedFile ? (
-              <div className="flex items-center gap-3 p-4 border-2 border-green-200 bg-green-50 rounded-md">
-                <CheckCircle2 className="w-6 h-6 text-green-500" />
+              <div className="flex items-center gap-3 p-4 border-2 border-status-success/30 bg-status-success/10 rounded-md">
+                <CheckCircle2 className="w-6 h-6 text-status-success" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-700 truncate">
                     {completedFile.file_name || "Arquivo enviado"}
                   </p>
-                  <p className="text-xs text-green-600">Arquivo já enviado</p>
+                  <p className="text-xs text-status-success">Arquivo já enviado</p>
                 </div>
                 <button
                   type="button"
@@ -661,7 +661,7 @@ export default function CandidatePortalPage() {
           )}
 
           {error && (
-            <p className="text-xs text-red-500 flex items-center gap-1">
+            <p className="text-xs text-status-error flex items-center gap-1">
               <AlertCircle className="w-3 h-3" />
               {error}
             </p>
@@ -676,7 +676,7 @@ export default function CandidatePortalPage() {
           <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
             {icon}
             {field.label}
-            {field.required && <span className="text-red-500">*</span>}
+            {field.required && <span className="text-status-error">*</span>}
           </Label>
           {field.description && (
             <p className="text-xs text-gray-500">{field.description}</p>
@@ -694,7 +694,7 @@ export default function CandidatePortalPage() {
             ))}
           </select>
           {error && (
-            <p className="text-xs text-red-500 flex items-center gap-1">
+            <p className="text-xs text-status-error flex items-center gap-1">
               <AlertCircle className="w-3 h-3" />
               {error}
             </p>
@@ -709,7 +709,7 @@ export default function CandidatePortalPage() {
           <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
             {icon}
             {field.label}
-            {field.required && <span className="text-red-500">*</span>}
+            {field.required && <span className="text-status-error">*</span>}
           </Label>
           {field.description && (
             <p className="text-xs text-gray-500">{field.description}</p>
@@ -722,7 +722,7 @@ export default function CandidatePortalPage() {
             className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-200 resize-none"
           />
           {error && (
-            <p className="text-xs text-red-500 flex items-center gap-1">
+            <p className="text-xs text-status-error flex items-center gap-1">
               <AlertCircle className="w-3 h-3" />
               {error}
             </p>
@@ -736,7 +736,7 @@ export default function CandidatePortalPage() {
         <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
           {icon}
           {field.label}
-          {field.required && <span className="text-red-500">*</span>}
+          {field.required && <span className="text-status-error">*</span>}
         </Label>
         {field.description && (
           <p className="text-xs text-gray-500">{field.description}</p>
@@ -751,10 +751,10 @@ export default function CandidatePortalPage() {
               ? "numeric"
               : "text"
           }
-          className={error ? "border-red-300 focus:border-red-400" : ""}
+          className={error ? "border-status-error/30 focus:border-status-error/30" : ""}
         />
         {error && (
-          <p className="text-xs text-red-500 flex items-center gap-1">
+          <p className="text-xs text-status-error flex items-center gap-1">
             <AlertCircle className="w-3 h-3" />
             {error}
           </p>
@@ -779,7 +779,7 @@ export default function CandidatePortalPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <AlertCircle className="w-16 h-16 text-status-error mx-auto mb-4" />
             <h1 className="text-xl font-semibold text-gray-900 mb-2">Ops!</h1>
             <p className="text-gray-600">{errorMessage}</p>
           </CardContent>
@@ -793,7 +793,7 @@ export default function CandidatePortalPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
-            <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+            <AlertCircle className="w-16 h-16 text-status-warning mx-auto mb-4" />
             <h1 className="text-xl font-semibold text-gray-900 mb-2">Link Expirado</h1>
             <p className="text-gray-600">{errorMessage}</p>
             <p className="text-sm text-gray-500 mt-4">
@@ -898,7 +898,7 @@ export default function CandidatePortalPage() {
                   </div>
 
                   {otpError && (
-                    <p className="text-sm text-red-500 text-center flex items-center justify-center gap-1">
+                    <p className="text-sm text-status-error text-center flex items-center justify-center gap-1">
                       <AlertCircle className="w-4 h-4" />
                       {otpError}
                     </p>

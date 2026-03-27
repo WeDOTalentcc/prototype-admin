@@ -392,16 +392,16 @@ export function UniversalTransitionModal({
         </DialogHeader>
 
         {policyWarnings.length > 0 && (
-          <div className="mx-6 mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md text-sm dark:bg-amber-900/20 dark:border-amber-800">
+          <div className="mx-6 mt-3 p-3 bg-status-warning/10 border border-status-warning/30 rounded-md text-sm dark:bg-status-warning/20 dark:border-status-warning/30">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0 dark:text-amber-400" />
+              <AlertTriangle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0 dark:text-status-warning" />
               <div>
-                <p className="font-medium text-amber-800 dark:text-amber-300">Atenção — Política da empresa</p>
+                <p className="font-medium text-status-warning dark:text-status-warning">Atenção — Política da empresa</p>
                 {policyWarnings.map((w, i) => (
-                  <p key={i} className="mt-1 text-amber-700 dark:text-amber-400">{w}</p>
+                  <p key={i} className="mt-1 text-status-warning dark:text-status-warning">{w}</p>
                 ))}
                 {policyMetadata.requires_manager_approval && (
-                  <p className="mt-1 text-amber-700 dark:text-amber-400">
+                  <p className="mt-1 text-status-warning dark:text-status-warning">
                     Aprovação do gestor será necessária antes de prosseguir.
                   </p>
                 )}
@@ -411,13 +411,13 @@ export function UniversalTransitionModal({
         )}
 
         {interviewAlert && (
-          <div className="mx-4 mt-2 flex items-start gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
-            <CalendarClock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="mx-4 mt-2 flex items-start gap-2 px-3 py-2 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-lg">
+            <CalendarClock className="w-3.5 h-3.5 text-status-warning dark:text-status-warning flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-micro font-semibold text-amber-800 dark:text-amber-300">
+              <p className="text-micro font-semibold text-status-warning dark:text-status-warning">
                 Entrevista agendada
               </p>
-              <p className="text-micro text-amber-700 dark:text-amber-400">
+              <p className="text-micro text-status-warning dark:text-status-warning">
                 {interviewAlert.name} — {interviewAlert.date}
               </p>
             </div>

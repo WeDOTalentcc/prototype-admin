@@ -235,9 +235,9 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
   const getDensityColor = (densidade: string) => {
     switch (densidade) {
-      case 'alta': return 'bg-red-100 text-red-800 border-red-200'
-      case 'media': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'baixa': return 'bg-green-100 text-green-800 border-green-200'
+      case 'alta': return 'bg-status-error/15 text-status-error border-status-error/30'
+      case 'media': return 'bg-status-warning/15 text-status-warning border-status-warning/30'
+      case 'baixa': return 'bg-status-success/15 text-status-success border-status-success/30'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
@@ -257,7 +257,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-orange-600" />
+              <MapPin className="w-5 h-5 text-wedo-orange" />
               Análise Regional Detalhada
             </CardTitle>
 
@@ -270,7 +270,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                     onClick={() => setViewMode(mode)}
                     className={`px-3 py-1 text-xs rounded-md transition-colors ${
                       viewMode === mode
-                        ? 'bg-orange-600 text-white'
+                        ? 'bg-wedo-orange/10 text-white'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -357,7 +357,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                         <div className="text-center">
                           <div className={`text-lg font-bold flex items-center gap-1 ${
-                            (item.crescimentoMedio || item.crescimento) > 0 ? 'text-green-600' : 'text-red-600'
+                            (item.crescimentoMedio || item.crescimento) > 0 ? 'text-status-success' : 'text-status-error'
                           }`}>
                             {(item.crescimentoMedio || item.crescimento) > 0 ?
                               <ArrowUp className="w-4 h-4" /> :
@@ -374,7 +374,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                     <div className="mt-4">
                       <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-gray-700">
                         <div
-                          className="bg-green-500"
+                          className="bg-status-success"
                           style={{ width: `${percentages.remoto}%` }}
                           title={`Remoto: ${item.remoto} (${percentages.remoto.toFixed(1)}%)`}
                         />
@@ -393,7 +393,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                       <div className="flex items-center justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
-                            <Home className="w-3 h-3 text-green-600" />
+                            <Home className="w-3 h-3 text-status-success" />
                             <span>Remoto: {item.remoto}</span>
                           </div>
                           <div className="flex items-center gap-1">
@@ -427,7 +427,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                             <div className="space-y-2">
                               <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
                                 <div
-                                  className="bg-green-500"
+                                  className="bg-status-success"
                                   style={{ width: `${(estado.remoto / estado.total) * 100}%` }}
                                 />
                                 <div
@@ -442,7 +442,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                               <div className="text-xs text-gray-600 dark:text-gray-400">
                                 <div>R$ {estado.salarioMedio.toLocaleString()} salário médio</div>
-                                <div className={estado.crescimento > 0 ? 'text-green-600' : 'text-red-600'}>
+                                <div className={estado.crescimento > 0 ? 'text-status-success' : 'text-status-error'}>
                                   {estado.crescimento > 0 ? '+' : ''}{estado.crescimento}% crescimento
                                 </div>
                               </div>

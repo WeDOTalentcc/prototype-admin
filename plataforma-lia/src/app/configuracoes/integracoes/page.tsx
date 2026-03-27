@@ -65,8 +65,8 @@ export default function IntegracoesPage() {
         <CardHeader className="pb-3 pt-4 px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-md bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="w-9 h-9 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-wedo-cyan-dark dark:text-wedo-cyan-dark" />
               </div>
               <div>
                 <CardTitle className="text-sm font-semibold text-gray-900 dark:text-gray-50 font-['Open_Sans',sans-serif]">
@@ -82,7 +82,7 @@ export default function IntegracoesPage() {
                 <Loader2 className="w-3 h-3 animate-spin" /> Verificando...
               </Badge>
             ) : microsoftStatus === "connected" ? (
-              <Badge variant="outline" className="text-micro gap-1 border-green-200 text-green-700 dark:text-green-400 dark:border-green-800">
+              <Badge variant="outline" className="text-micro gap-1 border-status-success/30 text-status-success dark:text-status-success dark:border-status-success/30">
                 <CheckCircle2 className="w-3 h-3" /> Conectado
               </Badge>
             ) : (
@@ -106,8 +106,8 @@ export default function IntegracoesPage() {
         <CardHeader className="pb-3 pt-4 px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-md bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
-                <Chrome className="w-5 h-5 text-red-500 dark:text-red-400" />
+              <div className="w-9 h-9 rounded-md bg-status-error/10 flex items-center justify-center">
+                <Chrome className="w-5 h-5 text-status-error dark:text-status-error" />
               </div>
               <div>
                 <CardTitle className="text-sm font-semibold text-gray-900 dark:text-gray-50 font-['Open_Sans',sans-serif]">
@@ -119,7 +119,7 @@ export default function IntegracoesPage() {
               </div>
             </div>
             {googleStatus === "connected" ? (
-              <Badge variant="outline" className="text-micro gap-1 border-green-200 text-green-700 dark:text-green-400 dark:border-green-800">
+              <Badge variant="outline" className="text-micro gap-1 border-status-success/30 text-status-success dark:text-status-success dark:border-status-success/30">
                 <CheckCircle2 className="w-3 h-3" /> Conectado
               </Badge>
             ) : (
@@ -134,9 +134,9 @@ export default function IntegracoesPage() {
             Conecte sua conta Google Workspace para criar eventos com link do Google Meet automaticamente ao agendar entrevistas.
           </p>
           {errorMsg && (
-            <div className="flex items-center gap-2 p-2 rounded-md bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-              <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-              <p className="text-xs text-red-700 dark:text-red-400 font-['Open_Sans',sans-serif]">{errorMsg}</p>
+            <div className="flex items-center gap-2 p-2 rounded-md bg-status-error/10 border border-status-error/30 dark:border-status-error/30">
+              <AlertCircle className="w-3.5 h-3.5 text-status-error flex-shrink-0" />
+              <p className="text-xs text-status-error dark:text-status-error font-['Open_Sans',sans-serif]">{errorMsg}</p>
             </div>
           )}
           {googleStatus !== "connected" && (

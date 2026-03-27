@@ -28,9 +28,9 @@ export function ServiceConsumption({
   const getTrendColor = (direction?: "up" | "down" | "neutral") => {
     switch (direction) {
       case "up":
-        return "text-red-600"
+        return "text-status-error"
       case "down":
-        return "text-green-600"
+        return "text-status-success"
       default:
         return "text-gray-500"
     }

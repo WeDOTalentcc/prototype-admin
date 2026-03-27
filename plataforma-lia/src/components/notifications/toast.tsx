@@ -13,24 +13,24 @@ interface ToastProps {
 const typeConfig = {
   success: {
     icon: CheckCircle,
-    bgColor: 'bg-emerald-50 dark:bg-emerald-950/20',
-    borderColor: 'border-emerald-200 dark:border-emerald-800',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    titleColor: 'text-emerald-900 dark:text-emerald-100'
+    bgColor: 'bg-status-success/10',
+    borderColor: 'border-status-success/30 dark:border-status-success/30',
+    iconColor: 'text-status-success dark:text-status-success',
+    titleColor: 'text-status-success dark:text-status-success'
   },
   error: {
     icon: AlertCircle,
-    bgColor: 'bg-red-50 dark:bg-red-950/20',
-    borderColor: 'border-red-200 dark:border-red-800',
-    iconColor: 'text-red-600 dark:text-red-400',
-    titleColor: 'text-red-900 dark:text-red-100'
+    bgColor: 'bg-status-error/10',
+    borderColor: 'border-status-error/30 dark:border-status-error/30',
+    iconColor: 'text-status-error dark:text-status-error',
+    titleColor: 'text-status-error dark:text-status-error'
   },
   warning: {
     icon: AlertTriangle,
-    bgColor: 'bg-amber-50 dark:bg-amber-950/20',
-    borderColor: 'border-amber-200 dark:border-amber-800',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    titleColor: 'text-amber-900 dark:text-amber-100'
+    bgColor: 'bg-status-warning/10',
+    borderColor: 'border-status-warning/30 dark:border-status-warning/30',
+    iconColor: 'text-status-warning dark:text-status-warning',
+    titleColor: 'text-status-warning dark:text-status-warning'
   },
   info: {
     icon: Info,
@@ -67,11 +67,11 @@ export function Toast({ notification }: ToastProps) {
       {/* Indicador de tempo real */}
       {notification.realTime && (
         <div
-          className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"
+          className="absolute -top-1 -right-1 w-3 h-3 bg-status-success rounded-full"
           style={{ animation: 'scaleInDelayed 0.2s ease-out' }}
         >
           <div
-            className="w-full h-full bg-green-500 rounded-full"
+            className="w-full h-full bg-status-success rounded-full"
             style={{ animation: 'realtimePulse 2s infinite' }}
           />
         </div>

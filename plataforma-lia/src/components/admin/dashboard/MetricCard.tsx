@@ -26,9 +26,9 @@ export function MetricCard({
   const getTrendColor = () => {
     switch (trendDirection) {
       case "up":
-        return "text-green-600"
+        return "text-status-success"
       case "down":
-        return "text-red-600"
+        return "text-status-error"
       default:
         return "text-gray-500"
     }

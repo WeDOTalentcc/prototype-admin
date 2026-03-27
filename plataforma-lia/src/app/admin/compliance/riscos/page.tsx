@@ -159,8 +159,8 @@ export default function RiscosPage() {
                     {riskStats.total}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <TrendingUp className="w-3 h-3 text-amber-500" />
-                    <span className="text-xs text-amber-600">+2 este mês</span>
+                    <TrendingUp className="w-3 h-3 text-status-warning" />
+                    <span className="text-xs text-status-warning">+2 este mês</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
@@ -187,7 +187,7 @@ export default function RiscosPage() {
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                  <AlertCircle className="w-5 h-5 text-red-500" />
+                  <AlertCircle className="w-5 h-5 text-status-error" />
                 </div>
               </div>
             </CardContent>
@@ -204,14 +204,14 @@ export default function RiscosPage() {
                     {risks.filter(r => r.status === 'mitigating').length}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-micro bg-amber-100 text-amber-700 hover:bg-amber-100">
+                    <Badge className="text-micro bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
                       <Clock className="w-3 h-3 mr-1" />
                       Ação em curso
                     </Badge>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)' }}>
-                  <Clock className="w-5 h-5 text-amber-500" />
+                  <Clock className="w-5 h-5 text-status-warning" />
                 </div>
               </div>
             </CardContent>
@@ -228,14 +228,14 @@ export default function RiscosPage() {
                     {Math.round((riskStats.mitigated / riskStats.total) * 100)}%
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-micro bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <Badge className="text-micro bg-status-success/15 text-status-success hover:bg-status-success/15">
                       <CheckCircle2 className="w-3 h-3 mr-1" />
                       {riskStats.mitigated} mitigados
                     </Badge>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
               </div>
             </CardContent>
@@ -281,7 +281,7 @@ export default function RiscosPage() {
                   <span className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                     Cobertura de Seguro
                   </span>
-                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                  <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
                     {insuranceCoverage}
                   </Badge>
                 </div>
@@ -359,7 +359,7 @@ export default function RiscosPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500" />
+                <AlertCircle className="w-4 h-4 text-status-error" />
                 <CardTitle className="text-base font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                   Top 5 Riscos Prioritários
                 </CardTitle>
@@ -444,7 +444,7 @@ export default function RiscosPage() {
                         </Badge>
                       )}
                       {'status' in page && (
-                        <Badge className="text-xs bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                        <Badge className="text-xs bg-status-success/15 text-status-success hover:bg-status-success/15">
                           {page.status}
                         </Badge>
                       )}

@@ -45,7 +45,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
       label: 'Remoto',
       value: 342,
       percentage: 34.2,
-      color: 'bg-green-500',
+      color: 'bg-status-success',
       icon: <Home className="w-4 h-4" />
     },
     {
@@ -172,12 +172,12 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             {/* Remoto */}
             <div className="flex items-center gap-3">
               <div className="w-16 text-xs text-gray-600 flex items-center gap-1">
-                <Home className="w-3 h-3 text-green-600" />
+                <Home className="w-3 h-3 text-status-success" />
                 Remoto
               </div>
               <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-status-success h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(item.remoto / maxValue) * 100}%` }}
                 ></div>
               </div>
@@ -240,7 +240,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
 
               <div className="relative h-32 flex items-end justify-center gap-1">
                 {/* Remoto */}
-                <div className="w-3 bg-green-500 rounded-t" style={{
+                <div className="w-3 bg-status-success rounded-t" style={{
                   height: `${(item.remoto / maxTrendValue) * 100}%`,
                   minHeight: '4px'
                 }} title={`Remoto: ${item.remoto}`}></div>
@@ -268,7 +268,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         {/* Legenda */}
         <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded"></div>
+            <div className="w-3 h-3 bg-status-success rounded"></div>
             <span className="text-xs text-gray-600">Remoto</span>
           </div>
           <div className="flex items-center gap-2">
@@ -300,9 +300,9 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
 
     const getDensityColor = (densidade: string) => {
       switch (densidade) {
-        case 'alta': return 'bg-red-500'
-        case 'media': return 'bg-yellow-500'
-        case 'baixa': return 'bg-green-500'
+        case 'alta': return 'bg-status-error'
+        case 'media': return 'bg-status-warning'
+        case 'baixa': return 'bg-status-success'
         default: return 'bg-gray-300'
       }
     }
@@ -325,15 +325,15 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         {/* Legenda do heatmap */}
         <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
+            <div className="w-4 h-4 bg-status-success rounded"></div>
             <span className="text-xs text-gray-600">Baixa densidade (&lt;60)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+            <div className="w-4 h-4 bg-status-warning rounded"></div>
             <span className="text-xs text-gray-600">Média densidade (60-100)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-500 rounded"></div>
+            <div className="w-4 h-4 bg-status-error rounded"></div>
             <span className="text-xs text-gray-600">Alta densidade (&gt;200)</span>
           </div>
         </div>

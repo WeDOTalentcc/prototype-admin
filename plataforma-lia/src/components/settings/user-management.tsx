@@ -265,9 +265,9 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ativo': return `${badgeStyles.success} border-green-200`
-      case 'inativo': return `${badgeStyles.error} border-red-200`
-      case 'pendente': return `${badgeStyles.warning} border-yellow-200`
+      case 'ativo': return `${badgeStyles.success} border-status-success/30`
+      case 'inativo': return `${badgeStyles.error} border-status-error/30`
+      case 'pendente': return `${badgeStyles.warning} border-status-warning/30`
       default: return `${badgeStyles.default} border-gray-200`
     }
   }
@@ -283,7 +283,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center p-6 gap-3">
-        <div className="text-xs text-red-500">{error}</div>
+        <div className="text-xs text-status-error">{error}</div>
         <Button onClick={fetchUsers} size="sm">Tentar novamente</Button>
       </div>
     )
@@ -516,9 +516,9 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
     <div className="space-y-4">
       {/* SCIM/SSO Banner */}
       {isSCIMEnabled && (
-        <Card className="border-blue-200 dark:border-blue-900">
+        <Card className="border-wedo-cyan/30 dark:border-wedo-cyan/30">
           <CardContent className="p-3 flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <Info className="w-4 h-4 text-wedo-cyan-dark dark:text-wedo-cyan-dark flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className={textStyles.subtitle}>
                 Provisionamento automático ativo via {scimConfig?.directoryName || 'SSO Enterprise'}
@@ -532,7 +532,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
               href="https://workos.com/docs/directory-sync"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 text-xs flex-shrink-0"
+              className="text-wedo-cyan-dark dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark flex items-center gap-1 text-xs flex-shrink-0"
             >
               <ExternalLink className="w-3 h-3" />
               Saiba mais
@@ -543,15 +543,15 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
 
       {/* Success Message */}
       {successMessage && (
-        <Card className="border-green-200 dark:border-green-900">
+        <Card className="border-status-success/30 dark:border-status-success/30">
           <CardContent className="p-3 flex items-start gap-2">
-            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-4 h-4 text-status-success dark:text-status-success flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className={textStyles.subtitle}>{successMessage}</p>
             </div>
             <button
               onClick={() => setSuccessMessage(null)}
-              className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+              className="text-status-success dark:text-status-success hover:text-status-success dark:hover:text-status-success"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -588,13 +588,13 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</div>
+            <div className="text-2xl font-bold text-status-success dark:text-status-success">{stats.active}</div>
             <div className={textStyles.description}>Usuários Ativos</div>
           </CardContent>
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.managers}</div>
+            <div className="text-2xl font-bold text-wedo-purple dark:text-wedo-purple">{stats.managers}</div>
             <div className={textStyles.description}>Gestores</div>
           </CardContent>
         </Card>
@@ -704,7 +704,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteUser(user.id)}
-                        className="h-7 w-7 p-0 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                        className="h-7 w-7 p-0 text-status-error dark:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/30"
                         title="Excluir"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -831,7 +831,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteUser(user.id)}
-                              className="h-7 w-7 p-0 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                              className="h-7 w-7 p-0 text-status-error dark:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/30"
                               title="Excluir"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

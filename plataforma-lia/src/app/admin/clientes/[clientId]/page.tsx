@@ -240,8 +240,8 @@ export default function ClientOverviewPage({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-red-500" />
+        <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
         <h3 className="text-lg font-medium mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
           Erro ao carregar dados
@@ -321,8 +321,8 @@ export default function ClientOverviewPage({
                   </span>
                 </p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">+2 este mês</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">+2 este mês</span>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
@@ -343,12 +343,12 @@ export default function ClientOverviewPage({
                   {metrics.open_vacancies}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">+3 esta semana</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">+3 esta semana</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div className="w-10 h-10 rounded-md bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -365,12 +365,12 @@ export default function ClientOverviewPage({
                   {metrics.total_candidates}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">+45 hoje</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">+45 hoje</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                <UserSearch className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 rounded-md bg-status-warning/10 dark:bg-status-warning/20 flex items-center justify-center">
+                <UserSearch className="w-5 h-5 text-status-warning dark:text-status-warning" />
               </div>
             </div>
           </CardContent>
@@ -503,11 +503,11 @@ export default function ClientOverviewPage({
                 <div key={step.id} className="flex items-center gap-3">
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
                     step.completed 
-                      ? 'bg-emerald-100 dark:bg-emerald-900/30' 
+                      ? 'bg-status-success/15 dark:bg-status-success/30' 
                       : 'bg-gray-100 dark:bg-gray-800'
                   }`}>
                     {step.completed ? (
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="w-3 h-3 text-status-success dark:text-status-success" />
                     ) : (
                       <Clock className="w-3 h-3 text-gray-400" />
                     )}

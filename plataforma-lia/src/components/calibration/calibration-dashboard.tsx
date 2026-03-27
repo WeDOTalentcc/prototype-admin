@@ -248,9 +248,9 @@ export function CalibrationDashboard() {
 
   const getAccuracyColor = (accuracy: number) => {
     if (accuracy >= 90) return "text-gray-600 dark:text-gray-400"
-    if (accuracy >= 80) return "text-green-600"
-    if (accuracy >= 70) return "text-yellow-600"
-    return "text-red-600"
+    if (accuracy >= 80) return "text-status-success"
+    if (accuracy >= 70) return "text-status-warning"
+    return "text-status-error"
   }
 
   const getDivergenceIcon = (type: string) => {

@@ -212,7 +212,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
             <Star
               className={`w-3 h-3 ${
                 star <= command.rating
-                  ? 'text-yellow-500 fill-yellow-500'
+                  ? 'text-status-warning fill-yellow-500'
                   : 'text-gray-300'
               }`}
             />
@@ -330,7 +330,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteCommand(command)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                      className="h-8 w-8 p-0 text-status-error hover:text-status-error"
                       title="Excluir comando"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -343,10 +343,10 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
                 {/* Comando */}
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <MessageCircle className="w-4 h-4 text-purple-600" />
+                    <MessageCircle className="w-4 h-4 text-wedo-purple" />
                     <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Comando:</span>
                   </div>
-                  <code className="text-sm text-purple-700 dark:text-purple-300 font-mono">
+                  <code className="text-sm text-wedo-purple dark:text-wedo-purple font-mono">
                     {command.command}
                   </code>
                 </div>
@@ -406,7 +406,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
           <Card className="w-full max-w-md bg-white dark:bg-gray-800">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-500" />
+                <AlertCircle className="w-5 h-5 text-status-error" />
                 Confirmar Exclusão
               </CardTitle>
             </CardHeader>
@@ -430,7 +430,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
                 </Button>
                 <Button
                   onClick={confirmDelete}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-status-error hover:bg-status-error text-white"
                 >
                   Excluir Comando
                 </Button>

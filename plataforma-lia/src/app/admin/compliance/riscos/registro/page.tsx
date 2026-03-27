@@ -151,11 +151,11 @@ const getScoreColor = (score: number) => {
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'open':
-      return { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-100', label: 'Aberto' }
+      return { icon: AlertTriangle, color: 'text-status-error', bg: 'bg-status-error/15', label: 'Aberto' }
     case 'in_treatment':
-      return { icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100', label: 'Em Tratamento' }
+      return { icon: Clock, color: 'text-status-warning', bg: 'bg-status-warning/15', label: 'Em Tratamento' }
     case 'closed':
-      return { icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-100', label: 'Fechado' }
+      return { icon: CheckCircle2, color: 'text-status-success', bg: 'bg-status-success/15', label: 'Fechado' }
     default:
       return { icon: Clock, color: 'text-gray-600', bg: 'bg-gray-100', label: status }
   }
@@ -166,11 +166,11 @@ const getTreatmentConfig = (treatment: string) => {
     case 'mitigate':
       return { icon: ShieldCheck, color: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-50 dark:bg-gray-800/50', label: 'Mitigar' }
     case 'accept':
-      return { icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Aceitar' }
+      return { icon: CheckCircle2, color: 'text-status-success', bg: 'bg-status-success/10', label: 'Aceitar' }
     case 'transfer':
-      return { icon: ArrowRightLeft, color: 'text-purple-600', bg: 'bg-purple-50', label: 'Transferir' }
+      return { icon: ArrowRightLeft, color: 'text-wedo-purple', bg: 'bg-wedo-purple/10', label: 'Transferir' }
     case 'avoid':
-      return { icon: XCircle, color: 'text-red-600', bg: 'bg-red-50', label: 'Evitar' }
+      return { icon: XCircle, color: 'text-status-error', bg: 'bg-status-error/10', label: 'Evitar' }
     default:
       return { icon: Clock, color: 'text-gray-600', bg: 'bg-gray-50', label: treatment }
   }
@@ -187,22 +187,22 @@ const getImpactLabel = (value: string) => {
 }
 
 const getProbabilityColor = (value: string) => {
-  if (value === 'high' || value === 'very_high') return 'text-red-600 bg-red-50'
-  if (value === 'medium') return 'text-amber-600 bg-amber-50'
-  return 'text-emerald-600 bg-emerald-50'
+  if (value === 'high' || value === 'very_high') return 'text-status-error bg-status-error/10'
+  if (value === 'medium') return 'text-status-warning bg-status-warning/10'
+  return 'text-status-success bg-status-success/10'
 }
 
 const getImpactColor = (value: string) => {
-  if (value === 'high' || value === 'critical') return 'text-red-600 bg-red-50'
-  if (value === 'medium') return 'text-amber-600 bg-amber-50'
-  return 'text-emerald-600 bg-emerald-50'
+  if (value === 'high' || value === 'critical') return 'text-status-error bg-status-error/10'
+  if (value === 'medium') return 'text-status-warning bg-status-warning/10'
+  return 'text-status-success bg-status-success/10'
 }
 
 const getCategoryColor = (category: string) => {
   const colors: Record<string, string> = {
-    'Segurança': 'bg-red-100 text-red-700',
-    'Operacional': 'bg-amber-100 text-amber-700',
-    'Compliance': 'bg-purple-100 text-purple-700',
+    'Segurança': 'bg-status-error/15 text-status-error',
+    'Operacional': 'bg-status-warning/15 text-status-warning',
+    'Compliance': 'bg-wedo-purple/15 text-wedo-purple',
     'Privacidade': 'bg-violet-100 text-violet-700',
     'Legal': 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
     'Financeiro': 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50',
@@ -263,9 +263,9 @@ export default function RiskRegisterPage() {
         <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderLeft: '4px solid #ef4444' }}>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-status-error mt-0.5" />
               <div>
-                <p className="font-medium text-sm text-red-700">
+                <p className="font-medium text-sm text-status-error">
                   Gap de Compliance - ISO 27001
                 </p>
                 <p className="text-sm mt-1" style={{ color: 'var(--eleven-text-secondary)' }}>
@@ -297,7 +297,7 @@ export default function RiskRegisterPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{criticalCount}</p>
@@ -311,7 +311,7 @@ export default function RiskRegisterPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)' }}>
-                  <Clock className="w-5 h-5 text-amber-500" />
+                  <Clock className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{inTreatmentCount}</p>
@@ -325,7 +325,7 @@ export default function RiskRegisterPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{closedCount}</p>
@@ -474,7 +474,7 @@ export default function RiskRegisterPage() {
                               <DropdownMenuItem>Ver detalhes</DropdownMenuItem>
                               <DropdownMenuItem>Editar risco</DropdownMenuItem>
                               <DropdownMenuItem>Atualizar status</DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">Arquivar</DropdownMenuItem>
+                              <DropdownMenuItem className="text-status-error">Arquivar</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

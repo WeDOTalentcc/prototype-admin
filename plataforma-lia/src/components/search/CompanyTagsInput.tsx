@@ -382,7 +382,7 @@ export function CompanyTagsInput({
             className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-64 overflow-y-auto"
           >
             {aiError && (
-              <div className="px-3 py-2 text-sm text-amber-600 flex items-center gap-2 border-b border-gray-100">
+              <div className="px-3 py-2 text-sm text-status-warning flex items-center gap-2 border-b border-gray-100">
                 <AlertCircle className="w-4 h-4" />
                 <span>{aiError}</span>
               </div>
@@ -404,15 +404,15 @@ export function CompanyTagsInput({
                 )}
               >
                 {item.type === 'ai' ? (
-                  <div className="flex items-center gap-2 text-purple-600">
+                  <div className="flex items-center gap-2 text-wedo-purple">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     <span>{item.label}</span>
                   </div>
                 ) : item.type === 'ai-suggestion' ? (
                   <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
-                    <Brain className="w-3 h-3 text-purple-500" />
+                    <Brain className="w-3 h-3 text-wedo-purple" />
                     <span>{item.label}</span>
-                    <span className="text-micro px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded-full ml-auto">AI</span>
+                    <span className="text-micro px-1.5 py-0.5 bg-wedo-purple/15 text-wedo-purple rounded-full ml-auto">AI</span>
                   </div>
                 ) : (
                   <span className="text-gray-800 dark:text-gray-200">{item.label}</span>

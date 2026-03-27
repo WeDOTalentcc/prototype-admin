@@ -231,7 +231,7 @@ export function SaveArchetypeModal({
                     {tag}
                     <button
                       onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 hover:text-red-500"
+                      className="ml-1 hover:text-status-error"
                     >
                       <X className="w-3 h-3" />
                     </button>

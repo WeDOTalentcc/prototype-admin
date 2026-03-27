@@ -39,8 +39,8 @@ export function HITLConfirmCard({
   return (
     <div
       className={cn(
-        "rounded-md border border-amber-200 dark:border-amber-800",
-        "bg-amber-50 dark:bg-amber-950/30",
+        "rounded-md border border-status-warning/30 dark:border-status-warning/30",
+        "bg-status-warning/10",
         "p-3 space-y-2.5"
       )}
       role="alertdialog"
@@ -49,11 +49,11 @@ export function HITLConfirmCard({
       {/* Header */}
       <div className="flex items-start gap-2">
         <AlertCircle
-          className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5"
+          className="w-4 h-4 text-status-warning dark:text-status-warning flex-shrink-0 mt-0.5"
           strokeWidth={2}
         />
         <p
-          className="text-sm-ui font-semibold text-amber-800 dark:text-amber-300 leading-snug"
+          className="text-sm-ui font-semibold text-status-warning dark:text-status-warning leading-snug"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           Confirmação necessária

@@ -37,21 +37,21 @@ const DEFAULT_DIMENSIONS: ScoreDimension[] = [
 ]
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return "text-emerald-600 dark:text-emerald-400"
-  if (score >= 60) return "text-amber-600 dark:text-amber-400"
-  return "text-red-600 dark:text-red-400"
+  if (score >= 80) return "text-status-success dark:text-status-success"
+  if (score >= 60) return "text-status-warning dark:text-status-warning"
+  return "text-status-error dark:text-status-error"
 }
 
 function getBarColor(score: number): string {
-  if (score >= 80) return "bg-emerald-500"
-  if (score >= 60) return "bg-amber-500"
-  return "bg-red-500"
+  if (score >= 80) return "bg-status-success"
+  if (score >= 60) return "bg-status-warning"
+  return "bg-status-error"
 }
 
 function getBarBgColor(score: number): string {
-  if (score >= 80) return "bg-emerald-100 dark:bg-emerald-900/30"
-  if (score >= 60) return "bg-amber-100 dark:bg-amber-900/30"
-  return "bg-red-100 dark:bg-red-900/30"
+  if (score >= 80) return "bg-status-success/15"
+  if (score >= 60) return "bg-status-warning/15 dark:bg-status-warning/30"
+  return "bg-status-error/15 dark:bg-status-error/30"
 }
 
 function ProgressBar({ value, label, maxValue = 100 }: ScoreDimension) {
@@ -143,7 +143,7 @@ export function ScoreBreakdownBadgeLazy({
 
           {error && !loading && (
             <div className="flex items-center gap-1.5 py-2 text-xs text-gray-500">
-              <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+              <AlertCircle className="h-3.5 w-3.5 text-status-warning" />
               <span>{error}</span>
             </div>
           )}
@@ -158,7 +158,7 @@ export function ScoreBreakdownBadgeLazy({
                   <ul className="space-y-0.5">
                     {data.strengths.slice(0, 3).map((s, i) => (
                       <li key={i} className="text-micro text-gray-600 dark:text-gray-400 flex gap-1">
-                        <span className="text-emerald-500 mt-0.5">•</span>
+                        <span className="text-status-success mt-0.5">•</span>
                         <span>{s}</span>
                       </li>
                     ))}
@@ -174,7 +174,7 @@ export function ScoreBreakdownBadgeLazy({
                   <ul className="space-y-0.5">
                     {data.concerns.slice(0, 3).map((c, i) => (
                       <li key={i} className="text-micro text-gray-600 dark:text-gray-400 flex gap-1">
-                        <span className="text-amber-500 mt-0.5">•</span>
+                        <span className="text-status-warning mt-0.5">•</span>
                         <span>{c}</span>
                       </li>
                     ))}

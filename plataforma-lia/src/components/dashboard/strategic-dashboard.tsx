@@ -111,8 +111,8 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-500" />
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-500" />
+      case 'up': return <TrendingUp className="w-4 h-4 text-status-success" />
+      case 'down': return <TrendingDown className="w-4 h-4 text-status-error" />
       default: return <Minus className="w-4 h-4 text-gray-400" />
     }
   }
@@ -120,7 +120,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
   const getTrendColor = (trend: string, value: number, isPositive: boolean = true) => {
     if (trend === 'stable') return 'text-gray-500'
     const positive = isPositive ? trend === 'up' : trend === 'down'
-    return positive ? 'text-green-600' : 'text-red-600'
+    return positive ? 'text-status-success' : 'text-status-error'
   }
 
   const getCategoryIcon = (category: string) => {
@@ -243,7 +243,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
     return (
       <Card className="">
         <CardContent className="p-8 text-center">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className="text-status-error mb-4">{error}</p>
           <Button onClick={fetchData} variant="outline" className="gap-2">
             <RefreshCw className="w-4 h-4" />
             Tentar Novamente
@@ -367,7 +367,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                 'bg-gray-700 dark:bg-gray-300',
                 'bg-gray-200 dark:bg-gray-700',
                 'bg-gray-200 dark:bg-gray-700',
-                'bg-green-500'
+                'bg-status-success'
               ]
               
               return (
@@ -397,7 +397,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                   </div>
                   {stage.drop_off_rate > 0 && index > 0 && (
                     <div className="absolute -top-1 right-0">
-                      <Badge variant="outline" className="text-xs bg-red-50 text-red-600 border-red-200">
+                      <Badge variant="outline" className="text-xs bg-status-error/10 text-status-error border-status-error/30">
                         -{stage.drop_off_rate.toFixed(0)}%
                       </Badge>
                     </div>
@@ -443,9 +443,9 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                     >
                       <td className="py-3 px-2">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          recruiter.rank === 1 ? 'bg-yellow-400 text-yellow-900' :
+                          recruiter.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
                           recruiter.rank === 2 ? 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200' :
-                          recruiter.rank === 3 ? 'bg-orange-300 text-orange-800' :
+                          recruiter.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange' :
                           'bg-gray-100 text-gray-600'
                         }`}>
                           {recruiter.rank}
@@ -464,13 +464,13 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       </td>
                       <td className="py-3 px-2 text-center">
                         <div className="flex items-center justify-center gap-1">
-                          <span className={isOnTarget ? 'text-green-600 font-bold' : 'text-gray-950 dark:text-gray-50'}>
+                          <span className={isOnTarget ? 'text-status-success font-bold' : 'text-gray-950 dark:text-gray-50'}>
                             {recruiter.positions_filled}
                           </span>
                           <span className="text-gray-400">/</span>
                           <span className="text-gray-500">{recruiter.positions_target}</span>
                           {isOnTarget && (
-                            <Badge className="ml-1 bg-green-100 text-green-700 text-xs">
+                            <Badge className="ml-1 bg-status-success/15 text-status-success text-xs">
                               ✓
                             </Badge>
                           )}
@@ -484,18 +484,18 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       </td>
                       <td className="py-3 px-2 text-center">
                         <span className={`font-medium ${
-                          recruiter.conversion_rate >= 3 ? 'text-green-600' : 
+                          recruiter.conversion_rate >= 3 ? 'text-status-success' : 
                           recruiter.conversion_rate >= 2 ? 'text-gray-600 dark:text-gray-400' : 
-                          'text-orange-500'
+                          'text-wedo-orange'
                         }`}>
                           {recruiter.conversion_rate.toFixed(1)}%
                         </span>
                       </td>
                       <td className="py-3 px-2 text-center">
                         <span className={`${
-                          recruiter.avg_time_to_fill_days <= 25 ? 'text-green-600' : 
+                          recruiter.avg_time_to_fill_days <= 25 ? 'text-status-success' : 
                           recruiter.avg_time_to_fill_days <= 30 ? 'text-gray-600 dark:text-gray-400' : 
-                          'text-orange-500'
+                          'text-wedo-orange'
                         }`}>
                           {recruiter.avg_time_to_fill_days}d
                         </span>

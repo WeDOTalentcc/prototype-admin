@@ -114,7 +114,7 @@ const TECH_STACK_CATEGORIES = [
     label: "Frontend",
     icon: Layout,
     color:
-      "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300",
+      "bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success",
     suggestions: [
       "React",
       "Vue.js",
@@ -131,7 +131,7 @@ const TECH_STACK_CATEGORIES = [
     label: "Dados",
     icon: Database,
     color:
-      "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300",
+      "bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning",
     suggestions: [
       "PostgreSQL",
       "MongoDB",
@@ -147,7 +147,7 @@ const TECH_STACK_CATEGORIES = [
     key: "cloud",
     label: "Cloud",
     icon: Cloud,
-    color: "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300",
+    color: "bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan-dark",
     suggestions: [
       "AWS",
       "Azure",
@@ -163,7 +163,7 @@ const TECH_STACK_CATEGORIES = [
     label: "DevOps",
     icon: Settings,
     color:
-      "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300",
+      "bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple",
     suggestions: [
       "Docker",
       "Kubernetes",
@@ -194,7 +194,7 @@ const TECH_STACK_CATEGORIES = [
     label: "ERPs",
     icon: Briefcase,
     color:
-      "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300",
+      "bg-wedo-orange/10 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange",
     suggestions: [
       "SAP",
       "Oracle",
@@ -1372,7 +1372,7 @@ export function CompanyTeamHub({
     "bg-wedo-orange text-white",
     "bg-wedo-purple text-white",
     "bg-wedo-magenta text-white",
-    "bg-blue-500 text-white",
+    "bg-wedo-cyan text-white",
     "bg-status-error text-white",
     "bg-status-warning text-white",
   ];
@@ -1726,7 +1726,7 @@ export function CompanyTeamHub({
       <div className="space-y-3">
         {successMessage && (
           <div
-            className="bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300 px-2 py-1.5 rounded-full flex items-center gap-2 text-xs"
+            className="bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success px-2 py-1.5 rounded-full flex items-center gap-2 text-xs"
           >
             <CheckCircle className="w-3.5 h-3.5" />
             {successMessage}
@@ -1734,7 +1734,7 @@ export function CompanyTeamHub({
         )}
         {error && (
           <div
-            className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 rounded-full flex items-center gap-2 text-xs"
+            className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-full flex items-center gap-2 text-xs"
           >
             <AlertCircle className="w-3.5 h-3.5" />
             {error}
@@ -2205,7 +2205,7 @@ export function CompanyTeamHub({
 
                     {!isLiaAnalyzing && (!isEditingCompanyData || !companyData.website) && (
                       <p
-                        className="text-micro text-amber-600 dark:text-amber-400 mt-2"
+                        className="text-micro text-status-warning dark:text-status-warning mt-2"
         
                       >
                         {!isEditingCompanyData 
@@ -2325,7 +2325,7 @@ export function CompanyTeamHub({
                                 values: prev.values?.filter((_, i) => i !== idx),
                               }))
                             }
-                            className="ml-1 hover:text-red-500"
+                            className="ml-1 hover:text-status-error"
                           >
                             ×
                           </button>
@@ -2388,7 +2388,7 @@ export function CompanyTeamHub({
                                 ),
                               }))
                             }
-                            className="ml-1 hover:text-red-500"
+                            className="ml-1 hover:text-status-error"
                           >
                             ×
                           </button>
@@ -2681,7 +2681,7 @@ export function CompanyTeamHub({
                               seniority_levels: (prev.seniority_levels || []).filter((_, i) => i !== idx),
                             }))
                           }
-                          className="ml-1 hover:text-red-500"
+                          className="ml-1 hover:text-status-error"
                         >
                           ×
                         </button>
@@ -2704,7 +2704,7 @@ export function CompanyTeamHub({
                             seniority_levels: [...(prev.seniority_levels || []), level],
                           }));
                         }}
-                        className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-wedo-purple/30 hover:text-wedo-purple transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
         
                       >
                         + {level}
@@ -2791,7 +2791,7 @@ export function CompanyTeamHub({
                                 default_behavioral_competencies: (prev.default_behavioral_competencies || []).filter((_, i) => i !== idx),
                               }))
                             }
-                            className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
+                            className="text-gray-400 dark:text-gray-500 hover:text-status-error transition-colors"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -2894,7 +2894,7 @@ export function CompanyTeamHub({
                                 default_salary_ranges: (prev.default_salary_ranges || []).filter((_, i) => i !== idx),
                               }))
                             }
-                            className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
+                            className="text-gray-400 dark:text-gray-500 hover:text-status-error transition-colors"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -3104,7 +3104,7 @@ export function CompanyTeamHub({
                     {(companyData.evp_bullets || []).map((bullet, idx) => (
                       <Badge
                         key={idx}
-                        className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-micro px-2 py-0.5 rounded-full"
+                        className="bg-status-warning/10 dark:bg-status-warning/20 text-status-warning dark:text-status-warning text-micro px-2 py-0.5 rounded-full"
                       >
                         {bullet}
                         {isEditingCompanyData && (
@@ -3117,7 +3117,7 @@ export function CompanyTeamHub({
                                 ),
                               }))
                             }
-                            className="ml-1 hover:text-red-500"
+                            className="ml-1 hover:text-status-error"
                           >
                             ×
                           </button>
@@ -3349,7 +3349,7 @@ export function CompanyTeamHub({
                                               tech,
                                             )
                                           }
-                                          className="ml-1 hover:text-red-500"
+                                          className="ml-1 hover:text-status-error"
                                         >
                                           ×
                                         </button>
@@ -3456,7 +3456,7 @@ export function CompanyTeamHub({
                                           onClick={() =>
                                             removeTechFromCategory("outros", tech)
                                           }
-                                          className="ml-1 hover:text-red-500"
+                                          className="ml-1 hover:text-status-error"
                                         >
                                           ×
                                         </button>
@@ -3568,7 +3568,7 @@ export function CompanyTeamHub({
                               default_languages: (prev.default_languages || []).filter((_, i) => i !== idx),
                             }))
                           }
-                          className="ml-1 hover:text-red-500"
+                          className="ml-1 hover:text-status-error"
                         >
                           ×
                         </button>
@@ -4097,7 +4097,7 @@ export function CompanyTeamHub({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteMember(member.id)}
-                              className="h-6 w-6 p-0 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50"
+                              className="h-6 w-6 p-0 rounded-md text-status-error hover:text-status-error hover:bg-status-error/10"
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>
@@ -4209,13 +4209,13 @@ export function CompanyTeamHub({
                       </select>
                     </div>
                     {memberError && (
-                      <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-micro">
+                      <div className="bg-status-error/10 border border-status-error/30 rounded-md p-2 flex items-center gap-2 text-status-error text-micro">
                         <AlertCircle className="w-3 h-3" />
                         {memberError}
                       </div>
                     )}
                     {memberSuccess && (
-                      <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-micro">
+                      <div className="bg-status-success/10 border border-status-success/30 rounded-md p-2 flex items-center gap-2 text-status-success text-micro">
                         <CheckCircle className="w-3 h-3" />
                         {memberSuccess}
                       </div>
@@ -4288,13 +4288,13 @@ export function CompanyTeamHub({
       )}
 
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-xs">
+        <div className="bg-status-success/10 border border-status-success/30 rounded-md p-2 flex items-center gap-2 text-status-success text-xs">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-xs">
+        <div className="bg-status-error/10 border border-status-error/30 rounded-md p-2 flex items-center gap-2 text-status-error text-xs">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
@@ -4362,7 +4362,7 @@ export function CompanyTeamHub({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50"
+                      className="h-7 w-7 p-0 rounded-md text-status-error hover:text-status-error hover:bg-status-error/10"
                       onClick={() => setDepartmentToDelete(dept)}
                       disabled={!isEditingDepartments}
                     >
@@ -4415,7 +4415,7 @@ export function CompanyTeamHub({
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
-              className="rounded-md text-xs bg-red-500 hover:bg-red-600"
+              className="rounded-md text-xs bg-status-error hover:bg-status-error"
               onClick={() =>
                 departmentToDelete &&
                 handleDeleteDepartment(departmentToDelete.id)
@@ -4608,13 +4608,13 @@ export function CompanyTeamHub({
   const renderApprovers = () => (
     <div className="space-y-3">
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2 text-green-700 text-xs">
+        <div className="bg-status-success/10 border border-status-success/30 rounded-md p-2 flex items-center gap-2 text-status-success text-xs">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-2 flex items-center gap-2 text-red-700 text-xs">
+        <div className="bg-status-error/10 border border-status-error/30 rounded-md p-2 flex items-center gap-2 text-status-error text-xs">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
@@ -4873,7 +4873,7 @@ export function CompanyTeamHub({
                             variant={approver.isActive ? "default" : "outline"}
                             className={`text-micro rounded-md ${
                               approver.isActive
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                ? "bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success"
                                 : "border-gray-200 dark:border-gray-700"
                             }`}
                           >
@@ -4890,7 +4890,7 @@ export function CompanyTeamHub({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50"
+                            className="h-7 w-7 p-0 rounded-md text-status-error hover:text-status-error hover:bg-status-error/10"
                             onClick={() => handleDeleteApprover(approver.id)}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -4926,10 +4926,10 @@ export function CompanyTeamHub({
   const renderUsers = () => <UserManagement onUserUpdate={onUserUpdate} />;
 
   const EmptyFieldWarning = ({ fieldName }: { fieldName: string }) => (
-    <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/30 rounded-md px-2 py-1">
-      <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
+    <div className="flex items-center gap-1.5 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30/50 dark:border-status-warning/30/30 rounded-md px-2 py-1">
+      <AlertCircle className="w-3 h-3 text-status-warning flex-shrink-0" />
       <span
-        className="text-micro text-amber-600 dark:text-amber-400"
+        className="text-micro text-status-warning dark:text-status-warning"
       >
         Não informado - preencher manualmente
       </span>
@@ -5048,7 +5048,7 @@ export function CompanyTeamHub({
                                 onClick={() =>
                                   removeTechFromCategory(category.key, tech)
                                 }
-                                className="ml-1.5 hover:text-red-500"
+                                className="ml-1.5 hover:text-status-error"
                               >
                                 ×
                               </button>
@@ -5135,7 +5135,7 @@ export function CompanyTeamHub({
                         {isEditingCompanyData && (
                           <button
                             onClick={() => removeTechFromCategory("outros", tech)}
-                            className="ml-1.5 hover:text-red-500"
+                            className="ml-1.5 hover:text-status-error"
                           >
                             ×
                           </button>

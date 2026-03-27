@@ -112,7 +112,7 @@ function InlineFieldEditor({
           disabled={isSaving}
           className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
         >
-          <Check className="w-3 h-3 text-green-600" />
+          <Check className="w-3 h-3 text-status-success" />
         </button>
         <button
           onClick={onCancel}
@@ -150,7 +150,7 @@ function InlineFieldEditor({
         {isSaving ? (
           <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
         ) : (
-          <Check className="w-3 h-3 text-green-600" />
+          <Check className="w-3 h-3 text-status-success" />
         )}
       </button>
       <button
@@ -206,7 +206,7 @@ export function HiringPoliciesHub() {
               {setupProgress}% configurado
             </span>
             {setupProgress >= 100 && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 flex-shrink-0">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30 flex-shrink-0">
                 Completo
               </span>
             )}
@@ -330,7 +330,7 @@ export function HiringPoliciesHub() {
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium border ${
                         isCompleted
-                          ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                          ? 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30'
                           : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
                       }`}
                     >
@@ -356,7 +356,7 @@ export function HiringPoliciesHub() {
                           <div
                             key={field}
                             className={`group flex items-center justify-between gap-2 py-1.5 px-1.5 rounded transition-all duration-300 ${
-                              isUpdated ? 'bg-green-50 dark:bg-green-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                              isUpdated ? 'bg-status-success/10 dark:bg-status-success/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                             }`}
                           >
                             <span className={`${textStyles.description} flex-shrink-0`}>
@@ -373,7 +373,7 @@ export function HiringPoliciesHub() {
                             ) : (
                               <div className="flex items-center gap-1">
                                 <span className={`${textStyles.metricSmall} text-right transition-colors duration-300 ${
-                                  isUpdated ? 'text-green-700 dark:text-green-400' : ''
+                                  isUpdated ? 'text-status-success dark:text-status-success' : ''
                                 }`}>
                                   {formatFieldValue(value)}
                                 </span>

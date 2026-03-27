@@ -138,8 +138,8 @@ export function AlertsSection({
                           className={`text-xs cursor-pointer transition-all hover:scale-105 ${
                             alert.channels.includes(channel) 
                               ? channel === 'email' ? 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-                                : channel === 'slack' ? 'bg-purple-500 hover:bg-purple-600' 
-                                : 'bg-emerald-500 hover:bg-emerald-600'
+                                : channel === 'slack' ? 'bg-wedo-purple hover:bg-wedo-purple' 
+                                : 'bg-status-success hover:bg-status-success'
                               : ''
                           }`}
                           onClick={() => handleToggleAlertChannel(alert.id, channel)}

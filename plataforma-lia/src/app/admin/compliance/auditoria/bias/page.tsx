@@ -47,7 +47,7 @@ const complianceFrameworks = [
 
 const getAlertBadge = (hasAlerts: boolean) =>
   hasAlerts ? (
-    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+    <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/20 dark:text-status-warning">
       Atenção
     </Badge>
   ) : (
@@ -60,15 +60,15 @@ const getDimensionStatusBadge = (alertLevel: AuditDimension["alert_level"]) =>
       <CheckCircle2 className="w-3 h-3" aria-hidden="true" />Clear
     </Badge>
   ) : (
-    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 gap-1">
+    <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/20 dark:text-status-warning gap-1">
       <AlertTriangle className="w-3 h-3" aria-hidden="true" />Warning
     </Badge>
   )
 
 const getProgressColor = (ratio: number) => {
-  if (ratio >= 0.90) return "bg-emerald-500"
-  if (ratio >= 0.80) return "bg-amber-500"
-  return "bg-red-500"
+  if (ratio >= 0.90) return "bg-status-success"
+  if (ratio >= 0.80) return "bg-status-warning"
+  return "bg-status-error"
 }
 
 const formatDate = (dateStr: string) =>
@@ -170,9 +170,9 @@ export default function BiasAuditPage() {
 
         {/* Error state */}
         {error && (
-          <Card className="mb-6 border-red-200 dark:border-red-800" role="alert">
+          <Card className="mb-6 border-status-error/30 dark:border-status-error/30" role="alert">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+              <div className="flex items-center gap-3 text-status-error dark:text-status-error">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
                 <p className="text-sm">{error}</p>
               </div>
@@ -213,8 +213,8 @@ export default function BiasAuditPage() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-md">
-                      <Calendar className="w-5 h-5 text-purple-600" aria-hidden="true" />
+                    <div className="p-2 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
+                      <Calendar className="w-5 h-5 text-wedo-purple" aria-hidden="true" />
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Avaliado em</p>
@@ -249,11 +249,11 @@ export default function BiasAuditPage() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-md ${alertCount > 0 ? "bg-amber-50 dark:bg-amber-900/20" : "bg-emerald-50 dark:bg-emerald-900/20"}`}>
+                    <div className={`p-2 rounded-md ${alertCount > 0 ? "bg-status-warning/10 dark:bg-status-warning/20" : "bg-status-success/10 dark:bg-status-success/20"}`}>
                       {alertCount > 0 ? (
-                        <AlertTriangle className="w-5 h-5 text-amber-600" aria-hidden="true" />
+                        <AlertTriangle className="w-5 h-5 text-status-warning" aria-hidden="true" />
                       ) : (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+                        <CheckCircle2 className="w-5 h-5 text-status-success" aria-hidden="true" />
                       )}
                     </div>
                     <div>
@@ -323,7 +323,7 @@ export default function BiasAuditPage() {
                               </span>
                             </div>
                             {dim.below_threshold && (
-                              <p className="text-xs text-amber-600 mt-1">Abaixo do limiar (80%)</p>
+                              <p className="text-xs text-status-warning mt-1">Abaixo do limiar (80%)</p>
                             )}
                           </td>
                           <td className="px-4 py-4">

@@ -94,9 +94,9 @@ const NotificationItem = React.memo(({
 
   const getIcon = useMemo(() => {
     switch (notification.type) {
-      case "success": return <CheckCircle className="w-4 h-4 text-green-600" />
-      case "warning": return <AlertCircle className="w-4 h-4 text-yellow-600" />
-      case "error": return <AlertCircle className="w-4 h-4 text-red-600" />
+      case "success": return <CheckCircle className="w-4 h-4 text-status-success" />
+      case "warning": return <AlertCircle className="w-4 h-4 text-status-warning" />
+      case "error": return <AlertCircle className="w-4 h-4 text-status-error" />
       default: return <Info className="w-4 h-4 text-gray-600 dark:text-gray-400" />
     }
   }, [notification.type])
@@ -128,10 +128,10 @@ const NotificationItem = React.memo(({
         <div className="flex-shrink-0 mt-0.5">
           <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
             !notification.read 
-              ? notification.type === 'success' ? 'bg-green-100 dark:bg-green-900/30' 
-                : notification.type === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30'
-                : notification.type === 'error' ? 'bg-red-100 dark:bg-red-900/30'
-                : 'bg-blue-100 dark:bg-blue-900/30'
+              ? notification.type === 'success' ? 'bg-status-success/15 dark:bg-status-success/30' 
+                : notification.type === 'warning' ? 'bg-status-warning/15 dark:bg-status-warning/30'
+                : notification.type === 'error' ? 'bg-status-error/15 dark:bg-status-error/30'
+                : 'bg-wedo-cyan/15'
               : 'bg-gray-100 dark:bg-gray-800'
           }`}>
             {getIcon}
@@ -316,7 +316,7 @@ export function NotificationSystem({
         <Bell className="w-3.5 h-3.5" />
         {unreadCount > 0 && (
           <Badge
-            className="absolute -top-0.5 -right-0.5 h-4 w-4 text-xs p-0 flex items-center justify-center bg-red-500 text-white border-0"
+            className="absolute -top-0.5 -right-0.5 h-4 w-4 text-xs p-0 flex items-center justify-center bg-status-error text-white border-0"
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </Badge>
@@ -366,8 +366,8 @@ export function NotificationSystem({
             <div className="max-h-[340px] overflow-y-auto bg-gray-50 dark:bg-gray-900/50">
               {error ? (
                 <div className="py-10 px-4 text-center">
-                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-red-400" />
-                  <p className="text-sm text-red-500">{error}</p>
+                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-status-error" />
+                  <p className="text-sm text-status-error">{error}</p>
                   <Button 
                     variant="ghost" 
                     size="sm" 

@@ -186,9 +186,9 @@ export default function CoberturaPage() {
                   </p>
                 </div>
                 {overallPercentage >= 70 ? (
-                  <TrendingUp className="w-6 h-6 text-emerald-500" />
+                  <TrendingUp className="w-6 h-6 text-status-success" />
                 ) : (
-                  <TrendingDown className="w-6 h-6 text-amber-500" />
+                  <TrendingDown className="w-6 h-6 text-status-warning" />
                 )}
               </div>
               <Progress value={overallPercentage} className="h-2 mt-4" />
@@ -209,7 +209,7 @@ export default function CoberturaPage() {
                     de {totalControls} total
                   </p>
                 </div>
-                <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                <CheckCircle2 className="w-6 h-6 text-status-success" />
               </div>
             </CardContent>
           </Card>
@@ -228,7 +228,7 @@ export default function CoberturaPage() {
                     controles pendentes
                   </p>
                 </div>
-                <AlertTriangle className="w-6 h-6 text-amber-500" />
+                <AlertTriangle className="w-6 h-6 text-status-warning" />
               </div>
             </CardContent>
           </Card>
@@ -302,13 +302,13 @@ export default function CoberturaPage() {
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="flex items-center gap-4 text-xs">
                         <span className="flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                          <CheckCircle2 className="w-3 h-3 text-status-success" />
                           <span style={{ color: 'var(--eleven-text-secondary)' }}>
                             {(framework.stats?.implemented || 0) + (framework.stats?.verified || 0)} Implementados
                           </span>
                         </span>
                         <span className="flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3 text-amber-500" />
+                          <AlertTriangle className="w-3 h-3 text-status-warning" />
                           <span style={{ color: 'var(--eleven-text-secondary)' }}>
                             {framework.stats?.inProgress || 0} Em Progresso
                           </span>
@@ -384,7 +384,7 @@ export default function CoberturaPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+                <CheckCircle2 className="w-12 h-12 text-status-success mx-auto mb-3" />
                 <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                   Parabéns! Todos os controles estão implementados.
                 </p>
@@ -439,7 +439,7 @@ export default function CoberturaPage() {
                       {row.coverage.map((covered, fwIdx) => (
                         <td key={fwIdx} className="text-center py-3 px-4">
                           {covered ? (
-                            <CheckCircle2 className="w-5 h-5 text-emerald-500 mx-auto" />
+                            <CheckCircle2 className="w-5 h-5 text-status-success mx-auto" />
                           ) : (
                             <XCircle className="w-5 h-5 text-gray-300 mx-auto" />
                           )}

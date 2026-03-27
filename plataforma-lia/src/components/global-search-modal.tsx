@@ -264,14 +264,14 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
     if (type === "candidate") {
       switch (status) {
         case "Entrevista agendada": return "bg-wedo-cyan/15 text-wedo-cyan-dark"
-        case "Triagem aprovada": return "bg-green-100 text-green-700"
+        case "Triagem aprovada": return "bg-status-success/15 text-status-success"
         case "Processo finalizado": return "bg-gray-100 text-gray-800"
-        default: return "bg-yellow-100 text-yellow-700"
+        default: return "bg-status-warning/15 text-status-warning"
       }
     }
 
     if (type === "job") {
-      return status === "Ativa" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-800"
+      return status === "Ativa" ? "bg-status-success/15 text-status-success" : "bg-gray-100 text-gray-800"
     }
 
     return "bg-gray-100 text-gray-800"

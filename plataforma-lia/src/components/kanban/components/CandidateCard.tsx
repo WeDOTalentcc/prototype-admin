@@ -261,7 +261,7 @@ export function CandidateCard({
                 className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
                
               >
-                <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+                <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-status-error' : 'text-gray-500'}`} />
                 {isFavorite ? 'Remover dos Favoritos' : 'Adicionar a Favoritos'}
               </DropdownMenuItem>
               <DropdownMenuItem 

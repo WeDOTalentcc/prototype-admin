@@ -25,8 +25,8 @@ const getAutomationIcon = (trigger: string) => {
 const getActionLabel = (action: string) => {
   switch (action) {
     case 'send_email': return { label: 'Email', color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }
-    case 'send_whatsapp': return { label: 'WhatsApp', color: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' }
-    case 'notify_recruiter': return { label: 'Notificação', color: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' }
+    case 'send_whatsapp': return { label: 'WhatsApp', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' }
+    case 'notify_recruiter': return { label: 'Notificação', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' }
     default: return { label: action, color: 'bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400' }
   }
 }

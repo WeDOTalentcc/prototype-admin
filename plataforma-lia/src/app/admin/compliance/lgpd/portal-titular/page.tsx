@@ -134,14 +134,14 @@ export default function PortalTitularPage() {
     switch (status) {
       case 'implemented':
         return (
-          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+          <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             Implementado
           </Badge>
         )
       case 'in_progress':
         return (
-          <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+          <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
             <Loader2 className="w-3 h-3 mr-1" />
             Em Desenvolvimento
           </Badge>
@@ -170,10 +170,10 @@ export default function PortalTitularPage() {
     if (!config) return <Badge>{status}</Badge>
 
     const colorClasses: Record<string, string> = {
-      'amber': 'bg-amber-100 text-amber-700 hover:bg-amber-100',
+      'amber': 'bg-status-warning/15 text-status-warning hover:bg-status-warning/15',
  'blue': 'text-gray-600 dark:text-gray-400 hover:bg-gray-100',
-      'emerald': 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
-      'red': 'bg-red-100 text-red-700 hover:bg-red-100',
+      'emerald': 'bg-status-success/15 text-status-success hover:bg-status-success/15',
+      'red': 'bg-status-error/15 text-status-error hover:bg-status-error/15',
       'gray': 'bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-100',
     }
 
@@ -189,7 +189,7 @@ export default function PortalTitularPage() {
     
     if (request.isOverdue || daysUntil < 0) {
       return (
-        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+        <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">
           <AlertCircle className="w-3 h-3 mr-1" />
           Atrasado
         </Badge>
@@ -198,7 +198,7 @@ export default function PortalTitularPage() {
     
     if (daysUntil <= 3) {
       return (
-        <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+        <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
           <Clock className="w-3 h-3 mr-1" />
           {daysUntil}d restantes
         </Badge>
@@ -206,7 +206,7 @@ export default function PortalTitularPage() {
     }
 
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+      <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
         <CheckCircle2 className="w-3 h-3 mr-1" />
         {daysUntil}d restantes
       </Badge>
@@ -344,7 +344,7 @@ export default function PortalTitularPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
-                  <Loader2 className="w-5 h-5 text-amber-500" />
+                  <Loader2 className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -360,7 +360,7 @@ export default function PortalTitularPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -393,12 +393,12 @@ export default function PortalTitularPage() {
           <Card className="mb-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderColor: 'rgba(239, 68, 68, 0.5)', backgroundColor: 'rgba(239, 68, 68, 0.08)' }}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600" />
+                <AlertCircle className="w-5 h-5 text-status-error" />
                 <div>
-                  <p className="text-sm font-medium text-red-800">
+                  <p className="text-sm font-medium text-status-error">
                     {stats.overdueRequests} solicitação(ões) com prazo excedido
                   </p>
-                  <p className="text-xs text-red-600">
+                  <p className="text-xs text-status-error">
                     Atenda imediatamente para evitar penalidades. Prazo legal: 15 dias (Art. 18, §3º da LGPD).
                   </p>
                 </div>
@@ -599,11 +599,11 @@ export default function PortalTitularPage() {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2 text-xs">
-                    <Badge variant="outline" className="bg-emerald-50 border-emerald-200 text-emerald-700">
+                    <Badge variant="outline" className="bg-status-success/10 border-status-success/30 text-status-success">
                       {implementedCount} Implementados
                     </Badge>
                     {inProgressCount > 0 && (
-                      <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-700">
+                      <Badge variant="outline" className="bg-status-warning/10 border-status-warning/30 text-status-warning">
                         {inProgressCount} Em Desenvolvimento
                       </Badge>
                     )}
@@ -659,7 +659,7 @@ export default function PortalTitularPage() {
                       className="flex-1"
                     />
                     <Button variant="outline" size="icon" onClick={handleCopy}>
-                      {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                      {copied ? <Check className="w-4 h-4 text-status-success" /> : <Copy className="w-4 h-4" />}
                     </Button>
                   </div>
                   <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -688,7 +688,7 @@ export default function PortalTitularPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
                     <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Taxa de Conclusão</span>
-                    <span className="font-semibold text-emerald-600">
+                    <span className="font-semibold text-status-success">
                       {stats && stats.totalRequests > 0 
                         ? `${Math.round((stats.completedRequests / stats.totalRequests) * 100)}%`
                         : '0%'}
@@ -696,13 +696,13 @@ export default function PortalTitularPage() {
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
                     <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>SLA Compliance</span>
-                    <span className={`font-semibold ${(stats?.slaComplianceRate || 0) >= 90 ? 'text-emerald-600' : (stats?.slaComplianceRate || 0) >= 70 ? 'text-amber-600' : 'text-red-600'}`}>
+                    <span className={`font-semibold ${(stats?.slaComplianceRate || 0) >= 90 ? 'text-status-success' : (stats?.slaComplianceRate || 0) >= 70 ? 'text-status-warning' : 'text-status-error'}`}>
                       {stats?.slaComplianceRate?.toFixed(0) || 0}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-secondary)' }}>
                     <span className="text-sm" style={{ color: 'var(--eleven-text-secondary)' }}>Atrasados</span>
-                    <span className={`font-semibold ${(stats?.overdueRequests || 0) === 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <span className={`font-semibold ${(stats?.overdueRequests || 0) === 0 ? 'text-status-success' : 'text-status-error'}`}>
                       {stats?.overdueRequests || 0}
                     </span>
                   </div>
@@ -858,8 +858,8 @@ export default function PortalTitularPage() {
                 <div className="space-y-1">
                   <Label className="text-xs text-gray-500">Identidade Verificada</Label>
                   <div className="flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-emerald-500" />
-                    <span className="text-emerald-600">
+                    <UserCheck className="w-4 h-4 text-status-success" />
+                    <span className="text-status-success">
                       Verificada em {new Date(selectedRequest.identityVerifiedAt!).toLocaleString('pt-BR')}
                     </span>
                   </div>
@@ -869,7 +869,7 @@ export default function PortalTitularPage() {
               {selectedRequest.response && (
                 <div className="space-y-1">
                   <Label className="text-xs text-gray-500">Resposta</Label>
-                  <p className="text-sm bg-emerald-50 p-3 rounded-md border border-emerald-100">
+                  <p className="text-sm bg-status-success/10 p-3 rounded-md border border-status-success/30">
                     {selectedRequest.response}
                   </p>
                 </div>
@@ -878,7 +878,7 @@ export default function PortalTitularPage() {
               {selectedRequest.rejectionReason && (
                 <div className="space-y-1">
                   <Label className="text-xs text-gray-500">Motivo da Rejeição</Label>
-                  <p className="text-sm bg-red-50 p-3 rounded-md border border-red-100">
+                  <p className="text-sm bg-status-error/10 p-3 rounded-md border border-status-error/30">
                     {selectedRequest.rejectionReason}
                   </p>
                 </div>
@@ -937,7 +937,7 @@ export default function PortalTitularPage() {
             <Button 
               onClick={handleSubmitAction} 
               disabled={actionLoading || (actionType === 'complete' ? !actionResponse : !actionReason)}
-              className={actionType === 'reject' ? 'bg-red-600 hover:bg-red-700' : ''}
+              className={actionType === 'reject' ? 'bg-status-error hover:bg-status-error' : ''}
             >
               {actionLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {actionType === 'complete' ? 'Concluir' : 'Rejeitar'}

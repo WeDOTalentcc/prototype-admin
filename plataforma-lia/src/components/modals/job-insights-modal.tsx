@@ -508,21 +508,21 @@ export function JobInsightsModal({
 
   const getConversionStatusColor = (status: 'good' | 'warning' | 'critical') => {
     switch (status) {
-      case 'good': return { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: 'text-green-600' }
-      case 'warning': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', icon: 'text-amber-600' }
-      case 'critical': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: 'text-red-600' }
+      case 'good': return { bg: 'bg-status-success/10', border: 'border-status-success/30', text: 'text-status-success', icon: 'text-status-success' }
+      case 'warning': return { bg: 'bg-status-warning/10', border: 'border-status-warning/30', text: 'text-status-warning', icon: 'text-status-warning' }
+      case 'critical': return { bg: 'bg-status-error/10', border: 'border-status-error/30', text: 'text-status-error', icon: 'text-status-error' }
     }
   }
 
   const getInsightStyles = (type: InsightCategory['type']) => {
     switch (type) {
       case 'action':
-        return { bg: 'bg-amber-50', border: 'border-amber-300', icon: Lightbulb, iconColor: 'text-amber-600' }
+        return { bg: 'bg-status-warning/10', border: 'border-status-warning/30', icon: Lightbulb, iconColor: 'text-status-warning' }
       case 'analysis':
       case 'comparison':
-        return { bg: 'bg-purple-50', border: 'border-purple-300', icon: Eye, iconColor: 'text-purple-600' }
+        return { bg: 'bg-wedo-purple/10', border: 'border-wedo-purple/30', icon: Eye, iconColor: 'text-wedo-purple' }
       case 'attention':
-        return { bg: 'bg-red-50', border: 'border-red-300', icon: AlertCircle, iconColor: 'text-red-600' }
+        return { bg: 'bg-status-error/10', border: 'border-status-error/30', icon: AlertCircle, iconColor: 'text-status-error' }
     }
   }
 
@@ -773,10 +773,10 @@ export function JobInsightsModal({
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                  <CheckCircle className="w-3.5 h-3.5 text-status-success" />
                   <span className="text-xs text-gray-600">Aprovados</span>
                 </div>
-                <p className="text-xl font-bold text-green-700">{aggregateMetrics.totalApproved}</p>
+                <p className="text-xl font-bold text-status-success">{aggregateMetrics.totalApproved}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
@@ -852,10 +852,10 @@ export function JobInsightsModal({
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <PhoneCall className="w-3.5 h-3.5 text-green-600" />
+                  <PhoneCall className="w-3.5 h-3.5 text-status-success" />
                   <span className="text-xs text-gray-600">Triagens Realizadas</span>
                 </div>
-                <p className="text-xl font-bold text-green-700">{liaFunnelMetrics.triagens_realizadas}</p>
+                <p className="text-xl font-bold text-status-success">{liaFunnelMetrics.triagens_realizadas}</p>
               </div>
 
               <div className="bg-white rounded-md p-3 border border-gray-200">
@@ -901,7 +901,7 @@ export function JobInsightsModal({
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-white/50 rounded-full overflow-hidden">
                         <div 
-                          className={`h-full ${rate.status === 'good' ? 'bg-green-500' : rate.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'}`}
+                          className={`h-full ${rate.status === 'good' ? 'bg-status-success' : rate.status === 'warning' ? 'bg-status-warning' : 'bg-status-error'}`}
                           style={{ width: `${Math.min(rate.rate, 100)}%` }}
                         />
                       </div>
@@ -946,7 +946,7 @@ export function JobInsightsModal({
                   {trendData.conversionTrend.map((val, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center">
                       <div 
-                        className="w-full bg-green-500 rounded-t transition-all"
+                        className="w-full bg-status-success rounded-t transition-all"
                         style={{ height: `${(val / 100) * 100}%` }}
                       />
                       <span className="text-micro text-gray-500 mt-1">{trendData.weeks[i]}</span>
@@ -1167,7 +1167,7 @@ export function JobInsightsModal({
                     <span className="text-micro font-medium text-gray-500">{job.title}</span>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {job.behavioral_competencies?.map((comp, i) => (
-                        <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                        <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-wedo-purple/15 text-wedo-purple">
                           {comp.competency}
                         </span>
                       ))}
@@ -1190,7 +1190,7 @@ export function JobInsightsModal({
                     <span className="text-micro font-medium text-gray-500">{job.title}</span>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {job.benefits?.map((benefit, i) => (
-                        <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                        <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-status-success/15 text-status-success">
                           {benefit}
                         </span>
                       ))}
@@ -1202,18 +1202,18 @@ export function JobInsightsModal({
           )}
 
           {bottlenecks && bottlenecks.length > 0 && (
-            <div className="bg-amber-50 rounded-md p-4 border border-amber-200">
-              <h3 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <AlertOctagon className="w-3.5 h-3.5 text-amber-600" />
+            <div className="bg-status-warning/10 rounded-md p-4 border border-status-warning/30">
+              <h3 className="text-xs font-semibold text-status-warning uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <AlertOctagon className="w-3.5 h-3.5 text-status-warning" />
                 Gargalos Identificados
               </h3>
               <div className="space-y-2">
                 {bottlenecks.map((b, index) => (
-                  <div key={index} className="bg-white rounded-md p-3 border border-amber-200">
+                  <div key={index} className="bg-white rounded-md p-3 border border-status-warning/30">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-gray-950">{b.stage}</span>
                       {b.stuckCount > 0 && (
-                        <span className="text-micro px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                        <span className="text-micro px-2 py-0.5 rounded-full bg-status-warning/15 text-status-warning">
                           {b.stuckCount} parados
                         </span>
                       )}
@@ -1227,7 +1227,7 @@ export function JobInsightsModal({
                       <div className="flex items-center gap-1.5">
                         <TrendingUp className="w-3 h-3 text-gray-500 rotate-180" />
                         <span className="text-gray-600">Taxa desistência:</span>
-                        <span className={`font-medium ${b.dropRate > 30 ? 'text-red-600' : b.dropRate > 15 ? 'text-amber-600' : 'text-green-600'}`}>
+                        <span className={`font-medium ${b.dropRate > 30 ? 'text-status-error' : b.dropRate > 15 ? 'text-status-warning' : 'text-status-success'}`}>
                           {b.dropRate}%
                         </span>
                       </div>
@@ -1239,24 +1239,24 @@ export function JobInsightsModal({
           )}
 
           {jobs.some(job => (job.days_open || 0) > 30 && (job.approved_count || 0) === 0) && (
-            <div className="bg-red-50 rounded-md p-4 border border-red-200">
-              <h3 className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+            <div className="bg-status-error/10 rounded-md p-4 border border-status-error/30">
+              <h3 className="text-xs font-semibold text-status-error uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 text-status-error" />
                 Vagas Sem Aprovação
               </h3>
               <div className="space-y-2">
                 {jobs.filter(job => (job.days_open || 0) > 30 && (job.approved_count || 0) === 0).map(job => (
-                  <div key={job.id} className="bg-white rounded-md p-3 border border-red-200">
+                  <div key={job.id} className="bg-white rounded-md p-3 border border-status-error/30">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {job.code && (
-                          <span className="text-micro font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">{job.code}</span>
+                          <span className="text-micro font-medium text-status-error bg-status-error/15 px-1.5 py-0.5 rounded-full">{job.code}</span>
                         )}
                         <span className="text-xs font-semibold text-gray-950">{job.title}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3 h-3 text-red-500" />
-                        <span className="text-xs font-medium text-red-600">
+                        <Clock className="w-3 h-3 text-status-error" />
+                        <span className="text-xs font-medium text-status-error">
                           {job.days_open} dias aberta
                         </span>
                       </div>
@@ -1350,14 +1350,14 @@ export function JobInsightsModal({
                     <div 
                       className={`h-full rounded-full transition-all ${
                         dim.score >= 80 ? 'bg-gray-900 dark:bg-gray-50' : 
-                        dim.score >= 60 ? 'bg-amber-400' : 'bg-red-400'
+                        dim.score >= 60 ? 'bg-status-warning' : 'bg-status-error'
                       }`}
                       style={{ width: `${dim.score}%` }}
                     />
                   </div>
                   <span className={`text-xs font-semibold w-10 text-right ${
                     dim.score >= 80 ? 'text-gray-600 dark:text-gray-400' : 
-                    dim.score >= 60 ? 'text-amber-600' : 'text-red-500'
+                    dim.score >= 60 ? 'text-status-warning' : 'text-status-error'
                   }`}>
                     {dim.score}%
                   </span>
@@ -1385,7 +1385,7 @@ export function JobInsightsModal({
                           <h4 className="text-xs font-semibold text-gray-950">{insight.title}</h4>
                           {insight.badge && (
                             <span className={`text-micro font-medium px-1.5 py-0.5 rounded-full ${
-                              insight.type === 'attention' ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'
+                              insight.type === 'attention' ? 'bg-status-error/20 text-status-error' : 'bg-status-warning/20 text-status-warning'
                             }`}>
                               {insight.badge}
                             </span>
@@ -1434,7 +1434,7 @@ export function JobInsightsModal({
                               {job.screening_count || 0} triagem
                             </span>
                             {daysRemaining !== null && (
-                              <span className={`flex items-center gap-1 ${daysRemaining <= 7 ? 'text-amber-600 font-medium' : ''}`}>
+                              <span className={`flex items-center gap-1 ${daysRemaining <= 7 ? 'text-status-warning font-medium' : ''}`}>
                                 <Clock className="w-3 h-3" />
                                 {daysRemaining > 0 ? `${daysRemaining}d restantes` : 'Expirado'}
                               </span>

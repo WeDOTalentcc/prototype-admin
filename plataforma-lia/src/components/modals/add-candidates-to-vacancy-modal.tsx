@@ -329,7 +329,7 @@ export function AddCandidatesToVacancyModal({
                 <Check className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
               )}
               {isOwn && (
-                <Star className="w-3 h-3 text-amber-500 flex-shrink-0" fill="var(--status-warning)" />
+                <Star className="w-3 h-3 text-status-warning flex-shrink-0" fill="var(--status-warning)" />
               )}
             </div>
             <div className={`flex items-center gap-3 mt-1 ${textStyles.bodySmall}`}>
@@ -433,8 +433,8 @@ export function AddCandidatesToVacancyModal({
               </div>
             ) : loadError ? (
               <div className="flex flex-col items-center justify-center h-[250px] text-gray-600">
-                <AlertCircle className="w-8 h-8 mb-2 text-red-400" />
-                <p className={`${textStyles.bodySmall} text-red-600`}>{loadError}</p>
+                <AlertCircle className="w-8 h-8 mb-2 text-status-error" />
+                <p className={`${textStyles.bodySmall} text-status-error`}>{loadError}</p>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -459,7 +459,7 @@ export function AddCandidatesToVacancyModal({
                 {recruiterVacancies.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                      <Star className="w-3 h-3 text-amber-500" fill="var(--status-warning)" />
+                      <Star className="w-3 h-3 text-status-warning" fill="var(--status-warning)" />
                       <span className={`${textStyles.caption} font-medium uppercase tracking-wider`}>
                         Suas Vagas
                       </span>

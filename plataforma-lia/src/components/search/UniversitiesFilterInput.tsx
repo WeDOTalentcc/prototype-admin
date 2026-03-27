@@ -303,7 +303,7 @@ export function UniversitiesFilterInput({
         <div className="flex items-center gap-3">
           <button 
             onClick={clearAll}
-            className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors"
+            className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo
@@ -370,7 +370,7 @@ export function UniversitiesFilterInput({
                 )}
               >
                 {item.type === 'ai' ? (
-                  <div className="flex items-center gap-2 text-purple-600">
+                  <div className="flex items-center gap-2 text-wedo-purple">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     <span>{item.label}</span>
                   </div>

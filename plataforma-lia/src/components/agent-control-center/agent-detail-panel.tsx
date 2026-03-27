@@ -173,9 +173,9 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 </span>
                 <div className="flex items-center gap-1">
                   {agent.delta > 0 ? (
-                    <TrendingUp className="w-3 h-3 text-green-500" />
+                    <TrendingUp className="w-3 h-3 text-status-success" />
                   ) : agent.delta < 0 ? (
-                    <TrendingDown className="w-3 h-3 text-red-500" />
+                    <TrendingDown className="w-3 h-3 text-status-error" />
                   ) : (
                     <Minus className="w-3 h-3 text-gray-600" />
                   )}
@@ -237,10 +237,10 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         style={{ backgroundColor: 'var(--eleven-bg-message)' }}
                       >
                         <div className="flex-shrink-0 mt-0.5">
-                          {activity.status === 'success' && <CheckCircle className="w-4 h-4 text-green-500" />}
-                          {activity.status === 'in_progress' && <Clock className="w-4 h-4 text-amber-500 animate-pulse" />}
+                          {activity.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
+                          {activity.status === 'in_progress' && <Clock className="w-4 h-4 text-status-warning animate-pulse" />}
                           {activity.status === 'pending' && <Clock className="w-4 h-4 text-gray-600" />}
-                          {activity.status === 'error' && <XCircle className="w-4 h-4 text-red-500" />}
+                          {activity.status === 'error' && <XCircle className="w-4 h-4 text-status-error" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
@@ -310,8 +310,8 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                                 {driver.name}
                               </span>
                               <div className="flex items-center gap-1">
-                                {driver.impact === 'positive' && <TrendingUp className="w-3 h-3 text-green-500" />}
-                                {driver.impact === 'negative' && <TrendingDown className="w-3 h-3 text-red-500" />}
+                                {driver.impact === 'positive' && <TrendingUp className="w-3 h-3 text-status-success" />}
+                                {driver.impact === 'negative' && <TrendingDown className="w-3 h-3 text-status-error" />}
                                 {driver.impact === 'neutral' && <Minus className="w-3 h-3 text-gray-600" />}
                                 <span className="text-xs font-medium" style={{ color: getImpactColor(driver.impact) }}>
                                   {driver.value}%

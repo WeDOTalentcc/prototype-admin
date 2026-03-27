@@ -835,7 +835,7 @@ export function RubricEvaluationModal({
             <button
               onClick={handleReject}
               disabled={isLoading || !onReject}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-gray-300 text-red-600 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-red-400"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-status-error/10 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-gray-300 text-status-error dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-status-error"
               style={{ 
               }}
             >

@@ -99,7 +99,7 @@ export function CalibrationCard({
   return (
     <Card className={cn(
       "w-full border transition-all duration-200",
-      feedbackGiven === 'like' && "border-green-300 bg-green-50/50 dark:bg-green-900/10",
+      feedbackGiven === 'like' && "border-status-success/30 bg-status-success/10/50 dark:bg-status-success/10",
       feedbackGiven === 'dislike' && "border-gray-300 bg-gray-50/50 dark:bg-gray-900/10 opacity-60",
       !feedbackGiven && "border-gray-100 dark:border-gray-700 hover:bg-gray-50 hover:border-gray-200 hover:",
       className
@@ -111,7 +111,7 @@ export function CalibrationCard({
               <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 {progress.isComplete ? (
-                  <span className="text-green-600 font-medium flex items-center gap-1">
+                  <span className="text-status-success font-medium flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Calibração completa! Sourcing liberado.
                   </span>
@@ -138,7 +138,7 @@ export function CalibrationCard({
               </p>
             )}
             {progress.sourcingBlocked && !progress.isComplete && (
-              <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-full px-2 py-1">
+              <div className="flex items-center gap-1.5 text-xs text-status-warning dark:text-status-warning bg-status-warning/10 dark:bg-status-warning/20 rounded-full px-2 py-1">
                 <span>Sourcing automático bloqueado até completar a calibração</span>
               </div>
             )}
@@ -244,7 +244,7 @@ export function CalibrationCard({
               <div className="flex items-center gap-2 pt-1">
                 <Button
                   size="sm"
-                  className="flex-1 h-8 text-xs gap-1.5 bg-green-500 hover:bg-green-600 text-white"
+                  className="flex-1 h-8 text-xs gap-1.5 bg-status-success hover:bg-status-success text-white"
                   onClick={handleLike}
                   disabled={isLoading}
                 >
@@ -305,7 +305,7 @@ export function CalibrationCard({
             {feedbackGiven && (
               <div className={cn(
                 "flex items-center gap-2 pt-1 text-xs",
-                feedbackGiven === 'like' ? "text-green-600" : "text-gray-800 dark:text-gray-200"
+                feedbackGiven === 'like' ? "text-status-success" : "text-gray-800 dark:text-gray-200"
               )}>
                 {feedbackGiven === 'like' ? (
                   <>

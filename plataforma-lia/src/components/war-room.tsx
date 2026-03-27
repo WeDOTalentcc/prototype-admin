@@ -136,8 +136,8 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-700 border-green-200'
-      case 'planning': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+      case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
+      case 'planning': return 'bg-status-warning/15 text-status-warning border-status-warning/30'
       case 'paused': return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
       case 'completed': return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
@@ -146,9 +146,9 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700'
-      case 'medium': return 'bg-yellow-100 text-yellow-700'
-      case 'low': return 'bg-green-100 text-green-700'
+      case 'high': return 'bg-status-error/15 text-status-error'
+      case 'medium': return 'bg-status-warning/15 text-status-warning'
+      case 'low': return 'bg-status-success/15 text-status-success'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200'
     }
   }
@@ -156,9 +156,9 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
   const getContactStatusIcon = (status: string) => {
     switch (status) {
       case 'contacted': return <Mail className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-      case 'approached': return <Phone className="w-3 h-3 text-orange-600" />
+      case 'approached': return <Phone className="w-3 h-3 text-wedo-orange" />
       case 'research': return <Eye className="w-3 h-3 text-gray-600" />
-      case 'scheduled': return <Calendar className="w-3 h-3 text-green-600" />
+      case 'scheduled': return <Calendar className="w-3 h-3 text-status-success" />
       default: return <User className="w-3 h-3 text-gray-600" />
     }
   }
@@ -169,7 +169,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-900 rounded-md max-w-6xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="p-6 bg-red-50 dark:bg-red-900/20">
+        <div className="p-6 bg-status-error/10 dark:bg-status-error/20">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold font-sans text-gray-950 dark:text-gray-50 flex items-center gap-2">
@@ -266,7 +266,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                       <Settings className="w-3 h-3 mr-1" />
                       Configurar
                     </Button>
-                    <Button size="sm" className="bg-red-600 hover:bg-red-700">
+                    <Button size="sm" className="bg-status-error hover:bg-status-error">
                       <Play className="w-3 h-3 mr-1" />
                       Executar
                     </Button>
@@ -292,7 +292,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                   <Card className="">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-green-600" />
+                        <Mail className="w-4 h-4 text-status-success" />
                         <div>
                           <p className="text-sm text-gray-800 dark:text-gray-200">Contatos Realizados</p>
                           <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">
@@ -306,7 +306,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                   <Card className="">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-purple-600" />
+                        <TrendingUp className="w-4 h-4 text-wedo-purple" />
                         <div>
                           <p className="text-sm text-gray-800 dark:text-gray-200">Taxa Resposta</p>
                           <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">
@@ -322,7 +322,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                   <Card className="">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-orange-600" />
+                        <CheckCircle className="w-4 h-4 text-wedo-orange" />
                         <div>
                           <p className="text-sm text-gray-800 dark:text-gray-200">ROI Estimado</p>
                           <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">

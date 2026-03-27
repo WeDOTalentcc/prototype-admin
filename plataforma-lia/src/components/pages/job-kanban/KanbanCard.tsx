@@ -24,9 +24,9 @@ export function KanbanCard({
 }: KanbanCardProps) {
   const getScoreColor = (score?: number) => {
     if (!score) return "text-gray-400 dark:text-gray-500"
-    if (score >= 80) return "text-emerald-600 dark:text-emerald-400"
-    if (score >= 60) return "text-amber-600 dark:text-amber-400"
-    return "text-red-600 dark:text-red-400"
+    if (score >= 80) return "text-status-success dark:text-status-success"
+    if (score >= 60) return "text-status-warning dark:text-status-warning"
+    return "text-status-error dark:text-status-error"
   }
 
   const getInitials = (name: string) => {
@@ -129,7 +129,7 @@ export function KanbanCard({
           <TooltipProvider delayDuration={200}>
             <div className="flex items-center gap-2">
               {candidate.tags?.includes("favorite") && (
-                <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                <Star className="h-3 w-3 text-status-warning fill-amber-500" />
               )}
               {candidate.notes && (
                 <MessageSquare className="h-3 w-3 text-gray-400 dark:text-gray-500" />
@@ -137,7 +137,7 @@ export function KanbanCard({
               {isStale && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Clock className="h-3 w-3 text-amber-500" />
+                    <Clock className="h-3 w-3 text-status-warning" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
                     Parado há {candidate.days_in_stage} dias — considere avançar ou dar retorno
@@ -147,7 +147,7 @@ export function KanbanCard({
               {isHighScore && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TrendingUp className="h-3 w-3 text-emerald-500" />
+                    <TrendingUp className="h-3 w-3 text-status-success" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
                     Score WSI alto ({Math.round(candidate.lia_score!)}) — considere priorizar
@@ -157,7 +157,7 @@ export function KanbanCard({
               {isLowScore && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <AlertTriangle className="h-3 w-3 text-red-500" />
+                    <AlertTriangle className="h-3 w-3 text-status-error" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
                     Score WSI baixo ({Math.round(candidate.lia_score!)}) — avaliar permanência

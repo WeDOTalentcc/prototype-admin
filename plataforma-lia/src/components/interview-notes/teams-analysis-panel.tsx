@@ -37,22 +37,22 @@ const statusConfig: Record<
   },
   transcript_ready: {
     label: "Transcrição Pronta",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-wedo-cyan/15 text-wedo-cyan-dark",
     icon: Video,
   },
   scheduled: {
     label: "Análise Agendada",
-    color: "bg-yellow-100 text-yellow-700",
+    color: "bg-status-warning/15 text-status-warning",
     icon: Clock,
   },
   analyzed: {
     label: "Analisado",
-    color: "bg-green-100 text-green-700",
+    color: "bg-status-success/15 text-status-success",
     icon: CheckCircle,
   },
   completed: {
     label: "Concluído",
-    color: "bg-green-100 text-green-700",
+    color: "bg-status-success/15 text-status-success",
     icon: CheckCircle,
   },
 }
@@ -63,17 +63,17 @@ const recommendationConfig: Record<
 > = {
   approve: {
     label: "Aprovar",
-    color: "bg-green-100 text-green-700 border-green-200",
+    color: "bg-status-success/15 text-status-success border-status-success/30",
     icon: CheckCircle,
   },
   reject: {
     label: "Reprovar",
-    color: "bg-red-100 text-red-700 border-red-200",
+    color: "bg-status-error/15 text-status-error border-status-error/30",
     icon: XCircle,
   },
   pending_review: {
     label: "Revisão Necessária",
-    color: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    color: "bg-status-warning/15 text-status-warning border-status-warning/30",
     icon: AlertCircle,
   },
 }
@@ -119,7 +119,7 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
                 key={idx}
                 className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400"
               >
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="h-4 w-4 text-status-success mt-0.5 flex-shrink-0" />
                 <span>{insight}</span>
               </li>
             ))}
@@ -136,7 +136,7 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
                 key={idx}
                 className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400"
               >
-                <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="h-4 w-4 text-status-warning mt-0.5 flex-shrink-0" />
                 <span>{concern}</span>
               </li>
             ))}
@@ -220,9 +220,9 @@ export function TeamsAnalysisPanel({
         )}
 
         {status?.error && (
-          <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-            <XCircle className="h-4 w-4 text-red-500 mt-0.5" />
-            <p className="text-sm text-red-700">{status.error}</p>
+          <div className="flex items-start gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+            <XCircle className="h-4 w-4 text-status-error mt-0.5" />
+            <p className="text-sm text-status-error">{status.error}</p>
           </div>
         )}
 
@@ -239,8 +239,8 @@ export function TeamsAnalysisPanel({
         )}
 
         {status?.status === "transcript_ready" && (
-          <div className="text-center py-6 bg-blue-50 rounded-md space-y-3">
-            <Video className="h-8 w-8 text-blue-500 mx-auto" />
+          <div className="text-center py-6 bg-wedo-cyan/10 rounded-md space-y-3">
+            <Video className="h-8 w-8 text-wedo-cyan-dark mx-auto" />
             <p className="text-sm text-gray-700">
               Transcrição disponível! Clique para iniciar a análise.
             </p>
@@ -293,8 +293,8 @@ export function TeamsAnalysisPanel({
           )}
 
         {status?.status === "scheduled" && (
-          <div className="text-center py-6 bg-yellow-50 rounded-md">
-            <Clock className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+          <div className="text-center py-6 bg-status-warning/10 rounded-md">
+            <Clock className="h-8 w-8 text-status-warning mx-auto mb-2" />
             <p className="text-sm text-gray-700">
               Análise agendada e será processada em breve.
             </p>

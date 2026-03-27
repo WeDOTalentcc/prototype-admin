@@ -105,8 +105,8 @@ function AcceptInvitationContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
         <div className="w-full max-w-md bg-white rounded-2xl p-10 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertCircle className="w-8 h-8 text-red-600" />
+          <div className="w-16 h-16 bg-status-error/15 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-8 h-8 text-status-error" />
           </div>
           <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-3">Convite Inválido</h2>
           <p className="text-gray-600 mb-6">
@@ -126,8 +126,8 @@ function AcceptInvitationContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
         <div className="w-full max-w-md bg-white rounded-2xl p-10 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+          <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-8 h-8 text-status-success" />
           </div>
           <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-3">Conta Ativada!</h2>
           <p className="text-gray-600 mb-6">
@@ -222,8 +222,8 @@ function AcceptInvitationContent() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                <p className="text-red-600 text-sm font-medium">{error}</p>
+              <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                <p className="text-status-error text-sm font-medium">{error}</p>
               </div>
             )}
 

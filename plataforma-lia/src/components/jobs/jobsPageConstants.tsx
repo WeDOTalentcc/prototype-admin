@@ -2,9 +2,9 @@ import React from 'react'
 import type { JobStatus, WSIBlock, WSIAutomaticMessage } from './jobsPageTypes'
 
 export function getBloomComplexity(bloomLevel: number): { label: string; color: string } {
-  if (bloomLevel <= 2) return { label: 'Baixa', color: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' }
-  if (bloomLevel <= 4) return { label: 'Média', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' }
-  return { label: 'Alta', color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' }
+  if (bloomLevel <= 2) return { label: 'Baixa', color: 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30' }
+  if (bloomLevel <= 4) return { label: 'Média', color: 'bg-status-warning/10 text-status-warning border-status-warning/30 dark:bg-status-warning/20 dark:text-status-warning dark:border-status-warning/30' }
+  return { label: 'Alta', color: 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30' }
 }
 
 const BLOOM_PT_BR: Record<number, string> = {
@@ -65,7 +65,7 @@ export function getStatusColor(status: JobStatus): string {
 }
 
 export const priorityColors = {
-  "alta": "bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400",
+  "alta": "bg-status-error/10 text-status-error dark:text-status-error",
   "média": "bg-gray-50 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
   "baixa": "bg-gray-50 text-gray-800 dark:bg-gray-800 dark:text-gray-500"
 }

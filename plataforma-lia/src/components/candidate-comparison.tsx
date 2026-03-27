@@ -259,7 +259,7 @@ export function CandidateComparison({
 
   const getVerdictIcon = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
-      case 'winner': return <Trophy className="w-4 h-4 text-yellow-600" />
+      case 'winner': return <Trophy className="w-4 h-4 text-status-warning" />
       case 'close': return <Star className="w-4 h-4 text-gray-600 dark:text-gray-400" />
       case 'lower': return <Flame className="w-4 h-4 text-gray-800 dark:text-gray-200" />
     }
@@ -267,7 +267,7 @@ export function CandidateComparison({
 
   const getVerdictColor = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
-      case 'winner': return 'bg-yellow-50 border-yellow-200 text-yellow-800'
+      case 'winner': return 'bg-status-warning/10 border-status-warning/30 text-status-warning'
       case 'close': return 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
       case 'lower': return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
     }
@@ -296,26 +296,26 @@ export function CandidateComparison({
 
         <div className="p-6">
           {/* LIA Analysis Section */}
-          <div className="mb-6 border border-green-200 dark:border-green-800 rounded-md p-6 bg-green-50 dark:bg-green-900/10">
+          <div className="mb-6 border border-status-success/30 dark:border-status-success/30 rounded-md p-6 bg-status-success/10 dark:bg-status-success/10">
             <div className="flex items-center gap-3 mb-4">
-              <Brain className="w-5 h-5 text-green-600" />
-              <h4 className="text-lg font-semibold text-green-900 dark:text-green-100">
+              <Brain className="w-5 h-5 text-status-success" />
+              <h4 className="text-lg font-semibold text-status-success dark:text-status-success">
                 Análise Comparativa da LIA
               </h4>
-              {isAnalyzing && <RefreshCw className="w-4 h-4 animate-spin text-green-600" />}
+              {isAnalyzing && <RefreshCw className="w-4 h-4 animate-spin text-status-success" />}
             </div>
 
             {isAnalyzing ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
-                  <RefreshCw className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
-                  <h5 className="text-lg font-medium text-green-900 dark:text-green-100 mb-2">
+                  <RefreshCw className="w-12 h-12 animate-spin text-status-success mx-auto mb-4" />
+                  <h5 className="text-lg font-medium text-status-success dark:text-status-success mb-2">
                     LIA analisando candidatos...
                   </h5>
-                  <p className="text-green-700 dark:text-green-300">
+                  <p className="text-status-success dark:text-status-success">
                     Comparando perfis, experiências e fit cultural
                   </p>
-                  <div className="flex items-center justify-center gap-4 mt-4 text-sm text-green-600">
+                  <div className="flex items-center justify-center gap-4 mt-4 text-sm text-status-success">
                     <span>⚡ Análise técnica</span>
                     <span>🧠 Avaliação comportamental</span>
                     <span>🎯 Fit cultural</span>
@@ -326,30 +326,30 @@ export function CandidateComparison({
             ) : liaAnalysis && (
               <div className="space-y-6">
                 {/* Executive Summary */}
-                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-green-200">
-                  <h5 className="font-semibold text-green-900 dark:text-green-100 mb-2 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-status-success/30">
+                  <h5 className="font-semibold text-status-success dark:text-status-success mb-2 flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Recomendação Final da LIA
                   </h5>
-                  <p className="text-green-800 dark:text-green-200 mb-3">
+                  <p className="text-status-success dark:text-status-success mb-3">
                     {liaAnalysis.summary}
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Crown className="w-4 h-4 text-yellow-600" />
-                      <span className="font-medium text-green-900 dark:text-green-100">
+                      <Crown className="w-4 h-4 text-status-warning" />
+                      <span className="font-medium text-status-success dark:text-status-success">
                         Candidato Recomendado: {candidates.find(c => c.id === liaAnalysis.winner)?.name}
                       </span>
                     </div>
-                    <Badge className="bg-green-100 text-green-800">
+                    <Badge className="bg-status-success/15 text-status-success">
                       {liaAnalysis.confidence}% de confiança
                     </Badge>
                   </div>
                 </div>
 
                 {/* Scenario Analysis */}
-                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-green-200">
-                  <h5 className="font-semibold text-green-900 dark:text-green-100 mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-status-success/30">
+                  <h5 className="font-semibold text-status-success dark:text-status-success mb-4 flex items-center gap-2">
                     <Target className="w-4 h-4" />
                     Análise por Cenário
                   </h5>
@@ -361,7 +361,7 @@ export function CandidateComparison({
                         onClick={() => setSelectedScenario(key as any)}
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                           selectedScenario === key
-                            ? 'bg-green-100 text-green-800 border border-green-300'
+                            ? 'bg-status-success/15 text-status-success border border-status-success/30'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
                       >
@@ -373,34 +373,34 @@ export function CandidateComparison({
                     ))}
                   </div>
 
-                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-md">
+                  <div className="bg-status-success/10 dark:bg-status-success/20 p-3 rounded-md">
                     <div className="flex items-center gap-2 mb-2">
-                      <ThumbsUp className="w-4 h-4 text-green-600" />
-                      <span className="font-medium text-green-900 dark:text-green-100">
+                      <ThumbsUp className="w-4 h-4 text-status-success" />
+                      <span className="font-medium text-status-success dark:text-status-success">
                         Melhor para {selectedScenario === 'shortTerm' ? 'Curto Prazo' :
                                    selectedScenario === 'longTerm' ? 'Longo Prazo' :
                                    selectedScenario === 'leadership' ? 'Liderança' :
                                    selectedScenario === 'innovation' ? 'Inovação' : 'Estabilidade'}:
                       </span>
-                      <span className="font-semibold text-green-800">
+                      <span className="font-semibold text-status-success">
                         {candidates.find(c => c.id === liaAnalysis.scenarios[selectedScenario].best)?.name}
                       </span>
                     </div>
-                    <p className="text-sm text-green-700 dark:text-green-300">
+                    <p className="text-sm text-status-success dark:text-status-success">
                       {liaAnalysis.scenarios[selectedScenario].reason}
                     </p>
                   </div>
                 </div>
 
                 {/* Action Plan */}
-                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-green-200">
-                  <h5 className="font-semibold text-green-900 dark:text-green-100 mb-3 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-status-success/30">
+                  <h5 className="font-semibold text-status-success dark:text-status-success mb-3 flex items-center gap-2">
                     <Rocket className="w-4 h-4" />
                     Plano de Ação Recomendado
                   </h5>
                   <div className="space-y-2">
                     {liaAnalysis.recommendations.actionPlan.map((action, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-green-800 dark:text-green-200">
+                      <div key={idx} className="flex items-center gap-2 text-sm text-status-success dark:text-status-success">
                         <ChevronRight className="w-3 h-3" />
                         {action}
                       </div>
@@ -418,7 +418,7 @@ export function CandidateComparison({
                 {/* Winner Badge */}
                 {liaAnalysis && candidate.id === liaAnalysis.winner && (
                   <div className="absolute top-3 right-3 z-10">
-                    <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300 gap-1">
+                    <Badge className="bg-status-warning/15 text-status-warning border-status-warning/30 gap-1">
                       <Crown className="w-3 h-3" />
                       LIA Recomenda
                     </Badge>
@@ -445,9 +445,9 @@ export function CandidateComparison({
                           {candidate.matchPercentage}% Match
                         </Badge>
                         <Badge variant="outline" className={
-                          candidate.riskLevel === 'Baixo' ? 'text-green-700 border-green-200' :
-                          candidate.riskLevel === 'Médio' ? 'text-yellow-700 border-yellow-200' :
-                          'text-red-700 border-red-200'
+                          candidate.riskLevel === 'Baixo' ? 'text-status-success border-status-success/30' :
+                          candidate.riskLevel === 'Médio' ? 'text-status-warning border-status-warning/30' :
+                          'text-status-error border-status-error/30'
                         }>
                           {candidate.riskLevel} Risco
                         </Badge>
@@ -495,7 +495,7 @@ export function CandidateComparison({
                   {/* LIA Analysis for this candidate */}
                   {liaAnalysis && liaAnalysis.comparison[candidate.id] && (
                     <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <h6 className="text-xs font-medium text-green-700 dark:text-green-300 flex items-center gap-1">
+                      <h6 className="text-xs font-medium text-status-success dark:text-status-success flex items-center gap-1">
                         <Brain className="w-3 h-3 text-wedo-cyan" />
                         Análise da LIA
                       </h6>
@@ -526,7 +526,7 @@ export function CandidateComparison({
                           .filter((data: any) => data.verdict === 'winner')
                           .slice(0, 2)
                           .map((data: any, idx: number) => (
-                          <div key={idx} className="text-xs text-green-700 dark:text-green-300 flex items-start gap-1">
+                          <div key={idx} className="text-xs text-status-success dark:text-status-success flex items-start gap-1">
                             <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
                             {data.insights[0]}
                           </div>

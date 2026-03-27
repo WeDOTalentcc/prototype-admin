@@ -396,10 +396,10 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'error': return `${badgeStyles.error} border-red-200`
-      case 'warning': return `${badgeStyles.warning} border-yellow-200`
-      case 'info': return `${badgeStyles.info} border-blue-200`
-      case 'success': return `${badgeStyles.success} border-green-200`
+      case 'error': return `${badgeStyles.error} border-status-error/30`
+      case 'warning': return `${badgeStyles.warning} border-status-warning/30`
+      case 'info': return `${badgeStyles.info} border-wedo-cyan/30`
+      case 'success': return `${badgeStyles.success} border-status-success/30`
       default: return `${badgeStyles.default} border-gray-200`
     }
   }
@@ -452,7 +452,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
               variant="outline"
               size="sm"
               onClick={() => setAutoCorrectEnabled(!autoCorrectEnabled)}
-              className={`gap-2 ${autoCorrectEnabled ? 'bg-green-50 text-green-700' : ''}`}
+              className={`gap-2 ${autoCorrectEnabled ? 'bg-status-success/10 text-status-success' : ''}`}
             >
               <Zap className="w-3 h-3" />
               Auto-correção {autoCorrectEnabled ? 'ON' : 'OFF'}
@@ -464,15 +464,15 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
         {/* Resumo */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="text-center">
-            <div className="text-xl font-bold text-red-600">{errorResults.length}</div>
+            <div className="text-xl font-bold text-status-error">{errorResults.length}</div>
             <div className={textStyles.description}>Erros</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-yellow-600">{warningResults.length}</div>
+            <div className="text-xl font-bold text-status-warning">{warningResults.length}</div>
             <div className={textStyles.description}>Avisos</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-green-600">{successResults.length}</div>
+            <div className="text-xl font-bold text-status-success">{successResults.length}</div>
             <div className={textStyles.description}>Válidos</div>
           </div>
         </div>
@@ -544,7 +544,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
 
           {validationResults.filter(r => !r.isValid).length === 0 && (
             <div className="text-center py-6">
-              <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500" />
+              <CheckCircle className="w-12 h-12 mx-auto mb-3 text-status-success" />
               <h3 className={`${textStyles.subtitle} mb-1`}>Tudo Validado!</h3>
               <p className={textStyles.description}>Todos os campos estão corretos para esta seção.</p>
             </div>

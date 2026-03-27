@@ -9,19 +9,19 @@ import {
 import type { AutomationRule } from './types'
 
 export const categoryLabels: Record<string, { label: string, color: string }> = {
-  approval: { label: 'Aprovação', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
-  rejection: { label: 'Rejeição', color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' },
+  approval: { label: 'Aprovação', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
+  rejection: { label: 'Rejeição', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
   scheduling: { label: 'Agendamento', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-  followup: { label: 'Follow-up', color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' },
+  followup: { label: 'Follow-up', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   feedback: { label: 'Feedback', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan-dark/20 dark:text-wedo-cyan' },
-  system: { label: 'Sistema', color: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' }
+  system: { label: 'Sistema', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' }
 }
 
 export const severityColors: Record<string, string> = {
   low: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
-  medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-  critical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+  medium: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
+  high: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange',
+  critical: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error'
 }
 
 export const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -46,9 +46,9 @@ export const moduleLabels: Record<string, { label: string, emoji: string }> = {
 
 export const recipientLabels: Record<string, { label: string, color: string }> = {
   candidate: { label: 'Candidato', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-  recruiter: { label: 'Recrutador', color: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' },
-  manager: { label: 'Gestor', color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' },
-  admin: { label: 'Admin', color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' },
+  recruiter: { label: 'Recrutador', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
+  manager: { label: 'Gestor', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
+  admin: { label: 'Admin', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
   rh: { label: 'RH', color: 'bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-400' },
   interviewer: { label: 'Entrevistador', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400' },
   stakeholders: { label: 'Stakeholders', color: 'bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400' }
@@ -56,13 +56,13 @@ export const recipientLabels: Record<string, { label: string, color: string }> =
 
 export const channelConfig: Record<string, { label: string, color: string, activeColor: string }> = {
   email: { label: 'Email', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' },
-  whatsapp: { label: 'WhatsApp', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
-  bell: { label: 'Bell', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' },
-  teams: { label: 'Teams', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
+  whatsapp: { label: 'WhatsApp', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' },
+  bell: { label: 'Bell', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
+  teams: { label: 'Teams', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' },
   chat: { label: 'Chat', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-wedo-cyan/20 text-wedo-cyan-dark dark:bg-wedo-cyan-dark/30 dark:text-wedo-cyan' },
   log: { label: 'Log', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' },
-  briefing: { label: 'Briefing', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  parecer: { label: 'Parecer', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' }
+  briefing: { label: 'Briefing', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
+  parecer: { label: 'Parecer', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' }
 }
 
 export const tabs = [

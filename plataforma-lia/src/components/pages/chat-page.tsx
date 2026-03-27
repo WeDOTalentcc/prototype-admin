@@ -2376,7 +2376,7 @@ Você pode me contar livremente ou colar uma descrição de vaga existente que e
     // Depois aplica o highlight se houver termo de busca
     if (!term) return formatted
     const regex = new RegExp(`(${term})`, 'gi')
-    return formatted.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800">$1</mark>')
+    return formatted.replace(regex, '<mark class="bg-status-warning/10 dark:bg-status-warning/10">$1</mark>')
   }, [formatMessageContent])
 
   const renderChatCard = useCallback((message: Message) => {
@@ -4465,7 +4465,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                       <div className="grid grid-cols-2 gap-3">
                         {contextData.data.collected_fields?.map((field: string, idx: number) => (
                           <div key={idx} className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: 'var(--eleven-sepia-mint)' }}>
-                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <CheckCircle className="w-4 h-4 text-status-success" />
                             <span className="text-sm">{field}</span>
                           </div>
                         ))}
@@ -4683,7 +4683,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
               <div
                 key={message.id}
                 data-message-id={message.id}
-                className={`flex justify-start ${isCurrentMessage ? 'ring-2 ring-gray-900/20 rounded-md' : ''} ${isHighlighted ? 'bg-yellow-50 dark:bg-yellow-900/20 rounded-md p-2' : ''}`}
+                className={`flex justify-start ${isCurrentMessage ? 'ring-2 ring-gray-900/20 rounded-md' : ''} ${isHighlighted ? 'bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-2' : ''}`}
               >
                 <div className={`flex ${
                   message.sender === "lia" ? "items-start gap-1 max-w-4xl" : "items-start space-x-3 max-w-3xl ml-16"
@@ -4761,7 +4761,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                           <div className="flex items-start gap-3">
                             <Globe className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 shrink-0" />
                             <div className="flex-1">
-                              <h4 className="font-semibold text-sm mb-1 text-blue-900 dark:text-blue-100">
+                              <h4 className="font-semibold text-sm mb-1 text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                                 Expandir para Banco de Dados Global
                               </h4>
  <p className="text-xs text-wedo-cyan-dark dark:text-gray-300 mb-3">
@@ -4783,7 +4783,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                                 </div>
                                 <div className="border-t border-gray-200 dark:border-gray-700 pt-1.5 flex items-center justify-between text-xs">
                                   <span className="text-gray-600 dark:text-gray-400">Saldo após busca:</span>
-                                  <span className="font-semibold text-green-600 dark:text-green-400">
+                                  <span className="font-semibold text-status-success dark:text-status-success">
                                     {Math.max(0, availableCredits - (message.data.workflow_data.search_results.global_credits_estimate || 5))} créditos
                                   </span>
                                 </div>
@@ -4814,7 +4814,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                               </div>
                               
                               {availableCredits < (message.data.workflow_data.search_results.global_credits_estimate || 5) && (
-                                <p className="text-xs text-red-600 dark:text-red-400 mt-2">
+                                <p className="text-xs text-status-error dark:text-status-error mt-2">
                                   Créditos insuficientes para esta busca.
                                 </p>
                               )}
@@ -5075,19 +5075,19 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                       border: '1px solid rgba(239, 68, 68, 0.3)' 
                     }}
                   >
-                    <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-status-error mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-red-600">Arquivo inválido</p>
-                      <p className="text-xs text-red-500 whitespace-pre-line mt-0.5">{fileValidationError}</p>
+                      <p className="text-sm font-medium text-status-error">Arquivo inválido</p>
+                      <p className="text-xs text-status-error whitespace-pre-line mt-0.5">{fileValidationError}</p>
                       <p className="text-xs text-gray-600 mt-1">
                         Formatos aceitos: PDF, DOC, DOCX, TXT, CSV, XLSX, PNG, JPG (máx. {MAX_FILE_SIZE_MB}MB)
                       </p>
                     </div>
                     <button
                       onClick={() => setFileValidationError(null)}
-                      className="p-1 rounded-full hover:bg-red-100 transition-colors"
+                      className="p-1 rounded-full hover:bg-status-error/15 transition-colors"
                     >
-                      <X className="w-3.5 h-3.5 text-red-500" />
+                      <X className="w-3.5 h-3.5 text-status-error" />
                     </button>
                   </div>
                 )}
@@ -5133,8 +5133,8 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-pulse" 
                     style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}
                   >
-                    <div className="w-3 h-3 bg-red-500 rounded-full animate-ping" />
-                    <span className="text-sm font-medium text-red-600">
+                    <div className="w-3 h-3 bg-status-error rounded-full animate-ping" />
+                    <span className="text-sm font-medium text-status-error">
                       Gravando... {recordingTime}s
                     </span>
                     <Button
@@ -5201,9 +5201,9 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                     style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)' }}
                   >
                     <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-green-600" />
+                      <FileText className="w-4 h-4 text-status-success" />
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-green-600">
+                        <span className="text-sm font-medium text-status-success">
                           Arquivo analisado: {fileAnalysisContext.filename}
                         </span>
                         <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
@@ -5466,7 +5466,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   candidate_name: "João Silva",
                   interviewers: []
                 }, "Agendar Entrevista")}
-                className="px-3 py-1.5 text-xs bg-orange-600 hover:bg-orange-700 text-white rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-wedo-orange hover:bg-wedo-orange/10 text-white rounded transition-colors"
               >
                 📅 Interview
               </button>
@@ -5579,7 +5579,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   }
                   setMessages(prev => [...prev, testMessage])
                 }}
-                className="px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-status-warning hover:bg-status-warning text-white rounded transition-colors"
               >
                 📅 Interview Card
               </button>

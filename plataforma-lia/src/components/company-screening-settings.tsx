@@ -357,7 +357,7 @@ Equipe de Recrutamento`
                   <Card className="">
                     <CardHeader>
                       <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <CheckCircle className="w-4 h-4 text-status-success" />
                         Candidatos Aprovados
                       </CardTitle>
                     </CardHeader>
@@ -395,7 +395,7 @@ Equipe de Recrutamento`
                   <Card className="">
                     <CardHeader>
                       <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                        <Heart className="w-4 h-4 text-orange-600" />
+                        <Heart className="w-4 h-4 text-wedo-orange" />
                         Feedback Construtivo
                       </CardTitle>
                     </CardHeader>
@@ -445,7 +445,7 @@ Equipe de Recrutamento`
                     <div className="space-y-3">
                       {approachSettings.guidelines.map((guideline, index) => (
                         <div key={index} className="flex items-start gap-3">
-                          <Star className="w-4 h-4 text-yellow-500 mt-0.5" />
+                          <Star className="w-4 h-4 text-status-warning mt-0.5" />
                           <input
                             type="text"
                             value={guideline}

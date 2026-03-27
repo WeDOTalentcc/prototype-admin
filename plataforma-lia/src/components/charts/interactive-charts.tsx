@@ -619,14 +619,14 @@ export function PredictiveAnalyticsChart() {
 
       {/* Prediction Insights */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        <Card className="border-green-200">
+        <Card className="border-status-success/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
+              <TrendingUp className="w-5 h-5 text-status-success" />
               <div>
-                <p className="text-sm font-medium text-green-700">Tendência Positiva</p>
-                <p className="text-lg font-bold text-green-800">+24%</p>
-                <p className="text-xs text-green-600">Próximos 3 meses</p>
+                <p className="text-sm font-medium text-status-success">Tendência Positiva</p>
+                <p className="text-lg font-bold text-status-success">+24%</p>
+                <p className="text-xs text-status-success">Próximos 3 meses</p>
               </div>
             </div>
           </CardContent>
@@ -645,14 +645,14 @@ export function PredictiveAnalyticsChart() {
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200">
+        <Card className="border-wedo-orange/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-orange-600" />
+              <AlertCircle className="w-5 h-5 text-wedo-orange" />
               <div>
-                <p className="text-sm font-medium text-orange-700">Atenção Necessária</p>
-                <p className="text-lg font-bold text-orange-800">Tech</p>
-                <p className="text-xs text-orange-600">Demanda crescente</p>
+                <p className="text-sm font-medium text-wedo-orange">Atenção Necessária</p>
+                <p className="text-lg font-bold text-wedo-orange">Tech</p>
+                <p className="text-xs text-wedo-orange">Demanda crescente</p>
               </div>
             </div>
           </CardContent>

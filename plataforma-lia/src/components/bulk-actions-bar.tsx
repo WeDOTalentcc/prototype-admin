@@ -63,10 +63,10 @@ interface BulkActionsBarProps {
 const STATUS_OPTIONS = [
   { value: 'new', label: 'Novo', color: 'bg-gray-100 text-gray-800' },
   { value: 'screening', label: 'Em Triagem', color: 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark' },
-  { value: 'interview', label: 'Entrevista', color: 'bg-purple-100 text-purple-800' },
-  { value: 'offer', label: 'Proposta', color: 'bg-amber-100 text-amber-800' },
-  { value: 'hired', label: 'Contratado', color: 'bg-green-100 text-green-800' },
-  { value: 'rejected', label: 'Recusado', color: 'bg-red-100 text-red-800' },
+  { value: 'interview', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple' },
+  { value: 'offer', label: 'Proposta', color: 'bg-status-warning/15 text-status-warning' },
+  { value: 'hired', label: 'Contratado', color: 'bg-status-success/15 text-status-success' },
+  { value: 'rejected', label: 'Recusado', color: 'bg-status-error/15 text-status-error' },
 ]
 
 const BulkActionsBar = memo(function BulkActionsBar({
@@ -475,7 +475,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
           <Button
             variant="ghost"
             size="sm"
-            className="text-red-400 hover:text-red-300 hover:bg-red-900/30"
+            className="text-status-error hover:text-status-error hover:bg-status-error/30"
             onClick={() => setConfirmDeleteModal(true)}
             disabled={isProcessing}
           >
@@ -488,7 +488,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
       <Dialog open={confirmDeleteModal} onOpenChange={setConfirmDeleteModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
+            <DialogTitle className="flex items-center gap-2 text-status-error">
               <AlertTriangle className="h-5 w-5" />
               Confirmar Exclusão
             </DialogTitle>
@@ -608,7 +608,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <PlayCircle className="h-5 w-5 text-green-600" />
+              <PlayCircle className="h-5 w-5 text-status-success" />
               Iniciar Triagem
             </DialogTitle>
             <DialogDescription>
@@ -641,12 +641,12 @@ const BulkActionsBar = memo(function BulkActionsBar({
             <DialogTitle>
               {operationResult ? (
                 operationResult.failed === 0 ? (
-                  <span className="flex items-center gap-2 text-green-600">
+                  <span className="flex items-center gap-2 text-status-success">
                     <CheckCircle className="h-5 w-5" />
                     Operação Concluída
                   </span>
                 ) : (
-                  <span className="flex items-center gap-2 text-amber-600">
+                  <span className="flex items-center gap-2 text-status-warning">
                     <AlertTriangle className="h-5 w-5" />
                     Operação Parcial
                   </span>
@@ -666,24 +666,24 @@ const BulkActionsBar = memo(function BulkActionsBar({
             {operationResult && (
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <CheckCircle className="h-4 w-4 text-status-success" />
                   <span>{operationResult.processed - operationResult.failed} processado(s) com sucesso</span>
                 </div>
                 {operationResult.failed > 0 && (
                   <>
-                    <div className="flex items-center gap-2 text-red-600">
+                    <div className="flex items-center gap-2 text-status-error">
                       <XCircle className="h-4 w-4" />
                       <span>{operationResult.failed} erro(s)</span>
                     </div>
                     {operationResult.errors && operationResult.errors.length > 0 && (
-                      <div className="mt-2 p-2 bg-red-50 rounded border border-red-200 max-h-32 overflow-y-auto">
+                      <div className="mt-2 p-2 bg-status-error/10 rounded border border-status-error/30 max-h-32 overflow-y-auto">
                         {operationResult.errors.slice(0, 5).map((err, idx) => (
-                          <p key={idx} className="text-xs text-red-700">
+                          <p key={idx} className="text-xs text-status-error">
                             ID {err.id}: {err.error}
                           </p>
                         ))}
                         {operationResult.errors.length > 5 && (
-                          <p className="text-xs text-red-500 mt-1">
+                          <p className="text-xs text-status-error mt-1">
                             + {operationResult.errors.length - 5} erro(s) adicional(is)
                           </p>
                         )}

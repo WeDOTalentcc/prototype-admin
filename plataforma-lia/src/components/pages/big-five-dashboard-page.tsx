@@ -413,7 +413,7 @@ export function BigFiveDashboardPage() {
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Contratações</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.totalHired}</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
+                <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowUpRight className="w-3 h-3" />
                   +15% vs anterior
                 </p>
@@ -429,7 +429,7 @@ export function BigFiveDashboardPage() {
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Performance Média</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.avgPerformance}</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
+                <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowUpRight className="w-3 h-3" />
                   +0.8 vs tradicional
                 </p>
@@ -445,7 +445,7 @@ export function BigFiveDashboardPage() {
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Fit Cultural</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.avgFit}%</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
+                <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowUpRight className="w-3 h-3" />
                   +{kpis.accuracyGain}% precisão
                 </p>
@@ -461,7 +461,7 @@ export function BigFiveDashboardPage() {
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Turnover</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.avgTurnover}%</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
+                <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowDownRight className="w-3 h-3" />
                   -67% vs tradicional
                 </p>
@@ -477,7 +477,7 @@ export function BigFiveDashboardPage() {
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">ROI Melhoria</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.roiImprovement}%</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
+                <p className="text-xs text-status-success flex items-center gap-1">
                   <DollarSign className="w-3 h-3" />
                   vs métodos tradicionais
                 </p>
@@ -493,7 +493,7 @@ export function BigFiveDashboardPage() {
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Tempo p/ Contratar</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{mockCompanyData.averageTimeToHire}d</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
+                <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowDownRight className="w-3 h-3" />
                   -23% vs anterior
                 </p>

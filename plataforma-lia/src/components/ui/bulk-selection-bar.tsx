@@ -162,7 +162,7 @@ export function BulkSelectionBar({
                         onClick={() => handleAction(action.id)}
                         disabled={action.disabled}
                         className={cn(
-                          action.variant === 'destructive' && "text-red-500 focus:text-red-500"
+                          action.variant === 'destructive' && "text-status-error focus:text-status-error"
                         )}
                       >
                         {action.icon}

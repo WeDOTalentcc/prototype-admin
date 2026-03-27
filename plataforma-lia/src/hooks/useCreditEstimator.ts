@@ -128,19 +128,19 @@ export function getCostLevel(credits: number): "low" | "medium" | "high" | "very
 
 export function getCostColor(level: "low" | "medium" | "high" | "very-high"): string {
   switch (level) {
-    case "low": return "text-green-600"
-    case "medium": return "text-yellow-600"
-    case "high": return "text-orange-600"
-    case "very-high": return "text-red-600"
+    case "low": return "text-status-success"
+    case "medium": return "text-status-warning"
+    case "high": return "text-wedo-orange"
+    case "very-high": return "text-status-error"
   }
 }
 
 export function getCostBgColor(level: "low" | "medium" | "high" | "very-high"): string {
   switch (level) {
-    case "low": return "bg-green-50"
-    case "medium": return "bg-yellow-50"
-    case "high": return "bg-orange-50"
-    case "very-high": return "bg-red-50"
+    case "low": return "bg-status-success/10"
+    case "medium": return "bg-status-warning/10"
+    case "high": return "bg-wedo-orange/10"
+    case "very-high": return "bg-status-error/10"
   }
 }
 

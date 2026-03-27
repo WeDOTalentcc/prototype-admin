@@ -33,11 +33,11 @@ export const BENEFIT_CATEGORIES: {
   color: string
   bgColor: string
 }[] = [
-  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-red-500", bgColor: "bg-red-50 dark:bg-red-900/20" },
-  { id: "food", name: "Alimentação", icon: Utensils, color: "text-orange-500", bgColor: "bg-orange-50 dark:bg-orange-900/20" },
+  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
+  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/10/20" },
   { id: "transport", name: "Transporte", icon: Car, color: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-100 dark:bg-gray-800" },
-  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-purple-500", bgColor: "bg-purple-50 dark:bg-purple-900/20" },
-  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-green-500", bgColor: "bg-green-50 dark:bg-green-900/20" },
+  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-gray-300", bgColor: "bg-gray-50 dark:bg-gray-800" },
   { id: "family", name: "Família", icon: Baby, color: "text-pink-500", bgColor: "bg-pink-50 dark:bg-pink-900/20" },
   { id: "security", name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200", bgColor: "bg-gray-50 dark:bg-gray-800/50" },
@@ -143,7 +143,7 @@ export function BenefitBadgeList({
                     {benefit.name}
                   </span>
                   {benefit.is_highlighted && (
-                    <Star className={`${iconSizes[size]} text-yellow-500 fill-yellow-500`} />
+                    <Star className={`${iconSizes[size]} text-status-warning fill-yellow-500`} />
                   )}
                 </button>
               </TooltipTrigger>
@@ -165,7 +165,7 @@ export function BenefitBadgeList({
                       </div>
                     </div>
                     {benefit.is_highlighted && (
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                      <Star className="w-4 h-4 text-status-warning fill-yellow-500 flex-shrink-0" />
                     )}
                   </div>
                   
@@ -197,7 +197,7 @@ export function BenefitBadgeList({
                       <Badge variant="secondary" className="text-xs">Obrigatório</Badge>
                     )}
                     {benefit.is_discount && (
-                      <Badge variant="outline" className="text-xs text-red-600 border-red-200">Desconto</Badge>
+                      <Badge variant="outline" className="text-xs text-status-error border-status-error/30">Desconto</Badge>
                     )}
                     {benefit.provider && (
                       <Badge variant="outline" className="text-xs">{benefit.provider}</Badge>

@@ -154,13 +154,13 @@ const availableServices = [
 const getSeverityConfig = (severity: string) => {
   switch (severity) {
     case 'critical':
-      return { label: 'Crítico', color: 'bg-red-100 text-red-700 border-red-200', dot: 'bg-red-500' }
+      return { label: 'Crítico', color: 'bg-status-error/15 text-status-error border-status-error/30', dot: 'bg-status-error' }
     case 'high':
-      return { label: 'Alto', color: 'bg-orange-100 text-orange-700 border-orange-200', dot: 'bg-orange-500' }
+      return { label: 'Alto', color: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30', dot: 'bg-wedo-orange' }
     case 'medium':
-      return { label: 'Médio', color: 'bg-amber-100 text-amber-700 border-amber-200', dot: 'bg-amber-500' }
+      return { label: 'Médio', color: 'bg-status-warning/15 text-status-warning border-status-warning/30', dot: 'bg-status-warning' }
     case 'low':
-      return { label: 'Baixo', color: 'bg-green-100 text-green-700 border-green-200', dot: 'bg-green-500' }
+      return { label: 'Baixo', color: 'bg-status-success/15 text-status-success border-status-success/30', dot: 'bg-status-success' }
     default:
       return { label: severity, color: 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200', dot: 'bg-gray-500' }
   }
@@ -169,13 +169,13 @@ const getSeverityConfig = (severity: string) => {
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'open':
-      return { label: 'Aberto', color: 'bg-red-100 text-red-700', icon: AlertCircle }
+      return { label: 'Aberto', color: 'bg-status-error/15 text-status-error', icon: AlertCircle }
     case 'investigating':
-      return { label: 'Investigando', color: 'bg-amber-100 text-amber-700', icon: Clock }
+      return { label: 'Investigando', color: 'bg-status-warning/15 text-status-warning', icon: Clock }
     case 'mitigating':
       return { label: 'Mitigando', color: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50', icon: Shield }
     case 'resolved':
-      return { label: 'Resolvido', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 }
+      return { label: 'Resolvido', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2 }
     case 'closed':
       return { label: 'Fechado', color: 'bg-gray-100 text-gray-800 dark:text-gray-200', icon: XCircle }
     default:
@@ -352,17 +352,17 @@ export default function IncidentesPage() {
             borderColor: 'rgba(239, 68, 68, 0.3)'
           }}
         >
-          <AlertCircle className="w-5 h-5 text-red-500" />
+          <AlertCircle className="w-5 h-5 text-status-error" />
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <p className="font-medium text-sm text-red-700">Gap Identificado: Plano de Resposta a Incidentes</p>
-              <Badge className="text-micro bg-red-100 text-red-700">Crítico</Badge>
+              <p className="font-medium text-sm text-status-error">Gap Identificado: Plano de Resposta a Incidentes</p>
+              <Badge className="text-micro bg-status-error/15 text-status-error">Crítico</Badge>
             </div>
-            <p className="text-xs text-red-600">
+            <p className="text-xs text-status-error">
               É necessário documentar e formalizar o PRI com procedimentos detalhados para cada tipo de incidente, conforme requisitos do BCB 498 e ISO 27001.
             </p>
           </div>
-          <Badge className="bg-amber-100 text-amber-700">Em estruturação</Badge>
+          <Badge className="bg-status-warning/15 text-status-warning">Em estruturação</Badge>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -377,13 +377,13 @@ export default function IncidentesPage() {
                     {openIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-micro bg-amber-100 text-amber-700 hover:bg-amber-100">
+                    <Badge className="text-micro bg-status-warning/15 text-status-warning hover:bg-status-warning/15">
                       Em investigação
                     </Badge>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(251, 146, 60, 0.1)' }}>
-                  <AlertCircle className="w-5 h-5 text-orange-500" />
+                  <AlertCircle className="w-5 h-5 text-wedo-orange" />
                 </div>
               </div>
             </CardContent>
@@ -400,13 +400,13 @@ export default function IncidentesPage() {
                     {criticalIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className={`text-micro ${criticalIncidents === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'} hover:bg-emerald-100`}>
+                    <Badge className={`text-micro ${criticalIncidents === 0 ? 'bg-status-success/15 text-status-success' : 'bg-wedo-orange/15 text-wedo-orange'} hover:bg-status-success/15`}>
                       {criticalIncidents === 0 ? 'Sem críticos' : `${criticalIncidents} ativo(s)`}
                     </Badge>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: criticalIncidents === 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}>
-                  <Shield className={`w-5 h-5 ${criticalIncidents === 0 ? 'text-emerald-500' : 'text-red-500'}`} />
+                  <Shield className={`w-5 h-5 ${criticalIncidents === 0 ? 'text-status-success' : 'text-status-error'}`} />
                 </div>
               </div>
             </CardContent>
@@ -423,13 +423,13 @@ export default function IncidentesPage() {
                     {resolvedIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="text-micro bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <Badge className="text-micro bg-status-success/15 text-status-success hover:bg-status-success/15">
                       100% dentro do SLA
                     </Badge>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
               </div>
             </CardContent>

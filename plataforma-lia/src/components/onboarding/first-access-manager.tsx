@@ -503,7 +503,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Error Message */}
                 {error && (
-                  <div className="p-6 lia-bg-salmon rounded-2xl border-2 border-red-200">
+                  <div className="p-6 lia-bg-salmon rounded-2xl border-2 border-status-error/30">
                     <div className="flex items-center gap-3">
                       <AlertCircle className="w-5 h-5 lia-text-coral flex-shrink-0" />
                       <span className="lia-text-medium lia-text-coral lia-font-sans font-semibold">{error}</span>

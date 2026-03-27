@@ -368,7 +368,7 @@ export function SettingsPage() {
             title="Arrastar para redimensionar menu de configurações"
           >
             {/* Indicador visual mais sutil */}
-            <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-gray-700 group-hover:bg-blue-300 transition-colors duration-200" />
+            <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-gray-700 group-hover:bg-wedo-cyan/10 transition-colors duration-200" />
 
             {/* Área de hover expandida para facilitar o clique */}
             <div className="absolute top-0 -right-2 w-4 h-full" />
@@ -544,7 +544,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                   }}
                   className={`p-3 rounded-md border text-left transition-colors ${
                     liaSettings.personality === style.id
-                      ? 'border-gray-900 dark:border-gray-50 bg-blue-50 dark:bg-blue-900/20'
+                      ? 'border-gray-900 dark:border-gray-50 bg-wedo-cyan/10 dark:bg-wedo-cyan/20'
                       : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -890,7 +890,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                     currentStep === step.id
                       ? 'text-gray-600 dark:text-gray-400'
                       : currentStep > step.id
-                      ? 'text-green-500'
+                      ? 'text-status-success'
                       : 'text-gray-500'
                   }`}
                 >
@@ -899,7 +899,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                       currentStep === step.id
                         ? 'border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800'
                         : currentStep > step.id
-                        ? 'border-green-500 bg-green-500 text-white'
+                        ? 'border-status-success/30 bg-status-success text-white'
                         : 'border-gray-300 bg-gray-50 dark:bg-gray-800'
                     }`}
                   >
@@ -916,7 +916,7 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
                 {index < steps.length - 1 && (
                   <div
                     className={`w-16 h-0.5 mx-2 ${
-                      currentStep > step.id ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
+                      currentStep > step.id ? 'bg-status-success' : 'bg-gray-200 dark:bg-gray-700'
                     }`}
                   />
                 )}
@@ -1164,13 +1164,13 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
               </div>
 
               {essentialChannelsRemoved && (
-                <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-md">
-                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-status-warning/10 border border-status-warning/30 rounded-md">
+                  <AlertCircle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-amber-800">
+                    <p className="text-sm font-medium text-status-warning">
                       Atenção: Canais essenciais desativados
                     </p>
-                    <p className="text-xs text-amber-700 mt-1">
+                    <p className="text-xs text-status-warning mt-1">
                       Limitar os canais de comunicação pode comprometer a velocidade e eficiência do processo seletivo, 
                       reduzindo as chances de contato rápido com os melhores candidatos.
                     </p>
@@ -1247,17 +1247,17 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
 
       {/* Success Message */}
       {submitSuccess && (
-        <Card className="border-green-500 bg-green-50 dark:bg-green-900/20">
+        <Card className="border-status-success/30 bg-status-success/10 dark:bg-status-success/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-status-success flex items-center justify-center">
                 <Check className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-green-800 dark:text-green-200">
+                <h3 className="font-semibold text-status-success dark:text-status-success">
                   Jornada configurada com sucesso!
                 </h3>
-                <p className="text-sm text-green-600 dark:text-green-300">
+                <p className="text-sm text-status-success dark:text-status-success">
                   Suas configurações foram salvas. LIA está pronta para otimizar seu recrutamento.
                 </p>
               </div>
@@ -1268,17 +1268,17 @@ function JourneyMappingTab({ onSettingsChange }: { onSettingsChange: (changed: b
 
       {/* Error Message */}
       {submitError && (
-        <Card className="border-red-500 bg-red-50 dark:bg-red-900/20">
+        <Card className="border-status-error/30 bg-status-error/10 dark:bg-status-error/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-status-error flex items-center justify-center">
                 <X className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-red-800 dark:text-red-200">
+                <h3 className="font-semibold text-status-error dark:text-status-error">
                   Erro ao salvar configuração
                 </h3>
-                <p className="text-sm text-red-600 dark:text-red-300">
+                <p className="text-sm text-status-error dark:text-status-error">
                   {submitError}
                 </p>
               </div>
@@ -1761,7 +1761,7 @@ function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (changed: bo
             </div>
             <div>
               <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-red-600 rounded-md"></div>
+                <div className="w-5 h-5 bg-status-error rounded-md"></div>
                 YouTube
               </label>
               <input
@@ -2009,7 +2009,7 @@ function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (changed: bo
                     <Badge variant={branch.type === 'Matriz' ? 'default' : 'secondary'}>
                       {branch.type}
                     </Badge>
-                    <Badge variant="outline" className="text-green-600 border-green-200">
+                    <Badge variant="outline" className="text-status-success border-status-success/30">
                       {branch.status}
                     </Badge>
                     <Button variant="ghost" size="sm">
@@ -2282,7 +2282,7 @@ function CommunicationTab({ onSettingsChange }: { onSettingsChange: (changed: bo
             {templates.map((template) => (
               <div key={template.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-md">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-md flex items-center justify-center">
+                  <div className="w-10 h-10 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 rounded-md flex items-center justify-center">
                     <Mail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
@@ -2414,12 +2414,12 @@ function CommunicationTab({ onSettingsChange }: { onSettingsChange: (changed: bo
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+          <div className="p-4 bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30 rounded-md">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="font-medium text-green-900 dark:text-green-100">WhatsApp Business Conectado</span>
+              <CheckCircle className="w-5 h-5 text-status-success" />
+              <span className="font-medium text-status-success dark:text-status-success">WhatsApp Business Conectado</span>
             </div>
-            <p className="text-sm text-green-800 dark:text-green-200">
+            <p className="text-sm text-status-success dark:text-status-success">
               Número: +55 (11) 99999-9999
             </p>
           </div>
@@ -2545,10 +2545,10 @@ function CommunicationTab({ onSettingsChange }: { onSettingsChange: (changed: bo
               <div key={index} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-md">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                    automation.status === 'ativo' ? 'bg-green-100 dark:bg-green-900/20' : 'bg-gray-100 dark:bg-gray-800'
+                    automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-gray-100 dark:bg-gray-800'
                   }`}>
                     <Zap className={`w-5 h-5 ${
-                      automation.status === 'ativo' ? 'text-green-600' : 'text-gray-800'
+                      automation.status === 'ativo' ? 'text-status-success' : 'text-gray-800'
                     }`} />
                   </div>
                   <div>
@@ -2720,7 +2720,7 @@ function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: (change
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Pipeline e elegibilidade</p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 dark:bg-green-950 gap-1.5">
+              <Badge variant="outline" className="text-status-success border-status-success/30 bg-status-success/10 dark:bg-status-success gap-1.5">
                 <CheckCircle className="w-3 h-3" />
                 Sincronizado
               </Badge>
@@ -2751,7 +2751,7 @@ function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: (change
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 dark:bg-red-950 gap-1.5 cursor-pointer hover:bg-red-100">
+                  <Badge variant="outline" className="text-status-error border-status-error/30 bg-status-error/10 dark:bg-status-error gap-1.5 cursor-pointer hover:bg-status-error/15">
                     <Trash2 className="w-3 h-3" />
                     Deletar Template
                   </Badge>
@@ -2842,8 +2842,8 @@ function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: (change
                             className={cn(
                               "flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors",
                               stage.isActive
-                                ? "text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-                                : "text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                                ? "text-gray-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
+                                : "text-status-success hover:bg-status-success/10 dark:hover:bg-status-success"
                             )}
                           >
                             {stage.isActive ? (
@@ -2865,7 +2865,7 @@ function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: (change
                             variant="ghost"
                             size="sm"
                             onClick={() => removeStage(stage.name)}
-                            className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            className="h-7 w-7 p-0 text-status-error hover:text-status-error hover:bg-status-error/10"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
@@ -3024,13 +3024,13 @@ function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: bool
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-800">Workflows Ativos</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-status-success">
                   {workflows.filter(w => w.status === 'active').length}
                 </p>
                 <p className="text-xs text-gray-800">de {workflows.length} total</p>
               </div>
-              <div className="w-10 h-10 bg-green-100 rounded-md flex items-center justify-center">
-                <Workflow className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
+                <Workflow className="w-5 h-5 text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -3042,9 +3042,9 @@ function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: bool
               <div>
                 <p className="text-sm font-medium text-gray-800">Execuções Hoje</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">47</p>
-                <p className="text-xs text-green-600">+12% vs ontem</p>
+                <p className="text-xs text-status-success">+12% vs ontem</p>
               </div>
-              <div className="w-10 h-10 bg-blue-100 rounded-md flex items-center justify-center">
+              <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
                 <Zap className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </div>
             </div>
@@ -3056,11 +3056,11 @@ function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: bool
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-800">Taxa de Sucesso</p>
-                <p className="text-2xl font-bold text-orange-600">97.3%</p>
+                <p className="text-2xl font-bold text-wedo-orange">97.3%</p>
                 <p className="text-xs text-gray-800">últimos 7 dias</p>
               </div>
-              <div className="w-10 h-10 bg-orange-100 rounded-md flex items-center justify-center">
-                <Target className="w-5 h-5 text-orange-600" />
+              <div className="w-10 h-10 bg-wedo-orange/15 rounded-md flex items-center justify-center">
+                <Target className="w-5 h-5 text-wedo-orange" />
               </div>
             </div>
           </CardContent>
@@ -3071,11 +3071,11 @@ function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: bool
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-800">Templates</p>
-                <p className="text-2xl font-bold text-purple-600">12</p>
+                <p className="text-2xl font-bold text-wedo-purple">12</p>
                 <p className="text-xs text-gray-800">pré-configurados</p>
               </div>
-              <div className="w-10 h-10 bg-purple-100 rounded-md flex items-center justify-center">
-                <FileText className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
+                <FileText className="w-5 h-5 text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -3099,10 +3099,10 @@ function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: bool
               <div key={workflow.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-md hover:transition-shadow">
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                    workflow.status === 'active' ? 'bg-green-100' : 'bg-gray-100'
+                    workflow.status === 'active' ? 'bg-status-success/15' : 'bg-gray-100'
                   }`}>
                     <Workflow className={`w-5 h-5 ${
-                      workflow.status === 'active' ? 'text-green-600' : 'text-gray-800'
+                      workflow.status === 'active' ? 'text-status-success' : 'text-gray-800'
                     }`} />
                   </div>
                   <div>
@@ -3115,7 +3115,7 @@ function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                       <span>•</span>
                       <span>{workflow.executions} execuções</span>
                       <span>•</span>
-                      <span className="text-green-600">{workflow.successRate}% sucesso</span>
+                      <span className="text-status-success">{workflow.successRate}% sucesso</span>
                     </div>
                   </div>
                 </div>
@@ -3154,7 +3154,7 @@ function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: bool
             </Button>
 
             <Button variant="outline" className="h-auto p-4 justify-start gap-3">
-              <Download className="w-5 h-5 text-green-600" />
+              <Download className="w-5 h-5 text-status-success" />
               <div className="text-left">
                 <div className="font-medium">Importar Template</div>
                 <div className="text-sm text-gray-800">Da biblioteca de templates</div>
@@ -3162,7 +3162,7 @@ function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: bool
             </Button>
 
             <Button variant="outline" className="h-auto p-4 justify-start gap-3">
-              <BarChart3 className="w-5 h-5 text-purple-600" />
+              <BarChart3 className="w-5 h-5 text-wedo-purple" />
               <div className="text-left">
                 <div className="font-medium">Ver Analytics</div>
                 <div className="text-sm text-gray-800">Performance detalhada</div>
@@ -3329,7 +3329,7 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
       type: 'slack',
       status: 'active',
       icon: Slack,
-      color: 'bg-purple-100 text-purple-700',
+      color: 'bg-wedo-purple/15 text-wedo-purple',
       webhookUrl: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX',
       channels: ['#recrutamento', '#aprovacoes', '#geral'],
       events: ['novo_candidato', 'aprovacao', 'nova_nota', 'mencao'],
@@ -3478,29 +3478,29 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'connected': return <CheckCircle className="w-4 h-4 text-green-600" />
+      case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
       case 'connecting': return <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
-      case 'error': return <XCircle className="w-4 h-4 text-red-600" />
+      case 'error': return <XCircle className="w-4 h-4 text-status-error" />
       case 'disabled': return <Minus className="w-4 h-4 text-gray-800" />
-      default: return <AlertCircle className="w-4 h-4 text-yellow-600" />
+      default: return <AlertCircle className="w-4 h-4 text-status-warning" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'connected': return 'bg-green-50 text-green-700 border-green-200'
+      case 'connected': return 'bg-status-success/10 text-status-success border-status-success/30'
       case 'connecting': return 'bg-gray-50 dark:bg-gray-900 text-gray-700 border-gray-900 dark:border-gray-50'
-      case 'error': return 'bg-red-50 text-red-700 border-red-200'
+      case 'error': return 'bg-status-error/10 text-status-error border-status-error/30'
       case 'disabled': return 'bg-gray-50 text-gray-800 border-gray-200'
-      default: return 'bg-yellow-50 text-yellow-700 border-yellow-200'
+      default: return 'bg-status-warning/10 text-status-warning border-status-warning/30'
     }
   }
 
   const getSyncStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-green-600" />
-      case 'warning': return <AlertCircle className="w-4 h-4 text-yellow-600" />
-      case 'error': return <XCircle className="w-4 h-4 text-red-600" />
+      case 'success': return <CheckCircle2 className="w-4 h-4 text-status-success" />
+      case 'warning': return <AlertCircle className="w-4 h-4 text-status-warning" />
+      case 'error': return <XCircle className="w-4 h-4 text-status-error" />
       default: return <Info className="w-4 h-4 text-gray-600 dark:text-gray-400" />
     }
   }
@@ -3519,8 +3519,8 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
                 </p>
                 <p className="text-xs text-gray-800">de {atsystems.length} configurados</p>
               </div>
-              <div className="w-10 h-10 bg-green-100 rounded-md flex items-center justify-center">
-                <Link2 className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
+                <Link2 className="w-5 h-5 text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -3531,12 +3531,12 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-800">Registros Sincronizados</p>
-                <p className="text-2xl font-bold text-blue-900">
+                <p className="text-2xl font-bold text-wedo-cyan-dark">
                   {atsystems.reduce((acc, sys) => acc + sys.syncedRecords, 0).toLocaleString()}
                 </p>
-                <p className="text-xs text-green-600">+47 hoje</p>
+                <p className="text-xs text-status-success">+47 hoje</p>
               </div>
-              <div className="w-10 h-10 bg-blue-100 rounded-md flex items-center justify-center">
+              <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
                 <Database className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </div>
             </div>
@@ -3548,11 +3548,11 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-800">Uptime Médio</p>
-                <p className="text-2xl font-bold text-orange-900">99.7%</p>
-                <p className="text-xs text-orange-600">últimos 30 dias</p>
+                <p className="text-2xl font-bold text-wedo-orange">99.7%</p>
+                <p className="text-xs text-wedo-orange">últimos 30 dias</p>
               </div>
-              <div className="w-10 h-10 bg-orange-100 rounded-md flex items-center justify-center">
-                <Activity className="w-5 h-5 text-orange-600" />
+              <div className="w-10 h-10 bg-wedo-orange/15 rounded-md flex items-center justify-center">
+                <Activity className="w-5 h-5 text-wedo-orange" />
               </div>
             </div>
           </CardContent>
@@ -3566,8 +3566,8 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
                 <p className="text-lg font-bold text-gray-950">Há 15min</p>
                 <p className="text-xs text-gray-800">SAP SuccessFactors</p>
               </div>
-              <div className="w-10 h-10 bg-purple-100 rounded-md flex items-center justify-center">
-                <RefreshCw className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
+                <RefreshCw className="w-5 h-5 text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -3617,7 +3617,7 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
                         <p className="text-gray-800">Registros</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-medium text-green-600">
+                        <p className="font-medium text-status-success">
                           {Math.round((system.syncedRecords / system.totalRecords) * 100)}%
                         </p>
                         <p className="text-gray-800">Sincronizado</p>
@@ -3795,8 +3795,8 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-md flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-wedo-purple" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-800">Integrações Ativas</p>
@@ -3812,7 +3812,7 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-md flex items-center justify-center">
+                  <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
                     <Send className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
@@ -3829,8 +3829,8 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-md flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-status-success" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-800">Taxa de Sucesso</p>
@@ -3870,8 +3870,8 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge className={`${
-                        integration.status === 'active' ? 'bg-green-100 text-green-700' :
-                        integration.status === 'error' ? 'bg-red-100 text-red-700' :
+                        integration.status === 'active' ? 'bg-status-success/15 text-status-success' :
+                        integration.status === 'error' ? 'bg-status-error/15 text-status-error' :
                         'bg-gray-100 text-gray-800'
                       }`}>
                         {integration.status === 'active' ? 'Ativo' :
@@ -3897,7 +3897,7 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
                 {notificationTemplates.map(template => (
                   <div key={template.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-md">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-md flex items-center justify-center">
+                      <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
                         <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       </div>
                       <div>
@@ -3916,7 +3916,7 @@ function IntegrationsTab({ onSettingsChange }: { onSettingsChange: (changed: boo
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Badge className={template.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800'}>
+                      <Badge className={template.active ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800'}>
                         {template.active ? 'Ativo' : 'Inativo'}
                       </Badge>
                       <Button variant="outline" size="sm">
@@ -4105,10 +4105,10 @@ function AdminWeDOTalentTab({ onSettingsChange }: { onSettingsChange: (changed: 
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "ativo": return "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-      case "setup": return "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400"
+      case "ativo": return "bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success"
+      case "setup": return "bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange"
  case "trial": return "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-      case "suspenso": return "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+      case "suspenso": return "bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error"
       default: return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-500"
     }
   }
@@ -4213,15 +4213,15 @@ function AdminWeDOTalentTab({ onSettingsChange }: { onSettingsChange: (changed: 
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-md">
-                <div className="text-2xl font-bold text-green-700 dark:text-green-400">12</div>
-                <div className="text-sm text-green-600 dark:text-green-500">Tenants Ativos</div>
+              <div className="text-center p-4 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                <div className="text-2xl font-bold text-status-success dark:text-status-success">12</div>
+                <div className="text-sm text-status-success dark:text-status-success">Tenants Ativos</div>
               </div>
-              <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-md">
-                <div className="text-2xl font-bold text-orange-700 dark:text-orange-400">3</div>
-                <div className="text-sm text-orange-600 dark:text-orange-500">Em Setup</div>
+              <div className="text-center p-4 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md">
+                <div className="text-2xl font-bold text-wedo-orange dark:text-wedo-orange">3</div>
+                <div className="text-sm text-wedo-orange dark:text-wedo-orange">Em Setup</div>
               </div>
-              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+              <div className="text-center p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/20 rounded-md">
                 <div className="text-2xl font-bold text-gray-700 dark:text-gray-400">2</div>
  <div className="text-sm text-gray-600">Trial</div>
               </div>
@@ -4253,19 +4253,19 @@ function AdminWeDOTalentTab({ onSettingsChange }: { onSettingsChange: (changed: 
               <h4 className="font-medium mb-2">Checklist de Setup</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-status-success" />
                   <span>Criar tenant no banco de dados</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-status-success" />
                   <span>Configurar domínio personalizado</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-status-success" />
                   <span>Enviar credenciais de acesso</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-orange-600" />
+                  <AlertCircle className="w-4 h-4 text-wedo-orange" />
                   <span>Agendar treinamento inicial</span>
                 </div>
               </div>

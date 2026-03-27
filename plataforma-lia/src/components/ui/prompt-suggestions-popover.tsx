@@ -39,9 +39,9 @@ interface PromptSuggestionsPopoverProps {
 
 const CATEGORY_LABELS = {
   vagas: { label: 'Vagas', color: 'bg-wedo-cyan/15 text-wedo-cyan-dark' },
-  candidatos: { label: 'Candidatos', color: 'bg-green-100 text-green-700' },
-  comunicacao: { label: 'Comunicação', color: 'bg-purple-100 text-purple-700' },
-  analytics: { label: 'Analytics', color: 'bg-orange-100 text-orange-700' },
+  candidatos: { label: 'Candidatos', color: 'bg-status-success/15 text-status-success' },
+  comunicacao: { label: 'Comunicação', color: 'bg-wedo-purple/15 text-wedo-purple' },
+  analytics: { label: 'Analytics', color: 'bg-wedo-orange/15 text-wedo-orange' },
   automacao: { label: 'Automação', color: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50' }
 }
 

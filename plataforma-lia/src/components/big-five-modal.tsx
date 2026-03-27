@@ -23,9 +23,9 @@ interface BigFiveModalProps {
 const traitDescriptions = {
   "Abertura": {
     icon: "🎨",
-    color: "bg-purple-500",
-    bgColor: "bg-purple-50 dark:bg-purple-900/20",
-    textColor: "text-purple-900 dark:text-purple-100",
+    color: "bg-wedo-purple",
+    bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20",
+    textColor: "text-wedo-purple dark:text-wedo-purple",
     high: {
       label: "Alto",
       description: "Pessoas criativas, curiosas e abertas a novas experiências. Tendem a ser imaginativas, aventureiras e dispostas a explorar novas ideias.",
@@ -45,8 +45,8 @@ const traitDescriptions = {
   "Conscienciosidade": {
     icon: "✅",
     color: "bg-gray-900 dark:bg-gray-50",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-    textColor: "text-blue-900 dark:text-blue-100",
+    bgColor: "bg-wedo-cyan/10",
+    textColor: "text-wedo-cyan-dark dark:text-wedo-cyan-dark",
     high: {
       label: "Alto",
       description: "Pessoas organizadas, disciplinadas e orientadas a objetivos. Altamente confiáveis e responsáveis.",
@@ -65,9 +65,9 @@ const traitDescriptions = {
   },
   "Extroversão": {
     icon: "🎉",
-    color: "bg-amber-500",
-    bgColor: "bg-amber-50 dark:bg-amber-900/20",
-    textColor: "text-amber-900 dark:text-amber-100",
+    color: "bg-status-warning",
+    bgColor: "bg-status-warning/10 dark:bg-status-warning/20",
+    textColor: "text-status-warning dark:text-status-warning",
     high: {
       label: "Alto",
       description: "Energético, sociável e comunicativo. Gosta de interagir com pessoas e é estimulado por ambientes sociais.",
@@ -86,9 +86,9 @@ const traitDescriptions = {
   },
   "Amabilidade": {
     icon: "🤝",
-    color: "bg-green-500",
-    bgColor: "bg-green-50 dark:bg-green-900/20",
-    textColor: "text-green-900 dark:text-green-100",
+    color: "bg-status-success",
+    bgColor: "bg-status-success/10 dark:bg-status-success/20",
+    textColor: "text-status-success dark:text-status-success",
     high: {
       label: "Alto",
       description: "Empático, cooperativo e preocupado com o bem-estar dos outros. Valoriza harmonia nos relacionamentos.",
@@ -268,7 +268,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                     Score B5
                   </span>
                 </div>
-                <div className="text-lg font-semibold text-purple-600">
+                <div className="text-lg font-semibold text-wedo-purple">
                   {averageScore}
                 </div>
               </div>
@@ -289,14 +289,14 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 </div>
               </div>
             </div>
-            <div className="col-span-2 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-md p-3 border border-purple-100">
+            <div className="col-span-2 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-md p-3 border border-wedo-purple/30">
               <div className="flex items-center gap-3">
                 <span className="text-xl">{archetype.icon}</span>
                 <div>
-                  <div className="text-base-ui font-medium text-purple-900">
+                  <div className="text-base-ui font-medium text-wedo-purple">
                     {archetype.name}
                   </div>
-                  <div className="text-xs text-purple-700">
+                  <div className="text-xs text-wedo-purple">
                     {archetype.description}
                   </div>
                 </div>
@@ -310,7 +310,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
             <div className="col-span-2 lg:col-span-1">
               <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-4 h-full border border-gray-200 dark:border-gray-700">
                 <h3 className="text-xs font-medium uppercase tracking-wide text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2 font-['Open_Sans',sans-serif]">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-wedo-purple rounded-full"></div>
                   Perfil de Personalidade
                 </h3>
 
@@ -410,11 +410,11 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                     <span className="text-micro text-gray-600">0-39 Baixo</span>
                   </div>
                   <div>
-                    <div className="w-full h-1 bg-amber-500 rounded mb-1"></div>
+                    <div className="w-full h-1 bg-status-warning rounded mb-1"></div>
                     <span className="text-micro text-gray-600">40-69 Moderado</span>
                   </div>
                   <div>
-                    <div className="w-full h-1 bg-green-500 rounded mb-1"></div>
+                    <div className="w-full h-1 bg-status-success rounded mb-1"></div>
                     <span className="text-micro text-gray-600">70-100 Alto</span>
                   </div>
                 </div>
@@ -468,7 +468,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
             <div className="col-span-2 space-y-3 mt-2">
               <h3 className="text-xs font-medium uppercase tracking-wide text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2 font-['Open_Sans',sans-serif]">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="w-2 h-2 bg-status-success rounded-full"></div>
                 Análise Detalhada
               </h3>
               {traits.map((trait) => {

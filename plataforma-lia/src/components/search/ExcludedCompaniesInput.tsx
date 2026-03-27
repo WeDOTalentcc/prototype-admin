@@ -235,7 +235,7 @@ export function ExcludedCompaniesInput({
         <div className="flex items-center gap-3">
           <button 
             onClick={clearAll}
-            className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors"
+            className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo
@@ -305,15 +305,15 @@ export function ExcludedCompaniesInput({
           {value.map(company => (
             <Badge
               key={company.name}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-status-warning/10 text-status-warning border border-status-warning/30"
             >
               <span>{company.name}</span>
               {company.domain && (
-                <span className="text-amber-500 text-micro">• {company.domain}</span>
+                <span className="text-status-warning text-micro">• {company.domain}</span>
               )}
               <button
                 onClick={() => removeCompany(company.name)}
-                className="hover:bg-amber-100 rounded p-0.5 transition-colors ml-1"
+                className="hover:bg-status-warning/15 rounded p-0.5 transition-colors ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

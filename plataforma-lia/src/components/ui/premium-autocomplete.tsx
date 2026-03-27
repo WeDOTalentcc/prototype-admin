@@ -32,20 +32,20 @@ const CATEGORY_CONFIG = {
   popular: {
     label: "Populares na empresa",
     icon: TrendingUp,
-    color: "text-green-500",
-    bgColor: "bg-green-50",
+    color: "text-status-success",
+    bgColor: "bg-status-success/10",
   },
   team: {
     label: "Usados pelo time",
     icon: Users,
-    color: "text-purple-500",
-    bgColor: "bg-purple-50",
+    color: "text-wedo-purple",
+    bgColor: "bg-wedo-purple/10",
   },
   recommended: {
     label: "Recomendados pela LIA",
     icon: Star,
-    color: "text-amber-500",
-    bgColor: "bg-amber-50",
+    color: "text-status-warning",
+    bgColor: "bg-status-warning/10",
   },
 }
 

@@ -491,9 +491,9 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                     <div className="flex items-center justify-between">
                       <Badge
                         className={`text-xs ${
-                          template.type === 'executive' ? 'bg-purple-100 text-purple-800' :
+                          template.type === 'executive' ? 'bg-wedo-purple/10 text-wedo-purple' :
                           template.type === 'detailed' ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' :
-                          template.type === 'weekly' ? 'bg-green-100 text-green-800' :
+                          template.type === 'weekly' ? 'bg-status-success/10 text-status-success' :
                           'bg-gray-100 text-gray-800'
                         }`}
                       >

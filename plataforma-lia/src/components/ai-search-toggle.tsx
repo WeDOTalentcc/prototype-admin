@@ -207,13 +207,13 @@ export function AISearchToggle({
           onClick={handleExpand}
           className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-gray-800 rounded-md cursor-pointer hover:transition-all duration-200"
         >
-          <Brain className="w-4 h-4 text-green-600 dark:text-green-400" />
+          <Brain className="w-4 h-4 text-status-success dark:text-status-success" />
           <span className="text-sm text-gray-800 dark:text-gray-200 flex-1">
             {placeholder}
           </span>
           <div className="flex items-center gap-2">
-            <Brain className="w-4 h-4 text-green-600 dark:text-green-400" />
-            <span className="text-xs text-green-600 dark:text-green-400 font-medium">LIA</span>
+            <Brain className="w-4 h-4 text-status-success dark:text-status-success" />
+            <span className="text-xs text-status-success dark:text-status-success font-medium">LIA</span>
           </div>
         </div>
       </div>
@@ -225,19 +225,19 @@ export function AISearchToggle({
     return (
       <div className="w-full">
         {/* Versão expandida in-line */}
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl">
+        <div className="bg-status-success/10 dark:bg-status-success/20 rounded-2xl">
 
           {/* Header compacto */}
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-600 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-status-success rounded-md flex items-center justify-center">
                 <Brain className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-green-900 dark:text-green-100 text-sm">
+                <h3 className="font-semibold text-status-success dark:text-status-success text-sm">
                   Assistente LIA
                 </h3>
-                <p className="text-xs text-green-700 dark:text-green-300">
+                <p className="text-xs text-status-success dark:text-status-success">
                   Comando inteligente para banco de talentos
                 </p>
               </div>
@@ -246,7 +246,7 @@ export function AISearchToggle({
               variant="ghost"
               size="sm"
               onClick={handleCollapse}
-              className="text-green-700 hover:text-green-900 dark:text-green-300 dark:hover:text-green-100"
+              className="text-status-success hover:text-status-success dark:text-status-success dark:hover:text-status-success"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -255,7 +255,7 @@ export function AISearchToggle({
           {/* Input Principal */}
           <div className="p-4">
             <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-md">
-              <Brain className="w-4 h-4 text-green-600" />
+              <Brain className="w-4 h-4 text-status-success" />
               <input
                 ref={inputRef}
                 type="text"
@@ -269,7 +269,7 @@ export function AISearchToggle({
                 variant="ghost"
                 size="sm"
                 onClick={handleVoiceInput}
-                className={`${isListening ? 'text-red-500' : 'text-green-600'}`}
+                className={`${isListening ? 'text-status-error' : 'text-status-success'}`}
               >
                 <Mic className={`w-4 h-4 ${isListening ? 'animate-pulse' : ''}`} />
               </Button>
@@ -285,7 +285,7 @@ export function AISearchToggle({
 
           {/* Sugestões Contextuais - Layout Compacto */}
           <div className="px-4 pb-4">
-            <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-3">
+            <h4 className="text-sm font-medium text-status-success dark:text-status-success mb-3">
               💡 Sugestões Rápidas
             </h4>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
@@ -296,12 +296,12 @@ export function AISearchToggle({
                   className="text-left p-3 bg-white dark:bg-gray-800 rounded-md hover:transition-all duration-200 group"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <suggestion.icon className="w-4 h-4 text-green-600 group-hover:text-green-700" />
-                    <span className="font-medium text-green-900 dark:text-green-100 text-xs">
+                    <suggestion.icon className="w-4 h-4 text-status-success group-hover:text-status-success" />
+                    <span className="font-medium text-status-success dark:text-status-success text-xs">
                       {suggestion.title}
                     </span>
                   </div>
-                  <p className="text-xs text-green-700 dark:text-green-300 line-clamp-2">
+                  <p className="text-xs text-status-success dark:text-status-success line-clamp-2">
                     {suggestion.description}
                   </p>
                 </button>
@@ -312,7 +312,7 @@ export function AISearchToggle({
           {/* Comandos Recentes - Linha Horizontal */}
           {recentCommands.length > 0 && (
             <div className="px-4 pb-4">
-              <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-2">
+              <h4 className="text-sm font-medium text-status-success dark:text-status-success mb-2">
                 🕐 Recentes
               </h4>
               <div className="flex gap-2 overflow-x-auto">
@@ -320,7 +320,7 @@ export function AISearchToggle({
                   <button
                     key={index}
                     onClick={() => handleSubmit(command)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-md text-xs hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors whitespace-nowrap"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success rounded-md text-xs hover:bg-status-success/20 dark:hover:bg-status-success/50 transition-colors whitespace-nowrap"
                   >
                     <Clock className="w-3 h-3" />
                     {command}
@@ -331,8 +331,8 @@ export function AISearchToggle({
           )}
 
           {/* Footer Compacto */}
-          <div className="px-4 py-2 bg-green-100/50 dark:bg-green-900/20 rounded-b-2xl">
-            <div className="flex items-center justify-between text-xs text-green-700 dark:text-green-300">
+          <div className="px-4 py-2 bg-status-success/15/50 dark:bg-status-success/20 rounded-b-2xl">
+            <div className="flex items-center justify-between text-xs text-status-success dark:text-status-success">
               <span>💡 Use linguagem natural</span>
               <span>⌨️ Enter para enviar</span>
             </div>
@@ -346,19 +346,19 @@ export function AISearchToggle({
   // Modal expansivo (mantém funcionalidade existente para outros contextos)
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20">
-      <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl w-full max-w-4xl mx-4">
+      <div className="bg-status-success/10 dark:bg-status-success/20 rounded-2xl w-full max-w-4xl mx-4">
 
         {/* Header */}
         <div className="flex items-center justify-between p-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-600 rounded-md flex items-center justify-center">
+            <div className="w-10 h-10 bg-status-success rounded-md flex items-center justify-center">
               <Brain className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">
+              <h3 className="text-lg font-semibold text-status-success dark:text-status-success">
                 Assistente LIA
               </h3>
-              <p className="text-sm text-green-700 dark:text-green-300">
+              <p className="text-sm text-status-success dark:text-status-success">
                 Comando inteligente para banco de talentos
               </p>
             </div>
@@ -367,7 +367,7 @@ export function AISearchToggle({
             variant="ghost"
             size="sm"
             onClick={handleCollapse}
-            className="text-green-700 hover:text-green-900 dark:text-green-300 dark:hover:text-green-100"
+            className="text-status-success hover:text-status-success dark:text-status-success dark:hover:text-status-success"
           >
             <X className="w-5 h-5" />
           </Button>
@@ -376,7 +376,7 @@ export function AISearchToggle({
         {/* Input Principal */}
         <div className="p-6">
           <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-md">
-            <Brain className="w-5 h-5 text-green-600" />
+            <Brain className="w-5 h-5 text-status-success" />
             <input
               ref={inputRef}
               type="text"
@@ -390,7 +390,7 @@ export function AISearchToggle({
               variant="ghost"
               size="sm"
               onClick={handleVoiceInput}
-              className={`${isListening ? 'text-red-500' : 'text-green-600'}`}
+              className={`${isListening ? 'text-status-error' : 'text-status-success'}`}
             >
               <Mic className={`w-5 h-5 ${isListening ? 'animate-pulse' : ''}`} />
             </Button>
@@ -406,7 +406,7 @@ export function AISearchToggle({
 
         {/* Sugestões Contextuais */}
         <div className="px-6 pb-4">
-          <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-3">
+          <h4 className="text-sm font-medium text-status-success dark:text-status-success mb-3">
             Sugestões para Banco de Talentos
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -417,12 +417,12 @@ export function AISearchToggle({
                 className="text-left p-4 bg-white dark:bg-gray-800 rounded-md hover:transition-all duration-200 group"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <suggestion.icon className="w-5 h-5 text-green-600 group-hover:text-green-700" />
-                  <span className="font-medium text-green-900 dark:text-green-100 text-sm">
+                  <suggestion.icon className="w-5 h-5 text-status-success group-hover:text-status-success" />
+                  <span className="font-medium text-status-success dark:text-status-success text-sm">
                     {suggestion.title}
                   </span>
                 </div>
-                <p className="text-xs text-green-700 dark:text-green-300 mb-2">
+                <p className="text-xs text-status-success dark:text-status-success mb-2">
                   {suggestion.description}
                 </p>
                 <p className="text-xs text-gray-800 dark:text-gray-200 italic">
@@ -436,7 +436,7 @@ export function AISearchToggle({
         {/* Comandos Recentes */}
         {recentCommands.length > 0 && (
           <div className="px-6 pb-6">
-            <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-3">
+            <h4 className="text-sm font-medium text-status-success dark:text-status-success mb-3">
               Comandos Recentes
             </h4>
             <div className="flex flex-wrap gap-2">
@@ -444,7 +444,7 @@ export function AISearchToggle({
                 <button
                   key={index}
                   onClick={() => handleSubmit(command)}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-md text-sm hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success rounded-md text-sm hover:bg-status-success/20 dark:hover:bg-status-success/50 transition-colors"
                 >
                   <Clock className="w-3 h-3" />
                   {command}
@@ -455,8 +455,8 @@ export function AISearchToggle({
         )}
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-green-100/50 dark:bg-green-900/20 rounded-b-2xl">
-          <div className="flex items-center justify-between text-xs text-green-700 dark:text-green-300">
+        <div className="px-6 py-4 bg-status-success/15/50 dark:bg-status-success/20 rounded-b-2xl">
+          <div className="flex items-center justify-between text-xs text-status-success dark:text-status-success">
             <span>💡 Dica: Use linguagem natural - "Mostre desenvolvedores React em SP"</span>
             <div className="flex items-center gap-4">
               <span>🎤 Pressione para falar</span>

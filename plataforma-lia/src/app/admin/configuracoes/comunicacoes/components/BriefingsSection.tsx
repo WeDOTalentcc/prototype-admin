@@ -47,8 +47,8 @@ export function BriefingsSection() {
           <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="w-10 h-10 rounded-md bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-status-warning dark:text-status-warning" />
                 </div>
                 <div>
                   <CardTitle className="text-base">Resumo de Fim de Dia</CardTitle>
@@ -86,8 +86,8 @@ export function BriefingsSection() {
           <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-status-success dark:text-status-success" />
                 </div>
                 <div>
                   <CardTitle className="text-base">Parecer Resumido</CardTitle>
@@ -102,7 +102,7 @@ export function BriefingsSection() {
                 Parecer conciso com pontos-chave, score de aderência e recomendação principal.
               </p>
               <div className="flex items-center gap-2 mt-3">
-                <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
+                <Badge className="bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success">
                   Sob demanda
                 </Badge>
                 <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
@@ -115,8 +115,8 @@ export function BriefingsSection() {
           <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                  <ClipboardCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="w-10 h-10 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center">
+                  <ClipboardCheck className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
                 </div>
                 <div>
                   <CardTitle className="text-base">Parecer Completo</CardTitle>
@@ -131,7 +131,7 @@ export function BriefingsSection() {
                 Parecer detalhado com análise técnica, comportamental, cultural e histórico profissional.
               </p>
               <div className="flex items-center gap-2 mt-3">
-                <Badge className="bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
+                <Badge className="bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple">
                   Sob demanda
                 </Badge>
                 <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">

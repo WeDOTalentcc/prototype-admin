@@ -2099,8 +2099,8 @@ export function ExpandableAIPrompt({
     if (filteredCount < totalCount) {
       return {
         text: `${filteredCount} de ${totalCount} candidatos`,
-        color: 'text-amber-600',
-        bgColor: 'bg-amber-50 border-amber-200'
+        color: 'text-status-warning',
+        bgColor: 'bg-status-warning/10 border-status-warning/30'
       }
     }
 
@@ -2483,14 +2483,14 @@ export function ExpandableAIPrompt({
                   <div className="relative group">
                     <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs ${
                       creditEstimate.isLocal 
-                        ? 'bg-green-50 text-green-700' 
+                        ? 'bg-status-success/10 text-status-success' 
                         : !creditEstimate.canAfford
-                          ? 'bg-red-50 text-red-700'
+                          ? 'bg-status-error/10 text-status-error'
                           : getCostLevel(creditEstimate.total) === 'low' 
-                            ? 'bg-green-50 text-green-700'
+                            ? 'bg-status-success/10 text-status-success'
                             : getCostLevel(creditEstimate.total) === 'medium'
-                              ? 'bg-amber-50 text-amber-700'
-                              : 'bg-red-50 text-red-700'
+                              ? 'bg-status-warning/10 text-status-warning'
+                              : 'bg-status-error/10 text-status-error'
                     }`}>
                       <Coins className="w-3 h-3" />
                       <span className="font-medium">
@@ -2503,7 +2503,7 @@ export function ExpandableAIPrompt({
                         )}
                       </span>
                       {!creditEstimate.isLocal && !creditEstimate.canAfford && (
-                        <AlertCircle className="w-3 h-3 text-red-500" />
+                        <AlertCircle className="w-3 h-3 text-status-error" />
                       )}
                     </div>
                     
@@ -2511,11 +2511,11 @@ export function ExpandableAIPrompt({
                     <div className="absolute right-0 top-full mt-1.5 hidden group-hover:block z-50">
                       <div className="bg-gray-900 text-white px-3 py-2 rounded-md text-xs min-w-[220px]">
                         <div className="font-semibold mb-2 flex items-center gap-1.5">
-                          <Coins className="w-3.5 h-3.5 text-amber-400" />
+                          <Coins className="w-3.5 h-3.5 text-status-warning" />
                           Estimativa de Custo
                         </div>
                         {creditEstimate.isLocal ? (
-                          <div className="text-green-400">
+                          <div className="text-status-success">
                             Busca local gratuita - sem consumo de créditos
                           </div>
                         ) : (
@@ -2525,7 +2525,7 @@ export function ExpandableAIPrompt({
                               <div className="flex justify-between pb-1.5 border-b border-gray-700">
                                 <span className="text-gray-300">Saldo disponível:</span>
                                 <span className={`font-medium ${
-                                  creditEstimate.canAfford ? 'text-green-400' : 'text-red-400'
+                                  creditEstimate.canAfford ? 'text-status-success' : 'text-status-error'
                                 }`}>
                                   {creditEstimate.availableCredits} créditos
                                 </span>
@@ -2546,7 +2546,7 @@ export function ExpandableAIPrompt({
                               </span>
                             </div>
                             {!creditEstimate.canAfford && (
-                              <div className="text-xs text-red-400 mt-1.5 pt-1.5 border-t border-gray-700 flex items-center gap-1">
+                              <div className="text-xs text-status-error mt-1.5 pt-1.5 border-t border-gray-700 flex items-center gap-1">
                                 <AlertCircle className="w-3 h-3" />
                                 Saldo insuficiente para esta busca
                               </div>
@@ -3116,7 +3116,7 @@ export function ExpandableAIPrompt({
                                 }}
                               >
                                 {alert.severity === 'warning' ? (
-                                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500" />
+                                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
                                 ) : (
                                   <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
                                 )}
@@ -3188,9 +3188,9 @@ export function ExpandableAIPrompt({
                           {index > 0 && (
                             <button
                               onClick={() => removeSimilarUrl(index)}
-                              className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-50 transition-colors"
+                              className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-status-error/10 transition-colors"
                             >
-                              <X className="w-3.5 h-3.5 text-red-400" />
+                              <X className="w-3.5 h-3.5 text-status-error" />
                             </button>
                           )}
                           {index === similarUrls.length - 1 && similarUrls.length < MAX_SIMILAR_URLS && (
@@ -3240,7 +3240,7 @@ export function ExpandableAIPrompt({
                             >
                               <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                               <span className="max-w-[150px] truncate">{file.name}</span>
-                              <button onClick={() => removeCvFile(index)} className="hover:text-red-500">
+                              <button onClick={() => removeCvFile(index)} className="hover:text-status-error">
                                 <X className="w-3 h-3" />
                               </button>
                             </div>
@@ -3319,7 +3319,7 @@ export function ExpandableAIPrompt({
                               <span className="text-gray-700">{keyword}</span>
                               <button
                                 onClick={() => removeSuggestion(keyword)}
-                                className="opacity-50 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                                className="opacity-50 group-hover:opacity-100 hover:text-status-error transition-opacity"
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -3606,7 +3606,7 @@ export function ExpandableAIPrompt({
                                 education: {},
                                 languages: {}
                               })}
-                              className="text-xs text-gray-800 dark:text-gray-200 hover:text-red-500"
+                              className="text-xs text-gray-800 dark:text-gray-200 hover:text-status-error"
                             >
                               Limpar
                             </button>
@@ -3828,13 +3828,13 @@ export function ExpandableAIPrompt({
                                 <button
                                   onClick={(e) => openDeleteArchetypeDialog(arch, e)}
                                   disabled={isDeletingArchetype === arch.id}
-                                  className="p-1 rounded hover:bg-red-50 transition-colors"
+                                  className="p-1 rounded hover:bg-status-error/10 transition-colors"
                                   title="Excluir arquétipo"
                                 >
                                   {isDeletingArchetype === arch.id ? (
                                     <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
                                   ) : (
-                                    <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+                                    <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-status-error" />
                                   )}
                                 </button>
                               </div>
@@ -3960,8 +3960,8 @@ export function ExpandableAIPrompt({
             <div className="px-4 pb-4">
               {/* Voice Listening Indicator */}
               {isListening && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded mb-3">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <div className="flex items-center gap-2 text-sm text-status-error bg-status-error/10 p-2 rounded mb-3">
+                  <div className="w-2 h-2 bg-status-error rounded-full animate-pulse"></div>
                   <span>🎙️ Ouvindo... Fale seu comando</span>
                 </div>
               )}
@@ -4187,7 +4187,7 @@ export function ExpandableAIPrompt({
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
-              <Trash2 className="w-4 h-4 text-red-500" />
+              <Trash2 className="w-4 h-4 text-status-error" />
               Excluir Arquétipo
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-gray-600">
@@ -4232,7 +4232,7 @@ export function ExpandableAIPrompt({
               {pendingSourceChange === 'hybrid' ? (
                 <Zap className="w-3 h-3 text-gray-600" />
               ) : (
-                <Globe className="w-3 h-3 text-amber-600" />
+                <Globe className="w-3 h-3 text-status-warning" />
               )}
               <h3 className="font-semibold text-xs text-gray-800">
                 {pendingSourceChange === 'hybrid' ? 'Busca Híbrida' : 'Busca Global'}
@@ -4254,11 +4254,11 @@ export function ExpandableAIPrompt({
               )}
               <div className="flex justify-between text-micro">
                 <span className="text-gray-600">Global:</span>
-                <span className="font-medium text-amber-600">1 cr/candidato</span>
+                <span className="font-medium text-status-warning">1 cr/candidato</span>
               </div>
               <div className="flex justify-between text-micro pt-1 border-t border-gray-100">
                 <span className="font-medium text-gray-800 dark:text-gray-200">Total estimado:</span>
-                <span className="font-semibold text-amber-600">1 cr/candidato</span>
+                <span className="font-semibold text-status-warning">1 cr/candidato</span>
               </div>
             </div>
             

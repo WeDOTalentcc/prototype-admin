@@ -95,13 +95,13 @@ const FieldBadges = ({ field }: { field: DataField }) => (
       </Badge>
     )}
     {field.savesToProfile && (
-      <Badge className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-micro px-1 py-0 h-4">
+      <Badge className="bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success text-micro px-1 py-0 h-4">
         <User className="w-2.5 h-2.5 mr-0.5" />
         Cadastro
       </Badge>
     )}
     {field.type === 'file' && (
-      <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 text-micro px-1 py-0 h-4">
+      <Badge className="bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning text-micro px-1 py-0 h-4">
         <File className="w-2.5 h-2.5 mr-0.5" />
         Documento
       </Badge>
@@ -213,9 +213,9 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
   return (
     <div className="space-y-4">
       {error && (
-        <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-          <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-          <p className="text-xs text-amber-700 dark:text-amber-300">
+        <div className="flex items-center gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
+          <AlertCircle className="w-4 h-4 text-status-warning flex-shrink-0" />
+          <p className="text-xs text-status-warning dark:text-status-warning">
             {error} - Usando configurações padrão.
           </p>
         </div>
@@ -580,10 +580,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
             onToggle={() => toggleSection('lgpd')}
           >
             <div className="space-y-4">
-              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
+              <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-micro text-amber-700 dark:text-amber-300">
+                  <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
+                  <p className="text-micro text-status-warning dark:text-status-warning">
                     A Lei Geral de Proteção de Dados (Lei nº 13.709/2018) exige consentimento explícito do candidato antes da coleta de dados pessoais.
                   </p>
                 </div>
@@ -804,7 +804,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         className={cn(
                           "flex items-center justify-between p-2 rounded-md border transition-colors",
                           field.enabled
-                            ? "bg-white dark:bg-gray-900 border-purple-300/50 dark:border-purple-700/50"
+                            ? "bg-white dark:bg-gray-900 border-wedo-purple/30/50 dark:border-wedo-purple/30/50"
                             : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60"
                         )}
                       >
@@ -816,7 +816,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           {isEditing && (
                             <button
                               onClick={() => removeCustomField(field.id)}
-                              className="p-0.5 text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
+                              className="p-0.5 text-gray-400 dark:text-gray-500 hover:text-status-error transition-colors"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>

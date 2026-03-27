@@ -95,7 +95,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
             <text
               x={width - padding.right + 5}
               y={yScale(targetValue)}
-              className="text-red-600 dark:text-red-400"
+              className="text-status-error dark:text-status-error"
               style={{ fontSize: '9px' }}
               alignmentBaseline="middle"
             >

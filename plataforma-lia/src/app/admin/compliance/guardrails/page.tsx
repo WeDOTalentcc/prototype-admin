@@ -217,7 +217,7 @@ export default function GuardrailsPage() {
         </Card>
         <Card className="border border-gray-200">
           <CardContent className="p-4">
-            <div className="text-2xl font-semibold text-green-700">{activeCount}</div>
+            <div className="text-2xl font-semibold text-status-success">{activeCount}</div>
             <div className="text-xs text-gray-500 mt-0.5">Ativos</div>
           </CardContent>
         </Card>
@@ -297,7 +297,7 @@ export default function GuardrailsPage() {
                         </span>
                       )}
                       {g.is_active ? (
-                        <span className="flex items-center gap-0.5 text-xs text-green-600">
+                        <span className="flex items-center gap-0.5 text-xs text-status-success">
                           <CheckCircle2 className="h-3 w-3" /> Ativo
                         </span>
                       ) : (
@@ -327,7 +327,7 @@ export default function GuardrailsPage() {
                       onClick={() => handleToggle(g)}
                     >
                       {g.is_active
-                        ? <ToggleRight className="h-4 w-4 text-green-600" />
+                        ? <ToggleRight className="h-4 w-4 text-status-success" />
                         : <ToggleLeft className="h-4 w-4 text-gray-400" />
                       }
                     </Button>
@@ -390,7 +390,7 @@ export default function GuardrailsPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">Regra <span className="text-red-500">*</span></Label>
+              <Label className="text-xs">Regra <span className="text-status-error">*</span></Label>
               <Textarea
                 className="text-xs resize-none"
                 rows={3}
@@ -401,7 +401,7 @@ export default function GuardrailsPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">Mensagem de bloqueio <span className="text-red-500">*</span></Label>
+              <Label className="text-xs">Mensagem de bloqueio <span className="text-status-error">*</span></Label>
               <Textarea
                 className="text-xs resize-none"
                 rows={2}

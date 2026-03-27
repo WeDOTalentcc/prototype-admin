@@ -359,7 +359,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                         className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors opacity-0 group-hover:opacity-100"
                         title="Copiar comando"
                       >
-                        <Copy className={`w-3.5 h-3.5 ${isCopied ? 'text-green-500' : 'text-gray-800'}`} />
+                        <Copy className={`w-3.5 h-3.5 ${isCopied ? 'text-status-success' : 'text-gray-800'}`} />
                       </button>
                       <Button
                         size="sm"

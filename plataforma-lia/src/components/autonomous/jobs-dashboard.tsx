@@ -102,10 +102,10 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      pending: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
-      running: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-      completed: 'bg-green-500/10 text-green-600 dark:text-green-400',
-      failed: 'bg-red-500/10 text-red-600 dark:text-red-400',
+      pending: 'bg-status-warning/10 text-status-warning dark:text-status-warning',
+      running: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark',
+      completed: 'bg-status-success/10 text-status-success dark:text-status-success',
+      failed: 'bg-status-error/10 text-status-error dark:text-status-error',
       cancelled: 'bg-gray-500/10 text-gray-600 dark:text-gray-400'
     }
     return styles[status] || styles.pending
@@ -283,7 +283,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                   )}
 
                   {job.error_message && job.status === 'failed' && (
-                    <p className="text-micro text-red-600 dark:text-red-400 line-clamp-2">
+                    <p className="text-micro text-status-error dark:text-status-error line-clamp-2">
                       {job.error_message}
                     </p>
                   )}

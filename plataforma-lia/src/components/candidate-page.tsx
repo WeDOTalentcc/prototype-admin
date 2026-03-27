@@ -412,9 +412,9 @@ export function CandidatePage({
 
   const badgeStyles = {
     default: 'text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-0',
-    success: 'text-micro px-1.5 py-0 h-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-0',
-    warning: 'text-micro px-1.5 py-0 h-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-0',
-    error: 'text-micro px-1.5 py-0 h-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-0',
+    success: 'text-micro px-1.5 py-0 h-4 bg-status-success/10 dark:bg-status-success/20 text-status-success dark:text-status-success border-0',
+    warning: 'text-micro px-1.5 py-0 h-4 bg-status-warning/10 dark:bg-status-warning/20 text-status-warning dark:text-status-warning border-0',
+    error: 'text-micro px-1.5 py-0 h-4 bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error border-0',
     info: 'text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-0'
   }
 
@@ -817,7 +817,7 @@ export function CandidatePage({
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span className="text-micro font-medium text-gray-800 dark:text-gray-200 uppercase tracking-wider">Parecer LIA</span>
-                            <span className="text-micro font-semibold text-emerald-600">
+                            <span className="text-micro font-semibold text-status-success">
                               Score: {opinionsHistory[0]?.score || liaScore}/100
                             </span>
                           </div>
@@ -840,13 +840,13 @@ export function CandidatePage({
                       </div>
                       <div className="flex items-center gap-1">
                         {opinionsHistory[0]?.recommendation === 'approved' && (
-                          <Badge className="text-micro px-1.5 py-0 h-4 bg-green-50 text-green-700 flex items-center gap-0.5">
+                          <Badge className="text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success flex items-center gap-0.5">
                             <CheckCircle className="w-2.5 h-2.5" />
                             APROVADO
                           </Badge>
                         )}
                         {opinionsHistory[0]?.recommendation === 'pending_review' && (
-                          <Badge className="text-micro px-1.5 py-0 h-4 bg-amber-50 text-amber-700 flex items-center gap-0.5">
+                          <Badge className="text-micro px-1.5 py-0 h-4 bg-status-warning/10 text-status-warning flex items-center gap-0.5">
                             <Clock className="w-2.5 h-2.5" />
                             PENDENTE
                           </Badge>
@@ -868,7 +868,7 @@ export function CandidatePage({
                         <ul className="space-y-0.5">
                           {(opinionsHistory[0]?.strengths || ['Ferramentas de design', 'Design systems', 'Liderança de equipes']).slice(0, 3).map((s: string, i: number) => (
                             <li key={i} className="text-micro text-gray-600 dark:text-gray-400 flex items-start gap-1">
-                              <span className="text-emerald-500">•</span> {s}
+                              <span className="text-status-success">•</span> {s}
                             </li>
                           ))}
                         </ul>
@@ -881,7 +881,7 @@ export function CandidatePage({
                         <ul className="space-y-0.5">
                           {(opinionsHistory[0]?.concerns || ['Acessibilidade avançada', 'Analytics de UX', 'Motion design']).slice(0, 3).map((c: string, i: number) => (
                             <li key={i} className="text-micro text-gray-600 dark:text-gray-400 flex items-start gap-1">
-                              <span className="text-amber-500">•</span> {c}
+                              <span className="text-status-warning">•</span> {c}
                             </li>
                           ))}
                         </ul>
@@ -939,7 +939,7 @@ export function CandidatePage({
                                 </span>
                               ))}
                               {isStartup && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 border border-green-100">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30">
                                   🚀 Startup
                                 </span>
                               )}
@@ -985,7 +985,7 @@ export function CandidatePage({
                 <Card>
                   <CardHeader className="py-3 bg-gray-50 dark:bg-gray-800">
                     <div className="flex items-center gap-2">
-                      <GraduationCap className="w-4 h-4 text-purple-600" />
+                      <GraduationCap className="w-4 h-4 text-wedo-purple" />
                       <CardTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                         Formação Acadêmica
                       </CardTitle>
@@ -1018,7 +1018,7 @@ export function CandidatePage({
                   <Card>
                     <CardHeader className="py-3 bg-gray-50 dark:bg-gray-800">
                       <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4 text-green-600" />
+                        <Award className="w-4 h-4 text-status-success" />
                         <CardTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                           Certificações
                         </CardTitle>
@@ -1027,7 +1027,7 @@ export function CandidatePage({
                     <CardContent className="p-4">
                       <div className="flex flex-wrap gap-1.5">
                         {candidate.certifications.map((cert: string, idx: number) => (
-                          <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
+                          <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-status-success/10 text-status-success border-status-success/30">
                             {cert}
                           </Badge>
                         ))}
@@ -1044,7 +1044,7 @@ export function CandidatePage({
                   <CardHeader className="py-3 bg-wedo-green/10 dark:bg-wedo-green/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-green-600" />
+                        <DollarSign className="w-4 h-4 text-status-success" />
                         <CardTitle className="text-sm font-bold text-gray-950 dark:text-gray-50">
                           Pacote de Remuneração Total
                         </CardTitle>
@@ -1066,7 +1066,7 @@ export function CandidatePage({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-gray-600 dark:text-gray-400">Anualizado (13,33x)</span>
-                          <span className="text-sm font-semibold text-green-600">
+                          <span className="text-sm font-semibold text-status-success">
                             R$ 199.950,00
                           </span>
                         </div>
@@ -1093,9 +1093,9 @@ export function CandidatePage({
                         <p className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">Benefícios Inclusos:</p>
                         <div className="flex flex-wrap gap-1">
                           <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-xs">VR R$1.500</Badge>
-                          <Badge className="bg-green-50 text-green-700 text-xs">Saúde Premium</Badge>
-                          <Badge className="bg-purple-50 text-purple-700 text-xs">Gympass</Badge>
-                          <Badge className="bg-orange-50 text-orange-700 text-xs">Home Office</Badge>
+                          <Badge className="bg-status-success/10 text-status-success text-xs">Saúde Premium</Badge>
+                          <Badge className="bg-wedo-purple/10 text-wedo-purple text-xs">Gympass</Badge>
+                          <Badge className="bg-wedo-orange/10 text-wedo-orange text-xs">Home Office</Badge>
                         </div>
                       </div>
 
@@ -1105,7 +1105,7 @@ export function CandidatePage({
                           <span className="text-sm font-bold text-gray-950 dark:text-gray-50">
                             TOTAL ANUAL
                           </span>
-                          <span className="text-lg font-bold text-green-600">
+                          <span className="text-lg font-bold text-status-success">
                             R$ 349.190,00
                           </span>
                         </div>
@@ -1186,7 +1186,7 @@ export function CandidatePage({
                           <Badge variant="outline" className="text-xs bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-600">Remoto</Badge>
                         )}
                         {candidate.willing_to_relocate && (
-                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Aceita Relocação</Badge>
+                          <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">Aceita Relocação</Badge>
                         )}
                         {candidate.work_model_preference && (
                           <Badge variant="outline" className="text-xs">{candidate.work_model_preference}</Badge>
@@ -1212,7 +1212,7 @@ export function CandidatePage({
                     <div>
                       <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5">Status</h5>
                       <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
+                        <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success dark:text-status-success' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
                           {candidate.is_active ? 'Ativo' : 'Inativo'}
                         </Badge>
                         {candidate.source && (
@@ -1311,17 +1311,17 @@ export function CandidatePage({
                       {/* Status Badges */}
                       <div className="flex flex-wrap gap-1.5">
                         {(candidate as any).is_open_to_work && (
-                          <Badge className="text-xs bg-green-50 text-green-700 border-green-200">
+                          <Badge className="text-xs bg-status-success/10 text-status-success border-status-success/30">
                             ✓ Open to Work
                           </Badge>
                         )}
                         {(candidate as any).is_decision_maker && (
-                          <Badge className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                          <Badge className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                             👔 Decision Maker
                           </Badge>
                         )}
                         {(candidate as any).is_top_universities && (
-                          <Badge className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                          <Badge className="text-xs bg-status-warning/10 text-status-warning border-status-warning/30">
                             🎓 Top Universities
                           </Badge>
                         )}
@@ -1448,8 +1448,8 @@ export function CandidatePage({
                       onClick={() => setActivityFilter('interviews')}
                       className={`px-2 py-1 text-xs rounded transition-colors ${
                         activityFilter === 'interviews'
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200'
+                          ? 'bg-wedo-purple text-white'
+                          : 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple hover:bg-wedo-purple/10'
                       }`}
                     >
                       🎤 Entrevistas
@@ -1468,8 +1468,8 @@ export function CandidatePage({
                       onClick={() => setActivityFilter('lia')}
                       className={`px-2 py-1 text-xs rounded transition-colors ${
                         activityFilter === 'lia'
-                          ? 'bg-red-600 text-white'
-                          : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200'
+                          ? 'bg-status-error text-white'
+                          : 'bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error hover:bg-status-error/20'
                       }`}
                     >
                       🤖 LIA
@@ -1478,8 +1478,8 @@ export function CandidatePage({
                       onClick={() => setActivityFilter('offers')}
                       className={`px-2 py-1 text-xs rounded transition-colors ${
                         activityFilter === 'offers'
-                          ? 'bg-green-600 text-white'
-                          : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200'
+                          ? 'bg-status-success text-white'
+                          : 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success hover:bg-status-success/20'
                       }`}
                     >
                       💼 Ofertas
@@ -1491,7 +1491,7 @@ export function CandidatePage({
               {/* Card de Previsões da IA */}
               <Card className="bg-gray-50 dark:bg-gray-800/50">
                 <CardHeader
-                  className="pb-3 cursor-pointer hover:bg-purple-100/30 dark:hover:bg-purple-900/30 transition-colors"
+                  className="pb-3 cursor-pointer hover:bg-wedo-purple/15/30 dark:hover:bg-wedo-purple/30 transition-colors"
                   onClick={() => setShowAIPredictions(!showAIPredictions)}
                 >
                   <div className="flex items-center justify-between">
@@ -1503,7 +1503,7 @@ export function CandidatePage({
                       </Badge>
                     </div>
                     <ChevronDown
-                      className={`w-4 h-4 text-purple-600 transition-transform ${
+                      className={`w-4 h-4 text-wedo-purple transition-transform ${
                         showAIPredictions ? 'rotate-180' : ''
                       }`}
                     />
@@ -1648,7 +1648,7 @@ export function CandidatePage({
                                                 <div
                                                   className={`max-w-[70%] px-3 py-2 rounded-md text-xs ${
                                                     msg.sender === 'LIA'
-                                                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-900 dark:text-purple-300'
+                                                      ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
                                                       : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                                                   }`}
                                                 >
@@ -1754,12 +1754,12 @@ export function CandidatePage({
                 <Card className="hover:transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <FileText className="w-5 h-5 text-red-600" />
+                      <FileText className="w-5 h-5 text-status-error" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">CV_{candidate.name.replace(' ', '_')}_2025.pdf</h4>
                         <p className="text-xs text-gray-800 dark:text-gray-200">2.1 MB • há 3 dias</p>
                         <div className="flex gap-1 mt-2">
-                          <Badge className="bg-green-100 text-green-700 text-xs">✓ Verificado</Badge>
+                          <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
                           <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs">LIA: 95%</Badge>
                         </div>
                       </div>
@@ -1788,13 +1788,13 @@ export function CandidatePage({
                 <Card className="hover:transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <FileText className="w-5 h-5 text-purple-600" />
+                      <FileText className="w-5 h-5 text-wedo-purple" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Portfolio_UX_2025.pdf</h4>
                         <p className="text-xs text-gray-800 dark:text-gray-200">12.3 MB • há 1 dia</p>
                         <div className="flex gap-1 mt-2">
-                          <Badge className="bg-green-100 text-green-700 text-xs">✓ Verificado</Badge>
-                          <Badge className="bg-purple-100 text-purple-700 text-xs">Destacado</Badge>
+                          <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
+                          <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">Destacado</Badge>
                         </div>
                       </div>
                     </div>
@@ -1813,13 +1813,13 @@ export function CandidatePage({
                 <Card className="hover:transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <Video className="w-5 h-5 text-red-600" />
+                      <Video className="w-5 h-5 text-status-error" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Apresentacao_Pessoal.mp4</h4>
                         <p className="text-xs text-gray-800 dark:text-gray-200">25.4 MB • 3:45 min</p>
                         <div className="flex gap-1 mt-2">
-                          <Badge className="bg-green-100 text-green-700 text-xs">✓ Analisado</Badge>
-                          <Badge className="bg-red-100 text-red-700 text-xs">Triagem</Badge>
+                          <Badge className="bg-status-success/15 text-status-success text-xs">✓ Analisado</Badge>
+                          <Badge className="bg-status-error/15 text-status-error text-xs">Triagem</Badge>
                         </div>
                       </div>
                     </div>
@@ -1844,13 +1844,13 @@ export function CandidatePage({
                 <Card className="hover:transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <Video className="w-5 h-5 text-purple-600" />
+                      <Video className="w-5 h-5 text-wedo-purple" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Case_UX_Design.mp4</h4>
                         <p className="text-xs text-gray-800 dark:text-gray-200">45.2 MB • 8:20 min</p>
                         <div className="flex gap-1 mt-2">
-                          <Badge className="bg-purple-100 text-purple-700 text-xs">Destaque</Badge>
-                          <Badge className="bg-green-100 text-green-700 text-xs">Score: 88%</Badge>
+                          <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">Destaque</Badge>
+                          <Badge className="bg-status-success/15 text-status-success text-xs">Score: 88%</Badge>
                         </div>
                       </div>
                     </div>
@@ -1881,7 +1881,7 @@ export function CandidatePage({
                         <p className="text-xs text-gray-800 dark:text-gray-200">1.8 MB • 4:32 min • há 1 dia</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs">Triagem WSI</Badge>
-                          <Badge className="bg-green-100 text-green-700 text-xs">Score: 92%</Badge>
+                          <Badge className="bg-status-success/15 text-status-success text-xs">Score: 92%</Badge>
                         </div>
                       </div>
                     </div>
@@ -1920,12 +1920,12 @@ export function CandidatePage({
                 <Card className="hover:transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <Image className="w-5 h-5 text-green-600" />
+                      <Image className="w-5 h-5 text-status-success" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">foto_perfil.jpg</h4>
                         <p className="text-xs text-gray-800 dark:text-gray-200">456 KB • há 2 horas</p>
                         <div className="flex gap-1 mt-2">
-                          <Badge className="bg-green-100 text-green-700 text-xs">✓ Verificado</Badge>
+                          <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
                         </div>
                       </div>
                     </div>
@@ -1954,12 +1954,12 @@ export function CandidatePage({
                 <Card className="hover:transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <Award className="w-5 h-5 text-orange-600" />
+                      <Award className="w-5 h-5 text-wedo-orange" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">Certificados.zip</h4>
                         <p className="text-xs text-gray-800 dark:text-gray-200">3.2 MB • há 1 semana</p>
                         <div className="flex gap-1 mt-2">
-                          <Badge className="bg-orange-100 text-orange-700 text-xs">5 arquivos</Badge>
+                          <Badge className="bg-wedo-orange/15 text-wedo-orange text-xs">5 arquivos</Badge>
                         </div>
                       </div>
                     </div>
@@ -2000,7 +2000,7 @@ export function CandidatePage({
                     onClick={() => setOpinionsSubTab('analises')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
                       opinionsSubTab === 'analises'
-                        ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500'
+                        ? 'bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple border-b-2 border-wedo-purple/30'
                         : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
@@ -2065,13 +2065,13 @@ export function CandidatePage({
                           
                           const getOpinionScoreColor = (score: number, isWsi: boolean) => {
                             if (isWsi) {
-                              if (score >= 4) return 'text-emerald-600'
-                              if (score >= 3) return 'text-amber-600'
-                              return 'text-red-500'
+                              if (score >= 4) return 'text-status-success'
+                              if (score >= 3) return 'text-status-warning'
+                              return 'text-status-error'
                             } else {
-                              if (score >= 80) return 'text-emerald-600'
-                              if (score >= 60) return 'text-amber-600'
-                              return 'text-red-500'
+                              if (score >= 80) return 'text-status-success'
+                              if (score >= 60) return 'text-status-warning'
+                              return 'text-status-error'
                             }
                           }
                           
@@ -2112,10 +2112,10 @@ export function CandidatePage({
                               >
                                 <div className="flex items-center gap-2">
                                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                    isWsiOpinion ? 'bg-purple-100' : 'bg-gray-100 dark:bg-gray-800'
+                                    isWsiOpinion ? 'bg-wedo-purple/15' : 'bg-gray-100 dark:bg-gray-800'
                                   }`}>
                                     {isWsiOpinion ? (
-                                      <Target className="w-4 h-4 text-purple-600" />
+                                      <Target className="w-4 h-4 text-wedo-purple" />
                                     ) : (
                                       <Brain className="w-4 h-4 text-wedo-cyan" />
                                     )}
@@ -2168,7 +2168,7 @@ export function CandidatePage({
                                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                                       >
                                         {copiedItemId === `opinion-${opinion.id}` ? (
-                                          <Check className="w-3.5 h-3.5 text-green-500" />
+                                          <Check className="w-3.5 h-3.5 text-status-success" />
                                         ) : (
                                           <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
                                         )}
@@ -2215,14 +2215,14 @@ export function CandidatePage({
                                   
                                   {opinion.strengths && opinion.strengths.length > 0 && (
                                     <div>
-                                      <h5 className={`${textStyles.label} text-emerald-700 mb-1 flex items-center gap-1`}>
+                                      <h5 className={`${textStyles.label} text-status-success mb-1 flex items-center gap-1`}>
                                         <CheckCircle className="w-3 h-3" />
                                         Pontos Fortes
                                       </h5>
                                       <ul className="space-y-0.5">
                                         {opinion.strengths.map((s: string, i: number) => (
                                           <li key={i} className={`${textStyles.caption} text-gray-600 flex items-start gap-1`}>
-                                            <span className="text-emerald-500 mt-0.5">•</span>
+                                            <span className="text-status-success mt-0.5">•</span>
                                             {s}
                                           </li>
                                         ))}
@@ -2232,14 +2232,14 @@ export function CandidatePage({
                                   
                                   {opinion.concerns && opinion.concerns.length > 0 && (
                                     <div>
-                                      <h5 className={`${textStyles.label} text-amber-700 mb-1 flex items-center gap-1`}>
+                                      <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                                         <AlertCircle className="w-3 h-3" />
                                         Pontos de Atenção
                                       </h5>
                                       <ul className="space-y-0.5">
                                         {opinion.concerns.map((c: string, i: number) => (
                                           <li key={i} className={`${textStyles.caption} text-gray-600 flex items-start gap-1`}>
-                                            <span className="text-amber-500 mt-0.5">•</span>
+                                            <span className="text-status-warning mt-0.5">•</span>
                                             {c}
                                           </li>
                                         ))}
@@ -2296,8 +2296,8 @@ export function CandidatePage({
                     {!isLoadingAnalyses && (!savedAnalyses || savedAnalyses.total_analyses === 0) && (
                       <Card>
                         <CardContent className="p-6 text-center">
-                          <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center mx-auto mb-3">
-                            <Brain className="w-6 h-6 text-purple-300" />
+                          <div className="w-12 h-12 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-3">
+                            <Brain className="w-6 h-6 text-wedo-purple" />
                           </div>
                           <p className={`${textStyles.subtitle} mb-1`}>Nenhuma análise disponível</p>
                           <p className={textStyles.description}>
@@ -2326,8 +2326,8 @@ export function CandidatePage({
                                 onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id)}
                               >
                                 <div className="flex items-center gap-2.5">
-                                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                    <Brain className="w-4 h-4 text-purple-600" />
+                                  <div className="w-8 h-8 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
+                                    <Brain className="w-4 h-4 text-wedo-purple" />
                                   </div>
                                   <div className="min-w-0">
                                     <div className="flex items-center gap-2">
@@ -2361,7 +2361,7 @@ export function CandidatePage({
                                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                                       >
                                         {copiedItemId === `analysis-${analysis.id}` ? (
-                                          <Check className="w-3.5 h-3.5 text-green-500" />
+                                          <Check className="w-3.5 h-3.5 text-status-success" />
                                         ) : (
                                           <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
                                         )}
@@ -2388,9 +2388,9 @@ export function CandidatePage({
                                             e.stopPropagation()
                                             setAnalysisToDelete(analysis)
                                           }}
-                                          className="p-1.5 hover:bg-red-50 rounded transition-colors group"
+                                          className="p-1.5 hover:bg-status-error/10 rounded transition-colors group"
                                         >
-                                          <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500" />
+                                          <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-status-error" />
                                         </button>
                                       </TooltipTrigger>
                                       <TooltipContent side="top" className="text-micro">Remover análise</TooltipContent>
@@ -2424,7 +2424,7 @@ export function CandidatePage({
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteAnalysis}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-status-error hover:bg-status-error text-white"
             >
               Remover Definitivamente
             </AlertDialogAction>

@@ -72,7 +72,7 @@ export default function SSOAdminPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="p-6">
-          <div className="flex items-center gap-3 text-red-600">
+          <div className="flex items-center gap-3 text-status-error">
             <AlertCircle className="h-6 w-6" />
             <span>Erro ao carregar configurações SSO</span>
           </div>
@@ -100,7 +100,7 @@ export default function SSOAdminPage() {
             <Badge 
               variant="outline" 
               className={isFromWorkOS 
-                ? "bg-green-50 text-green-700 border-green-200" 
+                ? "bg-status-success/10 text-status-success border-status-success/30" 
                 : "bg-gray-50 text-gray-600 border-gray-200"
               }
             >
@@ -136,7 +136,7 @@ export default function SSOAdminPage() {
           <CardContent>
             <div className="flex items-center gap-2">
               {status?.sso_enabled ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-status-success" />
               ) : (
                 <AlertCircle className="h-5 w-5 text-gray-400" />
               )}
@@ -155,7 +155,7 @@ export default function SSOAdminPage() {
           <CardContent>
             <div className="flex items-center gap-2">
               {status?.scim_enabled ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-status-success" />
               ) : (
                 <AlertCircle className="h-5 w-5 text-gray-400" />
               )}

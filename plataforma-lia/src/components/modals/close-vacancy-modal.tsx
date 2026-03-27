@@ -366,21 +366,21 @@ export function CloseVacancyModal({
   
   const renderStep1 = () => (
     <div className="space-y-6">
-      <div className={cn(cardStyles.default, 'p-4 border-emerald-200 bg-emerald-50')}>
+      <div className={cn(cardStyles.default, 'p-4 border-status-success/30 bg-status-success/10')}>
         <div className="flex items-center gap-4">
           <div className="relative">
-            <Avatar className="h-14 w-14 border-2 border-emerald-400">
-              <AvatarFallback className="bg-emerald-100 text-emerald-700 text-lg font-medium">
+            <Avatar className="h-14 w-14 border-2 border-status-success/30">
+              <AvatarFallback className="bg-status-success/15 text-status-success text-lg font-medium">
                 {getInitials(hiredCandidate.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-1">
+            <div className="absolute -bottom-1 -right-1 bg-status-success rounded-full p-1">
               <Check className="h-3 w-3 text-white" />
             </div>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className={cn(textStyles.titleLarge, 'text-emerald-900')}>
+              <span className={cn(textStyles.titleLarge, 'text-status-success')}>
                 {hiredCandidate.name}
               </span>
               <Badge className={cn(badgeStyles.success, 'gap-1')}>
@@ -388,7 +388,7 @@ export function CloseVacancyModal({
                 Contratado
               </Badge>
             </div>
-            <p className={cn(textStyles.description, 'text-emerald-700')}>
+            <p className={cn(textStyles.description, 'text-status-success')}>
               {hiredCandidate.email || hiredCandidate.phone || 'Contato não informado'}
             </p>
           </div>
@@ -420,7 +420,7 @@ export function CloseVacancyModal({
             </SelectContent>
           </Select>
           {step1Templates.length === 0 && !templatesLoading && (
-            <p className={cn(textStyles.caption, 'text-amber-600')}>
+            <p className={cn(textStyles.caption, 'text-status-warning')}>
               Nenhum template disponível para {hiredChannel === 'email' ? 'Email' : hiredChannel === 'whatsapp' ? 'WhatsApp' : 'Email + WhatsApp'}
             </p>
           )}
@@ -543,7 +543,7 @@ export function CloseVacancyModal({
               </SelectContent>
             </Select>
             {step2Templates.length === 0 && !templatesLoading && (
-              <p className={cn(textStyles.caption, 'text-amber-600')}>
+              <p className={cn(textStyles.caption, 'text-status-warning')}>
                 Nenhum template disponível para {othersChannel === 'email' ? 'Email' : othersChannel === 'whatsapp' ? 'WhatsApp' : 'Email + WhatsApp'}
               </p>
             )}

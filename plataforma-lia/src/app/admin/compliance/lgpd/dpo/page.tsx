@@ -64,9 +64,9 @@ export default function DPOPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Ativo</Badge>
+        return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Ativo</Badge>
       case 'inactive':
-        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Inativo</Badge>
+        return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">Inativo</Badge>
       default:
         return <Badge>{status}</Badge>
     }
@@ -232,7 +232,7 @@ export default function DPOPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <UserCheck className="w-5 h-5 text-emerald-500" />
+                  <UserCheck className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold" style={{ color: 'var(--eleven-text-primary)' }}>{activeDPOs}</p>
@@ -246,7 +246,7 @@ export default function DPOPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
-                  <Star className="w-5 h-5 text-amber-500" />
+                  <Star className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold truncate" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -348,7 +348,7 @@ export default function DPOPage() {
                           <DropdownMenuItem>Editar</DropdownMenuItem>
                           <DropdownMenuItem>Definir como Principal</DropdownMenuItem>
                           <DropdownMenuItem>Ver histórico</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">Desativar</DropdownMenuItem>
+                          <DropdownMenuItem className="text-status-error">Desativar</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

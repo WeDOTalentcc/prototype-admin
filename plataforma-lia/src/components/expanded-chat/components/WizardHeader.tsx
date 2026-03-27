@@ -55,7 +55,7 @@ export function WizardHeader({
               className={cn(
                 "inline-flex items-center gap-1 px-1.5 py-0.5 text-micro font-medium rounded-full",
                 catalogStatus.maturity_level === 'complete' 
-                  ? "bg-green-500/10 text-green-500"
+                  ? "bg-status-success/10 text-status-success"
                   : catalogStatus.maturity_level === 'partial'
                   ? "bg-status-warning/10 text-status-warning"
                   : "bg-gray-100 text-gray-500"
@@ -90,8 +90,8 @@ export function WizardHeader({
               </>
             ) : autoSaveLastSaved ? (
               <>
-                <Check className="w-3 h-3 text-green-500" />
-                <span className="text-green-500">{getLastSavedText() || 'Salvo'}</span>
+                <Check className="w-3 h-3 text-status-success" />
+                <span className="text-status-success">{getLastSavedText() || 'Salvo'}</span>
               </>
             ) : hasPendingChanges ? (
               <>
@@ -103,11 +103,11 @@ export function WizardHeader({
           {(autoSaveLastSaved || hasRestoredDraft) && (
             <button
               onClick={onClearDraft}
-              className="p-1 rounded-md hover:bg-red-50 transition-colors group focus-visible:ring-2 focus-visible:ring-gray-400"
+              className="p-1 rounded-md hover:bg-status-error/10 transition-colors group focus-visible:ring-2 focus-visible:ring-gray-400"
               title="Começar do zero"
               aria-label="Limpar rascunho e começar do zero"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-gray-400 group-hover:text-red-500 transition-colors" />
+              <RefreshCw className="w-3.5 h-3.5 text-gray-400 group-hover:text-status-error transition-colors" />
             </button>
           )}
           <button
@@ -139,7 +139,7 @@ export function WizardHeader({
           className={cn(
             "mt-2 px-2.5 py-1.5 rounded-md flex items-center gap-2 border",
             catalogStatus.maturity_level === 'complete'
-              ? "bg-green-500/[0.08] border-green-500/20"
+              ? "bg-status-success/[0.08] border-status-success/30/20"
               : "bg-status-warning/[0.08] border-status-warning/20"
           )}
         >
@@ -147,7 +147,7 @@ export function WizardHeader({
             className={cn(
               "w-3.5 h-3.5 flex-shrink-0",
               catalogStatus.maturity_level === 'complete'
-                ? "text-green-500"
+                ? "text-status-success"
                 : "text-status-warning"
             )}
           />
@@ -155,7 +155,7 @@ export function WizardHeader({
             className={cn(
               "text-micro font-medium",
               catalogStatus.maturity_level === 'complete'
-                ? "text-green-500"
+                ? "text-status-success"
                 : "text-status-warning"
             )}
            

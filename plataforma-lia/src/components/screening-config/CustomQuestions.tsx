@@ -170,11 +170,11 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                     )}
                   </div>
                   {question.character === 'eliminatoria' ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error">
                       eliminatória{question.expectedAnswer ? ` (${question.expectedAnswer})` : ''}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning">
                       classificatória
                     </span>
                   )}
@@ -188,7 +188,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                       </button>
                       <button
                         onClick={() => onRemoveQuestion(question.id)}
-                        className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/30 text-gray-500 dark:text-gray-400 hover:text-status-error dark:hover:text-status-error transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

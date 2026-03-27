@@ -371,7 +371,7 @@ export function WebhooksSection({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-red-600 hover:text-red-700"
+                          className="text-status-error hover:text-status-error"
                           onClick={() => handleDeleteWebhook(webhook.id)}
                           title="Excluir"
                         >
@@ -438,10 +438,10 @@ export function WebhooksSection({
                               <Badge 
                                 className={`text-xs ${
                                   log.status === 'success' 
-                                    ? 'bg-emerald-100 text-emerald-700' 
+                                    ? 'bg-status-success/15 text-status-success' 
                                     : log.status === 'failed' 
-                                    ? 'bg-red-100 text-red-700' 
-                                    : 'bg-amber-100 text-amber-700'
+                                    ? 'bg-status-error/15 text-status-error' 
+                                    : 'bg-status-warning/15 text-status-warning'
                                 }`}
                               >
                                 {log.status === 'success' ? 'Sucesso' : log.status === 'failed' ? 'Falha' : 'Pendente'}

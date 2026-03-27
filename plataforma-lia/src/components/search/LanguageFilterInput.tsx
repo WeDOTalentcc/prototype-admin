@@ -226,7 +226,7 @@ export function LanguageFilterInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors"
+            className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo

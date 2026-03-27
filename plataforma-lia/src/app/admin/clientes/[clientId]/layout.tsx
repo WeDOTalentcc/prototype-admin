@@ -161,11 +161,11 @@ export default function ClientLayout({
               <ClientHeaderSkeleton />
             ) : error ? (
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-md bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                  <AlertCircle className="w-7 h-7 text-red-500" />
+                <div className="w-14 h-14 rounded-md bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center">
+                  <AlertCircle className="w-7 h-7 text-status-error" />
                 </div>
                 <div>
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                  <p className="text-sm text-status-error dark:text-status-error">{error}</p>
                   <Button
                     variant="ghost"
                     size="sm"

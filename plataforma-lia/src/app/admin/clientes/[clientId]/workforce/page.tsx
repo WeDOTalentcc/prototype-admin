@@ -67,15 +67,15 @@ const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', '
 
 const priorityConfig = {
   low: { label: 'Baixa', color: 'text-gray-600', bg: 'bg-gray-100' },
-  medium: { label: 'Média', color: 'text-amber-600', bg: 'bg-amber-100' },
-  high: { label: 'Alta', color: 'text-orange-600', bg: 'bg-orange-100' },
-  critical: { label: 'Crítica', color: 'text-red-600', bg: 'bg-red-100' }
+  medium: { label: 'Média', color: 'text-status-warning', bg: 'bg-status-warning/15' },
+  high: { label: 'Alta', color: 'text-wedo-orange', bg: 'bg-wedo-orange/15' },
+  critical: { label: 'Crítica', color: 'text-status-error', bg: 'bg-status-error/15' }
 }
 
 const statusConfig = {
   planned: { label: 'Planejada', color: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-100 dark:bg-gray-800' },
-  open: { label: 'Aberta', color: 'text-amber-600', bg: 'bg-amber-100' },
-  filled: { label: 'Preenchida', color: 'text-emerald-600', bg: 'bg-emerald-100' },
+  open: { label: 'Aberta', color: 'text-status-warning', bg: 'bg-status-warning/15' },
+  filled: { label: 'Preenchida', color: 'text-status-success', bg: 'bg-status-success/15' },
   cancelled: { label: 'Cancelada', color: 'text-gray-600', bg: 'bg-gray-100' }
 }
 
@@ -288,8 +288,8 @@ export default function ClientWorkforcePage({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-red-500" />
+        <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
         <h3 className="text-lg font-medium mb-1" style={{ color: 'var(--eleven-text-primary)' }}>
           Erro ao carregar dados
@@ -351,15 +351,15 @@ export default function ClientWorkforcePage({
       {(alerts.length > 0 || pendingBudgetApprovals.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {pendingBudgetApprovals.length > 0 && (
-            <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20">
+            <Card className="border-status-warning/30 bg-status-warning/10/50 dark:border-status-warning/30 dark:bg-status-warning/20">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <DollarSign className="w-5 h-5 text-amber-600 mt-0.5" />
+                  <DollarSign className="w-5 h-5 text-status-warning mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                       {pendingBudgetApprovals.length} vaga(s) aguardando aprovação de budget
                     </p>
-                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                    <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                       {pendingBudgetApprovals.map(v => v.title).slice(0, 3).join(', ')}
                       {pendingBudgetApprovals.length > 3 && ` e mais ${pendingBudgetApprovals.length - 3}`}
                     </p>
@@ -370,15 +370,15 @@ export default function ClientWorkforcePage({
           )}
 
           {alerts.filter(a => a.severity === 'high').length > 0 && (
-            <Card className="border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20">
+            <Card className="border-status-error/30 bg-status-error/10/50 dark:border-status-error/30 dark:bg-status-error/20">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <AlertTriangle className="w-5 h-5 text-status-error mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    <p className="text-sm font-medium text-status-error dark:text-status-error">
                       {alerts.filter(a => a.severity === 'high').length} alerta(s) de SLA
                     </p>
-                    <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                    <p className="text-xs text-status-error dark:text-status-error mt-1">
                       {alerts.filter(a => a.severity === 'high')[0]?.description}
                     </p>
                   </div>
@@ -422,14 +422,14 @@ export default function ClientWorkforcePage({
                   {plan?.totalFilled || 0}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-600" />
-                  <span className="text-xs text-emerald-600">
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">
                     {progressPercent.toFixed(0)}% do plano
                   </span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -449,8 +449,8 @@ export default function ClientWorkforcePage({
                   vagas abertas
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 rounded-md bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-status-warning" />
               </div>
             </div>
           </CardContent>
@@ -470,8 +470,8 @@ export default function ClientWorkforcePage({
                   com vagas planejadas
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -513,10 +513,10 @@ export default function ClientWorkforcePage({
                           {row.planned}
                         </td>
                         <td className="py-3 px-2 text-center">
-                          <span className="text-emerald-600">{row.filled}</span>
+                          <span className="text-status-success">{row.filled}</span>
                         </td>
                         <td className="py-3 px-2 text-center">
-                          <span className="text-amber-600">{row.open}</span>
+                          <span className="text-status-warning">{row.open}</span>
                         </td>
                         <td className="py-3 pl-4">
                           <div className="flex items-center gap-2">
@@ -713,9 +713,9 @@ export default function ClientWorkforcePage({
                                   </td>
                                   <td className="py-3 px-4 text-center">
                                     {vacancy.budgetApproved ? (
-                                      <CheckCircle2 className="w-4 h-4 mx-auto text-emerald-600" />
+                                      <CheckCircle2 className="w-4 h-4 mx-auto text-status-success" />
                                     ) : (
-                                      <Clock className="w-4 h-4 mx-auto text-amber-600" />
+                                      <Clock className="w-4 h-4 mx-auto text-status-warning" />
                                     )}
                                   </td>
                                 </tr>

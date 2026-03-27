@@ -457,9 +457,9 @@ export function JDEvaluationPanel({
 
   const getStatusDotColor = (status: string) => {
     switch (status) {
-      case "sufficient": return "bg-green-500"
-      case "partial": return "bg-amber-500"
-      case "insufficient": return "bg-red-400"
+      case "sufficient": return "bg-status-success"
+      case "partial": return "bg-status-warning"
+      case "insufficient": return "bg-status-error"
       default: return "bg-gray-400"
     }
   }
@@ -473,11 +473,11 @@ export function JDEvaluationPanel({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return { text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" }
-    if (score >= 70) return { text: "text-green-600", bg: "bg-green-50", border: "border-green-200" }
-    if (score >= 50) return { text: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" }
-    if (score >= 30) return { text: "text-orange-600", bg: "bg-orange-50", border: "border-orange-200" }
-    return { text: "text-red-600", bg: "bg-red-50", border: "border-red-200" }
+    if (score >= 90) return { text: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" }
+    if (score >= 70) return { text: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" }
+    if (score >= 50) return { text: "text-status-warning", bg: "bg-status-warning/10", border: "border-status-warning/30" }
+    if (score >= 30) return { text: "text-wedo-orange", bg: "bg-wedo-orange/10", border: "border-wedo-orange/30" }
+    return { text: "text-status-error", bg: "bg-status-error/10", border: "border-status-error/30" }
   }
 
   const handleSaveRascunho = async () => {
@@ -728,11 +728,11 @@ export function JDEvaluationPanel({
                 const band = evaluation.band || (evaluation.score >= 90 ? 'excelente' : evaluation.score >= 70 ? 'bom' : evaluation.score >= 50 ? 'adequado' : evaluation.score >= 30 ? 'insuficiente' : 'critico')
                 const bandLabel = evaluation.band_label || (band === 'excelente' ? 'Excelente' : band === 'bom' ? 'Bom' : band === 'adequado' ? 'Adequado' : band === 'insuficiente' ? 'Insuficiente' : 'Crítico')
                 const bandColors: Record<string, string> = {
-                  excelente: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                  bom: 'bg-green-50 text-green-700 border-green-200',
-                  adequado: 'bg-amber-50 text-amber-700 border-amber-200',
-                  insuficiente: 'bg-orange-50 text-orange-700 border-orange-200',
-                  critico: 'bg-red-50 text-red-700 border-red-300',
+                  excelente: 'bg-status-success/10 text-status-success border-status-success/30',
+                  bom: 'bg-status-success/10 text-status-success border-status-success/30',
+                  adequado: 'bg-status-warning/10 text-status-warning border-status-warning/30',
+                  insuficiente: 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30',
+                  critico: 'bg-status-error/10 text-status-error border-status-error/30',
                 }
                 return (
                   <div className="flex items-center gap-3 pb-2 border-b border-gray-100 dark:border-gray-700">
@@ -744,7 +744,7 @@ export function JDEvaluationPanel({
                       {bandLabel}
                     </span>
                     {band === 'critico' && (
-                      <span className="text-micro text-red-600 font-medium flex items-center gap-1">
+                      <span className="text-micro text-status-error font-medium flex items-center gap-1">
                         <XCircle className="w-3 h-3" />
                         JD bloqueado — geração de perguntas desabilitada
                       </span>
@@ -759,24 +759,24 @@ export function JDEvaluationPanel({
                   {evaluation.indicators.map((indicator, idx) => (
                     <div key={idx} className={cn(
                       "flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-micro",
-                      indicator.status === 'sufficient' ? 'bg-green-50 border-green-100 dark:bg-green-900/10 dark:border-green-800' :
-                      indicator.status === 'partial' ? 'bg-amber-50 border-amber-100 dark:bg-amber-900/10 dark:border-amber-800' :
-                      'bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-800'
+                      indicator.status === 'sufficient' ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/10 dark:border-status-success/30' :
+                      indicator.status === 'partial' ? 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/10 dark:border-status-warning/30' :
+                      'bg-status-error/10 border-status-error/30 dark:bg-status-error/10 dark:border-status-error/30'
                     )}>
                       {indicator.status === 'sufficient' ? (
-                        <CheckCircle className="w-3 h-3 text-green-600 shrink-0" />
+                        <CheckCircle className="w-3 h-3 text-status-success shrink-0" />
                       ) : indicator.status === 'partial' ? (
-                        <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" />
+                        <AlertTriangle className="w-3 h-3 text-status-warning shrink-0" />
                       ) : (
-                        <XCircle className="w-3 h-3 text-red-500 shrink-0" />
+                        <XCircle className="w-3 h-3 text-status-error shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide block">{indicator.dimension}</span>
                         <span className={cn(
                           "truncate block font-medium",
-                          indicator.status === 'sufficient' ? 'text-green-800 dark:text-green-300' :
-                          indicator.status === 'partial' ? 'text-amber-800 dark:text-amber-300' :
-                          'text-red-700 dark:text-red-400'
+                          indicator.status === 'sufficient' ? 'text-status-success dark:text-status-success' :
+                          indicator.status === 'partial' ? 'text-status-warning dark:text-status-warning' :
+                          'text-status-error dark:text-status-error'
                         )}>{indicator.label}</span>
                       </div>
                       <span className="text-micro font-semibold text-gray-600 shrink-0">
@@ -807,7 +807,7 @@ export function JDEvaluationPanel({
                   "text-micro px-2.5 py-2 rounded-md border leading-relaxed",
                   evaluation.can_generate
                     ? "bg-gray-50 border-gray-100 text-gray-600 dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-400"
-                    : "bg-red-50 border-red-100 text-red-700 dark:bg-red-900/10 dark:border-red-800 dark:text-red-400"
+                    : "bg-status-error/10 border-status-error/30 text-status-error dark:bg-status-error/10 dark:border-status-error/30 dark:text-status-error"
                 )}>
                   {evaluation.lia_suggestion}
                 </div>
@@ -988,7 +988,7 @@ export function JDEvaluationPanel({
                                 <span className="text-xs text-gray-700 dark:text-gray-300 flex-1 leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>{item}</span>
                                 <button
                                   onClick={() => setEditResponsibilities(prev => prev.filter((_, i) => i !== idx))}
-                                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 shrink-0 transition-opacity"
+                                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-status-error shrink-0 transition-opacity"
                                 >
                                   <X className="h-3 w-3" />
                                 </button>
@@ -1035,7 +1035,7 @@ export function JDEvaluationPanel({
                             {editTechSkills.map((item, idx) => (
                               <span key={idx} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
                                 {item}
-                                <button onClick={() => setEditTechSkills(prev => prev.filter((_, i) => i !== idx))} className="text-gray-400 hover:text-red-500">
+                                <button onClick={() => setEditTechSkills(prev => prev.filter((_, i) => i !== idx))} className="text-gray-400 hover:text-status-error">
                                   <XCircle className="h-3 w-3" />
                                 </button>
                               </span>
@@ -1096,7 +1096,7 @@ export function JDEvaluationPanel({
                             {editBehavCompetencies.map((item, idx) => (
                               <span key={idx} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
                                 {item}
-                                <button onClick={() => setEditBehavCompetencies(prev => prev.filter((_, i) => i !== idx))} className="text-gray-400 hover:text-red-500">
+                                <button onClick={() => setEditBehavCompetencies(prev => prev.filter((_, i) => i !== idx))} className="text-gray-400 hover:text-status-error">
                                   <XCircle className="h-3 w-3" />
                                 </button>
                               </span>
@@ -1285,7 +1285,7 @@ export function JDEvaluationPanel({
                   </div>
 
                   {saveError && (
-                    <p className="text-micro text-red-500 mt-2">Erro ao salvar. Tente novamente.</p>
+                    <p className="text-micro text-status-error mt-2">Erro ao salvar. Tente novamente.</p>
                   )}
                 </div>
               )}

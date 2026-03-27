@@ -402,12 +402,12 @@ export function SmartImportZone({
             <div className="flex flex-wrap gap-2 mb-3">
               {previewData.matchedFields.length > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                  <CheckCircle className="w-3.5 h-3.5 text-status-success" />
                   <span className={`${textStyles.labelSmall} dark:text-gray-400`}>
                     Campos identificados:
                   </span>
                   {previewData.matchedFields.map((field) => (
-                    <Badge key={field} className="text-micro bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
+                    <Badge key={field} className="text-micro bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success rounded-full">
                       {field}
                     </Badge>
                   ))}
@@ -415,12 +415,12 @@ export function SmartImportZone({
               )}
               {previewData.unmatchedFields.length > 0 && (
                 <div className="flex items-center gap-1.5 mt-1">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                  <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
                   <span className={`${textStyles.labelSmall} dark:text-gray-400`}>
                     Não encontrados:
                   </span>
                   {previewData.unmatchedFields.map((field) => (
-                    <Badge key={field} className="text-micro bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-full">
+                    <Badge key={field} className="text-micro bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning rounded-full">
                       {field}
                     </Badge>
                   ))}
@@ -512,23 +512,23 @@ export function SmartImportZone({
   )
 
   const renderSuccessState = () => (
-    <Card className={`${cardStyles.default} border-2 border-green-200 dark:border-green-800 rounded-md bg-green-50/50 dark:bg-green-900/10`}>
+    <Card className={`${cardStyles.default} border-2 border-status-success/30 dark:border-status-success/30 rounded-md bg-status-success/10/50 dark:bg-status-success/10`}>
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-100 dark:bg-green-900/30">
-            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-success/15 dark:bg-status-success/30">
+            <CheckCircle className="w-4 h-4 text-status-success dark:text-status-success" />
           </div>
           <h3 className={`${textStyles.title} dark:text-gray-100`}>
             Importação Concluída!
           </h3>
-          <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400`}>
+          <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success`}>
             {successMessage}
           </p>
           <Button
             variant="outline"
             size="sm"
             onClick={resetState}
-            className="gap-1.5 rounded-md text-xs border-green-300 text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30 font-['Open_Sans',sans-serif]"
+            className="gap-1.5 rounded-md text-xs border-status-success/30 text-status-success hover:bg-status-success/15 dark:border-status-success/30 dark:text-status-success dark:hover:bg-status-success/30 font-['Open_Sans',sans-serif]"
           >
             <Upload className="w-3.5 h-3.5" />
             Nova Importação
@@ -539,23 +539,23 @@ export function SmartImportZone({
   )
 
   const renderErrorState = () => (
-    <Card className={`${cardStyles.default} border-2 border-red-200 dark:border-red-800 rounded-md bg-red-50/50 dark:bg-red-900/10`}>
+    <Card className={`${cardStyles.default} border-2 border-status-error/30 dark:border-status-error/30 rounded-md bg-status-error/10/50 dark:bg-status-error/10`}>
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-red-100 dark:bg-red-900/30">
-            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-error/15 dark:bg-status-error/30">
+            <AlertCircle className="w-4 h-4 text-status-error dark:text-status-error" />
           </div>
           <h3 className={`${textStyles.title} dark:text-gray-100`}>
             Erro na Importação
           </h3>
-          <p className={`${textStyles.bodySmall} text-red-600 dark:text-red-400 max-w-md`}>
+          <p className={`${textStyles.bodySmall} text-status-error dark:text-status-error max-w-md`}>
             {errorMessage}
           </p>
           <Button
             variant="outline"
             size="sm"
             onClick={resetState}
-            className="gap-1.5 rounded-md text-xs border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30 font-['Open_Sans',sans-serif]"
+            className="gap-1.5 rounded-md text-xs border-status-error/30 text-status-error hover:bg-status-error/15 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30 font-['Open_Sans',sans-serif]"
           >
             <X className="w-3.5 h-3.5" />
             Tentar Novamente

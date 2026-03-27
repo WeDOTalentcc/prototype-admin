@@ -28,7 +28,7 @@ export function ReactThinkingStream({ steps, isThinking }: ReactThinkingStreamPr
         {isThinking ? (
           <Loader2 className="h-3 w-3 animate-spin text-gray-400" />
         ) : (
-          <span className="h-3 w-3 rounded-full bg-green-400 inline-block" />
+          <span className="h-3 w-3 rounded-full bg-status-success inline-block" />
         )}
         <span className="flex-1 text-left">
           {isThinking ? "LIA está pensando..." : `Raciocínio concluído (${steps.length} etapas)`}

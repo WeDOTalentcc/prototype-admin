@@ -240,13 +240,13 @@ export function ArchetypesList({
                     <button
                       onClick={(e) => onDeleteArchetype(arch, e)}
                       disabled={isDeletingArchetype === arch.id}
-                      className="p-1 rounded hover:bg-red-50 transition-colors"
+                      className="p-1 rounded hover:bg-status-error/10 transition-colors"
                       title="Excluir arquétipo"
                     >
                       {isDeletingArchetype === arch.id ? (
                         <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
                       ) : (
-                        <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+                        <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-status-error" />
                       )}
                     </button>
                   </div>

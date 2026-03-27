@@ -22,8 +22,8 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
     >
       <div className="w-full max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm p-6 space-y-6">
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle2 className="w-7 h-7 text-green-600 dark:text-green-400" />
+          <div className="w-12 h-12 rounded-full bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
+            <CheckCircle2 className="w-7 h-7 text-status-success dark:text-status-success" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">
             Triagem concluída com sucesso!

@@ -180,7 +180,7 @@ export function IndustrySingleSelect({
       <div
         className={cn(
           "flex items-center gap-2 px-3 py-2 rounded-md border bg-white dark:bg-gray-900 transition-all cursor-text",
-          error ? "border-red-300" : "border-gray-200 dark:border-gray-700",
+          error ? "border-status-error/30" : "border-gray-200 dark:border-gray-700",
           isOpen && "ring-2 ring-gray-900/20 border-gray-400"
         )}
         onClick={() => {
@@ -249,7 +249,7 @@ export function IndustrySingleSelect({
              
             >
               {item.type === 'ai' && (
-                <Brain className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                <Brain className="w-3.5 h-3.5 text-status-warning flex-shrink-0" />
               )}
               {item.type === 'ai-suggestion' && (
                 <Brain className="w-3 h-3 text-wedo-cyan flex-shrink-0" />

@@ -17,22 +17,22 @@ export interface WSIQualityBarProps {
 
 const colorClasses = {
   green: {
-    bg: 'bg-green-500',
-    bgLight: 'bg-green-50',
-    text: 'text-green-600',
-    border: 'border-green-200',
+    bg: 'bg-status-success',
+    bgLight: 'bg-status-success/10',
+    text: 'text-status-success',
+    border: 'border-status-success/30',
   },
   yellow: {
-    bg: 'bg-yellow-500',
-    bgLight: 'bg-yellow-50',
-    text: 'text-yellow-600',
-    border: 'border-yellow-200',
+    bg: 'bg-status-warning',
+    bgLight: 'bg-status-warning/10',
+    text: 'text-status-warning',
+    border: 'border-status-warning/30',
   },
   red: {
-    bg: 'bg-red-500',
-    bgLight: 'bg-red-50',
-    text: 'text-red-600',
-    border: 'border-red-200',
+    bg: 'bg-status-error',
+    bgLight: 'bg-status-error/10',
+    text: 'text-status-error',
+    border: 'border-status-error/30',
   },
 }
 
@@ -95,7 +95,7 @@ export function WSIQualityBar({
                     className={cn(
                       'w-5 h-5 rounded-full flex items-center justify-center transition-all',
                       field.isMet 
-                        ? 'bg-green-100 text-green-600' 
+                        ? 'bg-status-success/15 text-status-success' 
                         : 'bg-gray-100 text-gray-400'
                     )}
                   >
@@ -108,7 +108,7 @@ export function WSIQualityBar({
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
                   <p className="font-medium">{field.label}</p>
-                  <p className={field.isMet ? 'text-green-600' : 'text-gray-500'}>
+                  <p className={field.isMet ? 'text-status-success' : 'text-gray-500'}>
                     {field.current}/{field.required} {field.isMet ? '✓' : 'necessário'}
                   </p>
                 </TooltipContent>
@@ -127,7 +127,7 @@ export function WSIQualityBar({
           
           {!canAdvance && (
             <span 
-              className="text-micro text-red-500 font-medium whitespace-nowrap"
+              className="text-micro text-status-error font-medium whitespace-nowrap"
              
             >
               Mínimo 70% para avançar

@@ -267,7 +267,7 @@ export function CompetenciesStage() {
           </button>
           <button 
             onClick={() => removeTechnicalSkill(skill.id)}
-            className="p-0.5 text-gray-400 hover:text-red-500 transition-colors"
+            className="p-0.5 text-gray-400 hover:text-status-error transition-colors"
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -286,7 +286,7 @@ export function CompetenciesStage() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="ml-1 p-0.5 text-amber-500">
+                  <button className="ml-1 p-0.5 text-status-warning">
                     <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                   </button>
                 </TooltipTrigger>

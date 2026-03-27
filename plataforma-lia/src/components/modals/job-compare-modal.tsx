@@ -96,44 +96,44 @@ const INSIGHT_STYLES: Record<LiaInsight["type"], {
   icon: React.ElementType
 }> = {
   action_recommended: {
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    iconColor: "text-amber-600",
+    bg: "bg-status-warning/10",
+    border: "border-status-warning/30",
+    iconColor: "text-status-warning",
     badgeText: "Ação Recomendada",
-    badgeBg: "bg-amber-100 text-amber-700",
+    badgeBg: "bg-status-warning/15 text-status-warning",
     icon: Zap,
   },
   analysis: {
-    bg: "bg-purple-50",
-    border: "border-purple-200",
-    iconColor: "text-purple-600",
+    bg: "bg-wedo-purple/10",
+    border: "border-wedo-purple/30",
+    iconColor: "text-wedo-purple",
     badgeText: "Análise",
-    badgeBg: "bg-purple-100 text-purple-700",
+    badgeBg: "bg-wedo-purple/15 text-wedo-purple",
     icon: Search,
   },
   comparative: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    iconColor: "text-blue-600",
+    bg: "bg-wedo-cyan/10",
+    border: "border-wedo-cyan/30",
+    iconColor: "text-wedo-cyan-dark",
     badgeText: "Comparativo",
-    badgeBg: "bg-blue-100 text-blue-700",
+    badgeBg: "bg-wedo-cyan/15 text-wedo-cyan-dark",
     icon: ArrowRightLeft,
   },
   attention: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    iconColor: "text-red-600",
+    bg: "bg-status-error/10",
+    border: "border-status-error/30",
+    iconColor: "text-status-error",
     badgeText: "Atenção",
-    badgeBg: "bg-red-100 text-red-700",
+    badgeBg: "bg-status-error/15 text-status-error",
     icon: XCircle,
   },
 }
 
 const JOB_COLORS = [
  { bar: "bg-gray-900", text: "text-gray-600 dark:text-gray-400", light: "bg-gray-100 dark:bg-gray-800" },
-  { bar: "bg-purple-500", text: "text-purple-600", light: "bg-purple-100" },
-  { bar: "bg-emerald-500", text: "text-emerald-600", light: "bg-emerald-100" },
-  { bar: "bg-orange-500", text: "text-orange-600", light: "bg-orange-100" },
+  { bar: "bg-wedo-purple", text: "text-wedo-purple", light: "bg-wedo-purple/15" },
+  { bar: "bg-status-success", text: "text-status-success", light: "bg-status-success/15" },
+  { bar: "bg-wedo-orange", text: "text-wedo-orange", light: "bg-wedo-orange/15" },
 ]
 
 interface LiaAnalysisData {
@@ -689,7 +689,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                   <tr className="hover:bg-gray-50">
                     <td className="text-gray-800 p-2.5 border border-gray-200">
                       <div className="flex items-center gap-1.5">
-                        <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                        <CheckCircle className="w-3.5 h-3.5 text-status-success" />
                         Aprovados
                       </div>
                     </td>
@@ -979,10 +979,10 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                             {metric.value}
                           </span>
                           {metric.trend === "up" && (
-                            <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+                            <TrendingUp className="w-3.5 h-3.5 text-status-success" />
                           )}
                           {metric.trend === "down" && (
-                            <TrendingDown className="w-3.5 h-3.5 text-amber-500" />
+                            <TrendingDown className="w-3.5 h-3.5 text-status-warning" />
                           )}
                         </div>
                       </div>

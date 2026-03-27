@@ -215,7 +215,7 @@ export function ColumnConfigurationModal({
                     </button>
                     <button
                       onClick={() => onDeleteView(view.id)}
-                      className="text-gray-400 dark:text-gray-500 hover:text-red-500 p-1"
+                      className="text-gray-400 dark:text-gray-500 hover:text-status-error p-1"
                     >
                       <X className="w-3 h-3" />
                     </button>

@@ -170,16 +170,16 @@ export function JobTemplatesPage() {
   })
 
   const getSuccessColor = (rate: number) => {
-    if (rate >= 85) return "text-green-600"
-    if (rate >= 70) return "text-yellow-600"
-    return "text-red-600"
+    if (rate >= 85) return "text-status-success"
+    if (rate >= 70) return "text-status-warning"
+    return "text-status-error"
   }
 
   const getDemandColor = (demand: string) => {
     switch (demand) {
-      case "alta": return "bg-green-100 text-green-700 border-green-200"
-      case "média": return "bg-yellow-100 text-yellow-700 border-yellow-200"
-      case "baixa": return "bg-red-100 text-red-700 border-red-200"
+      case "alta": return "bg-status-success/15 text-status-success border-status-success/30"
+      case "média": return "bg-status-warning/15 text-status-warning border-status-warning/30"
+      case "baixa": return "bg-status-error/15 text-status-error border-status-error/30"
       default: return "bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200"
     }
   }
@@ -224,7 +224,7 @@ export function JobTemplatesPage() {
                 <div>
                   <p className="text-sm text-gray-600">Templates Ativos</p>
                   <p className="text-2xl font-bold text-gray-950">{templates.length}</p>
-                  <p className="text-xs text-green-600">+3 este mês</p>
+                  <p className="text-xs text-status-success">+3 este mês</p>
                 </div>
                 <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                   <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -238,13 +238,13 @@ export function JobTemplatesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Taxa Sucesso Média</p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-status-success">
                     {Math.round(templates.reduce((acc, t) => acc + t.successRate, 0) / templates.length)}%
                   </p>
-                  <p className="text-xs text-green-600">+5% vs mês anterior</p>
+                  <p className="text-xs text-status-success">+5% vs mês anterior</p>
                 </div>
-                <div className="w-10 h-10 bg-green-100 rounded-md flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-status-success" />
                 </div>
               </div>
             </CardContent>
@@ -255,12 +255,12 @@ export function JobTemplatesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Templates IA</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                  <p className="text-2xl font-bold text-wedo-purple">
                     {templates.filter(t => t.isAIGenerated).length}
                   </p>
-                  <p className="text-xs text-purple-600">67% do total</p>
+                  <p className="text-xs text-wedo-purple">67% do total</p>
                 </div>
-                <div className="w-10 h-10 bg-purple-100 rounded-md flex items-center justify-center">
+                <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                   <Brain className="w-5 h-5 text-wedo-cyan" />
                 </div>
               </div>
@@ -272,13 +272,13 @@ export function JobTemplatesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Tempo Médio</p>
-                  <p className="text-2xl font-bold text-orange-600">
+                  <p className="text-2xl font-bold text-wedo-orange">
                     {Math.round(templates.reduce((acc, t) => acc + t.avgTimeToHire, 0) / templates.length)}d
                   </p>
-                  <p className="text-xs text-orange-600">para contratação</p>
+                  <p className="text-xs text-wedo-orange">para contratação</p>
                 </div>
-                <div className="w-10 h-10 bg-orange-100 rounded-md flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-orange-600" />
+                <div className="w-10 h-10 bg-wedo-orange/15 rounded-md flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-wedo-orange" />
                 </div>
               </div>
             </CardContent>
@@ -346,7 +346,7 @@ export function JobTemplatesPage() {
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {template.isAIGenerated && (
-                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                      <Badge variant="outline" className="bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                         <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
                         IA
                       </Badge>
@@ -362,7 +362,7 @@ export function JobTemplatesPage() {
                     className="h-8 w-8 p-0"
                   >
                     {template.isFavorite ?
-                      <Star className="w-4 h-4 text-yellow-500 fill-current" /> :
+                      <Star className="w-4 h-4 text-status-warning fill-current" /> :
                       <StarOff className="w-4 h-4 text-gray-600" />
                     }
                   </Button>
@@ -379,8 +379,8 @@ export function JobTemplatesPage() {
                   <span>{template.level}</span>
                   <Badge variant="outline" className={`text-xs ${
                     template.workModel === 'remoto' ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' :
-                    template.workModel === 'híbrido' ? 'border-purple-200 bg-purple-50 text-purple-700' :
-                    'border-green-200 bg-green-50 text-green-700'
+                    template.workModel === 'híbrido' ? 'border-wedo-purple/30 bg-wedo-purple/10 text-wedo-purple' :
+                    'border-status-success/30 bg-status-success/10 text-status-success'
                   }`}>
                     {template.workModel}
                   </Badge>
@@ -405,7 +405,7 @@ export function JobTemplatesPage() {
                     <div className="text-xs text-gray-800 dark:text-gray-200">sucesso</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs font-bold text-orange-600">{template.avgTimeToHire}d</div>
+                    <div className="text-xs font-bold text-wedo-orange">{template.avgTimeToHire}d</div>
                     <div className="text-xs text-gray-800 dark:text-gray-200">tempo</div>
                   </div>
                 </div>
@@ -464,7 +464,7 @@ export function JobTemplatesPage() {
             <div className="bg-white dark:bg-gray-800 rounded-md w-full max-w-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-semibold flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-600" />
+                  <Brain className="w-5 h-5 text-wedo-purple" />
                   Gerador de Templates com IA
                 </h3>
                 <Button variant="ghost" size="sm" onClick={() => setShowAIGenerator(false)}>
@@ -514,14 +514,14 @@ export function JobTemplatesPage() {
                   />
                 </div>
 
-                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-md p-4">
+                <div className="bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Brain className="w-4 h-4 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                    <Brain className="w-4 h-4 text-wedo-purple" />
+                    <span className="text-sm font-medium text-wedo-purple dark:text-wedo-purple">
                       IA vai gerar automaticamente:
                     </span>
                   </div>
-                  <ul className="text-xs text-purple-600 dark:text-purple-400 space-y-1">
+                  <ul className="text-xs text-wedo-purple dark:text-wedo-purple space-y-1">
                     <li>• Descrição otimizada da vaga</li>
                     <li>• Lista de requisitos relevantes</li>
                     <li>• Benefícios atrativos para o mercado</li>

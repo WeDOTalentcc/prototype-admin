@@ -62,10 +62,10 @@ export function RubricEvaluationCard({
   const jobCode = data.job_code || data.job_id
 
   const getScoreBadge = (scoreValue: number) => {
-    if (scoreValue >= 80) return { label: 'Forte', className: 'bg-emerald-100 text-emerald-700 border-emerald-200' }
+    if (scoreValue >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
     if (scoreValue >= 60) return { label: 'Bom', className: 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark border-gray-300 dark:border-gray-600' }
-    if (scoreValue >= 40) return { label: 'Moderado', className: 'bg-amber-100 text-amber-700 border-amber-200' }
-    return { label: 'Fraco', className: 'bg-red-100 text-red-700 border-red-200' }
+    if (scoreValue >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
+    return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
   }
 
   const getScoreColor = (scoreValue: number) => {
@@ -82,13 +82,13 @@ export function RubricEvaluationCard({
   const getRubricIcon = (level: string) => {
     switch (level?.toLowerCase()) {
       case 'exceeds':
-        return <Check className="w-3.5 h-3.5 text-emerald-600" />
+        return <Check className="w-3.5 h-3.5 text-status-success" />
       case 'meets':
         return <Check className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
       case 'partial':
-        return <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+        return <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
       case 'missing':
-        return <X className="w-3.5 h-3.5 text-red-600" />
+        return <X className="w-3.5 h-3.5 text-status-error" />
       default:
         return <AlertCircle className="w-3.5 h-3.5 text-gray-400" />
     }
@@ -97,13 +97,13 @@ export function RubricEvaluationCard({
   const getRubricColor = (level: string) => {
     switch (level?.toLowerCase()) {
       case 'exceeds':
-        return 'text-emerald-700'
+        return 'text-status-success'
       case 'meets':
         return 'text-wedo-cyan-dark'
       case 'partial':
-        return 'text-amber-700'
+        return 'text-status-warning'
       case 'missing':
-        return 'text-red-700'
+        return 'text-status-error'
       default:
         return 'text-gray-600'
     }
@@ -112,13 +112,13 @@ export function RubricEvaluationCard({
   const getRubricBgColor = (level: string) => {
     switch (level?.toLowerCase()) {
       case 'exceeds':
-        return 'bg-emerald-50'
+        return 'bg-status-success/10'
       case 'meets':
         return 'bg-gray-50 dark:bg-gray-900'
       case 'partial':
-        return 'bg-amber-50'
+        return 'bg-status-warning/10'
       case 'missing':
-        return 'bg-red-50'
+        return 'bg-status-error/10'
       default:
         return 'bg-gray-50'
     }
@@ -296,14 +296,14 @@ export function RubricEvaluationCard({
 
       {(data.strengths && data.strengths.length > 0) && isExpanded && (
         <div className="flex items-start gap-2 pt-1">
-          <TrendingUp className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+          <TrendingUp className="w-3.5 h-3.5 text-status-success mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <span className={`${textStyles.caption} text-gray-500 font-medium block mb-1`}>
               Pontos Fortes:
             </span>
             <div className="flex flex-wrap gap-1">
               {data.strengths.map((strength, idx) => (
-                <Badge key={idx} variant="secondary" className="bg-emerald-50 text-emerald-700 text-micro">
+                <Badge key={idx} variant="secondary" className="bg-status-success/10 text-status-success text-micro">
                   {strength}
                 </Badge>
               ))}
@@ -314,14 +314,14 @@ export function RubricEvaluationCard({
 
       {(data.concerns && data.concerns.length > 0) && isExpanded && (
         <div className="flex items-start gap-2">
-          <AlertCircle className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+          <AlertCircle className="w-3.5 h-3.5 text-status-warning mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <span className={`${textStyles.caption} text-gray-500 font-medium block mb-1`}>
               Pontos de Atenção:
             </span>
             <div className="flex flex-wrap gap-1">
               {data.concerns.map((concern, idx) => (
-                <Badge key={idx} variant="secondary" className="bg-amber-50 text-amber-700 text-micro">
+                <Badge key={idx} variant="secondary" className="bg-status-warning/10 text-status-warning text-micro">
                   {concern}
                 </Badge>
               ))}

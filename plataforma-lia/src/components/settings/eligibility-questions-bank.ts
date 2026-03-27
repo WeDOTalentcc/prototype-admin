@@ -35,14 +35,14 @@ export type ScreeningQuestionTemplate = EligibilityQuestionTemplate
 
 export const QUESTION_CATEGORIES: Record<QuestionCategory, { label: string; icon: string; color: string }> = {
   general: { label: 'Gerais', icon: '📋', color: 'bg-gray-100 text-gray-700' },
-  eligibility: { label: 'Elegibilidade e Requisitos Legais', icon: '📋', color: 'bg-blue-100 text-blue-700' },
-  availability: { label: 'Disponibilidade e Mobilidade', icon: '✈️', color: 'bg-green-100 text-green-700' },
-  education: { label: 'Formação e Certificações', icon: '🎓', color: 'bg-purple-100 text-purple-700' },
-  experience: { label: 'Experiência Específica', icon: '💼', color: 'bg-orange-100 text-orange-700' },
+  eligibility: { label: 'Elegibilidade e Requisitos Legais', icon: '📋', color: 'bg-wedo-cyan/15 text-wedo-cyan-dark' },
+  availability: { label: 'Disponibilidade e Mobilidade', icon: '✈️', color: 'bg-status-success/15 text-status-success' },
+  education: { label: 'Formação e Certificações', icon: '🎓', color: 'bg-wedo-purple/15 text-wedo-purple' },
+  experience: { label: 'Experiência Específica', icon: '💼', color: 'bg-wedo-orange/15 text-wedo-orange' },
   languages: { label: 'Idiomas', icon: '🌍', color: 'bg-wedo-cyan/20 text-wedo-cyan-dark' },
-  compensation: { label: 'Remuneração e Contrato', icon: '💰', color: 'bg-yellow-100 text-yellow-700' },
+  compensation: { label: 'Remuneração e Contrato', icon: '💰', color: 'bg-status-warning/15 text-status-warning' },
   work_model: { label: 'Modelo de Trabalho', icon: '🏠', color: 'bg-indigo-100 text-indigo-700' },
-  compliance: { label: 'Compliance e Conflito de Interesses', icon: '⚠️', color: 'bg-red-100 text-red-700' },
+  compliance: { label: 'Compliance e Conflito de Interesses', icon: '⚠️', color: 'bg-status-error/15 text-status-error' },
   system_default: { label: 'Perguntas Padrão do Sistema', icon: '⚙️', color: 'bg-gray-100 text-gray-700' },
 }
 

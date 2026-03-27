@@ -36,9 +36,9 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 const COLOR_CLASSES: Record<string, string> = {
   cyan: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  amber: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  red: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  green: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  amber: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
+  red: 'bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error',
+  green: 'bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
   gray: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
 }
 

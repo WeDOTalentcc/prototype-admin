@@ -229,7 +229,7 @@ export function CompetenciesStage({
             {skill.name}
             {skill.source === 'company_catalog' && (
               <span
-                className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"
+                className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0"
                 title="Pré-preenchido do catálogo de competências da empresa"
               />
             )}
@@ -273,7 +273,7 @@ export function CompetenciesStage({
           </button>
           <button
             onClick={() => onSetTechnicalSkills(technicalSkills.filter(s => s.id !== skill.id))}
-            className="p-0.5 text-gray-400 hover:text-red-500 transition-colors"
+            className="p-0.5 text-gray-400 hover:text-status-error transition-colors"
             aria-label={`Remover competência: ${skill.name}`}
           >
             <Trash2 className="w-3 h-3" />
@@ -304,7 +304,7 @@ export function CompetenciesStage({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="ml-1 p-0.5 text-amber-500 hover:text-amber-600 transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded" aria-label="Ver sugestão de peso da LIA">
+                  <button className="ml-1 p-0.5 text-status-warning hover:text-status-warning transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded" aria-label="Ver sugestão de peso da LIA">
                     <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                   </button>
                 </TooltipTrigger>
@@ -328,13 +328,13 @@ export function CompetenciesStage({
   return (
     <div className="space-y-4">
       {!isFieldRequired && (
-        <div className="p-3 bg-gradient-to-r from-green-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-green-500/30">
+        <div className="p-3 bg-gradient-to-r from-green-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-status-success/30/30">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-              <Brain className="w-3.5 h-3.5 text-green-500" />
+            <div className="w-6 h-6 rounded-full bg-status-success/20 flex items-center justify-center flex-shrink-0">
+              <Brain className="w-3.5 h-3.5 text-status-success" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-green-800">
+              <span className="text-xs font-medium text-status-success">
                 Competências pré-configuradas
               </span>
               <p className="text-micro text-gray-500 mt-0.5">
@@ -362,15 +362,15 @@ export function CompetenciesStage({
       )}
 
       {hasSkillsFromCatalog && (
-        <div className="p-3 bg-gradient-to-r from-blue-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-blue-500/30">
+        <div className="p-3 bg-gradient-to-r from-blue-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-wedo-cyan/30/30">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-              <Settings className="w-3.5 h-3.5 text-blue-500" />
+            <div className="w-6 h-6 rounded-full bg-wedo-cyan/20 flex items-center justify-center flex-shrink-0">
+              <Settings className="w-3.5 h-3.5 text-wedo-cyan-dark" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-blue-800 flex items-center gap-1.5">
+              <span className="text-xs font-medium text-wedo-cyan-dark flex items-center gap-1.5">
                 Competências pré-preenchidas do catálogo da empresa
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
               </span>
               <p className="text-micro text-gray-500 mt-0.5">
                 Essas competências foram automaticamente sugeridas com base no catálogo de habilidades da sua empresa.
@@ -405,8 +405,8 @@ export function CompetenciesStage({
             <div className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5",
               technicalSkills.length >= 3
-                ? "bg-green-500/10 text-green-500 border border-green-500/30"
-                : "bg-amber-100 text-amber-700 border border-amber-300"
+                ? "bg-status-success/10 text-status-success border border-status-success/30/30"
+                : "bg-status-warning/15 text-status-warning border border-status-warning/30"
             )}>
               <span className="font-semibold">{technicalSkills.length}/3</span>
               <span>Técnicas</span>
@@ -415,8 +415,8 @@ export function CompetenciesStage({
             <div className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5",
               behavioralCompetencies.filter(c => c.enabled).length >= 3
-                ? "bg-green-500/10 text-green-500 border border-green-500/30"
-                : "bg-amber-100 text-amber-700 border border-amber-300"
+                ? "bg-status-success/10 text-status-success border border-status-success/30/30"
+                : "bg-status-warning/15 text-status-warning border border-status-warning/30"
             )}>
               <span className="font-semibold">{behavioralCompetencies.filter(c => c.enabled).length}/3</span>
               <span>Comportamentais</span>
@@ -651,7 +651,7 @@ export function CompetenciesStage({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <button className="ml-0.5 p-0.5 text-amber-500 hover:text-amber-600 transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded" aria-label="Ver sugestão de peso da LIA">
+                              <button className="ml-0.5 p-0.5 text-status-warning hover:text-status-warning transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded" aria-label="Ver sugestão de peso da LIA">
                                 <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                               </button>
                             </TooltipTrigger>
@@ -677,7 +677,7 @@ export function CompetenciesStage({
                     </button>
                     <button
                       onClick={() => onSetBehavioralCompetencies(behavioralCompetencies.filter(c => c.id !== comp.id))}
-                      className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                      className="p-1 text-gray-400 hover:text-status-error transition-colors"
                       aria-label={`Remover competência: ${comp.name}`}
                     >
                       <Trash2 className="w-3 h-3" />

@@ -140,13 +140,13 @@ export function CompanyDataSection({
   return (
     <div className="space-y-4">
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400 px-3 py-2 rounded-md flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
+        <div className="bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success px-3 py-2 rounded-md flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
           <CheckCircle className="w-3.5 h-3.5" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-3 py-2 rounded-md flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error dark:bg-status-error/20 dark:border-status-error/30 dark:text-status-error px-3 py-2 rounded-md flex items-center gap-2 text-xs font-['Open_Sans',sans-serif]">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
@@ -509,7 +509,7 @@ export function CompanyDataSection({
             )}
 
             {!isLiaAnalyzing && (!isEditingCompanyData || !companyData.website) && (
-              <p className="text-micro text-amber-600 mt-2">
+              <p className="text-micro text-status-warning mt-2">
                 {!isEditingCompanyData 
                   ? "Clique em 'Editar' para habilitar a análise"
                   : "Informe o website da empresa acima para habilitar a análise"
@@ -594,7 +594,7 @@ export function CompanyDataSection({
                           ...prev,
                           values: prev.values?.filter((_: any, i: number) => i !== idx),
                         }))}
-                        className="ml-1 hover:text-red-500"
+                        className="ml-1 hover:text-status-error"
                       >×</button>
                     )}
                   </Badge>
@@ -642,7 +642,7 @@ export function CompanyDataSection({
                           ...prev,
                           coreCompetencies: prev.coreCompetencies?.filter((_: any, i: number) => i !== idx),
                         }))}
-                        className="ml-1 hover:text-red-500"
+                        className="ml-1 hover:text-status-error"
                       >×</button>
                     )}
                   </Badge>
@@ -851,7 +851,7 @@ export function CompanyDataSection({
                           ...prev,
                           seniority_levels: (prev.seniority_levels || []).filter((_: any, i: number) => i !== idx),
                         }))}
-                        className="ml-1 hover:text-red-500"
+                        className="ml-1 hover:text-status-error"
                       >×</button>
                     )}
                   </Badge>
@@ -872,7 +872,7 @@ export function CompanyDataSection({
                           seniority_levels: [...(prev.seniority_levels || []), level],
                         }))
                       }}
-                      className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-wedo-purple/30 hover:text-wedo-purple transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
                       + {level}
                     </button>

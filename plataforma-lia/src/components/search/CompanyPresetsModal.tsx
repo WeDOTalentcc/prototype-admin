@@ -404,10 +404,10 @@ export function CompanyPresetsModal({
                               e.stopPropagation()
                               handleDeleteCustomPreset(preset.id)
                             }}
-                            className="p-1 opacity-0 group-hover:opacity-100 hover:bg-red-50 rounded transition-all"
+                            className="p-1 opacity-0 group-hover:opacity-100 hover:bg-status-error/10 rounded transition-all"
                             title="Excluir preset"
                           >
-                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                            <Trash2 className="w-3.5 h-3.5 text-status-error" />
                           </button>
                         </div>
                       </div>

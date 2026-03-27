@@ -2385,7 +2385,7 @@ export function SmartSearchInput({
                           }}
                         >
                           {alert.severity === "warning" ? (
-                            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500" />
+                            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
                           ) : (
                             <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
                           )}
@@ -2494,9 +2494,9 @@ export function SmartSearchInput({
                     {index > 0 && (
                       <button
                         onClick={() => removeSimilarUrl(index)}
-                        className="p-1 rounded hover:bg-red-50 transition-colors"
+                        className="p-1 rounded hover:bg-status-error/10 transition-colors"
                       >
-                        <X className="w-3 h-3 text-red-400" />
+                        <X className="w-3 h-3 text-status-error" />
                       </button>
                     )}
                     {index === similarUrls.length - 1 && similarUrls.length < MAX_SIMILAR_URLS && (
@@ -2549,7 +2549,7 @@ export function SmartSearchInput({
                       >
                         <FileText className="w-3 h-3 text-gray-500" />
                         <span className="max-w-[150px] truncate text-gray-800 dark:text-gray-200">{file.name}</span>
-                        <button onClick={() => removeCvFile(index)} className="hover:text-red-500">
+                        <button onClick={() => removeCvFile(index)} className="hover:text-status-error">
                           <X className="w-2.5 h-2.5" />
                         </button>
                       </div>
@@ -2629,7 +2629,7 @@ export function SmartSearchInput({
                         <span className="text-gray-700">{keyword}</span>
                         <button
                           onClick={() => removeSuggestion(keyword)}
-                          className="opacity-50 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                          className="opacity-50 group-hover:opacity-100 hover:text-status-error transition-opacity"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -3626,7 +3626,7 @@ export function SmartSearchInput({
               </div>
               
               {booleanError && (
-                <div className="flex items-center gap-2 text-xs text-red-500">
+                <div className="flex items-center gap-2 text-xs text-status-error">
                   <AlertCircle className="w-3.5 h-3.5" />
                   {booleanError}
                 </div>
@@ -5070,7 +5070,7 @@ export function SmartSearchInput({
                             <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">sinônimo</span>
                           )}
                           {suggestion.is_related && (
-                            <span className="text-micro px-1 py-0.5 rounded-full bg-green-50 text-green-600">relacionado</span>
+                            <span className="text-micro px-1 py-0.5 rounded-full bg-status-success/10 text-status-success">relacionado</span>
                           )}
                         </button>
                       ))}
@@ -5267,7 +5267,7 @@ export function SmartSearchInput({
                             <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">sinônimo</span>
                           )}
                           {suggestion.is_related && (
-                            <span className="text-micro px-1 py-0.5 rounded-full bg-green-50 text-green-600">relacionado</span>
+                            <span className="text-micro px-1 py-0.5 rounded-full bg-status-success/10 text-status-success">relacionado</span>
                           )}
                         </button>
                       ))}
@@ -5394,7 +5394,7 @@ export function SmartSearchInput({
                 {pendingSourceChange === 'hybrid' ? (
                   <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 ) : (
-                  <Globe className="w-4 h-4 text-amber-600" />
+                  <Globe className="w-4 h-4 text-status-warning" />
                 )}
               </div>
               <div>
@@ -5413,16 +5413,16 @@ export function SmartSearchInput({
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600">Local:</span>
-                  <span className="font-medium text-emerald-600">Grátis</span>
+                  <span className="font-medium text-status-success">Grátis</span>
                 </div>
               )}
               <div className="flex justify-between text-xs">
                 <span className="text-gray-600">Global:</span>
-                <span className="font-medium text-amber-600">1 cr/candidato</span>
+                <span className="font-medium text-status-warning">1 cr/candidato</span>
               </div>
               <div className="flex justify-between text-xs pt-2 border-t border-gray-200">
                 <span className="font-medium text-gray-800 dark:text-gray-200">Total estimado:</span>
-                <span className="font-semibold text-amber-600">1 cr/candidato</span>
+                <span className="font-semibold text-status-warning">1 cr/candidato</span>
               </div>
             </div>
             

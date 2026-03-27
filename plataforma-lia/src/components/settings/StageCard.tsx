@@ -240,7 +240,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                       {active && !isEditMode && (
                         <div className="flex items-center gap-1.5">
                           {field?.required && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 text-micro">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-status-error/10 text-status-error text-micro">
                               Obrigatório
                             </span>
                           )}
@@ -302,7 +302,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
         <span className="font-medium">Subetapas</span>
         <span className="text-gray-400">({activeCount} ativas)</span>
         {!isRealId(stage.id) && isEditMode && (
-          <span className="ml-auto text-micro text-amber-500">Salve a etapa primeiro</span>
+          <span className="ml-auto text-micro text-status-warning">Salve a etapa primeiro</span>
         )}
       </button>
 
@@ -339,7 +339,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
               </span>
 
               {ss.is_waiting && ss.is_active && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-micro font-medium">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan-dark text-micro font-medium">
                   Aguarda
                 </span>
               )}
@@ -357,9 +357,9 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
                   {togglingId === `default-${ss.id}` ? (
                     <Loader2 className="h-3 w-3 animate-spin text-gray-400" />
                   ) : ss.is_default ? (
-                    <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                    <Star className="h-3 w-3 text-status-warning fill-amber-400" />
                   ) : (
-                    <Star className="h-3 w-3 text-gray-300 hover:text-amber-400" />
+                    <Star className="h-3 w-3 text-gray-300 hover:text-status-warning" />
                   )}
                 </button>
               )}
@@ -374,7 +374,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
               )}
 
               {!canManage && ss.is_default && (
-                <Star className="h-3 w-3 text-amber-400 fill-amber-400 flex-shrink-0" />
+                <Star className="h-3 w-3 text-status-warning fill-amber-400 flex-shrink-0" />
               )}
             </div>
           ))}
@@ -609,7 +609,7 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
               {getTypeBadge(stage.type)}
               <ActionBehaviorBadge behavior={stage.action_behavior} />
               {stage.isActive ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-600 text-micro font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-status-success/10 text-status-success text-micro font-medium">
                   <Check className="h-3 w-3" />Ativo
                 </span>
               ) : (
@@ -642,7 +642,7 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
               {stage.sub_statuses?.map(ss => (
                 <span key={ss.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                   {ss.display_name}
-                  {ss.is_default && <Star className="h-2.5 w-2.5 text-amber-500" />}
+                  {ss.is_default && <Star className="h-2.5 w-2.5 text-status-warning" />}
                 </span>
               ))}
             </div>
@@ -819,7 +819,7 @@ export function SortableStageCard({
                   variant="ghost"
                   size="sm"
                   onClick={() => onRemove(stage.id)}
-                  className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="text-gray-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20 transition-colors"
                   aria-label={`Remover etapa ${getStageDisplayName(stage)}`}
                 >
                   <Trash2 className="h-4 w-4" />

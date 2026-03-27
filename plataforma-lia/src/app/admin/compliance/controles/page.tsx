@@ -171,7 +171,7 @@ export default function ControlesPage() {
             <Progress value={overallPercentage} className="h-2 mb-4" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-status-success" />
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                     {totalImplemented}
@@ -182,7 +182,7 @@ export default function ControlesPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-500" />
+                <Clock className="w-4 h-4 text-status-warning" />
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                     {Object.values(dashboard?.byFramework || {}).reduce((acc, fw) => acc + fw.inProgress, 0)}
@@ -193,7 +193,7 @@ export default function ControlesPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-orange-500" />
+                <AlertCircle className="w-4 h-4 text-wedo-orange" />
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                     {Object.values(dashboard?.byFramework || {}).reduce((acc, fw) => acc + fw.notStarted, 0)}
@@ -317,19 +317,19 @@ export default function ControlesPage() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                <div className="w-3 h-3 rounded-full bg-status-success" />
                 <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                   Implementado / Verificado
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
+                <div className="w-3 h-3 rounded-full bg-status-warning" />
                 <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                   Em Progresso
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-orange-500" />
+                <div className="w-3 h-3 rounded-full bg-wedo-orange" />
                 <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                   Não Iniciado
                 </span>

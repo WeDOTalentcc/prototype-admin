@@ -60,16 +60,16 @@ interface Incident {
 }
 
 const severityColors: Record<string, string> = {
-  critical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-  medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  critical: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
+  high: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange',
+  medium: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   low: 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50',
 }
 
 const statusColors: Record<string, string> = {
-  open: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  investigating: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  resolved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  open: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
+  investigating: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
+  resolved: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success',
 }
 
 const statusLabels: Record<string, string> = {
@@ -211,8 +211,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           })}
         </div>
         <div className="p-6 text-center">
-          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-sm text-red-600">Erro ao carregar incidentes</p>
+          <AlertCircle className="w-8 h-8 text-status-error mx-auto mb-2" />
+          <p className="text-sm text-status-error">Erro ao carregar incidentes</p>
           <Button variant="outline" size="sm" onClick={refetch} className="mt-3">
             <RefreshCw className="w-4 h-4 mr-2" />
             Tentar novamente
@@ -257,24 +257,24 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                 <div className="flex items-center gap-1 mt-1">
                   {openIncidents > 0 ? (
                     <>
-                      <AlertTriangle className="w-3 h-3 text-amber-500" />
-                      <span className="text-xs text-amber-600">Requer atenção</span>
+                      <AlertTriangle className="w-3 h-3 text-status-warning" />
+                      <span className="text-xs text-status-warning">Requer atenção</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                      <span className="text-xs text-emerald-600">Tudo OK</span>
+                      <CheckCircle2 className="w-3 h-3 text-status-success" />
+                      <span className="text-xs text-status-success">Tudo OK</span>
                     </>
                   )}
                 </div>
               </div>
               <div className={cn(
                 "w-10 h-10 rounded-md flex items-center justify-center",
-                openIncidents > 0 ? "bg-amber-50 dark:bg-amber-900/20" : "bg-emerald-50 dark:bg-emerald-900/20"
+                openIncidents > 0 ? "bg-status-warning/10 dark:bg-status-warning/20" : "bg-status-success/10 dark:bg-status-success/20"
               )}>
                 <AlertTriangle className={cn(
                   "w-5 h-5",
-                  openIncidents > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
+                  openIncidents > 0 ? "text-status-warning dark:text-status-warning" : "text-status-success dark:text-status-success"
                 )} />
               </div>
             </div>
@@ -288,12 +288,12 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Resolvidos</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{resolvedIncidents}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">Últimos 30 dias</span>
+                  <CheckCircle2 className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">Últimos 30 dias</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-10 h-10 rounded-md bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-status-success dark:text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -328,12 +328,12 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                   {integrationsLoading || integrations.length === 0 ? '-' : `${(integrations.reduce((acc, i) => acc + i.uptime, 0) / integrations.length).toFixed(1)}%`}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
-                  <Activity className="w-3 h-3 text-purple-500" />
-                  <span className="text-xs text-purple-600">Últimos 30 dias</span>
+                  <Activity className="w-3 h-3 text-wedo-purple" />
+                  <span className="text-xs text-wedo-purple">Últimos 30 dias</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div className="w-10 h-10 rounded-md bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center">
+                <Activity className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -390,8 +390,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                         </div>
                         {incident.resolvedAt && (
                           <div className="flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                            <span className="text-xs text-emerald-600">
+                            <CheckCircle2 className="w-3 h-3 text-status-success" />
+                            <span className="text-xs text-status-success">
                               Resolvido: {formatDateTime(incident.resolvedAt)}
                             </span>
                           </div>
@@ -412,7 +412,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
             </div>
           ) : (
             <div className="text-center py-6">
-              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+              <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
               <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Nenhum incidente encontrado</p>
             </div>
           )}
@@ -443,11 +443,11 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                 >
                   <div className="flex items-center gap-3">
                     {integration.status === 'up' ? (
-                      <Wifi className="w-5 h-5 text-emerald-500" />
+                      <Wifi className="w-5 h-5 text-status-success" />
                     ) : integration.status === 'down' ? (
-                      <WifiOff className="w-5 h-5 text-red-500" />
+                      <WifiOff className="w-5 h-5 text-status-error" />
                     ) : (
-                      <Wifi className="w-5 h-5 text-amber-500" />
+                      <Wifi className="w-5 h-5 text-status-warning" />
                     )}
                     <div>
                       <p className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>{integration.name}</p>

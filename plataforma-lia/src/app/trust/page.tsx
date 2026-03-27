@@ -84,7 +84,7 @@ function getStatusBadge(status: string) {
     case 'active':
     case 'compliant':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-success/15 text-status-success">
           <CheckCircle2 className="w-3 h-3" />
           Ativo
         </span>
@@ -159,7 +159,7 @@ export default function PublicTrustCenterPage() {
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-status-success/15 text-status-success text-sm font-medium mb-4">
             <Shield className="w-4 h-4" />
             Segurança & Compliance
           </div>
@@ -173,8 +173,8 @@ export default function PublicTrustCenterPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           <div className="bg-white rounded-md border border-gray-200 p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-              <BadgeCheck className="w-6 h-6 text-emerald-600" />
+            <div className="w-12 h-12 rounded-full bg-status-success/15 flex items-center justify-center mx-auto mb-4">
+              <BadgeCheck className="w-6 h-6 text-status-success" />
             </div>
             <div className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-1">{activeCompliance}</div>
             <p className="text-gray-600 text-sm">Frameworks Ativos</p>
@@ -189,16 +189,16 @@ export default function PublicTrustCenterPage() {
           </div>
 
           <div className="bg-white rounded-md border border-gray-200 p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 rounded-full bg-wedo-purple/15 flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-6 h-6 text-wedo-purple" />
             </div>
             <div className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-1">{resources.length}</div>
             <p className="text-gray-600 text-sm">Documentos</p>
           </div>
 
           <div className="bg-white rounded-md border border-gray-200 p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-              <Globe className="w-6 h-6 text-amber-600" />
+            <div className="w-12 h-12 rounded-full bg-status-warning/15 flex items-center justify-center mx-auto mb-4">
+              <Globe className="w-6 h-6 text-status-warning" />
             </div>
             <div className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-1">33+</div>
             <p className="text-gray-600 text-sm">Integrações</p>
@@ -302,8 +302,8 @@ export default function PublicTrustCenterPage() {
                 key={resource.id}
                 className="bg-white rounded-md border border-gray-200 p-4 flex items-start gap-4 hover:border-gray-900 dark:hover:border-gray-50 hover:transition-all text-left"
               >
-                <div className="w-10 h-10 rounded-md bg-red-100 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 rounded-md bg-status-error/15 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-5 h-5 text-status-error" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-950 dark:text-gray-50 text-sm">{resource.name}</p>
@@ -340,8 +340,8 @@ export default function PublicTrustCenterPage() {
               </div>
               <div className="border border-gray-200 rounded-md p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-md bg-purple-100 flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-purple-600" />
+                  <div className="w-8 h-8 rounded-md bg-wedo-purple/15 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-wedo-purple" />
                   </div>
                   <h4 className="font-medium text-gray-950 dark:text-gray-50">Rubric Evaluation (CV vs Vaga)</h4>
                 </div>
@@ -351,8 +351,8 @@ export default function PublicTrustCenterPage() {
               </div>
               <div className="border border-gray-200 rounded-md p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-md bg-emerald-100 flex items-center justify-center">
-                    <Award className="w-4 h-4 text-emerald-600" />
+                  <div className="w-8 h-8 rounded-md bg-status-success/15 flex items-center justify-center">
+                    <Award className="w-4 h-4 text-status-success" />
                   </div>
                   <h4 className="font-medium text-gray-950 dark:text-gray-50">LIA Scoring</h4>
                 </div>
@@ -362,8 +362,8 @@ export default function PublicTrustCenterPage() {
               </div>
               <div className="border border-gray-200 rounded-md p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-md bg-amber-100 flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-amber-600" />
+                  <div className="w-8 h-8 rounded-md bg-status-warning/15 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-status-warning" />
                   </div>
                   <h4 className="font-medium text-gray-950 dark:text-gray-50">LIA Opinion (Parecer)</h4>
                 </div>
@@ -380,19 +380,19 @@ export default function PublicTrustCenterPage() {
                 <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-3">Transparência Algorítmica</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Explicação automática de todas as decisões (LGPD Art. 20)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Todas as metodologias documentadas e auditáveis</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Candidatos podem solicitar explicação de avaliação</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Logs completos de decisão para auditoria</span>
                   </li>
                 </ul>
@@ -401,19 +401,19 @@ export default function PublicTrustCenterPage() {
                 <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-3">Supervisão Humana (EU AI Act Art. 14)</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>IA nunca toma decisão final de contratação/rejeição</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Recrutador humano revisa todas as recomendações</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Candidatos podem solicitar revisão humana</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Override humano sempre disponível</span>
                   </li>
                 </ul>
@@ -427,19 +427,19 @@ export default function PublicTrustCenterPage() {
                 <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-3">Mitigação de Viés</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Exclusão de campos protegidos (gênero, idade, etnia, estado civil)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Prompts com instruções anti-viés explícitas</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Auditoria anual de viés planejada (Warden AI)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Monitoramento de disparate impact por grupos demográficos</span>
                   </li>
                 </ul>
@@ -448,19 +448,19 @@ export default function PublicTrustCenterPage() {
                 <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-3">Direitos do Candidato</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Notificação de uso de IA na avaliação (NYC LL144)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Acesso aos dados usados na avaliação (LGPD Art. 18)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Explicação da lógica de decisão (LGPD Art. 20)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Solicitação de exclusão de dados (LGPD Art. 18-VI)</span>
                   </li>
                 </ul>

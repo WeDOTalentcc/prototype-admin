@@ -177,18 +177,18 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
   const getInteractionIcon = (type: string) => {
     switch (type) {
       case 'email': return <Mail className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-      case 'call': return <Phone className="w-4 h-4 text-green-500" />
+      case 'call': return <Phone className="w-4 h-4 text-status-success" />
       case 'view': return <Eye className="w-4 h-4 text-gray-800 dark:text-gray-200" />
-      case 'meeting': return <Video className="w-4 h-4 text-purple-500" />
+      case 'meeting': return <Video className="w-4 h-4 text-wedo-purple" />
       default: return <MessageCircle className="w-4 h-4 text-gray-800 dark:text-gray-200" />
     }
   }
 
   const getNoteColor = (type: string) => {
     switch (type) {
-      case 'positive': return 'border-l-green-500 bg-green-50 dark:bg-green-900/10'
-      case 'negative': return 'border-l-red-500 bg-red-50 dark:bg-red-900/10'
-      default: return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/10'
+      case 'positive': return 'border-l-green-500 bg-status-success/10 dark:bg-status-success/10'
+      case 'negative': return 'border-l-red-500 bg-status-error/10 dark:bg-status-error/10'
+      default: return 'border-l-blue-500 bg-wedo-cyan/10'
     }
   }
 
@@ -214,7 +214,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 <span className="text-gray-600 dark:text-gray-400">
                   {candidateData.currentRole} • {candidateData.experience}
                 </span>
-                <Badge className={`${candidateData.status === 'Em triagem' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                <Badge className={`${candidateData.status === 'Em triagem' ? 'bg-status-warning/15 text-status-warning dark:text-status-warning' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
                   {candidateData.status}
                 </Badge>
               </div>
@@ -225,8 +225,8 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   <span className="text-sm font-medium text-wedo-cyan-dark">LIA: {candidateData.liaScore}/10</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Target className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-700">Match: {candidateData.skillsMatch}%</span>
+                  <Target className="w-4 h-4 text-status-success" />
+                  <span className="text-sm font-medium text-status-success">Match: {candidateData.skillsMatch}%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4 text-gray-800 dark:text-gray-200" />
@@ -378,7 +378,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">Tags</label>
                     <div className="flex flex-wrap gap-2">
                       {candidateData.tags.map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs border-green-200 text-green-700">
+                        <Badge key={index} variant="outline" className="text-xs border-status-success/30 text-status-success">
                           {tag}
                         </Badge>
                       ))}
@@ -512,7 +512,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       onClick={() => setNoteType('positive')}
                       className={`px-3 py-1 text-xs rounded-full border transition-colors ${
                         noteType === 'positive'
-                          ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700'
+                          ? 'bg-status-success/15 dark:bg-status-success/20 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
                       }`}
                     >
@@ -534,7 +534,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       onClick={() => setNoteType('negative')}
                       className={`px-3 py-1 text-xs rounded-full border transition-colors ${
                         noteType === 'negative'
-                          ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700'
+                          ? 'bg-status-error/15 dark:bg-status-error/20 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
                       }`}
                     >

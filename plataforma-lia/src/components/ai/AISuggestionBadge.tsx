@@ -45,9 +45,9 @@ export function AISuggestionBadge({
   const confidencePercent = Math.round(suggestion.confidence_score * 100)
   
   const confidenceColor = 
-    confidencePercent >= 90 ? "text-green-600" :
+    confidencePercent >= 90 ? "text-status-success" :
     confidencePercent >= 75 ? "text-gray-900 dark:text-gray-50" :
-    "text-amber-600"
+    "text-status-warning"
 
   const handleApprove = async () => {
     if (!onApprove) return
@@ -144,7 +144,7 @@ export function AISuggestionBadge({
         <Button 
           size="icon" 
           variant="ghost" 
-          className="h-7 w-7 text-green-600 hover:bg-green-100"
+          className="h-7 w-7 text-status-success hover:bg-status-success/15"
           onClick={handleApprove}
           disabled={isLoading}
         >
@@ -153,7 +153,7 @@ export function AISuggestionBadge({
         <Button 
           size="icon" 
           variant="ghost" 
-          className="h-7 w-7 text-red-600 hover:bg-red-100"
+          className="h-7 w-7 text-status-error hover:bg-status-error/15"
           onClick={handleReject}
           disabled={isLoading}
         >

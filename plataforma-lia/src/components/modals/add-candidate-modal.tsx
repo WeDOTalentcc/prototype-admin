@@ -430,7 +430,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       {skill}
                       <button
                         onClick={() => handleRemoveSkill(skill)}
-                        className="ml-2 hover:text-red-500"
+                        className="ml-2 hover:text-status-error"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -547,12 +547,12 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       <CardContent className="pt-4">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-gray-800 dark:text-gray-200">Fit Cultural</span>
-                          <User className="w-4 h-4 text-green-500" />
+                          <User className="w-4 h-4 text-status-success" />
                         </div>
-                        <div className="text-2xl font-bold text-green-600">{liaAnalysis.culturalFit}%</div>
+                        <div className="text-2xl font-bold text-status-success">{liaAnalysis.culturalFit}%</div>
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2">
                           <div
-                            className="bg-green-600 h-1.5 rounded-full"
+                            className="bg-status-success h-1.5 rounded-full"
                             style={{ width: `${liaAnalysis.culturalFit}%` }}
                           />
                         </div>
@@ -563,12 +563,12 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       <CardContent className="pt-4">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-gray-800 dark:text-gray-200">Fit Técnico</span>
-                          <Zap className="w-4 h-4 text-purple-500" />
+                          <Zap className="w-4 h-4 text-wedo-purple" />
                         </div>
-                        <div className="text-2xl font-bold text-purple-600">{liaAnalysis.technicalFit}%</div>
+                        <div className="text-2xl font-bold text-wedo-purple">{liaAnalysis.technicalFit}%</div>
                         <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                           <div
-                            className="bg-purple-600 h-1.5 rounded-full"
+                            className="bg-wedo-purple h-1.5 rounded-full"
                             style={{ width: `${liaAnalysis.technicalFit}%` }}
                           />
                         </div>
@@ -578,16 +578,16 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
                   {/* Strengths and Improvements */}
                   <div className="grid grid-cols-2 gap-4">
-                    <Card className="bg-green-50">
+                    <Card className="bg-status-success/10">
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-3">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                          <h4 className="font-semibold text-green-800">Pontos Fortes</h4>
+                          <CheckCircle className="w-4 h-4 text-status-success" />
+                          <h4 className="font-semibold text-status-success">Pontos Fortes</h4>
                         </div>
                         <ul className="space-y-1">
                           {liaAnalysis.strengths.map((strength: string, index: number) => (
-                            <li key={index} className="text-sm text-green-700 flex items-start gap-2">
-                              <span className="text-green-500 mt-0.5">•</span>
+                            <li key={index} className="text-sm text-status-success flex items-start gap-2">
+                              <span className="text-status-success mt-0.5">•</span>
                               {strength}
                             </li>
                           ))}
@@ -595,16 +595,16 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-orange-50">
+                    <Card className="bg-wedo-orange/10">
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-3">
-                          <AlertCircle className="w-4 h-4 text-orange-600" />
-                          <h4 className="font-semibold text-orange-800">Pontos de Atenção</h4>
+                          <AlertCircle className="w-4 h-4 text-wedo-orange" />
+                          <h4 className="font-semibold text-wedo-orange">Pontos de Atenção</h4>
                         </div>
                         <ul className="space-y-1">
                           {liaAnalysis.improvements.map((improvement: string, index: number) => (
-                            <li key={index} className="text-sm text-orange-700 flex items-start gap-2">
-                              <span className="text-orange-500 mt-0.5">•</span>
+                            <li key={index} className="text-sm text-wedo-orange flex items-start gap-2">
+                              <span className="text-wedo-orange mt-0.5">•</span>
                               {improvement}
                             </li>
                           ))}

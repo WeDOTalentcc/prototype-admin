@@ -29,20 +29,20 @@ export function ScreeningNotificationCard({
   const recommendationConfig = {
     aprovado: {
       borderColor: "border-l-emerald-500",
-      badgeBg: "bg-emerald-50 dark:bg-emerald-900/20",
-      badgeText: "text-emerald-700 dark:text-emerald-300",
+      badgeBg: "bg-status-success/10 dark:bg-status-success/10/20",
+      badgeText: "text-status-success dark:text-status-success",
       label: "Aprovado",
     },
     reprovado: {
       borderColor: "border-l-red-500",
-      badgeBg: "bg-red-50 dark:bg-red-900/20",
-      badgeText: "text-red-700 dark:text-red-300",
+      badgeBg: "bg-status-error/10 dark:bg-status-error/10/20",
+      badgeText: "text-status-error dark:text-status-error",
       label: "Reprovado",
     },
     avaliação_manual: {
       borderColor: "border-l-amber-500",
-      badgeBg: "bg-amber-50 dark:bg-amber-900/20",
-      badgeText: "text-amber-700 dark:text-amber-300",
+      badgeBg: "bg-status-warning/10 dark:bg-status-warning/10/20",
+      badgeText: "text-status-warning dark:text-status-warning",
       label: "Avaliação Manual",
     },
   }
@@ -92,10 +92,10 @@ export function ScreeningNotificationCard({
                 <div
                   className={`h-full rounded-full transition-all ${
                     wsiScore >= 75
-                      ? "bg-emerald-500"
+                      ? "bg-status-success/10"
                       : wsiScore >= 50
-                        ? "bg-amber-500"
-                        : "bg-red-500"
+                        ? "bg-status-warning/10"
+                        : "bg-status-error/10"
                   }`}
                   style={{ width: `${wsiScore}%` }}
                 />

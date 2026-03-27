@@ -198,7 +198,7 @@ export function DataRequestIndicator({
                 <span className="text-gray-500 dark:text-gray-400">Expira em:</span>
                 <span className={cn(
                   "font-medium",
-                  expired ? "text-red-500" : "text-gray-700 dark:text-gray-300"
+                  expired ? "text-status-error" : "text-gray-700 dark:text-gray-300"
                 )}>
                   {formatDate(expiresAt)}
                   {expired && " (expirado)"}

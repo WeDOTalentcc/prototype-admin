@@ -167,10 +167,10 @@ export function FastTrackReviewPanel({
         </div>
       </div>
       
-      <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md space-y-3">
+      <div className="p-3 bg-status-warning/10 border border-status-warning/30/30 rounded-md space-y-3">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-yellow-400" />
-          <span className="text-sm font-medium text-yellow-400">
+          <AlertTriangle className="w-4 h-4 text-status-warning" />
+          <span className="text-sm font-medium text-status-warning">
             Campos que precisam sua atenção
           </span>
         </div>
@@ -252,21 +252,21 @@ export function FastTrackReviewPanel({
       </div>
       
       {hasCompetencyChanges && (
-        <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-md">
+        <div className="p-3 bg-wedo-cyan/10 border border-wedo-cyan/30/30 rounded-md">
           <div className="flex items-start gap-2">
-            <HelpCircle className="w-4 h-4 text-blue-400 mt-0.5" />
+            <HelpCircle className="w-4 h-4 text-wedo-cyan-dark mt-0.5" />
             <div>
-              <span className="text-sm font-medium text-blue-400">
+              <span className="text-sm font-medium text-wedo-cyan-dark">
                 Competências foram alteradas
               </span>
-              <p className="text-xs text-blue-400/70 mt-1">
+              <p className="text-xs text-wedo-cyan-dark/70 mt-1">
                 As perguntas WSI podem precisar de atualização.
               </p>
               <Button
                 onClick={onRequestWSIRegeneration}
                 size="sm"
                 variant="outline"
-                className="mt-2 text-xs border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                className="mt-2 text-xs border-wedo-cyan/30/50 text-wedo-cyan-dark hover:bg-wedo-cyan/10"
               >
                 Regenerar perguntas WSI
               </Button>
@@ -445,7 +445,7 @@ export function FastTrackReviewPanel({
       </Button>
       
       {!canPublish && (
-        <p className="text-xs text-center text-yellow-400">
+        <p className="text-xs text-center text-status-warning">
           Preencha todos os campos obrigatórios acima
         </p>
       )}

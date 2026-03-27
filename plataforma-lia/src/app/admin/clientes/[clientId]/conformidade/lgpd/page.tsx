@@ -56,10 +56,10 @@ const dsrTypeLabels: Record<string, string> = {
 }
 
 const dsrStatusColors: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  pending: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   in_progress: 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50',
-  completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  overdue: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  completed: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success',
+  overdue: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
 }
 
 const dsrStatusLabels: Record<string, string> = {
@@ -151,8 +151,8 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           })}
         </div>
         <div className="p-6 text-center">
-          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-sm text-red-600">Erro ao carregar dados LGPD</p>
+          <AlertCircle className="w-8 h-8 text-status-error mx-auto mb-2" />
+          <p className="text-sm text-status-error">Erro ao carregar dados LGPD</p>
           <Button variant="outline" size="sm" onClick={refetch} className="mt-3">
             <RefreshCw className="w-4 h-4 mr-2" />
             Tentar novamente
@@ -195,12 +195,12 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Consentimentos</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{stats?.totalConsents || 0}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <UserCheck className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">{stats?.activeConsents || 0} ativos</span>
+                  <UserCheck className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">{stats?.activeConsents || 0} ativos</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-10 h-10 rounded-md bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
+                <Users className="w-5 h-5 text-status-success dark:text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -213,12 +213,12 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>DSRs Pendentes</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{stats?.pendingDSRs || 0}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <Clock className="w-3 h-3 text-amber-500" />
-                  <span className="text-xs text-amber-600">Aguardando resposta</span>
+                  <Clock className="w-3 h-3 text-status-warning" />
+                  <span className="text-xs text-status-warning">Aguardando resposta</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 rounded-md bg-status-warning/10 dark:bg-status-warning/20 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-status-warning dark:text-status-warning" />
               </div>
             </div>
           </CardContent>
@@ -248,19 +248,19 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                 <div className="flex items-center gap-1 mt-1">
                   {breaches.filter(b => b.status !== 'closed').length > 0 ? (
                     <>
-                      <AlertTriangle className="w-3 h-3 text-red-500" />
-                      <span className="text-xs text-red-600">{breaches.filter(b => b.status !== 'closed').length} abertos</span>
+                      <AlertTriangle className="w-3 h-3 text-status-error" />
+                      <span className="text-xs text-status-error">{breaches.filter(b => b.status !== 'closed').length} abertos</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                      <span className="text-xs text-emerald-600">Nenhum aberto</span>
+                      <CheckCircle2 className="w-3 h-3 text-status-success" />
+                      <span className="text-xs text-status-success">Nenhum aberto</span>
                     </>
                   )}
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <div className="w-10 h-10 rounded-md bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-status-error dark:text-status-error" />
               </div>
             </div>
           </CardContent>
@@ -276,8 +276,8 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           </CardHeader>
           <CardContent>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                <UserCheck className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="w-12 h-12 rounded-full bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center">
+                <UserCheck className="w-6 h-6 text-wedo-purple dark:text-wedo-purple" />
               </div>
               <div className="flex-1">
                 <p className="font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{dpo.name}</p>
@@ -364,13 +364,13 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
               </div>
               
               <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="p-3 rounded-md bg-emerald-50 dark:bg-emerald-900/20">
-                  <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{stats?.dataWithinRetention || 0}</p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400">Dentro do prazo</p>
+                <div className="p-3 rounded-md bg-status-success/10 dark:bg-status-success/20">
+                  <p className="text-lg font-semibold text-status-success dark:text-status-success">{stats?.dataWithinRetention || 0}</p>
+                  <p className="text-xs text-status-success dark:text-status-success">Dentro do prazo</p>
                 </div>
-                <div className="p-3 rounded-md bg-red-50 dark:bg-red-900/20">
-                  <p className="text-lg font-semibold text-red-600 dark:text-red-400">{stats?.dataExceedingRetention || 0}</p>
-                  <p className="text-xs text-red-600 dark:text-red-400">Prazo excedido</p>
+                <div className="p-3 rounded-md bg-status-error/10 dark:bg-status-error/20">
+                  <p className="text-lg font-semibold text-status-error dark:text-status-error">{stats?.dataExceedingRetention || 0}</p>
+                  <p className="text-xs text-status-error dark:text-status-error">Prazo excedido</p>
                 </div>
               </div>
 

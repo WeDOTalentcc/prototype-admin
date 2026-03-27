@@ -305,9 +305,9 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
   const getCategoryBadge = (category?: string) => {
     switch (category) {
       case 'system': return { label: 'Sistema', icon: Lock, color: 'text-gray-400 bg-gray-50 dark:bg-gray-800/50' }
-      case 'default': return { label: 'Padrão', icon: Target, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30' }
-      case 'custom': return { label: 'Custom', icon: Settings, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' }
-      default: return { label: 'Custom', icon: Settings, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' }
+      case 'default': return { label: 'Padrão', icon: Target, color: 'text-wedo-cyan-dark bg-wedo-cyan/10' }
+      case 'custom': return { label: 'Custom', icon: Settings, color: 'text-status-warning bg-status-warning/10' }
+      default: return { label: 'Custom', icon: Settings, color: 'text-status-warning bg-status-warning/10' }
     }
   }
 
@@ -315,9 +315,9 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
     <div className="space-y-4">
       {isCreationMode && (
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-4 py-3">
-            <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-            <p className="text-sm text-amber-800 dark:text-amber-300 font-['Open_Sans',sans-serif]">
+          <div className="flex items-center gap-3 flex-1 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md px-4 py-3">
+            <Info className="w-4 h-4 text-status-warning dark:text-status-warning flex-shrink-0" />
+            <p className="text-sm text-status-warning dark:text-status-warning font-['Open_Sans',sans-serif]">
               Vaga em rascunho — preencha os dados e publique quando estiver pronta
             </p>
           </div>
@@ -371,7 +371,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                 <div className={`${textStyles.description} 2xl:text-xs`}>{section.description}</div>
               </div>
               {isDone ? (
-                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500 dark:text-emerald-400" />
+                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success dark:text-status-success" />
               ) : (
                 <Circle className="w-3.5 h-3.5 flex-shrink-0 text-gray-300 dark:text-gray-600" />
               )}
@@ -405,7 +405,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                 <div className={`${textStyles.description} 2xl:text-xs`}>{section.description}</div>
               </div>
               {isDone ? (
-                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500 dark:text-emerald-400" />
+                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success dark:text-status-success" />
               ) : (
                 <Circle className="w-3.5 h-3.5 flex-shrink-0 text-gray-300 dark:text-gray-600" />
               )}
@@ -526,13 +526,13 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                 <div className="rounded-md p-3 mb-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                   <div className="flex items-start gap-2.5">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                      statusChangeConfirm.screeningImpact === 'pause' ? 'bg-amber-100 dark:bg-amber-900/30' :
-                      statusChangeConfirm.screeningImpact === 'complete' ? 'bg-blue-100 dark:bg-blue-900/30' :
-                      'bg-green-100 dark:bg-green-900/30'
+                      statusChangeConfirm.screeningImpact === 'pause' ? 'bg-status-warning/15 dark:bg-status-warning/30' :
+                      statusChangeConfirm.screeningImpact === 'complete' ? 'bg-wedo-cyan/15' :
+                      'bg-status-success/15 dark:bg-status-success/30'
                     }`}>
-                      {statusChangeConfirm.screeningImpact === 'pause' && <Pause className="w-3 h-3 text-amber-600" />}
-                      {statusChangeConfirm.screeningImpact === 'complete' && <CheckCircle2 className="w-3 h-3 text-blue-600" />}
-                      {statusChangeConfirm.screeningImpact === 'ask_reactivate' && <Play className="w-3 h-3 text-green-600" />}
+                      {statusChangeConfirm.screeningImpact === 'pause' && <Pause className="w-3 h-3 text-status-warning" />}
+                      {statusChangeConfirm.screeningImpact === 'complete' && <CheckCircle2 className="w-3 h-3 text-wedo-cyan-dark" />}
+                      {statusChangeConfirm.screeningImpact === 'ask_reactivate' && <Play className="w-3 h-3 text-status-success" />}
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -659,9 +659,9 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                         <label className={labelClass}>Triagem</label>
                         <div 
                           className={`w-full px-3 py-2 text-xs rounded-md border cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                            (job?.screeningStatus || 'not_configured') === 'active' ? 'border-green-200 bg-green-50/50 text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400' :
-                            (job?.screeningStatus || 'not_configured') === 'paused' ? 'border-amber-200 bg-amber-50/50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400' :
-                            (job?.screeningStatus || 'not_configured') === 'completed' ? 'border-blue-200 bg-blue-50/50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
+                            (job?.screeningStatus || 'not_configured') === 'active' ? 'border-status-success/30 bg-status-success/10/50 text-status-success dark:border-status-success/30 dark:bg-status-success/20 dark:text-status-success' :
+                            (job?.screeningStatus || 'not_configured') === 'paused' ? 'border-status-warning/30 bg-status-warning/10/50 text-status-warning dark:border-status-warning/30 dark:bg-status-warning/20 dark:text-status-warning' :
+                            (job?.screeningStatus || 'not_configured') === 'completed' ? 'border-wedo-cyan/30 bg-wedo-cyan/10/50 text-wedo-cyan-dark dark:border-wedo-cyan/30 dark:text-wedo-cyan-dark' :
                             'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
                           }`}
                          
@@ -968,7 +968,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                   {isEditing && (
                                     <button
                                       onClick={() => removeLanguage(idx)}
-                                      className="p-1.5 mb-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 transition-colors"
+                                      className="p-1.5 mb-1 rounded-lg hover:bg-status-error/10 dark:hover:bg-status-error/10/30 text-gray-400 hover:text-status-error transition-colors"
                                     >
                                       <X className="w-4 h-4" />
                                     </button>
@@ -1143,8 +1143,8 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                     <div className="space-y-0">
                       <div className="flex items-center justify-between py-2.5 border-b border-gray-100 dark:border-gray-800">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                            <Linkedin className="w-4 h-4 text-blue-600" />
+                          <div className="w-8 h-8 rounded-lg bg-wedo-cyan/10 flex items-center justify-center">
+                            <Linkedin className="w-4 h-4 text-wedo-cyan-dark" />
                           </div>
                           <div>
                             <span className="text-xs font-medium text-gray-900 dark:text-gray-50">LinkedIn</span>
@@ -1159,8 +1159,8 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                       </div>
                       <div className="flex items-center justify-between py-2.5 border-b border-gray-100 dark:border-gray-800">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
-                            <Globe className="w-4 h-4 text-green-600" />
+                          <div className="w-8 h-8 rounded-lg bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
+                            <Globe className="w-4 h-4 text-status-success" />
                           </div>
                           <div>
                             <span className="text-xs font-medium text-gray-900 dark:text-gray-50">Website</span>
@@ -1175,8 +1175,8 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                       </div>
                       <div className="flex items-center justify-between py-2.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                            <Search className="w-4 h-4 text-purple-600" />
+                          <div className="w-8 h-8 rounded-lg bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center">
+                            <Search className="w-4 h-4 text-wedo-purple" />
                           </div>
                           <div>
                             <span className="text-xs font-medium text-gray-900 dark:text-gray-50">Indeed</span>
@@ -1474,11 +1474,11 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                         />
                                         <span className="text-micro text-gray-400 dark:text-gray-500 font-['Open_Sans',sans-serif]">dias</span>
                                         {slaModified && (
-                                          <span className="text-micro text-amber-500 font-['Open_Sans',sans-serif]">(padrão: {defaultSla}d)</span>
+                                          <span className="text-micro text-status-warning font-['Open_Sans',sans-serif]">(padrão: {defaultSla}d)</span>
                                         )}
                                       </div>
                                     ) : (
-                                      <span className={`text-micro font-['Open_Sans',sans-serif] ${slaModified ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                                      <span className={`text-micro font-['Open_Sans',sans-serif] ${slaModified ? 'text-status-warning dark:text-status-warning font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
                                         {currentSla} {currentSla === 1 ? 'dia' : 'dias'}
                                         {slaModified && ` (padrão: ${defaultSla}d)`}
                                       </span>
@@ -1515,7 +1515,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                   <button
                                     type="button"
                                     onClick={() => removeStage(index)}
-                                    className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500"
+                                    className="p-1 rounded hover:bg-status-error/10 dark:hover:bg-status-error/10/30 text-gray-400 hover:text-status-error"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
@@ -1677,7 +1677,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                                 <span key={name} className="px-3 py-1.5 rounded-full text-xs font-['Open_Sans',sans-serif] font-medium bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 flex items-center gap-1.5">
                                   {name}
                                   {isEditing && (
-                                    <button onClick={() => toggleBenefit(name)} className="hover:text-red-300">
+                                    <button onClick={() => toggleBenefit(name)} className="hover:text-status-error">
                                       <X className="w-3 h-3" />
                                     </button>
                                   )}

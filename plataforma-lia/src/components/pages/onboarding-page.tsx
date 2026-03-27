@@ -219,10 +219,10 @@ export function OnboardingPage() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+      pending: 'bg-status-warning/15 text-status-warning border-status-warning/30',
       in_progress: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600',
-      completed: 'bg-green-100 text-green-700 border-green-200',
-      delayed: 'bg-red-100 text-red-700 border-red-200'
+      completed: 'bg-status-success/15 text-status-success border-status-success/30',
+      delayed: 'bg-status-error/15 text-status-error border-status-error/30'
     }
     return colors[status as keyof typeof colors] || colors.pending
   }
@@ -266,8 +266,8 @@ export function OnboardingPage() {
                 </p>
                 <p className="text-xs text-gray-800 dark:text-gray-200">processos ativos</p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-md flex items-center justify-center">
-                <Clock className="w-6 h-6 text-yellow-600" />
+              <div className="w-12 h-12 bg-status-warning/15 rounded-md flex items-center justify-center">
+                <Clock className="w-6 h-6 text-status-warning" />
               </div>
             </div>
           </CardContent>
@@ -278,13 +278,13 @@ export function OnboardingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Concluídos</p>
-                <p className="text-2xl font-bold text-green-900">
+                <p className="text-2xl font-bold text-status-success">
                   {onboardingCandidates.filter(c => c.status === 'completed').length}
                 </p>
                 <p className="text-xs text-gray-800 dark:text-gray-200">com sucesso</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-md flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -295,11 +295,11 @@ export function OnboardingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Taxa de Sucesso</p>
-                <p className="text-2xl font-bold text-purple-900">92%</p>
+                <p className="text-2xl font-bold text-wedo-purple">92%</p>
                 <p className="text-xs text-gray-800 dark:text-gray-200">últimos 3 meses</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-md flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -370,8 +370,8 @@ export function OnboardingPage() {
               <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${
-                    item.priority === 'high' ? 'bg-red-500' :
-                    item.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                    item.priority === 'high' ? 'bg-status-error' :
+                    item.priority === 'medium' ? 'bg-status-warning' : 'bg-status-success'
                   }`} />
                   <div>
                     <p className="font-medium text-gray-950 dark:text-gray-50">{item.task}</p>
@@ -479,8 +479,8 @@ export function OnboardingPage() {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${
-                        candidate.status === 'completed' ? 'bg-green-500' :
-                        candidate.status === 'delayed' ? 'bg-red-500' : 'bg-gray-700 dark:bg-gray-300'
+                        candidate.status === 'completed' ? 'bg-status-success' :
+                        candidate.status === 'delayed' ? 'bg-status-error' : 'bg-gray-700 dark:bg-gray-300'
                       }`}
                       style={{ width: `${candidate.progress}%` }}
                     />
@@ -564,7 +564,7 @@ export function OnboardingPage() {
                   <div className="space-y-2">
                     {template.tasks.slice(0, 3).map(task => (
                       <div key={task.id} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className={`w-4 h-4 ${task.isCompleted ? 'text-green-600' : 'text-gray-600'}`} />
+                        <CheckCircle className={`w-4 h-4 ${task.isCompleted ? 'text-status-success' : 'text-gray-600'}`} />
                         <span className="text-gray-950 dark:text-gray-50">{task.title}</span>
                         <Badge variant="outline" className="text-xs">
                           {task.type === 'document' ? 'Doc' :
@@ -682,10 +682,10 @@ interface CandidateDetailModalProps {
 function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps) {
   const getStatusColor = (status: string) => {
     const colors = {
-      pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+      pending: 'bg-status-warning/15 text-status-warning border-status-warning/30',
       in_progress: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600',
-      completed: 'bg-green-100 text-green-700 border-green-200',
-      delayed: 'bg-red-100 text-red-700 border-red-200'
+      completed: 'bg-status-success/15 text-status-success border-status-success/30',
+      delayed: 'bg-status-error/15 text-status-error border-status-error/30'
     }
     return colors[status as keyof typeof colors] || colors.pending
   }
@@ -787,7 +787,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                   <div className="space-y-3">
                     {onboardingTemplates[0].tasks.map((task, index) => (
                       <div key={task.id} className="flex items-start gap-3 p-3 border border-gray-200 rounded-md">
-                        <CheckCircle className={`w-5 h-5 mt-0.5 ${task.isCompleted ? 'text-green-600' : 'text-gray-600'}`} />
+                        <CheckCircle className={`w-5 h-5 mt-0.5 ${task.isCompleted ? 'text-status-success' : 'text-gray-600'}`} />
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-medium text-gray-950 dark:text-gray-50">{task.title}</h4>
@@ -810,7 +810,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                             <span>Prazo: Dia {task.dueDate}</span>
                             <span>Tempo estimado: {task.estimatedTime}min</span>
                             {task.completedDate && (
-                              <span className="text-green-600">
+                              <span className="text-status-success">
                                 Concluído em {new Date(task.completedDate).toLocaleDateString('pt-BR')}
                               </span>
                             )}

@@ -267,19 +267,19 @@ export default function ISO27001Page() {
               <Progress value={stats.compliancePercentage} className="h-2 mb-3" />
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <CheckCircle2 className="w-4 h-4 text-status-success" />
                   <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                     {stats.implemented + stats.verified} Implementados
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-amber-500" />
+                  <Clock className="w-4 h-4 text-status-warning" />
                   <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                     {stats.inProgress} Em Progresso
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-orange-500" />
+                  <AlertCircle className="w-4 h-4 text-wedo-orange" />
                   <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                     {stats.notStarted} Não Iniciados
                   </span>

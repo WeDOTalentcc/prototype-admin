@@ -85,7 +85,7 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
         </p>
 
         {process.env.NODE_ENV === "development" && error && (
-          <pre className="text-left text-xs bg-gray-100 dark:bg-gray-800 rounded-md p-3 mb-4 overflow-auto max-h-32 text-red-600 dark:text-red-400">
+          <pre className="text-left text-xs bg-gray-100 dark:bg-gray-800 rounded-md p-3 mb-4 overflow-auto max-h-32 text-status-error dark:text-status-error">
             {error.message}
           </pre>
         )}

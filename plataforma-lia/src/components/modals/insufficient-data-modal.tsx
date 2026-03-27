@@ -60,7 +60,7 @@ export function InsufficientDataModal({
       <AlertDialogContent className="max-w-md rounded-md dark:bg-gray-900 dark:border-gray-700">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className={`p-2.5 rounded-md ${hasEnoughData ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'}`}>
+            <div className={`p-2.5 rounded-md ${hasEnoughData ? 'bg-status-warning/15 text-status-warning' : 'bg-status-error/15 text-status-error'}`}>
               <AlertTriangle className="w-5 h-5" />
             </div>
             <AlertDialogTitle className="text-lg font-semibold">
@@ -84,19 +84,19 @@ export function InsufficientDataModal({
               </p>
               
               {requiredMissing.length > 0 && (
-                <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                  <h4 className="text-xs font-semibold text-red-800 mb-2 flex items-center gap-1.5">
+                <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                  <h4 className="text-xs font-semibold text-status-error mb-2 flex items-center gap-1.5">
                     <XCircle className="w-4 h-4" />
                     Informações obrigatórias faltando
                   </h4>
                   <ul className="space-y-1.5">
                     {requiredMissing.map((req) => (
                       <li key={req.field} className="flex items-start gap-2">
-                        <span className="text-red-500 mt-0.5">{getIcon(req.field)}</span>
+                        <span className="text-status-error mt-0.5">{getIcon(req.field)}</span>
                         <div>
-                          <span className="text-xs font-medium text-red-700">{req.label}</span>
+                          <span className="text-xs font-medium text-status-error">{req.label}</span>
                           {req.description && (
-                            <p className="text-xs text-red-600">{req.description}</p>
+                            <p className="text-xs text-status-error">{req.description}</p>
                           )}
                         </div>
                       </li>
@@ -106,19 +106,19 @@ export function InsufficientDataModal({
               )}
               
               {optionalMissing.length > 0 && (
-                <div className="p-3 rounded-md bg-amber-50 border border-amber-200">
-                  <h4 className="text-xs font-semibold text-amber-800 mb-2 flex items-center gap-1.5">
+                <div className="p-3 rounded-md bg-status-warning/10 border border-status-warning/30">
+                  <h4 className="text-xs font-semibold text-status-warning mb-2 flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4" />
                     Informações recomendadas para melhor análise
                   </h4>
                   <ul className="space-y-1.5">
                     {optionalMissing.map((req) => (
                       <li key={req.field} className="flex items-start gap-2">
-                        <span className="text-amber-500 mt-0.5">{getIcon(req.field)}</span>
+                        <span className="text-status-warning mt-0.5">{getIcon(req.field)}</span>
                         <div>
-                          <span className="text-xs font-medium text-amber-700">{req.label}</span>
+                          <span className="text-xs font-medium text-status-warning">{req.label}</span>
                           {req.description && (
-                            <p className="text-xs text-amber-600">{req.description}</p>
+                            <p className="text-xs text-status-warning">{req.description}</p>
                           )}
                         </div>
                       </li>
@@ -128,15 +128,15 @@ export function InsufficientDataModal({
               )}
               
               {requirements.filter(r => r.hasData).length > 0 && (
-                <div className="p-3 rounded-md bg-green-50 border border-green-200">
-                  <h4 className="text-xs font-semibold text-green-800 mb-2 flex items-center gap-1.5">
+                <div className="p-3 rounded-md bg-status-success/10 border border-status-success/30">
+                  <h4 className="text-xs font-semibold text-status-success mb-2 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4" />
                     Informações disponíveis
                   </h4>
                   <ul className="space-y-1">
                     {requirements.filter(r => r.hasData).map((req) => (
-                      <li key={req.field} className="flex items-center gap-2 text-xs text-green-700">
-                        <span className="text-green-500">{getIcon(req.field)}</span>
+                      <li key={req.field} className="flex items-center gap-2 text-xs text-status-success">
+                        <span className="text-status-success">{getIcon(req.field)}</span>
                         {req.label}
                       </li>
                     ))}

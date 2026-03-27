@@ -38,15 +38,15 @@ export default function ConsumoIAPage() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-md">
-          <AlertCircle className="w-5 h-5 text-red-500" />
+        <div className="flex items-center gap-3 p-4 bg-status-error/10 border border-status-error/30 rounded-md">
+          <AlertCircle className="w-5 h-5 text-status-error" />
           <div>
-            <p className="font-medium text-red-800">Erro ao carregar dados</p>
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="font-medium text-status-error">Erro ao carregar dados</p>
+            <p className="text-sm text-status-error">{error}</p>
           </div>
           <button
             onClick={() => refetch()}
-            className="ml-auto px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+            className="ml-auto px-3 py-1 text-sm bg-status-error/15 hover:bg-status-error/20 text-status-error rounded transition-colors"
           >
             Tentar novamente
           </button>

@@ -216,9 +216,9 @@ export function CVPreview({
   }
 
   const getConfidenceColor = (score: number) => {
-    if (score >= 0.8) return "text-green-600 bg-green-100"
-    if (score >= 0.6) return "text-yellow-600 bg-yellow-100"
-    return "text-orange-600 bg-orange-100"
+    if (score >= 0.8) return "text-status-success bg-status-success/15"
+    if (score >= 0.6) return "text-status-warning bg-status-warning/15"
+    return "text-wedo-orange bg-wedo-orange/15"
   }
 
   const getConfidenceLabel = (score: number) => {
@@ -250,13 +250,13 @@ export function CVPreview({
         </DialogHeader>
 
         {parsedData.duplicate_warning && (
-          <div className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 p-3 bg-status-warning/10 border border-status-warning/30 rounded-md">
+            <AlertTriangle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-yellow-800">
+              <p className="text-sm font-medium text-status-warning">
                 Possível candidato duplicado
               </p>
-              <p className="text-xs text-yellow-700 mt-1">
+              <p className="text-xs text-status-warning mt-1">
                 {parsedData.duplicate_warning.message}
                 {" - "}
                 <span className="font-medium">
@@ -268,9 +268,9 @@ export function CVPreview({
                   type="checkbox"
                   checked={overrideDuplicate}
                   onChange={(e) => setOverrideDuplicate(e.target.checked)}
-                  className="rounded border-yellow-400"
+                  className="rounded border-status-warning/30"
                 />
-                <span className="text-xs text-yellow-700">
+                <span className="text-xs text-status-warning">
                   Criar mesmo assim (ignorar duplicado)
                 </span>
               </label>
@@ -607,9 +607,9 @@ export function CVPreview({
         </Tabs>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+            <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0" />
+            <p className="text-sm text-status-error">{error}</p>
           </div>
         )}
 

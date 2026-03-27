@@ -181,7 +181,7 @@ const nodeTypes = [
     type: 'trigger',
     title: 'Triggers',
     icon: Zap,
-    color: 'bg-green-50 border-green-200 text-green-700',
+    color: 'bg-status-success/10 border-status-success/30 text-status-success',
     items: [
       { id: 'candidate_approved', name: 'Candidato Aprovado', description: 'Quando um candidato é aprovado' },
       { id: 'interview_scheduled', name: 'Entrevista Agendada', description: 'Quando uma entrevista é marcada' },
@@ -205,7 +205,7 @@ const nodeTypes = [
     type: 'action',
     title: 'Ações',
     icon: Target,
-    color: 'bg-purple-50 border-purple-200 text-purple-700',
+    color: 'bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple',
     items: [
       { id: 'send_email', name: 'Enviar Email', description: 'Envia email personalizado' },
       { id: 'send_whatsapp', name: 'Enviar WhatsApp', description: 'Envia mensagem WhatsApp' },
@@ -219,7 +219,7 @@ const nodeTypes = [
     type: 'delay',
     title: 'Espera',
     icon: Clock,
-    color: 'bg-orange-50 border-orange-200 text-orange-700',
+    color: 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange',
     items: [
       { id: 'delay_minutes', name: 'Aguardar Minutos', description: 'Espera X minutos' },
       { id: 'delay_hours', name: 'Aguardar Horas', description: 'Espera X horas' },
@@ -244,7 +244,7 @@ export function WorkflowAutomationPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Workflows Ativos</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{workflows.filter(w => w.status === 'active').length}</p>
-                <p className="text-xs text-green-600">+2 esta semana</p>
+                <p className="text-xs text-status-success">+2 esta semana</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                 <Workflow className="w-6 h-6 text-gray-600 dark:text-gray-400" />
@@ -258,11 +258,11 @@ export function WorkflowAutomationPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Execuções Hoje</p>
-                <p className="text-2xl font-bold text-green-900">847</p>
-                <p className="text-xs text-green-600">+12% vs ontem</p>
+                <p className="text-2xl font-bold text-status-success">847</p>
+                <p className="text-xs text-status-success">+12% vs ontem</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-md flex items-center justify-center">
-                <Play className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
+                <Play className="w-6 h-6 text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -273,11 +273,11 @@ export function WorkflowAutomationPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Taxa de Sucesso</p>
-                <p className="text-2xl font-bold text-purple-900">94.2%</p>
-                <p className="text-xs text-purple-600">+0.8% vs semana</p>
+                <p className="text-2xl font-bold text-wedo-purple">94.2%</p>
+                <p className="text-xs text-wedo-purple">+0.8% vs semana</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-md flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -288,11 +288,11 @@ export function WorkflowAutomationPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Tempo Médio</p>
-                <p className="text-2xl font-bold text-orange-900">2.3s</p>
-                <p className="text-xs text-orange-600">-0.2s vs semana</p>
+                <p className="text-2xl font-bold text-wedo-orange">2.3s</p>
+                <p className="text-xs text-wedo-orange">-0.2s vs semana</p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-md flex items-center justify-center">
-                <Clock className="w-6 h-6 text-orange-600" />
+              <div className="w-12 h-12 bg-wedo-orange/15 rounded-md flex items-center justify-center">
+                <Clock className="w-6 h-6 text-wedo-orange" />
               </div>
             </div>
           </CardContent>
@@ -320,12 +320,12 @@ export function WorkflowAutomationPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-md flex items-center justify-center ${
-                      workflow.status === 'active' ? 'bg-green-100' :
-                      workflow.status === 'inactive' ? 'bg-gray-100' : 'bg-yellow-100'
+                      workflow.status === 'active' ? 'bg-status-success/15' :
+                      workflow.status === 'inactive' ? 'bg-gray-100' : 'bg-status-warning/15'
                     }`}>
                       <Workflow className={`w-6 h-6 ${
-                        workflow.status === 'active' ? 'text-green-600' :
-                        workflow.status === 'inactive' ? 'text-gray-600' : 'text-yellow-600'
+                        workflow.status === 'active' ? 'text-status-success' :
+                        workflow.status === 'inactive' ? 'text-gray-600' : 'text-status-warning'
                       }`} />
                     </div>
 
@@ -352,7 +352,7 @@ export function WorkflowAutomationPage() {
                     </div>
 
                     <div className="text-center">
-                      <p className="font-medium text-green-600">{workflow.successRate}%</p>
+                      <p className="font-medium text-status-success">{workflow.successRate}%</p>
                       <p className="text-gray-600">Sucesso</p>
                     </div>
 
@@ -428,7 +428,7 @@ export function WorkflowAutomationPage() {
                     {[1, 2, 3, 4, 5].map(star => (
                       <div
                         key={star}
-                        className={`w-3 h-3 ${star <= template.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                        className={`w-3 h-3 ${star <= template.rating ? 'text-status-warning' : 'text-gray-300'}`}
                       >
                         ⭐
                       </div>

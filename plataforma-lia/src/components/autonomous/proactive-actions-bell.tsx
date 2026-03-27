@@ -32,9 +32,9 @@ interface ProactiveActionsBellProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400"
-  if (score >= 60) return "text-amber-600 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-400"
-  return "text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400"
+  if (score >= 80) return "text-status-success bg-status-success/10 dark:text-status-success"
+  if (score >= 60) return "text-status-warning bg-status-warning/10 dark:bg-status-warning/30 dark:text-status-warning"
+  return "text-status-error bg-status-error/10 dark:bg-status-error/30 dark:text-status-error"
 }
 
 interface GroupedActions {
@@ -176,9 +176,9 @@ export function ProactiveActionsBell({
           ) : (
             <div className={cn(
               "w-2 h-2 rounded-full mt-1.5 shrink-0",
-              action.priority === 'urgent' && "bg-red-500",
-              action.priority === 'high' && "bg-orange-500",
-              action.priority === 'normal' && "bg-blue-500",
+              action.priority === 'urgent' && "bg-status-error",
+              action.priority === 'high' && "bg-wedo-orange",
+              action.priority === 'normal' && "bg-wedo-cyan",
               action.priority === 'low' && "bg-gray-400"
             )} />
           )}
@@ -221,7 +221,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-micro text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="h-6 px-2 text-micro text-gray-500 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
                 onClick={() => handleReject(action.id)}
                 disabled={isProcessing}
               >
@@ -231,7 +231,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-micro text-gray-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                className="h-6 px-2 text-micro text-gray-500 hover:text-status-warning hover:bg-status-warning/10 dark:hover:bg-status-warning/20"
                 onClick={() => handleDefer(action.id)}
                 disabled={isProcessing}
               >
@@ -280,7 +280,7 @@ export function ProactiveActionsBell({
           {pendingCount > 0 && (
             <span className={cn(
               "absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-micro font-bold text-white px-1",
-              hasUrgent ? "bg-red-500" : "bg-gray-900 dark:bg-gray-50"
+              hasUrgent ? "bg-status-error" : "bg-gray-900 dark:bg-gray-50"
             )}>
               {pendingCount > 9 ? '9+' : pendingCount}
             </span>

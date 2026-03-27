@@ -140,8 +140,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
           })}
         </div>
         <div className="p-6 text-center">
-          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-sm text-red-600">Erro ao carregar dados de conformidade</p>
+          <AlertCircle className="w-8 h-8 text-status-error mx-auto mb-2" />
+          <p className="text-sm text-status-error">Erro ao carregar dados de conformidade</p>
           <Button variant="outline" size="sm" onClick={refetchControls} className="mt-3">
             <RefreshCw className="w-4 h-4 mr-2" />
             Tentar novamente
@@ -185,8 +185,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{overallCompliance.toFixed(0)}%</p>
                 <Progress value={overallCompliance} className="h-2 mt-2 w-24" />
               </div>
-              <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-10 h-10 rounded-md bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-status-success dark:text-status-success" />
               </div>
             </div>
           </CardContent>
@@ -199,8 +199,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>Controles Ativos</p>
                 <p className="text-2xl font-semibold mt-1" style={{ color: 'var(--eleven-text-primary)' }}>{implementedControls}/{totalControls}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-600">{pendingControls} pendentes</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-xs text-status-success">{pendingControls} pendentes</span>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center">
@@ -221,8 +221,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                   <span className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>{dsrPending} DSRs pendentes</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div className="w-10 h-10 rounded-md bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
               </div>
             </div>
           </CardContent>
@@ -237,24 +237,24 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                 <div className="flex items-center gap-1 mt-1">
                   {openIncidents > 0 ? (
                     <>
-                      <AlertTriangle className="w-3 h-3 text-amber-500" />
-                      <span className="text-xs text-amber-600">Requer atenção</span>
+                      <AlertTriangle className="w-3 h-3 text-status-warning" />
+                      <span className="text-xs text-status-warning">Requer atenção</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                      <span className="text-xs text-emerald-600">Tudo em ordem</span>
+                      <CheckCircle2 className="w-3 h-3 text-status-success" />
+                      <span className="text-xs text-status-success">Tudo em ordem</span>
                     </>
                   )}
                 </div>
               </div>
               <div className={cn(
                 "w-10 h-10 rounded-md flex items-center justify-center",
-                openIncidents > 0 ? "bg-amber-50 dark:bg-amber-900/20" : "bg-emerald-50 dark:bg-emerald-900/20"
+                openIncidents > 0 ? "bg-status-warning/10 dark:bg-status-warning/20" : "bg-status-success/10 dark:bg-status-success/20"
               )}>
                 <AlertTriangle className={cn(
                   "w-5 h-5",
-                  openIncidents > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
+                  openIncidents > 0 ? "text-status-warning dark:text-status-warning" : "text-status-success dark:text-status-success"
                 )} />
               </div>
             </div>
@@ -330,13 +330,13 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
             {lgpdStats ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-md bg-emerald-50 dark:bg-emerald-900/20">
-                    <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{lgpdStats.totalConsents || 0}</p>
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400">Consentimentos Ativos</p>
+                  <div className="p-3 rounded-md bg-status-success/10 dark:bg-status-success/20">
+                    <p className="text-lg font-semibold text-status-success dark:text-status-success">{lgpdStats.totalConsents || 0}</p>
+                    <p className="text-xs text-status-success dark:text-status-success">Consentimentos Ativos</p>
                   </div>
-                  <div className="p-3 rounded-md bg-amber-50 dark:bg-amber-900/20">
-                    <p className="text-lg font-semibold text-amber-600 dark:text-amber-400">{lgpdStats.pendingDSRs || 0}</p>
-                    <p className="text-xs text-amber-600 dark:text-amber-400">DSRs Pendentes</p>
+                  <div className="p-3 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
+                    <p className="text-lg font-semibold text-status-warning dark:text-status-warning">{lgpdStats.pendingDSRs || 0}</p>
+                    <p className="text-xs text-status-warning dark:text-status-warning">DSRs Pendentes</p>
                   </div>
                 </div>
                 
@@ -375,14 +375,14 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
           <CardContent>
             <div className="flex items-center gap-4">
               {overdueReviews > 0 && (
-                <div className="p-4 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex-1">
+                <div className="p-4 rounded-md bg-status-error/10 dark:bg-status-error/20 border border-status-error/30 dark:border-status-error/30 flex-1">
                   <div className="flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <AlertCircle className="w-5 h-5 text-status-error" />
                     <div>
-                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                      <p className="text-sm font-medium text-status-error dark:text-status-error">
                         {overdueReviews} revisões em atraso
                       </p>
-                      <p className="text-xs text-red-600 mt-1">Requer ação imediata</p>
+                      <p className="text-xs text-status-error mt-1">Requer ação imediata</p>
                     </div>
                   </div>
                 </div>
@@ -425,7 +425,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
               </div>
               <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                   <div>
                     <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{biasSummary.passedAudits || 0}</p>
                     <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Aprovadas</p>
@@ -434,7 +434,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
               </div>
               <div className="p-4 rounded-md" style={{ backgroundColor: 'var(--eleven-bg-main)' }}>
                 <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-5 h-5 text-amber-500" />
+                  <AlertTriangle className="w-5 h-5 text-status-warning" />
                   <div>
                     <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>{biasSummary.concernAudits || 0}</p>
                     <p className="text-xs" style={{ color: 'var(--eleven-text-tertiary)' }}>Com Alertas</p>

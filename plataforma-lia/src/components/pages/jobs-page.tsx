@@ -1546,7 +1546,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
     { id: 'Ativa', label: 'Ativas', color: 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900' },
     { id: 'Paralisada', label: 'Paralisadas', color: 'bg-gray-50 text-gray-800 dark:text-gray-200 dark:bg-gray-800' },
     { id: 'Concluída', label: 'Concluídas', color: 'bg-gray-50 text-gray-800 dark:text-gray-500 dark:bg-gray-800' },
-    { id: 'Cancelada', label: 'Canceladas', color: 'bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400' }
+    { id: 'Cancelada', label: 'Canceladas', color: 'bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error' }
   ]
 
   const navigationFilters = useMemo(() => [
@@ -2927,7 +2927,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     text-${config.align} py-3 px-3 text-xs font-semibold text-gray-950 dark:text-gray-200 
                     relative group select-none
                     ${isDragging ? 'opacity-50' : ''}
-                    ${isDragOver ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                    ${isDragOver ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/20' : ''}
                     ${config.sortable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50' : ''}
                   `}
                   style={{ width: `${width}px`, minWidth: '50px' }}
@@ -3021,7 +3021,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   {job.title}
                                   {(job.visibility === 'confidential' || job.isConfidential) && (
                                     <span title="Vaga Confidencial" className="flex items-center">
-                                      <Shield className="w-3.5 h-3.5 text-orange-500" />
+                                      <Shield className="w-3.5 h-3.5 text-wedo-orange" />
                                     </span>
                                   )}
                                   {job.visibility === 'internal' && (
@@ -3347,7 +3347,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   size="sm"
                                   className={`h-7 w-7 p-0 transition-colors ${
                                     isUrgent 
-                                      ? 'bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30' 
+                                      ? 'bg-status-error/10 hover:bg-status-error/15 dark:bg-status-error/20 dark:hover:bg-status-error/30' 
                                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                                   }`}
                                   onClick={(e) => {
@@ -3358,7 +3358,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 >
                                   <AlertTriangle className={`w-3.5 h-3.5 transition-colors ${
                                     isUrgent 
-                                      ? 'text-red-500 fill-red-100' 
+                                      ? 'text-status-error fill-red-100' 
                                       : 'text-gray-800 dark:text-gray-200'
                                   }`} />
                                 </Button>
@@ -3389,7 +3389,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   size="sm"
                                   className={`h-7 w-7 p-0 transition-colors ${
                                     isFavorite 
-                                      ? 'bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/30' 
+                                      ? 'bg-status-warning/10 hover:bg-status-warning/15 dark:bg-status-warning/20 dark:hover:bg-status-warning/30' 
                                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                                   }`}
                                   onClick={(e) => {
@@ -3400,7 +3400,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 >
                                   <Star className={`w-3 h-3 transition-colors ${
                                     isFavorite 
-                                      ? 'text-yellow-500 fill-yellow-400' 
+                                      ? 'text-status-warning fill-yellow-400' 
                                       : 'text-gray-800 dark:text-gray-200'
                                   }`} />
                                 </Button>
@@ -4258,7 +4258,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
 
                         {/* Erro de upload */}
                         {jdUploadError && (
-                          <p className="text-micro text-red-500 px-1">
+                          <p className="text-micro text-status-error px-1">
                             {jdUploadError}
                           </p>
                         )}
@@ -4416,7 +4416,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                 {/* Resize Handle - só mostra no modo geral */}
                 {chatMode !== 'job-creation' && (
                 <div
-                  className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-amber-500 transition-colors group-hover:opacity-100 opacity-0"
+                  className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-status-warning transition-colors group-hover:opacity-100 opacity-0"
                   style={{ backgroundColor: 'rgba(245, 158, 11, 0.3)' }}
                   onMouseDown={(e) => {
                     e.preventDefault()
@@ -4526,7 +4526,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           onClick={() => toggleJobFilter('status', 'priorities', 'alta')}
                           className={`h-8 text-xs justify-start ${
                             jobFilters.status?.priorities?.includes('alta') 
-                              ? 'bg-red-50 border-red-300 text-red-700 font-semibold' 
+                              ? 'bg-status-error/10 border-status-error/30 text-status-error font-semibold' 
                               : ''
                           }`}
                         >
@@ -4552,7 +4552,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           onClick={() => toggleJobFilter('funnel', 'emptyPipeline', true)}
                           className={`h-8 text-xs justify-start ${
                             jobFilters.funnel?.emptyPipeline 
-                              ? 'bg-orange-50 border-orange-300 text-orange-700 font-semibold' 
+                              ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-semibold' 
                               : ''
                           }`}
                         >
@@ -4599,7 +4599,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             variant="outline"
                             className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                               jobFilters.status?.stages?.includes(stage)
-                                ? 'bg-purple-50 border-purple-300 text-purple-700 font-medium'
+                                ? 'bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple font-medium'
                                 : 'bg-white text-gray-800'
                             }`}
                             onClick={() => toggleJobFilter('status', 'stages', stage)}
@@ -4618,9 +4618,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       </h4>
                       <div className="flex gap-2">
                         {[
-                          { value: 'alta', label: 'Alta', color: 'bg-red-100 border-red-300 text-red-700' },
-                          { value: 'média', label: 'Média', color: 'bg-yellow-100 border-yellow-300 text-yellow-700' },
-                          { value: 'baixa', label: 'Baixa', color: 'bg-green-100 border-green-300 text-green-700' }
+                          { value: 'alta', label: 'Alta', color: 'bg-status-error/15 border-status-error/30 text-status-error' },
+                          { value: 'média', label: 'Média', color: 'bg-status-warning/15 border-status-warning/30 text-status-warning' },
+                          { value: 'baixa', label: 'Baixa', color: 'bg-status-success/15 border-status-success/30 text-status-success' }
                         ].map(priority => (
                           <Badge
                             key={priority.value}
@@ -4764,7 +4764,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           variant="outline"
                           className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                             jobFilters.publishing?.unpublished
-                              ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
+                              ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-medium'
                               : 'bg-white text-gray-800'
                           }`}
                           onClick={() => toggleJobFilter('publishing', 'unpublished', !jobFilters.publishing?.unpublished)}
@@ -4868,7 +4868,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   className="h-6 w-6 p-0"
                                   title="Remover"
                                 >
-                                  <Trash2 className="w-3 h-3 text-red-400" />
+                                  <Trash2 className="w-3 h-3 text-status-error" />
                                 </Button>
                               </div>
                             </div>
@@ -5056,7 +5056,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           </span>
                           {previewJob.deadline && (
                             <span className={`flex items-center gap-1 ${
-                              new Date(previewJob.deadline) < new Date() ? 'text-red-500' : 'text-gray-500'
+                              new Date(previewJob.deadline) < new Date() ? 'text-status-error' : 'text-gray-500'
                             }`}>
                               <Clock className="w-3 h-3" />
                               {(() => {
@@ -5093,12 +5093,12 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             </Badge>
                           )}
                           {previewJob.level && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-amber-50 text-amber-700 border border-amber-200">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-status-warning/10 text-status-warning border border-status-warning/30">
                               {previewJob.level}
                             </Badge>
                           )}
                           {previewJob.location && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-0.5">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 flex items-center gap-0.5">
                               <MapPin className="w-2.5 h-2.5" />
                               {previewJob.location}
                             </Badge>
@@ -5114,13 +5114,13 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             </Badge>
                           )}
                           {(previewJob.visibility === 'confidential' || previewJob.isConfidential) && (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-orange-50 text-orange-700 border-orange-200">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30">
                               <Shield className="w-2.5 h-2.5 mr-0.5" />
                               Confidencial
                             </Badge>
                           )}
                           {previewJob.visibility === 'internal' && (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-blue-50 text-blue-700 border-blue-200">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
                               <Building className="w-2.5 h-2.5 mr-0.5" />
                               Interna
                             </Badge>
@@ -5133,7 +5133,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           )}
                           {/* Badge de publicação */}
                           {(previewJob.publishedLinkedIn || previewJob.publishedWebsite) ? (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-green-50 text-green-700 border-green-200 flex items-center gap-0.5">
+                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border-status-success/30 flex items-center gap-0.5">
                               <Globe className="w-2.5 h-2.5" />
                               Publicada
                             </Badge>
@@ -5144,7 +5144,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             </Badge>
                           )}
                           {(previewJob.salaryRange?.min || previewJob.salaryRange?.max || previewJob.salaryMin || previewJob.salaryMax) && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-green-50 text-green-700 border border-green-200 flex items-center gap-0.5">
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border border-status-success/30 flex items-center gap-0.5">
                               <DollarSign className="w-2.5 h-2.5" />
                               {(() => {
                                 const min = previewJob.salaryRange?.min || previewJob.salaryMin
@@ -5320,15 +5320,15 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         </div>
 
                         {/* SLA Status */}
-                        <div className={`rounded-md p-3 ${jobMetrics?.sla.within_sla === false ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-gray-800'}`}>
+                        <div className={`rounded-md p-3 ${jobMetrics?.sla.within_sla === false ? 'bg-status-error/10 dark:bg-status-error/20' : 'bg-gray-50 dark:bg-gray-800'}`}>
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Status SLA</span>
-                            <Shield className={`w-3 h-3 ${jobMetrics?.sla.within_sla === false ? 'text-red-600' : 'text-gray-800 dark:text-gray-200'}`} />
+                            <Shield className={`w-3 h-3 ${jobMetrics?.sla.within_sla === false ? 'text-status-error' : 'text-gray-800 dark:text-gray-200'}`} />
                           </div>
-                          <div className={`text-xl font-bold font-semibold ${jobMetrics?.sla.within_sla === false ? 'text-red-700 dark:text-red-300' : 'text-gray-950 dark:text-gray-50'}`}>
+                          <div className={`text-xl font-bold font-semibold ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-gray-950 dark:text-gray-50'}`}>
                             {isLoadingJobMetrics ? '...' : jobMetrics?.sla.within_sla ? 'OK' : 'Atrasado'}
                           </div>
-                          <div className={`mt-1 text-xs ${jobMetrics?.sla.within_sla === false ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                          <div className={`mt-1 text-xs ${jobMetrics?.sla.within_sla === false ? 'text-status-error dark:text-status-error' : 'text-gray-800 dark:text-gray-200'}`}>
                             {isLoadingJobMetrics ? '...' : jobMetrics?.sla.days_remaining != null ? `${jobMetrics.sla.days_remaining} dias restantes` : 'Sem prazo definido'}
                           </div>
                         </div>
@@ -5392,9 +5392,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       </div>
 
                       {/* Fatores de Risco */}
-                      <div className="bg-red-50 dark:bg-red-900/20 rounded-md p-3">
+                      <div className="bg-status-error/10 dark:bg-status-error/20 rounded-md p-3">
                         <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
-                          <Shield className="w-3.5 h-3.5 text-red-600" />
+                          <Shield className="w-3.5 h-3.5 text-status-error" />
                           Fatores de Risco
                         </h4>
                         <div className="space-y-1">
@@ -5405,7 +5405,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.level === 'Sênior' ? 4 : 2) ? 'bg-red-500' : 'bg-gray-300'
+                                    i < (previewJob.level === 'Sênior' ? 4 : 2) ? 'bg-status-error' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -5418,7 +5418,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.level === 'Sênior' ? 3 : 1) ? 'bg-orange-500' : 'bg-gray-300'
+                                    i < (previewJob.level === 'Sênior' ? 3 : 1) ? 'bg-wedo-orange' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -5679,9 +5679,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       </div>
 
                       {/* Candidatos Sem Resposta */}
-                      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-md p-3 border border-amber-200 dark:border-amber-800">
+                      <div className="bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-3 border border-status-warning/30 dark:border-status-warning/30">
                         <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
-                          <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                          <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
                           Candidatos Sem Resposta
                         </h4>
 
@@ -5689,7 +5689,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <div>
                             <div className="flex items-center justify-between mb-1">
                               <span className={`${textStyles.bodySmall} dark:text-gray-200`}>Sem Resposta</span>
-                              <span className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                              <span className="text-xs font-bold text-status-warning dark:text-status-warning">
                                 {previewJob.liaMetrics?.sem_resposta ?? 0}
                               </span>
                             </div>
@@ -5698,7 +5698,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
                                 const semResposta = previewJob.liaMetrics?.sem_resposta ?? 0
                                 const percent = pipelineLia > 0 ? (semResposta / pipelineLia) * 100 : 0
-                                return <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${percent}%` }}></div>
+                                return <div className="bg-status-warning h-1.5 rounded-full" style={{ width: `${percent}%` }}></div>
                               })()}
                             </div>
                             <p className="text-xs text-gray-800 mt-1">
@@ -5713,7 +5713,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           <div>
                             <div className="flex items-center justify-between mb-1">
                               <span className={`${textStyles.bodySmall} dark:text-gray-200`}>Aguardando</span>
-                              <span className="text-xs font-bold text-blue-700 dark:text-blue-300">
+                              <span className="text-xs font-bold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                                 {(() => {
                                   const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
                                   const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
@@ -5868,7 +5868,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Técnicas</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {technicalSkills.map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-micro px-1.5 py-0.5 h-[18px] font-medium border border-blue-200">
+                                      <Badge key={idx} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-cyan/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -5880,7 +5880,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Comportamentais</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {behavioralSkills.map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-micro px-1.5 py-0.5 h-[18px] font-medium border border-purple-200">
+                                      <Badge key={idx} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-purple/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -5892,7 +5892,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   <span className="text-micro font-medium text-gray-500 uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {responsibilitySkills.slice(0, 8).map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-micro px-1.5 py-0.5 h-[18px] font-medium border border-amber-200">
+                                      <Badge key={idx} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-micro px-1.5 py-0.5 h-[18px] font-medium border border-status-warning/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -5935,7 +5935,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                     </Badge>
                                   )}
                                   {lang.required && (
-                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-red-50 text-red-600 border border-red-200">
+                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30">
                                       Obrigatório
                                     </Badge>
                                   )}
@@ -6223,7 +6223,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                     {block.editable && blockQuestions.length > 0 && (
                                       <>
                                         {eliminatoryCount > 0 && (
-                                          <Badge className="text-micro px-1.5 py-0 bg-red-50 text-red-600 border border-red-200">
+                                          <Badge className="text-micro px-1.5 py-0 bg-status-error/10 text-status-error border border-status-error/30">
                                             {eliminatoryCount} Elim.
                                           </Badge>
                                         )}
@@ -6292,11 +6292,11 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                                                 <Badge className={`text-micro px-1.5 py-0 h-4 rounded-full ${
                                                   item.category === 'behavioral' || item.category === 'Comportamental'
-                                                    ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                                                    ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30'
                                                     : item.category === 'technical' || item.category === 'Técnica'
-                                                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                                    ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30'
                                                     : item.category === 'eligibility' || item.category === 'Elegibilidade'
-                                                    ? 'bg-green-100 text-green-700 border border-green-200'
+                                                    ? 'bg-status-success/15 text-status-success border border-status-success/30'
                                                     : 'bg-gray-100 text-gray-700 border border-gray-200'
                                                 }`}>
                                                   {item.category === 'behavioral' ? 'Comport.' 
@@ -6306,7 +6306,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                                     : item.category || 'Geral'}
                                                 </Badge>
                                                 {(item.type === 'eliminatory' || item.required) && (
-                                                  <Badge className="text-micro px-1.5 py-0 h-4 rounded-full bg-red-50 text-red-600 border border-red-200">
+                                                  <Badge className="text-micro px-1.5 py-0 h-4 rounded-full bg-status-error/10 text-status-error border border-status-error/30">
                                                     Eliminatória
                                                   </Badge>
                                                 )}
@@ -6420,17 +6420,17 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         <div className="flex items-center gap-3 mb-3 mt-3 pb-3 border-b border-gray-100">
                           <span className="text-micro text-gray-500">Canais:</span>
                           <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
                               <MessageSquare className="w-3 h-3" />
                               <span className="text-micro font-medium">WhatsApp</span>
                               {(screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
                               <Globe className="w-3 h-3" />
                               <span className="text-micro font-medium">Chat Web</span>
                               {(screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
                               <Phone className="w-3 h-3" />
                               <span className="text-micro font-medium">Ligação</span>
                               {(screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
@@ -6461,7 +6461,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-micro text-gray-500">Fallback</span>
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Revisão Manual</Badge>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Revisão Manual</Badge>
                           </div>
                         </div>
 
@@ -6522,15 +6522,15 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         </div>
 
                         {/* Risco de Recusa */}
-                        <div className="bg-red-50 dark:bg-red-900/20 rounded-md p-2.5">
+                        <div className="bg-status-error/10 dark:bg-status-error/20 rounded-md p-2.5">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Risco de Recusa</span>
-                            <AlertCircle className="w-3 h-3 text-red-600" />
+                            <AlertCircle className="w-3 h-3 text-status-error" />
                           </div>
-                          <div className="text-lg font-bold text-red-700 dark:text-red-300">
+                          <div className="text-lg font-bold text-status-error dark:text-status-error">
                             {previewJob.level === 'Sênior' ? '45%' : previewJob.level === 'Pleno' ? '25%' : '15%'}
                           </div>
-                          <div className="mt-0.5 text-xs text-red-600 dark:text-red-400">
+                          <div className="mt-0.5 text-xs text-status-error dark:text-status-error">
                             Gap salarial: {previewJob.level === 'Sênior' ? '±18%' : '±8%'}
                           </div>
                         </div>
@@ -6727,7 +6727,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < previewJob.urgencyLevel ? 'bg-red-500' : 'bg-gray-300'
+                                    i < previewJob.urgencyLevel ? 'bg-status-error' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -6753,9 +6753,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       </div>
 
                       {/* Fatores de Risco */}
-                      <div className="bg-red-50 dark:bg-red-900/20 rounded-md p-3">
+                      <div className="bg-status-error/10 dark:bg-status-error/20 rounded-md p-3">
                         <h4 className={`${textStyles.title} dark:text-gray-50 mb-2 flex items-center gap-1`}>
-                          <Shield className="w-3.5 h-3.5 text-red-600" />
+                          <Shield className="w-3.5 h-3.5 text-status-error" />
                           Fatores de Risco
                         </h4>
                         <div className="space-y-1">
@@ -6766,7 +6766,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.level === 'Sênior' ? 4 : 2) ? 'bg-red-500' : 'bg-gray-300'
+                                    i < (previewJob.level === 'Sênior' ? 4 : 2) ? 'bg-status-error' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -6779,7 +6779,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.level === 'Sênior' ? 3 : 1) ? 'bg-orange-500' : 'bg-gray-300'
+                                    i < (previewJob.level === 'Sênior' ? 3 : 1) ? 'bg-wedo-orange' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -7737,7 +7737,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                 {/* Seção 2: Base Teórica */}
                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
                   <div className="flex items-center gap-2 mb-3">
-                    <BookOpen className="w-4 h-4 text-purple-600" />
+                    <BookOpen className="w-4 h-4 text-wedo-purple" />
                     <h4 className="text-xs font-semibold text-gray-950">Base Teórica (4 Modelos Científicos)</h4>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -7752,7 +7752,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     </div>
                     <div className="p-3 bg-white rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className="text-micro px-1.5 py-0 h-4 bg-green-100 text-green-700">Bloom</Badge>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-status-success/15 text-status-success">Bloom</Badge>
                         <span className="text-micro text-gray-600">Anderson et al., 2001</span>
                       </div>
                       <p className="text-micro text-gray-800">
@@ -7761,7 +7761,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     </div>
                     <div className="p-3 bg-white rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className="text-micro px-1.5 py-0 h-4 bg-orange-100 text-orange-700">Dreyfus</Badge>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Dreyfus</Badge>
                         <span className="text-micro text-gray-600">1980</span>
                       </div>
                       <p className="text-micro text-gray-800">
@@ -7770,7 +7770,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     </div>
                     <div className="p-3 bg-white rounded-md border border-gray-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-100 text-purple-700">Big Five</Badge>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple">Big Five</Badge>
                         <span className="text-micro text-gray-600">1992</span>
                       </div>
                       <p className="text-micro text-gray-800">
@@ -7807,7 +7807,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         </tr>
                         <tr>
                           <td className="p-2">
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-100 text-purple-700">WSI Compact+</Badge>
+                            <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple">WSI Compact+</Badge>
                           </td>
                           <td className="p-2 text-center text-gray-800">8-10</td>
                           <td className="p-2 text-center text-gray-800">7-9 min</td>
@@ -7828,10 +7828,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     {[
                       { id: '0', name: 'Abordagem Inicial WhatsApp', time: '<1min', type: 'automático', color: 'bg-gray-100 text-gray-800' },
                       { id: '1', name: 'Apresentação da Oportunidade', time: '3min', type: 'automático', color: 'bg-gray-100 text-gray-800' },
-                      { id: '2', name: 'Perguntas Padrão da Empresa', time: '2min', type: 'empresa', color: 'bg-blue-100 text-blue-700' },
-                      { id: '3', name: 'Elegibilidade WSI', time: '2min', type: 'editável', color: 'bg-green-100 text-green-700' },
-                      { id: '4', name: 'Avaliação Técnica', time: '5min', type: 'editável', color: 'bg-green-100 text-green-700' },
-                      { id: '5', name: 'Análise Situacional e Fit', time: '4min', type: 'editável', color: 'bg-green-100 text-green-700' },
+                      { id: '2', name: 'Perguntas Padrão da Empresa', time: '2min', type: 'empresa', color: 'bg-wedo-cyan/15 text-wedo-cyan-dark' },
+                      { id: '3', name: 'Elegibilidade WSI', time: '2min', type: 'editável', color: 'bg-status-success/15 text-status-success' },
+                      { id: '4', name: 'Avaliação Técnica', time: '5min', type: 'editável', color: 'bg-status-success/15 text-status-success' },
+                      { id: '5', name: 'Análise Situacional e Fit', time: '4min', type: 'editável', color: 'bg-status-success/15 text-status-success' },
                       { id: '6', name: 'Resultado e Encerramento', time: '3min', type: 'automático', color: 'bg-gray-100 text-gray-800' },
                     ].map((block) => (
                       <div key={block.id} className="flex items-center gap-3 p-2 bg-white rounded-md border border-gray-100">
@@ -7858,7 +7858,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                 {/* Seção 5: Tipos de Validação */}
                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
                   <div className="flex items-center gap-2 mb-3">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <CheckCircle className="w-4 h-4 text-status-success" />
                     <h4 className="text-xs font-semibold text-gray-950">Tipos de Validação</h4>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -7897,7 +7897,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-                            <div className="h-full bg-purple-400" style={{ width: '30%' }}></div>
+                            <div className="h-full bg-wedo-purple" style={{ width: '30%' }}></div>
                           </div>
                           <span className="text-micro text-gray-800">30% comportamentais</span>
                         </div>
@@ -7908,17 +7908,17 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       <p className="text-xs font-mono text-gray-950 bg-gray-50 px-2 py-1 rounded-full">WSI = Σ(Peso × Score) / 100</p>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="p-2 bg-green-50 rounded-md border border-green-200 text-center">
-                        <div className="text-xs font-semibold text-green-700">≥ 4.2</div>
-                        <p className="text-micro text-green-600">Aprovado automático</p>
+                      <div className="p-2 bg-status-success/10 rounded-md border border-status-success/30 text-center">
+                        <div className="text-xs font-semibold text-status-success">≥ 4.2</div>
+                        <p className="text-micro text-status-success">Aprovado automático</p>
                       </div>
-                      <div className="p-2 bg-yellow-50 rounded-md border border-yellow-200 text-center">
-                        <div className="text-xs font-semibold text-yellow-700">3.8-4.1</div>
-                        <p className="text-micro text-yellow-600">Revisão humana</p>
+                      <div className="p-2 bg-status-warning/10 rounded-md border border-status-warning/30 text-center">
+                        <div className="text-xs font-semibold text-status-warning">3.8-4.1</div>
+                        <p className="text-micro text-status-warning">Revisão humana</p>
                       </div>
-                      <div className="p-2 bg-red-50 rounded-md border border-red-200 text-center">
-                        <div className="text-xs font-semibold text-red-700">&lt; 3.8</div>
-                        <p className="text-micro text-red-600">Reprovado</p>
+                      <div className="p-2 bg-status-error/10 rounded-md border border-status-error/30 text-center">
+                        <div className="text-xs font-semibold text-status-error">&lt; 3.8</div>
+                        <p className="text-micro text-status-error">Reprovado</p>
                       </div>
                     </div>
                   </div>
@@ -7927,7 +7927,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                 {/* Seção 7: Score Mínimo e Quando Ajustar */}
                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
                   <div className="flex items-center gap-2 mb-3">
-                    <Settings2 className="w-4 h-4 text-orange-600" />
+                    <Settings2 className="w-4 h-4 text-wedo-orange" />
                     <h4 className="text-xs font-semibold text-gray-950">Ajuste de Score Mínimo</h4>
                   </div>
                   <div className="space-y-3">
@@ -7967,33 +7967,33 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                 </div>
 
                 {/* Seção 8: Saturação e Dynamic Cutoff */}
-                <div className="p-4 bg-orange-50 border border-orange-200 rounded-md">
+                <div className="p-4 bg-wedo-orange/10 border border-wedo-orange/30 rounded-md">
                   <div className="flex items-center gap-2 mb-3">
-                    <AlertCircle className="w-4 h-4 text-orange-600" />
+                    <AlertCircle className="w-4 h-4 text-wedo-orange" />
                     <h4 className="text-xs font-semibold text-gray-950">Saturação e Dynamic Cutoff</h4>
                   </div>
                   <div className="space-y-3">
-                    <div className="p-3 bg-white rounded-md border border-orange-100">
-                      <p className="text-micro font-medium text-orange-700 mb-1">Smart Saturation</p>
+                    <div className="p-3 bg-white rounded-md border border-wedo-orange/30">
+                      <p className="text-micro font-medium text-wedo-orange mb-1">Smart Saturation</p>
                       <p className="text-xs text-gray-800 leading-relaxed">
                         Quando a vaga atinge <strong>20 candidatos aprovados</strong>, a triagem automática é pausada. 
                         O sistema sugere ações: agendar entrevistas em lote, revisar candidatos ou desbloquear pipeline.
                       </p>
                     </div>
-                    <div className="p-3 bg-white rounded-md border border-orange-100">
-                      <p className="text-micro font-medium text-orange-700 mb-1">Dynamic Cutoff (Top 25%)</p>
+                    <div className="p-3 bg-white rounded-md border border-wedo-orange/30">
+                      <p className="text-micro font-medium text-wedo-orange mb-1">Dynamic Cutoff (Top 25%)</p>
                       <p className="text-xs text-gray-800 leading-relaxed">
                         Após <strong>30-50 triagens</strong>, o sistema aplica corte dinâmico selecionando automaticamente 
                         os <strong>top 25%</strong> candidatos por percentil histórico, garantindo qualidade mesmo em alto volume.
                       </p>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="p-2 bg-white rounded-md border border-orange-100 text-center">
-                        <div className="text-sm font-semibold text-orange-700">20</div>
+                      <div className="p-2 bg-white rounded-md border border-wedo-orange/30 text-center">
+                        <div className="text-sm font-semibold text-wedo-orange">20</div>
                         <p className="text-micro text-gray-600">Limite saturação</p>
                       </div>
-                      <div className="p-2 bg-white rounded-md border border-orange-100 text-center">
-                        <div className="text-sm font-semibold text-orange-700">30-50</div>
+                      <div className="p-2 bg-white rounded-md border border-wedo-orange/30 text-center">
+                        <div className="text-sm font-semibold text-wedo-orange">30-50</div>
                         <p className="text-micro text-gray-600">Triagens p/ cutoff</p>
                       </div>
                     </div>

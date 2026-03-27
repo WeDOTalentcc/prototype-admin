@@ -37,14 +37,14 @@ const getStatusIcon = (status: string) => {
   switch (status) {
     case 'delivered':
     case 'read':
-      return <Check className="w-3 h-3 text-green-500" />
+      return <Check className="w-3 h-3 text-status-success" />
     case 'sent':
       return <Send className="w-3 h-3 text-gray-600 dark:text-gray-400" />
     case 'failed':
-      return <AlertCircle className="w-3 h-3 text-red-500" />
+      return <AlertCircle className="w-3 h-3 text-status-error" />
     case 'pending':
     default:
-      return <Clock className="w-3 h-3 text-yellow-500" />
+      return <Clock className="w-3 h-3 text-status-warning" />
   }
 }
 
@@ -67,7 +67,7 @@ const getStatusLabel = (status: string) => {
 const getChannelIcon = (channel: string) => {
   switch (channel) {
     case 'whatsapp':
-      return <MessageSquare className="w-3.5 h-3.5 text-green-600" />
+      return <MessageSquare className="w-3.5 h-3.5 text-status-success" />
     case 'email':
     default:
       return <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />

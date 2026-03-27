@@ -44,25 +44,25 @@ const STATUS_CONFIG: Record<CompetitivenessStatus, {
     icon: CheckCircle2,
     label: 'Competitivo',
     description: 'Remuneração alinhada com o mercado',
-    className: 'text-green-600 dark:text-green-400',
-    bgClassName: 'bg-green-50 dark:bg-green-950/30',
-    borderClassName: 'border-green-200 dark:border-green-800'
+    className: 'text-status-success dark:text-status-success',
+    bgClassName: 'bg-status-success/10 dark:bg-status-success/30',
+    borderClassName: 'border-status-success/30 dark:border-status-success/30'
   },
   below_market: {
     icon: AlertTriangle,
     label: 'Abaixo do Mercado',
     description: 'Pode dificultar atração de talentos',
-    className: 'text-amber-600 dark:text-amber-400',
-    bgClassName: 'bg-amber-50 dark:bg-amber-950/30',
-    borderClassName: 'border-amber-200 dark:border-amber-800'
+    className: 'text-status-warning dark:text-status-warning',
+    bgClassName: 'bg-status-warning/10 dark:bg-status-warning/30',
+    borderClassName: 'border-status-warning/30 dark:border-status-warning/30'
   },
   above_market: {
     icon: TrendingUp,
     label: 'Acima do Mercado',
     description: 'Remuneração acima da média',
-    className: 'text-blue-600 dark:text-blue-400',
-    bgClassName: 'bg-blue-50 dark:bg-blue-950/30',
-    borderClassName: 'border-blue-200 dark:border-blue-800'
+    className: 'text-wedo-cyan-dark dark:text-wedo-cyan-dark',
+    bgClassName: 'bg-wedo-cyan/10',
+    borderClassName: 'border-wedo-cyan/30 dark:border-wedo-cyan/30'
   }
 }
 
@@ -108,7 +108,7 @@ function MiniSalaryBar({
         />
         
         <div 
-          className="absolute top-2 h-2 bg-green-500 dark:bg-green-600 rounded-full"
+          className="absolute top-2 h-2 bg-status-success dark:bg-status-success rounded-full"
           style={{
             left: `${getPosition(proposed.min)}%`,
             width: `${getPosition(proposed.max) - getPosition(proposed.min)}%`
@@ -127,7 +127,7 @@ function MiniSalaryBar({
       
       <div className="flex justify-between text-micro text-muted-foreground">
         <div className="flex items-center gap-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+          <div className="w-1.5 h-1.5 rounded-full bg-status-success" />
           <span>Proposto</span>
         </div>
         <div className="flex items-center gap-1">
@@ -222,9 +222,9 @@ export function CompensationChatMessage({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="p-2.5 rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+              <div className="p-2.5 rounded-md bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
                 <p className="text-micro text-muted-foreground mb-0.5">Proposto</p>
-                <p className="text-xs font-semibold text-green-700 dark:text-green-400">
+                <p className="text-xs font-semibold text-status-success dark:text-status-success">
                   {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
                 </p>
               </div>
@@ -249,8 +249,8 @@ export function CompensationChatMessage({
                 className={cn(
                   "text-micro h-5",
                   analysis.salary.percentileVsMarket >= 50 
-                    ? "border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950/30 dark:text-green-400"
-                    : "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                    ? "border-status-success/30 bg-status-success/10 text-status-success dark:border-status-success/30 dark:bg-status-success/30 dark:text-status-success"
+                    : "border-status-warning/30 bg-status-warning/10 text-status-warning dark:border-status-warning/30 dark:bg-status-warning/30 dark:text-status-warning"
                 )}
               >
                 Percentil {analysis.salary.percentileVsMarket}
@@ -258,9 +258,9 @@ export function CompensationChatMessage({
             </div>
 
             {analysis.salary.suggestion && (
-              <div className="p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-start gap-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-micro text-amber-700 dark:text-amber-400">
+              <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-start gap-2">
+                <AlertTriangle className="h-3.5 w-3.5 text-status-warning flex-shrink-0 mt-0.5" />
+                <p className="text-micro text-status-warning dark:text-status-warning">
                   <span className="font-medium">Sugestão:</span> Considere ajustar para {formatCurrency(analysis.salary.suggestion.min)} - {formatCurrency(analysis.salary.suggestion.max)} para melhor competitividade.
                 </p>
               </div>

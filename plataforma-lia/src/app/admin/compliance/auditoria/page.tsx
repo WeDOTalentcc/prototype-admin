@@ -56,24 +56,24 @@ const quickLinks = [
     description: 'Análise de viés algorítmico e fairness em IA',
     href: '/admin/compliance/auditoria/bias',
     icon: Scale,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-wedo-purple',
+    bgColor: 'bg-wedo-purple/10 dark:bg-wedo-purple/20',
   },
   {
     title: 'Matriz SoD',
     description: 'Segregação de Funções (Segregation of Duties)',
     href: '/admin/compliance/auditoria/sod',
     icon: Users,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-status-warning',
+    bgColor: 'bg-status-warning/10 dark:bg-status-warning/20',
   },
   {
     title: 'Tracking de Treinamentos',
     description: 'Acompanhamento de treinamentos de segurança e compliance',
     href: '/admin/compliance/auditoria/treinamentos',
     icon: GraduationCap,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+    color: 'text-status-success',
+    bgColor: 'bg-status-success/10 dark:bg-status-success/20',
   },
   {
     title: 'Gerador de Pacote para Auditores',
@@ -90,11 +90,11 @@ const getActivityIcon = (type: string) => {
     case 'export':
       return <Download className="w-4 h-4 text-rose-500" />
     case 'bias':
-      return <Scale className="w-4 h-4 text-purple-500" />
+      return <Scale className="w-4 h-4 text-wedo-purple" />
     case 'training':
-      return <GraduationCap className="w-4 h-4 text-emerald-500" />
+      return <GraduationCap className="w-4 h-4 text-status-success" />
     case 'sod':
-      return <Users className="w-4 h-4 text-amber-500" />
+      return <Users className="w-4 h-4 text-status-warning" />
     case 'logs':
       return <ScrollText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
     default:
@@ -105,13 +105,13 @@ const getActivityIcon = (type: string) => {
 const getAuditTypeBadge = (type: string) => {
   switch (type) {
     case 'bias':
-      return <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">Bias</Badge>
+      return <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple">Bias</Badge>
     case 'external':
       return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Externa</Badge>
     case 'internal':
-      return <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">Interna</Badge>
+      return <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success">Interna</Badge>
     case 'sod':
-      return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">SoD</Badge>
+      return <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/20 dark:text-status-warning">SoD</Badge>
     default:
       return <Badge variant="secondary">{type}</Badge>
   }
@@ -182,11 +182,11 @@ export default function AuditoriaPage() {
                     {formatDate(dashboardStats.lastBiasAudit)}
                   </p>
                 </div>
-                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-md">
-                  <Scale className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
+                  <Scale className="w-6 h-6 text-wedo-purple" />
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-1 text-xs text-emerald-600">
+              <div className="mt-2 flex items-center gap-1 text-xs text-status-success">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Aprovada</span>
               </div>
@@ -202,11 +202,11 @@ export default function AuditoriaPage() {
                     {dashboardStats.sodConflicts}
                   </p>
                 </div>
-                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-md">
-                  <Users className="w-6 h-6 text-amber-600" />
+                <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 rounded-md">
+                  <Users className="w-6 h-6 text-status-warning" />
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-1 text-xs text-amber-600">
+              <div className="mt-2 flex items-center gap-1 text-xs text-status-warning">
                 <AlertTriangle className="w-3 h-3" />
                 <span>2 mitigados, 1 pendente</span>
               </div>
@@ -222,11 +222,11 @@ export default function AuditoriaPage() {
                     {dashboardStats.trainingRate}%
                   </p>
                 </div>
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-md">
-                  <GraduationCap className="w-6 h-6 text-emerald-600" />
+                <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                  <GraduationCap className="w-6 h-6 text-status-success" />
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-1 text-xs text-emerald-600">
+              <div className="mt-2 flex items-center gap-1 text-xs text-status-success">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Acima da meta (85%)</span>
               </div>
@@ -346,8 +346,8 @@ export default function AuditoriaPage() {
             <Card className="mt-4">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-md">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <div className="p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                    <CheckCircle2 className="w-5 h-5 text-status-success" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
@@ -365,8 +365,8 @@ export default function AuditoriaPage() {
             <Card className="mt-4">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-md">
-                    <Scale className="w-5 h-5 text-purple-600" />
+                  <div className="p-2 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
+                    <Scale className="w-5 h-5 text-wedo-purple" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-950 dark:text-gray-50">

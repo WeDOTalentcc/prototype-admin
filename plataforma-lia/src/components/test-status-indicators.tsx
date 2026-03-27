@@ -17,14 +17,14 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
       >
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
           candidate.technicalTestScore
-            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+            ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600'
         }`}>
           <FileText className="w-4 h-4" />
         </div>
         {candidate.technicalTestScore && (
           <div className="absolute -top-1 -right-1">
-            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
             </div>
           </div>
@@ -45,7 +45,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         </div>
         {candidate.englishTestScore && (
           <div className="absolute -top-1 -right-1">
-            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
             </div>
           </div>
@@ -66,7 +66,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         </div>
         {candidate.bigFiveScores && (
           <div className="absolute -top-1 -right-1">
-            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
             </div>
           </div>

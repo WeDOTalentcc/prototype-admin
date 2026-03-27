@@ -65,7 +65,7 @@ export function CreditCostDisplay({
           {formatCreditCost(estimate.total_estimated)}
         </span>
         {estimate.warnings.length > 0 && (
-          <AlertCircle className="w-4 h-4 text-amber-500" />
+          <AlertCircle className="w-4 h-4 text-status-warning" />
         )}
       </div>
     )
@@ -120,7 +120,7 @@ export function CreditCostDisplay({
           )}
 
           {estimate.phone_cost > 0 && (
-            <div className="flex items-center justify-between text-amber-600">
+            <div className="flex items-center justify-between text-status-warning">
               <span className="flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 Opcoes de Telefone
@@ -148,9 +148,9 @@ export function CreditCostDisplay({
       )}
 
       {estimate.warnings.length > 0 && (
-        <div className="mt-3 p-2 bg-amber-50 rounded border border-amber-200">
+        <div className="mt-3 p-2 bg-status-warning/10 rounded border border-status-warning/30">
           {estimate.warnings.map((warning, idx) => (
-            <div key={idx} className="flex items-start gap-2 text-xs text-amber-700">
+            <div key={idx} className="flex items-start gap-2 text-xs text-status-warning">
               <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
               <span>{warning}</span>
             </div>
@@ -189,7 +189,7 @@ interface InlineCreditCostProps {
 
 export function InlineCreditCost({ cost, label, highlight = false }: InlineCreditCostProps) {
   const level = getCostLevel(cost)
-  const color = highlight ? "text-amber-600" : getCostColor(level)
+  const color = highlight ? "text-status-warning" : getCostColor(level)
   
   return (
     <span className={`text-xs ${color}`}>

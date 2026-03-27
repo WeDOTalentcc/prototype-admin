@@ -84,7 +84,7 @@ export function JobFiltersPanel({
                 onClick={() => toggleJobFilter('status', 'priorities', 'alta')}
                 className={`h-8 text-xs justify-start ${
                   jobFilters.status?.priorities?.includes('alta') 
-                    ? 'bg-red-50 border-red-300 text-red-700 font-semibold' 
+                    ? 'bg-status-error/10 border-status-error/30 text-status-error font-semibold' 
                     : ''
                 }`}
               >
@@ -110,7 +110,7 @@ export function JobFiltersPanel({
                 onClick={() => toggleJobFilter('funnel', 'emptyPipeline', true)}
                 className={`h-8 text-xs justify-start ${
                   jobFilters.funnel?.emptyPipeline 
-                    ? 'bg-orange-50 border-orange-300 text-orange-700 font-semibold' 
+                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-semibold' 
                     : ''
                 }`}
               >
@@ -155,7 +155,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                     jobFilters.status?.stages?.includes(stage)
-                      ? 'bg-purple-50 border-purple-300 text-purple-700 font-medium'
+                      ? 'bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple font-medium'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
                   }`}
                   onClick={() => toggleJobFilter('status', 'stages', stage)}
@@ -173,9 +173,9 @@ export function JobFiltersPanel({
             </h4>
             <div className="flex gap-2">
               {[
-                { value: 'alta', label: 'Alta', color: 'bg-red-100 border-red-300 text-red-700' },
-                { value: 'média', label: 'Média', color: 'bg-yellow-100 border-yellow-300 text-yellow-700' },
-                { value: 'baixa', label: 'Baixa', color: 'bg-green-100 border-green-300 text-green-700' }
+                { value: 'alta', label: 'Alta', color: 'bg-status-error/15 border-status-error/30 text-status-error' },
+                { value: 'média', label: 'Média', color: 'bg-status-warning/15 border-status-warning/30 text-status-warning' },
+                { value: 'baixa', label: 'Baixa', color: 'bg-status-success/15 border-status-success/30 text-status-success' }
               ].map(priority => (
                 <Badge
                   key={priority.value}
@@ -360,7 +360,7 @@ export function JobFiltersPanel({
                 variant="outline"
                 className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
                   jobFilters.publishing?.unpublished
-                    ? 'bg-orange-50 border-orange-300 text-orange-700 font-medium'
+                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-medium'
                     : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
                 }`}
                 onClick={() => toggleJobFilter('publishing', 'unpublished', !jobFilters.publishing?.unpublished)}
@@ -462,7 +462,7 @@ export function JobFiltersPanel({
                         className="h-6 w-6 p-0"
                         title="Remover"
                       >
-                        <Trash2 className="w-3 h-3 text-red-400" />
+                        <Trash2 className="w-3 h-3 text-status-error" />
                       </Button>
                     </div>
                   </div>

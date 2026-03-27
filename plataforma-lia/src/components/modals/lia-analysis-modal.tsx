@@ -318,7 +318,7 @@ export function LiaAnalysisModal({
                   Transportar "{ANALYSIS_TABS.find(t => t.id === activeTab)?.label}" para Pareceres
                 </Button>
                 {savedMessage && (
-                  <p className={`text-micro text-center ${savedMessage.includes('Erro') ? 'text-red-500' : 'text-green-600'}`}>
+                  <p className={`text-micro text-center ${savedMessage.includes('Erro') ? 'text-status-error' : 'text-status-success'}`}>
                     {savedMessage.includes('Erro') ? '⚠ ' : '✓ '}{savedMessage}
                   </p>
                 )}

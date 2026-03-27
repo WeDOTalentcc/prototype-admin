@@ -187,7 +187,7 @@ export function MatrixSection({
                                   {recipientInfo.label}
                                 </Badge>
                                 {entry.isAutomatic ? (
-                                  <Badge className="text-xs bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
+                                  <Badge className="text-xs bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success">
                                     <Zap className="w-3 h-3 mr-1" />
                                     Automático
                                   </Badge>
@@ -197,7 +197,7 @@ export function MatrixSection({
                                   </Badge>
                                 )}
                                 {entry.requiresApproval && (
-                                  <Badge className="text-xs bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
+                                  <Badge className="text-xs bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning">
                                     <Shield className="w-3 h-3 mr-1" />
                                     Requer Aprovação
                                   </Badge>

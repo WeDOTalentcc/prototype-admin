@@ -255,7 +255,7 @@ export function LiaChatPanel() {
           </div>
           <span className="text-base-ui font-bold text-gray-900 dark:text-gray-50" style={{ fontFamily: "Inter, sans-serif" }}>LIA</span>
           {isConnected && (
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" title="Conectado" />
+            <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title="Conectado" />
           )}
         </div>
         <div className="flex items-center gap-1">
@@ -328,8 +328,8 @@ export function LiaChatPanel() {
 
       {/* WebSocket status banner */}
       {isReconnecting && (
-        <div className="px-4 py-1.5 border-b flex-shrink-0 bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900">
-          <p className="text-xs text-amber-700 dark:text-amber-400">
+        <div className="px-4 py-1.5 border-b flex-shrink-0 bg-status-warning/10 border-status-warning/30 dark:border-status-warning/30">
+          <p className="text-xs text-status-warning dark:text-status-warning">
             {`Reconectando… (tentativa ${reconnectAttempt}/3)`}
           </p>
         </div>

@@ -76,14 +76,14 @@ function formatDate(dateString?: string): string {
 
 function getDaysRemainingColor(days?: number): string {
   if (days === undefined) return "text-gray-500"
-  if (days <= 3) return "text-red-600"
-  if (days <= 7) return "text-orange-500"
-  return "text-green-600"
+  if (days <= 3) return "text-status-error"
+  if (days <= 7) return "text-wedo-orange"
+  return "text-status-success"
 }
 
 function getPlanBadgeColor(plan: string): string {
   const planLower = plan.toLowerCase()
-  if (planLower.includes("enterprise")) return "bg-purple-100 text-purple-700"
+  if (planLower.includes("enterprise")) return "bg-wedo-purple/15 text-wedo-purple"
   if (planLower.includes("professional") || planLower.includes("pro")) return "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
   if (planLower.includes("starter") || planLower.includes("basic")) return "bg-gray-100 text-gray-800 dark:text-gray-200"
   return "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
@@ -213,9 +213,9 @@ export default function AdminDashboard() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500" />
-          <span className="text-red-700">{error}</span>
+        <div className="mb-6 p-4 bg-status-error/10 border border-status-error/30 rounded-md flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-status-error" />
+          <span className="text-status-error">{error}</span>
         </div>
       )}
 
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
               <UserPlus className="w-5 h-5" style={{ color: "#16a34a" }} />
               <h3 className="font-semibold text-gray-950 dark:text-gray-50">Novos Clientes</h3>
             </div>
-            <span className="text-sm px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+            <span className="text-sm px-2 py-0.5 rounded-full bg-status-success/15 text-status-success">
               {newClients.length} no período
             </span>
           </div>
@@ -279,7 +279,7 @@ export default function AdminDashboard() {
               <Clock className="w-5 h-5" style={{ color: "var(--status-warning)" }} />
               <h3 className="font-semibold text-gray-950 dark:text-gray-50">Clientes em Trial</h3>
             </div>
-            <span className="text-sm px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+            <span className="text-sm px-2 py-0.5 rounded-full bg-wedo-orange/15 text-wedo-orange">
               {trialClients.length} ativos
             </span>
           </div>
@@ -326,7 +326,7 @@ export default function AdminDashboard() {
               <UserMinus className="w-5 h-5" style={{ color: "#dc2626" }} />
               <h3 className="font-semibold text-gray-950 dark:text-gray-50">Churned</h3>
             </div>
-            <span className="text-sm px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+            <span className="text-sm px-2 py-0.5 rounded-full bg-status-error/15 text-status-error">
               {churnedClients.length} no período
             </span>
           </div>
@@ -337,7 +337,7 @@ export default function AdminDashboard() {
             </div>
           ) : churnedClients.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <CheckCircle className="w-8 h-8 text-green-500 mb-2" />
+              <CheckCircle className="w-8 h-8 text-status-success mb-2" />
               <p className="text-sm text-gray-500">
                 Nenhum churn no período
               </p>
@@ -347,7 +347,7 @@ export default function AdminDashboard() {
               {churnedClients.slice(0, 5).map((client) => (
                 <div 
                   key={client.id}
-                  className="p-3 rounded-md border border-gray-100 bg-red-50/30"
+                  className="p-3 rounded-md border border-gray-100 bg-status-error/10/30"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-medium text-gray-950 dark:text-gray-50">
@@ -361,7 +361,7 @@ export default function AdminDashboard() {
                     Churned em {formatDate(client.churnedAt)}
                   </p>
                   {client.reason && (
-                    <p className="text-xs text-red-600 mt-1">
+                    <p className="text-xs text-status-error mt-1">
                       Motivo: {client.reason}
                     </p>
                   )}

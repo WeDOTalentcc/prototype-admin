@@ -222,7 +222,7 @@ export function SavedSearchesTab({
                   {search.name}
                 </h3>
                 {search.isFavorite && (
-                  <Star className="w-4 h-4 text-orange-500 fill-current flex-shrink-0" />
+                  <Star className="w-4 h-4 text-wedo-orange fill-current flex-shrink-0" />
                 )}
               </div>
 
@@ -287,13 +287,13 @@ export function SavedSearchesTab({
                     Editar
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onToggleFavorite(search.id)}>
-                    <Star className={`w-4 h-4 mr-2 ${search.isFavorite ? 'fill-current text-orange-500' : ''}`} />
+                    <Star className={`w-4 h-4 mr-2 ${search.isFavorite ? 'fill-current text-wedo-orange' : ''}`} />
                     {search.isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => openDeleteConfirm(search)}
-                    className="text-red-600 focus:text-red-600"
+                    className="text-status-error focus:text-status-error"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Excluir
@@ -349,8 +349,8 @@ export function SavedSearchesTab({
 
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-green-50 dark:bg-green-900/20">
-                <TrendingUp className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-success/10 dark:bg-status-success/20">
+                <TrendingUp className="w-5 h-5 text-status-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{totalUsage}</p>
@@ -361,8 +361,8 @@ export function SavedSearchesTab({
 
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-orange-50 dark:bg-orange-900/20">
-                <Star className="w-5 h-5 text-orange-500" />
+              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-wedo-orange/10 dark:bg-wedo-orange/10/20">
+                <Star className="w-5 h-5 text-wedo-orange" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{favoriteSearches.length}</p>
@@ -376,7 +376,7 @@ export function SavedSearchesTab({
       {favoriteSearches.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-orange-500 fill-current" />
+            <Star className="w-4 h-4 text-wedo-orange fill-current" />
             <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
               Favoritas ({favoriteSearches.length})
             </span>
@@ -620,7 +620,7 @@ export function SavedSearchesTab({
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteSearch}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-status-error hover:bg-status-error"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Excluir

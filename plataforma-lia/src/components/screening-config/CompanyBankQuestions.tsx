@@ -44,13 +44,13 @@ export type { CompanyBankQuestionsProps, BankQuestion }
 function CharacterBadge({ character }: { character: 'eliminatoria' | 'classificatoria' }) {
   if (character === 'eliminatoria') {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error">
         eliminatória
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning">
       classificatória
     </span>
   )
@@ -214,7 +214,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                             </span>
                             <button
                               onClick={() => onToggleQuestion(question.id, false)}
-                              className="rounded-lg p-1 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors shrink-0"
+                              className="rounded-lg p-1 hover:bg-status-error/10 dark:hover:bg-status-error/20 text-gray-400 hover:text-status-error dark:text-gray-500 dark:hover:text-status-error transition-colors shrink-0"
                               title="Remover pergunta"
                             >
                               <X className="w-3.5 h-3.5" />

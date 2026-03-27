@@ -186,7 +186,7 @@ function DashboardVersaoAtual() {
               Tendências de Recrutamento (Recharts)
             </CardTitle>
             <div className="flex gap-2">
-              <Badge variant="outline" className="text-xs bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700">
+              <Badge variant="outline" className="text-xs bg-wedo-orange/10 dark:bg-wedo-orange/10 text-wedo-orange dark:text-wedo-orange border-wedo-orange/30 dark:border-wedo-orange/30">
                 React-only
               </Badge>
             </div>
@@ -259,28 +259,28 @@ function DashboardVersaoOtimizada() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <Badge className="text-xs bg-status-success/15 text-status-success dark:bg-status-success dark:text-status-success">
             ✓ Vue-compatible
           </Badge>
-          <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <Badge className="text-xs bg-status-success/15 text-status-success dark:bg-status-success dark:text-status-success">
             Chart.js
           </Badge>
-          <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <Badge className="text-xs bg-status-success/15 text-status-success dark:bg-status-success dark:text-status-success">
             CSS Animations
           </Badge>
         </div>
       </div>
 
       {/* Animation Explanation Card */}
-      <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30">
+      <Card className="border-status-success/30 dark:border-status-success/30 bg-status-success/10 dark:bg-status-success/30">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Brain className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+            <Brain className="w-5 h-5 text-status-success dark:text-status-success flex-shrink-0 mt-0.5" />
             <div className="space-y-2 text-sm">
-              <p className="text-green-900 dark:text-green-100 font-medium">
+              <p className="text-status-success dark:text-status-success font-medium">
                 Animações CSS @keyframes substituindo Framer Motion
               </p>
-              <ul className="space-y-1 text-green-800 dark:text-green-200 text-xs">
+              <ul className="space-y-1 text-status-success dark:text-status-success text-xs">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-3 h-3 flex-shrink-0 mt-0.5" />
                   <span><strong>slideInUp:</strong> Cards entram com fade-in de baixo para cima (substitui motion.div initial/animate)</span>
@@ -298,7 +298,7 @@ function DashboardVersaoOtimizada() {
                   <span><strong>CSS transitions:</strong> Hover effects suaves com cubic-bezier (substitui transition do Framer)</span>
                 </li>
               </ul>
-              <p className="text-xs text-green-700 dark:text-green-300 italic mt-2">
+              <p className="text-xs text-status-success dark:text-status-success italic mt-2">
                 💡 Passe o mouse sobre os cards KPIs abaixo para ver as animações em ação!
               </p>
             </div>
@@ -347,11 +347,11 @@ function DashboardVersaoOtimizada() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Brain className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <Brain className="w-4 h-4 text-status-success dark:text-status-success" />
               Tendências de Recrutamento (Chart.js)
             </CardTitle>
             <div className="flex gap-2">
-              <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 border-green-300 dark:border-green-700">
+              <Badge className="text-xs bg-status-success/15 text-status-success dark:bg-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30">
                 ✓ Vue-compatible
               </Badge>
             </div>
@@ -462,8 +462,8 @@ function KPICard({
             variant="outline" 
             className={`text-xs ${
               trend === 'up' 
-                ? 'text-green-600 dark:text-green-400 border-green-600 dark:border-green-400' 
-                : 'text-red-600 dark:text-red-400 border-red-600 dark:border-red-400'
+                ? 'text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30' 
+                : 'text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
             }`}
           >
             {change}
@@ -574,8 +574,8 @@ function KPICardOptimized({
               variant="outline" 
               className={`text-xs kpi-badge-optimized ${
                 trend === 'up' 
-                  ? 'text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-950' 
-                  : 'text-red-600 dark:text-red-400 border-red-600 dark:border-red-400 hover:bg-red-50 dark:hover:bg-red-950'
+                  ? 'text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30 hover:bg-status-success/10 dark:hover:bg-status-success' 
+                  : 'text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30 hover:bg-status-error/10 dark:hover:bg-status-error'
               }`}
             >
               {change}

@@ -140,11 +140,11 @@ function OnboardingStepsChecklist({ steps }: { steps: OnboardingStep[] }) {
           <div
             key={step.id}
             className={`flex items-center gap-2 text-xs ${
-              step.completed ? "text-green-600" : "text-gray-400"
+              step.completed ? "text-status-success" : "text-gray-400"
             }`}
           >
             {step.completed ? (
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-status-success" />
             ) : (
               <Circle className="w-3.5 h-3.5" />
             )}
@@ -163,7 +163,7 @@ function ClientRow({ data, onResendEmail }: { data: ClientOnboardingData; onRese
     <>
       <tr 
         className={`border-b border-gray-100 hover:bg-gray-50/50 transition-colors cursor-pointer ${
-          data.status === "stalled" ? "bg-red-50/30" : ""
+          data.status === "stalled" ? "bg-status-error/10/30" : ""
         }`}
         onClick={() => setShowSteps(!showSteps)}
       >
@@ -190,13 +190,13 @@ function ClientRow({ data, onResendEmail }: { data: ClientOnboardingData; onRese
           </p>
         </td>
         <td className="py-4 px-4">
-          <span className={`text-sm ${data.daysSinceLastActivity > 7 ? 'text-red-600 font-medium' : 'text-gray-600'}`}>
+          <span className={`text-sm ${data.daysSinceLastActivity > 7 ? 'text-status-error font-medium' : 'text-gray-600'}`}>
             {formatLastActivity(data.daysSinceLastActivity)}
           </span>
           {data.daysSinceLastActivity > 7 && (
             <div className="flex items-center gap-1 mt-1">
-              <AlertCircle className="w-3 h-3 text-red-500" />
-              <span className="text-xs text-red-500">Atenção necessária</span>
+              <AlertCircle className="w-3 h-3 text-status-error" />
+              <span className="text-xs text-status-error">Atenção necessária</span>
             </div>
           )}
         </td>
@@ -367,7 +367,7 @@ export default function OnboardingClientesPage() {
           onClick={() => setFilter('pending')}
         >
           <p className="text-xs text-gray-500 uppercase tracking-wider">Pendentes</p>
-          <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
+          <p className="text-2xl font-bold text-wedo-orange">{stats.pending}</p>
         </Card>
         <Card 
           className={`p-4 cursor-pointer transition-all ${filter === 'in_progress' ? 'ring-2 ring-gray-900/20' : ''}`}
@@ -381,14 +381,14 @@ export default function OnboardingClientesPage() {
           onClick={() => setFilter('complete')}
         >
           <p className="text-xs text-gray-500 uppercase tracking-wider">Completos</p>
-          <p className="text-2xl font-bold text-green-600">{stats.complete}</p>
+          <p className="text-2xl font-bold text-status-success">{stats.complete}</p>
         </Card>
         <Card 
           className={`p-4 cursor-pointer transition-all ${filter === 'stalled' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('stalled')}
         >
           <p className="text-xs text-gray-500 uppercase tracking-wider">Parados (+7 dias)</p>
-          <p className="text-2xl font-bold text-red-600">{stats.stalled}</p>
+          <p className="text-2xl font-bold text-status-error">{stats.stalled}</p>
         </Card>
       </div>
 
@@ -428,8 +428,8 @@ export default function OnboardingClientesPage() {
           </div>
         ) : error ? (
           <div className="p-8 text-center">
-            <AlertCircle className="w-8 h-8 mx-auto text-red-400 mb-4" />
-            <p className="text-red-600">{error}</p>
+            <AlertCircle className="w-8 h-8 mx-auto text-status-error mb-4" />
+            <p className="text-status-error">{error}</p>
             <Button onClick={handleRefresh} variant="outline" className="mt-4">
               Tentar novamente
             </Button>

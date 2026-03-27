@@ -58,7 +58,7 @@ export function UnsavedPearchWarningModal({
       <AlertDialogContent className="max-w-md rounded-md dark:bg-gray-800 dark:border-gray-700">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-md bg-amber-100 text-amber-600">
+            <div className="p-2.5 rounded-md bg-status-warning/15 text-status-warning">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <AlertDialogTitle className="text-lg font-semibold">
@@ -88,19 +88,19 @@ export function UnsavedPearchWarningModal({
                 </div>
               )}
               
-              <div className="p-4 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+              <div className="p-4 rounded-md bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30">
                 <div className="flex items-start gap-3">
-                  <Database className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <Database className="w-5 h-5 text-status-warning mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="font-semibold text-amber-800 dark:text-amber-200">
+                    <p className="font-semibold text-status-warning dark:text-status-warning">
                       Você já pagou por esses dados
                     </p>
-                    <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                    <p className="text-sm text-status-warning dark:text-status-warning mt-1">
                       Salvar na base evita pagar novamente em futuras buscas.
                     </p>
                     <div className="flex items-center gap-1.5 mt-2">
-                      <Coins className="w-4 h-4 text-amber-600" />
-                      <span className="text-xs font-medium text-amber-700">
+                      <Coins className="w-4 h-4 text-status-warning" />
+                      <span className="text-xs font-medium text-status-warning">
                         {creditsConsumed} crédito{creditsConsumed > 1 ? 's' : ''} consumido{creditsConsumed > 1 ? 's' : ''}
                       </span>
                     </div>

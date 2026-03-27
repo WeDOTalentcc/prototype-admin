@@ -154,7 +154,7 @@ export function ColumnContextMenu({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => setConfirmRemoveOpen(true)}
-                className="text-red-600 dark:text-red-400 focus:text-red-600"
+                className="text-status-error dark:text-status-error focus:text-status-error"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-2" />
                 <span className="text-xs">Remover coluna</span>
@@ -249,7 +249,7 @@ export function ColumnContextMenu({
             <Button variant="outline" onClick={() => setConfirmRemoveOpen(false)} className="text-xs h-8">
               Cancelar
             </Button>
-            <Button onClick={handleRemove} className="bg-red-600 hover:bg-red-700 text-white text-xs h-8">
+            <Button onClick={handleRemove} className="bg-status-error hover:bg-status-error text-white text-xs h-8">
               Remover
             </Button>
           </DialogFooter>

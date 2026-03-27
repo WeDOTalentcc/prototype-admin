@@ -81,10 +81,10 @@ const categoryIcons: Record<string, React.ElementType> = {
 
 const typeColors: Record<string, { bg: string; text: string; border: string }> = {
   info: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-600 dark:text-gray-400', border: 'border-gray-300 dark:border-gray-600' },
-  success: { bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-600', border: 'border-emerald-200' },
-  warning: { bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600', border: 'border-amber-200' },
-  urgent: { bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-600', border: 'border-red-200' },
-  action_required: { bg: 'bg-purple-50 dark:bg-purple-950/30', text: 'text-purple-600', border: 'border-purple-200' }
+  success: { bg: 'bg-status-success/10', text: 'text-status-success', border: 'border-status-success/30' },
+  warning: { bg: 'bg-status-warning/10', text: 'text-status-warning', border: 'border-status-warning/30' },
+  urgent: { bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
+  action_required: { bg: 'bg-wedo-purple/10', text: 'text-wedo-purple', border: 'border-wedo-purple/30' }
 }
 
 export function NotificationCenter({ userId = 'default_user', onNavigate }: NotificationCenterProps) {
@@ -220,7 +220,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
         >
           <Bell className="h-4 w-4 text-gray-800 dark:text-gray-500" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-status-error text-xs font-medium text-white">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}

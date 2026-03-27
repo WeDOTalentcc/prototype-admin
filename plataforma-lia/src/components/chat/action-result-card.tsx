@@ -53,27 +53,27 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
   const Icon = config.icon
   const colorMap: Record<string, string> = {
     cyan: "border-wedo-cyan/30 bg-wedo-cyan/5",
-    emerald: "border-emerald-500/30 bg-emerald-500/5",
+    emerald: "border-status-success/30/30 bg-status-success/5",
     violet: "border-violet-500/30 bg-violet-500/5",
-    amber: "border-amber-500/30 bg-amber-500/5",
-    blue: "border-blue-500/30 bg-blue-500/5",
-    red: "border-red-500/30 bg-red-500/5",
+    amber: "border-status-warning/30/30 bg-status-warning/5",
+    blue: "border-wedo-cyan/30/30 bg-wedo-cyan/5",
+    red: "border-status-error/30/30 bg-status-error/5",
   }
   const iconColorMap: Record<string, string> = {
     cyan: "text-wedo-cyan",
-    emerald: "text-emerald-400",
+    emerald: "text-status-success",
     violet: "text-violet-400",
-    amber: "text-amber-400",
-    blue: "text-blue-400",
-    red: "text-red-400",
+    amber: "text-status-warning",
+    blue: "text-wedo-cyan-dark",
+    red: "text-status-error",
   }
   const badgeColorMap: Record<string, string> = {
     cyan: "bg-wedo-cyan/20 text-wedo-cyan",
-    emerald: "bg-emerald-500/20 text-emerald-300",
+    emerald: "bg-status-success/20 text-status-success",
     violet: "bg-violet-500/20 text-violet-300",
-    amber: "bg-amber-500/20 text-amber-300",
-    blue: "bg-blue-500/20 text-blue-300",
-    red: "bg-red-500/20 text-red-300",
+    amber: "bg-status-warning/20 text-status-warning",
+    blue: "bg-wedo-cyan/20 text-wedo-cyan-dark",
+    red: "bg-status-error/20 text-status-error",
   }
 
   const borderBg = colorMap[config.color] || colorMap.cyan
@@ -87,7 +87,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
           <Icon className={`w-4 h-4 ${iconColor}`} />
         </div>
         <span className="text-sm font-medium text-zinc-200">{config.label}</span>
-        <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-auto" />
+        <CheckCircle2 className="w-4 h-4 text-status-success ml-auto" />
       </div>
 
       <div className="space-y-1 text-xs text-zinc-400">
@@ -164,7 +164,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
         )}
 
         {result.simulated && (
-          <div className="flex items-center gap-1 mt-1 text-amber-400/60">
+          <div className="flex items-center gap-1 mt-1 text-status-warning/60">
             <AlertCircle className="w-3 h-3" />
             <span className="text-micro">Simulado (aguardando integração real)</span>
           </div>

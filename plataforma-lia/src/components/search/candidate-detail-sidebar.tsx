@@ -95,9 +95,9 @@ export function CandidateDetailSidebar({
 
   const getScoreColor = (score?: number) => {
     if (!score) return "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-    if (score >= 80) return "bg-green-100 text-green-700"
-    if (score >= 60) return "bg-yellow-100 text-yellow-700"
-    return "bg-orange-100 text-orange-700"
+    if (score >= 80) return "bg-status-success/15 text-status-success"
+    if (score >= 60) return "bg-status-warning/15 text-status-warning"
+    return "bg-wedo-orange/15 text-wedo-orange"
   }
 
   const copyToClipboard = (text: string) => {
@@ -123,7 +123,7 @@ export function CandidateDetailSidebar({
                   {candidate.name}
                 </SheetTitle>
                 {candidate.is_open_to_work && (
-                  <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
+                  <Badge className="bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     Aberto
                   </Badge>
@@ -166,7 +166,7 @@ export function CandidateDetailSidebar({
                   {candidate.is_discovered && (
                     <Badge 
                       variant="outline" 
-                      className="border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                      className="border-status-warning/30 dark:border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning"
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Descoberto
@@ -180,7 +180,7 @@ export function CandidateDetailSidebar({
                   )}
                 </div>
                 {candidate.is_discovered && (
-                  <p className="text-xs text-amber-600">
+                  <p className="text-xs text-status-warning">
                     Candidato descoberto - ainda não salvo na sua base local
                   </p>
                 )}
@@ -308,7 +308,7 @@ export function CandidateDetailSidebar({
                 <ul className="space-y-1">
                   {candidate.insights.strengths.map((strength, idx) => (
                     <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <CheckCircle className="h-4 w-4 text-status-success mt-0.5 flex-shrink-0" />
                       {strength}
                     </li>
                   ))}

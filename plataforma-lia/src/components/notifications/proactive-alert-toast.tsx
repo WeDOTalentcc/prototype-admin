@@ -37,7 +37,7 @@ const categoryConfig = {
   productivity: {
     icon: Clock,
     label: 'Produtividade',
-    color: 'text-purple-600 dark:text-purple-400'
+    color: 'text-wedo-purple dark:text-wedo-purple'
   },
   communication: {
     icon: MessageCircle,
@@ -47,7 +47,7 @@ const categoryConfig = {
   predictive: {
     icon: Brain,
     label: 'IA Preditiva',
-    color: 'text-amber-600 dark:text-amber-400'
+    color: 'text-status-warning dark:text-status-warning'
   },
   system: {
     icon: Settings,
@@ -64,28 +64,28 @@ const severityConfig = {
     progressBg: 'bg-gray-700 dark:bg-gray-300'
   },
   warning: {
-    bg: 'bg-amber-50 dark:bg-amber-950/30',
-    border: 'border-amber-200 dark:border-amber-800',
-    icon: 'text-amber-600',
-    progressBg: 'bg-amber-500'
+    bg: 'bg-status-warning/10',
+    border: 'border-status-warning/30 dark:border-status-warning/30',
+    icon: 'text-status-warning',
+    progressBg: 'bg-status-warning'
   },
   urgent: {
-    bg: 'bg-red-50 dark:bg-red-950/30',
-    border: 'border-red-200 dark:border-red-800',
-    icon: 'text-red-600',
-    progressBg: 'bg-red-500'
+    bg: 'bg-status-error/10',
+    border: 'border-status-error/30 dark:border-status-error/30',
+    icon: 'text-status-error',
+    progressBg: 'bg-status-error'
   },
   success: {
-    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    icon: 'text-emerald-600',
-    progressBg: 'bg-emerald-500'
+    bg: 'bg-status-success/10',
+    border: 'border-status-success/30 dark:border-status-success/30',
+    icon: 'text-status-success',
+    progressBg: 'bg-status-success'
   },
   action_required: {
-    bg: 'bg-purple-50 dark:bg-purple-950/30',
-    border: 'border-purple-200 dark:border-purple-800',
-    icon: 'text-purple-600',
-    progressBg: 'bg-purple-500'
+    bg: 'bg-wedo-purple/10',
+    border: 'border-wedo-purple/30 dark:border-wedo-purple/30',
+    icon: 'text-wedo-purple',
+    progressBg: 'bg-wedo-purple'
   }
 }
 
@@ -151,8 +151,8 @@ export function ProactiveAlertToast({
       {alert.severity === 'urgent' && (
         <div className="absolute -top-1 -left-1">
           <span className="flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-error opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-status-error"></span>
           </span>
         </div>
       )}
@@ -160,8 +160,8 @@ export function ProactiveAlertToast({
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", 
-            alert.severity === 'success' ? 'bg-emerald-100 dark:bg-emerald-900/50' :
-            alert.severity === 'urgent' ? 'bg-red-100 dark:bg-red-900/50' :
+            alert.severity === 'success' ? 'bg-status-success/15' :
+            alert.severity === 'urgent' ? 'bg-status-error/15 dark:bg-status-error/50' :
             'bg-gray-100 dark:bg-gray-800')}>
             <LIAIcon size="sm" className="w-6 h-6" />
           </div>

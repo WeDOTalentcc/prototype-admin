@@ -505,9 +505,9 @@ export function CandidatePreview({
   
   const getFileIcon = (fileType: string, mimeType?: string) => {
     if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-    if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-red-600" />
-    if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-amber-600" />
-    if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-green-600" />
+    if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-status-error" />
+    if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-status-warning" />
+    if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-status-success" />
     return <File className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
   }
   
@@ -1039,13 +1039,13 @@ export function CandidatePreview({
     const getScoreColor = (score: number | null, isWsi: boolean = false) => {
       if (score === null || score === undefined) return 'text-gray-600'
       if (isWsi) {
-        if (score >= 4.0) return 'text-emerald-600'
-        if (score >= 3.0) return 'text-amber-600'
-        return 'text-red-500'
+        if (score >= 4.0) return 'text-status-success'
+        if (score >= 3.0) return 'text-status-warning'
+        return 'text-status-error'
       } else {
-        if (score >= 80) return 'text-emerald-600'
-        if (score >= 60) return 'text-amber-600'
-        return 'text-red-500'
+        if (score >= 80) return 'text-status-success'
+        if (score >= 60) return 'text-status-warning'
+        return 'text-status-error'
       }
     }
     
@@ -1098,10 +1098,10 @@ export function CandidatePreview({
         >
           <div className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              isWsiOpinion ? 'bg-purple-100' : 'bg-gray-100 dark:bg-gray-800'
+              isWsiOpinion ? 'bg-wedo-purple/15' : 'bg-gray-100 dark:bg-gray-800'
             }`}>
               {isWsiOpinion ? (
-                <Target className="w-4 h-4 text-purple-600" />
+                <Target className="w-4 h-4 text-wedo-purple" />
               ) : (
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               )}
@@ -1157,7 +1157,7 @@ export function CandidatePreview({
                   className="p-1 hover:bg-gray-100 rounded transition-colors"
                 >
                   {copiedItemId === `opinion-${opinion.id}` ? (
-                    <Check className="w-3.5 h-3.5 text-green-500" />
+                    <Check className="w-3.5 h-3.5 text-status-success" />
                   ) : (
                     <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:text-gray-400" />
                   )}
@@ -1204,14 +1204,14 @@ export function CandidatePreview({
             
             {opinion.strengths && opinion.strengths.length > 0 && (
               <div>
-                <h5 className={`${textStyles.label} text-emerald-700 mb-1 flex items-center gap-1`}>
+                <h5 className={`${textStyles.label} text-status-success mb-1 flex items-center gap-1`}>
                   <CheckCircle className="w-3 h-3" />
                   Pontos Fortes
                 </h5>
                 <ul className="space-y-0.5">
                   {opinion.strengths.map((s: string, i: number) => (
                     <li key={i} className={`${textStyles.caption} text-gray-600 dark:text-gray-400 flex items-start gap-1`}>
-                      <span className="text-emerald-500 mt-0.5">•</span>
+                      <span className="text-status-success mt-0.5">•</span>
                       {s}
                     </li>
                   ))}
@@ -1221,14 +1221,14 @@ export function CandidatePreview({
             
             {opinion.concerns && opinion.concerns.length > 0 && (
               <div>
-                <h5 className={`${textStyles.label} text-amber-700 mb-1 flex items-center gap-1`}>
+                <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                   <AlertCircle className="w-3 h-3" />
                   Pontos de Atenção
                 </h5>
                 <ul className="space-y-0.5">
                   {opinion.concerns.map((c: string, i: number) => (
                     <li key={i} className={`${textStyles.caption} text-gray-600 dark:text-gray-400 flex items-start gap-1`}>
-                      <span className="text-amber-500 mt-0.5">•</span>
+                      <span className="text-status-warning mt-0.5">•</span>
                       {c}
                     </li>
                   ))}
@@ -1238,14 +1238,14 @@ export function CandidatePreview({
             
             {opinion.gaps && opinion.gaps.length > 0 && (
               <div>
-                <h5 className={`${textStyles.label} text-red-600 mb-1 flex items-center gap-1`}>
+                <h5 className={`${textStyles.label} text-status-error mb-1 flex items-center gap-1`}>
                   <AlertCircle className="w-3 h-3" />
                   Gaps Identificados
                 </h5>
                 <ul className="space-y-0.5">
                   {opinion.gaps.map((g: string, i: number) => (
                     <li key={i} className={`${textStyles.caption} text-gray-600 dark:text-gray-400 flex items-start gap-1`}>
-                      <span className="text-red-400 mt-0.5">•</span>
+                      <span className="text-status-error mt-0.5">•</span>
                       {g}
                     </li>
                   ))}
@@ -1257,7 +1257,7 @@ export function CandidatePreview({
               <div className="flex gap-3">
                 {opinion.matched_skills?.length > 0 && (
                   <div className="flex-1">
-                    <h5 className={`${textStyles.label} text-emerald-700 mb-1`}>Skills Match</h5>
+                    <h5 className={`${textStyles.label} text-status-success mb-1`}>Skills Match</h5>
                     <div className="flex flex-wrap gap-1">
                       {opinion.matched_skills.map((skill: string, i: number) => (
                         <Badge key={i} className={badgeStyles.success}>
@@ -1269,7 +1269,7 @@ export function CandidatePreview({
                 )}
                 {opinion.missing_skills?.length > 0 && (
                   <div className="flex-1">
-                    <h5 className={`${textStyles.label} text-red-600 mb-1`}>Skills Faltantes</h5>
+                    <h5 className={`${textStyles.label} text-status-error mb-1`}>Skills Faltantes</h5>
                     <div className="flex flex-wrap gap-1">
                       {opinion.missing_skills.map((skill: string, i: number) => (
                         <Badge key={i} className={badgeStyles.error}>
@@ -1293,23 +1293,23 @@ export function CandidatePreview({
             )}
             
             {opinion.recruiter_notes && (
-              <div className="bg-amber-50 rounded-md p-2 border border-amber-100">
-                <h5 className={`${textStyles.label} text-amber-700 mb-1 flex items-center gap-1`}>
+              <div className="bg-status-warning/10 rounded-md p-2 border border-status-warning/30">
+                <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                   <Edit className="w-3 h-3" />
                   Notas do Recrutador
                 </h5>
-                <p className={`${textStyles.caption} text-amber-800`}>{opinion.recruiter_notes}</p>
+                <p className={`${textStyles.caption} text-status-warning`}>{opinion.recruiter_notes}</p>
               </div>
             )}
             
             {opinion.recruiter_override && (
-              <div className="bg-purple-50 rounded-md p-2 border border-purple-100">
+              <div className="bg-wedo-purple/10 rounded-md p-2 border border-wedo-purple/30">
                 <div className="flex items-center gap-2 mb-1">
-                  <h5 className={`${textStyles.label} text-purple-700`}>Override do Recrutador</h5>
+                  <h5 className={`${textStyles.label} text-wedo-purple`}>Override do Recrutador</h5>
                   {getRecommendationBadge(opinion.recruiter_override)}
                 </div>
                 {opinion.recruiter_override_reason && (
-                  <p className={`${textStyles.caption} text-purple-800`}>{opinion.recruiter_override_reason}</p>
+                  <p className={`${textStyles.caption} text-wedo-purple`}>{opinion.recruiter_override_reason}</p>
                 )}
               </div>
             )}
@@ -1358,7 +1358,7 @@ export function CandidatePreview({
                   </Badge>
                 ) : null}
                 {(candidate.communication_consent !== undefined || candidate.communicationConsent !== undefined) && (
-                  <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(candidate.communication_consent ?? candidate.communicationConsent) ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                  <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(candidate.communication_consent ?? candidate.communicationConsent) ? 'bg-status-success/10 text-status-success' : 'bg-status-error/10 text-status-error'}`}>
                     {(candidate.communication_consent ?? candidate.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
                     LGPD
                   </Badge>
@@ -1577,7 +1577,7 @@ export function CandidatePreview({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={`h-6 w-6 p-0 ${isFavorite ? 'bg-amber-100' : 'hover:bg-amber-50'}`}
+                    className={`h-6 w-6 p-0 ${isFavorite ? 'bg-status-warning/15' : 'hover:bg-status-warning/10'}`}
                     onClick={() => {
                       onToggleFavorite?.(candidate.id)
                       toast({ 
@@ -1586,7 +1586,7 @@ export function CandidatePreview({
                       })
                     }}
                   >
-                    <Star className={`w-3.5 h-3.5 ${isFavorite ? 'text-amber-500 fill-amber-500' : 'text-amber-500'}`} />
+                    <Star className={`w-3.5 h-3.5 ${isFavorite ? 'text-status-warning fill-amber-500' : 'text-status-warning'}`} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">{isFavorite ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}</TooltipContent>
@@ -1616,7 +1616,7 @@ export function CandidatePreview({
                     href={candidate.linkedin || candidate.linkedin_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-blue-50' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded transition-colors ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.linkedin || candidate.linkedin_url) && e.preventDefault()}
                   >
                     <Linkedin className="w-3.5 h-3.5" style={{ color: (candidate.linkedin || candidate.linkedin_url) ? 'var(--gray-600)' : 'var(--gray-400)' }} />
@@ -1648,7 +1648,7 @@ export function CandidatePreview({
                     href={candidate.stackoverflow || candidate.stackoverflow_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.stackoverflow || candidate.stackoverflow_url) ? 'hover:bg-orange-50' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded transition-colors ${(candidate.stackoverflow || candidate.stackoverflow_url) ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.stackoverflow || candidate.stackoverflow_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.stackoverflow || candidate.stackoverflow_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -1682,7 +1682,7 @@ export function CandidatePreview({
                     href={candidate.behance || candidate.behance_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded transition-colors ${(candidate.behance || candidate.behance_url) ? 'hover:bg-blue-50' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded transition-colors ${(candidate.behance || candidate.behance_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.behance || candidate.behance_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.behance || candidate.behance_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -1801,9 +1801,9 @@ export function CandidatePreview({
                     const getScoreColor = (score: number | null, isWsi: boolean = false) => {
                       if (score === null || score === undefined) return 'text-gray-600'
                       if (isWsi) {
-                        return score >= 4.0 ? 'text-emerald-600' : score >= 3.0 ? 'text-amber-600' : 'text-red-500'
+                        return score >= 4.0 ? 'text-status-success' : score >= 3.0 ? 'text-status-warning' : 'text-status-error'
                       }
-                      return score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-amber-600' : 'text-red-500'
+                      return score >= 80 ? 'text-status-success' : score >= 60 ? 'text-status-warning' : 'text-status-error'
                     }
                     
                     return (
@@ -2103,13 +2103,13 @@ export function CandidatePreview({
               return (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {isOpenToWork === true && (
-                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 flex items-center gap-1">
-                      <Globe className="w-3 h-3 text-green-600 dark:text-green-400" />
+                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30 flex items-center gap-1">
+                      <Globe className="w-3 h-3 text-status-success dark:text-status-success" />
                       Open to Work
                     </Badge>
                   )}
                   {isTopUniversity === true && (
-                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-purple-50 text-purple-700 border-purple-200 flex items-center gap-1">
+                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 flex items-center gap-1">
                       🎓 Top University
                     </Badge>
                   )}
@@ -2121,7 +2121,7 @@ export function CandidatePreview({
                   {isBlacklisted === true && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-red-50 text-red-700 border-red-200 flex items-center gap-1 cursor-help">
+                        <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-status-error/10 text-status-error border-status-error/30 flex items-center gap-1 cursor-help">
                           ⚠️ LCNU
                         </Badge>
                       </TooltipTrigger>
@@ -2279,7 +2279,7 @@ export function CandidatePreview({
                               </span>
                             ))}
                             {isStartup && (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 border border-green-100">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30">
                                 🚀 Startup
                               </span>
                             )}
@@ -2517,7 +2517,7 @@ export function CandidatePreview({
                 {candidate.is_remote !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Aceita Remoto</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
                       {candidate.is_remote ? 'Sim' : 'Não'}
                     </Badge>
                   </div>
@@ -2526,7 +2526,7 @@ export function CandidatePreview({
                 {(candidate.willing_to_relocate !== undefined || candidate.willingToRelocate !== undefined) && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Aceita Mudança</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
                       {(candidate.willing_to_relocate ?? candidate.willingToRelocate) === true ? 'Sim' : 
                        (candidate.willing_to_relocate ?? candidate.willingToRelocate) === false ? 'Não' : 
                        String(candidate.willing_to_relocate ?? candidate.willingToRelocate)}
@@ -2537,7 +2537,7 @@ export function CandidatePreview({
                 {candidate.mobility !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Disponibilidade Viagens</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
                       {candidate.mobility === true ? 'Sim' : candidate.mobility === false ? 'Não' : String(candidate.mobility)}
                     </Badge>
                   </div>
@@ -2546,7 +2546,7 @@ export function CandidatePreview({
                 {candidate.communication_consent !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Consentimento LGPD</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.communication_consent ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.communication_consent ? 'bg-status-success/15 text-status-success' : 'bg-status-error/15 text-status-error'}`}>
                       {candidate.communication_consent ? '✓ Consentido' : '✗ Não consentido'}
                     </Badge>
                   </div>
@@ -2899,7 +2899,7 @@ export function CandidatePreview({
                                                   className={`text-xs px-1.5 py-0 h-4 ${
                                                     activity.score >= 80 ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' :
                                                     activity.score >= 60 ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' :
-                                                    'bg-red-50 text-red-700 border-red-200 font-medium'
+                                                    'bg-status-error/10 text-status-error border-status-error/30 font-medium'
                                                   }`}
                                                 >
                                                   {formatScorePercent(activity.score)}
@@ -2910,7 +2910,7 @@ export function CandidatePreview({
                                                   className={`text-xs px-1.5 py-0 h-4 ${
                                                     activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' :
                                                     activity.status === 'in-progress' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' :
-                                                    activity.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200 font-medium' :
+                                                    activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' :
                                                     'bg-white text-gray-600 dark:text-gray-400 border-gray-100'
                                                   }`}
                                                 >
@@ -2976,7 +2976,7 @@ export function CandidatePreview({
                                               )}
                                             </div>
                                             {activity.details.opened && (
-                                              <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 p-2 rounded">
+                                              <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 p-2 rounded">
                                                 <CheckCircle className="w-3 h-3" />
                                                 <span>Email aberto em {activity.details.openedAt}</span>
                                               </div>
@@ -2998,10 +2998,10 @@ export function CandidatePreview({
                                           <div className="mt-3 space-y-3">
                                             <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
                                               <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                                                <Calendar className="w-3 h-3 text-purple-600" />
+                                                <Calendar className="w-3 h-3 text-wedo-purple" />
                                                 {activity.details.interviewType}
                                                 {activity.details.stage && (
-                                                  <Badge className="ml-2 text-micro px-1.5 py-0 bg-purple-50 text-purple-700">{activity.details.stage}</Badge>
+                                                  <Badge className="ml-2 text-micro px-1.5 py-0 bg-wedo-purple/10 text-wedo-purple">{activity.details.stage}</Badge>
                                                 )}
                                               </h5>
                                               <div className="grid grid-cols-2 gap-2 mb-3">
@@ -3075,7 +3075,7 @@ export function CandidatePreview({
                                                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
                                                   <div className="flex flex-wrap gap-1">
                                                     {activity.details.strengths.map((s: string, i: number) => (
-                                                      <Badge key={i} className="text-micro px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
+                                                      <Badge key={i} className="text-micro px-1.5 py-0 bg-status-success/10 text-status-success border-status-success/30">
                                                         ✓ {s}
                                                       </Badge>
                                                     ))}
@@ -3095,9 +3095,9 @@ export function CandidatePreview({
                                           <div className="mt-3 space-y-3">
                                             <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
                                               <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                                                <FileText className="w-3 h-3 text-green-600" />
+                                                <FileText className="w-3 h-3 text-status-success" />
                                                 Candidatura Recebida
-                                                <Badge className="ml-2 text-micro px-1.5 py-0 bg-green-50 text-green-700">{activity.details.source}</Badge>
+                                                <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">{activity.details.source}</Badge>
                                               </h5>
                                               <div className="grid grid-cols-2 gap-2 mb-3">
                                                 <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded">
@@ -3116,7 +3116,7 @@ export function CandidatePreview({
                                                   </Badge>
                                                 )}
                                                 {activity.details.coverLetter && (
-                                                  <Badge className="text-micro px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200">
+                                                  <Badge className="text-micro px-2 py-0.5 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                                                     ✉️ Carta de Apresentação
                                                   </Badge>
                                                 )}
@@ -3126,9 +3126,9 @@ export function CandidatePreview({
                                                   <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Perguntas de Triagem</p>
                                                   <div className="space-y-1">
                                                     {activity.details.screeningQuestions.map((sq: any, i: number) => (
-                                                      <div key={i} className={`p-2 rounded text-xs ${sq.passed ? 'bg-green-50' : 'bg-red-50'}`}>
+                                                      <div key={i} className={`p-2 rounded text-xs ${sq.passed ? 'bg-status-success/10' : 'bg-status-error/10'}`}>
                                                         <p className="font-medium text-gray-800 dark:text-gray-200">{sq.question}</p>
-                                                        <p className={sq.passed ? 'text-green-700' : 'text-red-700'}>
+                                                        <p className={sq.passed ? 'text-status-success' : 'text-status-error'}>
                                                           {sq.passed ? '✓' : '✗'} {sq.answer}
                                                         </p>
                                                       </div>
@@ -3178,7 +3178,7 @@ export function CandidatePreview({
                                                     </div>
                                                     <Badge className={`${
                                                       activity.details.wsiScore.classification === 'excelente' ? badgeStyles.success :
-                                                      activity.details.wsiScore.classification === 'alto' ? 'bg-green-100 text-green-700' :
+                                                      activity.details.wsiScore.classification === 'alto' ? 'bg-status-success/15 text-status-success' :
                                                       activity.details.wsiScore.classification === 'medio' ? badgeStyles.warning :
                                                       badgeStyles.error
                                                     } text-micro`}>
@@ -3243,7 +3243,7 @@ export function CandidatePreview({
                                           <div className="mt-3 space-y-3">
                                             <div className={`${cardStyles.default} p-3`}>
                                               <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
-                                                <Code className="w-3 h-3 text-amber-500" />
+                                                <Code className="w-3 h-3 text-status-warning" />
                                                 {activity.details.testName}
                                                 <Badge className={`ml-2 ${activity.score >= 70 ? badgeStyles.success : badgeStyles.warning}`}>
                                                   {activity.score >= 70 ? 'Aprovado' : 'Atenção'}
@@ -3258,8 +3258,8 @@ export function CandidatePreview({
                                                   <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.timeSpent}</p>
                                                   <p className={textStyles.caption}>Tempo</p>
                                                 </div>
-                                                <div className={`text-center p-2 rounded-md border ${activity.score >= 80 ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : activity.score >= 60 ? 'bg-gray-50 dark:bg-gray-800 border-gray-200' : 'bg-gray-100 border-gray-300 dark:border-gray-600'}`}>
-                                                  <p className={`text-base font-bold ${activity.score >= 80 ? 'text-green-700 dark:text-green-400' : activity.score >= 60 ? 'text-gray-800 dark:text-gray-200' : 'text-gray-500'}`}>{activity.score}%</p>
+                                                <div className={`text-center p-2 rounded-md border ${activity.score >= 80 ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30' : activity.score >= 60 ? 'bg-gray-50 dark:bg-gray-800 border-gray-200' : 'bg-gray-100 border-gray-300 dark:border-gray-600'}`}>
+                                                  <p className={`text-base font-bold ${activity.score >= 80 ? 'text-status-success dark:text-status-success' : activity.score >= 60 ? 'text-gray-800 dark:text-gray-200' : 'text-gray-500'}`}>{activity.score}%</p>
                                                   <p className={textStyles.caption}>Score</p>
                                                 </div>
                                               </div>
@@ -3272,7 +3272,7 @@ export function CandidatePreview({
                                                         <span className={`${textStyles.caption} w-28 truncate`}>{cat.name}</span>
                                                         <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
                                                           <div 
-                                                            className={`h-full rounded-full ${cat.score >= 80 ? 'bg-green-500' : cat.score >= 60 ? 'bg-green-400/60' : 'bg-gray-300 dark:bg-gray-600'}`}
+                                                            className={`h-full rounded-full ${cat.score >= 80 ? 'bg-status-success' : cat.score >= 60 ? 'bg-status-success/60' : 'bg-gray-300 dark:bg-gray-600'}`}
                                                             style={{ width: `${cat.score}%` }}
                                                           />
                                                         </div>
@@ -3427,7 +3427,7 @@ export function CandidatePreview({
                                           <div className="mt-3 space-y-3">
                                             <div className={`${cardStyles.default} p-3`}>
                                               <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
-                                                <Video className="w-3 h-3 text-purple-500" />
+                                                <Video className="w-3 h-3 text-wedo-purple" />
                                                 Entrevista em Vídeo
                                                 <Badge className={`ml-2 ${badgeStyles.success}`}>
                                                   {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
@@ -3448,8 +3448,8 @@ export function CandidatePreview({
                                                 </div>
                                               </div>
                                               {activity.details.wsiScore && (
-                                                <div className="mb-3 p-2 bg-purple-50/50 rounded-md border border-purple-100">
-                                                  <p className={`${textStyles.labelSmall} text-purple-600 mb-2 flex items-center gap-1`}>
+                                                <div className="mb-3 p-2 bg-wedo-purple/10/50 rounded-md border border-wedo-purple/30">
+                                                  <p className={`${textStyles.labelSmall} text-wedo-purple mb-2 flex items-center gap-1`}>
                                                     <Target className="w-3 h-3" />
                                                     Score WSI
                                                   </p>
@@ -3463,12 +3463,12 @@ export function CandidatePreview({
                                                       <p className={textStyles.caption}>Comportamental</p>
                                                     </div>
                                                     <div className="text-center">
-                                                      <p className="text-base font-bold text-purple-600">{activity.details.wsiScore.overallWsi?.toFixed(1) || '-'}</p>
+                                                      <p className="text-base font-bold text-wedo-purple">{activity.details.wsiScore.overallWsi?.toFixed(1) || '-'}</p>
                                                       <p className={textStyles.caption}>Geral</p>
                                                     </div>
                                                     <Badge className={`${
                                                       activity.details.wsiScore.classification === 'excelente' ? badgeStyles.success :
-                                                      activity.details.wsiScore.classification === 'alto' ? 'bg-green-100 text-green-700' :
+                                                      activity.details.wsiScore.classification === 'alto' ? 'bg-status-success/15 text-status-success' :
                                                       activity.details.wsiScore.classification === 'medio' ? badgeStyles.warning :
                                                       badgeStyles.error
                                                     } text-micro`}>
@@ -3630,7 +3630,7 @@ export function CandidatePreview({
                                       className={`text-xs px-1.5 py-0 h-4 ${
                                         activity.score >= 80 ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' :
                                         activity.score >= 60 ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' :
-                                        'bg-red-50 text-red-700 border-red-200 font-medium'
+                                        'bg-status-error/10 text-status-error border-status-error/30 font-medium'
                                       }`}
                                     >
                                       {formatScorePercent(activity.score)}
@@ -3641,7 +3641,7 @@ export function CandidatePreview({
                                       className={`text-xs px-1.5 py-0 h-4 ${
                                         activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' :
                                         activity.status === 'in-progress' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' :
-                                        activity.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200 font-medium' :
+                                        activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' :
                                         'bg-white text-gray-600 dark:text-gray-400 border-gray-100'
                                       }`}
                                     >
@@ -3706,7 +3706,7 @@ export function CandidatePreview({
                                     <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
                                     <div className="flex flex-wrap gap-1">
                                       {(activity.details.strengths || []).map((s: string, i: number) => (
-                                        <Badge key={i} className="text-micro px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
+                                        <Badge key={i} className="text-micro px-1.5 py-0 bg-status-success/10 text-status-success border-status-success/30">
                                           ✓ {s}
                                         </Badge>
                                       ))}
@@ -3718,7 +3718,7 @@ export function CandidatePreview({
                                       <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos de Atenção</p>
                                       <div className="flex flex-wrap gap-1">
                                         {activity.details.areasToImprove.map((a: string, i: number) => (
-                                          <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
+                                          <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-status-warning/10 text-status-warning border-status-warning/30">
                                             ⚠ {a}
                                           </Badge>
                                         ))}
@@ -3746,10 +3746,10 @@ export function CandidatePreview({
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
                                   <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                                    <Calendar className="w-3 h-3 text-purple-600" />
+                                    <Calendar className="w-3 h-3 text-wedo-purple" />
                                     {activity.details.interviewType}
                                     {activity.details.stage && (
-                                      <Badge className="ml-2 text-micro px-1.5 py-0 bg-purple-50 text-purple-700">{activity.details.stage}</Badge>
+                                      <Badge className="ml-2 text-micro px-1.5 py-0 bg-wedo-purple/10 text-wedo-purple">{activity.details.stage}</Badge>
                                     )}
                                   </h5>
 
@@ -3808,13 +3808,13 @@ export function CandidatePreview({
                                   )}
 
                                   {activity.details.previousInterviews && activity.details.previousInterviews.length > 0 && (
-                                    <div className="bg-green-50 border border-green-100 p-2 rounded mb-3">
-                                      <p className="text-xs font-semibold text-green-800 mb-1">✅ Etapas Anteriores Concluídas</p>
+                                    <div className="bg-status-success/10 border border-status-success/30 p-2 rounded mb-3">
+                                      <p className="text-xs font-semibold text-status-success mb-1">✅ Etapas Anteriores Concluídas</p>
                                       <div className="space-y-1">
                                         {activity.details.previousInterviews.map((pi: any, i: number) => (
                                           <div key={i} className="flex justify-between text-xs">
-                                            <span className="text-green-700">{pi.stage} - {pi.type}</span>
-                                            <span className="font-medium text-green-800">{pi.score}%</span>
+                                            <span className="text-status-success">{pi.stage} - {pi.type}</span>
+                                            <span className="font-medium text-status-success">{pi.score}%</span>
                                           </div>
                                         ))}
                                       </div>
@@ -3839,9 +3839,9 @@ export function CandidatePreview({
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
                                   <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                                    <FileText className="w-3 h-3 text-green-600" />
+                                    <FileText className="w-3 h-3 text-status-success" />
                                     Candidatura Recebida
-                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-green-50 text-green-700">{activity.details.source}</Badge>
+                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">{activity.details.source}</Badge>
                                   </h5>
 
                                   <div className="grid grid-cols-2 gap-2 mb-3">
@@ -3870,7 +3870,7 @@ export function CandidatePreview({
                                       </Badge>
                                     )}
                                     {activity.details.coverLetter && (
-                                      <Badge className="text-micro px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200">
+                                      <Badge className="text-micro px-2 py-0.5 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                                         ✉️ Carta de Apresentação
                                       </Badge>
                                     )}
@@ -3881,9 +3881,9 @@ export function CandidatePreview({
                                       <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Perguntas de Triagem</p>
                                       <div className="space-y-2">
                                         {activity.details.screeningQuestions.map((sq: any, i: number) => (
-                                          <div key={i} className={`p-2 rounded border ${sq.passed ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                                          <div key={i} className={`p-2 rounded border ${sq.passed ? 'bg-status-success/10 border-status-success/30' : 'bg-status-error/10 border-status-error/30'}`}>
                                             <p className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1">{sq.question}</p>
-                                            <p className={`text-xs ${sq.passed ? 'text-green-700' : 'text-red-700'}`}>
+                                            <p className={`text-xs ${sq.passed ? 'text-status-success' : 'text-status-error'}`}>
                                               {sq.passed ? '✓' : '✗'} {sq.answer}
                                             </p>
                                           </div>
@@ -3917,9 +3917,9 @@ export function CandidatePreview({
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
                                   <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                                    <Mic className="w-3 h-3 text-red-500" />
+                                    <Mic className="w-3 h-3 text-status-error" />
                                     Triagem por Voz
-                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-green-50 text-green-700">
+                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">
                                       {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
                                     </Badge>
                                   </h5>
@@ -3978,11 +3978,11 @@ export function CandidatePreview({
                                   )}
 
                                   {activity.details.highlights && (
-                                    <div className="bg-green-50 border border-green-100 p-2 rounded mb-3">
-                                      <p className="text-xs font-semibold text-green-800 mb-1">✨ Destaques</p>
+                                    <div className="bg-status-success/10 border border-status-success/30 p-2 rounded mb-3">
+                                      <p className="text-xs font-semibold text-status-success mb-1">✨ Destaques</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.highlights.map((h: string, i: number) => (
-                                          <li key={i} className="text-xs text-green-700 flex items-start gap-1">
+                                          <li key={i} className="text-xs text-status-success flex items-start gap-1">
                                             <span>•</span> {h}
                                           </li>
                                         ))}
@@ -3996,7 +3996,7 @@ export function CandidatePreview({
                                   </div>
 
                                   <div className="flex gap-2">
-                                    <Button size="sm" className="text-xs h-7 bg-red-600 hover:bg-red-700">
+                                    <Button size="sm" className="text-xs h-7 bg-status-error hover:bg-status-error">
                                       <Play className="w-3 h-3 mr-1" />
                                       Ouvir Gravação
                                     </Button>
@@ -4013,9 +4013,9 @@ export function CandidatePreview({
                               <div className="mt-3 space-y-3">
                                 <div className="bg-white dark:bg-gray-900 p-3 rounded">
                                   <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                                    <Code className="w-3 h-3 text-amber-600" />
+                                    <Code className="w-3 h-3 text-status-warning" />
                                     {activity.details.testName}
-                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-amber-50 text-amber-700">{activity.details.provider}</Badge>
+                                    <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-warning/10 text-status-warning">{activity.details.provider}</Badge>
                                   </h5>
 
                                   <div className="grid grid-cols-4 gap-2 mb-3">
@@ -4027,8 +4027,8 @@ export function CandidatePreview({
                                       <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{activity.details.timeSpent}</p>
                                       <p className={textStyles.bodySmall}>Tempo</p>
                                     </div>
-                                    <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                                      <p className="text-lg font-bold text-green-700 dark:text-green-400">{activity.score}%</p>
+                                    <div className="text-center p-2 bg-status-success/10 dark:bg-status-success/20 rounded">
+                                      <p className="text-lg font-bold text-status-success dark:text-status-success">{activity.score}%</p>
                                       <p className={textStyles.bodySmall}>Score</p>
                                     </div>
                                     <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
@@ -4046,7 +4046,7 @@ export function CandidatePreview({
                                             <span className="text-xs text-gray-600 dark:text-gray-400 w-40 truncate">{cat.name}</span>
                                             <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
                                               <div 
-                                                className={`h-full rounded-full ${cat.score >= 80 ? 'bg-green-500' : cat.score >= 60 ? 'bg-green-400/60' : 'bg-gray-300 dark:bg-gray-600'}`}
+                                                className={`h-full rounded-full ${cat.score >= 80 ? 'bg-status-success' : cat.score >= 60 ? 'bg-status-success/60' : 'bg-gray-300 dark:bg-gray-600'}`}
                                                 style={{ width: `${cat.score}%` }}
                                               />
                                             </div>
@@ -4058,28 +4058,28 @@ export function CandidatePreview({
                                   )}
 
                                   {activity.details.codeChallenge && (
-                                    <div className="bg-purple-50 border border-purple-100 p-2 rounded mb-3">
-                                      <p className="text-xs font-semibold text-purple-800 mb-1">💻 Code Challenge: {activity.details.codeChallenge.name}</p>
+                                    <div className="bg-wedo-purple/10 border border-wedo-purple/30 p-2 rounded mb-3">
+                                      <p className="text-xs font-semibold text-wedo-purple mb-1">💻 Code Challenge: {activity.details.codeChallenge.name}</p>
                                       <div className="grid grid-cols-3 gap-2 text-xs">
                                         <div>
-                                          <span className="text-purple-600">Qualidade:</span>
-                                          <span className="font-medium text-purple-800 ml-1">{activity.details.codeChallenge.codeQuality}%</span>
+                                          <span className="text-wedo-purple">Qualidade:</span>
+                                          <span className="font-medium text-wedo-purple ml-1">{activity.details.codeChallenge.codeQuality}%</span>
                                         </div>
                                         <div>
-                                          <span className="text-purple-600">Funcionalidade:</span>
-                                          <span className="font-medium text-purple-800 ml-1">{activity.details.codeChallenge.functionality}%</span>
+                                          <span className="text-wedo-purple">Funcionalidade:</span>
+                                          <span className="font-medium text-wedo-purple ml-1">{activity.details.codeChallenge.functionality}%</span>
                                         </div>
                                         <div>
-                                          <span className="text-purple-600">Boas Práticas:</span>
-                                          <span className="font-medium text-purple-800 ml-1">{activity.details.codeChallenge.bestPractices}%</span>
+                                          <span className="text-wedo-purple">Boas Práticas:</span>
+                                          <span className="font-medium text-wedo-purple ml-1">{activity.details.codeChallenge.bestPractices}%</span>
                                         </div>
                                       </div>
-                                      <p className="text-xs text-purple-700 mt-1 italic">{activity.details.codeChallenge.feedback}</p>
+                                      <p className="text-xs text-wedo-purple mt-1 italic">{activity.details.codeChallenge.feedback}</p>
                                     </div>
                                   )}
 
                                   {activity.details.proctoring && (
-                                    <div className={`p-2 rounded mb-3 ${activity.details.proctoring.status === 'Clean' ? 'bg-green-50 border border-green-100' : 'bg-yellow-50 border border-yellow-100'}`}>
+                                    <div className={`p-2 rounded mb-3 ${activity.details.proctoring.status === 'Clean' ? 'bg-status-success/10 border border-status-success/30' : 'bg-status-warning/10 border border-status-warning/30'}`}>
                                       <p className="text-xs font-semibold mb-1 flex items-center gap-1">
                                         <Shield className="w-3 h-3" />
                                         Proctoring: {activity.details.proctoring.status}
@@ -4123,12 +4123,12 @@ export function CandidatePreview({
                                       <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📋 Critérios Avaliados</p>
                                       <div className="space-y-2">
                                         {activity.details.criteriaScores.map((c: any, i: number) => (
-                                          <div key={i} className={`p-2 rounded border ${c.status === 'exceeded' ? 'bg-green-50 border-green-200' : c.status === 'partial' ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 dark:bg-gray-800 border-gray-200'}`}>
+                                          <div key={i} className={`p-2 rounded border ${c.status === 'exceeded' ? 'bg-status-success/10 border-status-success/30' : c.status === 'partial' ? 'bg-status-warning/10 border-status-warning/30' : 'bg-gray-50 dark:bg-gray-800 border-gray-200'}`}>
                                             <div className="flex justify-between items-center mb-1">
                                               <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{c.criteria}</span>
                                               <div className="flex items-center gap-2">
                                                 <span className="text-micro text-gray-500 dark:text-gray-400">Peso: {c.weight}%</span>
-                                                <Badge className={`text-micro px-1.5 py-0 ${c.score >= 90 ? 'bg-green-100 text-green-700' : c.score >= 70 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                                                <Badge className={`text-micro px-1.5 py-0 ${c.score >= 90 ? 'bg-status-success/15 text-status-success' : c.score >= 70 ? 'bg-status-warning/15 text-status-warning' : 'bg-status-error/15 text-status-error'}`}>
                                                   {c.score}%
                                                 </Badge>
                                               </div>
@@ -4147,7 +4147,7 @@ export function CandidatePreview({
                                         <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">✓ Requisitos Obrigatórios</p>
                                         <div className="space-y-0.5">
                                           {activity.details.mustHaveRequirements.map((r: any, i: number) => (
-                                            <p key={i} className={`text-xs ${r.met ? 'text-green-700' : 'text-red-700'}`}>
+                                            <p key={i} className={`text-xs ${r.met ? 'text-status-success' : 'text-status-error'}`}>
                                               {r.met ? '✓' : '✗'} {r.requirement}
                                             </p>
                                           ))}
@@ -4159,7 +4159,7 @@ export function CandidatePreview({
                                         <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">○ Requisitos Desejáveis</p>
                                         <div className="space-y-0.5">
                                           {activity.details.niceToHaveRequirements.map((r: any, i: number) => (
-                                            <p key={i} className={`text-xs ${r.met ? 'text-green-700' : 'text-gray-500'}`}>
+                                            <p key={i} className={`text-xs ${r.met ? 'text-status-success' : 'text-gray-500'}`}>
                                               {r.met ? '✓' : '○'} {r.requirement}
                                             </p>
                                           ))}
@@ -4169,22 +4169,22 @@ export function CandidatePreview({
                                   </div>
 
                                   {activity.details.competitiveAdvantages && (
-                                    <div className="bg-green-50 border border-green-100 p-2 rounded mb-3">
-                                      <p className="text-xs font-semibold text-green-800 mb-1">🌟 Diferenciais Competitivos</p>
+                                    <div className="bg-status-success/10 border border-status-success/30 p-2 rounded mb-3">
+                                      <p className="text-xs font-semibold text-status-success mb-1">🌟 Diferenciais Competitivos</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.competitiveAdvantages.map((a: string, i: number) => (
-                                          <li key={i} className="text-xs text-green-700">• {a}</li>
+                                          <li key={i} className="text-xs text-status-success">• {a}</li>
                                         ))}
                                       </ul>
                                     </div>
                                   )}
 
                                   {activity.details.gaps && activity.details.gaps.length > 0 && (
-                                    <div className="bg-yellow-50 border border-yellow-100 p-2 rounded mb-3">
-                                      <p className="text-xs font-semibold text-yellow-800 mb-1">⚠️ Gaps Identificados</p>
+                                    <div className="bg-status-warning/10 border border-status-warning/30 p-2 rounded mb-3">
+                                      <p className="text-xs font-semibold text-status-warning mb-1">⚠️ Gaps Identificados</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.gaps.map((g: string, i: number) => (
-                                          <li key={i} className="text-xs text-yellow-700">• {g}</li>
+                                          <li key={i} className="text-xs text-status-warning">• {g}</li>
                                         ))}
                                       </ul>
                                     </div>
@@ -4208,7 +4208,7 @@ export function CandidatePreview({
  <Badge className="ml-2 text-micro px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800">{activity.details.offerNumber}</Badge>
                                     </h5>
                                     {activity.details.daysRemaining && (
-                                      <Badge className="text-micro px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
+                                      <Badge className="text-micro px-1.5 py-0 bg-status-warning/10 text-status-warning border-status-warning/30">
                                         ⏰ {activity.details.daysRemaining} dias restantes
                                       </Badge>
                                     )}
@@ -4221,7 +4221,7 @@ export function CandidatePreview({
                                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">+ Bônus: {activity.details.annualBonus}</p>
                                     )}
                                     {activity.details.signingBonus && (
-                                      <p className="text-xs text-green-700">+ Signing Bonus: {activity.details.signingBonus}</p>
+                                      <p className="text-xs text-status-success">+ Signing Bonus: {activity.details.signingBonus}</p>
                                     )}
                                   </div>
 
@@ -4276,9 +4276,9 @@ export function CandidatePreview({
                                   )}
 
                                   {activity.details.negotiationNotes && (
-                                    <div className="bg-yellow-50 border border-yellow-100 p-2 rounded mb-3">
-                                      <p className="text-xs font-semibold text-yellow-800 mb-1">📝 Notas da Negociação</p>
-                                      <p className="text-xs text-yellow-700">{activity.details.negotiationNotes}</p>
+                                    <div className="bg-status-warning/10 border border-status-warning/30 p-2 rounded mb-3">
+                                      <p className="text-xs font-semibold text-status-warning mb-1">📝 Notas da Negociação</p>
+                                      <p className="text-xs text-status-warning">{activity.details.negotiationNotes}</p>
                                     </div>
                                   )}
 
@@ -4431,8 +4431,8 @@ export function CandidatePreview({
                                   </div>
 
                                   {activity.details.leadershipStrengths && (
-                                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-2 rounded mb-3">
-                                      <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-1">💪 Pontos Fortes de Liderança</p>
+                                    <div className="bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30 p-2 rounded mb-3">
+                                      <p className="text-xs font-semibold text-status-success dark:text-status-success mb-1">💪 Pontos Fortes de Liderança</p>
                                       <ul className="space-y-0.5">
                                         {activity.details.leadershipStrengths.map((s: string, i: number) => (
                                           <li key={i} className="text-xs text-gray-800 dark:text-gray-200">✓ {s}</li>
@@ -4536,7 +4536,7 @@ export function CandidatePreview({
                                   </h5>
 
                                   {/* Checklist de Onboarding */}
-                                  <div className="bg-green-50 p-2 rounded mb-3">
+                                  <div className="bg-status-success/10 p-2 rounded mb-3">
                                     <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">
                                       📋 Checklist de Integração
                                     </p>
@@ -4719,7 +4719,7 @@ export function CandidatePreview({
                               <div className="mt-2 space-y-2">
                                 <div className="bg-white dark:bg-gray-900 p-2 rounded">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <FileVideo className="w-4 h-4 text-red-600" />
+                                    <FileVideo className="w-4 h-4 text-status-error" />
                                     <span className={textStyles.bodySmall}>
                                       Vídeo de {activity.duration}
                                     </span>
@@ -5052,7 +5052,7 @@ export function CandidatePreview({
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="p-1 h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                  className="p-1 h-6 w-6 text-status-error hover:text-status-error hover:bg-status-error/10"
                                   onClick={() => handleDeleteFile(file.id)}
                                   title="Excluir arquivo"
                                 >
@@ -5249,8 +5249,8 @@ export function CandidatePreview({
                   onClick={() => setExpandedActivity(expandedActivity === 'video1' ? null : 'video1')}
                 >
                   <div className="flex items-start gap-2">
-                    <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                      <FileVideo className="w-3.5 h-3.5 text-red-600" />
+                    <div className="w-7 h-7 rounded-full bg-status-error/15 flex items-center justify-center flex-shrink-0">
+                      <FileVideo className="w-3.5 h-3.5 text-status-error" />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -5485,8 +5485,8 @@ export function CandidatePreview({
               <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
                 <div className="p-2.5">
                   <div className="flex items-start gap-2">
-                    <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                      <Mic className="w-3.5 h-3.5 text-purple-600" />
+                    <div className="w-7 h-7 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
+                      <Mic className="w-3.5 h-3.5 text-wedo-purple" />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -5510,7 +5510,7 @@ export function CandidatePreview({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Badge className="text-xs px-1.5 py-0 h-4 bg-green-100 text-green-700">
+                          <Badge className="text-xs px-1.5 py-0 h-4 bg-status-success/15 text-status-success">
                             Transcrito
                           </Badge>
                           <Button
@@ -5541,8 +5541,8 @@ export function CandidatePreview({
               <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
                 <div className="p-2.5">
                   <div className="flex items-start gap-2">
-                    <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                      <Mic className="w-3.5 h-3.5 text-purple-600" />
+                    <div className="w-7 h-7 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
+                      <Mic className="w-3.5 h-3.5 text-wedo-purple" />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -5566,7 +5566,7 @@ export function CandidatePreview({
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                          <Badge className="text-xs px-1.5 py-0 h-4 bg-amber-100 text-amber-700">
+                          <Badge className="text-xs px-1.5 py-0 h-4 bg-status-warning/15 text-status-warning">
                             Pendente
                           </Badge>
                           <Button
@@ -5621,7 +5621,7 @@ export function CandidatePreview({
                 onClick={() => setOpinionsSubTab('analises')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
                   opinionsSubTab === 'analises'
-                    ? 'bg-purple-50 text-purple-600 border-b-2 border-purple-500'
+                    ? 'bg-wedo-purple/10 text-wedo-purple border-b-2 border-wedo-purple/30'
  : 'text-gray-500 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-50'
                 }`}
               >
@@ -5724,8 +5724,8 @@ export function CandidatePreview({
                 {/* Empty State */}
                 {!isLoadingAnalyses && (!savedAnalyses || savedAnalyses.total_analyses === 0) && (
                   <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md p-6 text-center">
-                    <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center mx-auto mb-3">
-                      <Brain className="w-6 h-6 text-purple-300" />
+                    <div className="w-12 h-12 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-3">
+                      <Brain className="w-6 h-6 text-wedo-purple" />
                     </div>
                     <p className={`${textStyles.subtitle} mb-1`}>Nenhuma análise disponível</p>
                     <p className={textStyles.description}>
@@ -5756,8 +5756,8 @@ export function CandidatePreview({
                             onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id)}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                <Brain className="w-4 h-4 text-purple-600" />
+                              <div className="w-8 h-8 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
+                                <Brain className="w-4 h-4 text-wedo-purple" />
                               </div>
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2">
@@ -5791,7 +5791,7 @@ export function CandidatePreview({
                                     className="p-1 hover:bg-gray-100 rounded transition-colors"
                                   >
                                     {copiedItemId === `analysis-${analysis.id}` ? (
-                                      <Check className="w-3.5 h-3.5 text-green-500" />
+                                      <Check className="w-3.5 h-3.5 text-status-success" />
                                     ) : (
                                       <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:text-gray-400" />
                                     )}
@@ -5818,9 +5818,9 @@ export function CandidatePreview({
                                         e.stopPropagation()
                                         setAnalysisToDelete(analysis)
                                       }}
-                                      className="p-1.5 hover:bg-red-50 rounded transition-colors group"
+                                      className="p-1.5 hover:bg-status-error/10 rounded transition-colors group"
                                     >
-                                      <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500" />
+                                      <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-status-error" />
                                     </button>
                                   </TooltipTrigger>
                                   <TooltipContent side="top" className="text-micro">Remover análise</TooltipContent>
@@ -5896,7 +5896,7 @@ export function CandidatePreview({
             <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Ações rápidas sugeridas</span>
- <Badge className="bg-green-100 text-gray-800 dark:bg-green-900 text-xs px-1.5 py-0.5">
+ <Badge className="bg-status-success/15 text-gray-800 dark:bg-status-success text-xs px-1.5 py-0.5">
                   Score {formatScorePercent(candidate.score)}
                 </Badge>
               </div>
@@ -6108,8 +6108,8 @@ export function CandidatePreview({
               <div className="flex items-center gap-2">
                 {previewType === 'pdf' && <FileText className="w-4 h-4 text-gray-800 dark:text-gray-200" />}
                 {previewType === 'image' && <Image className="w-4 h-4 text-gray-800 dark:text-gray-200" />}
-                {previewType === 'video' && <FileVideo className="w-4 h-4 text-red-600" />}
-                {previewType === 'audio' && <Mic className="w-4 h-4 text-purple-600" />}
+                {previewType === 'video' && <FileVideo className="w-4 h-4 text-status-error" />}
+                {previewType === 'audio' && <Mic className="w-4 h-4 text-wedo-purple" />}
                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                   {selectedFile.name}
                 </span>
@@ -6395,11 +6395,11 @@ export function CandidatePreview({
                   {/* Áudio Player e Conteúdo Principal */}
                   <div className="col-span-2">
                     {/* Player de Áudio */}
-                    <div className="bg-purple-50 rounded-md p-4 flex items-center justify-center">
+                    <div className="bg-wedo-purple/10 rounded-md p-4 flex items-center justify-center">
                       <div className="text-center w-full">
                         <div className="flex items-center justify-center mb-3">
-                          <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
-                            <Mic className="w-8 h-8 text-purple-600" />
+                          <div className="w-16 h-16 rounded-full bg-wedo-purple/15 flex items-center justify-center">
+                            <Mic className="w-8 h-8 text-wedo-purple" />
                           </div>
                         </div>
                         <p className="text-gray-800 dark:text-gray-200 mb-2">
@@ -6419,8 +6419,8 @@ export function CandidatePreview({
                             {audioPlaying ? <Pause className="w-4 h-4 text-white" /> : <Play className="w-4 h-4 text-white" />}
                           </Button>
                           <div className="flex-1">
-                            <div className="h-2 bg-purple-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-purple-600 rounded-full transition-all" style={{ width: audioPlaying ? '35%' : '0%' }} />
+                            <div className="h-2 bg-wedo-purple/10 rounded-full overflow-hidden">
+                              <div className="h-full bg-wedo-purple rounded-full transition-all" style={{ width: audioPlaying ? '35%' : '0%' }} />
                             </div>
                           </div>
                           <span className="text-xs text-gray-600 dark:text-gray-400 font-mono w-20 text-right">
@@ -6540,7 +6540,7 @@ export function CandidatePreview({
 
                       <div className="space-y-3 text-xs">
                         {/* Transcrição de exemplo */}
-                        <div className="border-l-2 border-purple-400 pl-3">
+                        <div className="border-l-2 border-wedo-purple/30 pl-3">
                           <p className={`${textStyles.bodySmall} mb-1`}>
                             0:00 • Candidato
                           </p>
@@ -6549,7 +6549,7 @@ export function CandidatePreview({
                           </p>
                         </div>
 
-                        <div className="border-l-2 border-purple-400 pl-3">
+                        <div className="border-l-2 border-wedo-purple/30 pl-3">
                           <p className={`${textStyles.bodySmall} mb-1`}>
                             1:15 • Candidato
                           </p>
@@ -6558,7 +6558,7 @@ export function CandidatePreview({
                           </p>
                         </div>
 
-                        <div className="border-l-2 border-purple-400 pl-3">
+                        <div className="border-l-2 border-wedo-purple/30 pl-3">
                           <p className={`${textStyles.bodySmall} mb-1`}>
                             2:30 • Candidato
                           </p>
@@ -6567,7 +6567,7 @@ export function CandidatePreview({
                           </p>
                         </div>
 
-                        <div className="border-l-2 border-purple-400 pl-3">
+                        <div className="border-l-2 border-wedo-purple/30 pl-3">
                           <p className={`${textStyles.bodySmall} mb-1`}>
                             3:45 • Candidato
                           </p>
@@ -6577,7 +6577,7 @@ export function CandidatePreview({
                         </div>
 
                         {/* Highlights identificados pela LIA */}
-                        <div className="mt-4 p-2 bg-purple-50 rounded">
+                        <div className="mt-4 p-2 bg-wedo-purple/10 rounded">
                           <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
                             🎯 Highlights da LIA
                           </p>
@@ -6639,7 +6639,7 @@ export function CandidatePreview({
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => analysisToDelete && handleDeleteAnalysis(analysisToDelete)}
-              className="bg-red-500 hover:bg-red-600 text-xs text-white"
+              className="bg-status-error hover:bg-status-error text-xs text-white"
               disabled={isDeletingAnalysis}
             >
               {isDeletingAnalysis ? 'Removendo...' : 'Remover Definitivamente'}

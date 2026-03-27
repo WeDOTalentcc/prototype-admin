@@ -32,13 +32,13 @@ export default function LGPDPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Ativo</Badge>
+        return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Ativo</Badge>
       case 'pending':
-        return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Pendente</Badge>
+        return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Pendente</Badge>
       case 'in_progress':
         return <Badge className="text-gray-600 dark:text-gray-400 hover:bg-gray-100">Em andamento</Badge>
       case 'completed':
-        return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Concluído</Badge>
+        return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Concluído</Badge>
       default:
         return <Badge>{status}</Badge>
     }
@@ -47,9 +47,9 @@ export default function LGPDPage() {
   const getAlertIcon = (type: string) => {
     switch (type) {
       case 'warning':
-        return <Clock className="w-4 h-4 text-amber-500" />
+        return <Clock className="w-4 h-4 text-status-warning" />
       case 'error':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />
+        return <AlertTriangle className="w-4 h-4 text-status-error" />
       default:
         return <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" />
     }
@@ -131,7 +131,7 @@ export default function LGPDPage() {
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle className="w-5 h-5 text-status-success" />
                 </div>
               </div>
             </CardContent>
@@ -152,7 +152,7 @@ export default function LGPDPage() {
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
-                  <Clock className="w-5 h-5 text-amber-500" />
+                  <Clock className="w-5 h-5 text-status-warning" />
                 </div>
               </div>
             </CardContent>
@@ -169,13 +169,13 @@ export default function LGPDPage() {
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : incidentesLGPD}
                   </p>
                   {stats?.breachesPendingAnpd ? (
-                    <p className="text-xs mt-1 text-red-600">
+                    <p className="text-xs mt-1 text-status-error">
                       {stats.breachesPendingAnpd} pendentes ANPD
                     </p>
                   ) : null}
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
               </div>
             </CardContent>
@@ -338,7 +338,7 @@ export default function LGPDPage() {
             <Card style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  <AlertTriangle className="w-4 h-4 text-status-warning" />
                   Alertas de Compliance
                 </CardTitle>
               </CardHeader>

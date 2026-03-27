@@ -68,8 +68,8 @@ export function OnboardingReplayButton({
 
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuItem className="gap-3 cursor-pointer">
-          <div className="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
-            <BookOpen className="w-4 h-4 text-green-600" />
+          <div className="w-8 h-8 bg-status-success/15 rounded-md flex items-center justify-center">
+            <BookOpen className="w-4 h-4 text-status-success" />
           </div>
           <div className="flex-1">
             <div className="font-medium">Central de Ajuda</div>
@@ -81,7 +81,7 @@ export function OnboardingReplayButton({
 
         <DropdownMenuItem className="gap-3 cursor-pointer">
           <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-            <Video className="w-4 h-4 text-purple-600" />
+            <Video className="w-4 h-4 text-wedo-purple" />
           </div>
           <div className="flex-1">
             <div className="font-medium">Vídeos Tutoriais</div>
@@ -92,8 +92,8 @@ export function OnboardingReplayButton({
         </DropdownMenuItem>
 
         <DropdownMenuItem className="gap-3 cursor-pointer">
-          <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center">
-            <FileText className="w-4 h-4 text-orange-600" />
+          <div className="w-8 h-8 bg-wedo-orange/15 rounded-md flex items-center justify-center">
+            <FileText className="w-4 h-4 text-wedo-orange" />
           </div>
           <div className="flex-1">
             <div className="font-medium">Guia de Início Rápido</div>

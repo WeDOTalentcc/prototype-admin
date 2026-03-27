@@ -61,7 +61,7 @@ export default function UpgradePage() {
       </div>
 
       <div className="text-center mb-10 max-w-xl">
-        <Badge variant="outline" className="mb-4 border-amber-300 text-amber-700 bg-amber-50">
+        <Badge variant="outline" className="mb-4 border-status-warning/30 text-status-warning bg-status-warning/10">
           Período de trial encerrado
         </Badge>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">

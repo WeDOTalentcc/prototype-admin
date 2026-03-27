@@ -180,7 +180,7 @@ export function JobDuplicateModal({
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-md bg-gray-50 border border-gray-200">
                   {KEPT_ITEMS.map((item) => (
                     <div key={item} className="flex items-center gap-1.5 text-xs text-gray-800">
-                      <Check className="w-3 h-3 text-green-600 flex-shrink-0" />
+                      <Check className="w-3 h-3 text-status-success flex-shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}

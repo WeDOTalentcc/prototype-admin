@@ -99,9 +99,9 @@ export function CalibrationStage() {
             <CheckCircle2 className="w-4 h-4 text-status-success" />
             <span className="text-xs font-medium text-status-success">{approvedCandidates.length}</span>
           </div>
-          <div className="flex items-center gap-1 px-3 py-1.5 bg-red-50 rounded-md">
-            <XCircle className="w-4 h-4 text-red-500" />
-            <span className="text-xs font-medium text-red-500">{rejectedCandidates.length}</span>
+          <div className="flex items-center gap-1 px-3 py-1.5 bg-status-error/10 rounded-md">
+            <XCircle className="w-4 h-4 text-status-error" />
+            <span className="text-xs font-medium text-status-error">{rejectedCandidates.length}</span>
           </div>
         </div>
         <p className="text-micro text-gray-400 text-center max-w-xs">
@@ -150,7 +150,7 @@ export function CalibrationStage() {
                 "w-2 h-2 rounded-full transition-all",
                 i === currentCalibrationIndex && "w-4",
                 cStatus === 'approved' ? "bg-status-success" :
-                cStatus === 'rejected' ? "bg-red-400" :
+                cStatus === 'rejected' ? "bg-status-error" :
                 i === currentCalibrationIndex ? "bg-gray-900 dark:bg-gray-50" : "bg-gray-300"
               )}
             />
@@ -162,7 +162,7 @@ export function CalibrationStage() {
       <div className={cn(
         "rounded-md border overflow-hidden transition-all",
         status === 'approved' ? "border-status-success bg-status-success/5" :
-        status === 'rejected' ? "border-red-400 bg-red-50" :
+        status === 'rejected' ? "border-status-error/30 bg-status-error/10" :
         "border-gray-200"
       )}>
         {/* Header */}
@@ -186,7 +186,7 @@ export function CalibrationStage() {
           </div>
           <div className="text-right">
             <div className="flex items-center gap-1 justify-end">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <Star className="w-4 h-4 fill-amber-400 text-status-warning" />
               <span className="text-sm font-semibold text-gray-800">{currentCandidate.overallScore || 85}%</span>
             </div>
             <span className="text-micro text-gray-400">Match Score</span>
@@ -230,7 +230,7 @@ export function CalibrationStage() {
               <span className="text-micro font-semibold text-gray-500 uppercase">Skills</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {currentCandidate.skillMap.flatMap(sm => sm.skills).slice(0, 8).map((skill, i) => (
-                  <span key={i} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-micro rounded-full">
+                  <span key={i} className="px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark text-micro rounded-full">
                     {skill}
                   </span>
                 ))}
@@ -251,7 +251,7 @@ export function CalibrationStage() {
                     {mc.isMatch ? (
                       <CheckCircle2 className="w-3 h-3 text-status-success" />
                     ) : (
-                      <XCircle className="w-3 h-3 text-red-400" />
+                      <XCircle className="w-3 h-3 text-status-error" />
                     )}
                     <span className={mc.isMatch ? "text-gray-800" : "text-gray-400"}>
                       {mc.criteria}
@@ -278,8 +278,8 @@ export function CalibrationStage() {
             className={cn(
               "flex-1 py-2 px-4 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1.5",
               status === 'rejected'
-                ? "bg-red-500 text-white"
-                : "border border-red-300 text-red-500 hover:bg-red-50"
+                ? "bg-status-error text-white"
+                : "border border-status-error/30 text-status-error hover:bg-status-error/10"
             )}
           >
             <XCircle className="w-4 h-4" />

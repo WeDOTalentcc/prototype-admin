@@ -86,13 +86,13 @@ export function DataBlockingModal({
     switch (status) {
       case 'pending':
         return (
-          <span className="text-micro bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">
+          <span className="text-micro bg-status-warning/15 text-status-warning px-1.5 py-0.5 rounded-full">
             Aguardando
           </span>
         )
       case 'expired':
         return (
-          <span className="text-micro bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">
+          <span className="text-micro bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-full">
             Expirado
           </span>
         )
@@ -128,7 +128,7 @@ export function DataBlockingModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-sm rounded-md dark:bg-gray-900 dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+          <DialogTitle className="flex items-center gap-2 text-status-warning dark:text-status-warning">
             <AlertTriangle className="w-5 h-5" />
             Dados Pendentes
           </DialogTitle>
@@ -138,8 +138,8 @@ export function DataBlockingModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3">
-            <p className="text-sm text-amber-800 dark:text-amber-300">
+          <div className="bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-3">
+            <p className="text-sm text-status-warning dark:text-status-warning">
               Esta etapa requer informações adicionais do candidato. 
               Você pode solicitar os dados ou avançar mesmo assim.
             </p>

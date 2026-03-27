@@ -62,35 +62,35 @@ const STATUS_CONFIG: Record<VoiceStatus, {
   calling: {
     icon: PhoneCall,
     label: 'Chamando candidato...',
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+    color: 'text-status-warning',
+    bgColor: 'bg-status-warning/10 dark:bg-status-warning/20',
     animate: true
   },
   in_progress: {
     icon: Mic,
     label: 'Triagem em andamento',
-    color: 'text-green-500',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
+    color: 'text-status-success',
+    bgColor: 'bg-status-success/10 dark:bg-status-success/20',
     animate: true
   },
   processing: {
     icon: Brain,
     label: 'Processando respostas...',
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-wedo-purple',
+    bgColor: 'bg-wedo-purple/10 dark:bg-wedo-purple/20',
     animate: true
   },
   completed: {
     icon: CheckCircle,
     label: 'Triagem concluída',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100 dark:bg-green-900/30'
+    color: 'text-status-success',
+    bgColor: 'bg-status-success/15 dark:bg-status-success/30'
   },
   failed: {
     icon: AlertCircle,
     label: 'Erro na triagem',
-    color: 'text-red-500',
-    bgColor: 'bg-red-50 dark:bg-red-900/20'
+    color: 'text-status-error',
+    bgColor: 'bg-status-error/10 dark:bg-status-error/20'
   }
 }
 
@@ -295,7 +295,7 @@ export function WSIVoiceScreeningStatus({
                   )}
 
                   {status === 'failed' && error && (
-                    <p className="text-sm text-red-500 mt-2">
+                    <p className="text-sm text-status-error mt-2">
                       {error}
                     </p>
                   )}
@@ -305,18 +305,18 @@ export function WSIVoiceScreeningStatus({
                   <div className="w-full space-y-3 pt-2">
                     <div className="text-center">
                       <div className={`text-3xl font-bold ${
-                        result.overall_wsi >= 4 ? 'text-green-600' :
-                        result.overall_wsi >= 3 ? 'text-yellow-600' :
-                        'text-red-600'
+                        result.overall_wsi >= 4 ? 'text-status-success' :
+                        result.overall_wsi >= 3 ? 'text-status-warning' :
+                        'text-status-error'
                       }`}>
                         {result.overall_wsi.toFixed(1)}
                       </div>
                       <Badge className={`mt-1 ${
                         result.classification === 'excelente' || result.classification === 'alto' 
-                          ? 'bg-green-100 text-green-700' :
+                          ? 'bg-status-success/15 text-status-success' :
                         result.classification === 'medio' 
-                          ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-red-100 text-red-700'
+                          ? 'bg-status-warning/15 text-status-warning' :
+                        'bg-status-error/15 text-status-error'
                       }`}>
                         {result.classification.charAt(0).toUpperCase() + result.classification.slice(1)}
                       </Badge>

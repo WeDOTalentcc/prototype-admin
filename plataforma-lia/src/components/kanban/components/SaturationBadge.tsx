@@ -152,17 +152,17 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
   const sourcingPercent = Math.min(data.sourcing.percentage, 100)
 
   const badgeElement = isSaturated ? (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-semibold font-['Open_Sans'] text-red-600 bg-red-50 border border-red-200 cursor-pointer" title="Pipeline Saturado">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-semibold font-['Open_Sans'] text-status-error bg-status-error/10 border border-status-error/30 cursor-pointer" title="Pipeline Saturado">
       <AlertTriangle className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
-      <span className="text-red-300">|</span>
+      <span className="text-status-error">|</span>
       <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-semibold font-['Open_Sans'] text-amber-600 bg-amber-50 border border-amber-200 cursor-pointer" title="Quase Saturado">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-semibold font-['Open_Sans'] text-status-warning bg-status-warning/10 border border-status-warning/30 cursor-pointer" title="Quase Saturado">
       <TrendingUp className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
-      <span className="text-amber-300">|</span>
+      <span className="text-status-warning">|</span>
       <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
     </span>
   )
@@ -186,16 +186,16 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
             <div className="space-y-1">
               <div className="flex items-center justify-between text-gray-700">
                 <span className="flex items-center gap-1">
-                  <Globe className="w-3 h-3 text-blue-500" />
+                  <Globe className="w-3 h-3 text-wedo-cyan-dark" />
                   Orgânico (Web + WhatsApp)
                 </span>
-                <span className={data.organic.is_saturated ? 'text-red-600 font-semibold' : ''}>
+                <span className={data.organic.is_saturated ? 'text-status-error font-semibold' : ''}>
                   {data.organic.count}/{data.organic.threshold}
                 </span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-1.5">
                 <div
-                  className={`h-1.5 rounded-full transition-all ${data.organic.is_saturated ? 'bg-red-500' : organicPercent >= 90 ? 'bg-amber-500' : 'bg-blue-500'}`}
+                  className={`h-1.5 rounded-full transition-all ${data.organic.is_saturated ? 'bg-status-error' : organicPercent >= 90 ? 'bg-status-warning' : 'bg-wedo-cyan'}`}
                   style={{ width: `${organicPercent}%` }}
                 />
               </div>
@@ -207,13 +207,13 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
                   <Search className="w-3 h-3 text-gray-500" />
                   Busca Ativa (Sourcing + ATS)
                 </span>
-                <span className={data.sourcing.is_saturated ? 'text-red-600 font-semibold' : ''}>
+                <span className={data.sourcing.is_saturated ? 'text-status-error font-semibold' : ''}>
                   {data.sourcing.count}/{data.sourcing.threshold}
                 </span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-1.5">
                 <div
-                  className={`h-1.5 rounded-full transition-all ${data.sourcing.is_saturated ? 'bg-red-500' : sourcingPercent >= 90 ? 'bg-amber-500' : 'bg-gray-500'}`}
+                  className={`h-1.5 rounded-full transition-all ${data.sourcing.is_saturated ? 'bg-status-error' : sourcingPercent >= 90 ? 'bg-status-warning' : 'bg-gray-500'}`}
                   style={{ width: `${sourcingPercent}%` }}
                 />
               </div>
@@ -232,7 +232,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
           </div>
 
           <div className="flex items-start gap-1.5 text-gray-500">
-            <Lightbulb className="w-3 h-3 mt-0.5 text-amber-500 shrink-0" />
+            <Lightbulb className="w-3 h-3 mt-0.5 text-status-warning shrink-0" />
             <span>{getRecommendationText(data.recommendation)}</span>
           </div>
         </div>
@@ -254,7 +254,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
           </button>
           <button
             onClick={() => router.push('/configuracoes')}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-wedo-cyan-dark bg-wedo-cyan/10 border border-wedo-cyan/30 hover:bg-wedo-cyan/15 transition-colors flex items-center justify-center gap-1"
           >
             <Settings className="w-3 h-3" />
             Ver configurações

@@ -155,19 +155,19 @@ function formatMessageWithVariables(message: string): React.ReactNode[] {
 
 const BLOOM_COLORS: Record<number, string> = {
   1: "bg-gray-100 text-gray-600 border-gray-200",
-  2: "bg-yellow-50 text-yellow-700 border-yellow-200",
-  3: "bg-orange-50 text-orange-700 border-orange-200",
-  4: "bg-red-50 text-red-700 border-red-200",
-  5: "bg-purple-50 text-purple-700 border-purple-200",
+  2: "bg-status-warning/10 text-status-warning border-status-warning/30",
+  3: "bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30",
+  4: "bg-status-error/10 text-status-error border-status-error/30",
+  5: "bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30",
   6: "bg-indigo-50 text-indigo-700 border-indigo-200"
 }
 
 const DREYFUS_COLORS: Record<number, string> = {
   1: "bg-gray-100 text-gray-600 border-gray-200",
   2: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600",
-  3: "bg-green-50 text-green-600 border-green-200",
-  4: "bg-yellow-50 text-yellow-700 border-yellow-200",
-  5: "bg-purple-50 text-purple-700 border-purple-200"
+  3: "bg-status-success/10 text-status-success border-status-success/30",
+  4: "bg-status-warning/10 text-status-warning border-status-warning/30",
+  5: "bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30"
 }
 
 export function ScreeningQuestionsPanel({
@@ -436,9 +436,9 @@ export function ScreeningQuestionsPanel({
     return (
       <div className="mb-3 space-y-1.5">
         {qualityWarnings.map((warning, idx) => (
-          <div key={idx} className="flex items-start gap-2 p-2 bg-amber-50 border border-amber-200 rounded-md">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
-            <p className="text-micro text-amber-700">{warning}</p>
+          <div key={idx} className="flex items-start gap-2 p-2 bg-status-warning/10 border border-status-warning/30 rounded-md">
+            <AlertTriangle className="h-3.5 w-3.5 text-status-warning mt-0.5 flex-shrink-0" />
+            <p className="text-micro text-status-warning">{warning}</p>
           </div>
         ))}
       </div>
@@ -472,14 +472,14 @@ export function ScreeningQuestionsPanel({
   const renderQuestionCard = (question: UnifiedScreeningQuestion, showDelete: boolean = false) => {
     const isAffirmativeQuestion = question.id?.includes('affirmative') || false
     const getCategoryBadge = () => {
-      if (isAffirmativeQuestion) return { label: 'Inclusão', color: 'bg-purple-50 text-purple-700 border-purple-200' }
+      if (isAffirmativeQuestion) return { label: 'Inclusão', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' }
       const cat = (question.category || '').toLowerCase()
-      if (cat.includes('tech')) return { label: 'Técnica', color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-700' }
-      if (cat.includes('behav') || cat.includes('situa')) return { label: 'Experiência', color: 'bg-purple-50 text-purple-600 border-purple-200' }
+      if (cat.includes('tech')) return { label: 'Técnica', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' }
+      if (cat.includes('behav') || cat.includes('situa')) return { label: 'Experiência', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' }
       if (cat.includes('elig') && question.is_eliminatory === false) return { label: 'Informativa', color: 'bg-gray-50 text-gray-600 border-gray-200' }
-      if (cat.includes('elig')) return { label: 'Eliminatória', color: 'bg-red-50 text-red-600 border-red-200' }
-      if (cat.includes('cult')) return { label: 'Cultural', color: 'bg-green-50 text-green-600 border-green-200' }
-      if (cat.includes('company')) return { label: 'Empresa', color: 'bg-orange-50 text-orange-600 border-orange-200' }
+      if (cat.includes('elig')) return { label: 'Eliminatória', color: 'bg-status-error/10 text-status-error border-status-error/30' }
+      if (cat.includes('cult')) return { label: 'Cultural', color: 'bg-status-success/10 text-status-success border-status-success/30' }
+      if (cat.includes('company')) return { label: 'Empresa', color: 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30' }
       return { label: 'Informativa', color: 'bg-gray-50 text-gray-600 border-gray-200' }
     }
     
@@ -508,7 +508,7 @@ export function ScreeningQuestionsPanel({
                   {badge.label}
                 </Badge>
                 {isAffirmativeQuestion && (
-                  <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-status-success/10 text-status-success border-status-success/30">
                     Não eliminatória
                   </Badge>
                 )}
@@ -520,7 +520,7 @@ export function ScreeningQuestionsPanel({
                   className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => toggleQuestion(question.id)}
                 >
-                  <Trash2 className="h-3 w-3 text-gray-400 hover:text-red-500" />
+                  <Trash2 className="h-3 w-3 text-gray-400 hover:text-status-error" />
                 </Button>
               )}
             </div>
@@ -529,11 +529,11 @@ export function ScreeningQuestionsPanel({
             </p>
             <div className="flex items-center gap-3 text-micro text-gray-500">
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                <span className="w-2 h-2 rounded-full bg-status-success"></span>
                 {question.weight ? `${Math.round(question.weight * 100)}%` : '75%'}
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-red-400"></span>
+                <span className="w-2 h-2 rounded-full bg-status-error"></span>
                 0%
               </span>
               <span className="flex items-center gap-1">
@@ -576,7 +576,7 @@ export function ScreeningQuestionsPanel({
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-medium text-gray-800">{block.name}</span>
                 {block.id === 2 && isAffirmative && (
-                  <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-purple-50 text-purple-700 border-purple-200">
+                  <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                     Vaga Afirmativa
                   </Badge>
                 )}
@@ -674,16 +674,16 @@ export function ScreeningQuestionsPanel({
       const isAffirmativeSuggestion = question.id?.includes('affirmative') || false
       const cat = (question.category || '').toLowerCase()
       if (isAffirmativeSuggestion) {
-        badges.push({ label: 'Inclusão', color: 'bg-purple-50 text-purple-700 border-purple-200' })
+        badges.push({ label: 'Inclusão', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' })
       } else if (cat.includes('elig') && question.is_eliminatory !== false) {
-        badges.push({ label: 'Eliminatória', color: 'bg-red-50 text-red-600 border-red-200' })
+        badges.push({ label: 'Eliminatória', color: 'bg-status-error/10 text-status-error border-status-error/30' })
       } else if (cat.includes('elig')) {
         badges.push({ label: 'Informativa', color: 'bg-gray-50 text-gray-600 border-gray-200' })
       }
-      if (cat.includes('tech')) badges.push({ label: 'Skills', color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-700' })
-      if (cat.includes('behav') || cat.includes('situa')) badges.push({ label: 'Experiência', color: 'bg-purple-50 text-purple-600 border-purple-200' })
-      if (cat.includes('cult')) badges.push({ label: 'Cultural', color: 'bg-green-50 text-green-600 border-green-200' })
-      if (badges.length === 0) badges.push({ label: 'Geral', color: 'bg-orange-50 text-orange-600 border-orange-200' })
+      if (cat.includes('tech')) badges.push({ label: 'Skills', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' })
+      if (cat.includes('behav') || cat.includes('situa')) badges.push({ label: 'Experiência', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' })
+      if (cat.includes('cult')) badges.push({ label: 'Cultural', color: 'bg-status-success/10 text-status-success border-status-success/30' })
+      if (badges.length === 0) badges.push({ label: 'Geral', color: 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30' })
       return badges
     }
 
@@ -735,11 +735,11 @@ export function ScreeningQuestionsPanel({
 
   if (error) {
     return (
-      <Card className={cn("w-full border-red-200", className)}>
+      <Card className={cn("w-full border-status-error/30", className)}>
         <CardContent className="flex items-center justify-center py-8">
           <div className="text-center space-y-3">
-            <AlertCircle className="h-8 w-8 mx-auto text-red-500" />
-            <p className="text-xs text-red-600">{error}</p>
+            <AlertCircle className="h-8 w-8 mx-auto text-status-error" />
+            <p className="text-xs text-status-error">{error}</p>
             <Button
               variant="outline"
               size="sm"
@@ -765,7 +765,7 @@ export function ScreeningQuestionsPanel({
             <CardTitle className="text-sm font-medium">Roteiro WSI de Triagem</CardTitle>
             <Badge 
               variant="outline" 
-              className="text-micro px-1.5 py-0 rounded-full bg-green-50 text-green-700 border-green-200"
+              className="text-micro px-1.5 py-0 rounded-full bg-status-success/10 text-status-success border-status-success/30"
             >
               Ativo
             </Badge>

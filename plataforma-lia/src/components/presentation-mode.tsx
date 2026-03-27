@@ -63,11 +63,11 @@ const KPICard = React.memo(({ kpi, index }: { kpi: any; index: number }) => (
       </div>
       <div className="flex items-center justify-center gap-2">
         {kpi.trend === "up" ?
-          <ArrowUp className="w-6 h-6 text-green-600" /> :
-          <ArrowDown className="w-6 h-6 text-red-600" />
+          <ArrowUp className="w-6 h-6 text-status-success" /> :
+          <ArrowDown className="w-6 h-6 text-status-error" />
         }
         <span className={`text-lg font-medium ${
-          kpi.trend === "up" ? "text-green-600" : "text-red-600"
+          kpi.trend === "up" ? "text-status-success" : "text-status-error"
         }`}>
           {Math.abs(kpi.change)}%
         </span>
@@ -164,18 +164,18 @@ DepartmentSlide.displayName = 'DepartmentSlide'
 const AlertItem = React.memo(({ alert, index }: { alert: any; index: number }) => {
   const getIcon = useMemo(() => {
     switch (alert.type) {
-      case "success": return <CheckCircle className="w-8 h-8 text-green-600" />
-      case "warning": return <AlertTriangle className="w-8 h-8 text-yellow-600" />
-      case "error": return <AlertTriangle className="w-8 h-8 text-red-600" />
+      case "success": return <CheckCircle className="w-8 h-8 text-status-success" />
+      case "warning": return <AlertTriangle className="w-8 h-8 text-status-warning" />
+      case "error": return <AlertTriangle className="w-8 h-8 text-status-error" />
       default: return <Activity className="w-8 h-8 text-gray-600 dark:text-gray-400" />
     }
   }, [alert.type])
 
   const getBgColor = useMemo(() => {
     switch (alert.type) {
-      case "success": return "bg-green-50 border-green-200"
-      case "warning": return "bg-yellow-50 border-yellow-200"
-      case "error": return "bg-red-50 border-red-200"
+      case "success": return "bg-status-success/10 border-status-success/30"
+      case "warning": return "bg-status-warning/10 border-status-warning/30"
+      case "error": return "bg-status-error/10 border-status-error/30"
       default: return "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600"
     }
   }, [alert.type])

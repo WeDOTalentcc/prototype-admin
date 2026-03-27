@@ -66,14 +66,14 @@ export function RevealCreditsModal({
                 Deseja revelar o {typeLabel} de <strong className="text-gray-950 dark:text-gray-50">{candidateName}</strong>?
               </p>
               
-              <div className="p-4 rounded-md bg-amber-50 border border-amber-200">
+              <div className="p-4 rounded-md bg-status-warning/10 border border-status-warning/30">
                 <div className="flex items-start gap-3">
-                  <CreditCard className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <CreditCard className="w-5 h-5 text-status-warning mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="font-semibold text-amber-800">
+                    <p className="font-semibold text-status-warning">
                       Custo: {creditsRequired} créditos
                     </p>
-                    <p className="text-sm text-amber-700 mt-1">
+                    <p className="text-sm text-status-warning mt-1">
                       {revealType === "email" 
                         ? "O custo será cobrado apenas se o candidato tiver email disponível."
                         : "O custo será cobrado apenas se o candidato tiver telefone disponível."}

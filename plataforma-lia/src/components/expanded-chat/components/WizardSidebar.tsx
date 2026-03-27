@@ -48,7 +48,7 @@ export function WizardSidebar({
                     isPhaseActive 
                       ? "bg-gray-900 dark:bg-gray-50" 
                       : isPhaseCompleted 
-                        ? "bg-green-500" 
+                        ? "bg-status-success" 
                         : "bg-gray-300"
                   )}
                 />
@@ -66,7 +66,7 @@ export function WizardSidebar({
                   {phase.label}
                 </span>
                 {isPhaseCompleted && (
-                  <Check className="w-3 h-3 text-green-500" strokeWidth={3} />
+                  <Check className="w-3 h-3 text-status-success" strokeWidth={3} />
                 )}
               </div>
               
@@ -96,7 +96,7 @@ export function WizardSidebar({
                           isActive 
                             ? "bg-gray-900 dark:bg-gray-50" 
                             : isCompleted 
-                              ? "bg-green-500" 
+                              ? "bg-status-success" 
                               : "border border-gray-300"
                         )}
                       >
@@ -163,7 +163,7 @@ export function WizardSidebar({
                 {phase.label}
               </span>
               {isPhaseCompleted && (
-                <Check className="w-2.5 h-2.5 text-green-500" strokeWidth={3} />
+                <Check className="w-2.5 h-2.5 text-status-success" strokeWidth={3} />
               )}
             </div>
             
@@ -189,7 +189,7 @@ export function WizardSidebar({
                     <div 
                       className={cn(
                         "w-full h-1.5 rounded-full transition-all",
- isActive ? "bg-gray-900 dark:bg-gray-50" : isCompleted ? "bg-green-500" : "bg-gray-200"
+ isActive ? "bg-gray-900 dark:bg-gray-50" : isCompleted ? "bg-status-success" : "bg-gray-200"
                       )}
                     />
                     {!compact && (

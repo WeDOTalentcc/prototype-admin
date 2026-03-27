@@ -23,9 +23,9 @@ export default function ProactiveChatMessage({
 }: ProactiveChatMessageProps) {
   const borderColor =
     severity === "urgent"
-      ? "border-red-500"
+      ? "border-status-error/30"
       : severity === "warning"
-      ? "border-amber-500"
+      ? "border-status-warning/30"
       : "border-wedo-cyan"
 
   return (

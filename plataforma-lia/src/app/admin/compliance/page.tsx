@@ -59,13 +59,13 @@ const FRAMEWORK_NAME_MAP: Record<string, string> = {
 function getSeverityColor(severity: string): string {
   switch (severity) {
     case 'critical':
-      return 'text-red-600 dark:text-red-400'
+      return 'text-status-error dark:text-status-error'
     case 'high':
-      return 'text-orange-500 dark:text-orange-400'
+      return 'text-wedo-orange dark:text-wedo-orange'
     case 'medium':
-      return 'text-amber-500 dark:text-amber-400'
+      return 'text-status-warning dark:text-status-warning'
     case 'low':
-      return 'text-emerald-500 dark:text-emerald-400'
+      return 'text-status-success dark:text-status-success'
     default:
       return 'text-gray-500'
   }
@@ -88,7 +88,7 @@ function getSeverityBadgeVariant(severity: string): "destructive" | "warning" | 
 
 function getAlertIcon(alert: Alert) {
   if (alert.status === 'resolved') {
-    return <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+    return <CheckCircle2 className="w-5 h-5 text-status-success shrink-0" />
   }
   if (alert.severity === 'critical' || alert.severity === 'high') {
     return <XCircle className={`w-5 h-5 ${getSeverityColor(alert.severity)} shrink-0`} />
@@ -259,8 +259,8 @@ export default function ComplianceDashboardPage() {
                     {totalControls}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <TrendingUp className="w-3 h-3 text-emerald-500" />
-                    <span className="text-xs text-emerald-600">{implementedControls} implementados</span>
+                    <TrendingUp className="w-3 h-3 text-status-success" />
+                    <span className="text-xs text-status-success">{implementedControls} implementados</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)' }}>
@@ -293,12 +293,12 @@ export default function ComplianceDashboardPage() {
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <Lock className="w-5 h-5 text-emerald-500" />
+                  <Lock className="w-5 h-5 text-status-success" />
                 </div>
               </div>
               {lgpdStats && lgpdStats.openBreaches > 0 && (
-                <div className="mt-3 p-2 rounded-md bg-red-50 dark:bg-red-900/20">
-                  <p className="text-xs text-red-600 dark:text-red-400">
+                <div className="mt-3 p-2 rounded-md bg-status-error/10 dark:bg-status-error/20">
+                  <p className="text-xs text-status-error dark:text-status-error">
                     {lgpdStats.openBreaches} incidente(s) em aberto
                   </p>
                 </div>
@@ -326,7 +326,7 @@ export default function ComplianceDashboardPage() {
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ backgroundColor: biasAlertCount > 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)' }}>
-                  <Scale className={`w-5 h-5 ${biasAlertCount > 0 ? 'text-amber-500' : 'text-emerald-500'}`} />
+                  <Scale className={`w-5 h-5 ${biasAlertCount > 0 ? 'text-status-warning' : 'text-status-success'}`} />
                 </div>
               </div>
               {latestBiasAudit && (
@@ -359,8 +359,8 @@ export default function ComplianceDashboardPage() {
                 </div>
               </div>
               {overdueReviews > 0 && (
-                <div className="mt-3 p-2 rounded-md bg-red-50 dark:bg-red-900/20">
-                  <p className="text-xs text-red-600 dark:text-red-400">
+                <div className="mt-3 p-2 rounded-md bg-status-error/10 dark:bg-status-error/20">
+                  <p className="text-xs text-status-error dark:text-status-error">
                     {overdueReviews} revisões em atraso
                   </p>
                 </div>
@@ -497,7 +497,7 @@ export default function ComplianceDashboardPage() {
               </div>
             ) : (
               <div className="text-center py-6">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
                 <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
                   Nenhum alerta encontrado
                 </p>

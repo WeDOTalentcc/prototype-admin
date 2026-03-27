@@ -29,13 +29,13 @@ const TEMPLATE_GROUPS: Record<string, { label: string; icon: string; situations:
 
 const TRIGGER_TYPE_LABELS: Record<string, { label: string; color: string }> = {
   'automatic': { label: 'Automático', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-  'manual': { label: 'Manual', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  'manual': { label: 'Manual', color: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' },
   'both': { label: 'Ambos', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' }
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
-  'high': 'bg-red-500',
-  'medium': 'bg-yellow-500',
+  'high': 'bg-status-error',
+  'medium': 'bg-status-warning',
   'low': 'bg-gray-400'
 }
 
@@ -420,10 +420,10 @@ Vamos agendar? 😊`,
 ]
 
 const categoryLabels = {
-  approval: { label: 'Aprovação', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
-  rejection: { label: 'Rejeição', color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' },
+  approval: { label: 'Aprovação', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
+  rejection: { label: 'Rejeição', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
   scheduling: { label: 'Agendamento', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-  followup: { label: 'Follow-up', color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' },
+  followup: { label: 'Follow-up', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   feedback: { label: 'Feedback', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' }
 }
 
@@ -820,13 +820,13 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
   const renderTemplates = () => (
     <div className="space-y-4">
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
+        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-4 h-4" />
           <span >{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-md flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span >{error}</span>
         </div>
@@ -1213,7 +1213,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                         </label>
                         <div className="flex flex-wrap gap-1.5">
                           {aiResultModal.changesMade.map((change, idx) => (
-                            <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">
+                            <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-status-success/15 text-status-success dark:bg-status-success dark:text-status-success">
                               <Check className="w-3 h-3 mr-1" />
                               {change}
                             </Badge>
@@ -1241,10 +1241,10 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
                         </div>
                       </div>
 
-                      <div className="p-3 rounded-md border border-amber-200 bg-amber-50">
+                      <div className="p-3 rounded-md border border-status-warning/30 bg-status-warning/10">
                         <div className="flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-amber-800" >
+                          <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-status-warning" >
                             Ao aplicar os ajustes, o texto será atualizado no editor. Lembre-se de clicar em <strong>"Salvar"</strong> para confirmar as alterações definitivamente.
                           </p>
                         </div>
@@ -1283,13 +1283,13 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
   const renderSignature = () => (
     <div className="space-y-4">
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-green-100 border border-green-300 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-200">
-          <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
+          <CheckCircle className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
           <span className="text-xs" >{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-md flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" />
           <span className="text-xs" >{error}</span>
         </div>
@@ -1381,13 +1381,13 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
   const renderSchedule = () => (
     <div className="space-y-4">
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-green-100 border border-green-300 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-200">
-          <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
+          <CheckCircle className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
           <span className="text-xs" >{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-md flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" />
           <span className="text-xs" >{error}</span>
         </div>
@@ -1431,12 +1431,12 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-amber-50 dark:bg-amber-900/20 rounded-md p-3 border border-amber-200 dark:border-amber-800">
+          <div className="bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-3 border border-status-warning/30 dark:border-status-warning/30">
             <div className="flex items-start gap-2">
-              <Shield className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <Shield className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className={`${textStyles.subtitle} text-amber-800 dark:text-amber-200`}>Conformidade LGPD</p>
-                <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5" >
+                <p className={`${textStyles.subtitle} text-status-warning dark:text-status-warning`}>Conformidade LGPD</p>
+                <p className="text-xs text-status-warning dark:text-status-warning mt-0.5" >
                   De acordo com as boas práticas de LGPD, mensagens só podem ser enviadas entre 8h e 20h em dias úteis. 
                   A LIA respeita automaticamente estes horários.
                 </p>
@@ -1553,13 +1553,13 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
   const renderAlerts = () => (
     <div className="space-y-4">
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-green-100 border border-green-300 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-200">
-          <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+        <div className="px-2 py-1.5 rounded-md flex items-center gap-2 bg-status-success/15 border border-status-success/30 text-status-success dark:bg-status-success dark:border-status-success/30 dark:text-status-success">
+          <CheckCircle className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
           <span className="text-xs" >{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 rounded-md flex items-center gap-2">
+        <div className="bg-status-error/10 border border-status-error/30 text-status-error px-2 py-1.5 rounded-md flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" />
           <span className="text-xs" >{error}</span>
         </div>

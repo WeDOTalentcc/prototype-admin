@@ -63,22 +63,22 @@ interface ProactiveInsightCardProps {
 const getAlertIcon = (type: 'warning' | 'info' | 'success') => {
   switch (type) {
     case 'warning':
-      return <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+      return <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
     case 'info':
       return <Info className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
     case 'success':
-      return <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+      return <CheckCircle className="w-3.5 h-3.5 text-status-success" />
   }
 }
 
 const getAlertBgColor = (type: 'warning' | 'info' | 'success') => {
   switch (type) {
     case 'warning':
-      return 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
+      return 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/20 dark:border-status-warning/30'
     case 'info':
  return 'bg-gray-50 border-gray-300 dark:bg-gray-800 dark:border-gray-200'
     case 'success':
-      return 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
+      return 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30'
   }
 }
 
@@ -199,7 +199,7 @@ export function ProactiveInsightCard({
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Phone className="w-3 h-3 text-green-500" />
+                        <Phone className="w-3 h-3 text-status-success" />
                         <span className={`${textStyles.bodySmall} dark:text-gray-400`}>Telefone</span>
                       </div>
                       <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{contact_quality.phone_percentage}%</span>
@@ -287,9 +287,9 @@ export function ProactiveInsightCard({
                       variant="outline"
                       className={cn(
                         "text-xs py-0.5 px-1.5",
-                        model.toLowerCase().includes('remoto') && "bg-green-50 border-green-200 text-green-700",
+                        model.toLowerCase().includes('remoto') && "bg-status-success/10 border-status-success/30 text-status-success",
                         model.toLowerCase().includes('híbrido') && "bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-wedo-cyan-dark",
-                        model.toLowerCase().includes('presencial') && "bg-purple-50 border-purple-200 text-purple-700"
+                        model.toLowerCase().includes('presencial') && "bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple"
                       )}
                     >
                       {model}: {count}

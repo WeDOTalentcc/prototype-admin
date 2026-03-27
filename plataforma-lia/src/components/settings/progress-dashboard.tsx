@@ -124,8 +124,8 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
   // v4: Cores de prioridade semânticas
   const priorityColors = {
-    high: { bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-400', icon: AlertTriangle },
-    medium: { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-400', icon: Clock },
+    high: { bg: 'bg-status-error/10 dark:bg-status-error/20', text: 'text-status-error dark:text-status-error', icon: AlertTriangle },
+    medium: { bg: 'bg-status-warning/10 dark:bg-status-warning/20', text: 'text-status-warning dark:text-status-warning', icon: Clock },
     low: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', icon: Info }
   }
 
@@ -173,9 +173,9 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                 </div>
                 <div className="flex items-center justify-center gap-1">
                   {progressMetrics.trend === 'up' ? (
-                    <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <TrendingUp className="w-4 h-4 text-status-success dark:text-status-success" />
                   ) : progressMetrics.trend === 'down' ? (
-                    <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                    <TrendingDown className="w-4 h-4 text-status-error dark:text-status-error" />
                   ) : (
                     <Activity className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   )}
@@ -188,8 +188,8 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
             <Card className="rounded-md border-gray-200 dark:border-gray-700">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="w-16 h-16 bg-status-success/10 dark:bg-status-success/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-status-success dark:text-status-success" />
                 </div>
                 <div className={`${textStyles.metricLarge} mb-1`}>
                   {progressMetrics.sectionsCompleted}
@@ -205,8 +205,8 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
             <Card className="rounded-md border-gray-200 dark:border-gray-700">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Timer className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                <div className="w-16 h-16 bg-status-warning/10 dark:bg-status-warning/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Timer className="w-8 h-8 text-status-warning dark:text-status-warning" />
                 </div>
                 <div className={`${textStyles.metricLarge} mb-1`}>
                   {Math.round(progressMetrics.estimatedTimeRemaining / 60 * 10) / 10}h
@@ -222,8 +222,8 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
             <Card className="rounded-md border-gray-200 dark:border-gray-700">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                <div className="w-16 h-16 bg-status-error/10 dark:bg-status-error/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle className="w-8 h-8 text-status-error dark:text-status-error" />
                 </div>
                 <div className={`${textStyles.metricLarge} mb-1`}>
                   {progressMetrics.criticalSectionsCompleted}
@@ -341,7 +341,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
                 {nextActions.length === 0 && (
                   <div className="text-center py-8">
-                    <Award className="w-12 h-12 mx-auto mb-4 text-green-600 dark:text-green-400" />
+                    <Award className="w-12 h-12 mx-auto mb-4 text-status-success dark:text-status-success" />
                     <h3 className={`${textStyles.subtitle} mb-2`}>
                       Parabéns! Setup Completo
                     </h3>
@@ -377,9 +377,9 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   const SectionIcon = section.icon
                   // v4: Status colors semânticas com dark mode
                   const statusColors = {
-                    completed: { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-700 dark:text-green-400', icon: CheckCircle },
-                    pending: { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-400', icon: Clock },
-                    incomplete: { bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-400', icon: AlertCircle }
+                    completed: { bg: 'bg-status-success/10 dark:bg-status-success/20', text: 'text-status-success dark:text-status-success', icon: CheckCircle },
+                    pending: { bg: 'bg-status-warning/10 dark:bg-status-warning/20', text: 'text-status-warning dark:text-status-warning', icon: Clock },
+                    incomplete: { bg: 'bg-status-error/10 dark:bg-status-error/20', text: 'text-status-error dark:text-status-error', icon: AlertCircle }
                   }
                   const statusColor = statusColors[section.status]
                   const StatusIcon = statusColor.icon

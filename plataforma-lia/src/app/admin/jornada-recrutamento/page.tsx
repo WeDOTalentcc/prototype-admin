@@ -204,7 +204,7 @@ export default function JornadaRecrutamentoPage() {
               Jornada de Recrutamento
             </h1>
             {isEditMode && hasChanges && (
-              <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200">
+              <Badge variant="outline" className="bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30">
                 Alterações não salvas
               </Badge>
             )}
@@ -314,7 +314,7 @@ export default function JornadaRecrutamentoPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Etapas ativas</span>
-                <span className="text-sm font-semibold text-green-600">{activeStages}</span>
+                <span className="text-sm font-semibold text-status-success">{activeStages}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Com automação</span>
@@ -354,7 +354,7 @@ export default function JornadaRecrutamentoPage() {
                 Email de feedback automático
               </div>
               <div className="flex items-center gap-2 text-xs text-gray-600">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <div className="w-2 h-2 rounded-full bg-status-success" />
                 Notificação WhatsApp
               </div>
               <p className="text-micro text-gray-400 pt-2 border-t">

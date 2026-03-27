@@ -15,21 +15,21 @@ function getStatusBadge(status: string) {
   switch (status) {
     case 'active':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-success/15 text-status-success">
           <CheckCircle2 className="w-3.5 h-3.5" />
           Ativo
         </span>
       )
     case 'renewing':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-warning/15 text-status-warning">
           <Clock className="w-3.5 h-3.5" />
           Em Renovação
         </span>
       )
     case 'expired':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-status-error/15 text-status-error">
           <XCircle className="w-3.5 h-3.5" />
           Expirado
         </span>

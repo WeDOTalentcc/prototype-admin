@@ -70,11 +70,11 @@ export function EmptyFieldNotificationMessage({
       exit={{ opacity: 0, y: -10 }}
       className="w-full"
     >
-      <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800">
+      <Card className="border-status-warning/30 bg-status-warning/10/50 dark:border-status-warning/30">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/50">
-              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <div className="p-2 rounded-full bg-status-warning/15 dark:bg-status-warning/50">
+              <AlertTriangle className="w-5 h-5 text-status-warning dark:text-status-warning" />
             </div>
             
             <div className="flex-1 space-y-3">

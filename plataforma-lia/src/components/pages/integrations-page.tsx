@@ -60,7 +60,7 @@ export function IntegrationsPage() {
       type: 'slack',
       status: 'active',
       icon: Slack,
-      color: 'bg-purple-100 text-purple-700',
+      color: 'bg-wedo-purple/15 text-wedo-purple',
       webhookUrl: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX',
       channels: ['#recrutamento', '#aprovacoes', '#geral'],
       events: ['novo_candidato', 'aprovacao', 'nova_nota', 'mencao'],
@@ -92,7 +92,7 @@ export function IntegrationsPage() {
       type: 'slack',
       status: 'error',
       icon: Slack,
-      color: 'bg-red-100 text-red-700',
+      color: 'bg-status-error/15 text-status-error',
       webhookUrl: 'https://hooks.slack.com/services/invalid',
       channels: ['#tech-hiring'],
       events: ['entrevista_tecnica', 'aprovacao_tech'],
@@ -214,19 +214,19 @@ export function IntegrationsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active': return <CheckCircle className="w-4 h-4 text-green-600" />
+      case 'active': return <CheckCircle className="w-4 h-4 text-status-success" />
       case 'inactive': return <PauseCircle className="w-4 h-4 text-gray-600" />
-      case 'error': return <AlertCircle className="w-4 h-4 text-red-600" />
-      default: return <Clock className="w-4 h-4 text-yellow-600" />
+      case 'error': return <AlertCircle className="w-4 h-4 text-status-error" />
+      default: return <Clock className="w-4 h-4 text-status-warning" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200'
+      case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
       case 'inactive': return 'bg-gray-100 text-gray-800 border-gray-200'
-      case 'error': return 'bg-red-100 text-red-800 border-red-200'
-      default: return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'error': return 'bg-status-error/15 text-status-error border-status-error/30'
+      default: return 'bg-status-warning/15 text-status-warning border-status-warning/30'
     }
   }
 
@@ -328,7 +328,7 @@ export function IntegrationsPage() {
                     {integrations.filter(i => i.status === 'active').length}
                   </p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <CheckCircle className="w-8 h-8 text-status-success" />
               </div>
             </CardContent>
           </Card>
@@ -360,7 +360,7 @@ export function IntegrationsPage() {
                     {templates.filter(t => t.active).length}
                   </p>
                 </div>
-                <FileText className="w-8 h-8 text-purple-600" />
+                <FileText className="w-8 h-8 text-wedo-purple" />
               </div>
             </CardContent>
           </Card>
@@ -376,7 +376,7 @@ export function IntegrationsPage() {
                     {Math.round(((webhookEvents.filter(e => e.status === 'success').length / webhookEvents.length) * 100) || 0)}%
                   </p>
                 </div>
-                <BarChart3 className="w-8 h-8 text-orange-600" />
+                <BarChart3 className="w-8 h-8 text-wedo-orange" />
               </div>
             </CardContent>
           </Card>
@@ -427,10 +427,10 @@ export function IntegrationsPage() {
 
                               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                                 <div>
-                                  <span className="font-medium text-green-600">{integration.messagesCount}</span> mensagens enviadas
+                                  <span className="font-medium text-status-success">{integration.messagesCount}</span> mensagens enviadas
                                 </div>
                                 <div>
-                                  <span className="font-medium text-red-600">{integration.errorCount}</span> erros
+                                  <span className="font-medium text-status-error">{integration.errorCount}</span> erros
                                 </div>
                                 <div>
                                   Última atividade: {new Date(integration.lastActivity).toLocaleDateString('pt-BR')}
@@ -487,7 +487,7 @@ export function IntegrationsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => deleteIntegration(integration.id)}
-                            className="gap-2 text-red-600 hover:text-red-800"
+                            className="gap-2 text-status-error hover:text-status-error"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -607,9 +607,9 @@ export function IntegrationsPage() {
                       <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            {event.status === 'success' && <CheckCircle className="w-4 h-4 text-green-600" />}
-                            {event.status === 'failed' && <AlertCircle className="w-4 h-4 text-red-600" />}
-                            {event.status === 'pending' && <Clock className="w-4 h-4 text-yellow-600" />}
+                            {event.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
+                            {event.status === 'failed' && <AlertCircle className="w-4 h-4 text-status-error" />}
+                            {event.status === 'pending' && <Clock className="w-4 h-4 text-status-warning" />}
                             <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                               {event.event}
                             </span>
@@ -624,13 +624,13 @@ export function IntegrationsPage() {
                         </p>
 
                         {event.error && (
-                          <p className="text-xs text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                          <p className="text-xs text-status-error bg-status-error/10 dark:bg-status-error/20 p-2 rounded">
                             {event.error}
                           </p>
                         )}
 
                         {event.response && (
-                          <p className="text-xs text-green-600 bg-green-50 dark:bg-green-900/20 p-2 rounded">
+                          <p className="text-xs text-status-success bg-status-success/10 dark:bg-status-success/20 p-2 rounded">
                             ✓ Enviado com sucesso
                           </p>
                         )}
@@ -763,7 +763,7 @@ export function IntegrationsPage() {
                         type: newIntegration.type,
                         status: 'active',
                         icon: newIntegration.type === 'slack' ? Slack : MessageSquare,
-                        color: newIntegration.type === 'slack' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+                        color: newIntegration.type === 'slack' ? 'bg-wedo-purple/15 text-wedo-purple' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
                         webhookUrl: newIntegration.webhookUrl,
                         channels: newIntegration.channels,
                         events: newIntegration.events,

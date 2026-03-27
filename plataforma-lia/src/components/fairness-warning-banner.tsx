@@ -21,16 +21,16 @@ export function FairnessWarningBanner({ warnings, onDismiss }: Props) {
   if (warnings.length === 0) return null
 
   return (
-    <div className="mx-3 mb-2 rounded-md border border-amber-200 bg-amber-50 p-3">
+    <div className="mx-3 mb-2 rounded-md border border-status-warning/30 bg-status-warning/10 p-3">
       <div className="flex items-start gap-2">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-status-warning" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-amber-800 mb-1">
+          <p className="text-xs font-medium text-status-warning mb-1">
             Atenção: possível viés implícito detectado
           </p>
           <ul className="space-y-0.5">
             {warnings.map((warning, i) => (
-              <li key={i} className="text-xs text-amber-700 leading-snug">
+              <li key={i} className="text-xs text-status-warning leading-snug">
                 • {warning}
               </li>
             ))}
@@ -39,7 +39,7 @@ export function FairnessWarningBanner({ warnings, onDismiss }: Props) {
         <button
           onClick={onDismiss}
           aria-label="Dispensar aviso de viés"
-          className="shrink-0 rounded p-0.5 text-amber-500 hover:bg-amber-100 hover:text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
+          className="shrink-0 rounded p-0.5 text-status-warning hover:bg-status-warning/15 hover:text-status-warning focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
         >
           <X className="h-3.5 w-3.5" />
         </button>

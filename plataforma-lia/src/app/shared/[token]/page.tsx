@@ -370,7 +370,7 @@ export default function SharedSearchPage() {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center font-['Open_Sans']">
         <div className="bg-zinc-900 rounded-md p-8 max-w-md text-center border border-zinc-800">
-          <div className="text-red-400 text-lg mb-4">{error}</div>
+          <div className="text-status-error text-lg mb-4">{error}</div>
           <Button
             onClick={() => fetchSharedData()}
             className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
@@ -476,7 +476,7 @@ export default function SharedSearchPage() {
                     className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
                   />
                   {authError && (
-                    <p className="text-red-400 text-sm">{authError}</p>
+                    <p className="text-status-error text-sm">{authError}</p>
                   )}
                   <Button
                     onClick={handleRequestOtp}
@@ -505,7 +505,7 @@ export default function SharedSearchPage() {
                     className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 text-center text-lg tracking-widest"
                   />
                   {authError && (
-                    <p className="text-red-400 text-sm">{authError}</p>
+                    <p className="text-status-error text-sm">{authError}</p>
                   )}
                   <Button
                     onClick={handleVerifyOtp}
@@ -555,13 +555,13 @@ export default function SharedSearchPage() {
                 </div>
                 <div className="flex gap-4 mt-4 text-sm">
                   <span className="flex items-center gap-1">
-                    👍 <span className="text-green-400">{counts.approved}</span>
+                    👍 <span className="text-status-success">{counts.approved}</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    🤔 <span className="text-yellow-400">{counts.maybe}</span>
+                    🤔 <span className="text-status-warning">{counts.maybe}</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    👎 <span className="text-red-400">{counts.rejected}</span>
+                    👎 <span className="text-status-error">{counts.rejected}</span>
                   </span>
                   <span className="flex items-center gap-1">
                     ⏳ <span className="text-zinc-400">{counts.pending}</span>
@@ -766,19 +766,19 @@ export default function SharedSearchPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               {feedback.rating === 'approved' && (
-                                <span className="flex items-center gap-2 text-green-400">
+                                <span className="flex items-center gap-2 text-status-success">
                                   <ThumbsUp className="w-4 h-4" />
                                   Interessado
                                 </span>
                               )}
                               {feedback.rating === 'maybe' && (
-                                <span className="flex items-center gap-2 text-yellow-400">
+                                <span className="flex items-center gap-2 text-status-warning">
                                   <HelpCircle className="w-4 h-4" />
                                   Talvez
                                 </span>
                               )}
                               {feedback.rating === 'rejected' && (
-                                <span className="flex items-center gap-2 text-red-400">
+                                <span className="flex items-center gap-2 text-status-error">
                                   <ThumbsDown className="w-4 h-4" />
                                   Não interessado
                                 </span>
@@ -805,7 +805,7 @@ export default function SharedSearchPage() {
                                 size="sm"
                                 className={
                                   pending?.rating === 'approved'
-                                    ? 'bg-green-600 hover:bg-green-700 text-white border-0'
+                                    ? 'bg-status-success hover:bg-status-success/10 text-white border-0'
                                     : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
                                 }
                               >
@@ -818,7 +818,7 @@ export default function SharedSearchPage() {
                                 size="sm"
                                 className={
                                   pending?.rating === 'maybe'
-                                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white border-0'
+                                    ? 'bg-status-warning/10 hover:bg-status-warning/10 text-white border-0'
                                     : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
                                 }
                               >
@@ -831,7 +831,7 @@ export default function SharedSearchPage() {
                                 size="sm"
                                 className={
                                   pending?.rating === 'rejected'
-                                    ? 'bg-red-600 hover:bg-red-700 text-white border-0'
+                                    ? 'bg-status-error hover:bg-status-error text-white border-0'
                                     : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
                                 }
                               >

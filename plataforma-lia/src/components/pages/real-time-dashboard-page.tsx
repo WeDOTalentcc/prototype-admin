@@ -202,15 +202,15 @@ export function RealTimeDashboardPage() {
       case 'healthy':
       case 'connected':
       case 'completed':
-        return 'text-green-600 bg-green-100 border-green-200'
+        return 'text-status-success bg-status-success/15 border-status-success/30'
       case 'warning':
       case 'syncing':
       case 'running':
-        return 'text-yellow-600 bg-yellow-100 border-yellow-200'
+        return 'text-status-warning bg-status-warning/15 border-status-warning/30'
       case 'critical':
       case 'error':
       case 'failed':
-        return 'text-red-600 bg-red-100 border-red-200'
+        return 'text-status-error bg-status-error/15 border-status-error/30'
       case 'offline':
       case 'queued':
         return 'text-gray-600 bg-gray-100 border-gray-200'
@@ -243,8 +243,8 @@ export function RealTimeDashboardPage() {
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'up': return <TrendingUp className="w-3 h-3 text-green-600" />
-      case 'down': return <TrendingDown className="w-3 h-3 text-red-600" />
+      case 'up': return <TrendingUp className="w-3 h-3 text-status-success" />
+      case 'down': return <TrendingDown className="w-3 h-3 text-status-error" />
       default: return <div className="w-3 h-3 bg-gray-400 rounded-full" />
     }
   }
@@ -257,12 +257,12 @@ export function RealTimeDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-1 flex items-center gap-1.5">
-                <Activity className="w-6 h-6 text-green-600" />
+                <Activity className="w-6 h-6 text-status-success" />
                 Dashboard de Performance em Tempo Real
                 {isLive && (
                   <div className="flex items-center gap-2 ml-4">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-sm text-green-600 font-medium">LIVE</span>
+                    <div className="w-2 h-2 bg-status-success rounded-full animate-pulse" />
+                    <span className="text-sm text-status-success font-medium">LIVE</span>
                   </div>
                 )}
               </h1>
@@ -338,8 +338,8 @@ export function RealTimeDashboardPage() {
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div
                       className={`h-1.5 rounded-full transition-all ${
-                        metric.value >= metric.threshold.critical ? 'bg-red-500' :
-                        metric.value >= metric.threshold.warning ? 'bg-yellow-500' : 'bg-green-500'
+                        metric.value >= metric.threshold.critical ? 'bg-status-error' :
+                        metric.value >= metric.threshold.warning ? 'bg-status-warning' : 'bg-status-success'
                       }`}
                       style={{ width: `${Math.min(100, (metric.value / metric.threshold.critical) * 100)}%` }}
                     />
@@ -388,13 +388,13 @@ export function RealTimeDashboardPage() {
                     </div>
                     <div>
                       <span className="text-gray-800 dark:text-gray-200">Uptime:</span>
-                      <div className="font-medium text-green-600">{ats.uptime}%</div>
+                      <div className="font-medium text-status-success">{ats.uptime}%</div>
                     </div>
                   </div>
 
                   {ats.errorRate > 0 && (
-                    <div className="mt-3 p-2 bg-red-50 rounded text-xs">
-                      <span className="text-red-600">Taxa de erro: {ats.errorRate}%</span>
+                    <div className="mt-3 p-2 bg-status-error/10 rounded text-xs">
+                      <span className="text-status-error">Taxa de erro: {ats.errorRate}%</span>
                     </div>
                   )}
                 </div>
@@ -407,7 +407,7 @@ export function RealTimeDashboardPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-purple-600" />
+              <Zap className="w-5 h-5 text-wedo-purple" />
               Workflows em Execução
             </CardTitle>
           </CardHeader>
@@ -460,7 +460,7 @@ export function RealTimeDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-green-600" />
+              <Activity className="w-5 h-5 text-status-success" />
               Feed de Atividades em Tempo Real
             </CardTitle>
           </CardHeader>
@@ -479,9 +479,9 @@ export function RealTimeDashboardPage() {
                 <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
                   <div className="text-xs text-gray-800 dark:text-gray-200 w-16">{activity.time}</div>
                   <div className={`w-2 h-2 rounded-full ${
-                    activity.type === 'success' ? 'bg-green-500' :
-                    activity.type === 'warning' ? 'bg-yellow-500' :
-                    activity.type === 'error' ? 'bg-red-500' : 'bg-gray-700 dark:bg-gray-300'
+                    activity.type === 'success' ? 'bg-status-success' :
+                    activity.type === 'warning' ? 'bg-status-warning' :
+                    activity.type === 'error' ? 'bg-status-error' : 'bg-gray-700 dark:bg-gray-300'
                   }`} />
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-800 dark:text-gray-200">{activity.event}</div>

@@ -287,19 +287,19 @@ export function IndicatorsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'exceeded': return 'text-green-600 bg-green-100'
+      case 'exceeded': return 'text-status-success bg-status-success/15'
       case 'achieved': return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800'
-      case 'on_track': return 'text-yellow-600 bg-yellow-100'
-      case 'behind': return 'text-red-600 bg-red-100'
+      case 'on_track': return 'text-status-warning bg-status-warning/15'
+      case 'behind': return 'text-status-error bg-status-error/15'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
 
   const getRankingIcon = (ranking: number) => {
     switch (ranking) {
-      case 1: return <Trophy className="w-5 h-5 text-yellow-500" />
+      case 1: return <Trophy className="w-5 h-5 text-status-warning" />
       case 2: return <Medal className="w-5 h-5 text-gray-600" />
-      case 3: return <Medal className="w-5 h-5 text-amber-600" />
+      case 3: return <Medal className="w-5 h-5 text-status-warning" />
       default: return <div className="w-5 h-5 flex items-center justify-center text-sm font-bold text-gray-800 dark:text-gray-200">{ranking}</div>
     }
   }
@@ -520,7 +520,7 @@ export function IndicatorsPage() {
                         {dept}
                         <button
                           onClick={() => setSelectedDepartments(selectedDepartments.filter(d => d !== dept))}
-                          className="ml-1 hover:text-red-600"
+                          className="ml-1 hover:text-status-error"
                         >
                           ×
                         </button>
@@ -531,7 +531,7 @@ export function IndicatorsPage() {
                         {name}
                         <button
                           onClick={() => setSelectedRecruiters(selectedRecruiters.filter(n => n !== name))}
-                          className="ml-1 hover:text-red-600"
+                          className="ml-1 hover:text-status-error"
                         >
                           ×
                         </button>
@@ -555,56 +555,56 @@ export function IndicatorsPage() {
                   <Users className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
-                  <TrendingUp className="w-3 h-3 text-green-600" />
-                  <span className="text-green-600">+12% vs mês anterior</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-status-success">+12% vs mês anterior</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-green-200 dark:border-green-800">
+            <Card className="border-status-success/30 dark:border-status-success/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-green-600 font-medium">Contratações Total</p>
-                    <p className="text-2xl font-bold text-green-700">{teamMetrics.totalHires}</p>
+                    <p className="text-sm text-status-success font-medium">Contratações Total</p>
+                    <p className="text-2xl font-bold text-status-success">{teamMetrics.totalHires}</p>
                   </div>
-                  <UserCheck className="w-8 h-8 text-green-600" />
+                  <UserCheck className="w-8 h-8 text-status-success" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
-                  <TrendingUp className="w-3 h-3 text-green-600" />
-                  <span className="text-green-600">Taxa: {teamMetrics.avgConversionRate}%</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-status-success">Taxa: {teamMetrics.avgConversionRate}%</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-purple-200 dark:border-purple-800">
+            <Card className="border-wedo-purple/30 dark:border-wedo-purple/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-purple-600 font-medium">Time to Fill Médio</p>
-                    <p className="text-2xl font-bold text-purple-700">{teamMetrics.avgTimeToFill} dias</p>
+                    <p className="text-sm text-wedo-purple font-medium">Time to Fill Médio</p>
+                    <p className="text-2xl font-bold text-wedo-purple">{teamMetrics.avgTimeToFill} dias</p>
                   </div>
-                  <Timer className="w-8 h-8 text-purple-600" />
+                  <Timer className="w-8 h-8 text-wedo-purple" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
-                  <TrendingDown className="w-3 h-3 text-green-600" />
-                  <span className="text-green-600">-3 dias vs meta</span>
+                  <TrendingDown className="w-3 h-3 text-status-success" />
+                  <span className="text-status-success">-3 dias vs meta</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-orange-200 dark:border-orange-800">
+            <Card className="border-wedo-orange/30 dark:border-wedo-orange/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-orange-600 font-medium">NPS Médio Equipe</p>
-                    <p className="text-2xl font-bold text-orange-700">{teamMetrics.avgNPS}%</p>
+                    <p className="text-sm text-wedo-orange font-medium">NPS Médio Equipe</p>
+                    <p className="text-2xl font-bold text-wedo-orange">{teamMetrics.avgNPS}%</p>
                   </div>
-                  <Star className="w-8 h-8 text-orange-600" />
+                  <Star className="w-8 h-8 text-wedo-orange" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
-                  <TrendingUp className="w-3 h-3 text-green-600" />
-                  <span className="text-green-600">+5% vs trimestre</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-status-success">+5% vs trimestre</span>
                 </div>
               </CardContent>
             </Card>
@@ -637,21 +637,21 @@ export function IndicatorsPage() {
           <Card className="border-l-4 border-l-orange-500">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-orange-600" />
+                <AlertTriangle className="w-5 h-5 text-wedo-orange" />
                 Alertas Rápidos
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-red-50 rounded-md">
-                  <div className="text-2xl font-bold text-red-600">2</div>
-                  <div className="text-sm text-red-700">Alertas Críticos</div>
-                  <div className="text-xs text-red-600 mt-1">Time to Fill &gt; 45 dias</div>
+                <div className="text-center p-4 bg-status-error/10 rounded-md">
+                  <div className="text-2xl font-bold text-status-error">2</div>
+                  <div className="text-sm text-status-error">Alertas Críticos</div>
+                  <div className="text-xs text-status-error mt-1">Time to Fill &gt; 45 dias</div>
                 </div>
-                <div className="text-center p-4 bg-yellow-50 rounded-md">
-                  <div className="text-2xl font-bold text-yellow-600">5</div>
-                  <div className="text-sm text-yellow-700">Avisos</div>
-                  <div className="text-xs text-yellow-600 mt-1">NPS abaixo da meta</div>
+                <div className="text-center p-4 bg-status-warning/10 rounded-md">
+                  <div className="text-2xl font-bold text-status-warning">5</div>
+                  <div className="text-sm text-status-warning">Avisos</div>
+                  <div className="text-xs text-status-warning mt-1">NPS abaixo da meta</div>
                 </div>
                 <div className="text-center p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
                   <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">12</div>
@@ -786,15 +786,15 @@ export function IndicatorsPage() {
                           <div className="text-gray-800 dark:text-gray-200">LinkedIn</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-medium text-green-600">{recruiter.sourcing.referrals}%</div>
+                          <div className="font-medium text-status-success">{recruiter.sourcing.referrals}%</div>
                           <div className="text-gray-800 dark:text-gray-200">Indicações</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-medium text-orange-600">{recruiter.sourcing.jobBoards}%</div>
+                          <div className="font-medium text-wedo-orange">{recruiter.sourcing.jobBoards}%</div>
                           <div className="text-gray-800 dark:text-gray-200">Job Boards</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-medium text-purple-600">{recruiter.sourcing.headhunting}%</div>
+                          <div className="font-medium text-wedo-purple">{recruiter.sourcing.headhunting}%</div>
                           <div className="text-gray-800 dark:text-gray-200">Headhunt</div>
                         </div>
                       </div>
@@ -821,7 +821,7 @@ export function IndicatorsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-yellow-500" />
+                  <Trophy className="w-5 h-5 text-status-warning" />
                   Ranking Geral dos Recrutadores
                 </CardTitle>
               </CardHeader>
@@ -829,9 +829,9 @@ export function IndicatorsPage() {
                 <div className="space-y-4">
                   {filteredRecruiters.map((recruiter, index) => (
                     <div key={recruiter.name} className={`flex items-center gap-4 p-4 rounded-md border ${
-                      index === 0 ? 'bg-yellow-50 border-yellow-200' :
+                      index === 0 ? 'bg-status-warning/10 border-status-warning/30' :
                       index === 1 ? 'bg-gray-50 border-gray-200' :
-                      index === 2 ? 'bg-amber-50 border-amber-200' :
+                      index === 2 ? 'bg-status-warning/10 border-status-warning/30' :
                       'bg-white border-gray-100'
                     }`}>
                       <div className="flex items-center gap-3">
@@ -854,19 +854,19 @@ export function IndicatorsPage() {
                           <div className="text-xs text-gray-800 dark:text-gray-200">Score Total</div>
                         </div>
                         <div>
-                          <div className="text-lg font-bold text-green-600">{recruiter.totalHires}</div>
+                          <div className="text-lg font-bold text-status-success">{recruiter.totalHires}</div>
                           <div className="text-xs text-gray-800 dark:text-gray-200">Contratações</div>
                         </div>
                         <div>
-                          <div className="text-lg font-bold text-purple-600">{recruiter.avgTimeToFill}d</div>
+                          <div className="text-lg font-bold text-wedo-purple">{recruiter.avgTimeToFill}d</div>
                           <div className="text-xs text-gray-800 dark:text-gray-200">Time to Fill</div>
                         </div>
                         <div>
-                          <div className="text-lg font-bold text-orange-600">{recruiter.npsScore}%</div>
+                          <div className="text-lg font-bold text-wedo-orange">{recruiter.npsScore}%</div>
                           <div className="text-xs text-gray-800 dark:text-gray-200">NPS</div>
                         </div>
                         <div>
-                          <div className="text-lg font-bold text-red-600">{recruiter.conversionRate}%</div>
+                          <div className="text-lg font-bold text-status-error">{recruiter.conversionRate}%</div>
                           <div className="text-xs text-gray-800 dark:text-gray-200">Conversão</div>
                         </div>
                       </div>
@@ -874,9 +874,9 @@ export function IndicatorsPage() {
                       <div className="text-right">
                         {index < 3 && (
                           <Badge className={`${
-                            index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                            index === 0 ? 'bg-status-warning/15 text-status-warning' :
                             index === 1 ? 'bg-gray-100 text-gray-800' :
-                            'bg-amber-100 text-amber-800'
+                            'bg-status-warning/15 text-status-warning'
                           }`}>
                             #{recruiter.ranking}
                           </Badge>
@@ -936,9 +936,9 @@ export function IndicatorsPage() {
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div
                                   className={`h-2 rounded-full transition-all duration-300 ${
-                                    goal.status === 'exceeded' ? 'bg-green-500' :
-                                    goal.status === 'achieved' ? 'bg-blue-500' :
-                                    goal.status === 'on_track' ? 'bg-yellow-500' : 'bg-red-500'
+                                    goal.status === 'exceeded' ? 'bg-status-success' :
+                                    goal.status === 'achieved' ? 'bg-wedo-cyan' :
+                                    goal.status === 'on_track' ? 'bg-status-warning' : 'bg-status-error'
                                   }`}
                                   style={{
                                     width: `${Math.min((goal.current / goal.target) * 100, 100)}%`
@@ -953,7 +953,7 @@ export function IndicatorsPage() {
                       {/* Metas Trimestrais */}
                       <div>
                         <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-4 flex items-center gap-2">
-                          <Target className="w-4 h-4 text-purple-600" />
+                          <Target className="w-4 h-4 text-wedo-purple" />
                           Metas Trimestrais
                         </h4>
                         <div className="space-y-4">
@@ -975,9 +975,9 @@ export function IndicatorsPage() {
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div
                                   className={`h-2 rounded-full transition-all duration-300 ${
-                                    goal.status === 'exceeded' ? 'bg-green-500' :
-                                    goal.status === 'achieved' ? 'bg-blue-500' :
-                                    goal.status === 'on_track' ? 'bg-yellow-500' : 'bg-red-500'
+                                    goal.status === 'exceeded' ? 'bg-status-success' :
+                                    goal.status === 'achieved' ? 'bg-wedo-cyan' :
+                                    goal.status === 'on_track' ? 'bg-status-warning' : 'bg-status-error'
                                   }`}
                                   style={{
                                     width: `${Math.min((goal.current / goal.target) * 100, 100)}%`
@@ -1015,7 +1015,7 @@ export function IndicatorsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                  <BarChart3 className="w-5 h-5 text-wedo-purple" />
                   Comparação de Performance
                 </CardTitle>
               </CardHeader>
@@ -1068,7 +1068,7 @@ export function IndicatorsPage() {
                             <div className="flex items-center gap-2">
                               <div className="w-20 bg-gray-200 rounded-full h-2">
                                 <div
-                                  className="bg-green-500 h-2 rounded-full"
+                                  className="bg-status-success h-2 rounded-full"
                                   style={{
                                     width: `${recruiter.npsScore}%`
                                   }}
@@ -1117,16 +1117,16 @@ export function IndicatorsPage() {
         <div className="space-y-6">
           {/* KPIs Estratégicos Principais */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-green-200">
+            <Card className="border-status-success/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-600" />
+                  <TrendingUp className="w-4 h-4 text-status-success" />
                   Taxa de Crescimento
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-700">+24.8%</div>
-                <div className="text-xs text-green-600 mt-1">vs trimestre anterior</div>
+                <div className="text-2xl font-bold text-status-success">+24.8%</div>
+                <div className="text-xs text-status-success mt-1">vs trimestre anterior</div>
                 <div className="mt-3 text-xs text-gray-600">
                   Contratações cresceram 35% e pipeline aumentou 18%
                 </div>
@@ -1149,32 +1149,32 @@ export function IndicatorsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-purple-200">
+            <Card className="border-wedo-purple/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Users className="w-4 h-4 text-purple-600" />
+                  <Users className="w-4 h-4 text-wedo-purple" />
                   Qualidade da Contratação
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-700">4.6/5.0</div>
-                <div className="text-xs text-purple-600 mt-1">Score médio</div>
+                <div className="text-2xl font-bold text-wedo-purple">4.6/5.0</div>
+                <div className="text-xs text-wedo-purple mt-1">Score médio</div>
                 <div className="mt-3 text-xs text-gray-600">
                   89% dos contratados ainda na empresa após 6 meses
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-orange-200">
+            <Card className="border-wedo-orange/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-orange-600" />
+                  <DollarSign className="w-4 h-4 text-wedo-orange" />
                   ROI em Recrutamento
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-700">325%</div>
-                <div className="text-xs text-orange-600 mt-1">Retorno sobre investimento</div>
+                <div className="text-2xl font-bold text-wedo-orange">325%</div>
+                <div className="text-xs text-wedo-orange mt-1">Retorno sobre investimento</div>
                 <div className="mt-3 text-xs text-gray-600">
                   Economia de R$ 2.4M em terceirização
                 </div>
@@ -1193,24 +1193,24 @@ export function IndicatorsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-green-600" />
+                  <Clock className="w-5 h-5 text-status-success" />
                   Time to Fill por Senioridade
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { level: 'Júnior', days: 18, color: 'bg-green-500', target: 20 },
+                    { level: 'Júnior', days: 18, color: 'bg-status-success', target: 20 },
                     { level: 'Pleno', days: 28, color: 'bg-gray-700 dark:bg-gray-300', target: 30 },
-                    { level: 'Sênior', days: 42, color: 'bg-yellow-500', target: 45 },
-                    { level: 'Liderança', days: 67, color: 'bg-red-500', target: 60 }
+                    { level: 'Sênior', days: 42, color: 'bg-status-warning', target: 45 },
+                    { level: 'Liderança', days: 67, color: 'bg-status-error', target: 60 }
                   ].map((item, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span>{item.level}</span>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{item.days} dias</span>
-                          <Badge className={item.days <= item.target ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
+                          <Badge className={item.days <= item.target ? 'bg-status-success/15 text-status-success' : 'bg-status-error/15 text-status-error'}>
                             {item.days <= item.target ? '✓' : '!'}
                           </Badge>
                         </div>
@@ -1263,7 +1263,7 @@ export function IndicatorsPage() {
                       <span className="font-medium">2%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-purple-500 h-2 rounded-full" style={{width: '2%'}}></div>
+                      <div className="bg-wedo-purple h-2 rounded-full" style={{width: '2%'}}></div>
                     </div>
                   </div>
                 </div>
@@ -1327,56 +1327,56 @@ export function IndicatorsPage() {
                   <Home className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
-                  <TrendingUp className="w-3 h-3 text-green-600" />
-                  <span className="text-green-600">+8% vs trimestre anterior</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-status-success">+8% vs trimestre anterior</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-purple-200">
+            <Card className="border-wedo-purple/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-purple-600 font-medium">Híbrido</p>
-                    <p className="text-2xl font-bold text-purple-700">35%</p>
+                    <p className="text-sm text-wedo-purple font-medium">Híbrido</p>
+                    <p className="text-2xl font-bold text-wedo-purple">35%</p>
                   </div>
-                  <Mountain className="w-8 h-8 text-purple-600" />
+                  <Mountain className="w-8 h-8 text-wedo-purple" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
-                  <TrendingUp className="w-3 h-3 text-green-600" />
-                  <span className="text-green-600">+3% vs trimestre anterior</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-status-success">+3% vs trimestre anterior</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-orange-200">
+            <Card className="border-wedo-orange/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-orange-600 font-medium">Presencial</p>
-                    <p className="text-2xl font-bold text-orange-700">23%</p>
+                    <p className="text-sm text-wedo-orange font-medium">Presencial</p>
+                    <p className="text-2xl font-bold text-wedo-orange">23%</p>
                   </div>
-                  <Building className="w-8 h-8 text-orange-600" />
+                  <Building className="w-8 h-8 text-wedo-orange" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
-                  <TrendingDown className="w-3 h-3 text-red-600" />
-                  <span className="text-red-600">-11% vs trimestre anterior</span>
+                  <TrendingDown className="w-3 h-3 text-status-error" />
+                  <span className="text-status-error">-11% vs trimestre anterior</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-green-200">
+            <Card className="border-status-success/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-green-600 font-medium">Satisfação Média</p>
-                    <p className="text-2xl font-bold text-green-700">8.4/10</p>
+                    <p className="text-sm text-status-success font-medium">Satisfação Média</p>
+                    <p className="text-2xl font-bold text-status-success">8.4/10</p>
                   </div>
-                  <Star className="w-8 h-8 text-green-600" />
+                  <Star className="w-8 h-8 text-status-success" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
-                  <TrendingUp className="w-3 h-3 text-green-600" />
-                  <span className="text-green-600">+0.3 vs mês anterior</span>
+                  <TrendingUp className="w-3 h-3 text-status-success" />
+                  <span className="text-status-success">+0.3 vs mês anterior</span>
                 </div>
               </CardContent>
             </Card>
@@ -1405,14 +1405,14 @@ export function IndicatorsPage() {
                         <span className="font-medium text-gray-950 dark:text-gray-50">{item.dept}</span>
                         <div className="flex items-center gap-2 text-xs">
                           <span className="text-gray-600 dark:text-gray-400">{item.remote}% Remoto</span>
-                          <span className="text-purple-600">{item.hybrid}% Híbrido</span>
-                          <span className="text-orange-600">{item.office}% Presencial</span>
+                          <span className="text-wedo-purple">{item.hybrid}% Híbrido</span>
+                          <span className="text-wedo-orange">{item.office}% Presencial</span>
                         </div>
                       </div>
                       <div className="flex w-full h-3 rounded-full overflow-hidden">
                         <div className="bg-gray-700 dark:bg-gray-300" style={{width: `${item.remote}%`}}></div>
-                        <div className="bg-purple-500" style={{width: `${item.hybrid}%`}}></div>
-                        <div className="bg-orange-500" style={{width: `${item.office}%`}}></div>
+                        <div className="bg-wedo-purple" style={{width: `${item.hybrid}%`}}></div>
+                        <div className="bg-wedo-orange" style={{width: `${item.office}%`}}></div>
                       </div>
                     </div>
                   ))}
@@ -1423,7 +1423,7 @@ export function IndicatorsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-green-600" />
+                  <MapPin className="w-5 h-5 text-status-success" />
                   Distribuição Regional
                 </CardTitle>
               </CardHeader>
@@ -1437,7 +1437,7 @@ export function IndicatorsPage() {
                   ].map((item, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-status-success rounded-full"></div>
                         <span className="text-sm font-medium">{item.region}</span>
                       </div>
                       <div className="text-right">
@@ -1455,7 +1455,7 @@ export function IndicatorsPage() {
           <Card className="border-l-4 border-l-gray-400 dark:border-l-gray-500">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="w-5 h-5 text-yellow-600" />
+                <Lightbulb className="w-5 h-5 text-status-warning" />
                 Insights e Recomendações Estratégicas
               </CardTitle>
             </CardHeader>
@@ -1468,23 +1468,23 @@ export function IndicatorsPage() {
                     Considere expandir políticas de trabalho remoto.
                   </p>
                 </div>
-                <div className="p-4 bg-green-50 rounded-md">
-                  <h4 className="font-medium text-green-900 mb-2">💡 Oportunidade</h4>
-                  <p className="text-sm text-green-800">
+                <div className="p-4 bg-status-success/10 rounded-md">
+                  <h4 className="font-medium text-status-success mb-2">💡 Oportunidade</h4>
+                  <p className="text-sm text-status-success">
                     Híbrido tem alta satisfação (8.7/10) e pode ser expandido para
                     departamentos tradicionalmente presenciais.
                   </p>
                 </div>
-                <div className="p-4 bg-yellow-50 rounded-md">
-                  <h4 className="font-medium text-yellow-900 mb-2">⚠️ Atenção</h4>
-                  <p className="text-sm text-yellow-800">
+                <div className="p-4 bg-status-warning/10 rounded-md">
+                  <h4 className="font-medium text-status-warning mb-2">⚠️ Atenção</h4>
+                  <p className="text-sm text-status-warning">
                     Presencial em declínio (-11%). Avaliar necessidade real vs
                     preferência dos colaboradores em Vendas e Operações.
                   </p>
                 </div>
-                <div className="p-4 bg-purple-50 rounded-md">
-                  <h4 className="font-medium text-purple-900 mb-2">📊 Benchmark</h4>
-                  <p className="text-sm text-purple-800">
+                <div className="p-4 bg-wedo-purple/10 rounded-md">
+                  <h4 className="font-medium text-wedo-purple mb-2">📊 Benchmark</h4>
+                  <p className="text-sm text-wedo-purple">
                     Empresa está 15% acima da média do mercado em satisfação
                     com modelos flexíveis de trabalho.
                   </p>
@@ -1505,17 +1505,17 @@ export function IndicatorsPage() {
 
           {/* KPIs Preditivos */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-green-200">
+            <Card className="border-status-success/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-green-600 font-medium">Previsão Q4</p>
-                    <p className="text-2xl font-bold text-green-700">156</p>
+                    <p className="text-sm text-status-success font-medium">Previsão Q4</p>
+                    <p className="text-2xl font-bold text-status-success">156</p>
                     <p className="text-xs text-gray-800 dark:text-gray-200">Contratações</p>
                   </div>
-                  <TrendingUp className="w-8 h-8 text-green-600" />
+                  <TrendingUp className="w-8 h-8 text-status-success" />
                 </div>
-                <div className="mt-2 text-xs text-green-600">
+                <div className="mt-2 text-xs text-status-success">
                   +12% vs Q3 (IA: 89% confiança)
                 </div>
               </CardContent>
@@ -1537,33 +1537,33 @@ export function IndicatorsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-purple-200">
+            <Card className="border-wedo-purple/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-purple-600 font-medium">Turnover Risk</p>
-                    <p className="text-2xl font-bold text-purple-700">8.2%</p>
+                    <p className="text-sm text-wedo-purple font-medium">Turnover Risk</p>
+                    <p className="text-2xl font-bold text-wedo-purple">8.2%</p>
                     <p className="text-xs text-gray-800 dark:text-gray-200">Próximos 6 meses</p>
                   </div>
-                  <AlertTriangle className="w-8 h-8 text-purple-600" />
+                  <AlertTriangle className="w-8 h-8 text-wedo-purple" />
                 </div>
-                <div className="mt-2 text-xs text-purple-600">
+                <div className="mt-2 text-xs text-wedo-purple">
                   87 funcionários em risco
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-orange-200">
+            <Card className="border-wedo-orange/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-orange-600 font-medium">Budget Impact</p>
-                    <p className="text-2xl font-bold text-orange-700">R$ 2.8M</p>
+                    <p className="text-sm text-wedo-orange font-medium">Budget Impact</p>
+                    <p className="text-2xl font-bold text-wedo-orange">R$ 2.8M</p>
                     <p className="text-xs text-gray-800 dark:text-gray-200">Economia prevista</p>
                   </div>
-                  <DollarSign className="w-8 h-8 text-orange-600" />
+                  <DollarSign className="w-8 h-8 text-wedo-orange" />
                 </div>
-                <div className="mt-2 text-xs text-orange-600">
+                <div className="mt-2 text-xs text-wedo-orange">
                   Otimizações em TA
                 </div>
               </CardContent>
@@ -1575,7 +1575,7 @@ export function IndicatorsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-600" />
+                  <Brain className="w-5 h-5 text-wedo-purple" />
                   Previsão de Demanda por Área
                 </CardTitle>
               </CardHeader>
@@ -1593,7 +1593,7 @@ export function IndicatorsPage() {
                         <span className="font-medium text-gray-950 dark:text-gray-50">{item.area}</span>
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-gray-600">{item.current} → {item.predicted}</span>
-                          <Badge className="bg-purple-100 text-purple-700 text-xs">
+                          <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">
                             {item.confidence}% confiança
                           </Badge>
                         </div>
@@ -1607,7 +1607,7 @@ export function IndicatorsPage() {
                         </div>
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-purple-500 h-2 rounded-full"
+                            className="bg-wedo-purple h-2 rounded-full"
                             style={{width: `${(item.predicted / 70) * 100}%`}}
                           ></div>
                         </div>
@@ -1621,7 +1621,7 @@ export function IndicatorsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-green-600" />
+                  <Target className="w-5 h-5 text-status-success" />
                   Skills em Alta Demanda
                 </CardTitle>
               </CardHeader>
@@ -1638,12 +1638,12 @@ export function IndicatorsPage() {
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                       <div>
                         <div className="font-medium text-gray-950 dark:text-gray-50">{item.skill}</div>
-                        <div className="text-sm text-green-600">{item.growth} crescimento</div>
+                        <div className="text-sm text-status-success">{item.growth} crescimento</div>
                       </div>
                       <Badge className={
-                        item.urgency === 'alta' ? 'bg-red-100 text-red-700' :
-                        item.urgency === 'média' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-green-100 text-green-700'
+                        item.urgency === 'alta' ? 'bg-status-error/15 text-status-error' :
+                        item.urgency === 'média' ? 'bg-status-warning/15 text-status-warning' :
+                        'bg-status-success/15 text-status-success'
                       }>
                         {item.urgency === 'alta' ? '🔴 Alta' :
                          item.urgency === 'média' ? '🟡 Média' : '🟢 Baixa'}
@@ -1659,7 +1659,7 @@ export function IndicatorsPage() {
           <Card className="border-l-4 border-l-red-500">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Brain className="w-5 h-5 text-red-600" />
+                <Brain className="w-5 h-5 text-status-error" />
                 Alertas Inteligentes e Ações Recomendadas
               </CardTitle>
             </CardHeader>
@@ -1689,31 +1689,31 @@ export function IndicatorsPage() {
                   }
                 ].map((alert, index) => (
                   <div key={index} className={`p-4 rounded-md border-l-4 ${
-                    alert.type === 'urgente' ? 'bg-red-50 border-l-red-500' :
-                    alert.type === 'atencao' ? 'bg-yellow-50 border-l-yellow-500' :
-                    'bg-green-50 border-l-green-500'
+                    alert.type === 'urgente' ? 'bg-status-error/10 border-l-red-500' :
+                    alert.type === 'atencao' ? 'bg-status-warning/10 border-l-yellow-500' :
+                    'bg-status-success/10 border-l-green-500'
                   }`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className={`font-medium mb-1 ${
-                          alert.type === 'urgente' ? 'text-red-900' :
-                          alert.type === 'atencao' ? 'text-yellow-900' :
-                          'text-green-900'
+                          alert.type === 'urgente' ? 'text-status-error' :
+                          alert.type === 'atencao' ? 'text-status-warning' :
+                          'text-status-success'
                         }`}>
                           {alert.type === 'urgente' ? '🚨' :
                            alert.type === 'atencao' ? '⚠️' : '💡'} {alert.title}
                         </h4>
                         <p className={`text-sm mb-2 ${
-                          alert.type === 'urgente' ? 'text-red-800' :
-                          alert.type === 'atencao' ? 'text-yellow-800' :
-                          'text-green-800'
+                          alert.type === 'urgente' ? 'text-status-error' :
+                          alert.type === 'atencao' ? 'text-status-warning' :
+                          'text-status-success'
                         }`}>
                           {alert.description}
                         </p>
                         <p className={`text-sm font-medium ${
-                          alert.type === 'urgente' ? 'text-red-900' :
-                          alert.type === 'atencao' ? 'text-yellow-900' :
-                          'text-green-900'
+                          alert.type === 'urgente' ? 'text-status-error' :
+                          alert.type === 'atencao' ? 'text-status-warning' :
+                          'text-status-success'
                         }`}>
                           💡 Ação recomendada: {alert.action}
                         </p>

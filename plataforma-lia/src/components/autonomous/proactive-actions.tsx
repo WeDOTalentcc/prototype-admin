@@ -13,9 +13,9 @@ import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } fro
 
 const PRIORITY_STYLES: Record<string, { badge: string; icon: React.ElementType }> = {
   low: { badge: 'bg-gray-500/10 text-gray-500', icon: Info },
-  normal: { badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', icon: Lightbulb },
-  high: { badge: 'bg-orange-500/10 text-orange-600 dark:text-orange-400', icon: AlertCircle },
-  urgent: { badge: 'bg-red-500/10 text-red-600 dark:text-red-400', icon: Bell }
+  normal: { badge: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark', icon: Lightbulb },
+  high: { badge: 'bg-wedo-orange/10 text-wedo-orange dark:text-wedo-orange', icon: AlertCircle },
+  urgent: { badge: 'bg-status-error/10 text-status-error dark:text-status-error', icon: Bell }
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -172,7 +172,7 @@ export function ProactiveActions({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                  className="h-7 w-7 p-0 text-status-success hover:text-status-success hover:bg-status-success/10 dark:hover:bg-status-success/20"
                   onClick={() => handleAccept(action.id)}
                   disabled={isProcessing}
                 >
@@ -185,7 +185,7 @@ export function ProactiveActions({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="h-7 w-7 p-0 text-gray-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
                   onClick={() => handleReject(action.id)}
                   disabled={isProcessing}
                 >
@@ -268,7 +268,7 @@ export function ProactiveActions({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        className="text-gray-500 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
                         onClick={() => handleReject(action.id)}
                         disabled={isProcessing}
                       >

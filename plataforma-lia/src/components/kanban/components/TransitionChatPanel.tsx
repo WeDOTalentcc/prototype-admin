@@ -86,10 +86,10 @@ function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
 
 function OutOfScopeIndicator() {
   return (
-    <div className="mt-2 pt-2 border-t border-amber-200/50">
+    <div className="mt-2 pt-2 border-t border-status-warning/30/50">
       <div className="flex items-center gap-1.5">
-        <ExternalLink className="w-3 h-3 text-amber-500 flex-shrink-0" />
-        <span className="text-micro font-medium text-amber-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <ExternalLink className="w-3 h-3 text-status-warning flex-shrink-0" />
+        <span className="text-micro font-medium text-status-warning" style={{ fontFamily: 'Inter, sans-serif' }}>
           Fora do escopo desta conversa
         </span>
       </div>
@@ -101,15 +101,15 @@ function FairnessWarning({ fairnessResult }: { fairnessResult: { is_fair: boolea
   if (fairnessResult.is_fair) return null
 
   return (
-    <div className="mt-2 pt-2 border-t border-red-200/50">
+    <div className="mt-2 pt-2 border-t border-status-error/30/50">
       <div className="flex items-start gap-1.5">
-        <ShieldAlert className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
+        <ShieldAlert className="w-3.5 h-3.5 text-status-error flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-xs font-semibold text-red-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-xs font-semibold text-status-error" style={{ fontFamily: 'Inter, sans-serif' }}>
             Alerta de Fairness
           </p>
           {fairnessResult.warnings.map((w, idx) => (
-            <p key={idx} className="text-micro text-red-500 mt-0.5">
+            <p key={idx} className="text-micro text-status-error mt-0.5">
               {w}
             </p>
           ))}
@@ -125,7 +125,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
   return (
     <div className="mt-2 pt-2 border-t border-gray-200/30">
       <div className="flex items-center gap-1 mb-1">
-        <Lightbulb className="w-3 h-3 text-amber-400" />
+        <Lightbulb className="w-3 h-3 text-status-warning" />
         <span className="text-micro font-medium text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>
           Baseado no seu histórico
         </span>
@@ -135,7 +135,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
           <button
             key={idx}
             onClick={() => onAccept(s)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 border border-amber-200 rounded text-micro text-amber-700 hover:bg-amber-100 transition-colors"
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-status-warning/10 border border-status-warning/30 rounded text-micro text-status-warning hover:bg-status-warning/15 transition-colors"
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
             <Sparkles className="w-2.5 h-2.5" />
@@ -151,7 +151,7 @@ function ConfidenceBadge({ confidence, layer }: { confidence?: number; layer?: n
   if (!confidence && confidence !== 0) return null
 
   const pct = Math.round(confidence * 100)
-  const color = pct >= 80 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-red-500'
+  const color = pct >= 80 ? 'text-status-success' : pct >= 50 ? 'text-status-warning' : 'text-status-error'
 
   return (
     <span className={cn("text-micro font-medium ml-1", color)} style={{ fontFamily: 'Inter, sans-serif' }}>

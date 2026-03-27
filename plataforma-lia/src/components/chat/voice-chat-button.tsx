@@ -229,7 +229,7 @@ export function VoiceChatButton({
       className={cn(
         "transition-all duration-200 focus-visible:ring-2 focus-visible:ring-gray-400",
         isRecording 
-          ? "text-red-500 hover:text-red-600 hover:bg-red-50 animate-pulse px-3" 
+          ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse px-3" 
           : isPlaying 
             ? "text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark hover:bg-gray-100 dark:bg-gray-800 px-3"
             : isProcessing

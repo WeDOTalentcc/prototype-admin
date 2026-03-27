@@ -171,12 +171,12 @@ export function CultureProfilePreview({
       </div>
       
       {isLowConfidence && (
-        <div className="rounded-md border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-900/20 p-3">
+        <div className="rounded-md border border-status-warning/30 dark:border-status-warning/30/50 bg-status-warning/10 dark:bg-status-warning/20 p-3">
           <div className="flex items-start gap-2">
-            <HelpCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+            <HelpCircle className="w-4 h-4 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-medium text-amber-800 dark:text-amber-300">Site com proteção anti-bot</p>
-              <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+              <p className="font-medium text-status-warning dark:text-status-warning">Site com proteção anti-bot</p>
+              <p className="text-xs text-status-warning dark:text-status-warning mt-0.5">
                 O site da empresa usa carregamento dinâmico (JavaScript/SPA) que não permite leitura automática. Clique em &quot;Editar&quot; acima para preencher manualmente as informações copiando do site da empresa.
               </p>
             </div>
@@ -276,7 +276,7 @@ export function CultureProfilePreview({
                   onChange={(e) => setNewValue(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addValue()}
                   placeholder="Novo valor..."
-                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-900"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-success/30 dark:border-status-success/30 bg-white dark:bg-gray-900"
                 />
                 <Button size="sm" variant="ghost" onClick={addValue} className="h-8 px-2">
                   <Plus className="w-4 h-4" />
@@ -286,9 +286,9 @@ export function CultureProfilePreview({
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-900/20 backdrop-blur-sm">
+        <Card className="rounded-2xl border border-status-warning/30 dark:border-status-warning/30/30 bg-status-warning/10/50 dark:bg-status-warning/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold text-status-warning dark:text-status-warning flex items-center gap-2">
               <Award className="w-4 h-4" />
               EVP - Proposta de Valor ({editedProfile.evp_bullets.length})
             </CardTitle>
@@ -300,14 +300,14 @@ export function CultureProfilePreview({
                   key={index}
                   className="flex items-start gap-2 text-xs text-gray-800 dark:text-gray-200"
                 >
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <Lightbulb className="w-3.5 h-3.5 text-status-warning mt-0.5 flex-shrink-0" />
                   <span className="flex-1">{evp}</span>
                   {isEditing && (
                     <button
                       onClick={() => removeEvp(index)}
-                      className="p-0.5 rounded-full hover:bg-amber-200 dark:hover:bg-amber-800 transition-colors"
+                      className="p-0.5 rounded-full hover:bg-status-warning/20 dark:hover:bg-status-warning transition-colors"
                     >
-                      <X className="w-3 h-3 text-amber-600" />
+                      <X className="w-3 h-3 text-status-warning" />
                     </button>
                   )}
                 </li>
@@ -324,7 +324,7 @@ export function CultureProfilePreview({
                   onChange={(e) => setNewEvp(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addEvp()}
                   placeholder="Novo diferencial..."
-                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-amber-200 dark:border-amber-800 bg-white dark:bg-gray-900"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-warning/30 dark:border-status-warning/30 bg-white dark:bg-gray-900"
                 />
                 <Button size="sm" variant="ghost" onClick={addEvp} className="h-8 px-2">
                   <Plus className="w-4 h-4" />
@@ -376,7 +376,7 @@ export function CultureProfilePreview({
                 onChange={(e) => setNewCompetency(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && addCompetency()}
                 placeholder="Nova competência... Ex: Liderança, Comunicação"
-                className="flex-1 px-3 py-1.5 text-xs rounded-md border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-900"
+                className="flex-1 px-3 py-1.5 text-xs rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30 bg-white dark:bg-gray-900"
               />
               <Button size="sm" variant="ghost" onClick={addCompetency} className="h-8 px-2">
                 <Plus className="w-4 h-4" />
@@ -416,8 +416,8 @@ export function CultureProfilePreview({
                     </ul>
                   </div>
                   
-                  <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-md p-2.5 mt-2">
-                    <p className="text-amber-800 dark:text-amber-200 leading-relaxed">
+                  <div className="bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-2.5 mt-2">
+                    <p className="text-status-warning dark:text-status-warning leading-relaxed">
                       <strong>Nota:</strong> Este perfil é gerado por <strong>inferência</strong> a partir da análise do site da empresa 
                       e <strong>não garante acuracidade</strong>. Para maior precisão, recomendamos que a empresa aplique um 
                       <strong> assessment de cultura organizacional</strong> com metodologia validada para definir seu perfil.
@@ -548,9 +548,9 @@ export function CultureProfilePreview({
       )}
 
       {(editedProfile.dei_initiatives || editedProfile.sustainability || editedProfile.social_impact) && (
-        <Card className="rounded-2xl border border-green-100 dark:border-green-900/30 bg-green-50/50 dark:bg-green-900/20 backdrop-blur-sm">
+        <Card className="rounded-2xl border border-status-success/30 dark:border-status-success/30/30 bg-status-success/10/50 dark:bg-status-success/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-green-700 dark:text-green-300 flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold text-status-success dark:text-status-success flex items-center gap-2">
               <Leaf className="w-4 h-4" />
               Responsabilidade Social
             </CardTitle>
@@ -558,19 +558,19 @@ export function CultureProfilePreview({
           <CardContent className="px-4 pb-4 space-y-3">
             {editedProfile.dei_initiatives && (
               <div>
-                <span className="text-micro text-green-600 dark:text-green-400 font-medium block mb-1">Diversidade, Equidade e Inclusão</span>
+                <span className="text-micro text-status-success dark:text-status-success font-medium block mb-1">Diversidade, Equidade e Inclusão</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.dei_initiatives}</p>
               </div>
             )}
             {editedProfile.sustainability && (
               <div>
-                <span className="text-micro text-green-600 dark:text-green-400 font-medium block mb-1">Sustentabilidade</span>
+                <span className="text-micro text-status-success dark:text-status-success font-medium block mb-1">Sustentabilidade</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.sustainability}</p>
               </div>
             )}
             {editedProfile.social_impact && (
               <div>
-                <span className="text-micro text-green-600 dark:text-green-400 font-medium block mb-1">Impacto Social</span>
+                <span className="text-micro text-status-success dark:text-status-success font-medium block mb-1">Impacto Social</span>
                 <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.social_impact}</p>
               </div>
             )}

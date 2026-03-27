@@ -74,11 +74,11 @@ const getCategoryBadge = (category: 'compliance' | 'security' | 'privacy' | 'eth
     case 'compliance':
       return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Compliance</Badge>
     case 'security':
-      return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">Segurança</Badge>
+      return <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/20 dark:text-status-warning">Segurança</Badge>
     case 'privacy':
-      return <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">Privacidade</Badge>
+      return <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple">Privacidade</Badge>
     case 'ethics':
-      return <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">Ética</Badge>
+      return <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success">Ética</Badge>
   }
 }
 
@@ -89,20 +89,20 @@ const getStatusBadge = (status: 'Concluído' | 'Pendente' | 'Em andamento') => {
     case 'Pendente':
       return <Badge variant="destructive" className="gap-1"><Clock className="w-3 h-3" />Pendente</Badge>
     case 'Em andamento':
-      return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 gap-1"><Play className="w-3 h-3" />Em andamento</Badge>
+      return <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/20 dark:text-status-warning gap-1"><Play className="w-3 h-3" />Em andamento</Badge>
   }
 }
 
 const getCompletionColor = (completion: number) => {
-  if (completion >= 90) return 'text-emerald-600'
-  if (completion >= 70) return 'text-amber-600'
-  return 'text-red-600'
+  if (completion >= 90) return 'text-status-success'
+  if (completion >= 70) return 'text-status-warning'
+  return 'text-status-error'
 }
 
 const getProgressColor = (completion: number) => {
-  if (completion >= 90) return 'bg-emerald-500'
-  if (completion >= 70) return 'bg-amber-500'
-  return 'bg-red-500'
+  if (completion >= 90) return 'bg-status-success'
+  if (completion >= 70) return 'bg-status-warning'
+  return 'bg-status-error'
 }
 
 export default function TreinamentosPage() {
@@ -151,23 +151,23 @@ export default function TreinamentosPage() {
           </Button>
         </div>
 
-        <Card className="mb-6 border-amber-300 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-700">
+        <Card className="mb-6 border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/10 dark:border-status-warning/30">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-md">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div className="p-2 bg-status-warning/15 dark:bg-status-warning/30 rounded-md">
+                <AlertTriangle className="w-5 h-5 text-status-warning" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                   Gap Crítico Identificado - ISO 27001 / LGPD
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                   O tracking de treinamentos é um requisito obrigatório da <strong>ISO 27001 (A.7.2.2)</strong> e da <strong>LGPD (Art. 50)</strong>. 
                   Todos os funcionários devem completar treinamentos de segurança e privacidade periodicamente. 
                   Funcionários com treinamentos vencidos devem ser notificados imediatamente.
                 </p>
               </div>
-              <Badge className="bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200">Atenção</Badge>
+              <Badge className="bg-status-warning/20 text-status-warning dark:bg-status-warning dark:text-status-warning">Atenção</Badge>
             </div>
           </CardContent>
         </Card>
@@ -190,8 +190,8 @@ export default function TreinamentosPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-md">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <div className="p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                  <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Concluídos (100%)</p>
@@ -204,8 +204,8 @@ export default function TreinamentosPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-md">
-                  <Clock className="w-5 h-5 text-amber-600" />
+                <div className="p-2 bg-status-warning/10 dark:bg-status-warning/20 rounded-md">
+                  <Clock className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Pendentes</p>
@@ -218,8 +218,8 @@ export default function TreinamentosPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-md">
-                  <Users className="w-5 h-5 text-purple-600" />
+                <div className="p-2 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
+                  <Users className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Taxa de Conclusão</p>
@@ -360,7 +360,7 @@ export default function TreinamentosPage() {
                           </td>
                           <td className="px-4 py-4">
                             {record.completionDate ? (
-                              <div className="flex items-center gap-1 text-sm text-emerald-600">
+                              <div className="flex items-center gap-1 text-sm text-status-success">
                                 <CheckCircle2 className="w-3 h-3" />
                                 {formatDate(record.completionDate)}
                               </div>
@@ -425,8 +425,8 @@ export default function TreinamentosPage() {
             <Card className="mt-4">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-md">
-                    <AlertTriangle className="w-5 h-5 text-amber-600" />
+                  <div className="p-2 bg-status-warning/10 dark:bg-status-warning/20 rounded-md">
+                    <AlertTriangle className="w-5 h-5 text-status-warning" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
@@ -444,8 +444,8 @@ export default function TreinamentosPage() {
             <Card className="mt-4">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-md">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <div className="p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md">
+                    <CheckCircle2 className="w-5 h-5 text-status-success" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-950 dark:text-gray-50">

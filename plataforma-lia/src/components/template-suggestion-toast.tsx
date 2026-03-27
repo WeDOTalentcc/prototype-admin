@@ -96,7 +96,7 @@ export function TemplateSuggestionToast({
   // Ícone baseado no motivo
   const getReasonIcon = () => {
     if (suggestion.repetitions >= 3) {
-      return <Zap className="w-4 h-4 text-orange-500" />
+      return <Zap className="w-4 h-4 text-wedo-orange" />
     } else if (suggestion.complexity >= 8) {
       return <Brain className="w-4 h-4 text-wedo-cyan" />
     } else {
@@ -107,9 +107,9 @@ export function TemplateSuggestionToast({
   // Cor do badge baseado no motivo
   const getBadgeColor = () => {
     if (suggestion.repetitions >= 3) {
-      return 'bg-orange-100 text-orange-700 border-orange-200'
+      return 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30'
     } else if (suggestion.complexity >= 8) {
-      return 'bg-purple-100 text-purple-700 border-purple-200'
+      return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
     } else {
       return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
     }

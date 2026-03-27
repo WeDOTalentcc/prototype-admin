@@ -168,7 +168,7 @@ export function FilterAutocomplete({
                 e.stopPropagation()
                 onRemove(value)
               }}
-              className="hover:text-red-500 transition-colors"
+              className="hover:text-status-error transition-colors"
               disabled={disabled}
             >
               <X className="w-3 h-3" />
@@ -241,7 +241,7 @@ export function FilterAutocomplete({
                     {showCounts && (
                       <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                         {suggestion.local_count > 0 && (
-                          <span className="flex items-center gap-0.5 text-xs text-emerald-600 font-medium">
+                          <span className="flex items-center gap-0.5 text-xs text-status-success font-medium">
                             <Home className="w-3 h-3" />
                             {suggestion.local_count}
                           </span>
@@ -336,7 +336,7 @@ export function TagInput({
               e.stopPropagation()
               onRemove(val)
             }}
-            className="hover:text-red-500 transition-colors"
+            className="hover:text-status-error transition-colors"
             disabled={disabled}
           >
             <X className="w-3 h-3" />

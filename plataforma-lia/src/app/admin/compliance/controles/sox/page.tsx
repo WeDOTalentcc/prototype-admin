@@ -290,19 +290,19 @@ export default function SOXPage() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-status-success" />
                 <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                   {soxSummary.effective || 0} Efetivos
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <XCircle className="w-4 h-4 text-red-500" />
+                <XCircle className="w-4 h-4 text-status-error" />
                 <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                   {soxSummary.ineffective || 0} Inefetivos
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-500" />
+                <Clock className="w-4 h-4 text-status-warning" />
                 <span className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
                   {soxSummary.pending || 0} Pendentes
                 </span>

@@ -280,13 +280,13 @@ export const buttonStyles = {
   ghost: 'bg-transparent hover:bg-gray-100 text-gray-600 font-medium rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
   
   // v4.1: Destructive
-  destructive: 'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-red-600/20 focus:outline-none',
+  destructive: 'bg-status-error hover:bg-status-error active:bg-status-error text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-red-600/20 focus:outline-none',
   
   // v4.1: Link style
   link: 'bg-transparent text-gray-600 hover:text-gray-900 font-medium rounded-md px-2 py-1 transition-colors underline-offset-4 hover:underline dark:text-gray-400 dark:hover:text-gray-50',
   
   // Aliases para compatibilidade
-  danger: 'bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md px-4 py-2 transition-colors',
+  danger: 'bg-status-error hover:bg-status-error text-white font-semibold rounded-md px-4 py-2 transition-colors',
   success: 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 font-semibold rounded-md px-4 py-2 transition-colors',
 } as const
 
@@ -296,8 +296,8 @@ export const buttonStyles = {
  */
 export const inputStyles = {
   default: 'border border-gray-300 hover:border-gray-400 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 outline-none transition-all',
-  error: 'border border-red-500 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-red-500/10 focus:border-red-500 outline-none',
-  success: 'border border-green-500 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-green-500/10 focus:border-green-500 outline-none',
+  error: 'border border-status-error/30 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-red-500/10 focus:border-status-error/30 outline-none',
+  success: 'border border-status-success/30 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-green-500/10 focus:border-status-success/30 outline-none',
   disabled: 'border border-gray-200 bg-gray-100 rounded-md px-3 py-2 text-base-ui font-normal text-gray-400 cursor-not-allowed',
 } as const
 
@@ -310,10 +310,10 @@ export const badgeStyles = {
   default: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
   
   // v4.1: Estados semânticos com dark mode
-  success: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  warning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  error: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  info: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  success: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
+  warning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
+  error: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error',
+  info: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark',
   
   // v4.1: WeDo accent colors (uso limitado - 10%) com dark mode
   cyan: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
@@ -326,9 +326,9 @@ export const badgeStyles = {
   
   // v4.1: Outline variants com dark mode
   outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300',
-  outlineSuccess: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-green-300 text-green-700 dark:border-green-700 dark:text-green-400',
-  outlineWarning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400',
-  outlineError: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-red-300 text-red-700 dark:border-red-700 dark:text-red-400',
+  outlineSuccess: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-success/30 text-status-success dark:border-status-success/30 dark:text-status-success',
+  outlineWarning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning',
+  outlineError: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error',
 } as const
 
 /**
@@ -381,9 +381,9 @@ export const modalStyles = {
 export const formStyles = {
   fieldGroup: 'space-y-1.5',
   label: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700",
-  labelRequired: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700 after:content-['*'] after:ml-0.5 after:text-red-500",
+  labelRequired: "font-['Open_Sans',sans-serif] text-xs font-medium text-gray-700 after:content-['*'] after:ml-0.5 after:text-status-error",
   helperText: "font-['Open_Sans',sans-serif] text-micro font-normal text-gray-500 mt-1",
-  errorText: "font-['Open_Sans',sans-serif] text-micro font-normal text-red-600 mt-1",
+  errorText: "font-['Open_Sans',sans-serif] text-micro font-normal text-status-error mt-1",
 } as const
 
 /**
@@ -534,14 +534,14 @@ export function getScoreColor(score: number, type: 'lia' | 'wsi' = 'lia'): {
   border: string
 } {
   if (type === 'wsi') {
-    if (score >= 4.0) return { text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' }
-    if (score >= 3.0) return { text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' }
-    return { text: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' }
+    if (score >= 4.0) return { text: 'text-status-success', bg: 'bg-status-success/10', border: 'border-status-success/30' }
+    if (score >= 3.0) return { text: 'text-status-warning', bg: 'bg-status-warning/10', border: 'border-status-warning/30' }
+    return { text: 'text-status-error', bg: 'bg-status-error/10', border: 'border-status-error/30' }
   }
   
-  if (score >= 80) return { text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' }
-  if (score >= 60) return { text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' }
-  return { text: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' }
+  if (score >= 80) return { text: 'text-status-success', bg: 'bg-status-success/10', border: 'border-status-success/30' }
+  if (score >= 60) return { text: 'text-status-warning', bg: 'bg-status-warning/10', border: 'border-status-warning/30' }
+  return { text: 'text-status-error', bg: 'bg-status-error/10', border: 'border-status-error/30' }
 }
 
 /**
@@ -553,25 +553,25 @@ export function getStatusStyle(status: string): {
   label: string
 } {
   const statusMap: Record<string, { text: string; bg: string; label: string }> = {
-    'active': { text: 'text-green-700', bg: 'bg-green-50', label: 'Ativo' },
-    'ativa': { text: 'text-green-700', bg: 'bg-green-50', label: 'Ativa' },
-    'approved': { text: 'text-green-700', bg: 'bg-green-50', label: 'Aprovado' },
-    'aprovado': { text: 'text-green-700', bg: 'bg-green-50', label: 'Aprovado' },
-    'completed': { text: 'text-green-700', bg: 'bg-green-50', label: 'Concluído' },
-    'pending': { text: 'text-amber-700', bg: 'bg-amber-50', label: 'Pendente' },
-    'pendente': { text: 'text-amber-700', bg: 'bg-amber-50', label: 'Pendente' },
-    'waiting': { text: 'text-amber-700', bg: 'bg-amber-50', label: 'Aguardando' },
-    'aguardando': { text: 'text-amber-700', bg: 'bg-amber-50', label: 'Aguardando' },
+    'active': { text: 'text-status-success', bg: 'bg-status-success/10', label: 'Ativo' },
+    'ativa': { text: 'text-status-success', bg: 'bg-status-success/10', label: 'Ativa' },
+    'approved': { text: 'text-status-success', bg: 'bg-status-success/10', label: 'Aprovado' },
+    'aprovado': { text: 'text-status-success', bg: 'bg-status-success/10', label: 'Aprovado' },
+    'completed': { text: 'text-status-success', bg: 'bg-status-success/10', label: 'Concluído' },
+    'pending': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Pendente' },
+    'pendente': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Pendente' },
+    'waiting': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Aguardando' },
+    'aguardando': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Aguardando' },
     'inactive': { text: 'text-gray-600', bg: 'bg-gray-100', label: 'Inativo' },
     'inativa': { text: 'text-gray-600', bg: 'bg-gray-100', label: 'Inativa' },
     'draft': { text: 'text-gray-600', bg: 'bg-gray-100', label: 'Rascunho' },
     'rascunho': { text: 'text-gray-600', bg: 'bg-gray-100', label: 'Rascunho' },
-    'error': { text: 'text-red-700', bg: 'bg-red-50', label: 'Erro' },
-    'erro': { text: 'text-red-700', bg: 'bg-red-50', label: 'Erro' },
-    'rejected': { text: 'text-red-700', bg: 'bg-red-50', label: 'Rejeitado' },
-    'rejeitado': { text: 'text-red-700', bg: 'bg-red-50', label: 'Rejeitado' },
-    'cancelled': { text: 'text-red-700', bg: 'bg-red-50', label: 'Cancelado' },
-    'cancelado': { text: 'text-red-700', bg: 'bg-red-50', label: 'Cancelado' },
+    'error': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Erro' },
+    'erro': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Erro' },
+    'rejected': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Rejeitado' },
+    'rejeitado': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Rejeitado' },
+    'cancelled': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Cancelado' },
+    'cancelado': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Cancelado' },
   }
   
   const key = status.toLowerCase()
@@ -589,14 +589,14 @@ export function getRecommendationStyle(recommendation: string): {
   switch (recommendation.toUpperCase()) {
     case 'APPROVED':
     case 'APROVADO':
-      return { text: 'text-green-700', bg: 'bg-green-50', label: 'APROVADO' }
+      return { text: 'text-status-success', bg: 'bg-status-success/10', label: 'APROVADO' }
     case 'PENDING':
     case 'PENDENTE':
-      return { text: 'text-amber-700', bg: 'bg-amber-50', label: 'PENDENTE' }
+      return { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'PENDENTE' }
     case 'NOT_APPROVED':
     case 'NAO_APROVADO':
     case 'NÃO APROVADO':
-      return { text: 'text-red-700', bg: 'bg-red-50', label: 'NÃO APROVADO' }
+      return { text: 'text-status-error', bg: 'bg-status-error/10', label: 'NÃO APROVADO' }
     default:
       return { text: 'text-gray-700', bg: 'bg-gray-100', label: recommendation }
   }

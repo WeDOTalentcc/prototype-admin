@@ -344,7 +344,7 @@ function IndicadoresEstrategicosPlaceholder() {
               <TrendingUp className="w-3.5 h-3.5 text-wedo-purple" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">+28%</div>
-            <p className={`${textStyles.bodySmall} text-purple-600 dark:text-purple-400 mt-1`}>vs. trimestre anterior</p>
+            <p className={`${textStyles.bodySmall} text-wedo-purple dark:text-wedo-purple mt-1`}>vs. trimestre anterior</p>
           </CardContent>
         </Card>
 
@@ -368,7 +368,7 @@ function IndicadoresEstrategicosPlaceholder() {
               <Target className="w-3.5 h-3.5 text-wedo-green" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">340%</div>
-            <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-1`}>Meta: 250%</p>
+            <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>Meta: 250%</p>
           </CardContent>
         </Card>
 
@@ -380,7 +380,7 @@ function IndicadoresEstrategicosPlaceholder() {
               <BarChart3 className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">67%</div>
-            <p className={`${textStyles.bodySmall} text-orange-600 dark:text-orange-400 mt-1`}>R$ 842k / R$ 1.25M</p>
+            <p className={`${textStyles.bodySmall} text-wedo-orange dark:text-wedo-orange mt-1`}>R$ 842k / R$ 1.25M</p>
           </CardContent>
         </Card>
       </div>
@@ -396,12 +396,12 @@ function IndicadoresEstrategicosPlaceholder() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-200 dark:border-green-800">
+            <div className="flex items-center justify-between p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md border border-status-success/30 dark:border-status-success/30">
               <div className="flex-1">
                 <p className={`${textStyles.subtitle} text-gray-950 dark:text-gray-50`}>Mariana Silva</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>23 contratações • 94% taxa de aprovação</p>
               </div>
-              <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
+              <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                 🥇 Top 1
               </Badge>
             </div>
@@ -416,12 +416,12 @@ function IndicadoresEstrategicosPlaceholder() {
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-md border border-purple-200 dark:border-purple-800">
+            <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div className="flex-1">
                 <p className={`${textStyles.subtitle} text-gray-950 dark:text-gray-50`}>Juliana Mendes</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>17 contratações • 91% taxa de aprovação</p>
               </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-micro font-medium">
+              <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                 🥉 Top 3
               </Badge>
             </div>
@@ -452,7 +452,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 <span className={`${textStyles.subtitle} dark:text-gray-300`}>Júnior</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">12 dias</span>
-                  <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
+                  <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                     -2d
                   </Badge>
                 </div>
@@ -482,7 +482,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 <span className={`${textStyles.subtitle} dark:text-gray-300`}>Sênior</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">27 dias</span>
-                  <Badge className={`${badgeStyles.warning} dark:bg-orange-900/30 dark:text-orange-400`}>
+                  <Badge className={`${badgeStyles.warning} dark:bg-wedo-orange/30 dark:text-wedo-orange`}>
                     -1d
                   </Badge>
                 </div>
@@ -497,7 +497,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 <span className={`${textStyles.subtitle} dark:text-gray-300`}>Especialista/C-Level</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">45 dias</span>
-                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-micro font-medium">
+                  <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                     +2d
                   </Badge>
                 </div>
@@ -520,10 +520,10 @@ function IndicadoresEstrategicosPlaceholder() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-md border-l-4 border-red-500">
+            <div className="p-4 bg-status-error/10 dark:bg-status-error/20 rounded-md border-l-4 border-status-error/30">
               <div className="flex items-start justify-between mb-2">
                 <p className={`${textStyles.subtitle} text-gray-950 dark:text-gray-50`}>Machine Learning Engineer</p>
-                <Badge className={`${badgeStyles.error} dark:bg-red-900/30 dark:text-red-400`}>
+                <Badge className={`${badgeStyles.error} dark:bg-status-error/30 dark:text-status-error`}>
                   Crítico
                 </Badge>
               </div>
@@ -534,7 +534,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
                   <span className="font-open-sans text-gray-600 dark:text-gray-400">Tempo médio</span>
-                  <span className="font-inter font-bold text-red-600 dark:text-red-400">62 dias</span>
+                  <span className="font-inter font-bold text-status-error dark:text-status-error">62 dias</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
                   <span className="font-open-sans text-gray-600 dark:text-gray-400">Taxa sucesso</span>
@@ -543,10 +543,10 @@ function IndicadoresEstrategicosPlaceholder() {
               </div>
             </div>
 
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-md border-l-4 border-orange-500">
+            <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md border-l-4 border-wedo-orange/30">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">DevOps Architect</p>
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs font-inter">
+                <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs font-inter">
                   Alto
                 </Badge>
               </div>
@@ -557,7 +557,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
                   <span className="font-open-sans text-gray-600 dark:text-gray-400">Tempo médio</span>
-                  <span className="font-inter font-bold text-orange-600 dark:text-orange-400">48 dias</span>
+                  <span className="font-inter font-bold text-wedo-orange dark:text-wedo-orange">48 dias</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
                   <span className="font-open-sans text-gray-600 dark:text-gray-400">Taxa sucesso</span>
@@ -566,10 +566,10 @@ function IndicadoresEstrategicosPlaceholder() {
               </div>
             </div>
 
-            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-500">
+            <div className="p-4 bg-status-warning/10 dark:bg-status-warning/20 rounded-md border-l-4 border-status-warning/30">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Security Specialist</p>
-                <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-inter">
+                <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning text-xs font-inter">
                   Médio
                 </Badge>
               </div>
@@ -580,7 +580,7 @@ function IndicadoresEstrategicosPlaceholder() {
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
                   <span className="font-open-sans text-gray-600 dark:text-gray-400">Tempo médio</span>
-                  <span className="font-inter font-bold text-yellow-600 dark:text-yellow-400">35 dias</span>
+                  <span className="font-inter font-bold text-status-warning dark:text-status-warning">35 dias</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
                   <span className="font-open-sans text-gray-600 dark:text-gray-400">Taxa sucesso</span>
@@ -608,7 +608,7 @@ function IndicadoresEstrategicosPlaceholder() {
                   <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Tecnologia</span>
                   <p className={`${textStyles.description} dark:text-gray-400`}>R$ 420k investidos • 47 contratações</p>
                 </div>
-                <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
+                <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                   112% ROI
                 </Badge>
               </div>
@@ -640,7 +640,7 @@ function IndicadoresEstrategicosPlaceholder() {
                   <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Marketing</span>
                   <p className={`${textStyles.description} dark:text-gray-400`}>R$ 124k investidos • 19 contratações</p>
                 </div>
-                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-micro font-medium">
+                <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                   87% ROI
                 </Badge>
               </div>
@@ -656,7 +656,7 @@ function IndicadoresEstrategicosPlaceholder() {
                   <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Operações</span>
                   <p className={`${textStyles.description} dark:text-gray-400`}>R$ 112k investidos • 15 contratações</p>
                 </div>
-                <Badge className={`${badgeStyles.warning} dark:bg-orange-900/30 dark:text-orange-400`}>
+                <Badge className={`${badgeStyles.warning} dark:bg-wedo-orange/30 dark:text-wedo-orange`}>
                   76% ROI
                 </Badge>
               </div>
@@ -732,7 +732,7 @@ function PrevisoesIAPlaceholder() {
               <p className={`${textStyles.description} dark:text-gray-400 mb-1`}>Candidaturas Esperadas</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">2.847</span>
-                <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
+                <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                   +12%
                 </Badge>
               </div>
@@ -740,7 +740,7 @@ function PrevisoesIAPlaceholder() {
             </div>
 
             {/* Hires Prediction */}
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-md border border-purple-200 dark:border-purple-800">
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <p className={`${textStyles.description} dark:text-gray-400 mb-1`}>Contratações Previstas</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">127</span>
@@ -752,22 +752,22 @@ function PrevisoesIAPlaceholder() {
             </div>
 
             {/* Time to Fill Prediction */}
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-md border border-orange-200 dark:border-orange-800">
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-md border border-wedo-orange/30 dark:border-wedo-orange/30">
               <p className={`${textStyles.description} dark:text-gray-400 mb-1`}>Time-to-Fill Médio</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">18</span>
                 <span className="text-sm font-open-sans text-gray-800 dark:text-gray-200">dias</span>
               </div>
-              <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-1`}>-3 dias vs. anterior</p>
+              <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>-3 dias vs. anterior</p>
             </div>
 
             {/* Cost Prediction */}
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-md border border-green-200 dark:border-green-800">
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-md border border-status-success/30 dark:border-status-success/30">
               <p className={`${textStyles.description} dark:text-gray-400 mb-1`}>Custo por Contratação</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-gray-950 dark:text-gray-50">R$ 3.2k</span>
               </div>
-              <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-1`}>-R$ 420 vs. anterior</p>
+              <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>-R$ 420 vs. anterior</p>
             </div>
           </div>
         </CardContent>
@@ -784,22 +784,22 @@ function PrevisoesIAPlaceholder() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-md border border-purple-200 dark:border-purple-800">
+            <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Ana Silva</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>Senior Developer • React/Node</p>
               </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 font-inter font-bold">
+              <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple font-inter font-bold">
                 98/100
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-md border border-purple-200 dark:border-purple-800">
+            <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Carlos Mendes</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>Product Manager • SaaS</p>
               </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 font-inter font-bold">
+              <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple font-inter font-bold">
                 96/100
               </Badge>
             </div>
@@ -835,8 +835,8 @@ function PrevisoesIAPlaceholder() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-md border-l-4 border-red-500">
-              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-600" />
+            <div className="flex items-start gap-3 p-3 bg-status-error/10 dark:bg-status-error/20 rounded-md border-l-4 border-status-error/30">
+              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-error" />
               <div>
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Vaga #2847 em risco</p>
                 <p className={`${textStyles.bodySmall} dark:text-gray-400 mt-1`}>
@@ -845,8 +845,8 @@ function PrevisoesIAPlaceholder() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-md border-l-4 border-orange-500">
-              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-orange-600" />
+            <div className="flex items-start gap-3 p-3 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md border-l-4 border-wedo-orange/30">
+              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
               <div>
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Pipeline lento - Tech Lead</p>
                 <p className={`${textStyles.bodySmall} dark:text-gray-400 mt-1`}>
@@ -855,8 +855,8 @@ function PrevisoesIAPlaceholder() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-md border-l-4 border-green-500">
-              <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-green-600" />
+            <div className="flex items-start gap-3 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md border-l-4 border-status-success/30">
+              <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-success" />
               <div>
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Candidato ideal identificado</p>
                 <p className={`${textStyles.bodySmall} dark:text-gray-400 mt-1`}>
@@ -894,7 +894,7 @@ function PrevisoesIAPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">React.js</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">287 vagas</span>
-                  <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
+                  <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                     +18%
                   </Badge>
                 </div>
@@ -909,7 +909,7 @@ function PrevisoesIAPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Python</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">243 vagas</span>
-                  <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
+                  <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                     +22%
                   </Badge>
                 </div>
@@ -939,7 +939,7 @@ function PrevisoesIAPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">AWS</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">194 vagas</span>
-                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs font-inter">
+                  <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs font-inter">
                     +28%
                   </Badge>
                 </div>
@@ -954,7 +954,7 @@ function PrevisoesIAPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-gray-800 dark:text-gray-200">Machine Learning</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs tracking-tight font-inter text-gray-800 dark:text-gray-200">156 vagas</span>
-                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs font-inter">
+                  <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs font-inter">
                     +34%
                   </Badge>
                 </div>
@@ -978,7 +978,7 @@ function PrevisoesIAPlaceholder() {
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Tecnologia</p>
-                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-micro font-medium">
+                <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                   +42 vagas
                 </Badge>
               </div>
@@ -1002,7 +1002,7 @@ function PrevisoesIAPlaceholder() {
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Marketing</p>
-                <Badge className={`${badgeStyles.success} dark:bg-green-900/30 dark:text-green-400`}>
+                <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                   +15 vagas
                 </Badge>
               </div>
@@ -1014,7 +1014,7 @@ function PrevisoesIAPlaceholder() {
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Operações</p>
-                <Badge className={`${badgeStyles.warning} dark:bg-orange-900/30 dark:text-orange-400`}>
+                <Badge className={`${badgeStyles.warning} dark:bg-wedo-orange/30 dark:text-wedo-orange`}>
                   +8 vagas
                 </Badge>
               </div>
@@ -1202,7 +1202,7 @@ function ModelosTrabalhoPlaceholder() {
             <p className="text-sm font-open-sans text-gray-600 dark:text-gray-400 text-center mb-4">
               Média de satisfação com modelo de trabalho
             </p>
-            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-open-sans">
+            <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success font-open-sans">
               <CheckCircle className="w-3 h-3 mr-1" />
               Acima da meta (8.0)
             </Badge>
@@ -1499,7 +1499,7 @@ function FunilPerformancePlaceholder() {
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Contratações Finalizadas</p>
                   <p className={`${textStyles.description} dark:text-gray-400`}>12% conversão (total)</p>
                 </div>
-                <span className="text-lg font-inter font-bold text-green-600 dark:text-green-400">389</span>
+                <span className="text-lg font-inter font-bold text-status-success dark:text-status-success">389</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
                 <div className="h-4 rounded-full bg-wedo-green-bright" style={{ width: '12%' }}></div>
@@ -1543,7 +1543,7 @@ function FunilPerformancePlaceholder() {
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Indicações Internas</p>
                   <p className={`${textStyles.description} dark:text-gray-400`}>412 candidaturas • 94 contratações</p>
                 </div>
-                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-inter font-bold">
+                <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success font-inter font-bold">
                   22.8%
                 </Badge>
               </div>
@@ -1559,7 +1559,7 @@ function FunilPerformancePlaceholder() {
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Site Corporativo</p>
                   <p className={`${textStyles.description} dark:text-gray-400`}>894 candidaturas • 87 contratações</p>
                 </div>
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 font-inter font-bold">
+                <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter font-bold">
                   9.7%
                 </Badge>
               </div>
@@ -1575,7 +1575,7 @@ function FunilPerformancePlaceholder() {
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Job Boards (Catho, Vagas.com)</p>
                   <p className={`${textStyles.description} dark:text-gray-400`}>562 candidaturas • 24 contratações</p>
                 </div>
-                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 font-inter font-bold">
+                <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple font-inter font-bold">
                   4.3%
                 </Badge>
               </div>
@@ -1612,10 +1612,10 @@ function FunilPerformancePlaceholder() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Taxa de Aceitação de Ofertas */}
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-md">
+            <div className="p-4 bg-status-success/10 dark:bg-status-success/20 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Taxa de Aceitação de Ofertas</p>
-                <div className="text-2xl font-inter font-bold text-green-600 dark:text-green-400">66%</div>
+                <div className="text-2xl font-inter font-bold text-status-success dark:text-status-success">66%</div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-green-bright" style={{ width: '66%' }}></div>
@@ -1632,14 +1632,14 @@ function FunilPerformancePlaceholder() {
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div className="h-2 rounded-full bg-gray-900" style={{ width: '70%' }}></div>
               </div>
-              <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-2`}>-4 dias vs. mês anterior</p>
+              <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-2`}>-4 dias vs. mês anterior</p>
             </div>
 
             {/* Satisfação dos Contratados */}
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-md">
+            <div className="p-4 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Satisfação dos Contratados (30 dias)</p>
-                <div className="text-2xl font-inter font-bold text-purple-600 dark:text-purple-400">8.7<span className="text-sm">/10</span></div>
+                <div className="text-2xl font-inter font-bold text-wedo-purple dark:text-wedo-purple">8.7<span className="text-sm">/10</span></div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-purple" style={{ width: '87%' }}></div>
@@ -1648,10 +1648,10 @@ function FunilPerformancePlaceholder() {
             </div>
 
             {/* Retenção 90 dias */}
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-md">
+            <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Retenção em 90 dias</p>
-                <div className="text-2xl font-inter font-bold text-orange-600 dark:text-orange-400">92%</div>
+                <div className="text-2xl font-inter font-bold text-wedo-orange dark:text-wedo-orange">92%</div>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-orange" style={{ width: '92%' }}></div>
@@ -1722,50 +1722,50 @@ function WarRoomOperacionalPlaceholder() {
 
       {/* Alertas Críticos KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+        <Card className="border-status-error/30 dark:border-status-error/30 bg-status-error/10 dark:bg-status-error/20">
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className="text-xs tracking-tight font-open-sans text-red-700 dark:text-red-400 font-semibold">VAGAS EM RISCO</p>
-              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+              <p className="text-xs tracking-tight font-open-sans text-status-error dark:text-status-error font-semibold">VAGAS EM RISCO</p>
+              <AlertTriangle className="w-3.5 h-3.5 text-status-error" />
             </div>
-            <div className="text-2xl font-inter font-bold text-red-600 dark:text-red-400">8</div>
-            <p className={`${textStyles.bodySmall} text-red-700 dark:text-red-400 mt-1`}>&gt;45 dias sem candidatos</p>
+            <div className="text-2xl font-inter font-bold text-status-error dark:text-status-error">8</div>
+            <p className={`${textStyles.bodySmall} text-status-error dark:text-status-error mt-1`}>&gt;45 dias sem candidatos</p>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+        <Card className="border-wedo-orange/30 dark:border-wedo-orange/30 bg-wedo-orange/10 dark:bg-wedo-orange/20">
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className="text-xs tracking-tight font-open-sans text-orange-700 dark:text-orange-400 font-semibold">AÇÕES URGENTES</p>
-              <Target className="w-3.5 h-3.5 text-orange-600" />
+              <p className="text-xs tracking-tight font-open-sans text-wedo-orange dark:text-wedo-orange font-semibold">AÇÕES URGENTES</p>
+              <Target className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
-            <div className="text-2xl font-inter font-bold text-orange-600 dark:text-orange-400">23</div>
-            <p className={`${textStyles.bodySmall} text-orange-700 dark:text-orange-400 mt-1`}>Aguardando ação RH</p>
+            <div className="text-2xl font-inter font-bold text-wedo-orange dark:text-wedo-orange">23</div>
+            <p className={`${textStyles.bodySmall} text-wedo-orange dark:text-wedo-orange mt-1`}>Aguardando ação RH</p>
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20">
+        <Card className="border-status-warning/30 dark:border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/20">
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className="text-xs tracking-tight font-open-sans text-yellow-700 dark:text-yellow-400 font-semibold">EM ESPERA</p>
-              <Users className="w-3.5 h-3.5 text-yellow-600" />
+              <p className="text-xs tracking-tight font-open-sans text-status-warning dark:text-status-warning font-semibold">EM ESPERA</p>
+              <Users className="w-3.5 h-3.5 text-status-warning" />
             </div>
-            <div className="text-2xl font-inter font-bold text-yellow-600 dark:text-yellow-400">47</div>
-            <p className={`${textStyles.bodySmall} text-yellow-700 dark:text-yellow-400 mt-1`}>&gt;5 dias sem feedback</p>
+            <div className="text-2xl font-inter font-bold text-status-warning dark:text-status-warning">47</div>
+            <p className={`${textStyles.bodySmall} text-status-warning dark:text-status-warning mt-1`}>&gt;5 dias sem feedback</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Vagas Críticas Detalhadas */}
-      <Card className="border-red-200 dark:border-red-800">
-        <CardHeader className="pb-3 bg-red-50 dark:bg-red-900/20">
+      <Card className="border-status-error/30 dark:border-status-error/30">
+        <CardHeader className="pb-3 bg-status-error/10 dark:bg-status-error/20">
           <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
-            <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+            <AlertTriangle className="w-3.5 h-3.5 text-status-error" />
             Vagas Críticas - Ação Imediata Necessária
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4 space-y-3">
-          <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-md border-l-4 border-red-500">
+          <div className="p-4 bg-status-error/10 dark:bg-status-error/20 rounded-md border-l-4 border-status-error/30">
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Vaga #2847 - Senior ML Engineer</p>
@@ -1773,24 +1773,24 @@ function WarRoomOperacionalPlaceholder() {
                   62 dias aberta • 0 candidatos qualificados • Prioridade MÁXIMA
                 </p>
               </div>
-              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 font-inter shrink-0">CRÍTICO</Badge>
+              <Badge className="bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error font-inter shrink-0">CRÍTICO</Badge>
             </div>
             <div className="flex items-center gap-2 mt-3">
-              <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white font-open-sans">Revisar Requisitos</Button>
+              <Button size="sm" className="bg-status-error hover:bg-status-error text-white font-open-sans">Revisar Requisitos</Button>
               <Button size="sm" variant="outline" className="font-open-sans">Buscar LIA Database</Button>
             </div>
           </div>
 
-          <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-md border-l-4 border-orange-500">
+          <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md border-l-4 border-wedo-orange/30">
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Vaga #3012 - Tech Lead Backend</p>
                 <p className="text-sm font-open-sans text-gray-600 dark:text-gray-400 mt-1">51 dias aberta • 3 candidatos em avaliação • Pipeline lento</p>
               </div>
-              <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 font-inter shrink-0">URGENTE</Badge>
+              <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter shrink-0">URGENTE</Badge>
             </div>
             <div className="flex items-center gap-2 mt-3">
-              <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-open-sans">Acelerar Processo</Button>
+              <Button size="sm" className="bg-wedo-orange hover:bg-wedo-orange/10 text-white font-open-sans">Acelerar Processo</Button>
               <Button size="sm" variant="outline" className="font-open-sans">Ver Candidatos</Button>
             </div>
           </div>
@@ -1798,7 +1798,7 @@ function WarRoomOperacionalPlaceholder() {
       </Card>
 
       {/* Gargalos e Recomendações LIA */}
-      <Card className="border-red-200 dark:border-red-800 rounded-md bg-white dark:bg-gray-900">
+      <Card className="border-status-error/30 dark:border-status-error/30 rounded-md bg-white dark:bg-gray-900">
         <CardHeader className="px-4 py-3">
           <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -1807,19 +1807,19 @@ function WarRoomOperacionalPlaceholder() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-600" />
+            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-error" />
             <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
               <strong>Vaga #2847 (ML Engineer) precisa de ação imediata:</strong> 62 dias sem candidatos. LIA sugere flexibilizar requisitos de "PhD obrigatório" para "Mestrado + 5 anos exp."
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <Target className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-orange-600" />
+            <Target className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
             <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
               <strong>Processo Tech Lead está 73% mais lento que a média:</strong> Gargalo identificado na aprovação do gestor. Sugere reunião de alinhamento.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <Users className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-yellow-600" />
+            <Users className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
             <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
               <strong>47 candidatos em espera podem desistir:</strong> LIA identificou padrão histórico de 65% desistência após 7 dias sem contato. Agendar entrevistas urgente.
             </p>
@@ -1882,13 +1882,13 @@ function VoiceScreeningDashboard() {
   const getRecommendationColor = (recommendation: string) => {
     switch (recommendation) {
       case 'strong_yes':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+        return 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success'
       case 'interview':
  return 'bg-gray-100 text-gray-900 dark:text-gray-300'
       case 'maybe':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+        return 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
       case 'reject':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+        return 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error'
       default:
  return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
     }
@@ -2064,7 +2064,7 @@ function VoiceScreeningDashboard() {
                               {screening.analysis.key_strengths.slice(0, 3).map((strength: string, idx: number) => (
                                 <Badge 
                                   key={idx}
-                                  className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs tracking-tight"
+                                  className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success text-xs tracking-tight"
                                 >
                                   ✓ {strength}
                                 </Badge>
@@ -2145,7 +2145,7 @@ function AnaliseCompetenciasPlaceholder() {
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Machine Learning / AI</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>Demanda: 156 vagas • Disponível: 42 candidatos</p>
               </div>
-              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 font-inter font-bold">Gap 73%</Badge>
+              <Badge className="bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error font-inter font-bold">Gap 73%</Badge>
             </div>
             <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
               <div className="bg-wedo-green-bright" style={{ width: '27%' }} title="Disponível"></div>
@@ -2160,7 +2160,7 @@ function AnaliseCompetenciasPlaceholder() {
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">DevOps / Cloud (AWS/Azure/GCP)</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>Demanda: 194 vagas • Disponível: 87 candidatos</p>
               </div>
-              <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 font-inter font-bold">Gap 55%</Badge>
+              <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter font-bold">Gap 55%</Badge>
             </div>
             <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
               <div className="bg-wedo-green-bright" style={{ width: '45%' }} title="Disponível"></div>
@@ -2175,7 +2175,7 @@ function AnaliseCompetenciasPlaceholder() {
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">React.js / Frontend Moderno</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>Demanda: 287 vagas • Disponível: 198 candidatos</p>
               </div>
-              <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 font-inter font-bold">Gap 31%</Badge>
+              <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning font-inter font-bold">Gap 31%</Badge>
             </div>
             <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
               <div className="bg-wedo-green-bright" style={{ width: '69%' }} title="Disponível"></div>
@@ -2204,20 +2204,20 @@ function AnaliseCompetenciasPlaceholder() {
  <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 font-inter font-bold">+340%</Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-md border border-purple-200 dark:border-purple-800">
+            <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">LLM Fine-tuning</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>18 vagas este mês</p>
               </div>
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 font-inter font-bold">+280%</Badge>
+              <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple font-inter font-bold">+280%</Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-200 dark:border-green-800">
+            <div className="flex items-center justify-between p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md border border-status-success/30 dark:border-status-success/30">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Kubernetes / K8s</p>
                 <p className={`${textStyles.description} dark:text-gray-400`}>64 vagas este mês</p>
               </div>
-              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-inter font-bold">+120%</Badge>
+              <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success font-inter font-bold">+120%</Badge>
             </div>
           </CardContent>
         </Card>
@@ -2231,20 +2231,20 @@ function AnaliseCompetenciasPlaceholder() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-md border-l-4 border-red-500">
+            <div className="p-3 bg-status-error/10 dark:bg-status-error/20 rounded-md border-l-4 border-status-error/30">
               <div className="flex items-start justify-between mb-1">
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Machine Learning Bootcamp</p>
-                <Badge className={`${badgeStyles.error} dark:bg-red-900/30 dark:text-red-400`}>CRÍTICO</Badge>
+                <Badge className={`${badgeStyles.error} dark:bg-status-error/30 dark:text-status-error`}>CRÍTICO</Badge>
               </div>
               <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
                 Gap de 73% • ROI estimado: R$ 280k economia em headhunting
               </p>
             </div>
 
-            <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-md border-l-4 border-orange-500">
+            <div className="p-3 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md border-l-4 border-wedo-orange/30">
               <div className="flex items-start justify-between mb-1">
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">DevOps & Cloud Certification</p>
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs font-inter">ALTO</Badge>
+                <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs font-inter">ALTO</Badge>
               </div>
               <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
                 Gap de 55% • Parceria com AWS Training disponível
@@ -2304,7 +2304,7 @@ function BigFiveAnalyticsDashboard() {
               <Users className="w-3.5 h-3.5 text-wedo-purple" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">247</div>
-            <p className={`${textStyles.bodySmall} text-purple-600 dark:text-purple-400 mt-1`}>+12% vs. mês anterior</p>
+            <p className={`${textStyles.bodySmall} text-wedo-purple dark:text-wedo-purple mt-1`}>+12% vs. mês anterior</p>
           </CardContent>
         </Card>
 
@@ -2315,7 +2315,7 @@ function BigFiveAnalyticsDashboard() {
               <Target className="w-3.5 h-3.5 text-wedo-green" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">89%</div>
-            <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-1`}>vs. 72% método tradicional</p>
+            <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>vs. 72% método tradicional</p>
           </CardContent>
         </Card>
 
@@ -2337,7 +2337,7 @@ function BigFiveAnalyticsDashboard() {
               <Award className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">8.9</div>
-            <p className={`${textStyles.bodySmall} text-orange-600 dark:text-orange-400 mt-1`}>contratados via Big Five</p>
+            <p className={`${textStyles.bodySmall} text-wedo-orange dark:text-wedo-orange mt-1`}>contratados via Big Five</p>
           </CardContent>
         </Card>
       </div>
@@ -2420,7 +2420,7 @@ function BigFiveAnalyticsDashboard() {
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Conscienciosidade</span>
               <div className="flex items-center gap-2">
-                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs tracking-tight">Muito Alta</Badge>
+                <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success text-xs tracking-tight">Muito Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.84</span>
               </div>
             </div>
@@ -2434,14 +2434,14 @@ function BigFiveAnalyticsDashboard() {
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Abertura</span>
               <div className="flex items-center gap-2">
-                <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs tracking-tight">Alta</Badge>
+                <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.67</span>
               </div>
             </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
               <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Amabilidade</span>
               <div className="flex items-center gap-2">
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs tracking-tight">Alta</Badge>
+                <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.63</span>
               </div>
             </div>
@@ -2472,7 +2472,7 @@ function DiversidadeInclusaoDashboard() {
               <Heart className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">8.2%</div>
-            <p className={`${textStyles.bodySmall} text-orange-600 dark:text-orange-400 mt-1`}>Meta: 5% (excedida)</p>
+            <p className={`${textStyles.bodySmall} text-wedo-orange dark:text-wedo-orange mt-1`}>Meta: 5% (excedida)</p>
           </CardContent>
         </Card>
 
@@ -2483,7 +2483,7 @@ function DiversidadeInclusaoDashboard() {
               <Users className="w-3.5 h-3.5 text-wedo-purple" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">48%</div>
-            <p className={`${textStyles.bodySmall} text-purple-600 dark:text-purple-400 mt-1`}>mulheres em tech</p>
+            <p className={`${textStyles.bodySmall} text-wedo-purple dark:text-wedo-purple mt-1`}>mulheres em tech</p>
           </CardContent>
         </Card>
 
@@ -2494,7 +2494,7 @@ function DiversidadeInclusaoDashboard() {
               <Users className="w-3.5 h-3.5 text-wedo-green" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">42%</div>
-            <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-1`}>população não-branca</p>
+            <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>população não-branca</p>
           </CardContent>
         </Card>
 
@@ -2523,7 +2523,7 @@ function DiversidadeInclusaoDashboard() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">C-Level</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-inter text-purple-600">40% M</span>
+                  <span className="text-sm font-inter text-wedo-purple">40% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">60% H</span>
                 </div>
               </div>
@@ -2537,7 +2537,7 @@ function DiversidadeInclusaoDashboard() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Gerência</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-inter text-purple-600">45% M</span>
+                  <span className="text-sm font-inter text-wedo-purple">45% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">55% H</span>
                 </div>
               </div>
@@ -2551,7 +2551,7 @@ function DiversidadeInclusaoDashboard() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Técnico</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-inter text-purple-600">48% M</span>
+                  <span className="text-sm font-inter text-wedo-purple">48% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">52% H</span>
                 </div>
               </div>
@@ -2649,7 +2649,7 @@ function NPSDashboard() {
               <Award className="w-3.5 h-3.5 text-wedo-green" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">+67</div>
-            <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-1`}>Excelente (acima de 50)</p>
+            <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>Excelente (acima de 50)</p>
           </CardContent>
         </Card>
 
@@ -2660,7 +2660,7 @@ function NPSDashboard() {
               <CheckCircle className="w-3.5 h-3.5 text-wedo-green" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">72%</div>
-            <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-1`}>64 de 89 respostas</p>
+            <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>64 de 89 respostas</p>
           </CardContent>
         </Card>
 
@@ -2682,7 +2682,7 @@ function NPSDashboard() {
               <AlertTriangle className="w-3.5 h-3.5 text-wedo-magenta" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">5%</div>
-            <p className={`${textStyles.bodySmall} text-red-600 dark:text-red-400 mt-1`}>4 de 89 respostas</p>
+            <p className={`${textStyles.bodySmall} text-status-error dark:text-status-error mt-1`}>4 de 89 respostas</p>
           </CardContent>
         </Card>
       </div>
@@ -2750,7 +2750,7 @@ function NPSDashboard() {
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Aplicação Inicial</span>
             <div className="flex items-center gap-2">
-              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs tracking-tight">Excelente</Badge>
+              <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success text-xs tracking-tight">Excelente</Badge>
               <span className="text-sm font-inter font-bold">9.2</span>
             </div>
           </div>
@@ -2764,21 +2764,21 @@ function NPSDashboard() {
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Entrevistas</span>
             <div className="flex items-center gap-2">
-              <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs tracking-tight">Muito Bom</Badge>
+              <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs tracking-tight">Muito Bom</Badge>
               <span className="text-sm font-inter font-bold">8.6</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Tempo de Resposta</span>
             <div className="flex items-center gap-2">
-              <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs tracking-tight">Bom</Badge>
+              <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs tracking-tight">Bom</Badge>
               <span className="text-sm font-inter font-bold">7.9</span>
             </div>
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
             <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Feedback Pós-Entrevista</span>
             <div className="flex items-center gap-2">
-              <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs tracking-tight">Regular</Badge>
+              <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning text-xs tracking-tight">Regular</Badge>
               <span className="text-sm font-inter font-bold">6.8</span>
             </div>
           </div>
@@ -2950,7 +2950,7 @@ function AgentActivityDashboard() {
       case 'active': return 'bg-gray-900 dark:bg-gray-50'
       case 'busy': return 'bg-wedo-green-bright'
       case 'idle': return 'bg-gray-400'
-      case 'error': return 'bg-red-500'
+      case 'error': return 'bg-status-error'
     }
   }
 
@@ -2965,9 +2965,9 @@ function AgentActivityDashboard() {
 
   const getActionStatusColor = (status: RecentAction['status']) => {
     switch (status) {
-      case 'success': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-      case 'pending': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-      case 'error': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+      case 'success': return 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success'
+      case 'pending': return 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
+      case 'error': return 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error'
     }
   }
 
@@ -3014,7 +3014,7 @@ function AgentActivityDashboard() {
               <CheckCircle className="w-3.5 h-3.5 text-wedo-green" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">{avgSuccessRate}%</div>
-            <p className={`${textStyles.bodySmall} text-green-600 dark:text-green-400 mt-1`}>Média geral dos agentes</p>
+            <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>Média geral dos agentes</p>
           </CardContent>
         </Card>
 
@@ -3026,7 +3026,7 @@ function AgentActivityDashboard() {
               <TrendingUp className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">{avgResponseTime}s</div>
-            <p className={`${textStyles.bodySmall} text-orange-600 dark:text-orange-400 mt-1`}>-0.3s vs. semana passada</p>
+            <p className={`${textStyles.bodySmall} text-wedo-orange dark:text-wedo-orange mt-1`}>-0.3s vs. semana passada</p>
           </CardContent>
         </Card>
 
@@ -3038,7 +3038,7 @@ function AgentActivityDashboard() {
               <Brain className="w-3.5 h-3.5 text-wedo-purple" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">{activeAgents}/7</div>
-            <p className={`${textStyles.bodySmall} text-purple-600 dark:text-purple-400 mt-1`}>Sistema operacional</p>
+            <p className={`${textStyles.bodySmall} text-wedo-purple dark:text-wedo-purple mt-1`}>Sistema operacional</p>
           </CardContent>
         </Card>
       </div>
@@ -3084,7 +3084,7 @@ function AgentActivityDashboard() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className={`${textStyles.description} dark:text-gray-400`}>Sucesso</span>
-                    <span className="text-xs font-inter font-bold text-green-600 dark:text-green-400">{agent.successRate}%</span>
+                    <span className="text-xs font-inter font-bold text-status-success dark:text-status-success">{agent.successRate}%</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className={`${textStyles.description} dark:text-gray-400`}>Tempo</span>
@@ -3138,9 +3138,9 @@ function AgentActivityDashboard() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">{agent.actionsToday}</span>
                         <Badge className={`text-xs tracking-tight ${
-                          agent.successRate >= 98 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                          agent.successRate >= 98 ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
  agent.successRate >= 95 ? 'bg-gray-100 text-gray-900 dark:text-gray-300' :
-                          'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
                         }`}>
                           {agent.successRate}%
                         </Badge>

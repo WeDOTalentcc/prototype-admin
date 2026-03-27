@@ -159,8 +159,8 @@ function AceitarConviteContent() {
                 />
               </div>
               
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-8 h-8 text-amber-600" />
+              <div className="w-16 h-16 bg-status-warning/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-status-warning" />
               </div>
               
               <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-2">
@@ -199,8 +199,8 @@ function AceitarConviteContent() {
                 />
               </div>
               
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-8 h-8 text-red-600" />
+              <div className="w-16 h-16 bg-status-error/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-status-error" />
               </div>
               
               <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-2">
@@ -239,8 +239,8 @@ function AceitarConviteContent() {
                 />
               </div>
               
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-status-success" />
               </div>
               
               <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-2">
@@ -336,9 +336,9 @@ function AceitarConviteContent() {
           )}
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-md flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-red-600">{error}</p>
+            <div className="mb-4 p-3 bg-status-error/10 border border-status-error/30 rounded-md flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-status-error mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-status-error">{error}</p>
             </div>
           )}
 

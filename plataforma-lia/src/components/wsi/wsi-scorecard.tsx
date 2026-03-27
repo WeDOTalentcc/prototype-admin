@@ -28,24 +28,24 @@ interface ScoreDisplay {
 }
 
 const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string }> = {
-  excepcional:    { label: 'Excepcional',      color: 'text-emerald-700', bgColor: 'bg-emerald-100', textColor: 'var(--status-success)' },
-  excelente:      { label: 'Excelente',         color: 'text-green-600',   bgColor: 'bg-green-100',   textColor: 'var(--status-success)' },
-  alto:           { label: 'Alto',               color: 'text-blue-600',   bgColor: 'bg-blue-100',    textColor: 'var(--gray-600)' },
-  medio:          { label: 'Médio',              color: 'text-amber-600',  bgColor: 'bg-amber-100',   textColor: 'var(--status-warning)' },
-  abaixo_da_media:{ label: 'Abaixo da média',   color: 'text-orange-600', bgColor: 'bg-orange-100',  textColor: 'var(--status-warning)' },
-  regular:        { label: 'Regular / Baixo',   color: 'text-red-600',    bgColor: 'bg-red-100',     textColor: 'var(--status-error)' },
+  excepcional:    { label: 'Excepcional',      color: 'text-status-success', bgColor: 'bg-status-success/15', textColor: 'var(--status-success)' },
+  excelente:      { label: 'Excelente',         color: 'text-status-success',   bgColor: 'bg-status-success/15',   textColor: 'var(--status-success)' },
+  alto:           { label: 'Alto',               color: 'text-wedo-cyan-dark',   bgColor: 'bg-wedo-cyan/15',    textColor: 'var(--gray-600)' },
+  medio:          { label: 'Médio',              color: 'text-status-warning',  bgColor: 'bg-status-warning/15',   textColor: 'var(--status-warning)' },
+  abaixo_da_media:{ label: 'Abaixo da média',   color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15',  textColor: 'var(--status-warning)' },
+  regular:        { label: 'Regular / Baixo',   color: 'text-status-error',    bgColor: 'bg-status-error/15',     textColor: 'var(--status-error)' },
 }
 
 const getClassificationConfig = (classification: string) =>
   WSI_CLASSIFICATION_CONFIG[classification] ?? WSI_CLASSIFICATION_CONFIG.medio
 
 const getScoreDisplay = (score: number): ScoreDisplay => {
-  if (score >= 4.5) return { value: score, label: 'Excepcional',    color: 'text-emerald-700', bgColor: 'bg-emerald-100' }
-  if (score >= 4.0) return { value: score, label: 'Excelente',      color: 'text-green-600',   bgColor: 'bg-green-100' }
-  if (score >= 3.5) return { value: score, label: 'Alto',            color: 'text-blue-600',    bgColor: 'bg-blue-100' }
-  if (score >= 3.0) return { value: score, label: 'Médio',           color: 'text-amber-600',  bgColor: 'bg-amber-100' }
-  if (score >= 2.25) return { value: score, label: 'Abaixo da média',color: 'text-orange-600', bgColor: 'bg-orange-100' }
-  return { value: score, label: 'Regular / Baixo', color: 'text-red-600', bgColor: 'bg-red-100' }
+  if (score >= 4.5) return { value: score, label: 'Excepcional',    color: 'text-status-success', bgColor: 'bg-status-success/15' }
+  if (score >= 4.0) return { value: score, label: 'Excelente',      color: 'text-status-success',   bgColor: 'bg-status-success/15' }
+  if (score >= 3.5) return { value: score, label: 'Alto',            color: 'text-wedo-cyan-dark',    bgColor: 'bg-wedo-cyan/15' }
+  if (score >= 3.0) return { value: score, label: 'Médio',           color: 'text-status-warning',  bgColor: 'bg-status-warning/15' }
+  if (score >= 2.25) return { value: score, label: 'Abaixo da média',color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' }
+  return { value: score, label: 'Regular / Baixo', color: 'text-status-error', bgColor: 'bg-status-error/15' }
 }
 
 const getClassificationBadge = (classification: string) => {
@@ -96,10 +96,10 @@ export function WSIScorecard({
 
   if (error) {
     return (
-      <Card className="border-dashed border-red-200 dark:border-red-900">
+      <Card className="border-dashed border-status-error/30 dark:border-status-error/30">
         <CardContent className="py-6 flex items-center justify-center">
-          <AlertCircle className="w-5 h-5 text-red-500" />
-          <span className="ml-2 text-sm text-red-500">{error}</span>
+          <AlertCircle className="w-5 h-5 text-status-error" />
+          <span className="ml-2 text-sm text-status-error">{error}</span>
         </CardContent>
       </Card>
     )

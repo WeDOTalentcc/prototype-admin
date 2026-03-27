@@ -120,9 +120,9 @@ export function CandidatesTable({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-emerald-600 dark:text-emerald-400"
-    if (score >= 60) return "text-amber-600 dark:text-amber-400"
-    return "text-red-600 dark:text-red-400"
+    if (score >= 80) return "text-status-success dark:text-status-success"
+    if (score >= 60) return "text-status-warning dark:text-status-warning"
+    return "text-status-error dark:text-status-error"
   }
 
   if (isLoading) {
@@ -368,7 +368,7 @@ export function CandidatesTable({
                     
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-amber-500">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-status-warning">
                           <Star className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>

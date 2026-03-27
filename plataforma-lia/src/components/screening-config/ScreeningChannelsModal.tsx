@@ -87,8 +87,8 @@ export function ScreeningChannelsModal({
         <div className="space-y-4 py-4">
           <div className="flex items-center justify-between p-3 rounded-md bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-green-50 flex items-center justify-center">
-                <MessageSquare className="w-4 h-4 text-green-600" />
+              <div className="w-8 h-8 rounded-md bg-status-success/10 flex items-center justify-center">
+                <MessageSquare className="w-4 h-4 text-status-success" />
               </div>
               <div>
                 <Label className="text-xs font-medium text-gray-950 dark:text-gray-50">WhatsApp</Label>
@@ -103,8 +103,8 @@ export function ScreeningChannelsModal({
 
           <div className="flex items-center justify-between p-3 rounded-md bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-blue-50 flex items-center justify-center">
-                <Globe className="w-4 h-4 text-blue-600" />
+              <div className="w-8 h-8 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
+                <Globe className="w-4 h-4 text-wedo-cyan-dark" />
               </div>
               <div>
                 <Label className="text-xs font-medium text-gray-950 dark:text-gray-50">Chat Web</Label>
@@ -119,8 +119,8 @@ export function ScreeningChannelsModal({
 
           <div className="flex items-center justify-between p-3 rounded-md bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-md bg-orange-50 flex items-center justify-center">
-                <Phone className="w-4 h-4 text-orange-600" />
+              <div className="w-8 h-8 rounded-md bg-wedo-orange/10 flex items-center justify-center">
+                <Phone className="w-4 h-4 text-wedo-orange" />
               </div>
               <div>
                 <Label className="text-xs font-medium text-gray-950 dark:text-gray-50">Ligação</Label>

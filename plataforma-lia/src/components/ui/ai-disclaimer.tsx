@@ -21,7 +21,7 @@ export function AIDisclaimer({ variant = "icon", className = "" }: AIDisclaimerP
 
   if (variant === "inline") {
     return (
-      <div className={`flex items-start gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-700 dark:text-amber-300 ${className}`}>
+      <div className={`flex items-start gap-2 p-2 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md text-xs text-status-warning dark:text-status-warning ${className}`}>
         <Brain className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-wedo-cyan" />
         <span>{disclaimerText}</span>
       </div>
@@ -30,7 +30,7 @@ export function AIDisclaimer({ variant = "icon", className = "" }: AIDisclaimerP
 
   if (variant === "compact") {
     return (
-      <div className={`flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 ${className}`}>
+      <div className={`flex items-center gap-1.5 text-xs text-status-warning dark:text-status-warning ${className}`}>
         <Brain className="h-3 w-3 text-wedo-cyan" />
         <span>{shortText}</span>
       </div>
@@ -42,7 +42,7 @@ export function AIDisclaimer({ variant = "icon", className = "" }: AIDisclaimerP
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={`inline-flex items-center justify-center h-5 w-5 rounded-full text-amber-500 hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors ${className}`}
+          className={`inline-flex items-center justify-center h-5 w-5 rounded-full text-status-warning hover:text-status-warning hover:bg-status-warning/15 dark:hover:bg-status-warning/30 transition-colors ${className}`}
           aria-label="Informações sobre dados gerados por IA"
         >
           <HelpCircle className="h-4 w-4" />
@@ -63,7 +63,7 @@ export function AIDisclaimer({ variant = "icon", className = "" }: AIDisclaimerP
               Estas informações foram geradas a partir de análises e inferências. 
               Podem faltar precisão ou necessitar de ajustes.
             </p>
-            <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+            <p className="text-xs text-status-warning dark:text-status-warning font-medium">
               Recomendamos revisar cada seção e fazer os ajustes necessários.
             </p>
           </div>

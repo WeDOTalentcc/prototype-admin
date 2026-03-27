@@ -129,15 +129,15 @@ export default function ClientJornadaPage({
         </div>
       </div>
 
-      <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20">
+      <Card className="border-status-warning/30 bg-status-warning/10/50 dark:border-status-warning/30 dark:bg-status-warning/20">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Bell className="w-5 h-5 text-amber-600 mt-0.5" />
+            <Bell className="w-5 h-5 text-status-warning mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                 Contexto do Cliente: {clientId}
               </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+              <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                 Esta jornada é específica para este cliente.
                 Todas as chamadas de API utilizarão o header X-Company-ID: {clientId}
               </p>
@@ -147,11 +147,11 @@ export default function ClientJornadaPage({
       </Card>
 
       {error && (
-        <Card className="border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20">
+        <Card className="border-status-error/30 bg-status-error/10/50 dark:border-status-error/30 dark:bg-status-error/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600" />
-              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+              <AlertCircle className="w-5 h-5 text-status-error" />
+              <p className="text-sm text-status-error dark:text-status-error">{error}</p>
             </div>
           </CardContent>
         </Card>
@@ -191,7 +191,7 @@ export default function ClientJornadaPage({
                     {stage.name}
                   </span>
                   {stage.isActive ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4 text-status-success" />
                   ) : (
                     <Clock className="w-4 h-4 text-gray-400" />
                   )}
@@ -216,7 +216,7 @@ export default function ClientJornadaPage({
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-emerald-600">
+            <p className="text-2xl font-semibold text-status-success">
               {stages.filter(s => s.automations?.emailFeedback).length}
             </p>
             <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>
@@ -226,7 +226,7 @@ export default function ClientJornadaPage({
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-purple-600">
+            <p className="text-2xl font-semibold text-wedo-purple">
               {stages.filter(s => s.automations?.whatsappNotification).length}
             </p>
             <p className="text-sm" style={{ color: 'var(--eleven-text-tertiary)' }}>

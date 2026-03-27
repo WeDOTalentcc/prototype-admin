@@ -2565,9 +2565,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
   
   // Helper para determinar a cor de um sub-status
   const getSubStatusColor = (status: SubStatus): { bg: string; text: string } => {
-    if (status.isApproval) return { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300' }
-    if (status.isRejection) return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' }
-    if (status.isWaiting) return { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' }
+    if (status.isApproval) return { bg: 'bg-status-success/15 dark:bg-status-success/30', text: 'text-status-success dark:text-status-success' }
+    if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error' }
+    if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning' }
     return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300' }
   }
 
@@ -4338,7 +4338,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
               onDragEnd={handleDragEnd}
               className={`bg-white dark:bg-gray-800 rounded-md border relative overflow-hidden ${
                 candidate.needsAction ? 'border-l-4 border-l-gray-800 border-gray-200 dark:border-gray-700' :
-                (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-green-500 border-gray-200 dark:border-gray-700 bg-green-50/30 dark:bg-green-900/20' : 
+                (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-green-500 border-gray-200 dark:border-gray-700 bg-status-success/10/30 dark:bg-status-success/20' : 
                 'border-gray-200 dark:border-gray-700'
               } hover:transition-all duration-300 cursor-move group`}
               style={{
@@ -4367,7 +4367,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   className="px-2 py-0.5 border-b bg-gray-100"
                 >
                   <div className="flex items-center gap-1">
-                    <Flag className="w-3 h-3 text-amber-500" />
+                    <Flag className="w-3 h-3 text-status-warning" />
                     <span className="text-micro font-bold text-gray-500">Ação Necessária</span>
                   </div>
                 </div>
@@ -4443,7 +4443,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
                        
                       >
-                        <Heart className={`w-3.5 h-3.5 mr-2 ${favoriteCandidates.has(candidate.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+                        <Heart className={`w-3.5 h-3.5 mr-2 ${favoriteCandidates.has(candidate.id) ? 'fill-red-500 text-status-error' : 'text-gray-500'}`} />
                         {favoriteCandidates.has(candidate.id) ? 'Remover dos Favoritos' : 'Adicionar a Favoritos'}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -4954,7 +4954,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <span>Aprovar</span>
                       </button>
                       <button
-                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-micro font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors"
                        
                         onClick={(e) => {
                           e.stopPropagation()
@@ -4982,7 +4982,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <span>Aprovar</span>
                       </button>
                       <button
-                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-micro font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors"
                        
                         onClick={(e) => {
                           e.stopPropagation()
@@ -5018,7 +5018,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           </button>
                           {/* Botão Alterar Horário - Abre UniversalTransitionModal com LIA */}
                           <button
-                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-micro font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors"
                            
                             onClick={(e) => {
                               e.stopPropagation()
@@ -5034,7 +5034,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           </button>
                           {/* Botão Cancelar Entrevista */}
                           <button
-                            className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-full text-micro font-medium transition-colors"
+                            className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error/10 hover:bg-status-error/15 text-status-error border border-status-error/30 rounded-full text-micro font-medium transition-colors"
                            
                             onClick={(e) => {
                               e.stopPropagation()
@@ -5054,7 +5054,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <>
                           {/* Botão Solicitar Urgência - Abre modal de confirmação */}
                           <button
-                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-micro font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors"
                            
                             onClick={(e) => {
                               e.stopPropagation()
@@ -5188,11 +5188,11 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
                             onClick={() => { setJobStatusModalMode('pause'); setShowJobStatusModal(true) }}
                           >
-                            <PauseCircle className="w-3.5 h-3.5 text-amber-500" />
+                            <PauseCircle className="w-3.5 h-3.5 text-status-warning" />
                             Pausar vaga
                           </button>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-red-600 hover:bg-red-50 transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors"
                             onClick={() => setShowCloseVacancyModal(true)}
                           >
                             <Archive className="w-3.5 h-3.5" />
@@ -5202,14 +5202,14 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       ) : (
                         <>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50 transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
                             onClick={() => { setJobStatusModalMode('activate'); setShowJobStatusModal(true) }}
                           >
                             <PlayCircle className="w-3.5 h-3.5" />
                             Reativar vaga
                           </button>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-red-600 hover:bg-red-50 transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors"
                             onClick={() => setShowCloseVacancyModal(true)}
                           >
                             <Archive className="w-3.5 h-3.5" />
@@ -5230,9 +5230,9 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     }
                     const scrStyles: Record<string, string> = {
                       not_configured: 'bg-gray-100 text-gray-700 border border-gray-300',
-                      not_started: 'bg-amber-50 text-amber-800 border border-amber-300',
-                      active: 'bg-emerald-50 text-emerald-800 border border-emerald-300',
-                      paused: 'bg-orange-50 text-orange-800 border border-orange-300',
+                      not_started: 'bg-status-warning/10 text-status-warning border border-status-warning/30',
+                      active: 'bg-status-success/10 text-status-success border border-status-success/30',
+                      paused: 'bg-wedo-orange/10 text-wedo-orange border border-wedo-orange/30',
                       completed: 'bg-sky-50 text-sky-800 border border-sky-300',
                     }
                     const handleScreeningStatusChange = async (newStatus: string) => {
@@ -5267,7 +5267,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           {scrStatus === 'not_started' && (
                             <>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50 transition-colors"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
                                 onClick={() => handleScreeningStatusChange('active')}
                               >
                                 <PlayCircle className="w-3.5 h-3.5" />
@@ -5284,7 +5284,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           )}
                           {scrStatus === 'active' && (
                             <button
-                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-amber-700 hover:bg-amber-50 transition-colors"
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-warning hover:bg-status-warning/10 transition-colors"
                               onClick={() => handleScreeningStatusChange('paused')}
                             >
                               <PauseCircle className="w-3.5 h-3.5" />
@@ -5294,7 +5294,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           {scrStatus === 'paused' && (
                             <>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50 transition-colors"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
                                 onClick={() => handleScreeningStatusChange('active')}
                               >
                                 <PlayCircle className="w-3.5 h-3.5" />
@@ -5316,7 +5316,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
                   {currentJob.status === 'Rascunho' && (
-                    <Badge className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                       Rascunho
                     </Badge>
                   )}
@@ -5357,7 +5357,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                     if (days <= 0) return null
                     const isLate = days > 30
                     return (
-                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-red-600' : 'text-gray-700 dark:text-gray-300'}`}>
+                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-gray-700 dark:text-gray-300'}`}>
                         {days}d {isLate ? 'de atraso' : 'aberta'}
                       </span>
                     )
@@ -5463,7 +5463,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
             <div className="ml-auto flex items-center gap-2">
               {pipelineInheritance.isCustomized ? (
                 <>
-                  <span className="inline-flex items-center gap-1 text-micro text-amber-600 dark:text-amber-400">
+                  <span className="inline-flex items-center gap-1 text-micro text-status-warning dark:text-status-warning">
                     <Settings className="w-3 h-3" />
                     Pipeline personalizado
                   </span>
@@ -5502,8 +5502,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
             <div
               key={insight.id}
               className={`flex items-start gap-2 px-3 py-2 rounded-md border text-xs ${
-                insight.urgency === 'urgent' ? 'bg-red-50 border-red-200 text-red-800' :
-                insight.urgency === 'high' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+                insight.urgency === 'urgent' ? 'bg-status-error/10 border-status-error/30 text-status-error' :
+                insight.urgency === 'high' ? 'bg-status-warning/10 border-status-warning/30 text-status-warning' :
                 'bg-gray-50 border-gray-200 text-gray-700'
               }`}
             >
@@ -5966,14 +5966,14 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   
                   {/* Ícone HubSpot/Integração */}
                   <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-wedo-orange flex items-center justify-center">
                       <span className="text-white text-micro font-bold">H</span>
                     </div>
                   </div>
                   
                   {/* Ícone Ações/Automação */}
                   <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-status-warning flex items-center justify-center">
                       <Brain className="w-3.5 h-3.5 text-white" />
                     </div>
                   </div>
@@ -6103,7 +6103,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                             {computedSuggestions.map((suggestion, idx) => {
                               const borderColor = suggestion.type === 'stale_candidate' ? 'border-l-amber-400' : suggestion.type === 'high_score' ? 'border-l-emerald-400' : 'border-l-red-400'
                               const IconComponent = suggestion.type === 'stale_candidate' ? Clock : suggestion.type === 'high_score' ? TrendingUp : AlertTriangle
-                              const iconColor = suggestion.type === 'stale_candidate' ? 'text-amber-500' : suggestion.type === 'high_score' ? 'text-emerald-500' : 'text-red-500'
+                              const iconColor = suggestion.type === 'stale_candidate' ? 'text-status-warning' : suggestion.type === 'high_score' ? 'text-status-success' : 'text-status-error'
                               return (
                                 <div key={`suggestion-${idx}`} className={`border-l-2 ${borderColor} bg-white rounded-r-lg px-2.5 py-2 border border-gray-100`}>
                                   <div className="flex items-start gap-2">
@@ -7011,8 +7011,8 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 <span
                                   className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-micro font-medium font-['Open_Sans'] ${
                                     saturationData.is_saturated
-                                      ? 'text-red-600 bg-red-50 border border-red-200'
-                                      : 'text-amber-600 bg-amber-50 border border-amber-200'
+                                      ? 'text-status-error bg-status-error/10 border border-status-error/30'
+                                      : 'text-status-warning bg-status-warning/10 border border-status-warning/30'
                                   }`}
                                   title={`Pipeline ${saturationData.is_saturated ? 'Saturado' : 'Quase saturado'} (${saturationData.approved_count}/${saturationData.saturation_threshold})`}
                                 >
@@ -7185,7 +7185,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 {/* Indicador "Ação Necessária" - aparece quando não está em hover */}
                                 {showNeedsAction && (
                                   <div className="flex items-center gap-1 group-hover:hidden transition-opacity">
-                                    <Flag className="w-3.5 h-3.5 text-amber-500" strokeWidth={2} />
+                                    <Flag className="w-3.5 h-3.5 text-status-warning" strokeWidth={2} />
                                   </div>
                                 )}
                                 {/* Botões de ação - aparecem no hover */}
@@ -7380,12 +7380,12 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           case 'is_open_to_work':
                             const isOpenToWork = candidate.is_opentowork || candidate.is_open_to_work
                             return isOpenToWork ? (
-                              <Badge className="text-xs bg-green-100 text-green-800">Open to Work</Badge>
+                              <Badge className="text-xs bg-status-success/15 text-status-success">Open to Work</Badge>
                             ) : <span className="text-xs text-gray-400">—</span>
                           
                           case 'is_decision_maker':
                             return candidate.is_decision_maker ? (
-                              <Badge className="text-xs bg-purple-100 text-purple-800">Decision Maker</Badge>
+                              <Badge className="text-xs bg-wedo-purple/15 text-wedo-purple">Decision Maker</Badge>
                             ) : <span className="text-xs text-gray-400">—</span>
                           
                           case 'is_top_universities':
@@ -7395,7 +7395,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                           
                           case 'is_hiring':
                             return candidate.is_hiring ? (
-                              <Badge className="text-xs bg-orange-100 text-orange-800">Contratando</Badge>
+                              <Badge className="text-xs bg-wedo-orange/15 text-wedo-orange">Contratando</Badge>
                             ) : <span className="text-xs text-gray-400">—</span>
                           
                           case 'headline':
@@ -7665,7 +7665,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                           openDecisionFlowModal(candidate, 'reject')
                                         }
                                       }}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md text-wedo-coral"
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-status-error/10 dark:hover:bg-status-error/20 rounded-md text-wedo-coral"
                                     >
                                       <XCircle className="w-4 h-4" />
                                       Reprovar
@@ -7706,7 +7706,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-6 px-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-micro font-semibold" 
+                                  className="h-6 px-2 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-semibold" 
                                   title="Reprovar candidato"
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -8213,7 +8213,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         {/* Nota Média em Destaque */}
                         <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-md">
+                            <div className="p-2 bg-wedo-purple/15 dark:bg-wedo-purple/30 rounded-md">
                               <Trophy className="w-5 h-5 text-gray-950 dark:text-gray-50" />
                             </div>
                             <div>
@@ -8277,7 +8277,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                           <p className={`${textStyles.description} mb-2`}>Distribuição de Notas</p>
                           <div className="flex items-end gap-1 h-8">
-                            <div className="flex-1 bg-red-500 rounded-t" style={{ height: '20%' }} title="0-40%: 5%"></div>
+                            <div className="flex-1 bg-status-error rounded-t" style={{ height: '20%' }} title="0-40%: 5%"></div>
                             <div className="flex-1 bg-gray-600 rounded-t" style={{ height: '30%' }} title="40-60%: 15%"></div>
                             <div className="flex-1 bg-gray-600 dark:bg-gray-500 rounded-t" style={{ height: '60%' }} title="60-80%: 35%"></div>
                             <div className="flex-1 bg-gray-700 rounded-t" style={{ height: '80%' }} title="80-100%: 45%"></div>
@@ -8644,7 +8644,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
             {/* Estatísticas Gerais */}
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
               {/* Nota Média Destacada */}
-              <div className="bg-purple-600 rounded-md p-4 mb-4 text-white">
+              <div className="bg-wedo-purple rounded-md p-4 mb-4 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-white/20 rounded-md">
@@ -8724,7 +8724,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
 
                 <div className="bg-white dark:bg-gray-900 rounded-md p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Gauge className="w-4 h-4 text-red-600" />
+                    <Gauge className="w-4 h-4 text-status-error" />
                     <span className="text-xs text-gray-800 dark:text-gray-200">Dificuldade Percebida</span>
                   </div>
                   <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">6.8/10</p>
@@ -8974,7 +8974,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
           {/* Painel Lateral */}
           <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-white dark:bg-gray-900" style={{ animation: 'slideInRight 0.3s ease-out' }}>
             {/* Header */}
-            <div className="bg-purple-600 p-4 text-white">
+            <div className="bg-wedo-purple p-4 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/20 rounded-md">
@@ -8982,7 +8982,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   </div>
                   <div>
                     <h2 className="text-lg font-bold">Sugestões de Perguntas da LIA</h2>
-                    <p className="text-purple-100 text-xs">Baseadas no perfil da vaga</p>
+                    <p className="text-wedo-purple text-xs">Baseadas no perfil da vaga</p>
                   </div>
                 </div>
                 <button
@@ -9168,11 +9168,11 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-900 rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fadeIn">
             {/* Header do Modal */}
-            <div className="bg-purple-600 p-6 text-white">
+            <div className="bg-wedo-purple p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Teste Técnico - UX Design</h2>
-                  <p className="text-purple-100 text-sm">Vaga: UX Designer • Sodexo</p>
+                  <p className="text-wedo-purple text-sm">Vaga: UX Designer • Sodexo</p>
                 </div>
                 <button
                   onClick={() => setShowTestPreview(false)}
@@ -9427,7 +9427,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
           {/* Painel Lateral */}
           <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-white dark:bg-gray-900 animate-slideInRight">
             {/* Header */}
-            <div className="bg-purple-600 p-4 text-white">
+            <div className="bg-wedo-purple p-4 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/20 rounded-md">
@@ -9435,7 +9435,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   </div>
                   <div>
                     <h2 className="text-lg font-bold">Sugestões de Perguntas da LIA</h2>
-                    <p className="text-purple-100 text-xs">Para Triagem - {selectedTriagemQuestion}</p>
+                    <p className="text-wedo-purple text-xs">Para Triagem - {selectedTriagemQuestion}</p>
                   </div>
                 </div>
                 <button

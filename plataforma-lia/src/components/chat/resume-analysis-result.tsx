@@ -19,15 +19,15 @@ export function ResumeAnalysisResult({
   compact = false 
 }: ResumeAnalysisResultProps) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-600'
-    if (score >= 60) return 'text-amber-600'
-    return 'text-red-600'
+    if (score >= 80) return 'text-status-success'
+    if (score >= 60) return 'text-status-warning'
+    return 'text-status-error'
   }
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-emerald-500'
-    if (score >= 60) return 'bg-amber-500'
-    return 'bg-red-500'
+    if (score >= 80) return 'bg-status-success'
+    if (score >= 60) return 'bg-status-warning'
+    return 'bg-status-error'
   }
 
   const getScoreLabel = (score: number) => {
@@ -69,7 +69,7 @@ export function ResumeAnalysisResult({
         {result.improvement_suggestions.length > 0 && (
           <div className="mt-3 pt-3 border-t">
             <p className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-1">
-              <Lightbulb className="h-3 w-3 text-amber-500" />
+              <Lightbulb className="h-3 w-3 text-status-warning" />
               {result.improvement_suggestions.length} sugestão{result.improvement_suggestions.length > 1 ? 'ões' : ''} de melhoria
             </p>
           </div>
@@ -119,7 +119,7 @@ export function ResumeAnalysisResult({
         <div className="bg-gray-50 rounded-md p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Star className="h-4 w-4 text-amber-500" />
+              <Star className="h-4 w-4 text-status-warning" />
               Qualidade do Layout
             </span>
             <div className="flex items-center gap-2">
@@ -129,10 +129,10 @@ export function ResumeAnalysisResult({
               <span className={cn(
                 "text-xs px-2 py-0.5 rounded-full",
                 result.layout_score >= 80 
-                  ? "bg-emerald-100 text-emerald-700"
+                  ? "bg-status-success/15 text-status-success"
                   : result.layout_score >= 60
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-red-100 text-red-700"
+                    ? "bg-status-warning/15 text-status-warning"
+                    : "bg-status-error/15 text-status-error"
               )}>
                 {getScoreLabel(result.layout_score)}
               </span>
@@ -157,9 +157,9 @@ export function ResumeAnalysisResult({
               {result.improvement_suggestions.map((suggestion, index) => (
                 <li 
                   key={index}
-                  className="flex items-start gap-3 p-3 bg-amber-50 rounded-md border border-amber-100"
+                  className="flex items-start gap-3 p-3 bg-status-warning/10 rounded-md border border-status-warning/30"
                 >
-                  <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="h-4 w-4 text-status-warning flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-700">{suggestion}</span>
                 </li>
               ))}
@@ -168,11 +168,11 @@ export function ResumeAnalysisResult({
         )}
 
         {result.improvement_suggestions.length === 0 && result.layout_score >= 80 && (
-          <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-md border border-emerald-100">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-4 bg-status-success/10 rounded-md border border-status-success/30">
+            <CheckCircle2 className="h-5 w-5 text-status-success flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-emerald-700">Currículo bem estruturado!</p>
-              <p className="text-xs text-emerald-600 mt-0.5">
+              <p className="text-sm font-medium text-status-success">Currículo bem estruturado!</p>
+              <p className="text-xs text-status-success mt-0.5">
                 O layout segue as melhores práticas de formatação.
               </p>
             </div>

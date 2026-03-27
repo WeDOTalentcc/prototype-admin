@@ -78,7 +78,7 @@ export function MessageFeedback({
         className={cn(
           "p-1.5 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
           thumbsState === 'up'
-            ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+            ? "bg-status-success/15 text-status-success dark:text-status-success"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
         )}
         title="Resposta útil"
@@ -92,7 +92,7 @@ export function MessageFeedback({
         className={cn(
           "p-1.5 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
           thumbsState === 'down'
-            ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+            ? "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
         )}
         title="Resposta não útil"
@@ -107,7 +107,7 @@ export function MessageFeedback({
             className={cn(
               "p-1.5 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
               rating > 0
-                ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+                ? "bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning"
                 : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             )}
             title="Avaliar resposta"
@@ -132,7 +132,7 @@ export function MessageFeedback({
                   className={cn(
                     "p-1 rounded transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
                     (hoveredStar >= star || rating >= star)
-                      ? "text-amber-500"
+                      ? "text-status-warning"
                       : "text-gray-300 dark:text-gray-600"
                   )}
                 >
@@ -146,7 +146,7 @@ export function MessageFeedback({
               ))}
             </div>
             {rating > 0 && (
-              <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-1 text-xs text-status-success dark:text-status-success">
                 <Check className="w-3 h-3" />
                 <span>Avaliação enviada!</span>
               </div>
@@ -161,7 +161,7 @@ export function MessageFeedback({
             className={cn(
               "p-1.5 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
               correctionSubmitted
-                ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                ? "bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark"
                 : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             )}
             title="Sugerir correção"
@@ -217,7 +217,7 @@ export function MessageFeedback({
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-2 py-2 text-xs text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-2 py-2 text-xs text-status-success dark:text-status-success">
                 <Check className="w-4 h-4" />
                 <span>Correção enviada! Obrigado pelo feedback.</span>
               </div>

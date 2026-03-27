@@ -89,9 +89,9 @@ export function TasksSection() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high": return "border-red-200 bg-red-50 text-red-700"
-      case "medium": return "border-yellow-200 bg-yellow-50 text-yellow-700"
-      case "low": return "border-green-200 bg-green-50 text-green-700"
+      case "high": return "border-status-error/30 bg-status-error/10 text-status-error"
+      case "medium": return "border-status-warning/30 bg-status-warning/10 text-status-warning"
+      case "low": return "border-status-success/30 bg-status-success/10 text-status-success"
       default: return "border-gray-200 bg-gray-50 text-gray-800 dark:text-gray-200"
     }
   }
@@ -158,7 +158,7 @@ export function TasksSection() {
         </div>
       ) : (
         <Card className="p-6 text-center">
-          <CheckCircle2 className="w-8 h-8 mx-auto mb-3 text-green-600" />
+          <CheckCircle2 className="w-8 h-8 mx-auto mb-3 text-status-success" />
           <h3 className="text-base font-medium text-gray-950 dark:text-gray-50 mb-1">
             Todas as tarefas concluídas!
           </h3>

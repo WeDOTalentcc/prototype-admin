@@ -46,26 +46,26 @@ const STATUS_CONFIG: Record<'hired' | 'cancelled', {
   hired: {
     icon: CheckCircle2,
     label: '✅ Contratado',
-    className: 'text-green-600 dark:text-green-400',
-    bgClassName: 'bg-green-50 dark:bg-green-950/30',
-    borderClassName: 'border-green-200 dark:border-green-800'
+    className: 'text-status-success dark:text-status-success',
+    bgClassName: 'bg-status-success/10 dark:bg-status-success/30',
+    borderClassName: 'border-status-success/30 dark:border-status-success/30'
   },
   cancelled: {
     icon: Clock,
     label: '⏳ Cancelada',
-    className: 'text-amber-600 dark:text-amber-400',
-    bgClassName: 'bg-amber-50 dark:bg-amber-950/30',
-    borderClassName: 'border-amber-200 dark:border-amber-800'
+    className: 'text-status-warning dark:text-status-warning',
+    bgClassName: 'bg-status-warning/10 dark:bg-status-warning/30',
+    borderClassName: 'border-status-warning/30 dark:border-status-warning/30'
   }
 }
 
 const WORK_MODEL_CONFIG: Record<string, { label: string; className: string }> = {
-  'remote': { label: 'Remoto', className: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800' },
-  'hybrid': { label: 'Híbrido', className: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/30 dark:text-purple-400 dark:border-purple-800' },
+  'remote': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' },
+  'hybrid': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
   'onsite': { label: 'Presencial', className: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-700' },
   'presencial': { label: 'Presencial', className: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-700' },
-  'remoto': { label: 'Remoto', className: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800' },
-  'híbrido': { label: 'Híbrido', className: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/30 dark:text-purple-400 dark:border-purple-800' },
+  'remoto': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' },
+  'híbrido': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
 }
 
 function formatCurrency(value: number): string {
@@ -146,7 +146,7 @@ function VacancyCard({
               {workModelConfig.label}
             </Badge>
             {vacancy.hired_candidate && vacancy.status === 'hired' && (
-              <span className="text-micro text-green-600 dark:text-green-400 flex items-center gap-1">
+              <span className="text-micro text-status-success dark:text-status-success flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
                 {vacancy.hired_candidate}
               </span>

@@ -55,8 +55,8 @@ const traits = [
     fullName: 'Abertura à Experiência',
     icon: Lightbulb,
     color: '#DC143C',
-    bgColor: 'bg-red-50 dark:bg-red-900/20',
-    borderColor: 'border-red-200 dark:border-red-800',
+    bgColor: 'bg-status-error/10 dark:bg-status-error/20',
+    borderColor: 'border-status-error/30 dark:border-status-error/30',
     description: 'Criatividade, curiosidade e disposição para novas experiências. Pessoas com alta abertura são imaginativas e apreciam a arte.'
   },
   {
@@ -65,8 +65,8 @@ const traits = [
     fullName: 'Conscienciosidade',
     icon: Target,
     color: '#2E8B57',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
-    borderColor: 'border-green-200 dark:border-green-800',
+    bgColor: 'bg-status-success/10 dark:bg-status-success/20',
+    borderColor: 'border-status-success/30 dark:border-status-success/30',
     description: 'Organização, disciplina e orientação para objetivos. Alta conscienciosidade indica responsabilidade e persistência.'
   },
   {
@@ -75,8 +75,8 @@ const traits = [
     fullName: 'Extroversão',
     icon: Users,
     color: '#FFA500',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-    borderColor: 'border-orange-200 dark:border-orange-800',
+    bgColor: 'bg-wedo-orange/10 dark:bg-wedo-orange/20',
+    borderColor: 'border-wedo-orange/30 dark:border-wedo-orange/30',
     description: 'Energia social, assertividade e busca por estímulos. Extrovertidos são comunicativos e entusiasmados.'
   },
   {
@@ -85,8 +85,8 @@ const traits = [
     fullName: 'Amabilidade',
     icon: Heart,
     color: '#8B4B8C',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-    borderColor: 'border-purple-200 dark:border-purple-800',
+    bgColor: 'bg-wedo-purple/10 dark:bg-wedo-purple/20',
+    borderColor: 'border-wedo-purple/30 dark:border-wedo-purple/30',
     description: 'Cooperação, empatia e consideração pelos outros. Alta amabilidade indica altruísmo e confiança.'
   },
   {
@@ -182,7 +182,7 @@ export default function ClientBigFivePage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Brain className="w-6 h-6 text-purple-600" />
+            <Brain className="w-6 h-6 text-wedo-purple" />
             <h2 
               className="text-lg font-semibold"
               style={{ color: 'var(--eleven-text-primary)' }}
@@ -274,7 +274,7 @@ export default function ClientBigFivePage({
                   </SelectItem>
                   <SelectItem value="eliminatory">
                     <div className="flex items-center gap-2">
-                      <AlertCircle className="w-3 h-3 text-amber-500" />
+                      <AlertCircle className="w-3 h-3 text-status-warning" />
                       <span>Eliminatório</span>
                     </div>
                   </SelectItem>
@@ -294,7 +294,7 @@ export default function ClientBigFivePage({
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
-              <BarChart3 className="w-4 h-4 text-purple-600" />
+              <BarChart3 className="w-4 h-4 text-wedo-purple" />
               Perfis por Cargo
             </CardTitle>
             <Select value={selectedJob} onValueChange={handleJobChange}>
@@ -392,9 +392,9 @@ export default function ClientBigFivePage({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="p-4 rounded-md bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-100 dark:border-purple-800">
+              <div className="p-4 rounded-md bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-wedo-purple/30 dark:border-wedo-purple/30">
                 <div className="text-center mb-4">
-                  <Brain className="w-10 h-10 mx-auto text-purple-600 mb-2" />
+                  <Brain className="w-10 h-10 mx-auto text-wedo-purple mb-2" />
                   <h4 className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
                     Avaliação de Perfil Comportamental
                   </h4>
@@ -417,7 +417,7 @@ export default function ClientBigFivePage({
                             key={n} 
                             className={`flex-1 h-8 rounded text-xs font-medium transition-colors ${
                               n === 4 
-                                ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border-2 border-purple-400' 
+                                ? 'bg-wedo-purple/15 dark:bg-wedo-purple/50 text-wedo-purple dark:text-wedo-purple border-2 border-wedo-purple/30' 
                                 : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                             }`}
                           >
@@ -436,16 +436,16 @@ export default function ClientBigFivePage({
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base font-medium flex items-center gap-2" style={{ color: 'var(--eleven-text-primary)' }}>
-                <BarChart3 className="w-4 h-4 text-purple-600" />
+                <BarChart3 className="w-4 h-4 text-wedo-purple" />
                 Preview: Resultado de Análise
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-md bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800">
+                <div className="flex items-center justify-between p-4 rounded-md bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-status-success/30 dark:border-status-success/30">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-                      <CheckCircle2 className="w-6 h-6 text-green-600" />
+                    <div className="w-12 h-12 rounded-full bg-status-success/15 dark:bg-status-success/50 flex items-center justify-center">
+                      <CheckCircle2 className="w-6 h-6 text-status-success" />
                     </div>
                     <div>
                       <p className="text-sm font-medium" style={{ color: 'var(--eleven-text-primary)' }}>
@@ -457,8 +457,8 @@ export default function ClientBigFivePage({
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">{matchScore}%</p>
-                    <p className="text-xs text-green-600">
+                    <p className="text-2xl font-bold text-status-success">{matchScore}%</p>
+                    <p className="text-xs text-status-success">
                       {matchScore >= matchThreshold ? 'Compatível' : 'Abaixo do threshold'}
                     </p>
                   </div>
@@ -509,12 +509,12 @@ export default function ClientBigFivePage({
                         </div>
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
                           isClose 
-                            ? 'bg-green-100 dark:bg-green-900/50' 
-                            : 'bg-amber-100 dark:bg-amber-900/50'
+                            ? 'bg-status-success/15 dark:bg-status-success/50' 
+                            : 'bg-status-warning/15 dark:bg-status-warning/50'
                         }`}>
                           {isClose 
-                            ? <CheckCircle2 className="w-3 h-3 text-green-600" />
-                            : <AlertCircle className="w-3 h-3 text-amber-600" />
+                            ? <CheckCircle2 className="w-3 h-3 text-status-success" />
+                            : <AlertCircle className="w-3 h-3 text-status-warning" />
                           }
                         </div>
                       </div>
@@ -522,14 +522,14 @@ export default function ClientBigFivePage({
                   })}
                 </div>
 
-                <div className="p-3 rounded-md bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                <div className="p-3 rounded-md bg-wedo-purple/10 dark:bg-wedo-purple/20 border border-wedo-purple/30 dark:border-wedo-purple/30">
                   <div className="flex items-start gap-2">
-                    <Brain className="w-4 h-4 text-purple-600 mt-0.5" />
+                    <Brain className="w-4 h-4 text-wedo-purple mt-0.5" />
                     <div>
-                      <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                      <p className="text-xs font-medium text-wedo-purple dark:text-wedo-purple">
                         Insight Comportamental
                       </p>
-                      <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                      <p className="text-xs text-wedo-purple dark:text-wedo-purple mt-1">
                         Candidato apresenta perfil equilibrado com alta amabilidade e boa conscienciosidade. 
                         Adequado para funções que exigem trabalho em equipe e organização.
                       </p>

@@ -87,23 +87,23 @@ const communicationModules = [
 ]
 
 const channelFilters = [
-  { id: 'email', label: 'Email', icon: Mail, color: 'bg-orange-600', hoverColor: 'hover:bg-orange-700' },
-  { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, color: 'bg-green-600', hoverColor: 'hover:bg-green-700' },
-  { id: 'bell', label: 'Bell', icon: Bell, color: 'bg-amber-600', hoverColor: 'hover:bg-amber-700' },
+  { id: 'email', label: 'Email', icon: Mail, color: 'bg-wedo-orange', hoverColor: 'hover:bg-wedo-orange/10' },
+  { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, color: 'bg-status-success', hoverColor: 'hover:bg-status-success' },
+  { id: 'bell', label: 'Bell', icon: Bell, color: 'bg-status-warning', hoverColor: 'hover:bg-status-warning' },
   { id: 'teams', label: 'Teams', icon: Grid3X3, color: 'bg-indigo-600', hoverColor: 'hover:bg-indigo-700' },
   { id: 'chat_lia', label: 'Chat LIA', icon: Bot, color: 'bg-gray-900 dark:bg-gray-50', hoverColor: 'hover:bg-gray-800 dark:hover:bg-gray-200' },
   { id: 'report', label: 'Relatórios', icon: BarChart3, color: 'bg-slate-600', hoverColor: 'hover:bg-slate-700' },
-  { id: 'briefing', label: 'Briefings', icon: Sun, color: 'bg-yellow-600', hoverColor: 'hover:bg-yellow-700' },
-  { id: 'parecer', label: 'Pareceres', icon: ClipboardCheck, color: 'bg-purple-600', hoverColor: 'hover:bg-purple-700' }
+  { id: 'briefing', label: 'Briefings', icon: Sun, color: 'bg-status-warning', hoverColor: 'hover:bg-status-warning/10' },
+  { id: 'parecer', label: 'Pareceres', icon: ClipboardCheck, color: 'bg-wedo-purple', hoverColor: 'hover:bg-wedo-purple' }
 ]
 
 const categoryLabels: Record<string, { label: string; color: string }> = {
-  approval: { label: 'Aprovação', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
-  rejection: { label: 'Rejeição', color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' },
+  approval: { label: 'Aprovação', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
+  rejection: { label: 'Rejeição', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
   scheduling: { label: 'Agendamento', color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' },
-  followup: { label: 'Follow-up', color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' },
+  followup: { label: 'Follow-up', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
  feedback: { label: 'Feedback', color: 'bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-gray-300' },
-  system: { label: 'Sistema', color: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' }
+  system: { label: 'Sistema', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' }
 }
 
 export default function ClientComunicacoesPage({
@@ -162,15 +162,15 @@ export default function ClientComunicacoesPage({
         </Link>
       </div>
 
-      <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20">
+      <Card className="border-status-warning/30 bg-status-warning/10/50 dark:border-status-warning/30 dark:bg-status-warning/20">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Bell className="w-5 h-5 text-amber-600 mt-0.5" />
+            <Bell className="w-5 h-5 text-status-warning mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-medium text-status-warning dark:text-status-warning">
                 Contexto do Cliente: {clientId}
               </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+              <p className="text-xs text-status-warning dark:text-status-warning mt-1">
                 As configurações abaixo são específicas para este cliente. 
                 Todas as chamadas de API utilizarão o header X-Company-ID: {clientId}
               </p>
@@ -256,7 +256,7 @@ export default function ClientComunicacoesPage({
                         {template.is_system_template && !template.origin_template_id && (
                           <Badge 
                             variant="outline" 
-                            className="text-xs bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800"
+                            className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30"
                           >
                             Sistema
                           </Badge>
@@ -278,7 +278,7 @@ export default function ClientComunicacoesPage({
                         )}
                         <Badge 
                           variant={template.is_active ? "default" : "secondary"}
-                          className={`text-xs ${template.is_active ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500'}`}
+                          className={`text-xs ${template.is_active ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' : 'bg-gray-100 text-gray-500'}`}
                         >
                           {template.is_active ? 'Ativo' : 'Inativo'}
                         </Badge>

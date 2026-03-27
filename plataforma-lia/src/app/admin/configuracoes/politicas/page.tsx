@@ -72,19 +72,19 @@ const CATEGORY_CONFIG: Record<PolicyCategory, { label: string; icon: React.Eleme
   ai_usage: {
     label: 'Limites de IA',
     icon: Brain,
-    color: 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400',
+    color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple',
     description: 'Controle de uso de tokens e rate limits por cliente',
   },
   security: {
     label: 'Segurança',
     icon: Lock,
-    color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400',
+    color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success',
     description: 'Políticas de senha, sessão e autenticação',
   },
   compliance: {
     label: 'Compliance',
     icon: Shield,
-    color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400',
+    color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning',
     description: 'Logs de auditoria e requisitos de consentimento',
   },
 }
@@ -270,7 +270,7 @@ export default function GlobalPoliciesPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+          <AlertTriangle className="w-12 h-12 text-status-warning mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">
             Erro ao carregar políticas
           </h3>
@@ -531,7 +531,7 @@ export default function GlobalPoliciesPage() {
                                   onCheckedChange={() => handleTogglePolicy(policy.id, policy.isActive)}
                                   disabled={isUpdating}
                                 />
-                                <span className={`text-xs ${policy.isActive ? 'text-emerald-600' : 'text-gray-500'}`}>
+                                <span className={`text-xs ${policy.isActive ? 'text-status-success' : 'text-gray-500'}`}>
                                   {policy.isActive ? 'Ativo' : 'Inativo'}
                                 </span>
                               </div>
@@ -686,10 +686,10 @@ export default function GlobalPoliciesPage() {
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         {entry.changeType === 'enable' && (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          <CheckCircle2 className="w-4 h-4 text-status-success" />
                         )}
                         {entry.changeType === 'disable' && (
-                          <AlertTriangle className="w-4 h-4 text-amber-500" />
+                          <AlertTriangle className="w-4 h-4 text-status-warning" />
                         )}
                         {entry.changeType === 'update' && (
                           <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -706,12 +706,12 @@ export default function GlobalPoliciesPage() {
                     </div>
                     
                     <div className="flex items-center gap-4 text-sm mb-2">
-                      <div className="flex items-center gap-1 text-red-600 dark:text-red-400">
+                      <div className="flex items-center gap-1 text-status-error dark:text-status-error">
                         <X className="w-3 h-3" />
                         <span className="line-through">{entry.previousValue}</span>
                       </div>
                       <span className="text-gray-400">→</span>
-                      <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                      <div className="flex items-center gap-1 text-status-success dark:text-status-success">
                         <CheckCircle2 className="w-3 h-3" />
                         <span>{entry.newValue}</span>
                       </div>

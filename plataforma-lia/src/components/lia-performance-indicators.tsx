@@ -23,8 +23,8 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         label: isApproved ? 'Triagem OK' : 'Triagem c/ Ressalvas',
         icon: isApproved ? <CheckCircle className="w-3.5 h-3.5" /> : <Target className="w-3.5 h-3.5" />,
         color: isApproved
-          ? 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400'
-          : 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400'
+          ? 'bg-status-success/15 text-status-success border-status-success/30 dark:bg-status-success/30 dark:text-status-success'
+          : 'bg-status-warning/15 text-status-warning border-status-warning/30 dark:text-status-warning'
       }
     }
 
@@ -33,7 +33,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'approved',
         label: 'Triagem OK',
         icon: <CheckCircle className="w-3.5 h-3.5" />,
-        color: 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400'
+        color: 'bg-status-success/15 text-status-success border-status-success/30 dark:bg-status-success/30 dark:text-status-success'
       }
     }
 
@@ -51,7 +51,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'pending',
         label: 'Aguardando Aprovação',
         icon: <Clock className="w-3.5 h-3.5" />,
-        color: 'bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400'
+        color: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30 dark:bg-wedo-orange/10/30 dark:text-wedo-orange'
       }
     }
 
@@ -112,8 +112,8 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
             <div
               className={`w-6 h-6 rounded flex items-center justify-center ${
                 candidate.triageComplete || candidate.liaStatus === 'triagem_completa'
-                  ? 'bg-green-100 dark:bg-green-900/30'
-                  : 'bg-yellow-100 dark:bg-yellow-900/30'
+                  ? 'bg-status-success/15 dark:bg-status-success/30'
+                  : 'bg-status-warning/15'
               }`}
               title={
                 candidate.triageComplete || candidate.liaStatus === 'triagem_completa'
@@ -122,9 +122,9 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
               }
             >
               {candidate.triageComplete || candidate.liaStatus === 'triagem_completa' ? (
-                <CheckCircle className="w-3 h-3 text-green-600 dark:text-green-400" />
+                <CheckCircle className="w-3 h-3 text-status-success dark:text-status-success" />
               ) : (
-                <Clock className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
+                <Clock className="w-3 h-3 text-status-warning dark:text-status-warning" />
               )}
             </div>
           </>
@@ -135,10 +135,10 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           <>
             <div className="w-3 h-px bg-gray-300 dark:bg-gray-600"></div>
             <div
-              className="w-6 h-6 rounded bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center"
+              className="w-6 h-6 rounded bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center"
               title="Entrevista agendada"
             >
-              <Calendar className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+              <Calendar className="w-3 h-3 text-wedo-purple dark:text-wedo-purple" />
             </div>
           </>
         )}
@@ -149,7 +149,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         <div className="flex gap-1 flex-wrap">
           {candidate.triageData.mobility === 'OK' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+              className="text-xs px-1.5 py-0.5 rounded-full bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success"
               title="Mobilidade OK"
             >
               Mob ✓
@@ -157,7 +157,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           )}
           {candidate.triageData.salary === 'Compatível' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+              className="text-xs px-1.5 py-0.5 rounded-full bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success"
               title="Salário compatível"
             >
               Sal ✓
@@ -165,7 +165,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
           )}
           {candidate.triageData.interest === 'Alto' && (
             <div
-              className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+              className="text-xs px-1.5 py-0.5 rounded-full bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success"
               title="Interesse alto"
             >
               Int ✓

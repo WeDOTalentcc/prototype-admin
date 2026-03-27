@@ -101,7 +101,7 @@ export function ToolConfirmationMessage({
       aria-describedby={`${dialogId}-desc`}
       onKeyDown={handleKeyDown}
       className={cn(
-        'flex flex-col gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-md border border-amber-200 dark:border-amber-800',
+        'flex flex-col gap-3 p-4 bg-status-warning/10 dark:bg-status-warning/30 rounded-md border border-status-warning/30 dark:border-status-warning/30',
         'animate-in fade-in-0 slide-in-from-bottom-2 duration-300',
         className
       )}
@@ -110,26 +110,26 @@ export function ToolConfirmationMessage({
         <div className="flex-shrink-0 text-2xl" aria-hidden="true">{toolInfo.icon}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-            <span id={`${dialogId}-title`} className="font-medium text-amber-800 dark:text-amber-200">
+            <AlertTriangle className="h-4 w-4 text-status-warning dark:text-status-warning" aria-hidden="true" />
+            <span id={`${dialogId}-title`} className="font-medium text-status-warning dark:text-status-warning">
               Confirmação necessária
             </span>
           </div>
-          <p id={`${dialogId}-desc`} className="text-sm text-amber-900 dark:text-amber-100 mb-2">
+          <p id={`${dialogId}-desc`} className="text-sm text-status-warning dark:text-status-warning mb-2">
             {confirmationMessage}
           </p>
-          <p className="text-xs text-amber-700 dark:text-amber-300">
+          <p className="text-xs text-status-warning dark:text-status-warning">
             {toolInfo.description}
           </p>
         </div>
       </div>
 
       {Object.keys(toolCall.parameters).length > 0 && (
-        <div className="bg-amber-100/50 dark:bg-amber-900/30 rounded-md p-2 text-xs" aria-label="Parâmetros da ação">
-          <span className="font-medium text-amber-800 dark:text-amber-200">Parâmetros:</span>
+        <div className="bg-status-warning/15/50 dark:bg-status-warning/30 rounded-md p-2 text-xs" aria-label="Parâmetros da ação">
+          <span className="font-medium text-status-warning dark:text-status-warning">Parâmetros:</span>
           <ul className="mt-1 space-y-0.5" role="list">
             {Object.entries(toolCall.parameters).map(([key, value]) => (
-              <li key={key} className="text-amber-700 dark:text-amber-300">
+              <li key={key} className="text-status-warning dark:text-status-warning">
                 <span className="font-medium">{key}:</span>{' '}
                 <span>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
               </li>
@@ -168,13 +168,13 @@ export function ToolConfirmationMessage({
           size="sm"
           data-testid="tool-cancel-button"
           aria-label="Cancelar execução"
-          className="border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/50 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200"
+          className="border-status-warning/30 dark:border-status-warning/30 hover:bg-status-warning/15 dark:hover:bg-status-warning/50 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200"
         >
           <X className="h-4 w-4 mr-1.5" aria-hidden="true" />
           <span>Cancelar</span>
         </Button>
         {!isExecuting && (
-          <span className="text-xs text-amber-600 dark:text-amber-400 ml-2" aria-hidden="true">
+          <span className="text-xs text-status-warning dark:text-status-warning ml-2" aria-hidden="true">
             ou digite &quot;sim&quot; / &quot;não&quot;
           </span>
         )}

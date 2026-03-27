@@ -71,8 +71,8 @@ function EmptyState({ message, onRetry }: { message?: string, onRetry?: () => vo
 function ErrorState({ message, onRetry }: { message: string, onRetry?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
-      <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
-        <AlertCircle className="w-8 h-8 text-red-500" />
+      <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
+        <AlertCircle className="w-8 h-8 text-status-error" />
       </div>
       <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-1">
         Erro ao carregar clientes

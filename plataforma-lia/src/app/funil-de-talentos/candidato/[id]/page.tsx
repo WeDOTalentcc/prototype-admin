@@ -486,9 +486,9 @@ export default function CandidateProfilePage() {
 
   const getFileIcon = (fileType: string, mimeType?: string) => {
     if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-    if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-red-600" />
-    if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-amber-600" />
-    if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-green-600" />
+    if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-status-error" />
+    if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-status-warning" />
+    if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-status-success" />
     return <File className="w-3.5 h-3.5 text-gray-600" />
   }
 
@@ -565,14 +565,14 @@ export default function CandidateProfilePage() {
 
   const getLanguageLevel = (level: string) => {
     const levels: Record<string, { label: string; percent: number; color: string }> = {
-      'native': { label: 'Nativo', percent: 100, color: 'bg-emerald-500' },
-      'nativo': { label: 'Nativo', percent: 100, color: 'bg-emerald-500' },
-      'fluent': { label: 'Fluente', percent: 90, color: 'bg-emerald-400' },
-      'fluente': { label: 'Fluente', percent: 90, color: 'bg-emerald-400' },
+      'native': { label: 'Nativo', percent: 100, color: 'bg-status-success' },
+      'nativo': { label: 'Nativo', percent: 100, color: 'bg-status-success' },
+      'fluent': { label: 'Fluente', percent: 90, color: 'bg-status-success' },
+      'fluente': { label: 'Fluente', percent: 90, color: 'bg-status-success' },
       'advanced': { label: 'Avançado', percent: 75, color: 'bg-gray-700 dark:bg-gray-300' },
       'avançado': { label: 'Avançado', percent: 75, color: 'bg-gray-700 dark:bg-gray-300' },
-      'intermediate': { label: 'Intermediário', percent: 50, color: 'bg-amber-500' },
-      'intermediário': { label: 'Intermediário', percent: 50, color: 'bg-amber-500' },
+      'intermediate': { label: 'Intermediário', percent: 50, color: 'bg-status-warning' },
+      'intermediário': { label: 'Intermediário', percent: 50, color: 'bg-status-warning' },
       'basic': { label: 'Básico', percent: 25, color: 'bg-gray-400' },
       'básico': { label: 'Básico', percent: 25, color: 'bg-gray-400' },
     }
@@ -638,7 +638,7 @@ export default function CandidateProfilePage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <p className="text-sm text-red-600 mb-4">{error || "Candidato não encontrado"}</p>
+          <p className="text-sm text-status-error mb-4">{error || "Candidato não encontrado"}</p>
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
@@ -697,7 +697,7 @@ export default function CandidateProfilePage() {
                     {candidate.communication_consent && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Badge className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+                          <Badge className="text-xs bg-status-success/10 text-status-success border-status-success/30">
                             <Shield className="w-3 h-3 mr-1" />
                             LGPD
                           </Badge>
@@ -708,7 +708,7 @@ export default function CandidateProfilePage() {
                     {candidate.is_blacklisted && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Badge className="text-xs bg-red-50 text-red-700 border-red-200">⚠️ LCNU</Badge>
+                          <Badge className="text-xs bg-status-error/10 text-status-error border-status-error/30">⚠️ LCNU</Badge>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="font-medium">Lista de Candidatos Não Utilizáveis</p>
@@ -724,7 +724,7 @@ export default function CandidateProfilePage() {
                       </Badge>
                     )}
                     {(candidate as any).is_potential && (
-                      <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                      <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                         Potencial
                       </Badge>
                     )}
@@ -733,8 +733,8 @@ export default function CandidateProfilePage() {
                     {(() => {
                       const status = (candidate as any).candidate_status || 'active'
                       const statusConfig: Record<string, { label: string, bg: string, text: string, border: string }> = {
-                        'active': { label: 'Ativo', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-                        'do_not_use': { label: 'Não Utilizar', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+                        'active': { label: 'Ativo', bg: 'bg-status-success/10', text: 'text-status-success', border: 'border-status-success/30' },
+                        'do_not_use': { label: 'Não Utilizar', bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
                         'hired': { label: 'Contratado', bg: 'bg-gray-50 dark:bg-gray-900', text: 'text-gray-900 dark:text-gray-50', border: 'border-gray-300 dark:border-gray-600' },
                         'inactive': { label: 'Inativo', bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300' }
                       }
@@ -839,7 +839,7 @@ export default function CandidateProfilePage() {
                           href={(candidate as any).stackoverflow_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${(candidate as any).stackoverflow_url ? 'hover:bg-orange-50' : 'opacity-30 cursor-default'}`}
+                          className={`p-1.5 rounded-md transition-colors ${(candidate as any).stackoverflow_url ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !(candidate as any).stackoverflow_url && e.preventDefault()}
                         >
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate as any).stackoverflow_url ? '#F48024' : 'var(--gray-400)'}><path d="M15 21H3v-8h2v6h10v-6h2v8z"/><path d="M5 15h10v-2H5v2zm0-3.5h10v-2H5v2zm.05-3.45l9.85 2.05.4-1.95L5.45 6l-.4 1.95zM7.15 4.55l8.95 4.55.85-1.7L8 2.85l-.85 1.7z"/></svg>
@@ -918,12 +918,12 @@ export default function CandidateProfilePage() {
                       </Badge>
                     )}
                     {(candidate as any).willing_to_relocate && (
-                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                      <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">
                         ✈️ Aceita Mudança
                       </Badge>
                     )}
                     {(candidate as any).mobility && (
-                      <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                      <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                         🚗 Mobilidade
                       </Badge>
                     )}
@@ -972,7 +972,7 @@ export default function CandidateProfilePage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => openCommunicationModal('whatsapp')} className="gap-1.5">
-                      <MessageSquare className="w-4 h-4 text-green-500" />
+                      <MessageSquare className="w-4 h-4 text-status-success" />
                       WhatsApp
                     </Button>
                   </TooltipTrigger>
@@ -981,7 +981,7 @@ export default function CandidateProfilePage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => openCommunicationModal('agendamento')} className="gap-1.5">
-                      <CalendarDays className="w-4 h-4 text-orange-500" />
+                      <CalendarDays className="w-4 h-4 text-wedo-orange" />
                       Agendar Entrevista
                     </Button>
                   </TooltipTrigger>
@@ -990,7 +990,7 @@ export default function CandidateProfilePage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => openCommunicationModal('triagem')} className="gap-1.5">
-                      <ClipboardCheck className="w-4 h-4 text-purple-500" />
+                      <ClipboardCheck className="w-4 h-4 text-wedo-purple" />
                       Triagem WSI
                     </Button>
                   </TooltipTrigger>
@@ -1137,12 +1137,12 @@ export default function CandidateProfilePage() {
                         {/* Soft Skills */}
                         {candidate.soft_skills && candidate.soft_skills.length > 0 && (
                           <div>
-                            <h5 className="text-xs font-medium text-amber-700 mb-1.5 flex items-center gap-1">
+                            <h5 className="text-xs font-medium text-status-warning mb-1.5 flex items-center gap-1">
                               <Users className="w-3 h-3" /> Soft Skills
                             </h5>
                             <div className="flex flex-wrap gap-1.5">
                               {candidate.soft_skills.map((skill, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-amber-50 text-amber-700 border-amber-200">
+                                <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-status-warning/10 text-status-warning border-status-warning/30">
                                   {skill}
                                 </Badge>
                               ))}
@@ -1200,7 +1200,7 @@ export default function CandidateProfilePage() {
                                   </span>
                                 ))}
                                 {isStartup && (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-green-50 text-green-700 border border-green-100">
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30">
                                     🚀 Startup
                                   </span>
                                 )}
@@ -1419,7 +1419,7 @@ export default function CandidateProfilePage() {
                             <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600">Remoto</Badge>
                           )}
                           {candidate.willing_to_relocate && (
-                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Aceita Relocação</Badge>
+                            <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">Aceita Relocação</Badge>
                           )}
                           {candidate.work_model_preference && (
                             <Badge variant="outline" className="text-xs">{candidate.work_model_preference}</Badge>
@@ -1445,7 +1445,7 @@ export default function CandidateProfilePage() {
                       <div>
                         <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5">Status</h5>
                         <div className="flex flex-wrap gap-1.5">
-                          <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
+                          <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
                             {candidate.is_active ? 'Ativo' : 'Inativo'}
                           </Badge>
                           {candidate.source && (
@@ -1540,17 +1540,17 @@ export default function CandidateProfilePage() {
                         {/* Badges de Status */}
                         <div className="flex flex-wrap gap-1.5">
                           {(candidate as any).is_open_to_work && (
-                            <Badge className="text-xs bg-green-50 text-green-700 border-green-200">
+                            <Badge className="text-xs bg-status-success/10 text-status-success border-status-success/30">
                               ✓ Open to Work
                             </Badge>
                           )}
                           {(candidate as any).is_decision_maker && (
-                            <Badge className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                            <Badge className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                               👔 Decision Maker
                             </Badge>
                           )}
                           {(candidate as any).is_top_universities && (
-                            <Badge className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                            <Badge className="text-xs bg-status-warning/10 text-status-warning border-status-warning/30">
                               🎓 Top Universities
                             </Badge>
                           )}
@@ -1654,7 +1654,7 @@ export default function CandidateProfilePage() {
                       <CardContent className="px-4 pb-4">
                         <div className="flex flex-wrap gap-1.5">
                           {((candidate as any).interests as string[]).map((interest: string, idx: number) => (
-                            <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200">
+                            <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                               {interest}
                             </Badge>
                           ))}
@@ -1754,7 +1754,7 @@ export default function CandidateProfilePage() {
                         <button
                           onClick={() => setActivityFilter('lia')}
                           className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                            activityFilter === 'lia' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                            activityFilter === 'lia' ? 'bg-status-error text-white' : 'bg-status-error/15 text-status-error hover:bg-status-error/20'
                           }`}
                         >
                           🤖 LIA
@@ -1778,7 +1778,7 @@ export default function CandidateProfilePage() {
                         <button
                           onClick={() => setActivityFilter('notes')}
                           className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                            activityFilter === 'notes' ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                            activityFilter === 'notes' ? 'bg-status-warning text-white' : 'bg-status-warning/15 text-status-warning hover:bg-status-warning/20'
                           }`}
                         >
                           📝 Notas
@@ -1788,10 +1788,10 @@ export default function CandidateProfilePage() {
 
                     {/* Seção de Adicionar Nota */}
                     {(activityFilter === 'notes' || activityFilter === 'all') && (
-                      <div className="p-4 border-b border-gray-100 bg-amber-50/30">
+                      <div className="p-4 border-b border-gray-100 bg-status-warning/10/30">
                         <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-1">
-                            <FileText className="w-4 h-4 text-amber-600" />
+                          <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center flex-shrink-0 mt-1">
+                            <FileText className="w-4 h-4 text-status-warning" />
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
@@ -1818,7 +1818,7 @@ export default function CandidateProfilePage() {
                           </div>
                           <Button 
                             size="sm" 
-                            className="gap-1.5 mt-6 bg-amber-600 hover:bg-amber-700 text-white"
+                            className="gap-1.5 mt-6 bg-status-warning hover:bg-status-warning/10 text-white"
                             disabled={!newNoteContent.trim()}
                             onClick={() => {
                               if (newNoteContent.trim()) {
@@ -1917,7 +1917,7 @@ export default function CandidateProfilePage() {
                             <div className="flex flex-col items-center justify-center py-12 px-4">
                               <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
                                 {activityFilter === 'notes' ? (
-                                  <FileText className="w-8 h-8 text-amber-600" />
+                                  <FileText className="w-8 h-8 text-status-warning" />
                                 ) : (
                                   <Activity className="w-8 h-8 text-gray-600" />
                                 )}
@@ -1941,14 +1941,14 @@ export default function CandidateProfilePage() {
                             {filteredItems.map((item: any, index: number) => {
                               if (item.itemType === 'note') {
                                 return (
-                                  <div key={item.id || index} className="flex items-start gap-3 p-3 bg-amber-50/50 rounded-md border border-amber-100 hover:transition-all">
-                                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                                      <FileText className="w-4 h-4 text-amber-600" />
+                                  <div key={item.id || index} className="flex items-start gap-3 p-3 bg-status-warning/10/50 rounded-md border border-status-warning/30 hover:transition-all">
+                                    <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center flex-shrink-0">
+                                      <FileText className="w-4 h-4 text-status-warning" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                                         <span className="text-xs font-medium text-gray-800">Nota Interna</span>
-                                        <Badge className="text-micro px-1.5 py-0 bg-amber-100 text-amber-700 border-amber-200">
+                                        <Badge className="text-micro px-1.5 py-0 bg-status-warning/15 text-status-warning border-status-warning/30">
                                           {getCategoryLabel(item.category)}
                                         </Badge>
                                         <span className="text-xs text-gray-400">
@@ -2142,7 +2142,7 @@ export default function CandidateProfilePage() {
                                         <Button size="sm" variant="ghost" className="p-1.5 h-7 w-7" onClick={() => handleDownloadFile(file.file_url, file.file_name)} title="Baixar arquivo">
                                           <Download className="w-3.5 h-3.5" />
                                         </Button>
-                                        <Button size="sm" variant="ghost" className="p-1.5 h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteFile(file.id)} title="Excluir arquivo">
+                                        <Button size="sm" variant="ghost" className="p-1.5 h-7 w-7 text-status-error hover:text-status-error hover:bg-status-error/10" onClick={() => handleDeleteFile(file.id)} title="Excluir arquivo">
                                           <X className="w-3.5 h-3.5" />
                                         </Button>
                                       </div>
@@ -2194,14 +2194,14 @@ export default function CandidateProfilePage() {
                       onClick={() => setOpinionsSubTab('analises')}
                       className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors ${
                         opinionsSubTab === 'analises' 
-                          ? 'text-purple-600 border-b-2 border-purple-600' 
+                          ? 'text-wedo-purple border-b-2 border-wedo-purple/30' 
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       Análises
                       {(savedAnalyses?.total_analyses || 0) > 0 && (
-                        <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-600 text-white">
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple text-white">
                           {savedAnalyses?.total_analyses || 0}
                         </Badge>
                       )}
@@ -2255,16 +2255,16 @@ export default function CandidateProfilePage() {
                         
                         const getScoreColor = (score: number | null) => {
                           if (score === null || score === undefined) return 'text-gray-600'
-                          if (score >= 80) return 'text-emerald-600'
-                          if (score >= 60) return 'text-amber-600'
-                          return 'text-red-500'
+                          if (score >= 80) return 'text-status-success'
+                          if (score >= 60) return 'text-status-warning'
+                          return 'text-status-error'
                         }
                         
                         const getRecommendationBadge = (rec: string | null) => {
                           if (!rec) return null
-                          if (rec === 'approved') return <Badge className="bg-emerald-100 text-emerald-700 text-xs flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5" />APROVADO</Badge>
-                          if (rec === 'pending_review') return <Badge className="bg-amber-100 text-amber-700 text-xs flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />PENDENTE</Badge>
-                          if (rec === 'not_approved') return <Badge className="bg-red-100 text-red-700 text-xs flex items-center gap-0.5"><X className="w-2.5 h-2.5" />NÃO APROVADO</Badge>
+                          if (rec === 'approved') return <Badge className="bg-status-success/15 text-status-success text-xs flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5" />APROVADO</Badge>
+                          if (rec === 'pending_review') return <Badge className="bg-status-warning/15 text-status-warning text-xs flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />PENDENTE</Badge>
+                          if (rec === 'not_approved') return <Badge className="bg-status-error/15 text-status-error text-xs flex items-center gap-0.5"><X className="w-2.5 h-2.5" />NÃO APROVADO</Badge>
                           return null
                         }
                         
@@ -2281,8 +2281,8 @@ export default function CandidateProfilePage() {
                                 className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isWsi ? 'bg-purple-100' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                                    {isWsi ? <Target className="w-4 h-4 text-purple-600" /> : <Brain className="w-4 h-4 text-wedo-cyan" />}
+                                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isWsi ? 'bg-wedo-purple/15' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                    {isWsi ? <Target className="w-4 h-4 text-wedo-purple" /> : <Brain className="w-4 h-4 text-wedo-cyan" />}
                                   </div>
                                   <div className="text-left">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -2365,14 +2365,14 @@ export default function CandidateProfilePage() {
                                   
                                   {opinion.strengths && opinion.strengths.length > 0 && (
                                     <div>
-                                      <h5 className="text-xs font-medium text-emerald-700 mb-2 flex items-center gap-1">
+                                      <h5 className="text-xs font-medium text-status-success mb-2 flex items-center gap-1">
                                         <CheckCircle className="w-3.5 h-3.5" />
                                         Pontos Fortes
                                       </h5>
                                       <ul className="space-y-1">
                                         {opinion.strengths.map((s: string, i: number) => (
                                           <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
-                                            <span className="text-emerald-500 mt-0.5">•</span>{s}
+                                            <span className="text-status-success mt-0.5">•</span>{s}
                                           </li>
                                         ))}
                                       </ul>
@@ -2381,14 +2381,14 @@ export default function CandidateProfilePage() {
                                   
                                   {opinion.gaps && opinion.gaps.length > 0 && (
                                     <div>
-                                      <h5 className="text-xs font-medium text-red-600 mb-2 flex items-center gap-1">
+                                      <h5 className="text-xs font-medium text-status-error mb-2 flex items-center gap-1">
                                         <AlertCircle className="w-3.5 h-3.5" />
                                         Gaps Identificados
                                       </h5>
                                       <ul className="space-y-1">
                                         {opinion.gaps.map((g: string, i: number) => (
                                           <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
-                                            <span className="text-red-400 mt-0.5">•</span>{g}
+                                            <span className="text-status-error mt-0.5">•</span>{g}
                                           </li>
                                         ))}
                                       </ul>
@@ -2442,8 +2442,8 @@ export default function CandidateProfilePage() {
                       {/* Empty State */}
                       {!isLoadingAnalyses && (!savedAnalyses?.analyses || savedAnalyses.analyses.length === 0) && (
                         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md p-8 text-center">
-                          <div className="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center mx-auto mb-4">
-                            <Brain className="w-7 h-7 text-purple-400" />
+                          <div className="w-14 h-14 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-4">
+                            <Brain className="w-7 h-7 text-wedo-purple" />
                           </div>
                           <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Nenhuma análise salva</p>
                           <p className="text-xs text-gray-500">
@@ -2470,15 +2470,15 @@ export default function CandidateProfilePage() {
                                   className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                                 >
                                   <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
-                                      <Brain className="w-4 h-4 text-purple-600" />
+                                    <div className="w-9 h-9 rounded-full bg-wedo-purple/15 flex items-center justify-center">
+                                      <Brain className="w-4 h-4 text-wedo-purple" />
                                     </div>
                                     <div className="text-left">
                                       <div className="flex items-center gap-2">
                                         <span className="text-sm font-medium text-gray-800">
                                           {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
                                         </span>
-                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-purple-50 text-purple-700 border-purple-200">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                                           Análise LIA
                                         </Badge>
                                       </div>

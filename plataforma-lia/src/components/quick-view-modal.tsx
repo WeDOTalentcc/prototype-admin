@@ -66,18 +66,18 @@ export function QuickViewModal({
   if (!isOpen || !candidate) return null
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-600 bg-green-100"
+    if (score >= 90) return "text-status-success bg-status-success/15"
     if (score >= 80) return "text-gray-800 dark:text-gray-200 bg-gray-100"
-    if (score >= 70) return "text-yellow-600 bg-yellow-100"
-    return "text-red-600 bg-red-100"
+    if (score >= 70) return "text-status-warning bg-status-warning/15"
+    return "text-status-error bg-status-error/15"
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-700 border-green-200'
+      case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
       case 'prospect': return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
-      case 'interview': return 'bg-purple-100 text-purple-700 border-purple-200'
-      case 'hired': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
+      case 'interview': return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
+      case 'hired': return 'bg-status-success/15 text-status-success border-status-success/30'
       default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-100'
     }
   }
@@ -295,14 +295,14 @@ export function QuickViewModal({
                   {/* Analysis */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-xs font-medium text-green-700 mb-3 flex items-center gap-2">
+                      <h3 className="text-xs font-medium text-status-success mb-3 flex items-center gap-2">
                         <Award className="w-4 h-4" />
                         Pontos Fortes
                       </h3>
                       <ul className="space-y-2">
                         {candidate.liaAnalysis.strengths.map((strength, index) => (
                           <li key={index} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 bg-status-success rounded-full mt-2 flex-shrink-0" />
                             {strength}
                           </li>
                         ))}
@@ -310,14 +310,14 @@ export function QuickViewModal({
                     </div>
 
                     <div>
-                      <h3 className="text-xs font-medium text-yellow-700 mb-3 flex items-center gap-2">
+                      <h3 className="text-xs font-medium text-status-warning mb-3 flex items-center gap-2">
                         <Target className="w-4 h-4" />
                         Pontos de Atenção
                       </h3>
                       <ul className="space-y-2">
                         {candidate.liaAnalysis.concerns.map((concern, index) => (
                           <li key={index} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 bg-status-warning rounded-full mt-2 flex-shrink-0" />
                             {concern}
                           </li>
                         ))}

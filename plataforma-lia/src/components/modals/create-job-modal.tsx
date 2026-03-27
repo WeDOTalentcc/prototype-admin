@@ -229,7 +229,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   htmlFor="job-title"
                   className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                 >
-                  Título da Vaga <span className="text-red-500">*</span>
+                  Título da Vaga <span className="text-status-error">*</span>
                 </label>
                 <input
                   id="job-title"
@@ -239,13 +239,13 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   placeholder="Ex: Engenheiro de Software Senior"
                   className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-white dark:bg-gray-800 border rounded-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
                     errors.title
-                      ? "border-red-500 focus:ring-red-500/20 bg-red-50 dark:bg-red-900/10"
+                      ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
                       : "border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
                   }`}
                   aria-required="true"
                 />
                 {errors.title && (
-                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className="text-xs text-status-error dark:text-status-error flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
                     {errors.title}
                   </p>
@@ -319,7 +319,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   htmlFor="job-manager"
                   className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                 >
-                  Gestor Responsável <span className="text-red-500">*</span>
+                  Gestor Responsável <span className="text-status-error">*</span>
                 </label>
                 <input
                   id="job-manager"
@@ -329,13 +329,13 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   placeholder="Nome do gestor"
                   className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-white dark:bg-gray-800 border rounded-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
                     errors.manager
-                      ? "border-red-500 focus:ring-red-500/20 bg-red-50 dark:bg-red-900/10"
+                      ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
                       : "border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
                   }`}
                   aria-required="true"
                 />
                 {errors.manager && (
-                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className="text-xs text-status-error dark:text-status-error flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
                     {errors.manager}
                   </p>
@@ -347,7 +347,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   htmlFor="job-manager-email"
                   className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
                 >
-                  Email do Gestor <span className="text-red-500">*</span>
+                  Email do Gestor <span className="text-status-error">*</span>
                 </label>
                 <input
                   id="job-manager-email"
@@ -357,13 +357,13 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   placeholder="gestor@empresa.com"
                   className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-white dark:bg-gray-800 border rounded-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
                     errors.managerEmail
-                      ? "border-red-500 focus:ring-red-500/20 bg-red-50 dark:bg-red-900/10"
+                      ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
                       : "border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
                   }`}
                   aria-required="true"
                 />
                 {errors.managerEmail && (
-                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className="text-xs text-status-error dark:text-status-error flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
                     {errors.managerEmail}
                   </p>

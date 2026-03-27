@@ -360,7 +360,7 @@ export function UnifiedCandidateTable({
                       px-3 py-3 relative group select-none text-xs font-semibold text-gray-800 dark:text-gray-200
                       ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                       ${isDragging ? 'opacity-50' : ''}
-                      ${isDropTarget ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                      ${isDropTarget ? 'bg-wedo-cyan/10' : ''}
                       ${column.sortable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50' : ''}
                     `}
                     style={{ 

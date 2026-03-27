@@ -561,24 +561,24 @@ export function JobStatusModal({
       </div>
 
       {hasProposalBlock && (
-        <div className="p-3 rounded-md bg-red-50 border border-red-200">
+        <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-status-error mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-red-800">
+              <p className="text-xs font-semibold text-status-error">
                 {candidatesInProposal.length} candidato(s) em etapa de Proposta
               </p>
-              <p className="text-micro text-red-600 mt-0.5">
+              <p className="text-micro text-status-error mt-0.5">
                 Finalize ou mova esses candidatos antes de pausar a vaga.
               </p>
               <div className="mt-2 space-y-1">
                 {candidatesInProposal.slice(0, 3).map(c => (
-                  <Badge key={c.id} variant="outline" className="text-micro bg-white border-red-200 text-red-700">
+                  <Badge key={c.id} variant="outline" className="text-micro bg-white border-status-error/30 text-status-error">
                     {c.name}
                   </Badge>
                 ))}
                 {candidatesInProposal.length > 3 && (
-                  <span className="text-micro text-red-600">+{candidatesInProposal.length - 3} mais</span>
+                  <span className="text-micro text-status-error">+{candidatesInProposal.length - 3} mais</span>
                 )}
               </div>
             </div>
@@ -773,7 +773,7 @@ export function JobStatusModal({
     <div className="space-y-4">
       <div className="p-2.5 rounded-md border bg-gray-50 border-gray-200">
         <div className="flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+          <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0" />
           <span className="text-xs text-gray-800 leading-relaxed">
             Você está prestes a ativar {jobs.length} vaga{jobs.length > 1 ? 's' : ''} pausada{jobs.length > 1 ? 's' : ''}
           </span>
@@ -971,9 +971,9 @@ export function JobStatusModal({
 
   const renderConfirmationStep = () => (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-2.5 rounded-md bg-green-50 border border-green-200">
-        <CheckCircle className="w-4 h-4 text-green-600" />
-        <span className="text-xs text-green-800 font-medium">
+      <div className="flex items-center gap-2 p-2.5 rounded-md bg-status-success/10 border border-status-success/30">
+        <CheckCircle className="w-4 h-4 text-status-success" />
+        <span className="text-xs text-status-success font-medium">
           Confirme as ações abaixo
         </span>
       </div>
@@ -983,34 +983,34 @@ export function JobStatusModal({
         
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-xs">
-            <Check className="w-3.5 h-3.5 text-green-600" />
+            <Check className="w-3.5 h-3.5 text-status-success" />
             <span className="text-gray-800">Pausar {jobs.length} vaga(s)</span>
           </div>
           
           {cancelScreenings && totalScreenings > 0 && (
             <div className="flex items-center gap-2 text-xs">
-              <Check className="w-3.5 h-3.5 text-green-600" />
+              <Check className="w-3.5 h-3.5 text-status-success" />
               <span className="text-gray-800">Desmarcar {totalScreenings} triagem(ns)</span>
             </div>
           )}
           
           {cancelInterviews && totalInterviews > 0 && (
             <div className="flex items-center gap-2 text-xs">
-              <Check className="w-3.5 h-3.5 text-green-600" />
+              <Check className="w-3.5 h-3.5 text-status-success" />
               <span className="text-gray-800">Desmarcar {totalInterviews} entrevista(s)</span>
             </div>
           )}
           
           {cancelTests && totalTests > 0 && (
             <div className="flex items-center gap-2 text-xs">
-              <Check className="w-3.5 h-3.5 text-green-600" />
+              <Check className="w-3.5 h-3.5 text-status-success" />
               <span className="text-gray-800">Cancelar {totalTests} teste(s)</span>
             </div>
           )}
           
           {notifyApplicants && (
             <div className="flex items-center gap-2 text-xs">
-              <Check className="w-3.5 h-3.5 text-green-600" />
+              <Check className="w-3.5 h-3.5 text-status-success" />
               <span className="text-gray-800">
                 Notificar {selectedCandidateIds.size} candidato(s) via {notificationChannel === 'both' ? 'Email e WhatsApp' : notificationChannel}
               </span>
@@ -1019,7 +1019,7 @@ export function JobStatusModal({
           
           {notifyRecruiters && (
             <div className="flex items-center gap-2 text-xs">
-              <Check className="w-3.5 h-3.5 text-green-600" />
+              <Check className="w-3.5 h-3.5 text-status-success" />
               <span className="text-gray-800">
                 Enviar resumo para recrutadores via {recruiterChannel === 'teams' ? 'Teams' : recruiterChannel === 'bell' ? 'Notificação interna' : 'Email'}
               </span>
@@ -1041,8 +1041,8 @@ export function JobStatusModal({
 
   const renderCompleteStep = () => (
     <div className="py-8 text-center space-y-4">
-      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-        <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="w-16 h-16 rounded-full bg-status-success/15 flex items-center justify-center mx-auto">
+        <CheckCircle className="w-8 h-8 text-status-success" />
       </div>
       <div>
         <h3 className="text-sm font-semibold text-gray-950">Processo Concluído!</h3>
