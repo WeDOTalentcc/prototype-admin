@@ -33,3 +33,20 @@ export {
   type SalaryParseResult,
   type FieldUpdateResult,
 } from './field-updater'
+
+export {
+  SKILLS_CATALOG,
+  ROLE_AREA_MAPPING,
+  CORE_SKILLS_BY_ROLE,
+  detectAreaFromRole,
+  getSkillSuggestions,
+  detectSeniorityLevel,
+  isLeadershipRole,
+  isCommercialRole,
+  isTechnicalRole,
+  getCoreSkillsForRole,
+  inferTechnicalSkillWeight,
+  inferBehavioralSkillWeight,
+  inferSkillWeight,
+  type SkillWeightInference,
+} from './skill-weight-utils'

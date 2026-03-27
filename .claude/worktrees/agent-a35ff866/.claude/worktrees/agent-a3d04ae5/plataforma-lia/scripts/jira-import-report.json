@@ -1,0 +1,279 @@
+{
+  "timestamp": "2026-01-26T09:39:11.546Z",
+  "project": "WT",
+  "total": 54,
+  "created": 54,
+  "failed": 0,
+  "results": [
+    {
+      "card": "SET-001",
+      "status": "created",
+      "issueKey": "WT-551"
+    },
+    {
+      "card": "EMP-001",
+      "status": "created",
+      "issueKey": "WT-552"
+    },
+    {
+      "card": "EMP-002",
+      "status": "created",
+      "issueKey": "WT-553"
+    },
+    {
+      "card": "EMP-003",
+      "status": "created",
+      "issueKey": "WT-554"
+    },
+    {
+      "card": "EMP-004",
+      "status": "created",
+      "issueKey": "WT-555"
+    },
+    {
+      "card": "EMP-005",
+      "status": "created",
+      "issueKey": "WT-556"
+    },
+    {
+      "card": "EMP-006",
+      "status": "created",
+      "issueKey": "WT-557"
+    },
+    {
+      "card": "EMP-008",
+      "status": "created",
+      "issueKey": "WT-558"
+    },
+    {
+      "card": "EMP-009",
+      "status": "created",
+      "issueKey": "WT-559"
+    },
+    {
+      "card": "EMP-010",
+      "status": "created",
+      "issueKey": "WT-560"
+    },
+    {
+      "card": "EMP-011",
+      "status": "created",
+      "issueKey": "WT-561"
+    },
+    {
+      "card": "EMP-012",
+      "status": "created",
+      "issueKey": "WT-562"
+    },
+    {
+      "card": "EMP-013",
+      "status": "created",
+      "issueKey": "WT-563"
+    },
+    {
+      "card": "EMP-014",
+      "status": "created",
+      "issueKey": "WT-564"
+    },
+    {
+      "card": "EMP-015",
+      "status": "created",
+      "issueKey": "WT-565"
+    },
+    {
+      "card": "EMP-016",
+      "status": "created",
+      "issueKey": "WT-566"
+    },
+    {
+      "card": "EMP-017",
+      "status": "created",
+      "issueKey": "WT-567"
+    },
+    {
+      "card": "REC-001",
+      "status": "created",
+      "issueKey": "WT-568"
+    },
+    {
+      "card": "REC-002",
+      "status": "created",
+      "issueKey": "WT-569"
+    },
+    {
+      "card": "REC-003",
+      "status": "created",
+      "issueKey": "WT-570"
+    },
+    {
+      "card": "REC-004",
+      "status": "created",
+      "issueKey": "WT-571"
+    },
+    {
+      "card": "REC-005",
+      "status": "created",
+      "issueKey": "WT-572"
+    },
+    {
+      "card": "REC-006",
+      "status": "created",
+      "issueKey": "WT-573"
+    },
+    {
+      "card": "REC-007",
+      "status": "created",
+      "issueKey": "WT-574"
+    },
+    {
+      "card": "REC-008",
+      "status": "created",
+      "issueKey": "WT-575"
+    },
+    {
+      "card": "REC-009",
+      "status": "created",
+      "issueKey": "WT-576"
+    },
+    {
+      "card": "REC-010",
+      "status": "created",
+      "issueKey": "WT-577"
+    },
+    {
+      "card": "REC-011",
+      "status": "created",
+      "issueKey": "WT-578"
+    },
+    {
+      "card": "REC-012",
+      "status": "created",
+      "issueKey": "WT-579"
+    },
+    {
+      "card": "COM-001",
+      "status": "created",
+      "issueKey": "WT-580"
+    },
+    {
+      "card": "COM-002",
+      "status": "created",
+      "issueKey": "WT-581"
+    },
+    {
+      "card": "COM-003",
+      "status": "created",
+      "issueKey": "WT-582"
+    },
+    {
+      "card": "COM-004",
+      "status": "created",
+      "issueKey": "WT-583"
+    },
+    {
+      "card": "COM-005",
+      "status": "created",
+      "issueKey": "WT-584"
+    },
+    {
+      "card": "COM-006",
+      "status": "created",
+      "issueKey": "WT-585"
+    },
+    {
+      "card": "COM-007",
+      "status": "created",
+      "issueKey": "WT-586"
+    },
+    {
+      "card": "COM-008",
+      "status": "created",
+      "issueKey": "WT-587"
+    },
+    {
+      "card": "COM-009",
+      "status": "created",
+      "issueKey": "WT-588"
+    },
+    {
+      "card": "COM-010",
+      "status": "created",
+      "issueKey": "WT-589"
+    },
+    {
+      "card": "MET-003",
+      "status": "created",
+      "issueKey": "WT-590"
+    },
+    {
+      "card": "MET-006",
+      "status": "created",
+      "issueKey": "WT-591"
+    },
+    {
+      "card": "MET-007",
+      "status": "created",
+      "issueKey": "WT-592"
+    },
+    {
+      "card": "BGL-001",
+      "status": "created",
+      "issueKey": "WT-593"
+    },
+    {
+      "card": "BGL-002",
+      "status": "created",
+      "issueKey": "WT-594"
+    },
+    {
+      "card": "BGL-003",
+      "status": "created",
+      "issueKey": "WT-595"
+    },
+    {
+      "card": "BGL-004",
+      "status": "created",
+      "issueKey": "WT-596"
+    },
+    {
+      "card": "BGL-005",
+      "status": "created",
+      "issueKey": "WT-597"
+    },
+    {
+      "card": "INT-001",
+      "status": "created",
+      "issueKey": "WT-598"
+    },
+    {
+      "card": "INT-002",
+      "status": "created",
+      "issueKey": "WT-599"
+    },
+    {
+      "card": "INT-003",
+      "status": "created",
+      "issueKey": "WT-600"
+    },
+    {
+      "card": "INT-004",
+      "status": "created",
+      "issueKey": "WT-601"
+    },
+    {
+      "card": "INT-005",
+      "status": "created",
+      "issueKey": "WT-602"
+    },
+    {
+      "card": "INT-006",
+      "status": "created",
+      "issueKey": "WT-603"
+    },
+    {
+      "card": "VOZ-001",
+      "status": "created",
+      "issueKey": "WT-604"
+    }
+  ]
+}

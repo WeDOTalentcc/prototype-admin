@@ -1,0 +1,729 @@
+{
+  "timestamp": "2026-01-26T11:48:47.816Z",
+  "total": 144,
+  "updated": 100,
+  "created": 44,
+  "failed": 0,
+  "results": [
+    {
+      "card": "AUTH-001",
+      "issueKey": "WT-893",
+      "action": "updated"
+    },
+    {
+      "card": "AUTH-002",
+      "issueKey": "WT-894",
+      "action": "updated"
+    },
+    {
+      "card": "AUTH-003",
+      "issueKey": "WT-895",
+      "action": "updated"
+    },
+    {
+      "card": "AUTH-004",
+      "issueKey": "WT-896",
+      "action": "updated"
+    },
+    {
+      "card": "WIZ-001",
+      "issueKey": "WT-897",
+      "action": "updated"
+    },
+    {
+      "card": "WIZ-002",
+      "issueKey": "WT-898",
+      "action": "updated"
+    },
+    {
+      "card": "WIZ-003",
+      "issueKey": "WT-899",
+      "action": "updated"
+    },
+    {
+      "card": "WIZ-004",
+      "issueKey": "WT-900",
+      "action": "updated"
+    },
+    {
+      "card": "WIZ-005",
+      "issueKey": "WT-901",
+      "action": "updated"
+    },
+    {
+      "card": "WIZ-006",
+      "issueKey": "WT-902",
+      "action": "updated"
+    },
+    {
+      "card": "WIZ-007",
+      "issueKey": "WT-903",
+      "action": "updated"
+    },
+    {
+      "card": "WIZ-008",
+      "issueKey": "WT-904",
+      "action": "updated"
+    },
+    {
+      "card": "MAP-001",
+      "issueKey": "WT-905",
+      "action": "updated"
+    },
+    {
+      "card": "MAP-002",
+      "issueKey": "WT-906",
+      "action": "updated"
+    },
+    {
+      "card": "MAP-003",
+      "issueKey": "WT-907",
+      "action": "updated"
+    },
+    {
+      "card": "MAP-004",
+      "issueKey": "WT-908",
+      "action": "updated"
+    },
+    {
+      "card": "MAP-005",
+      "issueKey": "WT-909",
+      "action": "updated"
+    },
+    {
+      "card": "MAP-006",
+      "issueKey": "WT-910",
+      "action": "updated"
+    },
+    {
+      "card": "WSI-001",
+      "issueKey": "WT-911",
+      "action": "updated"
+    },
+    {
+      "card": "WSI-002",
+      "issueKey": "WT-912",
+      "action": "updated"
+    },
+    {
+      "card": "WSI-003",
+      "issueKey": "WT-913",
+      "action": "updated"
+    },
+    {
+      "card": "WSI-004",
+      "issueKey": "WT-914",
+      "action": "updated"
+    },
+    {
+      "card": "WSI-005",
+      "issueKey": "WT-915",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-001",
+      "issueKey": "WT-916",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-002",
+      "issueKey": "WT-917",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-003",
+      "issueKey": "WT-918",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-004",
+      "issueKey": "WT-919",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-005",
+      "issueKey": "WT-920",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-006",
+      "issueKey": "WT-921",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-007",
+      "issueKey": "WT-922",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-008",
+      "issueKey": "WT-923",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-009",
+      "issueKey": "WT-924",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-010",
+      "issueKey": "WT-925",
+      "action": "updated"
+    },
+    {
+      "card": "TRI-011",
+      "issueKey": "WT-926",
+      "action": "updated"
+    },
+    {
+      "card": "SCO-001",
+      "issueKey": "WT-927",
+      "action": "updated"
+    },
+    {
+      "card": "SCO-002",
+      "issueKey": "WT-928",
+      "action": "updated"
+    },
+    {
+      "card": "SCO-003",
+      "issueKey": "WT-929",
+      "action": "updated"
+    },
+    {
+      "card": "SCO-004",
+      "issueKey": "WT-930",
+      "action": "updated"
+    },
+    {
+      "card": "SCO-005",
+      "issueKey": "WT-931",
+      "action": "updated"
+    },
+    {
+      "card": "SCO-006",
+      "issueKey": "WT-932",
+      "action": "updated"
+    },
+    {
+      "card": "SCO-007",
+      "issueKey": "WT-933",
+      "action": "updated"
+    },
+    {
+      "card": "SCO-008",
+      "issueKey": "WT-934",
+      "action": "updated"
+    },
+    {
+      "card": "GAT-001",
+      "issueKey": "WT-935",
+      "action": "updated"
+    },
+    {
+      "card": "GAT-002",
+      "issueKey": "WT-936",
+      "action": "updated"
+    },
+    {
+      "card": "GAT-003",
+      "issueKey": "WT-937",
+      "action": "updated"
+    },
+    {
+      "card": "GAT-004",
+      "issueKey": "WT-938",
+      "action": "updated"
+    },
+    {
+      "card": "GAT-005",
+      "issueKey": "WT-939",
+      "action": "updated"
+    },
+    {
+      "card": "GAT-006",
+      "issueKey": "WT-940",
+      "action": "updated"
+    },
+    {
+      "card": "GAT-007",
+      "issueKey": "WT-941",
+      "action": "updated"
+    },
+    {
+      "card": "TPL-001",
+      "issueKey": "WT-942",
+      "action": "updated"
+    },
+    {
+      "card": "TPL-002",
+      "issueKey": "WT-943",
+      "action": "updated"
+    },
+    {
+      "card": "TPL-003",
+      "issueKey": "WT-944",
+      "action": "updated"
+    },
+    {
+      "card": "TPL-004",
+      "issueKey": "WT-945",
+      "action": "updated"
+    },
+    {
+      "card": "TPL-005",
+      "issueKey": "WT-946",
+      "action": "updated"
+    },
+    {
+      "card": "TPL-006",
+      "issueKey": "WT-947",
+      "action": "updated"
+    },
+    {
+      "card": "TPL-007",
+      "issueKey": "WT-948",
+      "action": "updated"
+    },
+    {
+      "card": "AGE-001",
+      "issueKey": "WT-949",
+      "action": "updated"
+    },
+    {
+      "card": "AGE-002",
+      "issueKey": "WT-950",
+      "action": "updated"
+    },
+    {
+      "card": "AGE-003",
+      "issueKey": "WT-951",
+      "action": "updated"
+    },
+    {
+      "card": "AGE-004",
+      "issueKey": "WT-952",
+      "action": "updated"
+    },
+    {
+      "card": "AGE-005",
+      "issueKey": "WT-953",
+      "action": "updated"
+    },
+    {
+      "card": "AGE-006",
+      "issueKey": "WT-954",
+      "action": "updated"
+    },
+    {
+      "card": "AGE-007",
+      "issueKey": "WT-955",
+      "action": "updated"
+    },
+    {
+      "card": "AGE-008",
+      "issueKey": "WT-956",
+      "action": "updated"
+    },
+    {
+      "card": "NOT-001",
+      "issueKey": "WT-957",
+      "action": "updated"
+    },
+    {
+      "card": "NOT-002",
+      "issueKey": "WT-958",
+      "action": "updated"
+    },
+    {
+      "card": "NOT-003",
+      "issueKey": "WT-959",
+      "action": "updated"
+    },
+    {
+      "card": "NOT-004",
+      "issueKey": "WT-960",
+      "action": "updated"
+    },
+    {
+      "card": "NOT-005",
+      "issueKey": "WT-961",
+      "action": "updated"
+    },
+    {
+      "card": "NOT-006",
+      "issueKey": "WT-962",
+      "action": "updated"
+    },
+    {
+      "card": "KAN-001",
+      "issueKey": "WT-963",
+      "action": "updated"
+    },
+    {
+      "card": "KAN-002",
+      "issueKey": "WT-964",
+      "action": "updated"
+    },
+    {
+      "card": "KAN-003",
+      "issueKey": "WT-965",
+      "action": "updated"
+    },
+    {
+      "card": "KAN-004",
+      "issueKey": "WT-966",
+      "action": "updated"
+    },
+    {
+      "card": "KAN-005",
+      "issueKey": "WT-967",
+      "action": "updated"
+    },
+    {
+      "card": "KAN-006",
+      "issueKey": "WT-968",
+      "action": "updated"
+    },
+    {
+      "card": "KAN-007",
+      "issueKey": "WT-969",
+      "action": "updated"
+    },
+    {
+      "card": "KAN-008",
+      "issueKey": "WT-970",
+      "action": "updated"
+    },
+    {
+      "card": "TAB-001",
+      "issueKey": "WT-971",
+      "action": "updated"
+    },
+    {
+      "card": "TAB-002",
+      "issueKey": "WT-972",
+      "action": "updated"
+    },
+    {
+      "card": "TAB-003",
+      "issueKey": "WT-973",
+      "action": "updated"
+    },
+    {
+      "card": "TAB-004",
+      "issueKey": "WT-974",
+      "action": "updated"
+    },
+    {
+      "card": "TAB-005",
+      "issueKey": "WT-975",
+      "action": "updated"
+    },
+    {
+      "card": "PRV-001",
+      "issueKey": "WT-976",
+      "action": "updated"
+    },
+    {
+      "card": "PRV-002",
+      "issueKey": "WT-977",
+      "action": "updated"
+    },
+    {
+      "card": "PRV-003",
+      "issueKey": "WT-978",
+      "action": "updated"
+    },
+    {
+      "card": "PRV-004",
+      "issueKey": "WT-979",
+      "action": "updated"
+    },
+    {
+      "card": "PRV-005",
+      "issueKey": "WT-980",
+      "action": "updated"
+    },
+    {
+      "card": "VAG-001",
+      "issueKey": "WT-981",
+      "action": "updated"
+    },
+    {
+      "card": "VAG-002",
+      "issueKey": "WT-982",
+      "action": "updated"
+    },
+    {
+      "card": "VAG-003",
+      "issueKey": "WT-983",
+      "action": "updated"
+    },
+    {
+      "card": "VAG-004",
+      "issueKey": "WT-984",
+      "action": "updated"
+    },
+    {
+      "card": "VAG-005",
+      "issueKey": "WT-985",
+      "action": "updated"
+    },
+    {
+      "card": "VAG-006",
+      "issueKey": "WT-986",
+      "action": "updated"
+    },
+    {
+      "card": "VAG-007",
+      "issueKey": "WT-987",
+      "action": "updated"
+    },
+    {
+      "card": "VAG-008",
+      "issueKey": "WT-988",
+      "action": "updated"
+    },
+    {
+      "card": "INT-TWI-001",
+      "issueKey": "WT-989",
+      "action": "updated"
+    },
+    {
+      "card": "INT-TWI-002",
+      "issueKey": "WT-990",
+      "action": "updated"
+    },
+    {
+      "card": "INT-TWI-003",
+      "issueKey": "WT-991",
+      "action": "updated"
+    },
+    {
+      "card": "INT-TWI-004",
+      "issueKey": "WT-992",
+      "action": "updated"
+    },
+    {
+      "card": "INT-TWI-005",
+      "issueKey": "WT-1095",
+      "action": "created"
+    },
+    {
+      "card": "INT-TWI-006",
+      "issueKey": "WT-1096",
+      "action": "created"
+    },
+    {
+      "card": "INT-TWI-007",
+      "issueKey": "WT-1097",
+      "action": "created"
+    },
+    {
+      "card": "INT-MSG-001",
+      "issueKey": "WT-1098",
+      "action": "created"
+    },
+    {
+      "card": "INT-MSG-002",
+      "issueKey": "WT-1099",
+      "action": "created"
+    },
+    {
+      "card": "INT-MSG-003",
+      "issueKey": "WT-1100",
+      "action": "created"
+    },
+    {
+      "card": "INT-MSG-004",
+      "issueKey": "WT-1101",
+      "action": "created"
+    },
+    {
+      "card": "INT-MSG-005",
+      "issueKey": "WT-1102",
+      "action": "created"
+    },
+    {
+      "card": "INT-MSG-006",
+      "issueKey": "WT-1103",
+      "action": "created"
+    },
+    {
+      "card": "INT-MSG-007",
+      "issueKey": "WT-1104",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-001",
+      "issueKey": "WT-1105",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-002",
+      "issueKey": "WT-1106",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-003",
+      "issueKey": "WT-1107",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-004",
+      "issueKey": "WT-1108",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-005",
+      "issueKey": "WT-1109",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-006",
+      "issueKey": "WT-1110",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-007",
+      "issueKey": "WT-1111",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-008",
+      "issueKey": "WT-1112",
+      "action": "created"
+    },
+    {
+      "card": "INT-LLM-009",
+      "issueKey": "WT-1113",
+      "action": "created"
+    },
+    {
+      "card": "INT-WOS-001",
+      "issueKey": "WT-1114",
+      "action": "created"
+    },
+    {
+      "card": "INT-WOS-002",
+      "issueKey": "WT-1115",
+      "action": "created"
+    },
+    {
+      "card": "INT-WOS-003",
+      "issueKey": "WT-1116",
+      "action": "created"
+    },
+    {
+      "card": "INT-WOS-004",
+      "issueKey": "WT-1117",
+      "action": "created"
+    },
+    {
+      "card": "INT-WOS-005",
+      "issueKey": "WT-1118",
+      "action": "created"
+    },
+    {
+      "card": "INT-WOS-006",
+      "issueKey": "WT-1119",
+      "action": "created"
+    },
+    {
+      "card": "INT-WOS-007",
+      "issueKey": "WT-1120",
+      "action": "created"
+    },
+    {
+      "card": "JD-001",
+      "issueKey": "WT-1121",
+      "action": "created"
+    },
+    {
+      "card": "JD-002",
+      "issueKey": "WT-1122",
+      "action": "created"
+    },
+    {
+      "card": "WIZ-009",
+      "issueKey": "WT-1123",
+      "action": "created"
+    },
+    {
+      "card": "WIZ-010",
+      "issueKey": "WT-1124",
+      "action": "created"
+    },
+    {
+      "card": "WIZ-011",
+      "issueKey": "WT-1125",
+      "action": "created"
+    },
+    {
+      "card": "CFG-001",
+      "issueKey": "WT-1126",
+      "action": "created"
+    },
+    {
+      "card": "CFG-002",
+      "issueKey": "WT-1127",
+      "action": "created"
+    },
+    {
+      "card": "CFG-003",
+      "issueKey": "WT-1128",
+      "action": "created"
+    },
+    {
+      "card": "CFG-004",
+      "issueKey": "WT-1129",
+      "action": "created"
+    },
+    {
+      "card": "CFG-005",
+      "issueKey": "WT-1130",
+      "action": "created"
+    },
+    {
+      "card": "IMP-001",
+      "issueKey": "WT-1131",
+      "action": "created"
+    },
+    {
+      "card": "AGT-001",
+      "issueKey": "WT-1132",
+      "action": "created"
+    },
+    {
+      "card": "AGT-002",
+      "issueKey": "WT-1133",
+      "action": "created"
+    },
+    {
+      "card": "AGT-003",
+      "issueKey": "WT-1134",
+      "action": "created"
+    },
+    {
+      "card": "TRI-012",
+      "issueKey": "WT-1135",
+      "action": "created"
+    },
+    {
+      "card": "DAT-001",
+      "issueKey": "WT-1136",
+      "action": "created"
+    },
+    {
+      "card": "ENT-001",
+      "issueKey": "WT-1137",
+      "action": "created"
+    },
+    {
+      "card": "KAN-009",
+      "issueKey": "WT-1138",
+      "action": "created"
+    }
+  ]
+}

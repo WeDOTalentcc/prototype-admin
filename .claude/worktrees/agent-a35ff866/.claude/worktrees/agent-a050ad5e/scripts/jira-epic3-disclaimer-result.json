@@ -1,0 +1,71 @@
+{
+  "updated": [
+    {
+      "cardId": "MAP-001",
+      "jiraKey": "WT-905",
+      "summary": "MAP-001: FRONTEND] Lista de Candidatos da Base"
+    },
+    {
+      "cardId": "MAP-002",
+      "jiraKey": "WT-906",
+      "summary": "MAP-002: BACKEND] Busca Semântica com Elasticsearch + PG Vector + WRF"
+    },
+    {
+      "cardId": "MAP-003",
+      "jiraKey": "WT-907",
+      "summary": "MAP-003: FULL-STACK] Filtros Avancados de Candidatos"
+    },
+    {
+      "cardId": "MAP-004",
+      "jiraKey": "WT-908",
+      "summary": "MAP-004: FULL-STACK] Adicionar Candidato a Vaga"
+    },
+    {
+      "cardId": "MAP-005",
+      "jiraKey": "WT-909",
+      "summary": "MAP-005: AI] Matching Score entre Candidato e Vaga"
+    },
+    {
+      "cardId": "MAP-006",
+      "jiraKey": "WT-910",
+      "summary": "MAP-006: AI] Sugestoes Proativas de Candidatos"
+    },
+    {
+      "cardId": "MAP-007",
+      "jiraKey": "WT-1280",
+      "summary": "MAP-007: [BE] Endpoint de busca paginada com limit 10"
+    },
+    {
+      "cardId": "MAP-008",
+      "jiraKey": "WT-1281",
+      "summary": "MAP-008: [FE] Componente de paginação on-demand"
+    },
+    {
+      "cardId": "MAP-009",
+      "jiraKey": "WT-1282",
+      "summary": "MAP-009: [BE] Adaptar Elasticsearch query para exclusão de IDs"
+    },
+    {
+      "cardId": "MAP-010",
+      "jiraKey": "WT-1283",
+      "summary": "MAP-010: [BE] Adaptar PG Vector query para exclusão de IDs"
+    },
+    {
+      "cardId": "MAP-011",
+      "jiraKey": "WT-1284",
+      "summary": "MAP-011: [BE] API de feedback Like/Dislike para candidatos"
+    },
+    {
+      "cardId": "MAP-012",
+      "jiraKey": "WT-1285",
+      "summary": "MAP-012: [FE] Componente Like/Dislike no card de candidato"
+    },
+    {
+      "cardId": "MAP-013",
+      "jiraKey": "WT-1286",
+      "summary": "MAP-013: [FE] Remover ordenação automática por ranking"
+    }
+  ],
+  "already_has_disclaimer": [],
+  "errors": []
+}

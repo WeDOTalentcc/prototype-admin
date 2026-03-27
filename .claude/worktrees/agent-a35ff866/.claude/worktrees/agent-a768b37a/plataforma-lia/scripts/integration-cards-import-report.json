@@ -1,0 +1,188 @@
+{
+  "timestamp": "2026-01-26T10:31:02.242Z",
+  "total": 30,
+  "created": 30,
+  "failed": 0,
+  "results": [
+    {
+      "card": "INT-TWI-001",
+      "status": "created",
+      "issueKey": "WT-719",
+      "title": "[INTEGRAÇÃO] Configurar Twilio Account"
+    },
+    {
+      "card": "INT-TWI-002",
+      "status": "created",
+      "issueKey": "WT-720",
+      "title": "[BACKEND] Sandbox WhatsApp para Desenvolvimento"
+    },
+    {
+      "card": "INT-TWI-003",
+      "status": "created",
+      "issueKey": "WT-721",
+      "title": "[INTEGRAÇÃO] Número WhatsApp Business de Produção"
+    },
+    {
+      "card": "INT-TWI-004",
+      "status": "created",
+      "issueKey": "WT-722",
+      "title": "[BACKEND] Webhook de Recebimento de Mensagens WhatsApp"
+    },
+    {
+      "card": "INT-TWI-005",
+      "status": "created",
+      "issueKey": "WT-723",
+      "title": "[INTEGRAÇÃO] Templates de Mensagem Aprovados pelo Meta"
+    },
+    {
+      "card": "INT-TWI-006",
+      "status": "created",
+      "issueKey": "WT-724",
+      "title": "[BACKEND] Status Delivery Reports WhatsApp"
+    },
+    {
+      "card": "INT-TWI-007",
+      "status": "created",
+      "issueKey": "WT-725",
+      "title": "[BACKEND] Rate Limiting e Filas Redis para WhatsApp"
+    },
+    {
+      "card": "INT-MSG-001",
+      "status": "created",
+      "issueKey": "WT-726",
+      "title": "[INTEGRAÇÃO] Configurar Azure App Registration"
+    },
+    {
+      "card": "INT-MSG-002",
+      "status": "created",
+      "issueKey": "WT-727",
+      "title": "[BACKEND] OAuth Flow Microsoft (Authorization Code)"
+    },
+    {
+      "card": "INT-MSG-003",
+      "status": "created",
+      "issueKey": "WT-728",
+      "title": "[BACKEND] Microsoft Calendar API (Read/Write)"
+    },
+    {
+      "card": "INT-MSG-004",
+      "status": "created",
+      "issueKey": "WT-729",
+      "title": "[BACKEND] Teams Meeting API (Criar Reunião Online)"
+    },
+    {
+      "card": "INT-MSG-005",
+      "status": "created",
+      "issueKey": "WT-730",
+      "title": "[BACKEND] Webhook de Eventos Microsoft Graph"
+    },
+    {
+      "card": "INT-MSG-006",
+      "status": "created",
+      "issueKey": "WT-731",
+      "title": "[BACKEND] Token Refresh Automático Microsoft"
+    },
+    {
+      "card": "INT-MSG-007",
+      "status": "created",
+      "issueKey": "WT-732",
+      "title": "[BACKEND] Multi-tenant Calendar Support"
+    },
+    {
+      "card": "INT-LLM-001",
+      "status": "created",
+      "issueKey": "WT-733",
+      "title": "[BACKEND] Cliente Anthropic Claude"
+    },
+    {
+      "card": "INT-LLM-002",
+      "status": "created",
+      "issueKey": "WT-734",
+      "title": "[BACKEND] Cliente Google Gemini"
+    },
+    {
+      "card": "INT-LLM-003",
+      "status": "created",
+      "issueKey": "WT-735",
+      "title": "[BACKEND] Router de Modelos LLM"
+    },
+    {
+      "card": "INT-LLM-004",
+      "status": "created",
+      "issueKey": "WT-736",
+      "title": "[BACKEND] Fallback Automático entre Modelos LLM"
+    },
+    {
+      "card": "INT-LLM-005",
+      "status": "created",
+      "issueKey": "WT-737",
+      "title": "[BACKEND] Gestão de Prompts (Templates)"
+    },
+    {
+      "card": "INT-LLM-006",
+      "status": "created",
+      "issueKey": "WT-738",
+      "title": "[BACKEND] Cache de Respostas LLM (Redis)"
+    },
+    {
+      "card": "INT-LLM-007",
+      "status": "created",
+      "issueKey": "WT-739",
+      "title": "[BACKEND] Monitoramento de Custos LLM"
+    },
+    {
+      "card": "INT-LLM-008",
+      "status": "created",
+      "issueKey": "WT-740",
+      "title": "[BACKEND] Rate Limiting para LLM"
+    },
+    {
+      "card": "INT-LLM-009",
+      "status": "created",
+      "issueKey": "WT-741",
+      "title": "[BACKEND] Logging de Conversas LLM (Audit)"
+    },
+    {
+      "card": "INT-WOS-001",
+      "status": "created",
+      "issueKey": "WT-742",
+      "title": "[INTEGRAÇÃO] Configurar WorkOS Account"
+    },
+    {
+      "card": "INT-WOS-002",
+      "status": "created",
+      "issueKey": "WT-743",
+      "title": "[BACKEND] SSO SAML/OIDC com WorkOS"
+    },
+    {
+      "card": "INT-WOS-003",
+      "status": "created",
+      "issueKey": "WT-744",
+      "title": "[BACKEND] Directory Sync SCIM com WorkOS"
+    },
+    {
+      "card": "INT-WOS-004",
+      "status": "created",
+      "issueKey": "WT-745",
+      "title": "[BACKEND] MFA Enforcement com WorkOS"
+    },
+    {
+      "card": "INT-WOS-005",
+      "status": "created",
+      "issueKey": "WT-746",
+      "title": "[BACKEND] User Management com WorkOS SDK"
+    },
+    {
+      "card": "INT-WOS-006",
+      "status": "created",
+      "issueKey": "WT-747",
+      "title": "[BACKEND] Webhook de Eventos WorkOS"
+    },
+    {
+      "card": "INT-WOS-007",
+      "status": "created",
+      "issueKey": "WT-748",
+      "title": "[FRONTEND] Admin Portal WorkOS"
+    }
+  ]
+}

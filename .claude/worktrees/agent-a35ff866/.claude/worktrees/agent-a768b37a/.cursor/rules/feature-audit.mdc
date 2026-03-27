@@ -1,0 +1,70 @@
+---
+description: Auditoria obrigatória de 14 dimensões — use ANTES de marcar qualquer tarefa como concluída, após implementar features, ajustes ou correções. Garante que nada fique desconectado, parcialmente implementado ou em violação ao Design System / arquitetura de IA.
+alwaysApply: false
+---
+
+# Feature Audit — Checklist de 14 Dimensões
+
+> Referência completa (933 linhas): `.agents/skills/feature-audit/SKILL.md`
+
+> "Existir não é o mesmo que estar conectado. Compilar não é o mesmo que funcionar."
+
+## Mapa das 14 Dimensões
+
+| # | Dimensão | Sempre? |
+|---|----------|---------|
+| 1 | Integração (Wiring) | ✅ Sempre |
+| 2 | Fluxo de Dados | ✅ Sempre |
+| 3 | UI/UX + Design System v4.2.1 | Features com UI |
+| 4 | Backend e API | Features com API |
+| 5 | Tipos e Contratos | ✅ Sempre |
+| 6 | Fluxo do Usuário | ✅ Sempre |
+| 7 | Consistência | ✅ Sempre |
+| 8 | Documentação | ✅ Sempre |
+| 9 | Arquitetura de Agentes | Novos agentes/domínios |
+| 10 | Qualidade LLM | Prompts, intents |
+| 11 | Serviços e Integrações IA | WSI, scoring, APIs |
+| 12 | Governança e Resiliência IA | Compliance, flags |
+| 13 | Segurança e Proteção de Dados | ✅ Sempre |
+| 14 | Performance e Escalabilidade | Features com dados/listas |
+
+## Checklist Rápido (perguntas-chave por dimensão)
+
+**D1 — Wiring:** Hook está sendo importado e usado em componente? Endpoint → proxy → hook → componente conectados? Modal tem trigger acessível?
+
+**D2 — Dados:** Dado vem de API real (não useState hardcoded)? Atualiza após ação do usuário? Loading/error/empty states existem?
+
+**D3 — UI/DS:** Tokens `wedo-*` (não hex hardcoded)? `rounded-md` universal? Sem `box-shadow`? Dark mode? Open Sans/Inter? `text-xs` base (11px)?
+
+**D4 — Backend:** Endpoint retorna `company_id` isolado? Schema Pydantic para request e response? Errors com HTTP status correto?
+
+**D5 — Tipos:** Interfaces TypeScript definidas? Props tipadas? Sem `any`? Response do backend tem tipo correspondente no FE?
+
+**D6 — Fluxo:** Usuário consegue completar a tarefa do início ao fim? Estados de transição visíveis? Confirmação antes de ações destrutivas?
+
+**D7 — Consistência:** Naming igual ao resto da plataforma? Sem duplicação de componentes/serviços existentes?
+
+**D8 — Docs:** CLAUDE.md ou replit.md precisam de update? Endpoint documentado?
+
+**D9 — Agentes:** Agente herda `EnhancedAgentMixin`? `ConfidencePolicyService` aplicado? Circuit Breaker configurado?
+
+**D10 — LLM:** Prompt versionado? Anti-bajulação nas regras? Custo de tokens estimado?
+
+**D11 — Serviços IA:** WSI score explicitável? FairnessGuard ativo? Atributos protegidos mascarados antes do LLM?
+
+**D12 — Governança:** Feature flag ativa? LLM fallback chain configurada? TokenTrackingService registrando?
+
+**D13 — Segurança:** PII masking nos logs? `company_id` em todas as queries? Sem secrets no código? Rate limiting?
+
+**D14 — Performance:** Listas paginadas (não carregar tudo)? Cache Redis para dados frequentes? Tarefas longas no Celery?
+
+## Para mudanças menores (4 dimensões obrigatórias)
+
+D1 (Wiring) + D5 (Tipos) + D7 (Consistência) + D13 (Segurança)
+
+## Skills complementares para auditoria profunda
+
+- `@.cursor/rules/wedo-governance.mdc` — 13 Crenças + Production Readiness
+- `@.cursor/rules/screening-compliance.mdc` — Screening, viés, red teaming
+- `@.cursor/rules/dei-fairness.mdc` — DEI, FairnessGuard, bias audit
+- `@.cursor/rules/lgpd-data-protection.mdc` — LGPD, PII, consentimento

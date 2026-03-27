@@ -1,0 +1,10 @@
+{
+  "message_non_empty": true,
+  "domain": "wizard",
+  "stage_in_context": "requirements",
+  "collected_data_keys": [
+    "title",
+    "area"
+  ],
+  "confidence_valid": true
+}

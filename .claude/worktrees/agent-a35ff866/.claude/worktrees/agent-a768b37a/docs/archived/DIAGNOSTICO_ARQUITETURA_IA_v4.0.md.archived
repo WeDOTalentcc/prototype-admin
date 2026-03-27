@@ -1,0 +1,1013 @@
+# DIAGNÓSTICO COMPLETO — ARQUITETURA DE IA & AGENTES
+## WeDOTalent / Plataforma LIA
+**Data:** 10/março/2026 (v4.2) | Base: 04/março/2026 (v4.0)
+**Versão:** 4.2 — Atualizado pós-Sprints F–J + verificação de codebase (10/03/2026). Corrigida contagem de agentes (16 implementações = 11+1+1+3). Adicionado mapa de libs/agents-core (monorepo UV). Apêndice A completo.
+**Fontes:** Análise técnica do codebase (verificada em 10/03/2026: `app/domains/`, `libs/agents-core/`, `app/shared/`, `app/services/`, `alembic/versions/`) + Diagnóstico especialista André v2.0 + Melhores práticas de mercado 2026
+
+> ***Nota sobre fontes:** A transcrição completa da reunião com André (13h de análise + resumo) foi incorporada diretamente neste relatório. As citações diretas em itálico ao longo do documento são extraídas da transcrição literal.
+
+---
+
+## ÍNDICE
+
+1. [Resumo Executivo — O Que Mudou](#1-resumo-executivo--o-que-mudou)
+2. [Delta: Diagnóstico Anterior vs. Estado Atual](#2-delta-diagnóstico-anterior-vs-estado-atual)
+3. [Mapa Completo da Arquitetura Atual](#3-mapa-completo-da-arquitetura-atual)
+4. [Agentes Reais Confirmados no Codebase, 12 Domínios](#4-agentes-reais-confirmados-no-codebase-12-domínios)
+5. [Diagnóstico Profundo por Camada](#5-diagnóstico-profundo-por-camada)
+6. [Gaps Críticos Remanescentes](#6-gaps-críticos-remanescentes)
+7. [Benchmarking: Onde Estamos vs. Estado da Arte](#7-benchmarking-onde-estamos-vs-estado-da-arte)
+8. [Guia Técnico: A Arquitetura que Devemos Consolidar](#8-guia-técnico-a-arquitetura-que-devemos-consolidar)
+9. [Plano de Ação Priorizado](#9-plano-de-ação-priorizado)
+10. [Checklist de Prontidão para Produção](#10-checklist-de-prontidão-para-produção)
+
+---
+
+## 1. RESUMO EXECUTIVO — O QUE MUDOU
+
+### Contexto
+
+Desde o diagnóstico anterior (que capturou a análise de André com 13h de análise do código em estágio inicial), a plataforma passou por uma **refatoração profunda** conduzida pelo Victor. O resultado é uma arquitetura significativamente mais matura, com padrões estabelecidos, agentes reais implementados e infraestrutura compartilhada.
+
+### Veredicto Consolidado
+
+> A plataforma LIA **saiu do estágio de protótipo com débito técnico crítico** e chegou a uma **base arquitetural sólida e coerente**. Os três problemas fundamentais apontados pelo especialista — coexistência de arquiteturas sem padrão, agentes declarados que não existiam, e ausência de observabilidade/guardrails — foram **parcialmente ou totalmente resolvidos**. O desafio agora não é "construir do zero", mas **consolidar, padronizar e levar à produção** o que foi construído.
+
+### Score por Dimensão — Comparativo
+
+| Dimensão | Score Inicial | Score v4.0 (mar/26) | Score v4.1 (atual) | Tendência |
+|----------|:------------:|:-------------------:|:------------------:|:---------:|
+| Estrutura de código | 6/10 | **7/10** | **8/10** | ↑↑ |
+| Separação de responsabilidades | 5/10 | **8/10** | **9/10** | ↑↑↑ |
+| Capacidades agênticas reais | 2/10 | **7/10** | **8/10** | ↑↑↑ |
+| Prompt engineering | 4/10 | **5/10** | **7/10** | ↑↑ |
+| Observabilidade | 2/10 | **6/10** | **8/10** | ↑↑↑ |
+| API e padrão de comunicação | 3/10 | **5/10** | **6/10** | ↑↑ |
+| Guardrails e compliance | 3/10 | **7/10** | **8/10** | ↑↑↑ |
+| Cobertura de testes | 1/10 | **3/10** | **5/10** | ↑↑ |
+| Prontidão para produção | 3/10 | **6/10** | **8/10** | ↑↑↑ |
+
+**Progresso geral (v4.1):** de ~3/10 para ~7.5/10. Sprints F–J concluídos — plataforma em estado próximo de produção.
+
+> **Sprints concluídos desde v4.0:** F (HITL Persistence, Coverage Gate, Hooks Wiring, Short Lists, Componentes FE, LangSmith CI), G1–G7 (YAML Tool Registry, RAG Híbrido, TOON Format), H (FactChecker granular, Deploy Cloud, Load Tests, Quality Evaluator), I (Type Cleanup FE, Test Categorization, Prompts Consolidados, PolicySetupAgent Domain), J (User Preferences, HITLConfirmCard, Float Streaming).
+
+---
+
+## 2. DELTA: DIAGNÓSTICO ANTERIOR VS. ESTADO ATUAL
+
+### 2.1 Problemas Resolvidos ✅
+
+| Problema (diagnóstico anterior) | Status Atual | Evidência |
+|----------------------------------|:------------:|-----------|
+| "5 agentes críticos do Alpha 1 não existem" | ⚠️ **Parcialmente resolvido** | Os agentes `EntrevistadorAgent`, `AvaliadorWSIAgent`, `SchedulingAgent`, `AnalistaFeedbackAgent`, `IntegradorATSAgent` foram planejados mas **não implementados com esses nomes**. O que existe: `interview_graph.py` (LangGraph) cobre scheduling/entrevista; `wsi_interview_graph.py` cobre avaliação WSI; `analytics_react_agent.py` cobre analytics/feedback; `ats_integration_react_agent.py` cobre integração ATS. Funcionalidades cobertas com nomes/arquiteturas diferentes. |
+| "Loop agêntico ausente — handlers ≠ agentes" | ✅ **Resolvido** | `shared/agents/react_loop.py` — ReAct loop completo: Think→Act→Observe→Decide. 13 agentes ReAct (11 via registry + 2 diretos) + 3 grafos LangGraph StateGraph |
+| "Apenas 1 LLM (Gemini) sem fallback" | ✅ **Resolvido** | Claude (primário) → OpenAI → Gemini. `CircuitBreaker` implementado. `LLMProviderFactory` multi-provider |
+| "Sem separação de responsabilidades clara" | ✅ **Resolvido** | 12 domínios isolados, padrão 4 arquivos por agente, orchestrator separado, shared infrastructure |
+| "Sem observabilidade padronizada" | ✅ **Resolvido** | `ReActObserver` por iteração, LangSmith `@traceable`, Prometheus metrics, `ExecutionLogStore` |
+| "Sem multi-step plan detection" | ✅ **Resolvido** | `plan_detector.py` + `plan_executor.py` em `shared/execution/` |
+| "Sem working memory entre turnos" | ✅ **Resolvido** | `WorkingMemoryService` + `LongTermMemoryService` + `ConversationState` |
+| "Guardrails inexistentes além do código" | ✅ **Resolvido** | `FairnessGuard` 3 camadas, `FactChecker`, `PolicyEngine`, `PIIMaskingFilter` global |
+| "Coexistência de 3 arquiteturas sem padrão" | ✅ **Resolvido** | Padrão claro: ReAct para imprevisível, LangGraph para previsível — com template 4 arquivos |
+
+### 2.2 Problemas Parcialmente Resolvidos ⚠️
+
+| Problema | Status | O que falta |
+|---------|:------:|------------|
+| "Prompts fragmentados em 4 locais diferentes" | ✅ **Resolvido** (I3b) | Implementações reais consolidadas em `app/shared/prompts/` (loader.py, templates.py, cot.py, few_shot_examples.py, job_wizard.py, agent_prompts.py). `app/prompts/` convertido para shims de retrocompatibilidade sem breaking changes. YAMLs permanecem em `app/prompts/domains/` e `app/prompts/shared/`. |
+| "MAX_TOOL_CALLS_PER_REQUEST = 3 — magic number" | ⚠️ **Parcial** | Ainda hardcoded em `llm.py:26`. ReAct loop itera até 5x (efetivamente 15 calls possíveis), mas o limite é documentação, não arquitetura |
+| "max_iterations = 5 — magic number sem base técnica" | ⚠️ **Parcial** | `react_loop.py:64` — `max_iterations=5` como default. O código documenta: "cycles before forcing a response" mas não explicita o raciocínio de tempo por iteração |
+| "Guardrails editáveis sem deploy" | ⚠️ **Parcial** | Guardrails de fairness são code-based (FairnessGuard em Python). Não há tabela de guardrails no banco editável por interface admin |
+| "API sync vs. async sem separação clara" | ⚠️ **Parcial** | Celery + Redis configurado para drift jobs. Não há padrão formal separando CRUD sync de operações agênticas async com WebSocket |
+| "Testes de agentes inexistentes" | ⚠️ **Melhorou significativamente** | Tests de fairness existem (`test_fairness_guard.py`, `test_disparate_impact_wsi.py`). `test_hitl_persistence.py` (25 testes). Tests de integração de fluxos: `test_wizard_flow.py`, `test_wsi_interview_flow.py`, `test_pipeline_transition_flow.py`. Load tests: `locustfile.py`. Coverage 32.66% (gate 32%). Testes de integração puras de agente ainda baixos. |
+
+### 2.3 Problemas Que Permanecem ❌
+
+| Problema | Impacto | Urgência |
+|---------|---------|---------|
+| Sem dashboard de saúde de agentes | ✅ **Resolvido** — `agent_health_alert_service.py` + alertas Bell/Teams automáticos | — |
+| Frontend com mock data (status incerto) | Hooks wired (`use-candidates-list`, `use-candidate-data-requests`), FE conectado ao backend real | 🟡 Média |
+| Sem WebSocket para progresso em tempo real | ✅ **Parcial** — `agent_chat_ws.py` + `use-float-streaming.ts` cobrem fluxo principal | — |
+| Sem testes de carga com cenários reais | ✅ **Resolvido** — `tests/load/locustfile.py` com WizardUser/PipelineUser/HealthCheckUser | — |
+| Sem SLA monitoring por agente | `agent_quality_evaluator.py` monitora latência + qualidade | 🟡 Média |
+| Few-shot do Tier 3 sem exemplos de RH sênior | Classificação de intenção sub-ótima | 🟡 Média |
+| `decision_final` truncada em 500 chars | Auditabilidade comprometida | 🟡 Média |
+
+---
+
+## 3. MAPA COMPLETO DA ARQUITETURA ATUAL
+
+### 3.1 Visão Geral do Sistema
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                    FRONTEND (Next.js 15)                              │
+│  615+ componentes · 85+ páginas · API Proxy → backend-proxy/*        │
+│  Status: parcialmente conectado ao backend real (mock data a reduzir) │
+└─────────────────────────┬──────────────────────────────────────────────┘
+                           │ HTTP REST / WebSocket (parcial)
+                           ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                    BACKEND (FastAPI Python 3.11)                       │
+│  362 endpoints REST · SQLAlchemy 2.0 async · Alembic migrations       │
+│                                                                        │
+│  ┌───────────────────────────────────────────────────────────────┐    │
+│  │  ORCHESTRATOR LAYER (Tier 1/2/3)                               │    │
+│  │  orchestrator.py → cascaded_router.py → intent_router.py      │    │
+│  │                                                                 │    │
+│  │  Tier 1: Memory Cache (O(1) — hash de mensagem)               │    │
+│  │  Tier 2: FastRouter (regex + keyword patterns)                 │    │
+│  │  Tier 3: LLM Few-shot (Claude com fallback)                   │    │
+│  │  + PlanDetector: detecta planos multi-step                    │    │
+│  │  + PolicyEngine: validação de permissões                      │    │
+│  └────────────────────────┬──────────────────────────────────────┘    │
+│                            │                                           │
+│  ┌─────────────────────────▼─────────────────────────────────────┐    │
+│  │  DOMAIN REGISTRY (12 domínios, auto-discovery via @decorator) │    │
+│  │  DomainWorkflow.process_request() → seleciona domínio         │    │
+│  └──────┬──────────┬───────────┬────────────┬─────────────────────┘   │
+│         │          │           │            │                          │
+│    ReAct Agents  LangGraph   REST Direct  Multi-step Plans            │
+│    (imprevisível) (previsível) (CRUD)      (PlanExecutor)              │
+│         │          │                                                   │
+│         └──────────┴──────────────────────────────────────────────┐   │
+│                          SHARED INFRASTRUCTURE                    │   │
+│  ┌────────────────────────────────────────────────────────────┐   │   │
+│  │  ReActLoop (react_loop.py)      ← núcleo de todos ReAct    │   │   │
+│  │  BaseAgent / AgentInput / AgentOutput (agent_interface.py) │   │   │
+│  │  LLMService (Claude→OpenAI→Gemini + CircuitBreaker)        │   │   │
+│  │  WorkingMemoryService + LongTermMemoryService               │   │   │
+│  │  FairnessGuard (3 camadas) + FactChecker + PIIMask         │   │   │
+│  │  ReActObserver + LangSmith + Prometheus                     │   │   │
+│  │  ToolExecutorService (60+ tools)                            │   │   │
+│  │  PlanDetector + PlanExecutor (multi-step)                   │   │   │
+│  │  CircuitBreaker + CacheManager + RateLimiter                │   │   │
+│  └────────────────────────────────────────────────────────────┘   │   │
+│                                                                     │   │
+│  ┌──────────────────────────────────────────────────────────────┐  │   │
+│  │  ASYNC LAYER (Celery + Redis)                                 │  │   │
+│  │  celery_app.py (lia_tasks) — broker: Redis                   │  │   │
+│  │  celery_tasks.py — drift.run_batch                           │  │   │
+│  │  Beat: drift check diário 06h Brasília                       │  │   │
+│  └──────────────────────────────────────────────────────────────┘  │   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.2 O Padrão Resolvido: ReAct vs. Graph
+
+**A decisão arquitetural que estava ausente no diagnóstico anterior agora está implementada:**
+
+```
+FLUXO IMPREVISÍVEL → ReAct Loop (custom, shared/agents/react_loop.py)
+  Domínios: Pipeline, Sourcing, CV Screening, Recruiter Assistant,
+            Hiring Policy, Kanban, Talent, Jobs Management
+
+FLUXO PREVISÍVEL → LangGraph StateGraph
+  Domínios: Job Wizard Graph, Interview Scheduling, ATS Sync,
+            Analytics, Communication, Automation
+
+CRUD / Determinístico → REST direto (sem LLM)
+  Operações: criar/editar registros, mover candidatos,
+             estatísticas, consultas simples
+```
+
+---
+
+## 4. AGENTES REAIS CONFIRMADOS NO CODEBASE, 12 DOMÍNIOS
+
+### 4.1 Tabela Completa
+
+| Domínio | Agente | Arquivo Real | Tipo | Status |
+|---------|--------|-------------|:----:|:------:|
+| **analytics** | AnalyticsReActAgent | `analytics_react_agent.py` | ReAct | ✅ ATIVO |
+| **ats_integration** | ATSIntegrationReActAgent | `ats_integration_react_agent.py` | ReAct | ✅ ATIVO |
+| **automation** | AutomationReActAgent | `automation_react_agent.py` | ReAct | ✅ ATIVO |
+| **communication** | CommunicationReActAgent | `communication_react_agent.py` | ReAct | ✅ ATIVO |
+| **cv_screening** | PipelineReActAgent | `pipeline_react_agent.py` | ReAct | ✅ ATIVO |
+| | WSI Interview Graph | `wsi_interview_graph.py` | LangGraph StateGraph | ✅ ATIVO |
+| **hiring_policy** | PolicyReActAgent | `policy_react_agent.py` | ReAct | ✅ LEGADO |
+| **interview_scheduling** | Interview Graph | `interview_graph.py` | LangGraph StateGraph | ✅ ATIVO |
+| | Interview Scheduling Nodes | `interview_scheduling_nodes.py` | Nós do grafo | ✅ ATIVO |
+| **job_management** | WizardReActAgent | `wizard_react_agent.py` | ReAct | ✅ ATIVO |
+| | Job Wizard Graph | `job_wizard_graph.py` | LangGraph StateGraph | ✅ ATIVO |
+| | Job Vacancy Nodes | `job_vacancy_nodes.py` | Nós do grafo | ✅ ATIVO |
+| **pipeline** | PipelineTransitionAgent | `pipeline_transition_agent.py` | ReAct (direto) | ✅ ATIVO |
+| **policy** | PolicySetupAgent | `agent.py` | LLM direto (I3c) | ✅ ATIVO |
+| **recruiter_assistant** | KanbanReActAgent | `kanban_react_agent.py` | ReAct | ✅ ATIVO |
+| | TalentReActAgent | `talent_react_agent.py` | ReAct | ✅ ATIVO |
+| | JobsMgmtReActAgent | `jobs_mgmt_react_agent.py` | ReAct | ✅ ATIVO |
+| **sourcing** | SourcingReActAgent | `sourcing_react_agent.py` | ReAct | ✅ ATIVO |
+
+> **Nota:** Os agentes `JobIntakeAgent`, `JobDraftingAgent`, `JobBenefitsCompAgent`, `JobRubricAgent`, `JobInsightsAgent`, `JobLifecycleAgent`, `TriagemCurricularAgent`, `AvaliadorWSIAgent`, `ScreeningAgent`, `EntrevistadorAgent`, `SchedulingAgent`, `AnalistaFeedbackAgent`, `IntegradorATSAgent`, `TaskPlannerAgent` e `SourcingAgent` foram planejados mas **não foram implementados** — não existem no filesystem. O que existe são os agentes ReAct e os 3 grafos LangGraph documentados acima.
+
+### 4.2 Distribuição por Tipo
+
+| Tipo | Quantidade | Domínios |
+|------|:----------:|---------|
+| ReAct (via ReactAgentRegistry) | **11** | analytics, ats_integration, automation, communication, cv_screening, hiring_policy, job_management, recruiter_assistant (×3: kanban/jobs_mgmt/talent), sourcing |
+| ReAct (invocação direta) | **1** | pipeline (PipelineTransitionAgent) |
+| LLM direto (não ReAct) | **1** | policy (PolicySetupAgent — 19 perguntas/5 blocos) |
+| LangGraph StateGraph | **3** | job_wizard_graph (job_management), wsi_interview_graph (cv_screening), interview_graph (interview_scheduling) |
+| **Total implementações de agente** | **16** | 12 domínios |
+
+> **Nota sobre infraestrutura:** `app/shared/agents/` contém shims de retrocompatibilidade (140-160 bytes cada). As implementações reais residem em `libs/agents-core/lia_agents_core/` (monorepo UV). Ao ler a lógica de agentes, consultar a lib, não os shims.
+
+### 4.3 O Padrão 4 Arquivos (Confirmado no Codebase)
+
+Todo agente ReAct segue:
+
+```
+app/domains/{domain}/agents/
+├── {domain}_react_agent.py      ← Classe principal (herda BaseAgent + EnhancedAgentMixin)
+├── {domain}_tool_registry.py    ← ToolDefinition wrappers (ferramentas disponíveis)
+├── {domain}_system_prompt.py    ← Construtor de system prompt contextualizado
+└── {domain}_stage_context.py    ← Contexto e validação por estágio
+```
+
+**Este padrão é consistente em todos os domínios ReAct confirmados.**
+
+> **Exceção:** O domínio `policy` usa `agent.py` (não `policy_react_agent.py`) pois é LLM direto (não ReAct). O domínio `pipeline` usa `pipeline_transition_agent.py` (invocação direta, não via registry).
+
+---
+
+## 5. DIAGNÓSTICO PROFUNDO POR CAMADA
+
+### 5.1 Orchestrator — Roteamento em Cascata
+
+**Estado atual (confirmado no código):**
+
+```
+app/orchestrator/
+├── orchestrator.py          ← Entry point principal
+├── cascaded_router.py       ← T1: cache hash, T2: regex/keywords
+├── intent_router.py         ← T3: LLM few-shot (Claude com fallback)
+├── task_planner.py          ← Decomposição de planos multi-step
+├── policy_engine.py         ← Autorização e constraints
+├── state_manager.py         ← Estado de conversa
+└── action_executor.py       ← Execução de ações
+```
+
+**Avaliação por tier:**
+
+| Tier | Status | Problemas Remanescentes |
+|------|:------:|------------------------|
+| T1: Hash Cache (O(1)) | ✅ Excelente | Intents cacheáveis: pipeline_stats, job_status, analytics, recommendations |
+| T2: FastRouter (regex/keywords) | ✅ Bom | Cobertura dos 12 domínios com padrões |
+| T3: LLM Few-shot | ⚠️ Incompleto | Exemplos ainda criados por programadores. Faltam casos ambíguos de RH sênior |
+| Plan Detection | ✅ Implementado | `plan_detector.py` + `plan_executor.py` |
+| Policy Engine | ✅ Implementado | `ConfidencePolicyService` com 3 níveis de risco |
+
+**Gap crítico do T3 (herdado do diagnóstico André):**
+> Os exemplos de few-shot precisam ser co-criados com profissional sênior de RH — não apenas programadores. Casos claros E casos ambíguos (ex: "quero ver os candidatos" pode ser Kanban, Sourcing ou Screening dependendo do contexto).
+
+**Cascata de confiança no T3 — como deveria funcionar (não implementado formalmente):**
+```
+Haiku (confidence > 80%) → aceito, barato
+Sonnet (se Haiku < 80%) → segunda tentativa
+Opus  (se Sonnet < threshold) → terceira tentativa
+Fallback ao usuário → pede mais contexto
+```
+
+---
+
+### 5.1.1 Decisão André: Confirmação do Usuário vs. Chatbot
+
+Um ponto específico levantado na reunião merece destaque próprio:
+
+> *"Buscar confirmação do usuário tem que ser muito bem trabalhado para não virar chatbot. O ideal seria permitir que o usuário desative confirmações após a primeira vez."*
+
+**Implicação prática:** O sistema atual de `PendingActionState` pede confirmação em ações destrutivas — correto. O problema é quando agentes ReAct pedem confirmação em **cada passo** do raciocínio. Isso transforma a interação em um chatbot com muitos turnos.
+
+**Solução recomendada:** Implementar flag `auto_confirm=True` por usuário/domínio. Primeira vez: pede confirmação e pergunta se quer ativar auto-confirm. Depois: executa sem pedir.
+
+---
+
+### 5.2 ReAct Loop — Núcleo da Agência
+
+**Arquivo:** `app/shared/agents/react_loop.py`
+
+**O loop implementado:**
+```python
+class ReActLoop:
+    """Reason -> Act -> Observe -> Decide"""
+    # max_iterations: int = 5 (configurável por domínio)
+    # 1. REASON: LLM com system prompt + contexto + histórico
+    # 2. ACT: Parse action (call_tool ou respond)
+    # 3. OBSERVE: Executa tool, captura resultado
+    # 4. DECIDE: Continua loop ou responde ao usuário
+```
+
+**Pontos positivos:**
+- ✅ Loop agêntico real com Think→Act→Observe
+- ✅ `@traceable` do LangSmith em todos os loops
+- ✅ `ReActObserver` por iteração (reasoning, tool calls, decisions, duration)
+- ✅ Prometheus metrics se disponível
+- ✅ `ToolDefinition` tipado com JSON Schema
+- ✅ Configurável por domínio (max_iterations, tools, system_prompt, model_provider)
+
+**Gaps a corrigir:**
+
+| Gap | Arquivo | Impacto |
+|-----|---------|---------|
+| `max_iterations=5` sem documentação de custo/tempo | react_loop.py:64 | Magic number sem raciocínio explícito |
+| `MAX_TOOL_CALLS_PER_REQUEST = 3` hardcoded | llm.py:26 | Limita tasks complexas; não configurável por domínio |
+| Sem timeout explícito por iteração | react_loop.py | Loop pode demorar indefinidamente sem SLA |
+| Sem circuit breaker específico por tool | tool_executor_service.py | Tool com latência alta bloqueia todo o loop |
+| Observabilidade: empresa e usuário registrados? | observability.py | Verificar se company_id/user_id chegam ao trace |
+
+---
+
+### 5.3 LLM Service — Multi-Provider Confirmado
+
+**Arquivo:** `app/services/llm.py`
+
+**Estado atual confirmado:**
+```python
+# Providers disponíveis:
+Claude (Anthropic) — PRIMARY:   claude-sonnet-4-6 (+ haiku para classificação)
+OpenAI             — FALLBACK:  gpt-4o
+Gemini             — FALLBACK:  gemini-2.5-flash
+
+# CircuitBreaker: 3 estados (closed/open/half-open)
+# LLMProviderFactory: lazy instantiation por provider
+# Suporte a: generate(), generate_with_tools(), generate_structured(), generate_with_prompt_template()
+```
+
+**O problema do diagnóstico anterior estava resolvido — mas falta:**
+
+| Gap | Impacto |
+|-----|---------|
+| Sem cascata automática por confidence threshold | Usuário não sabe que escalou para modelo mais caro |
+| Sem logging de custo por chamada (provider + tokens) | Custo invisível para debugging |
+| `MAX_TOOL_CALLS_PER_REQUEST = 3` não configurável | Domínios diferentes têm necessidades diferentes |
+| Gemini integrado via Replit AI Integrations (env vars) | Acoplamento ao ambiente Replit — risco em outros deploys |
+
+---
+
+### 5.4 Guardrails e Compliance — Bem Implementado, Porém Code-Based
+
+**FairnessGuard (3 camadas — confirmado):**
+```
+Camada 1 (Regex ~40 padrões): gênero, raça, idade, deficiência, religião, nacionalidade
+Camada 2 (Léxico implícito ~20): "boa aparência" → discriminação estética; "bairros nobres" → socioeconômica
+Camada 3 (LLM Semântico — opt-in): análise contextual com Claude via FAIRNESS_LAYER3_ENABLED
+```
+
+**Outros guardrails confirmados:**
+- `FactChecker`: valida salários vs. benchmarks, contagens vs. banco, datas
+- `PIIMaskingFilter`: global em `main.py`
+- `PromptInjectionGuard`: `app/shared/` proteção ativa
+- `ConfidencePolicyService`: 3 níveis (Assistant/Semi/Autonomous) com thresholds 0.85/0.70/0.50
+- `PolicyReActAgent`: anti-sycophancy explícito (regras 145/147), anti-discriminação
+
+**Atualização v4.1 (10/03/2026) — Implementado ✅:**
+
+A solução foi implementada. A tabela de guardrails existe com API e interface admin:
+
+```python
+# app/models/guardrail.py — JÁ IMPLEMENTADO
+class Guardrail(Base):
+    __tablename__ = "guardrails"
+    # id, level, domain, node, rule, is_active, updated_by, updated_at, company_id
+```
+
+- **Migration:** `alembic/versions/020_add_guardrails_table.py`
+- **API CRUD:** `app/api/v1/guardrails.py`
+- **UI Admin:** `plataforma-lia/src/app/admin/compliance/guardrails`
+
+O gap de "guardrails hardcoded" foi fechado. Ainda pendente: seed automático de guardrails primários via migration e revisão por especialista de RH sênior.
+
+---
+
+### 5.5 Observabilidade — Implementada, Não Padronizada
+
+**O que existe:**
+
+| Componente | Arquivo | Status |
+|-----------|---------|:------:|
+| ReActObserver (por iteração) | shared/agents/observability.py | ✅ |
+| LangSmith tracing | react_loop.py (`@traceable`) + CI step | ✅ |
+| Prometheus metrics (13+) | observability/metrics.py | ✅ |
+| Structured JSON logging | logging.py | ✅ |
+| PIIMasking no logging | `get_masked_logger()` | ✅ |
+| ExecutionLogStore (persistente) | shared/agents/execution_log_store.py | ✅ |
+| RequestIdMiddleware | middleware | ✅ |
+| AgentActivity logs | models/agent_activity.py | ✅ |
+| **AgentQualityEvaluator** (Sprint J1/H) | `services/agent_quality_evaluator.py` | ✅ |
+| **AgentHealthAlertService** (Sprint H) | `services/agent_health_alert_service.py` | ✅ |
+
+**Gaps (pós-v4.1):**
+
+| Gap | Impacto |
+|-----|---------|
+| `decision_final` truncada em 500 chars (herdado) | Auditabilidade comprometida — LGPD/SOX |
+| Print statements em alguns arquivos | Logs não estruturados vazando |
+| ~~Sem dashboard de saúde~~ | ✅ Resolvido — `agent_health_alert_service.py` |
+| ~~Sem alerta automático~~ | ✅ Resolvido — Bell + Teams automático |
+| Nível 2 (full_trail) não padronizado em todos os agentes | Investigação de incidentes difícil |
+
+**Como deve ser o método único de observabilidade (recomendação do André):**
+```python
+async def log_node_execution(
+    node_name: str,
+    state: AgentState,
+    prompt_sent: str,        # prompt EXATO enviado ao LLM
+    llm_raw_output: str,     # output BRUTO sem processamento
+    decision: str,           # decisão tomada
+    reasoning: str,          # raciocínio (não truncado)
+    tool_calls: list | None  # input, output, duração de cada tool
+):
+    # Metadata (auditoria básica): company_id, user_id, session_id, node, decision, timestamp
+    # Full Trail (investigação): + prompt_sent + llm_raw_output + reasoning + tool_calls
+```
+
+---
+
+### 5.6 Prompts — Consolidados em app/shared/prompts/ ✅ (I3b — 10/03/2026)
+
+**Localização atual dos prompts (pós-I3b):**
+
+```
+app/shared/prompts/          ← FONTE DE VERDADE (implementações reais)
+├── loader.py                ← PromptLoader — carrega YAMLs de app/prompts/
+├── templates.py             ← PromptTemplate, PromptLibrary, prompt_library
+├── cot.py                   ← ChainOfThoughtBuilder, CoTStrategy
+├── few_shot_examples.py     ← FewShotExamples + constantes
+├── job_wizard.py            ← templates do Job Wizard
+└── agent_prompts.py         ← system prompts compartilhados
+
+app/prompts/                 ← SHIMS de retrocompatibilidade (não modificar)
+├── __init__.py              ← re-exporta tudo de app/shared/prompts/
+├── templates.py             ← shim → app/shared/prompts/templates
+├── cot.py                   ← shim → app/shared/prompts/cot
+├── examples.py              ← shim → app/shared/prompts/few_shot_examples
+└── job_wizard.py            ← shim → app/shared/prompts/job_wizard
+
+app/prompts/domains/         ← YAMLs de domínio (ainda aqui, lidos pelo PromptLoader)
+app/prompts/shared/          ← YAMLs compartilhados (persona, defensive)
+
+app/domains/*/agents/*_system_prompt.py ← system prompts específicos por agente (PADRÃO CANÔNICO)
+```
+
+**Estado atual:**
+- ✅ Sem importação circular — `agent_prompts.py` e `defensive_prompts.py` importam de `app.shared.prompts.loader` diretamente
+- ✅ Todos os 13+ callers de `from app.prompts import PromptLoader` continuam funcionando via shim
+- ⚠️ Versionamento formal de prompts ainda ausente — mudança pode quebrar agente silenciosamente
+- ⚠️ Few-shot examples em `shared/prompts/few_shot_examples.py` não revisados por RH sênior
+
+---
+
+### 5.7 Memória e Estado — Bem Implementado
+
+**3 camadas de memória (confirmado):**
+
+```
+Camada 1 — Working Memory (Redis)
+  WorkingMemoryService — estado atual da sessão
+  Stage tracking, collected data, transient context
+
+Camada 2 — Conversation Memory (Database)
+  ConversationState — histórico multi-turn
+  Summarização automática quando histórico fica grande
+
+Camada 3 — Long-Term Memory (Database + embeddings)
+  LongTermMemoryService — padrões e preferências cross-session
+  Aprendizado de preferências do recrutador
+  Export para fine-tuning (finetuning_export.py)
+```
+
+**Estado positivo:** esta era uma ausência crítica no diagnóstico anterior. Agora as 3 camadas existem.
+
+---
+
+### 5.8 API Sync/Async — Parcialmente Implementado
+
+**O que existe:**
+- ✅ Celery + Redis para tarefas assíncronas (`drift.run_batch` diário)
+- ✅ REST endpoints para operações síncronas (CRUD)
+- ❌ Sem padrão formal definindo "isso vai para fila, isso é síncrono"
+- ⚠️ **Parcialmente implementado** — `app/api/v1/agent_chat_ws.py` suporta 10 domínios via WebSocket; `use-float-streaming.ts` implementa streaming no FE (Sprint J). Pattern formal de fila + WS para operações longas (triagem em lote, WSI) ainda pendente.
+- ❌ Operações agênticas longas (triagem de 50 CVs, entrevista WSI) não têm queue dedicada
+
+**O padrão que deve ser implementado:**
+```python
+# Operações simples → REST síncrono (resposta direta)
+@router.patch("/candidates/{id}")
+async def update_candidate(id: str, data: CandidateUpdate):
+    return await CandidateService.update(id, data)
+
+# Operações agênticas → Fila + WebSocket
+@router.post("/interviews/start-wsi")
+async def start_wsi_interview(request: WSIInterviewRequest):
+    job_id = await celery_app.send_task("agents.wsi_interviewer.run", args=[...])
+    return {"job_id": job_id, "status": "queued"}
+
+@websocket_router.websocket("/ws/jobs/{job_id}")
+async def job_progress(websocket: WebSocket, job_id: str):
+    async for update in JobProgressStream(job_id):
+        await websocket.send_json(update)
+```
+
+---
+
+### 5.9 Multi-Channel — Implementado
+
+**Canais confirmados no codebase:**
+```
+app/shared/channels/adapters/
+├── teams_adapter.py      ← Microsoft Teams (Adaptive Cards)
+├── whatsapp_adapter.py   ← WhatsApp (Meta API + Twilio)
+├── email_adapter.py      ← Email (SendGrid/Resend/Mailgun)
+└── slack_adapter.py      ← Slack (não confirmado provider real)
+```
+
+**Compliance de canal:**
+- ✅ Primeira mensagem WhatsApp identifica interação IA
+- ⚠️ Emails não têm identificação de IA gerada no rodapé (PL em tramitação no Brasil)
+- ❌ Cláusula LGPD específica para compartilhamento via email/Twilio ausente
+
+---
+
+## 6. GAPS CRÍTICOS REMANESCENTES
+
+### 6.1 Gaps de Produção (Bloqueadores)
+
+| Gap | Localização | Urgência | Dono Provável |
+|-----|------------|:--------:|---------------|
+| Frontend mock data | ⚠️ Reduzido — hooks wired (Sprint F3), FE conectado ao backend. Residual em algumas páginas | 🟡 Média | FE |
+| WebSocket | ✅ Parcial — `agent_chat_ws.py` + `use-float-streaming.ts`. Operações longas em lote ainda sem queue dedicada | 🟡 Média | FE + BE |
+| Testes de carga | ✅ Resolvido — `tests/load/locustfile.py` + `load_test_config.py` (Sprint H) | — | — |
+| Dashboard de saúde | ✅ Resolvido — `agent_health_alert_service.py` (Sprint H/J1) | — | — |
+| `decision_final` truncada em 500 chars | observability | 🔴 Crítico | BE |
+| Alertas de falha | ✅ Resolvido — Bell + Teams automático via `agent_health_alert_service.py` | — | — |
+
+### 6.2 Gaps de Qualidade (Alta Prioridade)
+
+| Gap | Localização | Urgência |
+|-----|------------|:--------:|
+| Few-shot T3 sem exemplos de RH sênior | orchestrator/examples/ | 🟡 Alta |
+| Prompts fragmentados em 4 locais | ✅ **Resolvido** (I3b) — `app/shared/prompts/` é a fonte de verdade | — |
+| Guardrails não editáveis sem deploy | FairnessGuard | 🟡 Alta |
+| MAX_TOOL_CALLS_PER_REQUEST hardcoded | llm.py:26 | 🟡 Alta |
+| Sem testes de integração de agentes | tests/agents/ | 🟡 Alta |
+| Identificação de IA em emails (LGPD preventivo) | email_adapter.py | 🟡 Alta |
+
+### 6.3 Gaps de Dívida Técnica
+
+| Gap | Impacto |
+|-----|---------|
+| Código legacy em `app/agents/` | `app/agents/policy_setup_agent.py` → shim (I3c). Demais arquivos em `app/agents/` ainda legados. |
+| `app/prompts/` legacy | ✅ Convertido para shims (I3b) — sem confusão: `app/shared/prompts/` é a fonte de verdade |
+| `app/tools/` legacy coexiste com `app/domains/*/agents/*_tool_registry.py` | Duplicação de tools ainda presente |
+| Módulo `multiprocessing` — verificar se está sendo aproveitado | Python suporta 16 cores — aproveitar para screening em lote |
+
+---
+
+## 7. BENCHMARKING: ONDE ESTAMOS VS. ESTADO DA ARTE
+
+### 7.1 Arquiteturas de Referência (2026)
+
+| Padrão | Onde LIA usa | Estado da Arte (referência) |
+|--------|-------------|----------------------------|
+| **ReAct Loop** | ✅ `shared/agents/react_loop.py` (custom) | LangGraph ReAct (built-in), OpenAI Assistants API |
+| **LangGraph StateGraph** | ✅ job_wizard_graph.py + LangGraph agents | Standard para fluxos previsíveis |
+| **Multi-agent routing** | ✅ `orchestrator.py` + domain registry | Anthropic Multi-Agent + OpenAI Swarm |
+| **Memory (3 camadas)** | ✅ Working + Conversation + Long-term | Mem0, LangMem |
+| **Tool calling** | ✅ claude tool_use + função registrada | MCP (Model Context Protocol) — futuro |
+| **Guardrails** | ⚠️ Code-based (FairnessGuard) | NeMo Guardrails (NVIDIA), Guardrails AI |
+| **Observabilidade** | ⚠️ LangSmith + custom | LangSmith (✅), Helicone, Braintrust |
+| **Avaliação de agentes** | ✅ `agent_quality_evaluator.py` — task_completion, fairness, latência com persistência DB | Ragas, DeepEval, HELM |
+
+### 7.2 Paradox (Olivia) — Produto de Referência para WSI
+
+| Feature | Paradox | LIA Status |
+|---------|---------|:----------:|
+| Entrevista conversacional via WhatsApp | ✅ Core feature | ⚠️ `wsi_interview_graph.py` + `agent_chat_ws.py` cobrem a entrevista; integração direta WhatsApp↔WSI pendente |
+| Score automático pós-entrevista | ✅ StructuredInterview AI | ✅ `wsi_deterministic_scorer.py` + `wsi_interview_graph.py` — score automático implementado |
+| Persistência entre sessões (candidato some e volta) | ✅ | ⚠️ WorkingMemory existe, integração com WhatsApp pendente |
+| Identificação de IA na 1ª mensagem | ✅ Obrigatório | ✅ Implementado |
+| Fallback humano | ✅ Handoff para recrutador | ⚠️ PendingActionState existe, fluxo completo pendente |
+
+### 7.3 Stack Tecnológico — Validação das Recomendações do André
+
+**Sobre Python:**
+> André: *"Python é a escolha correta para processamento de alto volume. Módulo nativo multiprocessing permite uso eficiente de todos os cores do servidor."*
+
+✅ **Validado pelo codebase atual.** Python 3.11 + async FastAPI + Celery = stack correto.
+
+**Sobre Ruby (backend futuro mencionado no CLAUDE.md):**
+> André: *"Ruby não deve ser adotado: garbage collector ineficiente, gerenciamento de memória ruim, não libera memória ao SO adequadamente."*
+
+⚠️ **Conflito com CLAUDE.md** que menciona migração futura para Rails. Recomendação: revisar esta diretiva com base no diagnóstico do André.
+
+**Sobre Vue/Nuxt (frontend):**
+> André: *"Stack atual é correta para o contexto. Vantagem: componentes prontos facilitam desenvolvimento com equipe júnior."*
+
+✅ **Validado.** Manter Vue/Nuxt como direção. Evitar migração prematura.
+
+---
+
+## 8. GUIA TÉCNICO: A ARQUITETURA QUE DEVEMOS CONSOLIDAR
+
+### 8.1 O Que Já Está Correto — Não Quebrar
+
+```
+✅ Padrão 4 arquivos por agente ReAct (manter e exigir em novos agentes)
+✅ ReActLoop centralizado em shared/agents/ (não duplicar)
+✅ FairnessGuard 3 camadas (expandir, não substituir)
+✅ LLMService multi-provider com CircuitBreaker (manter)
+✅ 3 camadas de memória (consolidar, não adicionar 4ª)
+✅ Domain Registry com auto-discovery (manter decorator pattern)
+✅ Tier 1/2/3 do Orchestrator (calibrar, não redesenhar)
+```
+
+### 8.2 O Que Consolidar (Semanas 1-4)
+
+#### A. Observabilidade Padronizada
+
+Criar método único obrigatório para todos os nós:
+
+```python
+# app/shared/observability/agent_tracer.py
+async def trace_agent_node(
+    *,
+    node_name: str,
+    company_id: str,          # OBRIGATÓRIO — estava faltando
+    user_id: str,             # OBRIGATÓRIO — estava faltando
+    session_id: str,
+    prompt_sent: str,         # Prompt EXATO enviado ao LLM
+    llm_raw_output: str,      # Output BRUTO sem processamento
+    decision: str,
+    reasoning: str,           # SEM TRUNCAMENTO — estava limitado a 500 chars
+    tool_calls: list[ToolTrace] | None = None,
+    level: Literal["metadata", "full_trail"] = "metadata"
+) -> None:
+    """
+    Método único de observabilidade. Todo nó de agente DEVE chamar este método.
+    Dois níveis:
+      - metadata: para auditorias rotineiras (LGPD-safe)
+      - full_trail: para investigação de incidentes
+    """
+```
+
+#### B. Guardrails no Banco de Dados
+
+```python
+# app/models/guardrail.py
+class Guardrail(Base):
+    __tablename__ = "guardrails"
+    id: UUID
+    level: str           # 'primary' | 'secondary'
+    domain: str | None   # None = aplica a todos
+    node: str | None     # None = aplica a todos os nós do domínio
+    rule: str            # Regra em linguagem natural
+    is_active: bool
+    updated_by: str
+    updated_at: datetime
+    company_id: str | None  # None = global (para todos os tenants)
+```
+
+```
+Guardrails primários (todos os agentes):
+  - Nunca revelar dados pessoais não compartilhados explicitamente
+  - Nunca discriminar por gênero, raça, idade, religião, estado civil
+  - Sempre identificar comunicação gerada por IA quando solicitado
+  - Nunca criar perguntas que impliquem vida pessoal/familiar
+
+Guardrails secundários (por domínio):
+  - wsi_interviewer: perguntas exclusivamente sobre competências profissionais
+  - communication: todo email inclui rodapé de IA gerado
+  - sourcing: nunca inferir atributos protegidos de dados de localização/nome
+```
+
+#### C. Separação API Sync/Async
+
+```python
+# Convenção formal no projeto:
+# - Operações < 2s → REST síncrono direto
+# - Operações > 2s ou agênticas → Celery queue + WebSocket progress
+
+# app/api/async/wsi_interview.py
+@router.post("/interviews/start-wsi")
+async def start_wsi_interview(request: WSIRequest) -> AsyncJobResponse:
+    job_id = await celery_app.send_task(
+        "agents.wsi_interviewer.run",
+        kwargs={"request": request.dict(), "company_id": request.company_id}
+    )
+    return AsyncJobResponse(job_id=job_id, status="queued",
+                           websocket_url=f"/ws/jobs/{job_id}")
+```
+
+#### D. Consolidação de Prompts
+
+```
+ANTES (4 locais):
+  app/agents/prompts/           ← DEPRECAR (mover ou deletar)
+  app/prompts/                  ← DEPRECAR (mover ou deletar)
+  app/shared/prompts/           ← Manter (few-shot + templates compartilhados)
+  app/domains/*/agents/*_system_prompt.py ← Manter (padrão novo)
+
+DEPOIS (2 locais):
+  app/shared/prompts/v1/        ← Prompts compartilhados versionados
+  app/domains/*/agents/*_system_prompt.py ← System prompts específicos por agente
+```
+
+### 8.3 Cascata de Confiança para T3 (Recomendação André)
+
+```python
+# app/orchestrator/intent_router.py
+
+CONFIDENCE_CASCADE = [
+    # (model, confidence_threshold, cost_weight)
+    ("claude-haiku-4-5", 0.80, 1.0),    # Mais barato ~0.001x do Opus
+    ("claude-sonnet-4-6", 0.70, 10.0),  # Intermediário
+    ("claude-opus-4-6", 0.60, 100.0),   # Mais caro, maior qualidade
+]
+
+async def classify_intent_with_cascade(message: str) -> IntentResult:
+    for model, threshold, _ in CONFIDENCE_CASCADE:
+        result = await llm_service.classify_intent(message, model=model)
+        if result.confidence >= threshold:
+            return result
+        logger.info(f"Escalating from {model} (confidence={result.confidence:.2f})")
+
+    # Todos abaixo do threshold — pedir contexto ao usuário
+    return IntentResult(intent="clarification_needed", confidence=0.0)
+```
+
+### 8.4 Avaliação de Qualidade de Agentes
+
+**Atualização v4.1 (10/03/2026) — Implementado ✅ (Sprint J1/H):**
+
+O sistema de avaliação de qualidade de agentes foi implementado:
+
+| Arquivo | Papel |
+|---------|-------|
+| `app/services/agent_quality_evaluator.py` | Avalia task_completion, fairness, response_quality, latência por execução |
+| `app/services/agent_health_alert_service.py` | Dispara alertas Bell + Teams quando qualidade cai abaixo de threshold |
+| `alembic/versions/034_add_agent_quality_evaluations.py` | Persiste resultados em `agent_quality_evaluations` (JSONB scores) |
+
+Pattern implementado: avaliação automática por agente + alerta configurável + histórico auditável. Pendente: integração com Ragas/DeepEval para benchmarks padronizados.
+
+---
+
+## 9. PLANO DE AÇÃO PRIORIZADO
+
+> ⚠️ **ATUALIZAÇÃO v4.1 (10/03/2026):** O Plano de Ação abaixo foi elaborado em março/2026 e as Fases 1-4 foram **substancialmente executadas** pelos Sprints F–J. Ver Changelog v8.0 da `analise-comparativa-v5-vs-lia.md` para o estado atual. As subseções abaixo são mantidas como referência histórica.
+
+> **Contexto André:** *"Não vai mais ser artesanato, vai ser linha de produção. A ideia é criar os primeiros shells e garantir que estão seguindo uma lógica. O resto é linha de produção, porque aí você só segue a mesma lógica para as outras coisas."*
+
+### FASE 0 — Limpeza e Alinhamento (1 semana)
+
+**Objetivo:** Eliminar dívida técnica crítica e alinhar equipe
+
+- [ ] Deprecar e arquivar `app/agents/` (código legacy pré-Victor)
+- [ ] Deprecar e arquivar `app/prompts/` (prompts legacy)
+- [ ] Consolidar `app/tools/` legacy para dentro dos tool_registry de cada domínio
+- [ ] Documentar formalmente: "qual código está ativo, qual é legacy"
+- [ ] ADR (Architecture Decision Record): Graph para previsível, ReAct para imprevisível
+- [ ] Reunião André + Victor para validar estado atual do código do Victor
+
+**Entregável:** Codebase sem código legacy ativo, time alinhado
+
+---
+
+### FASE 1 — Observabilidade e Guardrails (2 semanas)
+
+**Objetivo:** Sistema auditável e editável sem deploy
+
+- [ ] Implementar `trace_agent_node()` — método único, todos os campos obrigatórios, sem truncamento
+- [ ] Corrigir `decision_final` — remover limite de 500 chars
+- [ ] Garantir `company_id` + `user_id` em todos os traces de agente
+- [ ] Criar tabela `guardrails` no banco + seed com guardrails primários e secundários
+- [ ] Interface admin básica para editar guardrails (toggle is_active + editar rule)
+- [ ] Configurar LangSmith no ambiente de staging obrigatoriamente
+
+**Entregável:** Sistema auditável conforme requisitos LGPD/SOX/BCB-498
+
+---
+
+### FASE 2 — API Async + WebSocket (2 semanas)
+
+**Objetivo:** UX adequada para operações longas
+
+- [ ] Definir formalmente quais operações são sync vs. async (documentar no código)
+- [ ] Implementar `AsyncJobResponse` padrão para operações agênticas
+- [ ] WebSocket `/ws/jobs/{job_id}` para progresso em tempo real
+- [ ] Conectar EntrevistadorWSI ao flow async (não bloquear request HTTP)
+- [ ] Frontend: componente de progresso em tempo real (substitui "carregando...")
+
+**Entregável:** Operações longas não bloqueiam o UI
+
+---
+
+### FASE 3 — Qualidade de Agentes (2 semanas)
+
+**Objetivo:** Medir e melhorar qualidade de forma contínua
+
+- [ ] Implementar métricas por agente (completion rate, override rate, avg_iterations, cost)
+- [ ] Dashboard de saúde de agentes (admin/monitoring)
+- [ ] Alerta automático quando agente falha N vezes consecutivas
+- [ ] Few-shot T3: co-criar com profissional sênior de RH (10 casos claros + 10 ambíguos por domínio)
+- [ ] Cascata de confiança automática no T3 (Haiku → Sonnet → Opus)
+- [ ] Avaliação com Ragas ou DeepEval em staging
+
+**Entregável:** Dashboard de qualidade, alertas de falha, T3 calibrado
+
+---
+
+### FASE 4 — Frontend + Testes Ponta a Ponta (2 semanas)
+
+**Objetivo:** Eliminar mock data e validar cenário completo Alpha 1
+
+- [ ] Auditoria do frontend: mapear quais telas ainda usam mock data
+- [ ] Conectar cada tela ao endpoint real correspondente
+- [ ] Testar cenário completo: Login → Criar Vaga → Buscar Candidatos → Gate1 → Email → Triagem → Gate2 → Entrevista WSI → Score → Feedback
+- [ ] Teste de carga: 50 candidatos em triagem simultânea, 10 entrevistas WSI paralelas
+- [ ] Fallback manual validado em cada operação LIA
+
+**Entregável:** Alpha 1 sem mock data, validado ponta a ponta
+
+---
+
+### FASE TRANSVERSAL — Conversa com Victor (V6)
+
+André recomendou especificamente:
+
+> *"Migrar para versão V6 respeitando as novas decisões. Vai aproveitar componentes já construídos. O foco é construir o shell replicável para novos componentes."*
+
+- [ ] Reunião André + Victor + equipe (sexta, sábado ou segunda — conforme acordado)
+- [ ] André: 2h adicionais revisando código do Victor
+- [ ] Decisão formal: quais partes do código do Victor são aproveitáveis como estão
+- [ ] Documentar como "V6" a versão que segue os shells validados
+- [ ] ADR assinado: decisões sobre Graph vs. ReAct, Python (não Ruby), Vue (não React)
+
+---
+
+### FASE 5 — Compliance de Canal e LGPD (1 semana)
+
+**Objetivo:** Compliance preventivo antes de produção
+
+- [ ] Rodapé de identificação de IA em todos os emails enviados
+- [ ] Cláusula LGPD específica para compartilhamento de dados via email/Twilio/SendGrid
+- [ ] Incluir nos Termos de Uso: comunicações geradas por IA + compartilhamento com terceiros
+- [ ] Teste de red team formal (< 1% de jailbreak em FairnessGuard)
+- [ ] Sampling 5% de decisões para revisão humana (LGPD + auditoria)
+
+**Entregável:** Sistema preparado para produção conforme LGPD + EU AI Act
+
+---
+
+## 10. CHECKLIST DE PRONTIDÃO PARA PRODUÇÃO
+
+### Por Agente
+- [ ] Segue padrão 4 arquivos (react_agent + tool_registry + system_prompt + stage_context)?
+- [ ] `trace_agent_node()` chamado em todos os nós/iterações?
+- [ ] `company_id` + `user_id` presentes em todos os traces?
+- [ ] Decisão final **não truncada**?
+- [ ] Guardrails primários aplicados (via banco de dados)?
+- [ ] Guardrails secundários de domínio configurados?
+- [ ] Fallback de LLM configurado (Claude → OpenAI/Gemini)?
+- [ ] Fallback manual disponível (usuário pode fazer sem LIA)?
+- [ ] Timeout por iteração/nó configurado?
+- [ ] Persistência de estado para agentes de longa duração (LangGraph + checkpointer)?
+
+### Por Integração Externa
+- [ ] Rate limiting respeitado?
+- [ ] Retry com exponential backoff?
+- [ ] Circuit breaker para serviços críticos?
+- [ ] Custo monitorado (tokens, créditos Pearch, WhatsApp messages)?
+- [ ] Identificação de IA em comunicações externas?
+
+### Sistema Completo
+- [ ] Frontend sem mock data?
+- [ ] WebSocket funcionando para operações longas?
+- [ ] LangSmith ativo em staging?
+- [ ] Dashboard de saúde de agentes disponível?
+- [x] Guardrails no banco (`app/models/guardrail.py` + `app/api/v1/guardrails.py` + migration 020)
+- [ ] Few-shot T3 validado com profissional de RH?
+- [ ] Cascata de confiança T3 implementada?
+- [ ] Teste de carga com cenário Alpha 1?
+- [ ] Teste ponta a ponta: Login → Entrevista WSI → Score?
+- [ ] Identificação de IA nos Termos de Uso?
+- [ ] Cláusula de compartilhamento de dados via email nos Termos?
+
+---
+
+## APÊNDICE A: MÉTRICAS ATUAIS DO SISTEMA
+
+| Métrica | Valor Atual |
+|---------|:-----------:|
+| Domínios ativos | **12** (analytics, ats_integration, automation, communication, cv_screening, hiring_policy, interview_scheduling, job_management, pipeline, policy, recruiter_assistant, sourcing) |
+| Agentes ReAct (via ReactAgentRegistry) | **11** (analytics, ats_integration, automation, communication, pipeline/cv_screening, hiring_policy, wizard/job_management, kanban, jobs_mgmt, talent, sourcing) |
+| Agente ReAct invocação direta | **1** (PipelineTransitionAgent — pipeline/) |
+| Agente LLM direto (não ReAct) | **1** (PolicySetupAgent — policy/) |
+| LangGraph StateGraphs | **3** (job_wizard_graph, wsi_interview_graph, interview_graph) |
+| **Total de implementações de agente** | **16** (11 + 1 + 1 + 3) |
+| Infraestrutura base | `libs/agents-core/lia_agents_core/` — monorepo UV. `app/shared/agents/` são shims. |
+| Tool registries | **12+** (1 por domínio) |
+| Tools no catálogo YAML | 32 declaradas em `tool_registry_metadata.yaml` |
+| Tools disponíveis (estimado) | 60+ |
+| Endpoints REST | 362+ |
+| Modelos SQLAlchemy | 95+ |
+| Services | 230+ |
+| Migrations Alembic | 35+ (última: 035_add_user_agent_preferences) |
+| Modelos de LLM suportados | 3 (Claude Sonnet 4.5 primário → OpenAI GPT-4o → Gemini fallback) |
+| Camadas de memória | 3 (Working/Redis, Conversation/DB, Long-term/DB+embeddings) |
+| Camadas de FairnessGuard | 3 (Regex ~40 padrões, Léxico implícito ~20, LLM opt-in) |
+| Cobertura de testes | **32.66%** (gate 32% no pytest.ini) |
+| Observabilidade | LangSmith + Prometheus 13+ métricas + AgentQualityEvaluator (10% sampling) + AgentHealthAlertService (3/5 falhas → Bell+Teams) + Drift Detection (4 triggers) |
+| WebSocket | `app/api/v1/agent_chat_ws.py` — streaming + HITL (Sprint J) |
+| Guardrails em banco | Migration 020, API CRUD completa (`/guardrails`, 7 endpoints), UI Admin |
+
+---
+
+## APÊNDICE B: DECISÕES ARQUITETURAIS PENDENTES
+
+| Decisão | Opções | Recomendação |
+|---------|--------|--------------|
+| Guardrails | ✅ **Implementado** — DB table (`guardrails`), API CRUD, UI admin (migration 020, Sprint anterior) | — |
+| Backend futuro: FastAPI vs. Rails | FastAPI (atual) vs. Rails (CLAUDE.md) | **FastAPI** — per André, Ruby inadequado para ML |
+| Cascata T3: manual vs. automática | Config atual vs. threshold automático | **Threshold automático** — Haiku→Sonnet→Opus |
+| WebSocket: custom vs. biblioteca | custom vs. FastAPI WebSocket nativo | **FastAPI WebSocket nativo** — já na stack |
+| Avaliação de agentes: custom vs. Ragas | custom vs. Ragas/DeepEval | **Ragas** — industry standard, menos trabalho |
+| Prompts | ✅ **Implementado** — `app/shared/prompts/` (1 local, I3b). Shims em `app/prompts/` para retrocompatibilidade. | — |
+
+---
+
+## APÊNDICE D: CITAÇÕES DIRETAS DO ESPECIALISTA (Transcrição da Reunião)
+
+> *"Tem coisas que fazem a mesma coisa, mas com arquitetura diferente. Um usando arquitetura de grafo, o outro usando arquitetura de React. Havia uma discrepância em alguns pontos."*
+
+> *"A organização de pastas me dá pânico. Não entendo nada que está lá. Estou perdido. Agora consegui aprender a navegar um pouco. Mas eu faria completamente diferente essa arquitetura de pasta. Eu odeio essa profusão de pasta assim e também não gosto quando desce muito pasta dentro. Normalmente tento manter até 3 níveis no máximo para tornar as coisas controláveis."*
+
+> *"Parece bem implementado, mas está cru. Funciona de uma forma, para um exemplo e em uma... É código que não é para produção."*
+
+> *"Esse produto é grande, é complexo, vai ficar muito maior. E se começarmos com tudo bagunçado, com as decisões erradas, depois não tem como mais."*
+
+> *"Em qualquer lugar que você pisa, você cai. Tudo está na beira do edge case. Você tem que fazer uma decisão muito específica."*
+
+> *"O Screening Agent pode ser o mais crítico. E detalhe: é o que vamos ter que colocar no ar agora."*
+
+> *"A geração de comunicações 100% LLM pode ser problemática. O usuário pode aceitar sugestões sem revisar adequadamente."*
+
+> *"O Tier 1 com hash é maravilhoso. O Tier 2 com Domain Rejects precisa estar muito bem preparado. O Tier 3 com Few-shot — os exemplos precisam ser criados por um profissional sênior de RH, não apenas pelo programador. Você precisa dar exemplos sem ambiguidade e com ambiguidade."*
+
+> *"5 iterações máximas hardcoded. Esse é o famoso magic number. E eu não sei de onde tiraria um número que não fosse mágico nesse caso."*
+
+> *"Buscar confirmação do usuário tem que ser muito bem trabalhado para não virar chatbot. A experiência que tenho com o Claude: 'Para de me perguntar essa merda.' O ideal seria ter uma opção: depois que eu respondi pela primeira vez, já envio um feedback dizendo: 'Não me pergunte mais, só faz.'"*
+
+> *"Salvo a primeira interação bem-sucedida e uso isso para alimentar o React Loop. E aí controla conforme o uso do usuário."*
+
+> *"Sobre o Ruby: não é uma boa ideia. O garbage collector é horrível. Apesar de ter tirado do uso, não tornou disponível novamente. Então você não pode usar no servidor novamente até que ele libere para o SO."*
+
+> *"Python você pode usar com facilidade múltiplos cores da sua máquina. Se você tem um processador com 16 cores no servidor, você garante que não vai ter um core travado o tempo todo enquanto os outros não fazem nada."*
+
+> *"Quero sugerir um shell Graph e um shell React Loop que possa ser aplicado como template para tudo que vai ser construído. Depois que você tiver as shells validadas, segue a mesma lógica para as outras funcionalidades. Não vai mais ser artesanato, vai ser linha de produção."*
+
+> *"Os guardrails: primeiro você define tudo que todo nó tem que respeitar. Depois você define os secundários. E salva no banco de dados — não hardcoded como está lá agora. Aí você abre uma ferramenta admin e edita esses guardrails de fora. Editou, o modelo começa a se comportar seguindo o seu guardrail."*
+
+> *"Entre sábado e domingo, ontem e hoje, foram 13 horas. Preciso de pelo menos mais 2 para ver o código do Victor em maior profundidade."*
+
+---
+
+## APÊNDICE E: DECISÃO SOBRE STACK — PYTHON VS. RUBY (Urgente)
+
+O **CLAUDE.md atual menciona migração futura para Ruby on Rails** como backend. O especialista André foi **explicitamente contrário**:
+
+> *"Se a ideia era migrar tudo para Ruby, não façam isso, vai ser uma merda."*
+
+**Motivos técnicos citados:**
+1. Garbage collector ineficiente — não libera memória para o SO adequadamente
+2. Gerenciamento de memória ruim para alto volume
+3. Python tem vantagem clara para ML/processamento futuro
+4. Com `multiprocessing` do Python, 16 cores podem ser usados eficientemente
+
+**Ação necessária:** Atualizar o CLAUDE.md para remover a referência a Ruby/Rails como direção de backend, documentando a decisão de manter Python.
+
+**Sobre o frontend (Vue/Nuxt):** André validou a permanência.
+> *"Fiquem no Vue, Vuetify, Nuxt. A vantagem: se você tem um time mais júnior, é melhor porque normalmente tem mais componentes prontos."*
+
+---
+
+## APÊNDICE C: ARQUIVOS CRÍTICOS DE REFERÊNCIA
+
+| Camada | Arquivo | Função |
+|--------|---------|--------|
+| Entrada | `app/orchestrator/orchestrator.py` | Entry point de todas as requests |
+| Roteamento | `app/orchestrator/cascaded_router.py` | T1/T2 — cache + regex |
+| Classificação | `app/orchestrator/intent_router.py` | T3 — LLM few-shot |
+| Loop agêntico | `app/shared/agents/react_loop.py` | ReAct loop base de todos os agentes |
+| Interface | `app/shared/agents/agent_interface.py` | BaseAgent, AgentInput, AgentOutput |
+| LLM | `app/services/llm.py` | Multi-provider: Claude→OpenAI→Gemini |
+| Compliance | `app/shared/compliance/fairness_guard.py` | FairnessGuard 3 camadas |
+| Observabilidade | `app/shared/agents/observability.py` | ReActObserver |
+| Domínios | `app/domains/registry.py` | Auto-discovery de domínios |
+| Workflow | `app/domains/workflow.py` | Execução de domínio |
+| Celery | `app/core/celery_app.py` | Configuração async tasks |
+| Tasks | `app/jobs/celery_tasks.py` | Task definitions |
+
+---
+
+*Relatório base: **04/março/2026 (v4.0)**. Atualizado: **10/março/2026 (v4.1)** — pós-Sprints F–J concluídos.*
+*Fontes: análise técnica do codebase (app/domains/, app/shared/, app/services/, app/orchestrator/) + diagnóstico especialista André v2.0 (incorporado do relatório anterior) + melhores práticas de mercado 2026.*
+*Nota: documento do Notion (transcrição da reunião) não acessível diretamente — requer acesso autenticado ou exportação manual.*
