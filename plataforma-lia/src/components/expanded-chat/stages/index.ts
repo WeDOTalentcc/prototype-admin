@@ -19,6 +19,8 @@ export type {
   CompanyDefaultQuestion
 } from './WSIQuestionsStage'
 
+export { SearchCalibrationStage, SearchCalibrationNavButtons } from './SearchCalibrationStage'
+
 export { EnrichedJDStage } from './EnrichedJDStage'
 export type {
   EnrichedJDStageProps,
