@@ -55,7 +55,7 @@ export function LiaExpandedPanel({
       <Card 
         className="flex flex-col overflow-hidden bg-white dark:bg-gray-900" 
         style={{ 
-          border: '1px solid #E4EBEF',
+          border: '1px solid var(--gray-200)',
           height
         }}
       >
@@ -138,7 +138,7 @@ export function LiaExpandedPanel({
             className="flex-shrink-0 px-4 py-3" 
             style={{ 
               backgroundColor: 'rgba(0, 184, 184, 0.04)',
-              borderBottom: '1px solid #E4EBEF' 
+              borderBottom: '1px solid var(--gray-200)' 
             }}
           >
             {contextPills}
@@ -348,7 +348,7 @@ export function LiaChatInput({
           data-testid="chat-input"
           className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 transition-all resize-none text-gray-950 dark:text-gray-50"
           style={{ 
-            border: '1px solid #E4EBEF',
+            border: '1px solid var(--gray-200)',
             fontFamily: 'Open Sans, sans-serif',
             backgroundColor: 'var(--gray-50)'
           }}

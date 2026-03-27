@@ -35,7 +35,7 @@ const dashboardMenuItems: DashboardMenuItem[] = [
     icon: Target,
     description: "KPIs de negócio, performance de recrutadores e ROI",
     count: 12,
-    color: "#9860D1" // Roxo WeDo - Estratégia premium
+    color: "var(--wedo-purple)" // Roxo WeDo - Estratégia premium
   },
   {
     id: "previsoes-ia",
@@ -50,7 +50,7 @@ const dashboardMenuItems: DashboardMenuItem[] = [
     icon: Users,
     description: "Big Five, Diversidade & Inclusão, NPS e Satisfação",
     count: 344,
-    color: "#60D186" // Verde WeDo - Pessoas/qualidade
+    color: "var(--status-success)" // Verde WeDo - Pessoas/qualidade
   },
   {
     id: "modelos-trabalho",
@@ -81,7 +81,7 @@ const dashboardMenuItems: DashboardMenuItem[] = [
     icon: Award,
     description: "Skills gap, competências emergentes e matriz de desenvolvimento",
     count: 14,
-    color: "#60D186" // Verde WeDo - Desenvolvimento/qualidade
+    color: "var(--status-success)" // Verde WeDo - Desenvolvimento/qualidade
   },
   {
     id: "voice-screening",

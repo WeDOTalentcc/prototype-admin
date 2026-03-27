@@ -140,7 +140,7 @@ export function CandidateQueriesGuide({
             className
           )}
           style={{ 
-            borderColor: isOpen ? 'var(--gray-950)' : '#E0E0E0', 
+            borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)',
             fontFamily: '"Open Sans", sans-serif', 
             fontWeight: 500
           }}
@@ -157,15 +157,15 @@ export function CandidateQueriesGuide({
           backgroundColor: 'var(--gray-50)',
           borderRadius: '16px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
-          border: '1px solid #E8E8E8'
+          border: '1px solid var(--gray-200)'
         }}
       >
         <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--gray-200)' }}>
           <div 
             className="flex items-center gap-3 px-4 py-3 rounded-md"
             style={{ 
-              backgroundColor: '#F8F8F8',
-              border: '1px solid #E8E8E8'
+              backgroundColor: 'var(--gray-100)',
+              border: '1px solid var(--gray-200)'
             }}
           >
             <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -175,7 +175,7 @@ export function CandidateQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-              style={{ fontFamily: '"Open Sans", sans-serif', color: '#2D2D2D' }}
+              style={{ fontFamily: '"Open Sans", sans-serif', color: 'var(--gray-950)' }}
               autoFocus
             />
             {searchTerm && (
@@ -229,10 +229,10 @@ export function CandidateQueriesGuide({
                 className="w-full px-4 py-3 text-left transition-all rounded-md group flex items-start gap-3"
                 style={{ 
                   backgroundColor: 'var(--gray-50)',
-                  border: '1px solid #EEEEEE'
+                  border: '1px solid var(--gray-100)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#F0FAFB'
+                  e.currentTarget.style.backgroundColor = 'var(--gray-50)'
                   e.currentTarget.style.borderColor = 'var(--gray-200)'
                 }}
                 onMouseLeave={(e) => {
@@ -250,7 +250,7 @@ export function CandidateQueriesGuide({
                   className="text-sm leading-relaxed pt-1"
                   style={{ 
                     fontFamily: '"Open Sans", sans-serif',
-                    color: '#444444'
+                    color: 'var(--gray-600)'
                   }}
                 >
                   {query.question}

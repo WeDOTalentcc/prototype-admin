@@ -233,7 +233,7 @@ export function LiaSuperPrompt() {
             {/* Header */}
             <div
               className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0"
-              style={{ backgroundColor: "#FAFBFC" }}
+              style={{ backgroundColor: "var(--gray-50)" }}
             >
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -423,7 +423,7 @@ export function LiaSuperPrompt() {
                                       </h3>
                                       <p
                                         className="text-xs leading-snug line-clamp-2"
-                                        style={{ color: "#555555", fontFamily: '"Open Sans", sans-serif' }}
+                                        style={{ color: "var(--gray-500)", fontFamily: '"Open Sans", sans-serif' }}
                                       >
                                         {suggestion.description}
                                       </p>

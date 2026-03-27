@@ -252,7 +252,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     <p 
                       className="text-xs leading-snug line-clamp-2"
                       style={{ 
-                        color: '#555555',
+                        color: 'var(--gray-500)',
                         fontFamily: '"Open Sans", sans-serif'
                       }}
                     >
@@ -282,7 +282,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             top: `${position.top}px`,
             right: `${position.right}px`,
             backgroundColor: 'var(--gray-50)',
-            border: '1px solid #E8E8E8',
+            border: '1px solid var(--gray-200)',
             cursor: isDragging ? 'grabbing' : 'grab'
           }}
         >
@@ -295,7 +295,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           <span 
             className="text-xs font-medium"
             style={{ 
-              color: '#555555',
+              color: 'var(--gray-500)',
               fontFamily: '"Open Sans", sans-serif'
             }}
           >
@@ -312,7 +312,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             top: `${position.top}px`,
             right: `${position.right}px`,
             backgroundColor: 'var(--gray-50)',
-            border: '1px solid #E8E8E8',
+            border: '1px solid var(--gray-200)',
             borderRadius: '16px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)'
           }}

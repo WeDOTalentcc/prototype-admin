@@ -28,12 +28,12 @@ interface ScoreDisplay {
 }
 
 const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string }> = {
-  excepcional:    { label: 'Excepcional',      color: 'text-emerald-700', bgColor: 'bg-emerald-100', textColor: '#065f46' },
-  excelente:      { label: 'Excelente',         color: 'text-green-600',   bgColor: 'bg-green-100',   textColor: '#166534' },
-  alto:           { label: 'Alto',               color: 'text-blue-600',   bgColor: 'bg-blue-100',    textColor: '#1d4ed8' },
+  excepcional:    { label: 'Excepcional',      color: 'text-emerald-700', bgColor: 'bg-emerald-100', textColor: 'var(--status-success)' },
+  excelente:      { label: 'Excelente',         color: 'text-green-600',   bgColor: 'bg-green-100',   textColor: 'var(--status-success)' },
+  alto:           { label: 'Alto',               color: 'text-blue-600',   bgColor: 'bg-blue-100',    textColor: 'var(--gray-600)' },
   medio:          { label: 'Médio',              color: 'text-amber-600',  bgColor: 'bg-amber-100',   textColor: '#92400e' },
-  abaixo_da_media:{ label: 'Abaixo da média',   color: 'text-orange-600', bgColor: 'bg-orange-100',  textColor: '#9a3412' },
-  regular:        { label: 'Regular / Baixo',   color: 'text-red-600',    bgColor: 'bg-red-100',     textColor: '#991b1b' },
+  abaixo_da_media:{ label: 'Abaixo da média',   color: 'text-orange-600', bgColor: 'bg-orange-100',  textColor: 'var(--status-warning)' },
+  regular:        { label: 'Regular / Baixo',   color: 'text-red-600',    bgColor: 'bg-red-100',     textColor: 'var(--status-error)' },
 }
 
 const getClassificationConfig = (classification: string) =>
