@@ -118,7 +118,7 @@ import {
   isTechnicalRole,
   getCoreSkillsForRole,
 } from './expanded-chat/utils/skill-weight-utils'
-import { ClearDraftConfirmModal, EditCriteriaModal } from './expanded-chat/modals'
+import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddCompetencyModal, AddBenefitModal, SkipCompetenciesWarningModal, CalibrationProfileModal } from './expanded-chat/modals'
 
 function ExpandedChatModalContent({
   isOpen,
@@ -8552,201 +8552,46 @@ Qual prefere?`,
       </div>
 
       {/* Modal: Add Technical Skill */}
-      {showAddSkillModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[400px] p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-              Adicionar {newSkillCategory === 'language' ? 'Linguagem' : newSkillCategory === 'framework' ? 'Framework' : newSkillCategory === 'database' ? 'Banco de Dados' : 'Ferramenta'}
-            </h3>
-            <input
-              type="text"
-              value={newSkillName}
-              onChange={(e) => setNewSkillName(e.target.value)}
-              placeholder={`Nome da ${newSkillCategory === 'language' ? 'linguagem' : newSkillCategory === 'framework' ? 'framework' : newSkillCategory === 'database' ? 'banco' : 'ferramenta'}...`}
-              className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
-              style={{ fontFamily: '"Open Sans", sans-serif' }}
-              autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && addNewSkill(newSkillName)}
-            />
-            <div className="flex gap-3 mt-4">
-              <Button
-                variant="outline"
-                onClick={() => { setShowAddSkillModal(false); setNewSkillName('') }}
-                className="flex-1 h-10 rounded-md border-gray-200"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => addNewSkill(newSkillName)}
-                disabled={!newSkillName.trim()}
-                className={cn("flex-1 h-10 rounded-md", newSkillName.trim() ? "bg-gray-900 text-white" : "bg-gray-200")}
-              >
-                Adicionar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddTechnicalSkillModal
+        show={showAddSkillModal}
+        skillCategory={newSkillCategory}
+        skillName={newSkillName}
+        onSkillNameChange={setNewSkillName}
+        onAdd={addNewSkill}
+        onCancel={() => { setShowAddSkillModal(false); setNewSkillName('') }}
+      />
 
       {/* Modal: Add Behavioral Competency */}
-      {showAddCompetencyModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[440px] p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-              Adicionar Competência Comportamental
-            </h3>
-            
-            {/* Company suggestions section */}
-            {getBehavioralCompetencies().length > 0 && (
-              <div className="mb-4">
-                <label className="text-xs font-medium text-gray-500 mb-2 block">Sugestões da Empresa</label>
-                <div className="flex flex-wrap gap-2">
-                  {getBehavioralCompetencies().map((comp, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setNewCompetencyName(comp.competency)}
-                      className={cn(
-                        "px-3 py-1.5 text-xs rounded-md border transition-all",
-                        newCompetencyName === comp.competency
-                          ? "bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400"
-                          : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-900 dark:hover:border-gray-50 hover:text-gray-900 dark:hover:text-gray-50"
-                      )}
-                    >
-                      {comp.competency}
-                      <span className="ml-1.5 text-micro opacity-70">
-                        ({comp.weight === 'Essencial' ? '●●●' : comp.weight === 'Importante' ? '●●○' : '●○○'})
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={newCompetencyName}
-                onChange={(e) => setNewCompetencyName(e.target.value)}
-                placeholder="Nome da competência (ex: Liderança)"
-                className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
-                autoFocus
-              />
-              <textarea
-                value={newCompetencyJustification}
-                onChange={(e) => setNewCompetencyJustification(e.target.value)}
-                placeholder="Justificativa (ex: Necessário para gestão de equipe)"
-                className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400 resize-none"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
-                rows={3}
-              />
-            </div>
-            <div className="flex gap-3 mt-4">
-              <Button
-                variant="outline"
-                onClick={() => { setShowAddCompetencyModal(false); setNewCompetencyName(''); setNewCompetencyJustification('') }}
-                className="flex-1 h-10 rounded-md border-gray-200"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={addNewCompetency}
-                disabled={!newCompetencyName.trim()}
-                className={cn("flex-1 h-10 rounded-md", newCompetencyName.trim() ? "bg-gray-900 text-white" : "bg-gray-200")}
-              >
-                Adicionar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddCompetencyModal
+        show={showAddCompetencyModal}
+        companySuggestions={getBehavioralCompetencies()}
+        competencyName={newCompetencyName}
+        competencyJustification={newCompetencyJustification}
+        onCompetencyNameChange={setNewCompetencyName}
+        onCompetencyJustificationChange={setNewCompetencyJustification}
+        onAdd={addNewCompetency}
+        onCancel={() => { setShowAddCompetencyModal(false); setNewCompetencyName(''); setNewCompetencyJustification('') }}
+      />
 
       {/* Modal: Add Benefit */}
-      {showAddBenefitModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[400px] p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-              Adicionar Benefício
-            </h3>
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={newBenefitName}
-                onChange={(e) => setNewBenefitName(e.target.value)}
-                placeholder="Nome do benefício (ex: Auxílio Creche)"
-                className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
-                autoFocus
-              />
-              <input
-                type="text"
-                value={newBenefitValue}
-                onChange={(e) => setNewBenefitValue(e.target.value)}
-                placeholder="Valor (opcional, ex: R$ 500/mês)"
-                className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
-                style={{ fontFamily: '"Open Sans", sans-serif' }}
-              />
-            </div>
-            <div className="flex gap-3 mt-4">
-              <Button
-                variant="outline"
-                onClick={() => { setShowAddBenefitModal(false); setNewBenefitName(''); setNewBenefitValue('') }}
-                className="flex-1 h-10 rounded-md border-gray-200"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={addNewBenefit}
-                disabled={!newBenefitName.trim()}
-                className={cn("flex-1 h-10 rounded-md", newBenefitName.trim() ? "bg-gray-900 text-white" : "bg-gray-200")}
-              >
-                Adicionar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddBenefitModal
+        show={showAddBenefitModal}
+        benefitName={newBenefitName}
+        benefitValue={newBenefitValue}
+        onBenefitNameChange={setNewBenefitName}
+        onBenefitValueChange={setNewBenefitValue}
+        onAdd={addNewBenefit}
+        onCancel={() => { setShowAddBenefitModal(false); setNewBenefitName(''); setNewBenefitValue('') }}
+      />
 
       {/* Modal: Skip Competencies Warning */}
-      {showSkipCompetenciesWarning && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[400px] p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-status-warning/10 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-status-warning" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                  Competências incompletas
-                </h3>
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-              Recomendamos pelo menos <strong>3 competências técnicas</strong> e <strong>3 comportamentais</strong> para que a LIA encontre candidatos de forma mais assertiva.
-            </p>
-            <p className="text-xs text-gray-400 mb-4" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-              Atualmente você tem: {technicalSkills.length} técnicas e {behavioralCompetencies.filter(c => c.enabled).length} comportamentais.
-            </p>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowSkipCompetenciesWarning(false)}
-                className="flex-1 h-10 rounded-md border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400"
-              >
-                Voltar e completar
-              </Button>
-              <Button
-                onClick={() => { setShowSkipCompetenciesWarning(false); goToNextStage() }}
-                className="flex-1 h-10 rounded-md"
-                style={{ backgroundColor: 'var(--status-warning)', color: 'white' }}
-              >
-                Confirmar assim mesmo
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SkipCompetenciesWarningModal
+        show={showSkipCompetenciesWarning}
+        technicalSkillsCount={technicalSkills.length}
+        behavioralCompetenciesCount={behavioralCompetencies.filter(c => c.enabled).length}
+        onClose={() => setShowSkipCompetenciesWarning(false)}
+        onConfirm={() => { setShowSkipCompetenciesWarning(false); goToNextStage() }}
+      />
 
       {/* Modal: Clear Draft Confirmation */}
       <ClearDraftConfirmModal
@@ -8756,380 +8601,21 @@ Qual prefere?`,
       />
 
       {/* Modal: Calibration Profile Review */}
-      {showCalibrationModal && calibrationCandidates.length > 0 && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[95vw] max-w-[1200px] h-[90vh] flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowCalibrationModal(false)}
-                  className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                  <span className="text-sm font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>Review Profiles</span>
-                </button>
-              </div>
-              <button
-                onClick={() => setShowCalibrationModal(false)}
-                className="p-2 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 flex overflow-hidden">
-              {/* Left Panel - Candidate Profile */}
-              <div className="flex-1 overflow-y-auto p-6 border-r border-gray-200">
-                {(() => {
-                  const candidate = calibrationCandidates[currentCalibrationIndex]
-                  if (!candidate) return null
-                  
-                  return (
-                    <div className="space-y-6">
-                      {/* Candidate Header */}
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gray-900 dark:bg-gray-50 flex items-center justify-center text-white font-semibold text-sm">
-                          {candidate.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h2 className="text-base font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                              {candidate.name}
-                            </h2>
-                            {candidate.linkedinUrl && (
-                              <a href={candidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                              </a>
-                            )}
-                            <button className="px-3 py-1 text-xs font-medium bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md transition-colors">
-                              Full Profile ↗
-                            </button>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                            {candidate.location}
-                          </p>
-                          <p className="text-xs text-gray-800 mt-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                            ↻ {candidate.currentRole} at {candidate.currentCompany}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                            ★ {candidate.education}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Tabs */}
-                      <div className="flex gap-1 border-b border-gray-200">
-                        {['experience', 'education', 'skillmap'].map((tab) => (
-                          <button
-                            key={tab}
-                            onClick={() => setCandidateProfileTab(tab as 'experience' | 'education' | 'skillmap')}
-                            className={cn(
-                              "px-3 py-1.5 text-sm font-medium transition-colors border-b-2",
-                              candidateProfileTab === tab
-                                ? "text-gray-800 border-gray-800"
-                                : "text-gray-500 border-transparent hover:text-gray-800"
-                            )}
-                            style={{ fontFamily: '"Open Sans", sans-serif' }}
-                          >
-                            {tab === 'experience' ? 'Experience' : tab === 'education' ? 'Education' : 'Skill Map'}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Tab Content */}
-                      {candidateProfileTab === 'experience' && (
-                        <div className="space-y-4">
-                          {/* Highlights */}
-                          <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
-                            <h4 className="text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                              Highlights <span className="text-gray-500 font-normal">Show more ({candidate.highlights.length})</span>
-                            </h4>
-                            <div className="flex flex-wrap gap-3">
-                              {candidate.highlights.map((highlight, idx) => (
-                                <div key={idx} className="flex items-center gap-2 px-2 py-1.5 bg-white rounded-md border border-gray-200">
-                                  <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center">
-                                    {highlight.icon === 'trophy' && <Star className="w-3.5 h-3.5 text-status-warning" />}
-                                    {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />}
-                                    {highlight.icon === 'building' && <Building2 className="w-3.5 h-3.5 text-violet-500" />}
-                                    {highlight.icon === 'rocket' && <Rocket className="w-3.5 h-3.5 text-wedo-green" />}
-                                    {highlight.icon === 'globe' && <MapPin className="w-3.5 h-3.5 text-pink-500" />}
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-semibold text-gray-800">{highlight.label}</p>
-                                    <p className="text-xs text-gray-500">{highlight.value}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Experience Stats */}
-                          <div className="flex gap-6 py-3 border-b border-gray-200">
-                            <div>
-                              <p className="text-xs text-gray-500 uppercase tracking-wide">Average Tenure</p>
-                              <p className="text-sm font-semibold text-gray-800">{candidate.averageTenure}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500 uppercase tracking-wide">Current Tenure</p>
-                              <p className="text-sm font-semibold text-gray-800">{candidate.currentTenure}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500 uppercase tracking-wide">Total Experience</p>
-                              <p className="text-sm font-semibold text-gray-800">{candidate.totalExperience}</p>
-                            </div>
-                          </div>
-
-                          {/* Experiences */}
-                          <div className="space-y-4">
-                            <h4 className="text-sm font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                              Experiences
-                            </h4>
-                            {candidate.experiences.map((exp) => (
-                              <div key={exp.id} className="flex gap-3">
-                                <div className="w-8 h-8 rounded-md bg-gray-50 flex items-center justify-center flex-shrink-0">
-                                  <Building2 className="w-4 h-4 text-gray-500" />
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-sm font-semibold text-gray-800">{exp.company}</p>
-                                    <span className="text-xs text-gray-500">{exp.duration}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-sm text-gray-800">{exp.role}</p>
-                                    {exp.isPromotion && (
-                                      <span className="px-2 py-0.5 text-xs font-medium text-violet-500 bg-violet-500/10 rounded-full">
-                                        Promotion
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-gray-500 mt-1">{exp.period}</p>
-                                  {exp.skills.length > 0 && (
-                                    <p className="text-xs text-gray-500 mt-2">
-                                      Skills: {exp.skills.slice(0, 6).join(' · ')} 
-                                      {exp.skills.length > 6 && <button className="text-gray-600 dark:text-gray-400 ml-1">Read More</button>}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {candidateProfileTab === 'education' && (
-                        <div className="space-y-4">
-                          {candidate.educationHistory.map((edu) => (
-                            <div key={edu.id} className="flex gap-4 p-3 bg-gray-50 rounded-md">
-                              <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center flex-shrink-0">
-                                <GraduationCap className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-800">{edu.institution}</p>
-                                <p className="text-sm text-gray-500">{edu.degree} in {edu.field}</p>
-                                <p className="text-xs text-gray-500 mt-1">{edu.period}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {candidateProfileTab === 'skillmap' && (
-                        <div className="space-y-6">
-                          {candidate.skillMap.map((category, idx) => (
-                            <div key={idx}>
-                              <h5 className="text-sm font-semibold text-gray-800 mb-2">{category.category}</h5>
-                              <div className="flex flex-wrap gap-2">
-                                {category.skills.map((skill, sidx) => (
-                                  <span key={sidx} className="px-2 py-1 text-micro font-medium text-gray-800 bg-gray-50 rounded-full border border-gray-200">
-                                    ★ {skill}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                          
-                          <div>
-                            <h5 className="text-sm font-semibold text-gray-800 mb-2">Additional Skills</h5>
-                            <div className="flex flex-wrap gap-2">
-                              {candidate.additionalSkills.slice(0, 10).map((skill, idx) => (
-                                <span key={idx} className="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 rounded-md">
-                                  {skill}
-                                </span>
-                              ))}
-                              {candidate.additionalSkills.length > 10 && (
-                                <span className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 font-medium">
-                                  +{candidate.additionalSkills.length - 10} more skills
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div>
-                            <h5 className="text-sm font-semibold text-gray-800 mb-2">Languages</h5>
-                            <div className="flex flex-wrap gap-2">
-                              {candidate.languages.map((lang, idx) => (
-                                <span key={idx} className="px-2 py-1 text-xs font-medium text-gray-800 bg-cyan-100 rounded-md">
-                                  {lang}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })()}
-              </div>
-
-              {/* Right Panel - LIA Analysis & Actions */}
-              <div className="w-[380px] flex flex-col bg-gray-50">
-                {/* Header - Por que encontramos este perfil */}
-                <div className="shrink-0 px-4 pt-4 pb-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                      Por que encontramos este perfil
-                    </h3>
-                    <button 
-                      onClick={() => setShowEditCriteriaModal(true)}
-                      className="text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark font-medium transition-colors"
-                    >
-                      Editar Critérios
-                    </button>
-                  </div>
-                </div>
-
-                {/* LIA Insights Box - Scrollable with max height */}
-                <div className="shrink-0 px-4 max-h-[180px] overflow-y-auto">
-                  <div className="p-3 bg-white rounded-md border border-gray-200 space-y-3">
-                    {calibrationCandidates[currentCalibrationIndex]?.matchCriteria.map((match) => (
-                      <div key={match.id} className="space-y-1">
-                        <div className="flex items-start gap-2">
-                          <div className={cn(
-                            "px-1.5 py-0.5 rounded-full text-micro font-medium",
-                            match.isMatch ? "bg-wedo-green/10 text-wedo-green" : "bg-status-error/10 text-status-error"
-                          )}>
-                            {match.isMatch ? '✓ Match' : '✗ No Match'}
-                          </div>
-                        </div>
-                        <p className="text-xs font-semibold text-gray-800">
-                          {match.criteria}
-                          <span className="ml-1.5 text-micro text-gray-500 font-normal">
-                            {match.importance === 1 ? '①②' : '①'}
-                          </span>
-                        </p>
-                        <p className="text-micro text-gray-500 leading-relaxed">
-                          {match.explanation}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Comment field - Always visible */}
-                <div className="shrink-0 px-4 py-3">
-                  <label className="text-xs font-medium text-gray-800 mb-1.5 block">
-                    Comentário para a LIA (opcional)
-                  </label>
-                  <textarea
-                    value={calibrationComment}
-                    onChange={(e) => setCalibrationComment(e.target.value)}
-                    placeholder="Ex: Gostei do perfil mas prefiro candidatos com mais experiência em startups..."
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 resize-none bg-white"
-                    style={{ fontFamily: '"Open Sans", sans-serif' }}
-                    rows={2}
-                  />
-                </div>
-
-                {/* Edit criteria note - Always visible */}
-                <div className="shrink-0 px-4 pb-3">
-                  <div className="p-2 bg-gray-50 rounded-md border border-gray-200">
-                    <p className="text-micro text-gray-500">
- Você pode <button onClick={() => setShowEditCriteriaModal(true)} className="font-medium">fixar critérios</button> obrigatórios ou <button onClick={() => setShowEditCriteriaModal(true)} className="text-gray-600 font-medium">reordenar</button> por importância.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Actions Footer - Always visible */}
-                <div className="shrink-0 px-4 py-3 border-t border-gray-200 bg-white mt-auto">
-                  {/* Navigation */}
-                  <div className="flex items-center justify-between mb-3">
-                    <button
-                      onClick={() => setCurrentCalibrationIndex(prev => Math.max(0, prev - 1))}
-                      disabled={currentCalibrationIndex === 0}
-                      className={cn(
-                        "p-1.5 rounded-md transition-colors",
-                        currentCalibrationIndex === 0 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"
-                      )}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <span className="text-xs text-gray-500">
-                      Profile {currentCalibrationIndex + 1}/{calibrationCandidates.length}
-                    </span>
-                    <button
-                      onClick={() => setCurrentCalibrationIndex(prev => Math.min(calibrationCandidates.length - 1, prev + 1))}
-                      disabled={currentCalibrationIndex === calibrationCandidates.length - 1}
-                      className={cn(
-                        "p-1.5 rounded-md transition-colors",
-                        currentCalibrationIndex === calibrationCandidates.length - 1 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"
-                      )}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Approve/Reject Buttons */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleApproveCandidate}
-                      className="flex-1 py-2.5 px-3 bg-gray-900 text-white rounded-md font-medium text-xs hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Aprovar
-                      <span className="text-micro opacity-80">A</span>
-                    </button>
-                    <button
-                      onClick={handleRejectCandidate}
-                      className="flex-1 py-2.5 px-3 bg-white text-status-error border border-status-error rounded-md font-medium text-xs hover:bg-status-error/5 transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                      Reprovar
-                      <span className="text-micro opacity-80">R</span>
-                    </button>
-                  </div>
-
-                  <p className="text-micro text-gray-500 text-center mt-2">
-                    Isso apenas calibra o agente e não envia emails.
-                  </p>
-
-                  {/* Progress */}
-                  <div className="mt-2 flex items-center justify-center gap-1.5">
-                    <span className="text-micro text-gray-500">Aprovados:</span>
-                    <div className="flex gap-1">
-                      {[0, 1, 2].map((i) => (
-                        <div
-                          key={i}
-                          className={cn(
-                            "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
-                            approvedCandidates.length > i
-                              ? "bg-wedo-green text-white"
-                              : "bg-gray-200 text-gray-500"
-                          )}
-                        >
-                          {approvedCandidates.length > i ? '✓' : i + 1}
-                        </div>
-                      ))}
-                    </div>
-                    <span className="text-micro text-gray-500">de 3</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <CalibrationProfileModal
+        show={showCalibrationModal}
+        candidates={calibrationCandidates}
+        currentIndex={currentCalibrationIndex}
+        profileTab={candidateProfileTab}
+        comment={calibrationComment}
+        approvedCount={approvedCandidates.length}
+        onSetCurrentIndex={setCurrentCalibrationIndex}
+        onSetProfileTab={setCandidateProfileTab}
+        onSetComment={setCalibrationComment}
+        onApprove={handleApproveCandidate}
+        onReject={handleRejectCandidate}
+        onClose={() => setShowCalibrationModal(false)}
+        onOpenEditCriteria={() => setShowEditCriteriaModal(true)}
+      />
 
       {/* Modal: Edit Criteria */}
       <EditCriteriaModal
