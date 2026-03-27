@@ -209,7 +209,7 @@ function DashboardVersaoAtual() {
                 <RechartsTooltip 
                   contentStyle={{
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid #e5e7eb',
+                    border: '1px solid var(--gray-200)',
                     borderRadius: '8px',
                     fontSize: '12px'
                   }}

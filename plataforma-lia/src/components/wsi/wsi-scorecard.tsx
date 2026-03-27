@@ -31,7 +31,7 @@ const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; 
   excepcional:    { label: 'Excepcional',      color: 'text-emerald-700', bgColor: 'bg-emerald-100', textColor: 'var(--status-success)' },
   excelente:      { label: 'Excelente',         color: 'text-green-600',   bgColor: 'bg-green-100',   textColor: 'var(--status-success)' },
   alto:           { label: 'Alto',               color: 'text-blue-600',   bgColor: 'bg-blue-100',    textColor: 'var(--gray-600)' },
-  medio:          { label: 'Médio',              color: 'text-amber-600',  bgColor: 'bg-amber-100',   textColor: '#92400e' },
+  medio:          { label: 'Médio',              color: 'text-amber-600',  bgColor: 'bg-amber-100',   textColor: 'var(--status-warning)' },
   abaixo_da_media:{ label: 'Abaixo da média',   color: 'text-orange-600', bgColor: 'bg-orange-100',  textColor: 'var(--status-warning)' },
   regular:        { label: 'Regular / Baixo',   color: 'text-red-600',    bgColor: 'bg-red-100',     textColor: 'var(--status-error)' },
 }

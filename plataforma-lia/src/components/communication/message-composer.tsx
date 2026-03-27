@@ -379,7 +379,7 @@ export function MessageComposer({
                 onClick={handleAdjustWithLIA}
                 disabled={isGenerating || (!aiPrompt.trim() && !message.trim())}
                 className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px]"
-                style={{ backgroundColor: isGenerating ? '#a3d9e3' : 'var(--gray-600)', color: 'white' }}
+                style={{ backgroundColor: isGenerating ? 'var(--wedo-cyan)' : 'var(--gray-600)', color: 'white' }}
               >
                 {isGenerating ? (
                   <>

@@ -167,7 +167,7 @@ export function CalibrationStage() {
       )}>
         {/* Header */}
         <div className="p-3 bg-white border-b border-gray-200 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-[#4A9DAB] flex items-center justify-center text-white font-semibold text-lg">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark flex items-center justify-center text-white font-semibold text-lg">
             {currentCandidate.name?.charAt(0) || 'C'}
           </div>
           <div className="flex-1 min-w-0">
@@ -176,7 +176,7 @@ export function CalibrationStage() {
                 {currentCandidate.name}
               </h3>
               {currentCandidate.linkedinUrl && (
-                <a href={currentCandidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-[#0077B5]">
+                <a href={currentCandidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-gray-600">
                   <Linkedin className="w-4 h-4" />
                 </a>
               )}

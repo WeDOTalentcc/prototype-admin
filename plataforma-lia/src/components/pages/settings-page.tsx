@@ -2677,7 +2677,7 @@ function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: (change
       name: `custom_${Date.now()}`,
       displayName: 'Nova Etapa',
       stageOrder: stages.length + 1,
-      color: '#94A3B8',
+      color: 'var(--gray-400)',
       icon: 'plus-circle',
       stageType: 'active' as const,
       isInitial: false,

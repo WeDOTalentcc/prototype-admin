@@ -165,7 +165,7 @@ export function CandidateCard({
       onDragStart={handleDragStartInternal}
       onDragEnd={onDragEnd}
       className={`bg-white dark:bg-gray-900 rounded-md border relative overflow-hidden ${
-        candidate.needsAction ? 'border-l-4 border-l-[#1F2937] border-gray-200 dark:border-gray-700' : 
+        candidate.needsAction ? 'border-l-4 border-l-gray-800 border-gray-200 dark:border-gray-700' : 
         (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-gray-300 dark:border-l-gray-600 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800' : 
         'border-gray-200 dark:border-gray-700'
       } ${isDragging ? 'opacity-50 cursor-grabbing' : 'cursor-move'} hover:transition-all duration-300 group`}

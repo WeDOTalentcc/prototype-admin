@@ -186,7 +186,7 @@ interface LineChartProps {
   color?: string
 }
 
-export function LineChart({ data, color = "#6b7280" }: LineChartProps) {
+export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
   const maxValue = Math.max(...data.map(d => d.value))
   const minValue = Math.min(...data.map(d => d.value))
   const range = maxValue - minValue || 1

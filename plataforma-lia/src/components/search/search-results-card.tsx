@@ -392,7 +392,7 @@ export function SearchResultsCard({
                             target="_blank" 
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-[#0077b5] hover:text-[#005582]"
+                            className="text-gray-600 hover:text-gray-700"
                           >
                             <Linkedin className="h-4 w-4" />
                           </a>

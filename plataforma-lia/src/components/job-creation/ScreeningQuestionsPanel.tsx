@@ -598,7 +598,7 @@ export function ScreeningQuestionsPanel({
               <Badge 
                 variant="outline" 
                 className="text-micro px-1.5 py-0"
-                style={{ backgroundColor: selectedInBlock > 0 ? '#A8D5B7' : '#f5f5f5', color: selectedInBlock > 0 ? '#1a5a34' : '#666', borderColor: selectedInBlock > 0 ? '#7ec9a0' : '#ddd' }}
+                style={{ backgroundColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--gray-100)', color: selectedInBlock > 0 ? 'var(--status-success)' : 'var(--gray-500)', borderColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--gray-300)' }}
               >
                 {selectedInBlock} {selectedInBlock === 1 ? 'Info.' : 'Infos.'}
               </Badge>

@@ -170,7 +170,7 @@ export function CalibrationCard({
                       href={candidate.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#0077B5] hover:text-[#005885] transition-colors"
+                      className="text-gray-600 hover:text-gray-700 transition-colors"
                       title="Ver perfil no LinkedIn"
                     >
                       <Linkedin className="w-3.5 h-3.5" />

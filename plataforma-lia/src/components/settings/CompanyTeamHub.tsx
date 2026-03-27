@@ -4547,7 +4547,7 @@ export function CompanyTeamHub({
                                     href={member.linkedin_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-[#0077B5] hover:text-[#0066a1] transition-colors"
+                                    className="text-gray-600 hover:text-gray-700 transition-colors"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <Linkedin className="w-3.5 h-3.5" />

@@ -150,7 +150,7 @@ export function VacancyFullSummary({
       <div className="flex items-start gap-3 max-w-[85%]">
         <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
-          <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-[#4FA3B4] text-white text-xs font-medium">
+          <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
@@ -173,7 +173,7 @@ export function VacancyFullSummary({
     <div className="flex items-start gap-3 max-w-[95%]">
       <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
         <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
-        <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-[#4FA3B4] text-white text-xs font-medium">
+        <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
           LIA
         </AvatarFallback>
       </Avatar>

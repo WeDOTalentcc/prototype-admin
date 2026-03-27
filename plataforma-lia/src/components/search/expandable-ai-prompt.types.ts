@@ -134,7 +134,7 @@ export const CONTEXT_COLORS: Record<string, {
   candidates: {
     border: 'var(--wedo-green-light)',
     bg: 'rgba(123, 194, 154, 0.1)',
-    headerText: '#5aa078',
+    headerText: 'var(--status-success)',
     headerBg: 'rgba(123, 194, 154, 0.15)',
   },
   jobs: {

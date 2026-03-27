@@ -119,7 +119,7 @@ export function SalaryStage() {
     <div className="space-y-3">
       {/* Market Benchmark Card */}
       {salaryBenchmark && (salaryBenchmark.market || salaryBenchmark.internal) && (
-        <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-[#22C55E]/5 rounded-md border border-gray-300 dark:border-gray-600">
+        <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-wedo-green-bright/5 rounded-md border border-gray-300 dark:border-gray-600">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>

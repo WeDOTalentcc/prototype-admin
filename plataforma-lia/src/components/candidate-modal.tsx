@@ -318,7 +318,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <div>
                       <label className="text-sm font-medium text-gray-800 dark:text-gray-200">LinkedIn</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                        <Linkedin className="w-4 h-4 text-gray-600" />
                         <a href={candidateData.linkedinUrl} className="text-sm text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 hover:underline">Ver perfil</a>
                       </div>
                     </div>

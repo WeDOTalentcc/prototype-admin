@@ -1675,7 +1675,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   <div className="p-4 bg-gray-50 rounded-md border border-gray-100 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                        <Linkedin className="w-4 h-4 text-gray-600" />
                         <span className="text-sm text-gray-700">LinkedIn</span>
                       </div>
                       <Switch

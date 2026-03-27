@@ -2470,7 +2470,7 @@ export function SmartSearchInput({
               {similarUrls.map((url, index) => (
                 <div key={index} className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                    <Linkedin className="w-3.5 h-3.5 text-[#0077B5]" />
+                    <Linkedin className="w-3.5 h-3.5 text-gray-600" />
                   </div>
                   <input
                     type="text"

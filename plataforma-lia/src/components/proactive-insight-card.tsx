@@ -219,7 +219,7 @@ export function ProactiveInsightCard({
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Linkedin className="w-3 h-3 text-[#0077B5]" />
+                        <Linkedin className="w-3 h-3 text-gray-600" />
                         <span className={`${textStyles.bodySmall} dark:text-gray-400`}>LinkedIn</span>
                       </div>
                       <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>

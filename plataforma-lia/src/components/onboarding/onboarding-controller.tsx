@@ -474,7 +474,7 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
                 ease: "easeInOut"
               }}
             >
-              <CheckCircle className="w-16 h-16" style={{ color: '#A8E6CF' }} />
+              <CheckCircle className="w-16 h-16" style={{ color: 'var(--wedo-green-pastel)' }} />
             </motion.div>
           </motion.div>
           

@@ -65,7 +65,7 @@ export function Breadcrumbs({
                 style={
                   scope === 'global' 
                     ? { borderColor: 'var(--gray-200)' }
-                    : { borderColor: '#9333ea', color: '#9333ea' }
+                    : { borderColor: 'var(--wedo-purple)', color: 'var(--wedo-purple)' }
                 }
               >
                 {scope === 'global' ? 'GLOBAL' : `Cliente: ${clientName || 'N/A'}`}

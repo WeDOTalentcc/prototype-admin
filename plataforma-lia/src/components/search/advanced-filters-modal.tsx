@@ -2175,7 +2175,7 @@ export function AdvancedFiltersModal({
                   >
                     <Badge 
                       className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium"
-                      style={{ backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#d97706", border: "none" }}
+                      style={{ backgroundColor: "var(--gray-100)", color: "var(--status-warning)", border: "none" }}
                     >
                       1 CRÉDITO/CAND.
                     </Badge>
@@ -2210,7 +2210,7 @@ export function AdvancedFiltersModal({
                   >
                     <Badge 
                       className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium"
-                      style={{ backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#d97706", border: "none" }}
+                      style={{ backgroundColor: "var(--gray-100)", color: "var(--status-warning)", border: "none" }}
                     >
                       1 CRÉDITO/CAND.
                     </Badge>

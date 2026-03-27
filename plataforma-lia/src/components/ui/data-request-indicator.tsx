@@ -46,13 +46,13 @@ const STATUS_CONFIG: Record<DataRequestStatus, {
   complete: {
     icon: <Check className="w-3 h-3" />,
     label: 'Completo',
-    color: '#5aa078',
+    color: 'var(--status-success)',
     bgColor: 'rgba(123, 194, 154, 0.15)',
   },
   partial: {
     icon: <AlertTriangle className="w-3 h-3" />,
     label: 'Parcial',
-    color: '#c58a5e',
+    color: 'var(--wedo-orange)',
     bgColor: 'rgba(232, 168, 124, 0.15)',
   },
   expired: {

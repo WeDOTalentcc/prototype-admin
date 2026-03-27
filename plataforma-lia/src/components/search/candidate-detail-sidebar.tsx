@@ -393,7 +393,7 @@ export function CandidateDetailSidebar({
                     className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <Linkedin className="h-4 w-4 text-[#0077b5]" />
+                      <Linkedin className="h-4 w-4 text-gray-600" />
                       <span className="text-sm text-gray-800 dark:text-gray-200">Ver perfil no LinkedIn</span>
                     </div>
                     <ExternalLink className="h-4 w-4 text-gray-600 dark:text-gray-400" />

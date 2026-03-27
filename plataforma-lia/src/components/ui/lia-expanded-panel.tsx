@@ -149,7 +149,7 @@ export function LiaExpandedPanel({
         {quickActions && (
           <div 
             className="flex-shrink-0 px-4 py-3" 
-            style={{ borderBottom: '1px solid #E4EBEF' }}
+            style={{ borderBottom: '1px solid var(--gray-200)' }}
           >
             {quickActions}
           </div>
@@ -159,7 +159,7 @@ export function LiaExpandedPanel({
         {tabs && (
           <div 
             className="flex-shrink-0 px-4 pt-2" 
-            style={{ borderBottom: '1px solid #E4EBEF' }}
+            style={{ borderBottom: '1px solid var(--gray-200)' }}
           >
             {tabs}
           </div>

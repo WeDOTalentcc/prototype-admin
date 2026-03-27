@@ -101,7 +101,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
       <div className="flex items-center justify-between px-4 py-2.5 bg-white border-b border-gray-200">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-[#4A9DAB] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark flex items-center justify-center">
               <span className="text-white text-sm font-bold">L</span>
             </div>
             <span className="text-sm font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>

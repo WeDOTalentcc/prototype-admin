@@ -185,7 +185,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             icon={<Target className="w-4 h-4" />}
             label="Taxa de Sucesso"
             value={`${globalMetrics.success_rate.toFixed(1)}%`}
-            color="#60D186"
+            color="var(--wedo-green-bright)"
           />
           <MetricCard
             icon={<Clock className="w-4 h-4" />}
@@ -197,7 +197,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             icon={<AlertTriangle className="w-4 h-4" />}
             label="Alertas"
             value={globalMetrics.proactive_alerts}
-            color={globalMetrics.proactive_alerts > 0 ? 'var(--status-warning)' : '#60D186'}
+            color={globalMetrics.proactive_alerts > 0 ? 'var(--status-warning)' : 'var(--wedo-green-bright)'}
           />
         </div>
 
@@ -319,7 +319,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     </span>
                     <span 
                       className="text-lg font-bold"
-                      style={{ color: agent.progress >= 80 ? '#60D186' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
+                      style={{ color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)' }}
                     >
                       {agent.progress}%
                     </span>
@@ -429,10 +429,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                         (status === 'success' ? 'rgba(96, 209, 134, 0.15)' : status === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)') : 
                         'var(--eleven-bg-message)',
                       color: selectedStatusFilter.includes(status) ? 
-                        (status === 'success' ? '#60D186' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') : 
+                        (status === 'success' ? 'var(--wedo-green-bright)' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') : 
                         'var(--eleven-text-secondary)',
                       border: `1px solid ${selectedStatusFilter.includes(status) ? 
-                        (status === 'success' ? '#60D186' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') : 'transparent'}`
+                        (status === 'success' ? 'var(--wedo-green-bright)' : status === 'error' ? 'var(--status-error)' : 'var(--status-warning)') : 'transparent'}`
                     }}
                   >
                     {status === 'success' && <CheckCircle className="w-2.5 h-2.5" />}

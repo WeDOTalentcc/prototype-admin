@@ -362,7 +362,7 @@ export function Jobs2Page() {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Publicações:</span>
                 <div className="flex items-center gap-1">
-                  <Linkedin className={`w-4 h-4 ${job.publishedLinkedIn ? 'text-[#0077B5]' : 'text-gray-600'}`} />
+                  <Linkedin className={`w-4 h-4 ${job.publishedLinkedIn ? 'text-gray-600' : 'text-gray-600'}`} />
                   <span className="text-xs">{job.publishedLinkedIn ? 'LinkedIn' : ''}</span>
                 </div>
                 <div className="flex items-center gap-1">

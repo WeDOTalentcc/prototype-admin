@@ -356,7 +356,7 @@ export function CandidatesTable({
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-[#0A66C2]"
+                            className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-gray-600"
                             onClick={() => window.open(candidate.linkedin_url, "_blank")}
                           >
                             <Linkedin className="h-4 w-4" />
