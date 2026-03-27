@@ -1,0 +1,99 @@
+"use client"
+
+import { Globe, AlertCircle, Loader2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+interface GlobalExpansionConfirmModalProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  lastSuccessfulQuery: string | null
+  lastSearchQuery: string | null
+  localResultsCount: number
+  isExpandingToGlobal: boolean
+  onConfirm: () => void
+}
+
+export function GlobalExpansionConfirmModal({
+  open,
+  onOpenChange,
+  lastSuccessfulQuery,
+  lastSearchQuery,
+  localResultsCount,
+  isExpandingToGlobal,
+  onConfirm,
+}: GlobalExpansionConfirmModalProps) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="max-w-md">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+              <Globe className="w-4 h-4 text-gray-700" />
+            </div>
+            Expandir para Busca Global
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-4">
+            <p className="text-sm text-gray-800 dark:text-gray-500">
+              A Busca Global encontra candidatos além da sua base local em um pool de mais de 800 milhões de perfis profissionais.
+            </p>
+
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-800">Busca atual:</span>
+                <span className="font-medium text-xs max-w-[200px] truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-800">Resultados locais:</span>
+                <span className="font-medium">{localResultsCount} candidatos</span>
+              </div>
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Custo por candidato:</span>
+                  <span className="font-bold text-lg text-gray-700">
+                    1 crédito
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-status-warning dark:text-status-warning bg-status-warning/10 dark:bg-status-warning/20 p-2 rounded-md">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>Você será cobrado apenas pelos candidatos que visualizar/revelar contatos.</span>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => onOpenChange(false)}>
+            Cancelar
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            disabled={isExpandingToGlobal}
+            className="text-white gap-2 bg-gray-900"
+          >
+            {isExpandingToGlobal ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Expandindo...
+              </>
+            ) : (
+              <>
+                <Globe className="w-4 h-4" />
+                Expandir Busca
+              </>
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}

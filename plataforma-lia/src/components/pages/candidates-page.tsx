@@ -56,6 +56,10 @@ import { ActionResultCard } from "@/components/chat/action-result-card"
 
 // Quick Actions Modals
 import { ContactModal, ScheduleModal } from "@/components/quick-actions-modals"
+import { GlobalExpansionConfirmModal } from "@/components/pages/candidates/GlobalExpansionConfirmModal"
+import { SourceChangeConfirmModal } from "@/components/pages/candidates/SourceChangeConfirmModal"
+import { ContactFilterConfirmModal } from "@/components/pages/candidates/ContactFilterConfirmModal"
+import { DeleteArchetypeModal } from "@/components/pages/candidates/DeleteArchetypeModal"
 import { QuickViewModal } from "@/components/quick-view-modal"
 import { UnifiedCommunicationModal, type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { CandidateComparison } from "@/components/candidate-comparison"
@@ -9472,213 +9476,33 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       </AlertDialog>
 
       {/* Modal de Confirmação para Expansão Global */}
-      <AlertDialog open={showGlobalExpansionConfirm} onOpenChange={setShowGlobalExpansionConfirm}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
-                <Globe className="w-4 h-4 text-gray-700" />
-              </div>
-              Expandir para Busca Global
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-4">
-              <p className="text-sm text-gray-800 dark:text-gray-500">
-                A Busca Global encontra candidatos além da sua base local em um pool de mais de 800 milhões de perfis profissionais.
-              </p>
-              
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-800">Busca atual:</span>
-                  <span className="font-medium text-xs max-w-[200px] truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-800">Resultados locais:</span>
-                  <span className="font-medium">{localResultsCount} candidatos</span>
-                </div>
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Custo por candidato:</span>
-                    <span className="font-bold text-lg text-gray-700">
-                      1 crédito
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs text-status-warning dark:text-status-warning bg-status-warning/10 dark:bg-status-warning/20 p-2 rounded-md">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>Você será cobrado apenas pelos candidatos que visualizar/revelar contatos.</span>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowGlobalExpansionConfirm(false)}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleExpandToGlobal}
-              disabled={isExpandingToGlobal}
-              className="text-white gap-2 bg-gray-900"
-            >
-              {isExpandingToGlobal ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Expandindo...
-                </>
-              ) : (
-                <>
-                  <Globe className="w-4 h-4" />
-                  Expandir Busca
-                </>
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <GlobalExpansionConfirmModal
+        open={showGlobalExpansionConfirm}
+        onOpenChange={setShowGlobalExpansionConfirm}
+        lastSuccessfulQuery={lastSuccessfulQuery}
+        lastSearchQuery={lastSearchQuery}
+        localResultsCount={localResultsCount}
+        isExpandingToGlobal={isExpandingToGlobal}
+        onConfirm={handleExpandToGlobal}
+      />
 
       {/* Modal de Confirmação para Mudança de Fonte (Híbrido/Global) */}
-      <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
-        <AlertDialogContent className="sm:max-w-[320px] w-[85vw] p-4 border border-gray-100" style={{ borderRadius: '10px' }}>
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: pendingSourceChange === 'hybrid' ? 'rgba(96, 190, 209, 0.15)' : 'rgba(217, 119, 6, 0.15)' }}>
-                {pendingSourceChange === 'hybrid' ? (
-                  <Zap className="w-4 h-4 text-gray-700" />
-                ) : (
-                  <Globe className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
-                )}
-              </div>
-              <div>
-                <h3 className={textStyles.title}>
-                  {pendingSourceChange === 'hybrid' ? 'Busca Híbrida' : 'Busca Global'}
-                </h3>
-                <p className={textStyles.caption}>
-                  {pendingSourceChange === 'hybrid' 
-                    ? 'Combina base local + global (800M+ perfis).'
-                    : 'Acessa 800M+ perfis profissionais.'}
-                </p>
-              </div>
-            </div>
-            
-            <div className="bg-gray-50 rounded-md p-3 space-y-2 border border-gray-100">
-              <div className="flex justify-between items-center text-xs">
-                <span className={textStyles.bodySmall}>Tipo de busca:</span>
-                <span className={`${textStyles.label} text-gray-800`}>{pendingSourceChange === 'hybrid' ? 'Híbrido' : 'Global'}</span>
-              </div>
-              <div className="border-t border-gray-200 pt-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className={`${textStyles.label} text-gray-800`}>Custo por candidato:</span>
-                  <span className="font-semibold text-gray-700">
-                    1 crédito
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1.5 text-micro text-status-warning bg-status-warning/10 p-2 rounded-md">
-              <AlertCircle className="w-3 h-3 flex-shrink-0" />
-              <span>Cada candidato da base global consumirá 1 crédito.</span>
-            </div>
-          </div>
-          
-          <div className="flex gap-2.5 pt-3">
-            <button
-              onClick={() => {
-                setShowSourceChangeModal(false)
-                setPendingSourceChange(null)
-              }}
-              className="flex-1 h-8 text-xs px-3 rounded-md bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 font-medium transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={confirmSourceChange}
-              className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors hover:opacity-90 bg-gray-900"
-            >
-              {pendingSourceChange === 'hybrid' ? (
-                <>
-                  <Zap className="w-3.5 h-3.5" />
-                  Ativar
-                </>
-              ) : (
-                <>
-                  <Globe className="w-3.5 h-3.5" />
-                  Ativar
-                </>
-              )}
-            </button>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+      <SourceChangeConfirmModal
+        open={showSourceChangeModal}
+        onOpenChange={setShowSourceChangeModal}
+        pendingSourceChange={pendingSourceChange}
+        onCancel={() => { setShowSourceChangeModal(false); setPendingSourceChange(null) }}
+        onConfirm={confirmSourceChange}
+      />
 
       {/* Modal de Confirmação para Filtro de Contato (Email/Telefone) */}
-      <AlertDialog open={showContactFilterModal} onOpenChange={setShowContactFilterModal}>
-        <AlertDialogContent className="max-w-md border border-gray-100">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ backgroundColor: 'rgba(93, 164, 122, 0.15)' }}>
-                {pendingContactFilter === 'email' ? (
-                  <Mail className="w-4 h-4 text-wedo-green" />
-                ) : (
-                  <Phone className="w-4 h-4 text-wedo-green" />
-                )}
-              </div>
-              {pendingContactFilter === 'email' ? 'Filtrar por Email' : 'Filtrar por Telefone'}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-4">
-              <p className="text-sm text-gray-800">
-                {pendingContactFilter === 'email'
-                  ? 'Ao ativar este filtro, a busca retornará apenas candidatos com email disponível.'
-                  : 'Ao ativar este filtro, a busca retornará apenas candidatos com telefone disponível.'}
-              </p>
-              
-              <div className="bg-gray-50 rounded-md p-4 space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-800">Filtro:</span>
-                  <span className="font-medium">{pendingContactFilter === 'email' ? 'Apenas com Email' : 'Apenas com Telefone'}</span>
-                </div>
-                <div className="border-t border-gray-200 pt-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Custo adicional:</span>
-                    <span className="font-bold text-lg text-wedo-green">
-                      +1 crédito/cand
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 p-2 rounded-md">
-                <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                <span>Você não gastará créditos com perfis sem dados de contato disponíveis.</span>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setShowContactFilterModal(false)
-              setPendingContactFilter(null)
-            }}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmContactFilterChange}
-              className="text-white gap-2 bg-wedo-green"
-            >
-              {pendingContactFilter === 'email' ? (
-                <>
-                  <Mail className="w-4 h-4" />
-                  Ativar Filtro Email
-                </>
-              ) : (
-                <>
-                  <Phone className="w-4 h-4" />
-                  Ativar Filtro Telefone
-                </>
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ContactFilterConfirmModal
+        open={showContactFilterModal}
+        onOpenChange={setShowContactFilterModal}
+        pendingContactFilter={pendingContactFilter}
+        onCancel={() => { setShowContactFilterModal(false); setPendingContactFilter(null) }}
+        onConfirm={confirmContactFilterChange}
+      />
 
       {/* Advanced Filters Modal */}
       {/* Modal de Filtros Avançados removido - agora usa painel lateral */}
@@ -10254,70 +10078,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       </Dialog>
 
       {/* Modal de Confirmação de Exclusão de Arquétipo */}
-      <AlertDialog open={!!archetypeToDelete} onOpenChange={(open) => !open && setArchetypeToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-base">
-              <AlertCircle className="w-5 h-5 text-status-error" />
-              Excluir Arquétipo
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-base-ui text-gray-500">
-              Tem certeza que deseja excluir o arquétipo <strong>"{archetypeToDelete?.name}"</strong>? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel 
-              onClick={() => setArchetypeToDelete(null)}
-             
-            >
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                if (!archetypeToDelete) return
-                setIsDeletingArchetype(true)
-                try {
-                  const response = await fetch(`/api/backend-proxy/search/archetypes/${archetypeToDelete.id}`, {
-                    method: 'DELETE'
-                  })
-                  
-                  if (!response.ok && response.status !== 404) {
-                    throw new Error(`Failed to delete archetype: ${response.status}`)
-                  }
-                  
-                  setUserArchetypes(prev => prev.filter(a => a.id !== archetypeToDelete.id))
-                  toast({
-                    title: "Arquétipo excluído",
-                    description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.`,
-                  })
-                } catch (error) {
-                  console.error('Error deleting archetype:', error)
-                  setUserArchetypes(prev => prev.filter(a => a.id !== archetypeToDelete.id))
-                  toast({
-                    title: "Arquétipo excluído",
-                    description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.`,
-                  })
-                } finally {
-                  setIsDeletingArchetype(false)
-                  setArchetypeToDelete(null)
-                }
-              }}
-              className="bg-status-error hover:bg-status-error"
-             
-              disabled={isDeletingArchetype}
-            >
-              {isDeletingArchetype ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Excluindo...
-                </>
-              ) : (
-                'Excluir'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteArchetypeModal
+        archetypeToDelete={archetypeToDelete}
+        onClose={() => setArchetypeToDelete(null)}
+        onDeleted={(id) => setUserArchetypes(prev => prev.filter(a => a.id !== id))}
+      />
 
 
     </div>
