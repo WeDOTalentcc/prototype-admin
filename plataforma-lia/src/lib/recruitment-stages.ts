@@ -255,7 +255,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'hired',
     displayName: 'Contratado',
     stageOrder: 14,
-    color: '#16A34A',  // --status-success — ÚNICO verde: vitória/conclusão positiva
+    color: 'var(--status-success)',  // único estado terminal positivo
     icon: 'check-circle',
     stageType: 'final',
     isInitial: false,
@@ -863,18 +863,18 @@ export const DOCUMENT_STATUSES: SubStatus[] = [
 // ==================== CANDIDATE SOURCES ====================
 
 export const CANDIDATE_SOURCES: CandidateSource[] = [
-  { id: 'website', name: 'website', displayName: 'Website', icon: 'globe', color: '#3B82F6' },
-  { id: 'linkedin', name: 'linkedin', displayName: 'LinkedIn', icon: 'linkedin', color: '#0A66C2' },
-  { id: 'indeed', name: 'indeed', displayName: 'Indeed', icon: 'briefcase', color: '#2164F3' },
-  { id: 'glassdoor', name: 'glassdoor', displayName: 'Glassdoor', icon: 'building', color: '#0CAA41' },
-  { id: 'referral', name: 'referral', displayName: 'Indicação', icon: 'users', color: '#10B981' },
-  { id: 'internal', name: 'internal', displayName: 'Interno', icon: 'home', color: '#6366F1' },
-  { id: 'agency', name: 'agency', displayName: 'Agência', icon: 'briefcase', color: '#F59E0B' },
-  { id: 'university', name: 'university', displayName: 'Universidade', icon: 'graduation-cap', color: '#8B5CF6' },
-  { id: 'event', name: 'event', displayName: 'Evento', icon: 'calendar', color: '#EC4899' },
-  { id: 'ats_gupy', name: 'ats_gupy', displayName: 'Gupy', icon: 'database', color: '#FF6B35' },
-  { id: 'ats_greenhouse', name: 'ats_greenhouse', displayName: 'Greenhouse', icon: 'database', color: '#24A148' },
-  { id: 'ats_lever', name: 'ats_lever', displayName: 'Lever', icon: 'database', color: '#4D4D4D' },
+  { id: 'website', name: 'website', displayName: 'Website', icon: 'globe', color: 'var(--gray-600)' },
+  { id: 'linkedin', name: 'linkedin', displayName: 'LinkedIn', icon: 'linkedin', color: '#0A66C2' }, // brand color — isento
+  { id: 'indeed', name: 'indeed', displayName: 'Indeed', icon: 'briefcase', color: 'var(--gray-600)' },
+  { id: 'glassdoor', name: 'glassdoor', displayName: 'Glassdoor', icon: 'building', color: 'var(--gray-600)' },
+  { id: 'referral', name: 'referral', displayName: 'Indicação', icon: 'users', color: 'var(--gray-700)' },
+  { id: 'internal', name: 'internal', displayName: 'Interno', icon: 'home', color: 'var(--gray-800)' },
+  { id: 'agency', name: 'agency', displayName: 'Agência', icon: 'briefcase', color: 'var(--gray-500)' },
+  { id: 'university', name: 'university', displayName: 'Universidade', icon: 'graduation-cap', color: 'var(--gray-500)' },
+  { id: 'event', name: 'event', displayName: 'Evento', icon: 'calendar', color: 'var(--gray-400)' },
+  { id: 'ats_gupy', name: 'ats_gupy', displayName: 'Gupy', icon: 'database', color: 'var(--gray-600)' },
+  { id: 'ats_greenhouse', name: 'ats_greenhouse', displayName: 'Greenhouse', icon: 'database', color: 'var(--gray-600)' },
+  { id: 'ats_lever', name: 'ats_lever', displayName: 'Lever', icon: 'database', color: 'var(--gray-700)' },
   { id: 'pearch', name: 'pearch', displayName: 'Pearch AI', icon: 'search', color: 'var(--wedo-cyan)' },
   { id: 'manual', name: 'manual', displayName: 'Manual', icon: 'edit', color: 'var(--gray-500)' },
   { id: 'other', name: 'other', displayName: 'Outro', icon: 'more-horizontal', color: 'var(--gray-400)' },

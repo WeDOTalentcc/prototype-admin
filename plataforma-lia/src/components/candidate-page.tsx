@@ -128,7 +128,7 @@ export function CandidatePage({
       id: 'offer-sent-1',
       type: 'offer-sent',
       icon: FileText,
-      iconColor: '#60D186', // Verde WeDo - sucesso/aprovação
+      iconColor: 'var(--status-success)', // Verde WeDo - sucesso/aprovação
       title: 'Carta Oferta Enviada',
       author: 'Ana Silva',
       authorRole: 'Recrutadora',
@@ -152,7 +152,7 @@ export function CandidatePage({
       id: 'technical-test-1',
       type: 'technical-test',
       icon: Code,
-      iconColor: '#9860D1', // Roxo WeDo - insights/avaliação
+      iconColor: 'var(--wedo-purple)', // Roxo WeDo - insights/avaliação
       title: 'Teste Técnico Realizado',
       author: 'Carlos Mendes',
       authorRole: 'Tech Lead',
@@ -208,7 +208,7 @@ export function CandidatePage({
       id: 'video-interview-1',
       type: 'video-interview',
       icon: Video,
-      iconColor: '#D160AB', // Magenta WeDo - urgência/destaque
+      iconColor: 'var(--gray-400)', // Magenta WeDo - urgência/destaque
       title: 'Vídeo de apresentação gravado',
       author: candidate.name,
       authorRole: 'Candidato',
@@ -861,7 +861,7 @@ export function CandidatePage({
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{ color: '#2E8B57' }}>
+                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{ color: 'var(--status-success)' }}>
                           <CheckCircle className="w-3 h-3" />
                           Pontos Fortes
                         </h4>
@@ -874,7 +874,7 @@ export function CandidatePage({
                         </ul>
                       </div>
                       <div>
-                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{ color: '#FFA500' }}>
+                        <h4 className="text-micro font-medium mb-1 flex items-center gap-1" style={{ color: 'var(--status-warning)' }}>
                           <AlertCircle className="w-3 h-3" />
                           A Desenvolver
                         </h4>
@@ -1129,7 +1129,7 @@ export function CandidatePage({
                       <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                         Português
                       </span>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: '#B8E6D3', color: '#2E8B57' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: '#B8E6D3', color: 'var(--status-success)' }}>
                         Nativo
                       </Badge>
                     </div>
@@ -1414,7 +1414,7 @@ export function CandidatePage({
                         onClick={() => setShowLiaModal(true)}
                         size="sm"
                         className="gap-1 text-white px-3 py-1.5 text-xs h-7"
-                        style={{ backgroundColor: '#E85A5A' }}
+                        style={{ backgroundColor: 'var(--status-error)' }}
                       >
                         <PlusCircle className="w-3.5 h-3.5" />
                         Nova Atividade
@@ -1599,7 +1599,7 @@ export function CandidatePage({
                                               className="text-xs"
                                               style={{
                                                 backgroundColor: activity.score >= 80 ? '#B8E6D3' : '#FFE4B5',
-                                                color: activity.score >= 80 ? '#2E8B57' : '#D2691E'
+                                                color: activity.score >= 80 ? 'var(--status-success)' : '#D2691E'
                                               }}
                                             >
                                               {activity.score}%
@@ -2007,7 +2007,7 @@ export function CandidatePage({
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Análises
                     {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-                      <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}>
+                      <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: 'var(--wedo-purple)' }}>
                         {savedAnalyses.total_analyses}
                       </Badge>
                     )}
@@ -2334,7 +2334,7 @@ export function CandidatePage({
                                       <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                                       <Badge 
                                         className="text-micro px-1.5 py-0 h-4"
-                                        style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}
+                                        style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: 'var(--wedo-purple)' }}
                                       >
                                         {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
                                       </Badge>

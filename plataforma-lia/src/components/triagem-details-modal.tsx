@@ -23,12 +23,12 @@ interface TriagemDetailsModalProps {
 }
 
 const WSI_CLASSIFICATION_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  excepcional:     { bg: 'rgba(5, 150, 105, 0.12)',  text: '#065F46', label: 'Excepcional' },
-  excelente:       { bg: 'rgba(34, 197, 94, 0.12)',  text: '#166534', label: 'Excelente' },
-  alto:            { bg: 'rgba(59, 130, 246, 0.12)', text: '#1D4ED8', label: 'Alto' },
-  medio:           { bg: 'rgba(234, 179, 8, 0.12)',  text: '#854D0E', label: 'Médio' },
-  abaixo_da_media: { bg: 'rgba(249, 115, 22, 0.12)', text: '#9A3412', label: 'Abaixo da média' },
-  regular:         { bg: 'rgba(239, 68, 68, 0.12)',  text: '#991B1B', label: 'Regular / Baixo' },
+  excepcional:     { bg: 'var(--status-success-bg)',  text: 'var(--status-success)', label: 'Excepcional' },
+  excelente:       { bg: 'var(--status-success-bg)',  text: 'var(--status-success)', label: 'Excelente' },
+  alto:            { bg: 'var(--gray-100)',            text: 'var(--gray-700)',        label: 'Alto' },
+  medio:           { bg: 'var(--status-warning-bg)',  text: 'var(--status-warning)',  label: 'Médio' },
+  abaixo_da_media: { bg: 'var(--status-error-bg)',    text: 'var(--status-error)',    label: 'Abaixo da média' },
+  regular:         { bg: 'var(--status-error-bg)',    text: 'var(--status-error)',    label: 'Regular / Baixo' },
 }
 
 const getClassificationColor = (classification: string) =>
@@ -43,13 +43,13 @@ const getDecisionDisplay = (decision?: string) => {
   switch (normalized) {
     case 'APROVADO':
     case 'aprovado':
-      return { label: 'Aprovado', icon: ThumbsUp, color: '#166534', bg: 'rgba(34, 197, 94, 0.12)' }
+      return { label: 'Aprovado', icon: ThumbsUp, color: 'var(--status-success)', bg: 'var(--status-success-bg)' }
     case 'EM_AVALIACAO':
     case 'aguardando':
-      return { label: 'Em Avaliação', icon: Clock, color: '#854D0E', bg: 'rgba(234, 179, 8, 0.12)' }
+      return { label: 'Em Avaliação', icon: Clock, color: 'var(--status-warning)', bg: 'var(--status-warning-bg)' }
     case 'REPROVADO':
     case 'nao_aprovado':
-      return { label: 'Não Aprovado', icon: ThumbsDown, color: '#991B1B', bg: 'rgba(239, 68, 68, 0.12)' }
+      return { label: 'Não Aprovado', icon: ThumbsDown, color: 'var(--status-error)', bg: 'var(--status-error-bg)' }
     default: return { label: 'Pendente', icon: Clock, color: 'var(--gray-400)', bg: 'var(--gray-50)' }
   }
 }
@@ -415,7 +415,7 @@ export function TriagemDetailsModal({
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className="px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 rounded-full hover:bg-gray-100"
-                style={{ ...font, backgroundColor: activeTab === tab.key ? 'var(--gray-800)' : 'transparent', color: activeTab === tab.key ? '#FFFFFF' : 'var(--gray-400)' }}
+                style={{ ...font, backgroundColor: activeTab === tab.key ? 'var(--gray-800)' : 'transparent', color: activeTab === tab.key ? 'var(--white)' : 'var(--gray-400)' }}
               >
                 <tab.icon className="w-3 h-3" />
                 {tab.label}
@@ -490,7 +490,7 @@ export function TriagemDetailsModal({
 
 
               <div className="border border-gray-100" style={{ backgroundColor: 'var(--gray-50)', borderRadius: '8px', overflow: 'hidden' }}>
-                <div className="cursor-pointer p-3 flex items-center justify-between hover:bg-gray-50 transition-colors" onClick={() => toggleSection('responses')} style={{ borderBottom: expandedSections.has('responses') ? '1px solid #F3F4F6' : 'none' }}>
+                <div className="cursor-pointer p-3 flex items-center justify-between hover:bg-gray-50 transition-colors" onClick={() => toggleSection('responses')} style={{ borderBottom: expandedSections.has('responses') ? '1px solid var(--gray-100)' : 'none' }}>
                   <h3 className="text-xs font-semibold flex items-center gap-2 text-gray-950 dark:text-gray-50" style={font}>
                     <MessageSquare className="w-4 h-4 text-gray-700" />
                     Respostas por Competência ({responses.length})
@@ -907,14 +907,14 @@ export function TriagemDetailsModal({
                   </p>
                   {feedbackSuccess && (
                     <div className="flex items-center gap-2 p-2 mb-3 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-                      <CheckCircle className="w-4 h-4" style={{ color: '#166534' }} />
-                      <span className="text-xs font-medium" style={{ ...font, color: '#166534' }}>Feedback enviado com sucesso</span>
+                      <CheckCircle className="w-4 h-4" style={{ color: 'var(--status-success)' }} />
+                      <span className="text-xs font-medium" style={{ ...font, color: 'var(--status-success)' }}>Feedback enviado com sucesso</span>
                     </div>
                   )}
                   {feedbackError && (
                     <div className="flex items-center gap-2 p-2 mb-3 rounded-lg" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                      <AlertCircle className="w-4 h-4" style={{ color: '#991B1B' }} />
-                      <span className="text-xs font-medium" style={{ ...font, color: '#991B1B' }}>{feedbackError}</span>
+                      <AlertCircle className="w-4 h-4" style={{ color: 'var(--status-error)' }} />
+                      <span className="text-xs font-medium" style={{ ...font, color: 'var(--status-error)' }}>{feedbackError}</span>
                     </div>
                   )}
                   <button
@@ -924,7 +924,7 @@ export function TriagemDetailsModal({
                     style={{
                       ...font,
                       backgroundColor: feedbackAlreadySent ? 'var(--gray-200)' : 'var(--gray-800)',
-                      color: feedbackAlreadySent ? 'var(--gray-400)' : '#FFFFFF',
+                      color: feedbackAlreadySent ? 'var(--gray-400)' : 'var(--white)',
                     }}
                   >
                     {sendingFeedback ? (
@@ -989,7 +989,7 @@ export function TriagemDetailsModal({
                       <p className="text-micro font-medium text-gray-500 mb-1" style={font}>Pontos Fortes Técnicos:</p>
                       {feedback.technical_strengths.map((s: string, i: number) => (
                         <div key={i} className="flex items-start gap-1.5 mb-0.5">
-                          <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#166534' }} />
+                          <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: 'var(--status-success)' }} />
                           <p className="text-xs text-gray-700" style={font}>{s}</p>
                         </div>
                       ))}

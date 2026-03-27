@@ -32,44 +32,44 @@ const CATEGORY_COLORS: Record<string, {
   badgeVariant: 'default' | 'secondary' | 'outline'
 }> = {
   vagas: {
-    backgroundColor: '#F0F9FC',
-    iconBg: '#E0F2FE',
-    textColor: '#0369A1',
+    backgroundColor: 'var(--gray-50)',
+    iconBg: 'var(--gray-100)',
+    textColor: 'var(--gray-700)',
     badgeVariant: 'default'
   },
   candidatos: {
-    borderColor: '#5DA47A',
-    backgroundColor: '#F0FDF4',
-    iconBg: '#DCFCE7',
-    textColor: '#166534',
+    borderColor: 'var(--gray-200)',
+    backgroundColor: 'var(--gray-50)',
+    iconBg: 'var(--gray-100)',
+    textColor: 'var(--gray-700)',
     badgeVariant: 'secondary'
   },
   entrevistas: {
-    borderColor: 'var(--wedo-orange)',
-    backgroundColor: '#FFFBEB',
-    iconBg: '#FEF3C7',
-    textColor: '#92400E',
+    borderColor: 'var(--gray-200)',
+    backgroundColor: 'var(--gray-50)',
+    iconBg: 'var(--gray-100)',
+    textColor: 'var(--gray-700)',
     badgeVariant: 'default'
   },
   relatorios: {
-    borderColor: 'var(--wedo-purple)',
-    backgroundColor: '#FAF5FF',
-    iconBg: '#F3E8FF',
-    textColor: '#6B21A8',
+    borderColor: 'var(--gray-200)',
+    backgroundColor: 'var(--gray-50)',
+    iconBg: 'var(--gray-100)',
+    textColor: 'var(--gray-700)',
     badgeVariant: 'secondary'
   },
   localizacao: {
-    borderColor: 'var(--wedo-purple)',
-    backgroundColor: '#FAF5FF',
-    iconBg: '#F3E8FF',
-    textColor: '#6B21A8',
+    borderColor: 'var(--gray-200)',
+    backgroundColor: 'var(--gray-50)',
+    iconBg: 'var(--gray-100)',
+    textColor: 'var(--gray-700)',
     badgeVariant: 'secondary'
   },
   industria: {
-    borderColor: '#3B82F6',
-    backgroundColor: '#EFF6FF',
-    iconBg: '#DBEAFE',
-    textColor: '#1E40AF',
+    borderColor: 'var(--gray-200)',
+    backgroundColor: 'var(--gray-50)',
+    iconBg: 'var(--gray-100)',
+    textColor: 'var(--gray-700)',
     badgeVariant: 'default'
   }
 }

@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation"
 
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
   vagas: { icon: 'var(--gray-600)', bg: 'var(--gray-50)', border: 'var(--gray-200)', hoverBg: '#D0EFF5' },
-  candidatos: { icon: '#5DA47A', bg: '#E5F5EB', border: '#5DA47A', hoverBg: '#D5EFE0' },
+  candidatos: { icon: 'var(--status-success)', bg: '#E5F5EB', border: 'var(--status-success)', hoverBg: '#D5EFE0' },
   entrevistas: { icon: 'var(--wedo-orange)', bg: '#FDF4E8', border: 'var(--wedo-orange)', hoverBg: '#FAECD8' },
   relatorios: { icon: 'var(--wedo-purple)', bg: '#F3EAFF', border: 'var(--wedo-purple)', hoverBg: '#EBE0FF' }
 }
@@ -251,9 +251,9 @@ export function LiaSuperPrompt() {
                     onClick={() => setActiveTab("conversa")}
                     className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors"
                     style={{
-                      backgroundColor: activeTab === "conversa" ? "#F0FDFF" : "transparent",
+                      backgroundColor: activeTab === "conversa" ? "var(--gray-50)" : "transparent",
                       color: activeTab === "conversa" ? "#00B8B8" : "var(--gray-400)",
-                      borderRight: "1px solid #E5E7EB"
+                      borderRight: "1px solid var(--gray-200)"
                     }}
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
@@ -263,7 +263,7 @@ export function LiaSuperPrompt() {
                     onClick={() => setActiveTab("controle")}
                     className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors"
                     style={{
-                      backgroundColor: activeTab === "controle" ? "#F0FDFF" : "transparent",
+                      backgroundColor: activeTab === "controle" ? "var(--gray-50)" : "transparent",
                       color: activeTab === "controle" ? "#00B8B8" : "var(--gray-400)"
                     }}
                   >
@@ -394,7 +394,7 @@ export function LiaSuperPrompt() {
                                   className="p-4 rounded-lg transition-all text-left group"
                                   style={{
                                     border: `1px solid ${colors.bg}`,
-                                    backgroundColor: "#FFFFFF"
+                                    backgroundColor: "var(--white)"
                                   }}
                                   onMouseEnter={(e) => {
                                     e.currentTarget.style.backgroundColor = colors.hoverBg
@@ -402,7 +402,7 @@ export function LiaSuperPrompt() {
                                     e.currentTarget.style.transform = "translateY(-2px)"
                                   }}
                                   onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = "#FFFFFF"
+                                    e.currentTarget.style.backgroundColor = "var(--white)"
                                     e.currentTarget.style.borderColor = colors.bg
                                     e.currentTarget.style.transform = "translateY(0)"
                                   }}
@@ -417,7 +417,7 @@ export function LiaSuperPrompt() {
                                     <div className="flex-1 min-w-0">
                                       <h3
                                         className="font-semibold text-sm leading-tight mb-1"
-                                        style={{ color: "#2D2D2D", fontFamily: '"Open Sans", sans-serif' }}
+                                        style={{ color: "var(--gray-800)", fontFamily: '"Open Sans", sans-serif' }}
                                       >
                                         {suggestion.title}
                                       </h3>

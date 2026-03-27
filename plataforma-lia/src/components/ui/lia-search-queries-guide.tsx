@@ -154,7 +154,7 @@ export function LiaSearchQueriesGuide({
           <div 
             className="flex items-center gap-2 px-2.5 py-2 rounded-md"
             style={{ 
-              backgroundColor: '#F8F8F8',
+              backgroundColor: 'var(--gray-100)',
               border: '1px solid #E8E8E8'
             }}
           >
@@ -165,7 +165,7 @@ export function LiaSearchQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400"
-              style={{ fontFamily: '"Open Sans", sans-serif', color: '#2D2D2D' }}
+              style={{ fontFamily: '"Open Sans", sans-serif', color: 'var(--gray-800)' }}
               autoFocus
             />
             {searchTerm && (
@@ -215,7 +215,7 @@ export function LiaSearchQueriesGuide({
         {selectedCount > 0 && (
           <div 
             className="px-3 py-2 border-b flex items-center gap-2"
-            style={{ borderColor: 'var(--gray-200)', backgroundColor: '#F0FAFB' }}
+            style={{ borderColor: 'var(--gray-200)', backgroundColor: 'var(--gray-50)' }}
           >
             <UserCheck className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
             <span 
@@ -237,10 +237,10 @@ export function LiaSearchQueriesGuide({
                 className="w-full px-2.5 py-2 text-left transition-all rounded-md group flex items-center gap-2"
                 style={{ 
                   backgroundColor: 'var(--gray-50)',
-                  border: '1px solid #EEEEEE'
+                  border: '1px solid var(--gray-100)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#F0FAFB'
+                  e.currentTarget.style.backgroundColor = 'var(--gray-50)'
                   e.currentTarget.style.borderColor = 'var(--gray-200)'
                 }}
                 onMouseLeave={(e) => {
@@ -258,7 +258,7 @@ export function LiaSearchQueriesGuide({
                   className="text-xs leading-snug font-medium"
                   style={{ 
                     fontFamily: '"Open Sans", sans-serif',
-                    color: '#2D2D2D'
+                    color: 'var(--gray-800)'
                   }}
                 >
                   {query.question}

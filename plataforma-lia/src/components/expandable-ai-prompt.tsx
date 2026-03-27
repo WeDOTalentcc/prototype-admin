@@ -1271,13 +1271,13 @@ export function ExpandableAIPrompt({
       case 'job_title':
         return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
       case 'location':
-        return { bg: '#F3EAFF', text: '#7C3AED', iconBg: 'var(--wedo-purple)' }
+        return { bg: '#F3EAFF', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)' }
       case 'skills':
         return { bg: '#E5F5EB', text: '#2D6A4F', iconBg: 'var(--wedo-green-light)' }
       case 'years_experience':
         return { bg: '#FDF4E8', text: '#B8860B', iconBg: 'var(--wedo-orange)' }
       case 'industry':
-        return { bg: '#E8F1FD', text: '#2563EB', iconBg: '#3B82F6' }
+        return { bg: '#E8F1FD', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
       default:
         return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
     }
@@ -2402,7 +2402,7 @@ export function ExpandableAIPrompt({
 
         {/* Área Expandida - REORGANIZADA SEM DUPLICAÇÃO */}
         {isExpanded && (
-          <div className="lia-prompt-expanded space-y-4" style={{ backgroundColor: '#F8F8F8' }}>
+          <div className="lia-prompt-expanded space-y-4" style={{ backgroundColor: 'var(--gray-100)' }}>
 
             {/* AI-First Context Pills + Quick Actions */}
             {(contextPill || quickActions.length > 0) && (
@@ -3238,7 +3238,7 @@ export function ExpandableAIPrompt({
                             <div 
                               key={index}
                               className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
-                              style={{ backgroundColor: "#F5F5F5" }}
+                              style={{ backgroundColor: 'var(--gray-100)' }}
                             >
                               <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                               <span className="max-w-[150px] truncate">{file.name}</span>
@@ -3251,7 +3251,7 @@ export function ExpandableAIPrompt({
                             <button
                               onClick={() => cvFileInputRef.current?.click()}
                               className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors border border-gray-200"
-                              style={{ backgroundColor: "#F5F5F5" }}
+                              style={{ backgroundColor: 'var(--gray-100)' }}
                             >
                               <Upload className="w-3 h-3" />
                               + CV
@@ -3262,7 +3262,7 @@ export function ExpandableAIPrompt({
                         <button
                           onClick={() => cvFileInputRef.current?.click()}
                           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-100 transition-colors border border-gray-200"
-                          style={{ backgroundColor: "#F5F5F5" }}
+                          style={{ backgroundColor: 'var(--gray-100)' }}
                         >
                           <Upload className="w-3.5 h-3.5" />
                           Arraste CVs aqui ou clique para upload (máx. 2)
@@ -3346,8 +3346,8 @@ export function ExpandableAIPrompt({
                       disabled={similarUrls.filter(u => u.trim()).length === 0 && similarCvFiles.length === 0}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ 
-                        backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--gray-950)" : "#E5E5E5",
-                        color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "white" : "var(--gray-400)"
+                        backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--gray-950)" : "var(--gray-200)",
+                        color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--white)" : "var(--gray-400)"
                       }}
                     >
                       <Search className="w-4 h-4" />
@@ -4227,7 +4227,7 @@ export function ExpandableAIPrompt({
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
           className="sm:max-w-[200px] w-[80vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md border" 
-          style={{ backgroundColor: '#F8F8F8', fontFamily: '"Open Sans", sans-serif' }}
+          style={{ backgroundColor: 'var(--gray-100)', fontFamily: '"Open Sans", sans-serif' }}
         >
           <div className="space-y-2" style={{ fontSize: '10px', lineHeight: '1.4' }}>
             <div className="flex items-center gap-1.5">

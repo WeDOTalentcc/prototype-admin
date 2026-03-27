@@ -1028,7 +1028,13 @@
       "Bash(git -C /home/runner/workspace/plataforma-lia diff --stat)",
       "Bash(git -C /home/runner/workspace/plataforma-lia status --short)",
       "Bash(git:*)",
-      "Bash(grep -n '\\\\[#[0-9a-fA-F]\\\\{3,8\\\\}\\\\]' /home/runner/workspace/plataforma-lia/src/components/expanded-chat-modal.tsx)"
+      "Bash(grep -n '\\\\[#[0-9a-fA-F]\\\\{3,8\\\\}\\\\]' /home/runner/workspace/plataforma-lia/src/components/expanded-chat-modal.tsx)",
+      "Bash(FILE=\"plataforma-lia/src/components/search/smart-search-input.tsx\")",
+      "Bash(python3 -c \":*)",
+      "Bash(sed -i \"s/''#F4D03F''/var\\(--status-warning\\)/g\" /home/runner/workspace/plataforma-lia/src/components/pages/big-five-dashboard-page.tsx)",
+      "Bash(sed -i \"s/: var\\(--status-warning\\)$/: ''var\\(--status-warning\\)''/g; s/color: var\\(--status-warning\\)/color: ''var\\(--status-warning\\)''/g; s/borderColor: var\\(--status-warning\\)/borderColor: ''var\\(--status-warning\\)''/g\" /home/runner/workspace/plataforma-lia/src/components/pages/big-five-dashboard-page.tsx)",
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,8\\\\}\" /home/runner/workspace/plataforma-lia/src/components/pages/tasks-page.tsx)",
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{6,8\\\\}\" /home/runner/workspace/plataforma-lia/src/components/pages/tasks-page.tsx)"
     ]
   }
 }

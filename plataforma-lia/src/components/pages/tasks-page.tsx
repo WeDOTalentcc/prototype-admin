@@ -961,9 +961,9 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
       case 'oferta':
         return '#B3A8B5' // Lilás mais escuro
       case 'minha':
-        return '#9E9E9E' // Cinza mais escuro
+        return 'var(--gray-400)' // Cinza mais escuro
       default:
-        return '#9E9E9E'
+        return 'var(--gray-400)'
     }
   }
 

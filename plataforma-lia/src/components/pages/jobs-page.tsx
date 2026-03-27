@@ -3048,10 +3048,10 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                   <Users 
                                     className="w-3.5 h-3.5"
                                     style={{
-                                      color: job.funnel.total >= 50 
-                                        ? '#4A90E2'
-                                        : job.funnel.total >= 20 
-                                        ? '#E17B75'
+                                      color: job.funnel.total >= 50
+                                        ? 'var(--gray-600)'
+                                        : job.funnel.total >= 20
+                                        ? 'var(--status-error)'
                                         : 'var(--status-warning)'
                                     }}
                                   />
@@ -3761,7 +3761,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                     fontFamily: '"Open Sans", sans-serif'
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#1f2937"
+                    e.currentTarget.style.borderColor = "var(--gray-800)"
                     e.currentTarget.style.boxShadow = "0 0 0 2px rgba(31, 41, 55, 0.12)"
                     setShowExpandedLIA(true)
                   }}
@@ -4274,7 +4274,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           className="w-full h-9 !text-xs font-medium rounded-md"
                           style={{
                             backgroundColor: jobDescriptionText.trim() ? 'var(--gray-800)' : 'var(--gray-50)',
-                            color: jobDescriptionText.trim() ? '#FFFFFF' : 'var(--gray-400)',
+                            color: jobDescriptionText.trim() ? 'var(--white)' : 'var(--gray-400)',
                             fontFamily: 'Open Sans, sans-serif'
                           }}
                           onClick={() => {
@@ -5161,7 +5161,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           {/* Badge de status */}
                           <Badge 
                             className="text-micro px-1.5 py-0 h-4 font-medium"
-                            style={{ backgroundColor: getStatusColor(previewJob.status as Job['status']), color: '#fff' }}
+                            style={{ backgroundColor: getStatusColor(previewJob.status as Job['status']), color: 'var(--white)' }}
                           >
                             {previewJob.status}
                           </Badge>

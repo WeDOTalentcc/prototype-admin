@@ -307,7 +307,9 @@
      Escala de 8 stops. gray-300 e gray-500 são utility tokens
      para hierarquia visual do pipeline (não usar em texto).
      ======================================== */
+  --white:    #FFFFFF;   /* surface principal, cards, modals */
   --gray-50:  #F9FAFB;   /* bg page, hover muito sutil */
+  --gray-100: #F3F4F6;   /* bg alternada, divisores muito suaves */
   --gray-200: #E5E7EB;   /* border padrão, divisores, bg cards */
   --gray-300: #D1D5DB;   /* pipeline early stages, bg sutil */
   --gray-400: #9CA3AF;   /* text disabled, placeholder, border médio */
@@ -321,9 +323,12 @@
      NUNCA eliminar — acessibilidade exige cor para
      communicar sucesso/erro/atenção além de ícone+texto.
      ======================================== */
-  --status-success: #16A34A;   /* aprovado, contratado, ação concluída */
-  --status-error:   #DC2626;   /* reprovado, erro, ação destrutiva */
-  --status-warning: #D97706;   /* pendente, atenção, prazo */
+  --status-success: #16A34A;              /* aprovado, contratado, ação concluída */
+  --status-error:   #DC2626;              /* reprovado, erro, ação destrutiva */
+  --status-warning: #D97706;              /* pendente, atenção, prazo */
+  --status-success-bg: rgba(22, 163, 74, 0.10);   /* bg para badges/cards de sucesso */
+  --status-error-bg:   rgba(220, 38, 38, 0.10);   /* bg para badges/cards de erro */
+  --status-warning-bg: rgba(217, 119, 6, 0.10);   /* bg para badges/cards de atenção */
 
   /* ========================================
      CHART — 4 tons monocromáticos para visualização

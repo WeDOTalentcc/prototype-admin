@@ -1447,7 +1447,7 @@ function FunilPerformancePlaceholder() {
                 </div>
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">3.247</span>
               </div>
-              <div className="w-full h-4 rounded-full" style={{ background: 'linear-gradient(to right, #374151, #4B5563)' }}></div>
+              <div className="w-full h-4 rounded-full" style={{ background: 'linear-gradient(to right, var(--gray-700), var(--gray-600))' }}></div>
             </div>
 
             {/* Triagem LIA */}
@@ -2852,7 +2852,7 @@ const agentsData: AgentInfo[] = [
     actionsToday: 47,
     successRate: 98,
     avgResponseTime: 1.2,
-    color: '#9860D1'
+    color: 'var(--wedo-purple)'
   },
   {
     id: 'sourcing',
@@ -2871,7 +2871,7 @@ const agentsData: AgentInfo[] = [
     actionsToday: 215,
     successRate: 96,
     avgResponseTime: 0.8,
-    color: '#60D186'
+    color: 'var(--status-success)'
   },
   {
     id: 'scheduling',
@@ -2891,7 +2891,7 @@ const agentsData: AgentInfo[] = [
     actionsToday: 89,
     successRate: 97,
     avgResponseTime: 0.5,
-    color: '#D160AB'
+    color: 'var(--gray-400)'
   },
   {
     id: 'analytics',
@@ -2911,7 +2911,7 @@ const agentsData: AgentInfo[] = [
     actionsToday: 156,
     successRate: 95,
     avgResponseTime: 1.1,
-    color: '#8860D1'
+    color: 'var(--wedo-purple)'
   }
 ]
 

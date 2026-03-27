@@ -128,7 +128,7 @@ export function BigFiveDashboardPage() {
       ],
       backgroundColor: COLORS,
       borderWidth: 2,
-      borderColor: '#fff'
+      borderColor: 'var(--white)'
     }]
   }
 
@@ -228,7 +228,7 @@ export function BigFiveDashboardPage() {
       {
         label: 'Turnover %',
         data: hiringOutcomes.map(d => d.turnover),
-        borderColor: '#E85A5A',
+        borderColor: 'var(--status-error)',
         backgroundColor: 'rgba(232, 90, 90, 0.1)',
         borderWidth: 3,
         tension: 0.4,
@@ -271,8 +271,8 @@ export function BigFiveDashboardPage() {
       {
         label: 'Métodos Tradicionais',
         data: successPrediction.map(d => d.tradicional),
-        backgroundColor: '#E5E5E5',
-        borderColor: '#E5E5E5',
+        backgroundColor: 'var(--gray-200)',
+        borderColor: 'var(--gray-200)',
         borderWidth: 1
       },
       {
@@ -306,7 +306,7 @@ export function BigFiveDashboardPage() {
       {
         label: 'Extroversão',
         data: departmentData.map(d => d.extraversion),
-        borderColor: '#F4D03F',
+        borderColor: 'var(--status-warning)',
         backgroundColor: 'rgba(244, 208, 63, 0.2)',
         borderWidth: 2
       },
@@ -320,7 +320,7 @@ export function BigFiveDashboardPage() {
       {
         label: 'Estabilidade',
         data: departmentData.map(d => d.neuroticism),
-        borderColor: '#E85A5A',
+        borderColor: 'var(--status-error)',
         backgroundColor: 'rgba(232, 90, 90, 0.2)',
         borderWidth: 2
       }
@@ -439,7 +439,7 @@ export function BigFiveDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ borderColor: '#F4D03F' }} className="dark:border-gray-600">
+        <Card style={{ borderColor: 'var(--status-warning)' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -450,7 +450,7 @@ export function BigFiveDashboardPage() {
                   +{kpis.accuracyGain}% precisão
                 </p>
               </div>
-              <Target className="w-8 h-8" style={{ color: '#F4D03F' }} />
+              <Target className="w-8 h-8" style={{ color: 'var(--status-warning)' }} />
             </div>
           </CardContent>
         </Card>
@@ -471,7 +471,7 @@ export function BigFiveDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ borderColor: '#E85A5A' }} className="dark:border-gray-600">
+        <Card style={{ borderColor: 'var(--status-error)' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -482,7 +482,7 @@ export function BigFiveDashboardPage() {
                   vs métodos tradicionais
                 </p>
               </div>
-              <TrendingUp className="w-8 h-8" style={{ color: '#E85A5A' }} />
+              <TrendingUp className="w-8 h-8" style={{ color: 'var(--status-error)' }} />
             </div>
           </CardContent>
         </Card>
@@ -543,7 +543,7 @@ export function BigFiveDashboardPage() {
         <Card className="dark:border-gray-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5" style={{ color: '#F4D03F' }} />
+              <Activity className="w-5 h-5" style={{ color: 'var(--status-warning)' }} />
               Evolução de Resultados (6 meses)
             </CardTitle>
           </CardHeader>
@@ -574,7 +574,7 @@ export function BigFiveDashboardPage() {
       <Card className="dark:border-gray-600">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Building className="w-5 h-5" style={{ color: '#E85A5A' }} />
+            <Building className="w-5 h-5" style={{ color: 'var(--status-error)' }} />
             Perfil Big Five por Departamento
           </CardTitle>
         </CardHeader>
@@ -603,7 +603,7 @@ export function BigFiveDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ borderColor: '#F4D03F' }} className="dark:border-gray-600">
+        <Card style={{ borderColor: 'var(--status-warning)' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <TrendingUp className="w-5 h-5 mt-1" style={{ color: 'var(--wedo-green-pastel)' }} />
@@ -619,10 +619,10 @@ export function BigFiveDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card style={{ borderColor: '#E85A5A' }} className="dark:border-gray-600">
+        <Card style={{ borderColor: 'var(--status-error)' }} className="dark:border-gray-600">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 mt-1" style={{ color: '#F4D03F' }} />
+              <AlertTriangle className="w-5 h-5 mt-1" style={{ color: 'var(--status-warning)' }} />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   ⚠️ Recomendação

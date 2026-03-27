@@ -99,12 +99,12 @@ export function AgentMemoryIndicator({
           gap: "10px",
           padding: "5px 10px",
           borderRadius: "6px",
-          border: "1px solid var(--eleven-border-subtle, #e5e7eb)",
-          backgroundColor: "var(--eleven-bg-card, #f9fafb)",
+          border: "1px solid var(--eleven-border-subtle, var(--gray-200))",
+          backgroundColor: "var(--eleven-bg-card, var(--gray-50))",
           cursor: "pointer",
           fontFamily: "Inter, sans-serif",
           fontSize: "12px",
-          color: "var(--eleven-text-secondary, #6B7280)",
+          color: "var(--eleven-text-secondary, var(--gray-500))",
           userSelect: "none",
           transition: "background-color 0.15s",
         }}
@@ -116,7 +116,7 @@ export function AgentMemoryIndicator({
 
         <span
           style={{
-            color: "var(--eleven-text-primary, #111827)",
+            color: "var(--eleven-text-primary, var(--gray-900))",
             fontWeight: 500,
             whiteSpace: "nowrap",
           }}
@@ -191,7 +191,7 @@ export function AgentMemoryIndicator({
                 overflowY: "auto",
                 fontFamily: "Inter, sans-serif",
                 fontSize: 12,
-                color: "var(--eleven-text-primary, #111827)",
+                color: "var(--eleven-text-primary, var(--gray-900))",
               }}
             >
               <div
@@ -312,7 +312,7 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className="border border-gray-200" style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 4, backgroundColor: confirmReset ? "#f3f4f6" : "transparent", color: confirmReset ? "var(--gray-600)" : "var(--gray-400)", borderColor: confirmReset ? "#06B6D4" : "var(--gray-200)", fontSize: 11, fontFamily: "Inter, sans-serif", cursor: "pointer", transition: "all 0.15s" }}
+                className="border border-gray-200" style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 4, backgroundColor: confirmReset ? "var(--gray-100)" : "transparent", color: confirmReset ? "var(--gray-600)" : "var(--gray-400)", borderColor: confirmReset ? "#06B6D4" : "var(--gray-200)", fontSize: 11, fontFamily: "Inter, sans-serif", cursor: "pointer", transition: "all 0.15s" }}
               >
                 <Trash2 style={{ width: 12, height: 12 }} />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}

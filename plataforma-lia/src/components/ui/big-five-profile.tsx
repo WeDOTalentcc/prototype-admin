@@ -62,7 +62,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       name: 'Neuroticismo',
       shortName: 'Neuroticismo',
       icon: Shield,
-      color: '#4169E1', // Azul royal
+      color: 'var(--gray-600)', // Azul royal
       colorName: 'gray',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
       barColor: 'bg-gray-700 dark:bg-gray-300',
@@ -86,7 +86,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       name: 'Extroversão',
       shortName: 'Extroversão',
       icon: Users,
-      color: '#FFA500', // Laranja
+      color: 'var(--status-warning)', // Laranja
       colorName: 'orange-600',
       bgColor: 'bg-orange-50',
       barColor: 'bg-orange-500',
@@ -110,7 +110,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       name: 'Afabilidade',
       shortName: 'Afabilidade',
       icon: Heart,
-      color: '#8B4B8C', // Roxo
+      color: 'var(--wedo-purple)', // Roxo
       colorName: 'purple-600',
       bgColor: 'bg-purple-50',
       barColor: 'bg-purple-500',
@@ -134,7 +134,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       name: 'Consciência',
       shortName: 'Consciência',
       icon: Target,
-      color: '#2E8B57', // Verde mar
+      color: 'var(--status-success)', // Verde mar
       colorName: 'green-600',
       bgColor: 'bg-green-50',
       barColor: 'bg-green-500',
@@ -271,7 +271,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
             <div className="flex flex-wrap gap-1">
               <span className="text-xs text-gray-500 dark:text-gray-400">Fit:</span>
               {scores.conscientiousness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#B8E6D3', color: '#2E8B57' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#B8E6D3', color: 'var(--status-success)' }}>
                   Gestão
                 </Badge>
               )}
@@ -281,17 +281,17 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
                 </Badge>
               )}
               {scores.extraversion > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#FFD700', color: '#FFA500' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#FFD700', color: 'var(--status-warning)' }}>
                   Liderança
                 </Badge>
               )}
               {scores.agreeableness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#D8BFD8', color: '#8B4B8C' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#D8BFD8', color: 'var(--wedo-purple)' }}>
                   Atendimento
                 </Badge>
               )}
               {scores.neuroticism < 30 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#87CEEB', color: '#4169E1' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#87CEEB', color: 'var(--gray-600)' }}>
                   Alta Pressão
                 </Badge>
               )}

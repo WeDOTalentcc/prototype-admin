@@ -8617,7 +8617,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                 <span 
                                   className="text-xs px-2 py-0.5 rounded-full"
                                   style={{ 
-                                    backgroundColor: visibleCount > 0 ? '#f3f4f6' : '#f3f4f6',
+                                    backgroundColor: visibleCount > 0 ? 'var(--gray-100)' : 'var(--gray-100)',
                                     color: visibleCount > 0 ? 'var(--gray-600)' : 'var(--gray-400)',
                                     fontFamily: 'Open Sans, sans-serif'
                                   }}
@@ -8636,8 +8636,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                     }}
                                     className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-all hover:bg-gray-100"
                                     style={{ 
-                                      backgroundColor: col.visible ? '#f9fafb' : '#fafafa',
-                                      border: col.visible ? '1px solid #d1d5db' : '1px solid #e5e7eb'
+                                      backgroundColor: col.visible ? 'var(--gray-50)' : '#fafafa',
+                                      border: col.visible ? '1px solid var(--gray-300)' : '1px solid var(--gray-200)'
                                     }}
                                   >
                                     {/* Custom Checkbox - Monocromático */}
@@ -8645,7 +8645,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                       className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
                                       style={{ 
                                         backgroundColor: col.visible ? 'var(--gray-600)' : 'transparent',
-                                        border: col.visible ? 'none' : '2px solid #d1d5db'
+                                        border: col.visible ? 'none' : '2px solid var(--gray-300)'
                                       }}
                                     >
                                       {col.visible && (
@@ -8655,7 +8655,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                     <span 
                                       className="text-xs flex-1 flex items-center gap-1.5"
                                       style={{ 
-                                        color: col.visible ? 'var(--gray-800)' : '#6b7280',
+                                        color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)',
                                         fontFamily: 'Open Sans, sans-serif',
                                         fontWeight: col.visible ? 500 : 400
                                       }}

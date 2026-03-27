@@ -409,13 +409,13 @@ export function SmartSearchInput({
         case 'job_title':
           return { borderRadius: '3px', padding: '0 2px' }
         case 'location':
-          return { backgroundColor: '#F3EAFF', color: '#7C3AED', borderRadius: '3px', padding: '0 2px' }
+          return { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)', borderRadius: '3px', padding: '0 2px' }
         case 'skills':
           return { backgroundColor: 'var(--gray-50)', color: 'var(--status-success)', borderRadius: '3px', padding: '0 2px' }
         case 'experience':
-          return { backgroundColor: '#FDF4E8', color: '#B8860B', borderRadius: '3px', padding: '0 2px' }
+          return { backgroundColor: 'var(--status-warning-bg)', color: 'var(--status-warning)', borderRadius: '3px', padding: '0 2px' }
         case 'industry':
-          return { backgroundColor: '#E8F1FD', color: '#2563EB', borderRadius: '3px', padding: '0 2px' }
+          return { backgroundColor: 'var(--gray-100)', color: 'var(--gray-700)', borderRadius: '3px', padding: '0 2px' }
         default:
           return {}
       }
@@ -1741,11 +1741,11 @@ export function SmartSearchInput({
               )}
               style={mode === m.key 
                 ? { 
-                    backgroundColor: "#1f2937",
+                    backgroundColor: "var(--gray-800)",
                     color: "white",
                     fontFamily: '"Open Sans", sans-serif'
                   } 
-                : { color: "#4b5563", fontFamily: '"Open Sans", sans-serif' }
+                : { color: "var(--gray-600)", fontFamily: '"Open Sans", sans-serif' }
               }
             >
               <m.icon className="w-3.5 h-3.5" />
@@ -1836,14 +1836,14 @@ export function SmartSearchInput({
                   placeholder={getPlaceholder()}
                   className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[56px] transition-all border relative"
                   style={{ 
-                    backgroundColor: ghostTextSuffix && !showAutocomplete ? "transparent" : "#FFFFFF",
+                    backgroundColor: ghostTextSuffix && !showAutocomplete ? "transparent" : "var(--white)",
                     color: "var(--gray-950)",
                     caretColor: "var(--gray-950)",
                     fontFamily: '"Open Sans", sans-serif',
                     zIndex: 2,
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#D1D5DB"
+                    e.currentTarget.style.borderColor = "var(--gray-300)"
                     e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                   }}
                   onBlur={(e) => {
@@ -2095,14 +2095,14 @@ export function SmartSearchInput({
                       if (cat.includes('cargo') || cat.includes('título') || cat.includes('job')) 
                         return { bg: 'var(--gray-50)', accent: 'var(--gray-600)' }
                       if (cat.includes('local') || cat.includes('cidade') || cat.includes('região')) 
-                        return { bg: '#F3EAFF', accent: 'var(--wedo-purple)' }
+                        return { bg: 'var(--gray-100)', accent: 'var(--wedo-purple)' }
                       if (cat.includes('skill') || cat.includes('tecnologia') || cat.includes('ferramenta')) 
                         return { bg: 'var(--gray-50)', accent: 'var(--wedo-green)' }
                       if (cat.includes('experiência') || cat.includes('senioridade') || cat.includes('anos')) 
-                        return { bg: '#FDF4E8', accent: 'var(--wedo-orange)' }
+                        return { bg: 'var(--status-warning-bg)', accent: 'var(--wedo-orange)' }
                       if (cat.includes('setor') || cat.includes('indústria') || cat.includes('área')) 
-                        return { bg: '#E8F1FD', accent: '#3B82F6' }
-                      return { bg: '#F5F8FA', accent: 'var(--gray-600)' }
+                        return { bg: 'var(--gray-100)', accent: 'var(--gray-600)' }
+                      return { bg: 'var(--gray-50)', accent: 'var(--gray-600)' }
                     }
                     const catColor = getCategoryColor(item.category)
                     const isSelected = selectedAutocompleteIndex === index
@@ -2191,13 +2191,13 @@ export function SmartSearchInput({
                       case 'job_title':
                         return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
                       case 'location':
-                        return { bg: '#F3EAFF', text: '#7C3AED', iconBg: 'var(--wedo-purple)' }
+                        return { bg: 'var(--gray-100)', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)' }
                       case 'skills':
                         return { bg: 'var(--gray-50)', text: 'var(--status-success)', iconBg: 'var(--wedo-green)' }
                       case 'years_experience':
-                        return { bg: '#FDF4E8', text: '#B8860B', iconBg: 'var(--wedo-orange)' }
+                        return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', iconBg: 'var(--wedo-orange)' }
                       case 'industry':
-                        return { bg: '#E8F1FD', text: '#2563EB', iconBg: '#3B82F6' }
+                        return { bg: 'var(--gray-100)', text: 'var(--gray-700)', iconBg: 'var(--gray-600)' }
                       default:
                         return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
                     }
@@ -2485,7 +2485,7 @@ export function SmartSearchInput({
                       fontFamily: "'Open Sans', sans-serif"
                     }}
                     onFocus={(e) => {
-                      e.currentTarget.style.borderColor = "#D1D5DB"
+                      e.currentTarget.style.borderColor = "var(--gray-300)"
                       e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                     }}
                     onBlur={(e) => {
@@ -2549,7 +2549,7 @@ export function SmartSearchInput({
                       <div 
                         key={index}
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs"
-                        style={{ backgroundColor: "#F8F9FA", fontFamily: "'Open Sans', sans-serif" }}
+                        style={{ backgroundColor: "var(--gray-50)", fontFamily: "'Open Sans', sans-serif" }}
                       >
                         <FileText className="w-3 h-3 text-gray-500" />
                         <span className="max-w-[150px] truncate text-gray-800 dark:text-gray-200">{file.name}</span>
@@ -2604,7 +2604,7 @@ export function SmartSearchInput({
 
               {/* Combined Suggestions Box */}
               {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-                <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{ backgroundColor: "#F8FCFD" }}>
+                <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{ backgroundColor: "var(--gray-50)" }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -2670,7 +2670,7 @@ export function SmartSearchInput({
                         fontFamily: "'Open Sans', sans-serif"
                       }}
                       onFocus={(e) => {
-                        e.currentTarget.style.borderColor = "#D1D5DB"
+                        e.currentTarget.style.borderColor = "var(--gray-300)"
                         e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                       }}
                       onBlur={(e) => {
@@ -2862,7 +2862,7 @@ export function SmartSearchInput({
                       fontFamily: "'Open Sans', sans-serif"
                     }}
                     onFocus={(e) => {
-                      e.currentTarget.style.borderColor = "#D1D5DB"
+                      e.currentTarget.style.borderColor = "var(--gray-300)"
                       e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                     }}
                     onBlur={(e) => {
@@ -3112,7 +3112,7 @@ export function SmartSearchInput({
                         fontFamily: "'Open Sans', sans-serif"
                       }}
                       onFocus={(e) => {
-                        e.currentTarget.style.borderColor = "#D1D5DB"
+                        e.currentTarget.style.borderColor = "var(--gray-300)"
                         e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                       }}
                       onBlur={(e) => {
@@ -3141,8 +3141,8 @@ export function SmartSearchInput({
                                     variant="outline" 
                                     className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
                                     style={{ 
-                                      borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : '#9ca3af',
-                                      color: vacancy.status === 'Ativa' ? 'var(--status-success)' : '#6b7280'
+                                      borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-400)',
+                                      color: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-500)'
                                     }}
                                   >
                                     {vacancy.status}
@@ -3231,7 +3231,7 @@ export function SmartSearchInput({
                     fontFamily: "'Open Sans', sans-serif"
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#D1D5DB"
+                    e.currentTarget.style.borderColor = "var(--gray-300)"
                     e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                   }}
                   onBlur={(e) => {
@@ -3426,7 +3426,7 @@ export function SmartSearchInput({
                     className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 min-h-[60px]"
                     style={{ 
                       border: "1px solid var(--eleven-border)",
-                      backgroundColor: "#F8FCFD",
+                      backgroundColor: "var(--gray-50)",
                       color: "var(--eleven-text-primary)"
                     }}
                     rows={2}
@@ -3465,16 +3465,16 @@ export function SmartSearchInput({
                     booleanError && "ring-2 ring-red-300"
                   )}
                   style={{ 
-                    borderColor: booleanError ? "#fca5a5" : "var(--gray-200)",
+                    borderColor: booleanError ? "var(--status-error)" : "var(--gray-200)",
                     backgroundColor: "var(--lia-bg-primary)",
                     color: "var(--gray-950)"
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#D1D5DB"
+                    e.currentTarget.style.borderColor = "var(--gray-300)"
                     e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = booleanError ? "#fca5a5" : "var(--gray-200)"
+                    e.currentTarget.style.borderColor = booleanError ? "var(--status-error)" : "var(--gray-200)"
                     e.currentTarget.style.boxShadow = "none"
                   }}
                   rows={2}
@@ -3680,7 +3680,7 @@ export function SmartSearchInput({
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                     archetypeTab === "list" 
                       ? "bg-gray-100 ring-1 ring-gray-400" 
-                      : "bg-white ring-1 ring-[#E5E7EB] hover:bg-gray-50"
+                      : "bg-white ring-1 ring-gray-200 hover:bg-gray-50"
                   )}
                   style={{ 
                     color: archetypeTab === "list" ? "var(--gray-950)" : "var(--gray-400)",
@@ -3767,8 +3767,8 @@ export function SmartSearchInput({
                             )}
                             style={{ 
                               border: isExpanded || selectedArchetype?.id === arch.id 
-                                ? "1px solid #D1D5DB" 
-                                : "1px solid #E5E7EB"
+                                ? "1px solid var(--gray-300)" 
+                                : "1px solid var(--gray-200)"
                             }}
                           >
                             <div 
@@ -4022,7 +4022,7 @@ export function SmartSearchInput({
                             fontFamily: "'Open Sans', sans-serif"
                           }}
                           onFocus={(e) => {
-                            e.currentTarget.style.borderColor = "#D1D5DB"
+                            e.currentTarget.style.borderColor = "var(--gray-300)"
                             e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                           }}
                           onBlur={(e) => {
@@ -4214,7 +4214,7 @@ export function SmartSearchInput({
                           fontFamily: "'Open Sans', sans-serif"
                         }}
                         onFocus={(e) => {
-                          e.currentTarget.style.borderColor = "#D1D5DB"
+                          e.currentTarget.style.borderColor = "var(--gray-300)"
                           e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
                         }}
                         onBlur={(e) => {
@@ -4474,7 +4474,7 @@ export function SmartSearchInput({
                             </div>
                           ) : jobSearchResults.length === 0 ? (
                             <div className="text-center py-4 px-3">
-                              <Briefcase className="w-5 h-5 mx-auto mb-1.5" style={{ color: "#ccc" }} />
+                              <Briefcase className="w-5 h-5 mx-auto mb-1.5" style={{ color: "var(--gray-300)" }} />
                               <p className="text-xs" style={{ color: "var(--gray-400)" }}>
                                 Nenhuma vaga encontrada para "{jobSearchQuery}"
                               </p>
@@ -4499,9 +4499,9 @@ export function SmartSearchInput({
                                           backgroundColor: job.status === "Publicada" ? "rgba(34, 197, 94, 0.15)" : 
                                                           job.status === "Encerrada" ? "rgba(156, 163, 175, 0.2)" : 
                                                           "rgba(245, 158, 11, 0.15)",
-                                          color: job.status === "Publicada" ? "#16a34a" : 
+                                          color: job.status === "Publicada" ? "var(--status-success)" : 
                                                 job.status === "Encerrada" ? "var(--gray-400)" : 
-                                                "#D97706"
+                                                "var(--status-warning)"
                                         }}
                                       >
                                         {job.status}
@@ -4513,13 +4513,13 @@ export function SmartSearchInput({
                                       </span>
                                       {job.department && (
                                         <>
-                                          <span className="text-micro" style={{ color: "#ccc" }}>•</span>
+                                          <span className="text-micro" style={{ color: "var(--gray-300)" }}>•</span>
                                           <span className="text-micro" style={{ color: "var(--gray-400)" }}>{job.department}</span>
                                         </>
                                       )}
                                       {job.seniority_level && (
                                         <>
-                                          <span className="text-micro" style={{ color: "#ccc" }}>•</span>
+                                          <span className="text-micro" style={{ color: "var(--gray-300)" }}>•</span>
                                           <span className="text-micro" style={{ color: "var(--gray-400)" }}>{job.seniority_level}</span>
                                         </>
                                       )}
@@ -4533,7 +4533,7 @@ export function SmartSearchInput({
                                       </p>
                                     )}
                                   </div>
-                                  <ChevronRight className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#ccc" }} />
+                                  <ChevronRight className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "var(--gray-300)" }} />
                                 </div>
                               </button>
                             ))
@@ -4544,7 +4544,7 @@ export function SmartSearchInput({
                       {/* Mensagem inicial quando não há busca */}
                       {!jobSearchQuery.trim() && (
                         <div className="text-center py-4 px-3 rounded-md border border-dashed border-gray-200">
-                          <Search className="w-5 h-5 mx-auto mb-1.5" style={{ color: "#ccc" }} />
+                          <Search className="w-5 h-5 mx-auto mb-1.5" style={{ color: "var(--gray-300)" }} />
                           <p className="text-xs" style={{ color: "var(--gray-400)" }}>
                             Digite o nome ou ID da vaga para buscar
                           </p>
@@ -5047,7 +5047,7 @@ export function SmartSearchInput({
                       }}
                       disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
                       className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
-                      style={{ backgroundColor: editArchetypeSkills.length > 0 ? "rgba(96, 190, 209, 0.15)" : "#F5F5F5", color: editArchetypeSkills.length > 0 ? "var(--gray-950)" : "var(--gray-400)" }}
+                      style={{ backgroundColor: editArchetypeSkills.length > 0 ? "rgba(96, 190, 209, 0.15)" : "var(--gray-100)", color: editArchetypeSkills.length > 0 ? "var(--gray-950)" : "var(--gray-400)" }}
                       title="Buscar skills similares com IA"
                     >
                       {isFindingSimilarSkills ? <Loader2 className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3 text-wedo-cyan" />}
@@ -5244,7 +5244,7 @@ export function SmartSearchInput({
                       }}
                       disabled={editArchetypeTags.length === 0 || isFindingSimilarTags}
                       className="px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors disabled:opacity-50"
-                      style={{ backgroundColor: editArchetypeTags.length > 0 ? "rgba(96, 190, 209, 0.15)" : "#F5F5F5", color: editArchetypeTags.length > 0 ? "var(--gray-950)" : "var(--gray-400)" }}
+                      style={{ backgroundColor: editArchetypeTags.length > 0 ? "rgba(96, 190, 209, 0.15)" : "var(--gray-100)", color: editArchetypeTags.length > 0 ? "var(--gray-950)" : "var(--gray-400)" }}
                       title="Buscar tags similares com IA"
                     >
                       {isFindingSimilarTags ? <Loader2 className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3 text-wedo-cyan" />}

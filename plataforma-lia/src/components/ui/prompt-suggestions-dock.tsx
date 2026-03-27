@@ -22,9 +22,9 @@ const CATEGORY_COLORS = {
     hoverBg: '#D0EFF5'
   },
   candidatos: {
-    icon: '#5DA47A',
+    icon: 'var(--status-success)',
     bg: '#E5F5EB',
-    border: '#5DA47A',
+    border: 'var(--status-success)',
     hoverBg: '#D5EFE0'
   },
   entrevistas: {
@@ -193,8 +193,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           <div>
             <h3 
               className="text-sm font-semibold flex items-center gap-2"
-              style={{ 
-                color: '#2D2D2D'
+              style={{
+                color: 'var(--gray-800)'
               }}
             >
               <div 
@@ -243,7 +243,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     <h3 
                       className="font-semibold text-sm leading-tight mb-1"
                       style={{ 
-                        color: '#2D2D2D',
+                        color: 'var(--gray-800)',
                         fontFamily: '"Open Sans", sans-serif'
                       }}
                     >
@@ -339,7 +339,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               <h3 
                 className="text-sm font-semibold"
                 style={{ 
-                  color: '#2D2D2D'
+                  color: 'var(--gray-800)'
                 }}
               >
                 Tarefas Sugeridas
@@ -392,7 +392,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                       <h4 
                         className="font-medium text-sm leading-tight"
                         style={{ 
-                          color: '#2D2D2D',
+                          color: 'var(--gray-800)',
                           fontFamily: '"Open Sans", sans-serif'
                         }}
                       >

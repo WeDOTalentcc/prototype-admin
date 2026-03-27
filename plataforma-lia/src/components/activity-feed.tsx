@@ -135,12 +135,12 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       'candidate_moved': '#E3DADC',
       'email_sent': '#DDE1E9',
       'offer_sent': '#E5E0E2',
-      'approval_pending': '#EAEAEA',
+      'approval_pending': 'var(--gray-100)',
       'voice_screening': '#E3DADC',
       'rubric_evaluation': '#E0EDF0',
       'screening_analysis': '#F0E6E0',
     }
-    return typeMap[activityType] || '#EAEAEA'
+    return typeMap[activityType] || 'var(--gray-100)'
   }
 
   const getActivityIconBackground = (activityType: string) => {
@@ -150,12 +150,12 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       'candidate_moved': '#B89BA0',
       'email_sent': '#8FA4C4',
       'offer_sent': '#B3A8B5',
-      'approval_pending': '#9E9E9E',
+      'approval_pending': 'var(--gray-400)',
       'voice_screening': '#B89BA0',
       'rubric_evaluation': 'var(--gray-400)',
       'screening_analysis': '#9B7B6B',
     }
-    return typeMap[activityType] || '#9E9E9E'
+    return typeMap[activityType] || 'var(--gray-400)'
   }
 
   const getActivityIconComponent = (activityType: string) => {

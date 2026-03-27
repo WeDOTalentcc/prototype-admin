@@ -513,12 +513,12 @@ export function CandidatePreview({
   
   const getCategoryColor = (fileType: string) => {
     const colors: Record<string, { bg: string, text: string }> = {
-      'cv': { bg: '#E85A5A20', text: '#E85A5A' },
+      'cv': { bg: 'var(--status-error-bg)', text: 'var(--status-error)' },
       'portfolio': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
-      'video': { bg: '#EF444420', text: 'var(--status-error)' },
-      'certificate': { bg: '#F59E0B20', text: 'var(--status-warning)' },
-      'document': { bg: '#6B728020', text: 'var(--gray-400)' },
-      'transcript': { bg: '#8B5CF620', text: 'var(--wedo-purple)' },
+      'video': { bg: 'var(--status-error-bg)', text: 'var(--status-error)' },
+      'certificate': { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)' },
+      'document': { bg: 'var(--gray-100)', text: 'var(--gray-400)' },
+      'transcript': { bg: 'var(--gray-100)', text: 'var(--wedo-purple)' },
     }
     return colors[fileType] || colors['document']
   }
@@ -1988,7 +1988,7 @@ export function CandidatePreview({
                             <Badge 
                               key={idx} 
                               className="text-micro px-1.5 py-0 border-0"
-                              style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#1e3a5f' }}
+                              style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: 'var(--gray-800)' }}
                             >
                               {skill}
                             </Badge>
@@ -2017,7 +2017,7 @@ export function CandidatePreview({
                             <Badge 
                               key={idx} 
                               className="text-micro px-1.5 py-0 border-0"
-                              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#1e3a5f' }}
+                              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: 'var(--gray-800)' }}
                             >
                               {item}
                             </Badge>
@@ -2074,7 +2074,7 @@ export function CandidatePreview({
                             <Badge 
                               key={idx} 
                               className="text-micro px-1.5 py-0 border-0"
-                              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: '#1e3a5f' }}
+                              style={{ backgroundColor: 'rgba(229, 231, 235, 0.3)', color: 'var(--gray-800)' }}
                             >
                               {tag}
                             </Badge>
@@ -5100,7 +5100,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               Enviado há 2 dias
                             </span>
-                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: '#E85A5A20', color: '#E85A5A' }}>
+                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: 'var(--status-error-bg)', color: 'var(--status-error)' }}>
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Currículo
                             </Badge>
@@ -5196,7 +5196,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               Enviado hoje
                             </span>
-                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: '#2E8B5720', color: '#2E8B57' }}>
+                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success)' }}>
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Foto
                             </Badge>
@@ -5329,7 +5329,7 @@ export function CandidatePreview({
                           <span className="absolute bottom-1 right-1 text-xs text-white bg-black/70 px-1 rounded-full">
                             3:45
                           </span>
-                          <Badge className="absolute top-1 left-1 text-xs px-1.5 py-0.5" style={{ backgroundColor: '#3B82F6', color: 'white' }}>
+                          <Badge className="absolute top-1 left-1 text-xs px-1.5 py-0.5" style={{ backgroundColor: 'var(--gray-700)', color: 'var(--white)' }}>
                             Prescreening
                           </Badge>
                         </div>
@@ -5499,7 +5499,7 @@ export function CandidatePreview({
                             <span className={textStyles.bodySmall}>
                               2.8 MB • MP3 • 4:32
                             </span>
-                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: '#9333EA20', color: '#9333EA' }}>
+                            <Badge className="text-xs px-1 py-0 h-3.5" style={{ backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)' }}>
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               Triagem
                             </Badge>
@@ -5628,7 +5628,7 @@ export function CandidatePreview({
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 Análises
                 {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}>
+                  <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{ backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)' }}>
                     {savedAnalyses.total_analyses}
                   </Badge>
                 )}
@@ -5764,7 +5764,7 @@ export function CandidatePreview({
                                   <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                                   <Badge 
                                     className="text-micro px-1.5 py-0 h-4"
-                                    style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', color: '#9333ea' }}
+                                    style={{ backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)' }}
                                   >
                                     {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
                                   </Badge>
@@ -6343,7 +6343,7 @@ export function CandidatePreview({
                       {/* Indicador do tipo de vídeo */}
                       <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded">
                         <div className="flex items-center gap-2">
-                          <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: '#3B82F6', color: 'white' }}>
+                          <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: 'var(--gray-700)', color: 'var(--white)' }}>
                             {selectedFile.videoType === 'interview' ? 'Entrevista Gravada' : 'Vídeo de Triagem'}
                           </Badge>
                           <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '3:45'}</span>
@@ -6531,7 +6531,7 @@ export function CandidatePreview({
                       {/* Indicador do tipo de áudio */}
                       <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded">
                         <div className="flex items-center gap-2">
-                          <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: '#9333EA', color: 'white' }}>
+                          <Badge className="text-xs px-1.5 py-0.5" style={{ backgroundColor: 'var(--wedo-purple)', color: 'var(--white)' }}>
                             {selectedFile.audioType === 'interview' ? 'Entrevista Gravada' : 'Áudio de Triagem'}
                           </Badge>
                           <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '4:32'}</span>
