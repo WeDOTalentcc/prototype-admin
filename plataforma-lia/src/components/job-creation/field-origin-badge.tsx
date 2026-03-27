@@ -28,31 +28,31 @@ const ORIGIN_CONFIG: Record<FieldOrigin, {
   detected: {
     label: 'Detectado',
     icon: Brain,
-    className: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-700',
+    className: 'bg-wedo-cyan/15 text-wedo-cyan-dark border-wedo-cyan/30 hover:bg-wedo-cyan/20 dark:bg-wedo-cyan/20 dark:text-wedo-cyan dark:border-wedo-cyan/40',
     description: 'Extraído automaticamente do texto'
   },
   default: {
     label: 'Default',
     icon: Building2,
-    className: 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-700',
+    className: 'bg-wedo-green/15 text-wedo-green border-wedo-green/30 hover:bg-wedo-green/20 dark:bg-wedo-green/20 dark:text-wedo-green dark:border-wedo-green/40',
     description: 'Configuração padrão da empresa'
   },
   manual: {
     label: 'Manual',
     icon: PenLine,
-    className: 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700',
+    className: 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700',
     description: 'Editado manualmente'
   },
   suggested: {
     label: 'Sugerido',
     icon: Lightbulb,
-    className: 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200 dark:bg-yellow-950 dark:text-yellow-400 dark:border-yellow-700',
+    className: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30 hover:bg-wedo-orange/20 dark:bg-wedo-orange/20 dark:text-wedo-orange dark:border-wedo-orange/40',
     description: 'Sugestão baseada em vagas similares'
   },
   benchmark: {
     label: 'Benchmark',
     icon: Lightbulb,
-    className: 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-700',
+    className: 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30 hover:bg-wedo-purple/20 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/40',
     description: 'Baseado em dados de mercado'
   }
 }

@@ -138,7 +138,7 @@ export function SetupAlertBadge() {
 
   const getProgressColor = () => {
     if (overallCompletion >= 80) return 'var(--gray-600)'
-    if (overallCompletion >= 50) return '#4BA8BA'
+    if (overallCompletion >= 50) return 'var(--wedo-cyan)'
     return 'var(--status-warning)'
   }
 

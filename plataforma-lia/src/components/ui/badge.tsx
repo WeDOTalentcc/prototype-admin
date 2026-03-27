@@ -15,11 +15,11 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-900/50",
         outline: "border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700",
-        success: "border-transparent bg-[rgba(123,194,154,0.15)] text-wedo-green",
-        warning: "border-transparent bg-[rgba(232,168,124,0.15)] text-wedo-orange",
-        info: "border-transparent bg-wedo-cyan/15 text-wedo-cyan-dark",
-        danger: "border-transparent bg-[rgba(232,168,124,0.15)] text-wedo-orange",
-        lilac: "border-transparent bg-[rgba(201,160,220,0.15)] text-wedo-purple",
+        success: "border-transparent bg-wedo-green/15 text-wedo-green dark:bg-wedo-green/20 dark:text-wedo-green",
+        warning: "border-transparent bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange",
+        info: "border-transparent bg-wedo-cyan/15 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan",
+        danger: "border-transparent bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error",
+        lilac: "border-transparent bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple",
       },
     },
     defaultVariants: {

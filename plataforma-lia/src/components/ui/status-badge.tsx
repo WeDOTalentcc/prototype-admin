@@ -64,8 +64,8 @@ export const STAGE_PASTEL_COLORS: Record<string, string> = {
 
 // Dark mode — inversão da escala (claro vira escuro, escuro vira claro)
 export const STAGE_PASTEL_COLORS_DARK: Record<string, string> = {
-  sourcing: '#374151',
-  screening: '#374151',
+  sourcing: 'var(--gray-600)',
+  screening: 'var(--gray-600)',
   long_list: 'var(--gray-600)',
   short_list: 'var(--gray-600)',
   interview_hr: 'var(--gray-500)',
@@ -77,9 +77,9 @@ export const STAGE_PASTEL_COLORS_DARK: Record<string, string> = {
   interview_final: 'var(--gray-300)',
   references: 'var(--gray-300)',
   offer: 'var(--gray-200)',
-  hired: '#15803D',               // status-success dark
-  rejected: '#374151',
-  offer_declined: '#374151',
+  hired: 'var(--status-success)',
+  rejected: 'var(--gray-600)',
+  offer_declined: 'var(--gray-600)',
   standby: 'var(--gray-600)',
 }
 
@@ -312,10 +312,10 @@ export function StatusBadge({
   
   // Para accent, usar cor pastel da etapa (light e dark)
   const bgColor = variant === 'accent' 
-    ? STAGE_PASTEL_COLORS[stageId] || '#E3DADC'
+    ? STAGE_PASTEL_COLORS[stageId] || 'var(--gray-200)'
     : styles.bg
   const bgColorDark = variant === 'accent'
-    ? STAGE_PASTEL_COLORS_DARK[stageId] || '#4A3D40'
+    ? STAGE_PASTEL_COLORS_DARK[stageId] || 'var(--gray-600)'
     : styles.darkBg || styles.bg
   
   // Obter ícone
