@@ -5441,10 +5441,1574 @@ Venha fazer parte do nosso time! 🚀`
     setMessages(prev => [...prev, voiceMsg])
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // handleSendMessage — Extracted interceptor handlers (Sprint 4.6)
+  // Each returns boolean/Promise<boolean>: true = handled, false = continue.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const _handleContextSwitch = (content: string): void => {
+    const detectedContext = contextSwitching.detectContextFromMessage(content)
+    if (!detectedContext || detectedContext === contextSwitching.currentContext) return
+    if (contextSwitching.isInWizardContext) {
+      contextSwitching.saveWizardSnapshot({
+        stage: currentStage,
+        basicInfoFields: basicInfoFields as unknown as Record<string, unknown>,
+        technicalSkills,
+        behavioralCompetencies,
+        salaryInfo: salaryInfo as unknown as Record<string, unknown>,
+        wsiQuestions,
+        detectedCriteria: detectedCriteria as unknown as Record<string, unknown>,
+        generatedJobDescription,
+        fastTrackSourceJobId: wizardFastTrackSourceJobId,
+      })
+    } else {
+      contextSwitching.saveGeneralSnapshot({
+        conversationId: conversationMemory.conversationId || conversationId,
+        lastMessageIndex: messages.length,
+      })
+    }
+    if (detectedContext === 'wizard') contextSwitching.switchToWizard()
+    else if (detectedContext === 'fast_track') contextSwitching.switchToFastTrack()
+    else if (detectedContext === 'general') contextSwitching.switchToGeneral()
+  }
+
+  // ── Interceptor 1: awaiting stage advance confirmation ────────────────────
+  const _handleStageAdvanceConfirmation = async (content: string): Promise<boolean> => {
+    if (!awaitingStageAdvanceConfirmation) return false
+    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingStageAdvanceConfirmation:', awaitingStageAdvanceConfirmation)
+    const lowerMessage = content.toLowerCase().trim()
+    const originalMessage = content.trim()
+
+    const adjustmentPatterns = [
+      'ajust', 'alter', 'mud', 'troc', 'edit', 'corrig', 'revis',
+      'quero', 'preciso', 'falta', 'adiciona', 'remov', 'exclui',
+      'não', 'nao', 'errad', 'outr', 'diferent'
+    ]
+    const isAdjustmentRequest = adjustmentPatterns.some(p => lowerMessage.includes(p))
+
+    const shortConfirmPatterns = [
+      /^sim$/i, /^pode$/i, /^vamos$/i, /^ok$/i, /^beleza$/i, /^bora$/i,
+      /^perfeito$/i, /^show$/i, /^massa$/i, /^confirmo$/i, /^confirma$/i,
+      /^tá bom$/i, /^ta bom$/i, /^está bom$/i, /^ta certo$/i, /^tá certo$/i,
+      /^pode ser$/i, /^pode sim$/i, /^sim,? pode$/i, /^vamos lá$/i,
+      /^vamos sim$/i, /^avança$/i, /^avançar$/i, /^próxima$/i, /^proxima$/i,
+      /^seguir$/i, /^segue$/i, /^prosseguir$/i, /^continuar$/i,
+      /^sim,?\s*(pode|vamos|avança|ok|beleza)$/i,
+      /^(pode|vamos|ok),?\s*sim$/i
+    ]
+
+    const isShortMessage = originalMessage.length <= 30
+    const isStandaloneConfirmation = shortConfirmPatterns.some(p => p.test(lowerMessage))
+    const isClearConfirmation = (isShortMessage && isStandaloneConfirmation && !isAdjustmentRequest)
+
+    if (isClearConfirmation) {
+      console.log('[ProactiveConfirmation] Detected clear confirmation:', lowerMessage)
+
+      if (awaitingStageAdvanceConfirmation === 'calibration-complete') {
+        setCalibrationComplete(true)
+        const totalEvaluated = approvedCandidates.length + rejectedCandidates.length
+        const completeMsg: Message = {
+          id: `calibration-finished-${Date.now()}`,
+          role: 'assistant',
+          content: `🎯 **Calibração finalizada!**\n\nO modelo de busca foi ajustado com base nas suas ${totalEvaluated} avaliações. Agora as próximas buscas vão priorizar candidatos similares aos que você aprovou.`,
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, completeMsg])
+        setAwaitingStageAdvanceConfirmation(null)
+        return true
+      }
+
+      const nextStage = awaitingStageAdvanceConfirmation
+
+      if (nextStage === 'jd-enrichment') {
+        console.log('[ProactiveConfirmation] Transitioning to jd-enrichment, calling smart-orchestrate')
+        setAwaitingStageAdvanceConfirmation(null)
+        setIsLoadingEnrichment(true)
+        const loadingMsg: Message = {
+          id: `jd-enrichment-loading-${Date.now()}`,
+          role: 'assistant',
+          content: '🔍 **Analisando dados de mercado...**\n\nEstou consultando benchmarks salariais, catálogo de competências e histórico da empresa para preparar sugestões personalizadas.',
+          timestamp: new Date(),
+          isProcessing: true,
+          processingState: 'analyzing'
+        }
+        setMessages(prev => [...prev, loadingMsg])
+        setCurrentStage('jd-enrichment' as WizardStage)
+        const collectedData = buildCollectedData()
+        orchestrateWizardMessage({
+          message: content,
+          current_stage: 'input-evaluation',
+          collected_data: collectedData,
+          conversation_history: messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
+          conversation_id: conversationMemory.conversationId || undefined,
+          company_id: user?.company || undefined,
+          user_id: user?.email || undefined
+        }).then(async result => {
+          setMessages(prev => prev.filter(m => m.id !== loadingMsg.id))
+          await processOrchestratorResponse(result, loadingMsg.id)
+          setIsLoadingEnrichment(false)
+          setTimeout(() => {
+            const parecerData = generateParecerData()
+            const parecerMsg: Message = {
+              id: `parecer-lia-${Date.now()}`,
+              role: 'assistant',
+              content: `Preparei uma análise completa da sua vaga. Revise o parecer abaixo e ajuste o que desejar antes de avançarmos para **Remuneração**.`,
+              timestamp: new Date(),
+              messageType: 'parecer-lia',
+              parecerData
+            }
+            setMessages(prev => [...prev, parecerMsg])
+            setAwaitingStageAdvanceConfirmation('salary')
+          }, 1000)
+        }).catch(error => {
+          console.error('[ProactiveConfirmation] Failed to get enriched JD:', error)
+          setMessages(prev => prev.filter(m => m.id !== loadingMsg.id))
+          setIsLoadingEnrichment(false)
+          const errorMsg: Message = {
+            id: `jd-enrichment-error-${Date.now()}`,
+            role: 'assistant',
+            content: '❌ Não consegui buscar as sugestões de mercado. Você pode continuar preenchendo manualmente ou tentar novamente.',
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, errorMsg])
+        })
+        return true
+      }
+
+      const transitionMsg: Message = {
+        id: `stage-transition-${Date.now()}`,
+        role: 'assistant',
+        content: getStageTransitionMessage(nextStage, {}),
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, transitionMsg])
+      setCurrentStage(nextStage as WizardStage)
+      setAwaitingStageAdvanceConfirmation(null)
+      if (nextStage === 'salary') {
+        setTimeout(() => {
+          const parecerData = generateParecerData()
+          const parecerMsg: Message = {
+            id: `parecer-lia-${Date.now()}`,
+            role: 'assistant',
+            content: `Preparei uma análise completa da sua vaga antes de configurar a remuneração.`,
+            timestamp: new Date(),
+            messageType: 'parecer-lia',
+            parecerData
+          }
+          setMessages(prev => [...prev, parecerMsg])
+        }, 500)
+      }
+      return true
+    }
+
+    // Not a clear confirmation — clear state and fall through to backend
+    console.log('[ProactiveConfirmation] Not a clear confirmation, routing to backend:', lowerMessage)
+    setAwaitingStageAdvanceConfirmation(null)
+    return false
+  }
+
+  // ── Interceptor 2: awaiting draft choice ──────────────────────────────────
+  const _handleDraftChoice = async (content: string): Promise<boolean> => {
+    if (!awaitingDraftChoice) return false
+    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingDraftChoice')
+    const lowerContent = content.toLowerCase().trim()
+
+    if (lowerContent.includes('continuar') || lowerContent.includes('retomar') ||
+        lowerContent.includes('prosseguir') || lowerContent.includes('sim')) {
+      applyPendingDraft()
+      const currentStageConfig = WIZARD_STAGES.find(s => s.id === pendingDraftData?.currentStage)
+      const stageMessage = currentStageConfig?.liaMessage || 'Continuando de onde você parou...'
+      const liaMessage: Message = {
+        id: `lia-continue-draft-${Date.now()}`,
+        role: 'assistant',
+        content: `Perfeito! Vou retomar de onde você parou. 📋\n\n${stageMessage}`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, liaMessage])
+      setIsPanelOpen(true)
+      return true
+    }
+
+    if (lowerContent.includes('zero') || lowerContent.includes('nova') ||
+        lowerContent.includes('novo') || lowerContent.includes('descartar') ||
+        lowerContent.includes('limpar') || lowerContent.includes('recomeçar')) {
+      clearWizardDraft()
+      setPendingDraftData(null)
+      setAwaitingDraftChoice(false)
+      setHasAppliedRestoredDraft(true)
+      setCurrentStage('input-evaluation')
+      setBasicInfoFields({ cargo: '', area: '', gestor: '', localidade: '', modeloTrabalho: '', tipoContrato: '' })
+      setSalaryInfo({ minSalary: '', maxSalary: '', minBonus: '', maxBonus: '', bonusCriteria: '', benefits: [] })
+      setTechnicalSkills([])
+      setBehavioralCompetencies([])
+      setWsiCandidates([])
+      setGeneratedJobDescription('')
+      const liaMessage: Message = {
+        id: `lia-fresh-start-${Date.now()}`,
+        role: 'assistant',
+        content: 'Perfeito! Vamos criar uma nova vaga do zero. 🆕\n\nMe conte sobre a posição que você precisa preencher. Pode descrever livremente - cargo, responsabilidades, requisitos, área, modelo de trabalho... Eu vou extrair as informações automaticamente.\n\n💡 **Dica:** Quanto mais detalhes você fornecer, mais precisa será a vaga gerada.',
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, liaMessage])
+      setIsPanelOpen(true)
+      setWizardMode('create_from_scratch')
+      return true
+    }
+
+    const clarifyMessage: Message = {
+      id: `lia-clarify-${Date.now()}`,
+      role: 'assistant',
+      content: 'Não entendi sua escolha. Por favor, digite **"continuar"** para retomar o rascunho, ou **"começar do zero"** para descartar e criar uma nova vaga.',
+      timestamp: new Date()
+    }
+    setMessages(prev => [...prev, clarifyMessage])
+    return true
+  }
+
+  // ── Interceptor 3: awaiting calibration choice ────────────────────────────
+  const _handleCalibrationChoice = async (content: string): Promise<boolean> => {
+    if (!awaitingCalibrationChoice || currentStage !== 'search-calibration') return false
+    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingCalibrationChoice')
+    const lowerContent = content.toLowerCase().trim()
+
+    const calibratePatterns = [
+      'calibrar', 'calibração', 'calibracao',
+      'avaliar candidato', 'avaliar perfis',
+      'mostrar candidato', 'mostra candidato', 'ver candidato', 'ver perfis',
+      'quero calibrar', 'calibrar agora', 'mostrar perfis', 'avaliar agora'
+    ]
+    const skipPatterns = [
+      'kanban', 'kbn', 'pular', 'direto', 'ir para', 'skip',
+      'depois', 'mais tarde', 'funil', 'pipeline',
+      'sem calibração', 'sem calibracao', 'calibrar depois',
+      'ir pro kanban', 'manda pro funil', 'pode pular',
+      'prefiro kanban', 'quero ir pro kanban', 'vai pro kanban',
+      'aprendizado natural', 'aprender no kanban'
+    ]
+
+    const hasCalibrationIntent = calibratePatterns.some(p => lowerContent.includes(p))
+    let hasSkipIntent = skipPatterns.some(p => lowerContent.includes(p))
+
+    if ((lowerContent === 'não' || lowerContent === 'nao') && !hasCalibrationIntent) {
+      hasSkipIntent = true
+    }
+
+    const explicitRejectCalibration = lowerContent.includes('não') && lowerContent.includes('calibr')
+    const hasConflictingIntent = hasCalibrationIntent && hasSkipIntent
+
+    if (hasConflictingIntent) {
+      setAwaitingCalibrationChoice(true)
+      const conflictClarifyMessage: Message = {
+        id: `lia-clarify-conflict-${Date.now()}`,
+        role: 'assistant',
+        content: `Percebi que você mencionou calibração mas também parece querer deixar para depois. Para confirmar:\n\n• **"Calibrar agora"** - mostro 5 perfis para avaliar rapidamente\n• **"Ir pro kanban"** - adiciono candidatos e você avalia lá\n\nQual prefere?`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, conflictClarifyMessage])
+      return true
+    }
+
+    if (hasSkipIntent || explicitRejectCalibration) {
+      setAwaitingCalibrationChoice(false)
+      const skipMessage: Message = {
+        id: `lia-skip-calibration-${Date.now()}`,
+        role: 'assistant',
+        content: `Perfeito! Os candidatos já estão sendo adicionados ao Kanban da vaga. 🎯\n\n**Aprendizado Implícito Ativado:**\nQuando você mover candidatos no Kanban (aprovar → entrevista, reprovar → descartado), eu automaticamente aprendo suas preferências e ajusto as futuras sugestões.\n\n📊 **Candidatos encontrados:** ${localCandidateCount > 0 ? localCandidateCount : 'Buscando...'}\n\nClique no botão abaixo para ir ao Kanban da vaga.`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, skipMessage])
+      setCalibrationComplete(true)
+      return true
+    }
+
+    if (hasCalibrationIntent && !hasSkipIntent) {
+      setAwaitingCalibrationChoice(false)
+      const calibrateMessage: Message = {
+        id: `lia-start-calibration-${Date.now()}`,
+        role: 'assistant',
+        content: `Ótimo! Vou te mostrar 5 perfis para você avaliar rapidamente. 🔍\n\nBasta indicar se cada candidato é **aderente** ou **não aderente** ao perfil da vaga.\n\nCarregando os primeiros perfis...`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, calibrateMessage])
+      setShowCalibrationModal(true)
+      return true
+    }
+
+    const ambiguousAffirmative = ['sim', 'ok', 'pode', 'vamos', 'bora', 'claro', 'beleza'].some(p => lowerContent === p || lowerContent.startsWith(p + ' '))
+    if (ambiguousAffirmative) {
+      const clarifyAmbiguousMessage: Message = {
+        id: `lia-clarify-ambiguous-${Date.now()}`,
+        role: 'assistant',
+        content: `Ótimo! Só para confirmar, você quer:\n          \n• **"Calibrar"** - eu mostro 5 perfis para você avaliar rapidamente\n• **"Ir pro kanban"** - eu adiciono os candidatos e você avalia lá\n\nQual prefere?`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, clarifyAmbiguousMessage])
+      return true
+    }
+
+    const clarifyCalibrationMessage: Message = {
+      id: `lia-clarify-calibration-${Date.now()}`,
+      role: 'assistant',
+      content: 'Não entendi sua preferência. Você quer **"calibrar"** (avaliar 5 perfis) ou **"ir pro kanban"** (aprendizado natural)?',
+      timestamp: new Date()
+    }
+    setMessages(prev => [...prev, clarifyCalibrationMessage])
+    return true
+  }
+
+  // ── Interceptor 4: pending tool call confirmation ─────────────────────────
+  const _handlePendingToolConfirmation = async (content: string): Promise<boolean> => {
+    if (!toolCalling.hasPendingTool || !activeToolConfirmationMessageId) return false
+    console.log('[DEBUG handleSendMessage] INTERCEPTED by hasPendingTool')
+    const lowerContent = content.toLowerCase().trim()
+
+    const affirmativePatterns = ['sim', 'pode', 'ok', 'claro', 'confirmo', 'confirma', 'prossegue', 'prosseguir', 'fazer', 'execute', 'aceito', 'pode ser', 'beleza', 'manda', 'vai', 'bora']
+    const negativePatterns = ['não', 'nao', 'cancela', 'cancelar', 'deixa', 'para', 'espera', 'aguarda', 'negativo', 'desisto']
+
+    const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
+    const isNegative = negativePatterns.some(p => lowerContent.includes(p))
+
+    if (isAffirmative && !isNegative) {
+      setIsLoading(true)
+      try {
+        const result = await toolCalling.confirmToolCall()
+        const feedbackMessage: Message = {
+          id: `tool-feedback-${Date.now()}`,
+          role: 'assistant',
+          content: result.success ? `✅ ${result.message}` : `❌ ${result.error || result.message}`,
+          timestamp: new Date(),
+          messageType: 'tool-execution-feedback',
+          toolExecutionResult: result,
+        }
+        setMessages(prev => [...prev, feedbackMessage])
+        setActiveToolConfirmationMessageId(null)
+        if (result.success) {
+          const followUpMessage: Message = {
+            id: `tool-followup-${Date.now()}`,
+            role: 'assistant',
+            content: 'Posso ajudar com mais alguma coisa?',
+            timestamp: new Date(),
+          }
+          setTimeout(() => {
+            setMessages(prev => [...prev, followUpMessage])
+          }, 500)
+        }
+      } catch (error) {
+        console.error('[ToolCalling] Error executing tool:', error)
+        const errorMessage: Message = {
+          id: `tool-error-${Date.now()}`,
+          role: 'assistant',
+          content: 'Tive um problema ao executar a ação. Por favor, tente novamente.',
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, errorMessage])
+        setActiveToolConfirmationMessageId(null)
+      } finally {
+        setIsLoading(false)
+      }
+      return true
+    }
+
+    if (isNegative) {
+      toolCalling.cancelToolCall()
+      setActiveToolConfirmationMessageId(null)
+      const cancelMessage: Message = {
+        id: `tool-cancel-${Date.now()}`,
+        role: 'assistant',
+        content: 'Tudo bem, cancelei a ação. Se precisar de algo mais, é só me avisar!',
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, cancelMessage])
+      return true
+    }
+
+    // Unclear — let message flow through to orchestrator
+    return false
+  }
+
+  // ── Interceptor 5: awaiting WSI regeneration confirmation ─────────────────
+  const _handleWSIRegenConfirmation = async (content: string): Promise<boolean> => {
+    if (!isInJobCreationMode || !awaitingWSIRegenerationConfirmation) return false
+    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingWSIRegenerationConfirmation')
+    const lowerContent = content.toLowerCase().trim()
+
+    const affirmativePatterns = ['sim', 'pode', 'atualiz', 'regen', 'ok', 'claro', 'por favor', 'quero']
+    const negativePatterns = ['não', 'nao', 'deixa', 'mantém', 'mantem', 'fica', 'assim mesmo']
+
+    const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
+    const isNegative = negativePatterns.some(p => lowerContent.includes(p))
+
+    if (isAffirmative && !isNegative) {
+      setAwaitingWSIRegenerationConfirmation(false)
+      setIsLoading(true)
+      try {
+        const { regenerateWSIQuestions } = await import('@/services/lia-api')
+        const currentQuestions = wsiCandidates.map(q => ({
+          question: q.question,
+          type: q.type || 'open',
+          required: q.required !== false,
+          competency_validated: q.competency
+        }))
+        const result = await regenerateWSIQuestions({
+          company_id: user?.company || 'default',
+          job_title: basicInfoFields.cargo,
+          current_questions: currentQuestions as any,
+          technical_skills: technicalSkills.map(s => s.name),
+          behavioral_competencies: behavioralCompetencies.map(c => c.name),
+          seniority: undefined,
+          max_questions: 10
+        })
+        if (result.success && result.questions.length > 0) {
+          setWsiCandidates(result.questions.map((q: any, idx: number) => ({
+            id: `wsi-regen-${idx}-${Date.now()}`,
+            question: q.question,
+            type: q.type || 'open',
+            required: q.required !== false,
+            selected: true,
+            batch: 0,
+            isWSI: true,
+            competency: q.competency_validated,
+          })))
+          analytics.trackSuggestion('fast_track_wsi_regenerated', true)
+          const successMessage: Message = {
+            id: `wsi-regen-success-${Date.now()}`,
+            role: 'assistant',
+            content: `Pronto! Gerei **${result.questions.length} novas perguntas WSI** baseadas nas competências atualizadas. Você pode revisar e ajustar no painel ao lado.`,
+            timestamp: new Date(),
+          }
+          setMessages(prev => [...prev, successMessage])
+        } else if (!result.success) {
+          const warningMessage: Message = {
+            id: `wsi-regen-warning-${Date.now()}`,
+            role: 'assistant',
+            content: 'A regeneração não foi possível. Manterei as perguntas atuais - você pode editá-las manualmente no painel.',
+            timestamp: new Date(),
+          }
+          setMessages(prev => [...prev, warningMessage])
+        }
+      } catch (error) {
+        console.error('WSI regeneration failed:', error)
+        const errorMessage: Message = {
+          id: `wsi-regen-error-${Date.now()}`,
+          role: 'assistant',
+          content: 'Tive um problema ao regenerar as perguntas. Você pode tentar novamente mais tarde ou editar manualmente.',
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, errorMessage])
+      } finally {
+        setIsLoading(false)
+      }
+      return true
+    }
+
+    if (isNegative) {
+      setAwaitingWSIRegenerationConfirmation(false)
+      const keepMessage: Message = {
+        id: `wsi-keep-${Date.now()}`,
+        role: 'assistant',
+        content: 'Tudo bem! Manterei as perguntas WSI atuais. Se mudar de ideia, é só me avisar.',
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, keepMessage])
+      return true
+    }
+
+    return false
+  }
+
+  // ── Interceptor 6: awaiting sensitive fields confirmation (Fast Track) ─────
+  const _handleSensitiveFieldsConfirmation = async (content: string): Promise<boolean> => {
+    if (!isInJobCreationMode || !awaitingSensitiveFieldsConfirmation) return false
+    console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingSensitiveFieldsConfirmation')
+    const lowerContent = content.toLowerCase().trim()
+
+    const gestorPatterns = [
+      /gestor(?:\s+(?:[eé]|vai ser|será))?\s+(?:o\s+|a\s+)?([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s]+?)(?:\s*[,.]|$)/i,
+      /(?:o\s+|a\s+)?([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]+(?:\s+[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]+)*)\s+(?:[eé]\s+)?(?:o\s+)?gestor/i,
+      /gestor(?:a)?[:\s]+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s]+?)(?:\s*[,.]|$)/i,
+    ]
+    let extractedGestor = ''
+    for (const pattern of gestorPatterns) {
+      const match = content.match(pattern)
+      if (match && match[1]) {
+        extractedGestor = match[1].trim()
+        break
+      }
+    }
+    if (lowerContent.includes('mesmo') || lowerContent.includes('anterior') || lowerContent.includes('igual')) {
+      if (fastTrackAppliedData?.gestor) extractedGestor = fastTrackAppliedData.gestor
+    }
+
+    let extractedLocation = ''
+    const locationPatterns = [
+      /(?:localiza[çc][aã]o|cidade|local|onde)[:\s]+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s\-]+?)(?:\s*[,.]|$)/i,
+      /(?:em|para)\s+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s\-]+?)(?:\s*[,.]|$)/i,
+    ]
+    if ((lowerContent.includes('sim') || lowerContent.includes('mesmo') || lowerContent.includes('continua')) && fastTrackAppliedData?.localidade) {
+      extractedLocation = fastTrackAppliedData.localidade
+    } else if (lowerContent.includes('remoto') || lowerContent.includes('home office')) {
+      extractedLocation = 'Remoto'
+    } else {
+      for (const pattern of locationPatterns) {
+        const match = content.match(pattern)
+        if (match && match[1]) {
+          extractedLocation = match[1].trim()
+          break
+        }
+      }
+    }
+    if (!extractedLocation && fastTrackAppliedData?.localidade) {
+      extractedLocation = fastTrackAppliedData.localidade
+    }
+
+    let isAffirmativeAction = false
+    let affirmativeCriteria = ''
+    const affirmativeNegativePatterns = [
+      /n[aã]o\s+[eé]\s+afirmativa/i,
+      /n[aã]o\s+afirmativa/i,
+      /n[aã]o,?\s*(?:n[aã]o\s+)?[eé]?\s*afirmativa/i,
+    ]
+    const affirmativePositivePatterns = [
+      /afirmativa\s+(?:para\s+)?(mulheres?|pcd|pessoas?\s+com\s+defici[êe]ncia|negr[oa]s?|lgbtq?\+?|50\+)/i,
+      /(?:sim|[eé])\s+afirmativa/i,
+      /vaga\s+afirmativa/i,
+    ]
+    const isNegativeAffirmative = affirmativeNegativePatterns.some(p => p.test(lowerContent))
+    if (!isNegativeAffirmative) {
+      for (const pattern of affirmativePositivePatterns) {
+        const match = content.match(pattern)
+        if (match) {
+          isAffirmativeAction = true
+          if (match[1]) affirmativeCriteria = match[1].trim()
+          break
+        }
+      }
+    }
+
+    if (extractedGestor) setBasicInfoFields(prev => ({ ...prev, gestor: extractedGestor }))
+    if (extractedLocation) setBasicInfoFields(prev => ({ ...prev, localidade: extractedLocation }))
+    if (isAffirmativeAction) {
+      setJobConfig(prev => ({ ...prev, isAffirmative: true }))
+      if (affirmativeCriteria) setDetectedCriteria(prev => ({ ...prev, affirmativeCriteriaPrimary: affirmativeCriteria }))
+    } else if (isNegativeAffirmative) {
+      setJobConfig(prev => ({ ...prev, isAffirmative: false }))
+    }
+
+    setAwaitingSensitiveFieldsConfirmation(false)
+    setFastTrackAppliedData(null)
+
+    const confirmationParts: string[] = []
+    if (extractedGestor) confirmationParts.push(`gestor: **${extractedGestor}**`)
+    if (extractedLocation) confirmationParts.push(`localização: **${extractedLocation}**`)
+    if (isAffirmativeAction) {
+      confirmationParts.push(`vaga afirmativa: **Sim${affirmativeCriteria ? ` (${affirmativeCriteria})` : ''}**`)
+    } else {
+      confirmationParts.push(`vaga afirmativa: **Não**`)
+    }
+
+    const confirmMessage: Message = {
+      id: `fasttrack-confirm-${Date.now()}`,
+      role: 'assistant',
+      content: `Perfeito! Registrei ${confirmationParts.join(', ')}.\n\nAgora você pode revisar todos os detalhes no painel lateral e publicar quando estiver pronto!`,
+      timestamp: new Date(),
+    }
+    setMessages(prev => [...prev, confirmMessage])
+    setCurrentStage('review-publish')
+    setWizardMode('create_from_scratch')
+    return true
+  }
+
+  // ── Interceptor 7: Fast Track suggestions (hasSuggestions gate) ───────────
+  const _handleFastTrackSuggestions = async (content: string): Promise<boolean> => {
+    if (!isInJobCreationMode || !fastTrack.hasSuggestions) return false
+    console.log('[DEBUG handleSendMessage] INTERCEPTED by fastTrack.hasSuggestions')
+    const lowerContent = content.toLowerCase().trim()
+
+    const numberMatch = lowerContent.match(/\b([1-5])\b|primeira|segunda|terceira|quarta|quinta/)
+    const hasExplicitSelection = numberMatch !== null
+
+    const affirmativePatterns = [
+      'sim', 'usa', 'usar', 'ok', 'vamos', 'pode ser', 'pode', 'essa', 'essa mesmo',
+      'top', 'bora', 'beleza', 'perfeito', 'ótimo', 'legal', 'certo', 'fechou'
+    ]
+    const negativePatterns = [
+      'não', 'nao', 'zero', 'nova', 'novo', 'criar', 'comecar', 'começar',
+      'do zero', 'outra', 'diferente', 'prefiro não'
+    ]
+
+    const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
+    const isNegative = negativePatterns.some(p => lowerContent.includes(p))
+
+    if ((isAffirmative || hasExplicitSelection) && !isNegative) {
+      if (awaitingFastTrackSelection && !numberMatch) {
+        const reaskMessage: Message = {
+          id: `fasttrack-reask-${Date.now()}`,
+          role: 'assistant',
+          content: 'Qual das vagas você quer usar? Diga o número (1, 2, 3...) ou "primeira", "segunda", etc.',
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, reaskMessage])
+        return true
+      }
+
+      if (fastTrack.suggestions.length > 1 && !numberMatch && !fastTrack.selectedJob) {
+        const clarifyMessage: Message = {
+          id: `fasttrack-clarify-${Date.now()}`,
+          role: 'assistant',
+          content: `Tenho ${fastTrack.suggestions.length} vagas similares. Qual você quer usar?\n\n${fastTrack.suggestions.slice(0, 5).map((s, i) => `${i + 1}. ${s.job_title}${s.department ? ` (${s.department})` : ''} - ${Math.round(s.similarity_score * 100)}% similar`).join('\n')}\n\nDiga o número ou "primeira", "segunda", etc.`,
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, clarifyMessage])
+        setAwaitingFastTrackSelection(true)
+        return true
+      }
+
+      let jobToApply: FastTrackSuggestion | null = null
+      if (numberMatch) {
+        const indexMap: Record<string, number> = {
+          '1': 0, 'primeira': 0, '2': 1, 'segunda': 1, '3': 2, 'terceira': 2,
+          '4': 3, 'quarta': 3, '5': 4, 'quinta': 4
+        }
+        const index = indexMap[numberMatch[0].toLowerCase()] ?? 0
+        if (index < fastTrack.suggestions.length) jobToApply = fastTrack.suggestions[index]
+      } else if (fastTrack.selectedJob) {
+        jobToApply = fastTrack.selectedJob
+      } else if (fastTrack.suggestions.length === 1) {
+        jobToApply = fastTrack.suggestions[0]
+      }
+
+      if (!jobToApply) return true
+
+      let fastTrackData = null
+      try {
+        fastTrackData = await fastTrack.applyFastTrack(jobToApply)
+      } catch (error) {
+        console.error('Fast Track apply failed:', error)
+        setAwaitingFastTrackSelection(false)
+        const errorMessage: Message = {
+          id: `fasttrack-error-${Date.now()}`,
+          role: 'assistant',
+          content: 'Ops! Tive um problema ao aplicar os dados. Quer tentar novamente ou criar do zero?',
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, errorMessage])
+        return true
+      }
+
+      if (fastTrackData) {
+        setBasicInfoFields({
+          cargo: fastTrackData.basicInfo.cargo || '',
+          area: fastTrackData.basicInfo.area || '',
+          gestor: fastTrackData.basicInfo.gestor || '',
+          localidade: fastTrackData.basicInfo.localidade || '',
+          modeloTrabalho: fastTrackData.basicInfo.modeloTrabalho || '',
+          tipoContrato: fastTrackData.basicInfo.tipoContrato || '',
+        })
+        setTechnicalSkills(fastTrackData.technicalSkills)
+        setBehavioralCompetencies(fastTrackData.behavioralCompetencies)
+        setSalaryInfo({
+          minSalary: fastTrackData.salaryInfo.minSalary || '',
+          maxSalary: fastTrackData.salaryInfo.maxSalary || '',
+          minBonus: fastTrackData.salaryInfo.minBonus || '',
+          maxBonus: fastTrackData.salaryInfo.maxBonus || '',
+          bonusCriteria: fastTrackData.salaryInfo.bonusCriteria || '',
+          benefits: fastTrackData.salaryInfo.benefits || [],
+        })
+        if (fastTrackData.wsiQuestions.length > 0) {
+          setWsiCandidates(fastTrackData.wsiQuestions.map(q => ({
+            ...q, selected: true, batch: 0, isWSI: true,
+          })))
+        }
+        if (fastTrackData.generatedDescription) setGeneratedJobDescription(fastTrackData.generatedDescription)
+        setDetectedCriteria(prev => ({ ...prev, ...fastTrackData.detectedCriteria }))
+        setWizardFastTrackSourceJobId(fastTrackData.sourceJobId)
+        setFastTrackOriginalCompetencies({
+          technicalSkillNames: fastTrackData.technicalSkills.map(s => s.name.toLowerCase()),
+          behavioralCompetencyNames: fastTrackData.behavioralCompetencies.map(c => c.name.toLowerCase())
+        })
+        setWsiRegenerationPrompted(false)
+        setAwaitingFastTrackSelection(false)
+        setFastTrackAppliedData({
+          gestor: fastTrackData.basicInfo.gestor || '',
+          localidade: fastTrackData.basicInfo.localidade || '',
+          sourceJobTitle: jobToApply.job_title || ''
+        })
+        setAwaitingSensitiveFieldsConfirmation(true)
+        analytics.trackSuggestion('fast_track_accepted', true)
+
+        const localidadeInfo = fastTrackData.basicInfo.localidade
+          ? `A localização continua sendo **${fastTrackData.basicInfo.localidade}**?`
+          : 'Qual será a localidade da vaga?'
+        const sensitiveFieldsMessage: Message = {
+          id: `fasttrack-sensitive-${Date.now()}`,
+          role: 'assistant',
+          content: `Copiei todos os dados da vaga "${jobToApply.job_title}"! Só preciso confirmar alguns detalhes:\n\n1. **Quem é o gestor** responsável por esta vaga?\n2. ${localidadeInfo}\n3. **Essa vaga é afirmativa** para algum grupo (PcD, mulheres, pessoas negras, LGBTQ+, 50+)?`,
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, sensitiveFieldsMessage])
+        setIsPanelOpen(true)
+      } else {
+        setAwaitingFastTrackSelection(false)
+        const errorMessage: Message = {
+          id: `fasttrack-null-${Date.now()}`,
+          role: 'assistant',
+          content: 'Não consegui carregar os dados dessa vaga. Quer tentar outra ou criar do zero?',
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, errorMessage])
+      }
+      return true
+    }
+
+    if (isNegative) {
+      fastTrack.clearSuggestions()
+      setFastTrackMessageSent(false)
+      setAwaitingFastTrackSelection(false)
+      analytics.trackSuggestion('fast_track_rejected', false)
+      const liaMessage: Message = {
+        id: `fasttrack-declined-${Date.now()}`,
+        role: 'assistant',
+        content: 'Tudo bem! Vamos criar uma nova vaga do zero. Me conta mais sobre a vaga que você precisa.',
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, liaMessage])
+      return true
+    }
+
+    return false
+  }
+
+  // ── Interceptor 8: Fast Track flow (pre_wizard / fast_track mode) ──────────
+  const _handleFastTrackFlow = async (content: string): Promise<boolean> => {
+    if (!isInJobCreationMode || (wizardMode !== 'pre_wizard' && wizardMode !== 'fast_track')) return false
+
+    const intent = detectFastTrackIntent(content)
+
+    if (wizardMode === 'pre_wizard') {
+      if (intent === 'fast_track') {
+        setWizardMode('fast_track')
+        setFastTrackState('collecting_criteria')
+        setIsPanelOpen(false)
+        const liaMessage: Message = {
+          id: `lia-fasttrack-${Date.now()}`,
+          role: 'assistant',
+          content: '🚀 **Ótima escolha!** Vou buscar suas vagas anteriores.\n\nPara encontrar a vaga certa, me diga pelo menos 2 critérios:\n- Cargo (ex: "Desenvolvedor Python")\n- Área ou departamento\n- Gestor responsável\n- Período aproximado\n\n**Exemplo:** "Desenvolvedor Python da equipe de dados do João"',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, liaMessage])
+        return true
+      }
+
+      if (intent === 'from_scratch') {
+        setWizardMode('create_from_scratch')
+        setIsPanelOpen(true)
+        if (fastTrackSuggestionsShownTracked) analytics.trackSuggestion('fast_track_rejected', false)
+        const liaMessage: Message = {
+          id: `lia-scratch-${Date.now()}`,
+          role: 'assistant',
+          content: FROM_SCRATCH_ORIENTATION_MESSAGE,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, liaMessage])
+        return true
+      }
+
+      // No clear choice — use AI to respond conversationally
+      setIsLoading(true)
+      try {
+        const conversationalResponse = await getConversationalResponse({
+          message: content,
+          mode: 'job_creation',
+          context: 'pre_wizard'
+        })
+        if (conversationalResponse.suggested_action === 'from_scratch') {
+          setWizardMode('create_from_scratch')
+          setIsPanelOpen(true)
+          if (fastTrackSuggestionsShownTracked) analytics.trackSuggestion('fast_track_rejected', false)
+          const liaMessage: Message = {
+            id: `lia-scratch-ai-${Date.now()}`,
+            role: 'assistant',
+            content: FROM_SCRATCH_ORIENTATION_MESSAGE,
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, liaMessage])
+          setIsLoading(false)
+          return true
+        }
+        if (conversationalResponse.suggested_action === 'fast_track') {
+          setWizardMode('fast_track')
+          setFastTrackState('collecting_criteria')
+          setIsPanelOpen(false)
+          const liaMessage: Message = {
+            id: `lia-fasttrack-ai-${Date.now()}`,
+            role: 'assistant',
+            content: '🚀 **Ótima escolha!** Vou buscar suas vagas anteriores.\n\nPara encontrar a vaga certa, me diga pelo menos 2 critérios:\n- Cargo (ex: "Desenvolvedor Python")\n- Área ou departamento\n- Gestor responsável\n- Período aproximado\n\n**Exemplo:** "Desenvolvedor Python da equipe de dados do João"',
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, liaMessage])
+          setIsLoading(false)
+          return true
+        }
+        const liaMessage: Message = {
+          id: `lia-conversational-${Date.now()}`,
+          role: 'assistant',
+          content: conversationalResponse.response,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, liaMessage])
+      } catch (error) {
+        console.error('Error getting conversational response:', error)
+        const liaMessage: Message = {
+          id: `lia-guidance-fallback-${Date.now()}`,
+          role: 'assistant',
+          content: 'Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, liaMessage])
+      } finally {
+        setIsLoading(false)
+      }
+      return true
+    }
+
+    // fast_track mode
+    if (intent === 'confirm' && fastTrackState === 'reviewing') {
+      await handleFastTrackPublish()
+      return true
+    }
+    if (intent === 'adjust' && (fastTrackState === 'reviewing' || fastTrackState === 'adjusting')) {
+      const adjustments = parseFastTrackAdjustment(content)
+      if (adjustments) {
+        setFastTrackAdjustments(prev => ({ ...prev, ...adjustments }))
+        setFastTrackState('adjusting')
+        if (fastTrackSelectedVacancy) {
+          const updatedVacancy = { ...fastTrackSelectedVacancy }
+          if (adjustments.salary_min) updatedVacancy.salary_range.min = adjustments.salary_min
+          if (adjustments.salary_max) updatedVacancy.salary_range.max = adjustments.salary_max
+          if (adjustments.work_model) updatedVacancy.work_model = adjustments.work_model
+          if (adjustments.location) updatedVacancy.location = adjustments.location
+          setFastTrackSelectedVacancy(updatedVacancy)
+          const liaMessage: Message = {
+            id: `lia-adjust-${Date.now()}`,
+            role: 'assistant',
+            content: `✅ **Ajuste aplicado!**\n\nAtualizei os valores conforme solicitado. Revise o resumo atualizado:\n\n• Salário: R$ ${updatedVacancy.salary_range.min.toLocaleString('pt-BR')} - R$ ${updatedVacancy.salary_range.max.toLocaleString('pt-BR')}\n• Modelo: ${updatedVacancy.work_model}\n• Local: ${updatedVacancy.location}\n\nSe quiser fazer mais ajustes, me diga. Quando estiver pronto, digite **"confirmar"** para publicar.`,
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, liaMessage])
+          setFastTrackState('reviewing')
+        }
+      } else {
+        const liaMessage: Message = {
+          id: `lia-adjust-error-${Date.now()}`,
+          role: 'assistant',
+          content: 'Não consegui entender o ajuste solicitado. Por favor, seja mais específico.\n\n**Exemplos:**\n• "salário para 15 a 20k"\n• "modelo híbrido"\n• "local para São Paulo"',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, liaMessage])
+      }
+      return true
+    }
+    if (intent === 'select' && fastTrackState === 'selecting') {
+      const numMatch = content.match(/(\d+)/)
+      const numberWords: Record<string, number> = { 'um': 1, 'dois': 2, 'três': 3, 'quatro': 4, 'cinco': 5, 'seis': 6, 'sete': 7, 'oito': 8, 'nove': 9, 'dez': 10 }
+      let index = -1
+      if (numMatch) {
+        index = parseInt(numMatch[1]) - 1
+      } else {
+        const word = content.toLowerCase().trim()
+        if (numberWords[word]) index = numberWords[word] - 1
+      }
+      if (index >= 0 && index < fastTrackSearchResults.length) {
+        const selectedVacancy = fastTrackSearchResults[index]
+        setFastTrackState('reviewing')
+        await handleFastTrackVacancySelect(selectedVacancy.id)
+      } else {
+        const liaMessage: Message = {
+          id: `lia-select-error-${Date.now()}`,
+          role: 'assistant',
+          content: `Número inválido. Por favor, escolha um número de 1 a ${fastTrackSearchResults.length}.`,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, liaMessage])
+      }
+      return true
+    }
+    if (intent === 'criteria' || fastTrackState === 'collecting_criteria') {
+      const criteria: VacancySearchCriteria = {}
+      const wantsToListAll = /(?:lista|listar|mostrar|ver|quais|todas|exibir|apresentar)\s*(?:as|as\s+vagas|vagas|anteriores|recentes|últimas|existentes)?/i.test(content)
+      const titleMatch = content.match(/(?:desenvolvedor|analista|gerente|coordenador|engenheiro|designer|product|ux|ui|frontend|backend|fullstack|devops|data|cientista|tech lead|architect)[^\s,.]*/gi)
+      if (titleMatch) criteria.title = titleMatch[0]
+      const managerMatch = content.match(/(?:do|da|equipe do|equipe da|gestor)\s+([A-Z][a-zà-ú]+(?:\s+[A-Z][a-zà-ú]+)?)/i)
+      if (managerMatch) criteria.manager = managerMatch[1]
+      const deptMatch = content.match(/(?:área|departamento|setor|time|equipe)\s+(?:de\s+)?([A-Za-zà-ú\s]+)/i)
+      if (deptMatch) criteria.department = deptMatch[1].trim()
+      setFastTrackSearchCriteria(criteria)
+
+      if (Object.keys(criteria).length > 0 || wantsToListAll) {
+        const liaMessage: Message = {
+          id: `lia-searching-${Date.now()}`,
+          role: 'assistant',
+          content: wantsToListAll && Object.keys(criteria).length === 0
+            ? '🔍 Buscando suas vagas mais recentes...'
+            : '🔍 Buscando vagas anteriores...',
+          timestamp: new Date(),
+          isProcessing: true,
+          processingState: 'searching'
+        }
+        setMessages(prev => [...prev, liaMessage])
+        await handleFastTrackSearch(criteria)
+        setMessages(prev => prev.filter(m => m.id !== liaMessage.id))
+      } else {
+        const liaMessage: Message = {
+          id: `lia-criteria-help-${Date.now()}`,
+          role: 'assistant',
+          content: 'Preciso de mais informações para buscar. Me diga:\n\n• **Cargo** - "Desenvolvedor Python", "Analista de Dados"\n• **Gestor** - "equipe do João", "área do Ricardo"\n• **Departamento** - "área de tecnologia", "time de produto"\n\nOu digite **"listar todas"** para ver as vagas mais recentes.',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, liaMessage])
+      }
+      return true
+    }
+    if (intent === 'from_scratch') {
+      setWizardMode('create_from_scratch')
+      setIsPanelOpen(true)
+      const liaMessage: Message = {
+        id: `lia-switch-${Date.now()}`,
+        role: 'assistant',
+        content: FROM_SCRATCH_ORIENTATION_MESSAGE,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, liaMessage])
+      return true
+    }
+
+    return false
+  }
+
+  // ── Interceptor 9: compensation message handling ───────────────────────────
+  const _handleCompensationMessage = async (content: string): Promise<boolean> => {
+    const lowerContent = content.toLowerCase().trim()
+    const hasCompensationMessage = messages.some(m => m.messageType === 'compensation')
+    if (!hasCompensationMessage) return false
+
+    const thinkingId = `thinking-interpret-${Date.now()}`
+    const thinkingMessage: Message = {
+      id: thinkingId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      processingState: 'thinking' as const
+    }
+    setMessages(prev => [...prev, thinkingMessage])
+
+    try {
+      const interpretation = await interpretMessage({
+        message: content,
+        current_stage: currentStage,
+        context: {
+          filled_fields: Object.keys(detectedCriteria).filter(k => (detectedCriteria as Record<string, any>)[k]),
+          has_compensation: true,
+          salary_min: salaryInfo.minSalary,
+          salary_max: salaryInfo.maxSalary
+        }
+      })
+
+      setMessages(prev => prev.filter(m => m.id !== thinkingId))
+      console.log('AI Interpretation:', interpretation)
+
+      const MIN_CONFIDENCE = 0.65
+      const isHighConfidence = interpretation.confidence >= MIN_CONFIDENCE
+
+      if (isHighConfidence && (interpretation.action === 'confirm' || interpretation.action === 'advance_stage' || interpretation.should_advance)) {
+        if (interpretation.extracted_entities && Object.keys(interpretation.extracted_entities).length > 0) {
+          if (interpretation.extracted_entities.salario_min) {
+            setSalaryInfo(prev => ({ ...prev, minSalary: interpretation.extracted_entities!.salario_min.toString() }))
+          }
+          if (interpretation.extracted_entities.salario_max) {
+            setSalaryInfo(prev => ({ ...prev, maxSalary: interpretation.extracted_entities!.salario_max.toString() }))
+          }
+        }
+        const minSal = parseInt(salaryInfo.minSalary) || 0
+        const maxSal = parseInt(salaryInfo.maxSalary) || 0
+        if (!(minSal > 0 && maxSal > 0)) {
+          const askSalaryMsg: Message = {
+            id: `ask-salary-${Date.now()}`,
+            role: 'assistant',
+            content: '💰 Antes de avançar, preciso confirmar a faixa salarial. Qual é o salário mínimo e máximo para esta vaga?',
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, askSalaryMsg])
+          return true
+        }
+        if (minSal > maxSal) {
+          const warningMsg: Message = {
+            id: `salary-order-warning-${Date.now()}`,
+            role: 'assistant',
+            content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, corrija os valores.',
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, warningMsg])
+          return true
+        }
+        setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
+        setCompensationAnalysis(null)
+        const confirmMessage: Message = {
+          id: `confirm-compensation-${Date.now()}`,
+          role: 'assistant',
+          content: interpretation.lia_response || '✅ **Valores de remuneração confirmados!**\n\nAvançando para a próxima etapa...',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, confirmMessage])
+        setTimeout(() => { goToNextStage() }, 1500)
+        return true
+      }
+
+      if (isHighConfidence && (interpretation.action === 'update_field' || interpretation.action === 'provide_data')) {
+        if (interpretation.extracted_entities) {
+          const newMin = interpretation.extracted_entities.salario_min
+          const newMax = interpretation.extracted_entities.salario_max
+          if (newMin || newMax) {
+            const minVal = newMin || parseInt(salaryInfo.minSalary) || 0
+            const maxVal = newMax || parseInt(salaryInfo.maxSalary) || 0
+            if (minVal > 0 && maxVal > 0 && minVal > maxVal) {
+              const warningMessage: Message = {
+                id: `salary-warning-${Date.now()}`,
+                role: 'assistant',
+                content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, informe os valores corretos.',
+                timestamp: new Date()
+              }
+              setMessages(prev => [...prev, warningMessage])
+              return true
+            }
+            if (newMin) setSalaryInfo(prev => ({ ...prev, minSalary: newMin.toString() }))
+            if (newMax) setSalaryInfo(prev => ({ ...prev, maxSalary: newMax.toString() }))
+            setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
+            setCompensationAnalysis(null)
+            const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(value)
+            const updateMessage: Message = {
+              id: `update-salary-${Date.now()}`,
+              role: 'assistant',
+              content: `✅ **Valores atualizados!**\n\n• Mínimo: ${formatCurrency(minVal)}\n• Máximo: ${formatCurrency(maxVal)}\n\nVocê pode confirmar ou ajustar novamente.`,
+              timestamp: new Date()
+            }
+            setMessages(prev => [...prev, updateMessage])
+            return true
+          }
+        }
+      }
+
+      if (interpretation.action === 'reject') {
+        const rejectMessage: Message = {
+          id: `reject-${Date.now()}`,
+          role: 'assistant',
+          content: interpretation.lia_response || 'Entendido. O que você gostaria de ajustar?',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, rejectMessage])
+        return true
+      }
+
+      if (interpretation.action === 'help') {
+        const helpMessage: Message = {
+          id: `help-${Date.now()}`,
+          role: 'assistant',
+          content: interpretation.lia_response || '💡 **Ajuda - Etapa de Remuneração**\n\nVocê pode:\n• **Confirmar** os valores atuais\n• **Aceitar sugestões** de mercado\n• **Ajustar** para novos valores (ex: "quero salário de 10 a 15 mil")\n• Pedir para **avançar** para próxima etapa',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, helpMessage])
+        return true
+      }
+
+      if (interpretation.clarification_needed && interpretation.clarification_question) {
+        const clarifyMessage: Message = {
+          id: `clarify-${Date.now()}`,
+          role: 'assistant',
+          content: interpretation.clarification_question,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, clarifyMessage])
+        return true
+      }
+
+      // action === 'ask_question' or low confidence — fall through to fallback patterns
+
+    } catch (error) {
+      console.error('AI interpretation failed, using fallback:', error)
+      setMessages(prev => prev.filter(m => m.id !== thinkingId))
+    }
+
+    // Fallback pattern matching
+    const isConfirmCommand = lowerContent === 'confirmar' || lowerContent.includes('confirmo') ||
+      lowerContent.includes('manter valores') || lowerContent.includes('manter atual') ||
+      lowerContent.includes('próximo') || lowerContent.includes('proximo') ||
+      lowerContent.includes('continuar') || lowerContent.includes('avançar') ||
+      lowerContent.includes('avancar') || lowerContent.includes('próximo passo') ||
+      lowerContent.includes('proximo passo') || lowerContent.includes('prosseguir') ||
+      lowerContent.includes('vamos para') || lowerContent.includes('pode avançar') ||
+      lowerContent.includes('ok') || lowerContent === 'sim' || lowerContent === 'ok'
+
+    if (isConfirmCommand) {
+      const minSal = parseInt(salaryInfo.minSalary) || 0
+      const maxSal = parseInt(salaryInfo.maxSalary) || 0
+      if (!(minSal > 0 && maxSal > 0)) {
+        const askSalaryMsg: Message = {
+          id: `ask-salary-fallback-${Date.now()}`,
+          role: 'assistant',
+          content: '💰 Antes de continuar, preciso da faixa salarial completa. Qual é o salário mínimo e máximo para esta vaga?',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, askSalaryMsg])
+        return true
+      }
+      if (minSal > maxSal) {
+        const warningMsg: Message = {
+          id: `salary-order-fallback-${Date.now()}`,
+          role: 'assistant',
+          content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, corrija os valores.',
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, warningMsg])
+        return true
+      }
+      setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
+      setCompensationAnalysis(null)
+      const confirmMessage: Message = {
+        id: `confirm-compensation-fallback-${Date.now()}`,
+        role: 'assistant',
+        content: '✅ **Valores de remuneração confirmados!**\n\nAvançando para a próxima etapa...',
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, confirmMessage])
+      setTimeout(() => { goToNextStage() }, 1500)
+      return true
+    }
+
+    if (lowerContent.includes('aceitar sugest') || lowerContent.includes('aplicar sugest')) {
+      const analysis = compensationAnalysis
+      if (analysis) {
+        if (analysis.salary.suggestion) {
+          setSalaryInfo(prev => ({
+            ...prev,
+            minSalary: analysis.salary.suggestion!.min.toString(),
+            maxSalary: analysis.salary.suggestion!.max.toString()
+          }))
+        }
+        if (analysis.bonus.suggestion) {
+          setSalaryInfo(prev => ({
+            ...prev,
+            minBonus: analysis.bonus.suggestion!.toString(),
+            maxBonus: analysis.bonus.suggestion!.toString()
+          }))
+        }
+        if (analysis.benefits.missingFromStandard && analysis.benefits.missingFromStandard.length > 0) {
+          const newBenefits = analysis.benefits.missingFromStandard.map(b => ({ id: b.id, name: b.name, value: b.value, enabled: true }))
+          setSalaryInfo(prev => ({
+            ...prev,
+            benefits: [...prev.benefits, ...newBenefits.filter(nb => !prev.benefits.some(pb => pb.id === nb.id))]
+          }))
+        }
+      }
+      setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
+      setCompensationAnalysis(null)
+      const confirmMessage: Message = {
+        id: `apply-suggestions-${Date.now()}`,
+        role: 'assistant',
+        content: '✅ **Sugestões aplicadas!**\n\nOs valores foram atualizados conforme as recomendações de mercado.',
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, confirmMessage])
+      setTimeout(() => { goToNextStage() }, 1500)
+      return true
+    }
+
+    const adjustMatch = lowerContent.match(/ajust(?:ar|e)?\s*(?:para)?\s*(?:r\$?\s*)?(\d+[\d.,]*)\s*(?:a|até|-|–|\/)\s*(?:r\$?\s*)?(\d+[\d.,]*)/i)
+    if (adjustMatch) {
+      const minValue = parseInt(adjustMatch[1].replace(/[.,]/g, ''))
+      const maxValue = parseInt(adjustMatch[2].replace(/[.,]/g, ''))
+      setSalaryInfo(prev => ({ ...prev, minSalary: minValue.toString(), maxSalary: maxValue.toString() }))
+      setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
+      setCompensationAnalysis(null)
+      const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(value)
+      const confirmMessage: Message = {
+        id: `adjust-salary-fallback-${Date.now()}`,
+        role: 'assistant',
+        content: `✅ **Faixa salarial atualizada!**\n\n• Mínimo: ${formatCurrency(minValue)}\n• Máximo: ${formatCurrency(maxValue)}\n\nVocê pode confirmar ou ajustar novamente.`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, confirmMessage])
+      return true
+    }
+
+    return false
+  }
+
+  // ── Interceptor 10: local command handling (navigation & edit) ─────────────
+  const _handleLocalCommands = (content: string): boolean => {
+    if (!isInJobCreationMode || wizardMode !== 'create_from_scratch' || currentStage === 'input-evaluation') return false
+
+    const parsedCommand = parseCommand(content)
+
+    if (parsedCommand.type === 'navigate') {
+      const navCommand = parsedCommand as ParsedNavigationCommand
+      const targetStage = navCommand.target
+      const targetStageIndex = WIZARD_STAGES.findIndex(s => s.id === targetStage)
+      const currentStageIndex = WIZARD_STAGES.findIndex(s => s.id === currentStage)
+
+      if (targetStage === currentStage) {
+        const alreadyHereMessage: Message = {
+          id: `nav-already-here-${Date.now()}`,
+          role: 'assistant',
+          content: `Você já está na etapa de **${getStageLabel(targetStage)}**. Como posso ajudar?`,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, alreadyHereMessage])
+        return true
+      }
+      if (targetStageIndex < currentStageIndex) {
+        setCurrentStage(targetStage)
+        const navSuccessMessage: Message = {
+          id: `nav-success-${Date.now()}`,
+          role: 'assistant',
+          content: `✅ Navegando para a etapa de **${getStageLabel(targetStage)}**.\n\nVocê pode revisar e ajustar os campos conforme necessário.`,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, navSuccessMessage])
+        return true
+      }
+      const stageConfig = WIZARD_STAGES.find(s => s.id === currentStage)
+      if (stageConfig) {
+        setCurrentStage(targetStage)
+        const navForwardMessage: Message = {
+          id: `nav-forward-${Date.now()}`,
+          role: 'assistant',
+          content: `✅ Navegando para a etapa de **${getStageLabel(targetStage)}**.\n\n💡 *Dica: Lembre-se de revisar as etapas anteriores antes de finalizar.*`,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, navForwardMessage])
+        return true
+      }
+    }
+
+    if (parsedCommand.type === 'edit') {
+      const editCommand = parsedCommand as ParsedEditCommand
+
+      if (editCommand.field === 'salary' && editCommand.value) {
+        const salaryResult = parseSalaryValue(String(editCommand.value))
+        if (salaryResult.isValid) {
+          const { updated, changes } = applySalaryUpdate(salaryInfo, salaryResult)
+          if (updated.minSalary !== salaryInfo.minSalary) {
+            trackFieldChange({ field: 'minSalary', oldValue: salaryInfo.minSalary, newValue: updated.minSalary, source: 'chat' })
+          }
+          if (updated.maxSalary !== salaryInfo.maxSalary) {
+            trackFieldChange({ field: 'maxSalary', oldValue: salaryInfo.maxSalary, newValue: updated.maxSalary, source: 'chat' })
+          }
+          setSalaryInfo(updated)
+          setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
+          setCompensationAnalysis(null)
+          const confirmMessage: Message = {
+            id: `edit-salary-${Date.now()}`,
+            role: 'assistant',
+            content: `✅ **Salário atualizado!**\n\n${changes.length > 0 ? changes.join('\n') : `Faixa salarial definida: ${salaryResult.formatted}`}\n\n*Você pode confirmar ou ajustar novamente.*`,
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, confirmMessage])
+          if (currentStage !== 'salary') setCurrentStage('salary')
+          return true
+        } else {
+          const errorMessage: Message = {
+            id: `edit-salary-error-${Date.now()}`,
+            role: 'assistant',
+            content: `❌ Não consegui entender o valor do salário. Por favor, use formatos como:\n• "15k" (para R$ 15.000)\n• "R$ 10.000 a R$ 15.000"\n• "10k a 15k"`,
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, errorMessage])
+          return true
+        }
+      }
+
+      if (editCommand.field === 'skill' && editCommand.value) {
+        const skillName = String(editCommand.value)
+        if (editCommand.action === 'add') {
+          const result = addSkillIfNotExists(technicalSkills, skillName)
+          if (result.added) {
+            trackFieldChange({ field: 'technicalSkill', oldValue: null, newValue: { name: skillName }, source: 'chat' })
+            setTechnicalSkills(result.skills)
+          }
+          const confirmMessage: Message = {
+            id: `edit-skill-add-${Date.now()}`,
+            role: 'assistant',
+            content: result.added
+              ? `✅ **Skill adicionada:** ${skillName}\n\n*A nova skill aparece no painel de competências.*`
+              : `ℹ️ ${result.message}`,
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, confirmMessage])
+          if (currentStage !== 'competencies') setCurrentStage('competencies')
+          return true
+        }
+        if (editCommand.action === 'remove') {
+          const result = removeSkillByName(technicalSkills, skillName)
+          if (result.removed) {
+            trackFieldChange({ field: 'technicalSkill', oldValue: { name: skillName }, newValue: null, source: 'chat' })
+            setTechnicalSkills(result.skills)
+          }
+          const confirmMessage: Message = {
+            id: `edit-skill-remove-${Date.now()}`,
+            role: 'assistant',
+            content: result.removed
+              ? `✅ **Skill removida:** ${skillName}`
+              : `ℹ️ ${result.message}`,
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, confirmMessage])
+          if (currentStage !== 'competencies') setCurrentStage('competencies')
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  // ── API dispatch: wizard (smart-orchestrate) ───────────────────────────────
+  const _handleWizardAPICall = async (content: string, processingMessageId: string): Promise<void> => {
+    console.log('[DEBUG handleSendMessage] SENDING TO BACKEND - smart-orchestrate')
+    setIsLoading(true)
+
+    try {
+      setTimeout(() => {
+        setMessages(msgs => msgs.map(m =>
+          m.id === processingMessageId
+            ? { ...m, content: '📊 Consultando LIA...', processingState: 'analyzing' as const }
+            : m
+        ))
+      }, 300)
+
+      const collectedData = buildCollectedData()
+      const conversationHistory = messages.slice(-10).map(m => ({ role: m.role, content: m.content }))
+      const panelChangesContext = generateLLMContext()
+      const enhancedMessage = panelChangesContext ? `${content}\n\n${panelChangesContext}` : content
+
+      if (conversationMemory.conversationId) {
+        conversationMemory.addMessage('user', content).catch(() => {})
+      }
+
+      const orchestratorResult = await orchestrateWizardMessage({
+        message: enhancedMessage,
+        current_stage: currentStage,
+        collected_data: collectedData,
+        conversation_history: conversationHistory,
+        conversation_id: conversationMemory.conversationId || undefined,
+        company_id: user?.company || undefined,
+        user_id: user?.email || undefined
+      })
+
+      console.log('[SmartOrchestrate] Using smart-orchestrate response (confidence:', orchestratorResult.confidence, ')')
+      await processOrchestratorResponse(orchestratorResult, processingMessageId)
+      setIsLoading(false)
+
+      if (currentStage === 'input-evaluation' && orchestratorResult.confidence >= 0.7) {
+        const evaluationContext = {
+          job_title: basicInfoFields.cargo || detectedCriteria.cargo || undefined,
+          seniority: detectedCriteria.senioridadeIdiomas || undefined,
+          department: basicInfoFields.area || detectedCriteria.departamento || undefined,
+          location: basicInfoFields.localidade || detectedCriteria.localizacao || undefined,
+          work_model: basicInfoFields.modeloTrabalho || detectedCriteria.modeloTrabalho || undefined,
+          technical_skills: technicalSkills.filter(s => s.required).map(s => s.name),
+          behavioral_skills: behavioralCompetencies.filter(c => c.enabled).map(c => c.name),
+        }
+        callEvaluationStep(content, evaluationContext).then((evalResult) => {
+          if (evalResult?.compensation_analysis) setCompensationAnalysis(evalResult.compensation_analysis)
+          const evalResultAny = evalResult as any
+          if (evalResultAny?.technical_skills || evalResultAny?.behavioral_competencies) {
+            const technicalSuggestions: TechnicalSkillSuggestion[] = (evalResultAny.technical_skills || []).map((skill: any) => ({
+              name: skill.name || skill, level: skill.level || 'Intermediário', weight: skill.weight || 3,
+              weightJustification: skill.weight_justification || 'Baseado em análise de mercado',
+              source: skill.source || 'market_benchmark', required: skill.required ?? true, category: skill.category || 'tool'
+            }))
+            const behavioralSuggestions: BehavioralCompetencySuggestion[] = (evalResultAny.behavioral_competencies || []).map((comp: any) => ({
+              name: comp.name || comp, weight: comp.weight || 3, justification: comp.justification || '',
+              weightJustification: comp.weight_justification || 'Baseado em histórico da empresa', source: comp.source || 'company_history'
+            }))
+            if (technicalSuggestions.length > 0 || behavioralSuggestions.length > 0) {
+              setCompetencySuggestions({ technicalSkills: technicalSuggestions, behavioralCompetencies: behavioralSuggestions })
+              setTimeout(() => {
+                const competenciesMessage: Message = {
+                  id: `lia-competencies-${Date.now()}`,
+                  role: 'assistant',
+                  content: '',
+                  timestamp: new Date(),
+                  messageType: 'competencies',
+                  competenciesSuggestions: { technicalSkills: technicalSuggestions, behavioralCompetencies: behavioralSuggestions }
+                }
+                setMessages(prev => [...prev, competenciesMessage])
+              }, 1000)
+            }
+          }
+        }).catch((err) => { console.error('Error calling evaluation step:', err) })
+      }
+    } catch (error) {
+      console.error('Error in wizard step:', error)
+      const newCriteria = extractCriteriaFromText(content)
+      const fallbackText = generateCriteriaResponse(newCriteria)
+      const fallbackFieldsData: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }> = []
+      if (newCriteria.cargo) fallbackFieldsData.push({ label: "Cargo", value: newCriteria.cargo, confidence: "high" })
+      if (newCriteria.senioridadeIdiomas) fallbackFieldsData.push({ label: "Senioridade", value: newCriteria.senioridadeIdiomas, confidence: "medium" })
+      if (newCriteria.modeloTrabalho) fallbackFieldsData.push({ label: "Modelo", value: newCriteria.modeloTrabalho, confidence: "medium" })
+      if (newCriteria.localizacao) fallbackFieldsData.push({ label: "Localização", value: newCriteria.localizacao, confidence: "medium" })
+      if (newCriteria.competenciasTecnicas?.length > 0) fallbackFieldsData.push({ label: "Skills Técnicas", value: newCriteria.competenciasTecnicas.slice(0, 5).join(", "), confidence: "medium" })
+      if (newCriteria.tipoContrato) fallbackFieldsData.push({ label: "Contrato", value: newCriteria.tipoContrato, confidence: "low" })
+      setMessages(msgs => msgs.map(m =>
+        m.id === processingMessageId
+          ? { ...m, content: '✅ Mensagem processada', processingState: 'completed' as const }
+          : m
+      ))
+      const fallbackMessage: Message = {
+        id: `fallback-${Date.now()}`,
+        role: 'assistant',
+        content: fallbackText,
+        timestamp: new Date(),
+        isTyping: true,
+        detectedFieldsData: fallbackFieldsData.length > 0 ? fallbackFieldsData : undefined
+      }
+      setMessages(msgs => [...msgs, fallbackMessage])
+      setDisplayedText("")
+      setTimeout(() => { typeText(fallbackText, fallbackMessage.id) }, 300)
+      setIsLoading(false)
+    }
+  }
+
+  // ── API dispatch: general chat (orchestrator) ──────────────────────────────
+  const _handleGeneralAPICall = async (content: string, _processingMessageId: string): Promise<void> => {
+    setIsLoading(true)
+    try {
+      let responseText = "Entendi! Estou processando as informações..."
+
+      if (onOrchestratedMessage) {
+        const orchestratedResponse = await onOrchestratedMessage(content.trim())
+        responseText = orchestratedResponse.content
+        if (orchestratedResponse.ui_action === 'start_job_wizard') {
+          setInternalJobCreationMode(true)
+          setCurrentStage('input-evaluation')
+          if (orchestratedResponse.ui_action_params?.initial_message) {
+            setDynamicInitialMessage(INITIAL_JOB_CREATION_MESSAGE)
+          }
+        }
+      } else {
+        if (!conversationMemory.conversationId && user?.email) {
+          await conversationMemory.initConversation(user.email, 'general')
+        }
+        const conversationContext = await conversationMemory.getContext()
+        if (conversationMemory.conversationId) {
+          conversationMemory.addMessage('user', content.trim()).catch(() => {})
+        }
+        const orchestratorResponse = await orchestratorProcess({
+          user_id: user?.email || 'demo-user',
+          message: content.trim(),
+          conversation_id: conversationMemory.conversationId || conversationId || undefined,
+          context_type: 'general',
+          context_id: conversationMemory.conversationId || undefined,
+          conversation_context: conversationContext || undefined,
+        })
+
+        if (orchestratorResponse.success) {
+          if (orchestratorResponse.conversation_id && !conversationId) {
+            setConversationId(orchestratorResponse.conversation_id)
+          }
+          responseText = orchestratorResponse.message || orchestratorResponse.result?.message || responseText
+          if (conversationMemory.conversationId) {
+            conversationMemory.addMessage('assistant', responseText, orchestratorResponse.intent).catch(() => {})
+          }
+          const suggestedToolCall = orchestratorResponse.suggested_tool_call || orchestratorResponse.result?.suggested_tool_call
+          if (suggestedToolCall) {
+            const toolCall: ToolCall = {
+              tool_name: suggestedToolCall.tool_name,
+              parameters: suggestedToolCall.parameters || {},
+              requires_confirmation: suggestedToolCall.requires_confirmation !== false,
+              confirmation_message: suggestedToolCall.confirmation_message || responseText,
+            }
+            if (toolCall.requires_confirmation) {
+              toolCalling.suggestToolCall(toolCall)
+              const confirmationMessageId = `tool-confirm-${Date.now()}`
+              setActiveToolConfirmationMessageId(confirmationMessageId)
+              const confirmationMessage: Message = {
+                id: confirmationMessageId,
+                role: 'assistant',
+                content: responseText,
+                timestamp: new Date(),
+                messageType: 'tool-confirmation',
+                toolCall: toolCall,
+              }
+              setMessages(prev => [...prev, confirmationMessage])
+              setIsLoading(false)
+              return
+            } else {
+              setIsLoading(true)
+              try {
+                const result = await toolCalling.executeToolDirectly(toolCall.tool_name, toolCall.parameters)
+                const feedbackMessage: Message = {
+                  id: `tool-feedback-${Date.now()}`,
+                  role: 'assistant',
+                  content: result.success ? `✅ ${result.message}` : `❌ ${result.error || result.message}`,
+                  timestamp: new Date(),
+                  messageType: 'tool-execution-feedback',
+                  toolExecutionResult: result,
+                }
+                setMessages(prev => [...prev, feedbackMessage])
+                setIsLoading(false)
+                return
+              } catch (error) {
+                console.error('[ToolCalling] Error executing tool directly:', error)
+              }
+            }
+          }
+        } else {
+          const response = await liaApi.sendMessage({
+            content: content.trim(),
+            conversation_id: conversationId || undefined,
+            user_id: 'demo-user'
+          })
+          if (response.conversation?.id && !conversationId) setConversationId(response.conversation.id)
+          responseText = response.message?.content || responseText
+        }
+      }
+
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: responseText,
+        timestamp: new Date(),
+        isTyping: true
+      }
+      setMessages(prev => [...prev, assistantMessage])
+      setDisplayedText("")
+      setTimeout(() => { typeText(responseText, assistantMessage.id) }, 300)
+
+    } catch (error) {
+      console.error('Error sending message:', error)
+      extractCriteriaFromText(content)
+      const errorText = "Entendi as informações! Detectei alguns critérios da vaga. Continue adicionando mais detalhes ou avance para a próxima etapa."
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: errorText,
+        timestamp: new Date(),
+        isTyping: true
+      }
+      setMessages(prev => [...prev, errorMessage])
+      setDisplayedText("")
+      setTimeout(() => { typeText(errorText, errorMessage.id) }, 300)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // handleSendMessage — thin dispatcher (Sprint 4.6)
+  // ─────────────────────────────────────────────────────────────────────────
   const handleSendMessage = async (content: string) => {
     if (!content.trim() || isLoading || isTypingEffect) return
-    
-    // DEBUG: Log message flow state
+
     console.log('[DEBUG handleSendMessage] Message received:', content)
     console.log('[DEBUG handleSendMessage] State:', {
       awaitingDraftChoice,
@@ -5457,1697 +7021,32 @@ Venha fazer parte do nosso time! 🚀`
       currentStage
     })
 
-    // Detect context switch intent from message
-    const detectedContext = contextSwitching.detectContextFromMessage(content)
-    if (detectedContext && detectedContext !== contextSwitching.currentContext) {
-      // Save current wizard state before switching
-      if (contextSwitching.isInWizardContext) {
-        contextSwitching.saveWizardSnapshot({
-          stage: currentStage,
-          basicInfoFields: basicInfoFields as unknown as Record<string, unknown>,
-          technicalSkills,
-          behavioralCompetencies,
-          salaryInfo: salaryInfo as unknown as Record<string, unknown>,
-          wsiQuestions,
-          detectedCriteria: detectedCriteria as unknown as Record<string, unknown>,
-          generatedJobDescription,
-          fastTrackSourceJobId: wizardFastTrackSourceJobId,
-        })
-      } else {
-        contextSwitching.saveGeneralSnapshot({
-          conversationId: conversationMemory.conversationId || conversationId,
-          lastMessageIndex: messages.length,
-        })
-      }
-      
-      // Switch context
-      if (detectedContext === 'wizard') {
-        contextSwitching.switchToWizard()
-      } else if (detectedContext === 'fast_track') {
-        contextSwitching.switchToFastTrack()
-      } else if (detectedContext === 'general') {
-        contextSwitching.switchToGeneral()
-      }
-    }
+    // 1. Context switch bookkeeping (no early return)
+    _handleContextSwitch(content)
 
+    // 2. Append user message
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: 'user',
       content: content.trim(),
       timestamp: new Date()
     }
-
     setMessages(prev => [...prev, userMessage])
     setInputValue("")
 
-    // Check if we're awaiting stage advance confirmation (conversational flow)
-    if (awaitingStageAdvanceConfirmation) {
-      console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingStageAdvanceConfirmation:', awaitingStageAdvanceConfirmation)
-      const lowerMessage = content.toLowerCase().trim()
-      const originalMessage = content.trim()
-      
-      // Patterns that indicate adjustment requests (NOT confirmations)
-      // These keywords mean the user wants to change something, not confirm
-      const adjustmentPatterns = [
-        'ajust', 'alter', 'mud', 'troc', 'edit', 'corrig', 'revis',
-        'quero', 'preciso', 'falta', 'adiciona', 'remov', 'exclui',
-        'não', 'nao', 'errad', 'outr', 'diferent'
-      ]
-      
-      const isAdjustmentRequest = adjustmentPatterns.some(p => lowerMessage.includes(p))
-      
-      // Short standalone confirmations (regex patterns for exact/near-exact matches)
-      // These only match when the ENTIRE message is a confirmation phrase
-      const shortConfirmPatterns = [
-        /^sim$/i, /^pode$/i, /^vamos$/i, /^ok$/i, /^beleza$/i, /^bora$/i,
-        /^perfeito$/i, /^show$/i, /^massa$/i, /^confirmo$/i, /^confirma$/i,
-        /^tá bom$/i, /^ta bom$/i, /^está bom$/i, /^ta certo$/i, /^tá certo$/i,
-        /^pode ser$/i, /^pode sim$/i, /^sim,? pode$/i, /^vamos lá$/i,
-        /^vamos sim$/i, /^avança$/i, /^avançar$/i, /^próxima$/i, /^proxima$/i,
-        /^seguir$/i, /^segue$/i, /^prosseguir$/i, /^continuar$/i,
-        /^sim,?\s*(pode|vamos|avança|ok|beleza)$/i,
-        /^(pode|vamos|ok),?\s*sim$/i
-      ]
-      
-      // Check if it's a short standalone confirmation AND not an adjustment request
-      const isShortMessage = originalMessage.length <= 30
-      const isStandaloneConfirmation = shortConfirmPatterns.some(p => p.test(lowerMessage))
-      
-      // Only treat as confirmation if:
-      // 1. Short message AND matches standalone pattern AND no adjustment keywords
-      const isClearConfirmation = (isShortMessage && isStandaloneConfirmation && !isAdjustmentRequest)
-      
-      if (isClearConfirmation) {
-        console.log('[ProactiveConfirmation] Detected clear confirmation:', lowerMessage)
-        
-        // Special handling for calibration completion (not a stage transition)
-        if (awaitingStageAdvanceConfirmation === 'calibration-complete') {
-          setCalibrationComplete(true)
-          const totalEvaluated = approvedCandidates.length + rejectedCandidates.length
-          const completeMsg: Message = {
-            id: `calibration-finished-${Date.now()}`,
-            role: 'assistant',
-            content: `🎯 **Calibração finalizada!**
+    // 3. Interceptors — first match wins
+    if (await _handleStageAdvanceConfirmation(content)) return
+    if (await _handleDraftChoice(content)) return
+    if (await _handleCalibrationChoice(content)) return
+    if (await _handlePendingToolConfirmation(content)) return
+    if (await _handleWSIRegenConfirmation(content)) return
+    if (await _handleSensitiveFieldsConfirmation(content)) return
+    if (await _handleFastTrackSuggestions(content)) return
+    if (await _handleFastTrackFlow(content)) return
+    if (await _handleCompensationMessage(content)) return
+    if (_handleLocalCommands(content)) return
 
-O modelo de busca foi ajustado com base nas suas ${totalEvaluated} avaliações. Agora as próximas buscas vão priorizar candidatos similares aos que você aprovou.`,
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, completeMsg])
-          setAwaitingStageAdvanceConfirmation(null)
-          return // Don't process further
-        }
-        
-        // Advance to next stage (normal stage transitions)
-        const nextStage = awaitingStageAdvanceConfirmation
-        
-        // Special handling for jd-enrichment: call smart-orchestrate to get enriched data
-        if (nextStage === 'jd-enrichment') {
-          console.log('[ProactiveConfirmation] Transitioning to jd-enrichment, calling smart-orchestrate')
-          setAwaitingStageAdvanceConfirmation(null)
-          setIsLoadingEnrichment(true)
-          
-          // Show loading message
-          const loadingMsg: Message = {
-            id: `jd-enrichment-loading-${Date.now()}`,
-            role: 'assistant',
-            content: '🔍 **Analisando dados de mercado...**\n\nEstou consultando benchmarks salariais, catálogo de competências e histórico da empresa para preparar sugestões personalizadas.',
-            timestamp: new Date(),
-            isProcessing: true,
-            processingState: 'analyzing'
-          }
-          setMessages(prev => [...prev, loadingMsg])
-          setCurrentStage('jd-enrichment' as WizardStage)
-          
-          // Call smart-orchestrate with CONFIRM intent to trigger generate_enriched_jd
-          const collectedData = buildCollectedData()
-          orchestrateWizardMessage({
-            message: content, // User's confirmation message
-            current_stage: 'input-evaluation', // Coming from input-evaluation
-            collected_data: collectedData,
-            conversation_history: messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
-            conversation_id: conversationMemory.conversationId || undefined,
-            company_id: user?.company || undefined,
-            user_id: user?.email || undefined
-          }).then(async result => {
-            setMessages(prev => prev.filter(m => m.id !== loadingMsg.id))
-            await processOrchestratorResponse(result, loadingMsg.id)
-            setIsLoadingEnrichment(false)
-            
-            setTimeout(() => {
-              const parecerData = generateParecerData()
-              const parecerMsg: Message = {
-                id: `parecer-lia-${Date.now()}`,
-                role: 'assistant',
-                content: `Preparei uma análise completa da sua vaga. Revise o parecer abaixo e ajuste o que desejar antes de avançarmos para **Remuneração**.`,
-                timestamp: new Date(),
-                messageType: 'parecer-lia',
-                parecerData
-              }
-              setMessages(prev => [...prev, parecerMsg])
-              setAwaitingStageAdvanceConfirmation('salary')
-            }, 1000)
-          }).catch(error => {
-            console.error('[ProactiveConfirmation] Failed to get enriched JD:', error)
-            setMessages(prev => prev.filter(m => m.id !== loadingMsg.id))
-            setIsLoadingEnrichment(false)
-            
-            // Show error message
-            const errorMsg: Message = {
-              id: `jd-enrichment-error-${Date.now()}`,
-              role: 'assistant',
-              content: '❌ Não consegui buscar as sugestões de mercado. Você pode continuar preenchendo manualmente ou tentar novamente.',
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, errorMsg])
-          })
-          return
-        }
-        
-        const transitionMsg: Message = {
-          id: `stage-transition-${Date.now()}`,
-          role: 'assistant',
-          content: getStageTransitionMessage(nextStage, {}),
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, transitionMsg])
-        setCurrentStage(nextStage as WizardStage)
-        setAwaitingStageAdvanceConfirmation(null)
-        if (nextStage === 'salary') {
-          setTimeout(() => {
-            const parecerData = generateParecerData()
-            const parecerMsg: Message = {
-              id: `parecer-lia-${Date.now()}`,
-              role: 'assistant',
-              content: `Preparei uma análise completa da sua vaga antes de configurar a remuneração.`,
-              timestamp: new Date(),
-              messageType: 'parecer-lia',
-              parecerData
-            }
-            setMessages(prev => [...prev, parecerMsg])
-          }, 500)
-        }
-        return // Don't process further
-      }
-      
-      // Not a clear confirmation - could be adjustment request or ambiguous
-      // Clear the awaiting state and let the message be processed by smart-orchestrate
-      console.log('[ProactiveConfirmation] Not a clear confirmation, routing to backend:', lowerMessage)
-      setAwaitingStageAdvanceConfirmation(null)
-      // Continue to normal message processing...
-    }
-
-    // Handle draft choice if awaiting user decision
-    if (awaitingDraftChoice) {
-      console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingDraftChoice')
-      const lowerContent = content.toLowerCase().trim()
-      
-      // Detect "continuar" intent
-      if (lowerContent.includes('continuar') || lowerContent.includes('retomar') || 
-          lowerContent.includes('prosseguir') || lowerContent.includes('sim')) {
-        // Apply the pending draft and show appropriate stage message
-        applyPendingDraft()
-        
-        // Get current stage message
-        const currentStageConfig = WIZARD_STAGES.find(s => s.id === pendingDraftData?.currentStage)
-        const stageMessage = currentStageConfig?.liaMessage || 'Continuando de onde você parou...'
-        
-        const liaMessage: Message = {
-          id: `lia-continue-draft-${Date.now()}`,
-          role: 'assistant',
-          content: `Perfeito! Vou retomar de onde você parou. 📋\n\n${stageMessage}`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-        setIsPanelOpen(true)
-        return
-      }
-      
-      // Detect "começar do zero" intent
-      if (lowerContent.includes('zero') || lowerContent.includes('nova') || 
-          lowerContent.includes('novo') || lowerContent.includes('descartar') ||
-          lowerContent.includes('limpar') || lowerContent.includes('recomeçar')) {
-        // Clear the draft and start fresh
-        clearWizardDraft()
-        setPendingDraftData(null)
-        setAwaitingDraftChoice(false)
-        setHasAppliedRestoredDraft(true)
-        
-        // Reset all wizard state
-        setCurrentStage('input-evaluation')
-        setBasicInfoFields({ cargo: '', area: '', gestor: '', localidade: '', modeloTrabalho: '', tipoContrato: '' })
-        setSalaryInfo({ minSalary: '', maxSalary: '', minBonus: '', maxBonus: '', bonusCriteria: '', benefits: [] })
-        setTechnicalSkills([])
-        setBehavioralCompetencies([])
-        setWsiCandidates([])
-        setGeneratedJobDescription('')
-        
-        // After clearing draft, ask user to describe the job (NOT repeat greeting with options)
-        const liaMessage: Message = {
-          id: `lia-fresh-start-${Date.now()}`,
-          role: 'assistant',
-          content: 'Perfeito! Vamos criar uma nova vaga do zero. 🆕\n\nMe conte sobre a posição que você precisa preencher. Pode descrever livremente - cargo, responsabilidades, requisitos, área, modelo de trabalho... Eu vou extrair as informações automaticamente.\n\n💡 **Dica:** Quanto mais detalhes você fornecer, mais precisa será a vaga gerada.',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, liaMessage])
-        setIsPanelOpen(true)
-        setWizardMode('create_from_scratch')
-        return
-      }
-      
-      // User didn't clearly choose - ask again
-      const clarifyMessage: Message = {
-        id: `lia-clarify-${Date.now()}`,
-        role: 'assistant',
-        content: 'Não entendi sua escolha. Por favor, digite **"continuar"** para retomar o rascunho, ou **"começar do zero"** para descartar e criar uma nova vaga.',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, clarifyMessage])
-      return
-    }
-
-    // Handle calibration choice after job publish
-    if (awaitingCalibrationChoice && currentStage === 'search-calibration') {
-      console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingCalibrationChoice')
-      const lowerContent = content.toLowerCase().trim()
-      
-      // Explicit patterns for "calibrate now" - requires clear calibration intent
-      const calibratePatterns = [
-        'calibrar', 'calibração', 'calibracao', 
-        'avaliar candidato', 'avaliar perfis', 
-        'mostrar candidato', 'mostra candidato', 'ver candidato', 'ver perfis',
-        'quero calibrar', 'calibrar agora', 'mostrar perfis', 'avaliar agora'
-      ]
-      
-      // Explicit patterns for "skip to kanban" - requires clear skip intent
-      const skipPatterns = [
-        'kanban', 'kbn', 'pular', 'direto', 'ir para', 'skip', 
-        'depois', 'mais tarde', 'funil', 'pipeline', 
-        'sem calibração', 'sem calibracao', 'calibrar depois',
-        'ir pro kanban', 'manda pro funil', 'pode pular', 
-        'prefiro kanban', 'quero ir pro kanban', 'vai pro kanban',
-        'aprendizado natural', 'aprender no kanban'
-      ]
-      
-      const hasCalibrationIntent = calibratePatterns.some(p => lowerContent.includes(p))
-      let hasSkipIntent = skipPatterns.some(p => lowerContent.includes(p))
-      
-      // Handle clear "não" as skip
-      if ((lowerContent === 'não' || lowerContent === 'nao') && !hasCalibrationIntent) {
-        hasSkipIntent = true
-      }
-      
-      // Explicit rejection of calibration
-      const explicitRejectCalibration = lowerContent.includes('não') && lowerContent.includes('calibr')
-      
-      // Detect conflict: has both calibration AND skip intent (e.g., "calibrar depois")
-      const hasConflictingIntent = hasCalibrationIntent && hasSkipIntent
-      
-      if (hasConflictingIntent) {
-        // Ask for clarification when intent is ambiguous - keep awaiting state true
-        setAwaitingCalibrationChoice(true)
-        const conflictClarifyMessage: Message = {
-          id: `lia-clarify-conflict-${Date.now()}`,
-          role: 'assistant',
-          content: `Percebi que você mencionou calibração mas também parece querer deixar para depois. Para confirmar:
-
-• **"Calibrar agora"** - mostro 5 perfis para avaliar rapidamente
-• **"Ir pro kanban"** - adiciono candidatos e você avalia lá
-
-Qual prefere?`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, conflictClarifyMessage])
-        return
-      }
-      
-      if (hasSkipIntent || explicitRejectCalibration) {
-        // Skip calibration - go directly to kanban
-        setAwaitingCalibrationChoice(false)
-        const skipMessage: Message = {
-          id: `lia-skip-calibration-${Date.now()}`,
-          role: 'assistant',
-          content: `Perfeito! Os candidatos já estão sendo adicionados ao Kanban da vaga. 🎯
-
-**Aprendizado Implícito Ativado:**
-Quando você mover candidatos no Kanban (aprovar → entrevista, reprovar → descartado), eu automaticamente aprendo suas preferências e ajusto as futuras sugestões.
-
-📊 **Candidatos encontrados:** ${localCandidateCount > 0 ? localCandidateCount : 'Buscando...'}
-
-Clique no botão abaixo para ir ao Kanban da vaga.`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, skipMessage])
-        setCalibrationComplete(true)
-        return
-      }
-      
-      if (hasCalibrationIntent && !hasSkipIntent) {
-        // Start explicit calibration flow
-        setAwaitingCalibrationChoice(false)
-        const calibrateMessage: Message = {
-          id: `lia-start-calibration-${Date.now()}`,
-          role: 'assistant',
-          content: `Ótimo! Vou te mostrar 5 perfis para você avaliar rapidamente. 🔍
-
-Basta indicar se cada candidato é **aderente** ou **não aderente** ao perfil da vaga.
-
-Carregando os primeiros perfis...`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, calibrateMessage])
-        setShowCalibrationModal(true)
-        return
-      }
-      
-      // Ambiguous response (like "sim", "ok", "pode") - ask for clarification
-      const ambiguousAffirmative = ['sim', 'ok', 'pode', 'vamos', 'bora', 'claro', 'beleza'].some(p => lowerContent === p || lowerContent.startsWith(p + ' '))
-      if (ambiguousAffirmative) {
-        const clarifyAmbiguousMessage: Message = {
-          id: `lia-clarify-ambiguous-${Date.now()}`,
-          role: 'assistant',
-          content: `Ótimo! Só para confirmar, você quer:
-          
-• **"Calibrar"** - eu mostro 5 perfis para você avaliar rapidamente
-• **"Ir pro kanban"** - eu adiciono os candidatos e você avalia lá
-
-Qual prefere?`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, clarifyAmbiguousMessage])
-        return
-      }
-      
-      // Completely unclear - ask again
-      const clarifyCalibrationMessage: Message = {
-        id: `lia-clarify-calibration-${Date.now()}`,
-        role: 'assistant',
-        content: 'Não entendi sua preferência. Você quer **"calibrar"** (avaliar 5 perfis) ou **"ir pro kanban"** (aprendizado natural)?',
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, clarifyCalibrationMessage])
-      return
-    }
-
-    // Handle pending tool call confirmation
-    if (toolCalling.hasPendingTool && activeToolConfirmationMessageId) {
-      console.log('[DEBUG handleSendMessage] INTERCEPTED by hasPendingTool')
-      const lowerContent = content.toLowerCase().trim()
-      
-      const affirmativePatterns = ['sim', 'pode', 'ok', 'claro', 'confirmo', 'confirma', 'prossegue', 'prosseguir', 'fazer', 'execute', 'aceito', 'pode ser', 'beleza', 'manda', 'vai', 'bora']
-      const negativePatterns = ['não', 'nao', 'cancela', 'cancelar', 'deixa', 'para', 'espera', 'aguarda', 'negativo', 'desisto']
-      
-      const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
-      const isNegative = negativePatterns.some(p => lowerContent.includes(p))
-      
-      if (isAffirmative && !isNegative) {
-        setIsLoading(true)
-        
-        try {
-          const result = await toolCalling.confirmToolCall()
-          
-          // Add execution feedback message
-          const feedbackMessage: Message = {
-            id: `tool-feedback-${Date.now()}`,
-            role: 'assistant',
-            content: result.success 
-              ? `✅ ${result.message}` 
-              : `❌ ${result.error || result.message}`,
-            timestamp: new Date(),
-            messageType: 'tool-execution-feedback',
-            toolExecutionResult: result,
-          }
-          setMessages(prev => [...prev, feedbackMessage])
-          setActiveToolConfirmationMessageId(null)
-          
-          if (result.success) {
-            // Add a follow-up message from LIA
-            const followUpMessage: Message = {
-              id: `tool-followup-${Date.now()}`,
-              role: 'assistant',
-              content: 'Posso ajudar com mais alguma coisa?',
-              timestamp: new Date(),
-            }
-            setTimeout(() => {
-              setMessages(prev => [...prev, followUpMessage])
-            }, 500)
-          }
-        } catch (error) {
-          console.error('[ToolCalling] Error executing tool:', error)
-          const errorMessage: Message = {
-            id: `tool-error-${Date.now()}`,
-            role: 'assistant',
-            content: 'Tive um problema ao executar a ação. Por favor, tente novamente.',
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, errorMessage])
-          setActiveToolConfirmationMessageId(null)
-        } finally {
-          setIsLoading(false)
-        }
-        return
-      } else if (isNegative) {
-        toolCalling.cancelToolCall()
-        setActiveToolConfirmationMessageId(null)
-        
-        const cancelMessage: Message = {
-          id: `tool-cancel-${Date.now()}`,
-          role: 'assistant',
-          content: 'Tudo bem, cancelei a ação. Se precisar de algo mais, é só me avisar!',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, cancelMessage])
-        return
-      }
-      // If unclear, let the message flow through to the orchestrator
-    }
-
-    // Handle WSI regeneration confirmation
-    if (isInJobCreationMode && awaitingWSIRegenerationConfirmation) {
-      console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingWSIRegenerationConfirmation')
-      const lowerContent = content.toLowerCase().trim()
-      
-      const affirmativePatterns = ['sim', 'pode', 'atualiz', 'regen', 'ok', 'claro', 'por favor', 'quero']
-      const negativePatterns = ['não', 'nao', 'deixa', 'mantém', 'mantem', 'fica', 'assim mesmo']
-      
-      const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
-      const isNegative = negativePatterns.some(p => lowerContent.includes(p))
-      
-      if (isAffirmative && !isNegative) {
-        setAwaitingWSIRegenerationConfirmation(false)
-        setIsLoading(true)
-        
-        try {
-          const { regenerateWSIQuestions } = await import('@/services/lia-api')
-          
-          // Build current questions from wsiCandidates
-          const currentQuestions = wsiCandidates.map(q => ({
-            question: q.question,
-            type: q.type || 'open',
-            required: q.required !== false,
-            competency_validated: q.competency
-          }))
-          
-          const result = await regenerateWSIQuestions({
-            company_id: user?.company || 'default',
-            job_title: basicInfoFields.cargo,
-            current_questions: currentQuestions as any,
-            technical_skills: technicalSkills.map(s => s.name),
-            behavioral_competencies: behavioralCompetencies.map(c => c.name),
-            seniority: undefined,
-            max_questions: 10
-          })
-          
-          if (result.success && result.questions.length > 0) {
-            setWsiCandidates(result.questions.map((q: any, idx: number) => ({
-              id: `wsi-regen-${idx}-${Date.now()}`,
-              question: q.question,
-              type: q.type || 'open',
-              required: q.required !== false,
-              selected: true,
-              batch: 0,
-              isWSI: true,
-              competency: q.competency_validated,
-            })))
-            
-            // Analytics: Track WSI regeneration
-            analytics.trackSuggestion('fast_track_wsi_regenerated', true)
-            
-            const successMessage: Message = {
-              id: `wsi-regen-success-${Date.now()}`,
-              role: 'assistant',
-              content: `Pronto! Gerei **${result.questions.length} novas perguntas WSI** baseadas nas competências atualizadas. Você pode revisar e ajustar no painel ao lado.`,
-              timestamp: new Date(),
-            }
-            setMessages(prev => [...prev, successMessage])
-          } else if (!result.success) {
-            const warningMessage: Message = {
-              id: `wsi-regen-warning-${Date.now()}`,
-              role: 'assistant',
-              content: 'A regeneração não foi possível. Manterei as perguntas atuais - você pode editá-las manualmente no painel.',
-              timestamp: new Date(),
-            }
-            setMessages(prev => [...prev, warningMessage])
-          }
-        } catch (error) {
-          console.error('WSI regeneration failed:', error)
-          const errorMessage: Message = {
-            id: `wsi-regen-error-${Date.now()}`,
-            role: 'assistant',
-            content: 'Tive um problema ao regenerar as perguntas. Você pode tentar novamente mais tarde ou editar manualmente.',
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, errorMessage])
-        } finally {
-          setIsLoading(false)
-        }
-        return
-      } else if (isNegative) {
-        setAwaitingWSIRegenerationConfirmation(false)
-        const keepMessage: Message = {
-          id: `wsi-keep-${Date.now()}`,
-          role: 'assistant',
-          content: 'Tudo bem! Manterei as perguntas WSI atuais. Se mudar de ideia, é só me avisar.',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, keepMessage])
-        return
-      }
-    }
-
-    // Handle sensitive fields confirmation after Fast Track
-    if (isInJobCreationMode && awaitingSensitiveFieldsConfirmation) {
-      console.log('[DEBUG handleSendMessage] INTERCEPTED by awaitingSensitiveFieldsConfirmation')
-      const lowerContent = content.toLowerCase().trim()
-      
-      // Extract gestor from response
-      const gestorPatterns = [
-        /gestor(?:\s+(?:[eé]|vai ser|será))?\s+(?:o\s+|a\s+)?([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s]+?)(?:\s*[,.]|$)/i,
-        /(?:o\s+|a\s+)?([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]+(?:\s+[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]+)*)\s+(?:[eé]\s+)?(?:o\s+)?gestor/i,
-        /gestor(?:a)?[:\s]+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s]+?)(?:\s*[,.]|$)/i,
-      ]
-      
-      let extractedGestor = ''
-      for (const pattern of gestorPatterns) {
-        const match = content.match(pattern)
-        if (match && match[1]) {
-          extractedGestor = match[1].trim()
-          break
-        }
-      }
-      
-      // Check for "mesmo da anterior" or similar
-      if (lowerContent.includes('mesmo') || lowerContent.includes('anterior') || lowerContent.includes('igual')) {
-        if (fastTrackAppliedData?.gestor) {
-          extractedGestor = fastTrackAppliedData.gestor
-        }
-      }
-      
-      // Extract location from response
-      let extractedLocation = ''
-      const locationPatterns = [
-        /(?:localiza[çc][aã]o|cidade|local|onde)[:\s]+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s\-]+?)(?:\s*[,.]|$)/i,
-        /(?:em|para)\s+([A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s\-]+?)(?:\s*[,.]|$)/i,
-      ]
-      
-      // Check for confirmation of previous location
-      if ((lowerContent.includes('sim') || lowerContent.includes('mesmo') || lowerContent.includes('continua')) && fastTrackAppliedData?.localidade) {
-        extractedLocation = fastTrackAppliedData.localidade
-      } else if (lowerContent.includes('remoto') || lowerContent.includes('home office')) {
-        extractedLocation = 'Remoto'
-      } else {
-        for (const pattern of locationPatterns) {
-          const match = content.match(pattern)
-          if (match && match[1]) {
-            extractedLocation = match[1].trim()
-            break
-          }
-        }
-      }
-      
-      // If no location extracted, keep the original
-      if (!extractedLocation && fastTrackAppliedData?.localidade) {
-        extractedLocation = fastTrackAppliedData.localidade
-      }
-      
-      // Extract affirmative action from response
-      let isAffirmativeAction = false
-      let affirmativeCriteria = ''
-      
-      const affirmativeNegativePatterns = [
-        /n[aã]o\s+[eé]\s+afirmativa/i,
-        /n[aã]o\s+afirmativa/i,
-        /n[aã]o,?\s*(?:n[aã]o\s+)?[eé]?\s*afirmativa/i,
-      ]
-      
-      const affirmativePositivePatterns = [
-        /afirmativa\s+(?:para\s+)?(mulheres?|pcd|pessoas?\s+com\s+defici[êe]ncia|negr[oa]s?|lgbtq?\+?|50\+)/i,
-        /(?:sim|[eé])\s+afirmativa/i,
-        /vaga\s+afirmativa/i,
-      ]
-      
-      const isNegativeAffirmative = affirmativeNegativePatterns.some(p => p.test(lowerContent))
-      
-      if (!isNegativeAffirmative) {
-        for (const pattern of affirmativePositivePatterns) {
-          const match = content.match(pattern)
-          if (match) {
-            isAffirmativeAction = true
-            if (match[1]) {
-              affirmativeCriteria = match[1].trim()
-            }
-            break
-          }
-        }
-      }
-      
-      // Update fields with extracted data
-      if (extractedGestor) {
-        setBasicInfoFields(prev => ({ ...prev, gestor: extractedGestor }))
-      }
-      if (extractedLocation) {
-        setBasicInfoFields(prev => ({ ...prev, localidade: extractedLocation }))
-      }
-      if (isAffirmativeAction) {
-        setJobConfig(prev => ({ ...prev, isAffirmative: true }))
-        if (affirmativeCriteria) {
-          setDetectedCriteria(prev => ({ ...prev, affirmativeCriteriaPrimary: affirmativeCriteria }))
-        }
-      } else if (isNegativeAffirmative) {
-        setJobConfig(prev => ({ ...prev, isAffirmative: false }))
-      }
-      
-      // Clear state and proceed to review
-      setAwaitingSensitiveFieldsConfirmation(false)
-      setFastTrackAppliedData(null)
-      
-      // Build confirmation response
-      const confirmationParts: string[] = []
-      if (extractedGestor) {
-        confirmationParts.push(`gestor: **${extractedGestor}**`)
-      }
-      if (extractedLocation) {
-        confirmationParts.push(`localização: **${extractedLocation}**`)
-      }
-      if (isAffirmativeAction) {
-        confirmationParts.push(`vaga afirmativa: **Sim${affirmativeCriteria ? ` (${affirmativeCriteria})` : ''}**`)
-      } else {
-        confirmationParts.push(`vaga afirmativa: **Não**`)
-      }
-      
-      const confirmMessage: Message = {
-        id: `fasttrack-confirm-${Date.now()}`,
-        role: 'assistant',
-        content: `Perfeito! Registrei ${confirmationParts.join(', ')}.\n\nAgora você pode revisar todos os detalhes no painel lateral e publicar quando estiver pronto!`,
-        timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, confirmMessage])
-      
-      // Now go to review stage
-      setCurrentStage('review-publish')
-      setWizardMode('create_from_scratch')
-      
-      return
-    }
-
-    // Handle Fast Track semantic suggestions (new hook)
-    // Accept responses when suggestions exist - simple gate on hasSuggestions
-    if (isInJobCreationMode && fastTrack.hasSuggestions) {
-      console.log('[DEBUG handleSendMessage] INTERCEPTED by fastTrack.hasSuggestions')
-      const lowerContent = content.toLowerCase().trim()
-      
-      // Detect specific selection (number or ordinal)
-      const numberMatch = lowerContent.match(/\b([1-5])\b|primeira|segunda|terceira|quarta|quinta/)
-      const hasExplicitSelection = numberMatch !== null
-      
-      // Detect affirmative response - user wants to use a suggestion
-      const affirmativePatterns = [
-        'sim', 'usa', 'usar', 'ok', 'vamos', 'pode ser', 'pode', 'essa', 'essa mesmo',
-        'top', 'bora', 'beleza', 'perfeito', 'ótimo', 'legal', 'certo', 'fechou'
-      ]
-      
-      // Detect negative response - user wants to create from scratch
-      const negativePatterns = [
-        'não', 'nao', 'zero', 'nova', 'novo', 'criar', 'comecar', 'começar',
-        'do zero', 'outra', 'diferente', 'prefiro não'
-      ]
-      
-      const isAffirmative = affirmativePatterns.some(p => lowerContent.includes(p))
-      const isNegative = negativePatterns.some(p => lowerContent.includes(p))
-      
-      if ((isAffirmative || hasExplicitSelection) && !isNegative) {
-        // If we're awaiting selection and user didn't provide a number, re-prompt
-        if (awaitingFastTrackSelection && !numberMatch) {
-          const reaskMessage: Message = {
-            id: `fasttrack-reask-${Date.now()}`,
-            role: 'assistant',
-            content: 'Qual das vagas você quer usar? Diga o número (1, 2, 3...) ou "primeira", "segunda", etc.',
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, reaskMessage])
-          return
-        }
-        
-        // If multiple suggestions and no explicit selection yet, ask for clarification
-        if (fastTrack.suggestions.length > 1 && !numberMatch && !fastTrack.selectedJob) {
-          const clarifyMessage: Message = {
-            id: `fasttrack-clarify-${Date.now()}`,
-            role: 'assistant',
-            content: `Tenho ${fastTrack.suggestions.length} vagas similares. Qual você quer usar?\n\n${fastTrack.suggestions.slice(0, 5).map((s, i) => `${i + 1}. ${s.job_title}${s.department ? ` (${s.department})` : ''} - ${Math.round(s.similarity_score * 100)}% similar`).join('\n')}\n\nDiga o número ou "primeira", "segunda", etc.`,
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, clarifyMessage])
-          setAwaitingFastTrackSelection(true)
-          return
-        }
-        
-        // Determine which job to use - require explicit selection for multiple suggestions
-        let jobToApply: FastTrackSuggestion | null = null
-        
-        if (numberMatch) {
-          const indexMap: Record<string, number> = {
-            '1': 0, 'primeira': 0,
-            '2': 1, 'segunda': 1,
-            '3': 2, 'terceira': 2,
-            '4': 3, 'quarta': 3,
-            '5': 4, 'quinta': 4
-          }
-          const index = indexMap[numberMatch[0].toLowerCase()] ?? 0
-          if (index < fastTrack.suggestions.length) {
-            jobToApply = fastTrack.suggestions[index]
-          }
-        } else if (fastTrack.selectedJob) {
-          jobToApply = fastTrack.selectedJob
-        } else if (fastTrack.suggestions.length === 1) {
-          jobToApply = fastTrack.suggestions[0]
-        }
-        
-        if (!jobToApply) {
-          return
-        }
-        
-        // Apply Fast Track data
-        let fastTrackData = null
-        try {
-          fastTrackData = await fastTrack.applyFastTrack(jobToApply)
-        } catch (error) {
-          console.error('Fast Track apply failed:', error)
-          setAwaitingFastTrackSelection(false)
-          const errorMessage: Message = {
-            id: `fasttrack-error-${Date.now()}`,
-            role: 'assistant',
-            content: 'Ops! Tive um problema ao aplicar os dados. Quer tentar novamente ou criar do zero?',
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, errorMessage])
-          return
-        }
-        
-        if (fastTrackData) {
-          // Apply data to wizard fields
-          setBasicInfoFields({
-            cargo: fastTrackData.basicInfo.cargo || '',
-            area: fastTrackData.basicInfo.area || '',
-            gestor: fastTrackData.basicInfo.gestor || '',
-            localidade: fastTrackData.basicInfo.localidade || '',
-            modeloTrabalho: fastTrackData.basicInfo.modeloTrabalho || '',
-            tipoContrato: fastTrackData.basicInfo.tipoContrato || '',
-          })
-          setTechnicalSkills(fastTrackData.technicalSkills)
-          setBehavioralCompetencies(fastTrackData.behavioralCompetencies)
-          setSalaryInfo({
-            minSalary: fastTrackData.salaryInfo.minSalary || '',
-            maxSalary: fastTrackData.salaryInfo.maxSalary || '',
-            minBonus: fastTrackData.salaryInfo.minBonus || '',
-            maxBonus: fastTrackData.salaryInfo.maxBonus || '',
-            bonusCriteria: fastTrackData.salaryInfo.bonusCriteria || '',
-            benefits: fastTrackData.salaryInfo.benefits || [],
-          })
-          if (fastTrackData.wsiQuestions.length > 0) {
-            setWsiCandidates(fastTrackData.wsiQuestions.map(q => ({
-              ...q,
-              selected: true,
-              batch: 0,
-              isWSI: true,
-            })))
-          }
-          if (fastTrackData.generatedDescription) {
-            setGeneratedJobDescription(fastTrackData.generatedDescription)
-          }
-          setDetectedCriteria(prev => ({
-            ...prev,
-            ...fastTrackData.detectedCriteria,
-          }))
-          
-          // Store source job ID for learning loop
-          setWizardFastTrackSourceJobId(fastTrackData.sourceJobId)
-          
-          // Store original competencies for WSI regeneration detection
-          setFastTrackOriginalCompetencies({
-            technicalSkillNames: fastTrackData.technicalSkills.map(s => s.name.toLowerCase()),
-            behavioralCompetencyNames: fastTrackData.behavioralCompetencies.map(c => c.name.toLowerCase())
-          })
-          setWsiRegenerationPrompted(false)
-          
-          // Clear awaiting selection state
-          setAwaitingFastTrackSelection(false)
-          
-          // Store applied data for sensitive fields confirmation
-          setFastTrackAppliedData({
-            gestor: fastTrackData.basicInfo.gestor || '',
-            localidade: fastTrackData.basicInfo.localidade || '',
-            sourceJobTitle: jobToApply.job_title || ''
-          })
-          
-          // Ask for sensitive fields confirmation instead of going directly to review
-          setAwaitingSensitiveFieldsConfirmation(true)
-          
-          // Analytics: Track Fast Track accepted
-          analytics.trackSuggestion('fast_track_accepted', true)
-          
-          // Build sensitive fields question
-          const localidadeInfo = fastTrackData.basicInfo.localidade 
-            ? `A localização continua sendo **${fastTrackData.basicInfo.localidade}**?`
-            : 'Qual será a localidade da vaga?'
-          
-          const sensitiveFieldsMessage: Message = {
-            id: `fasttrack-sensitive-${Date.now()}`,
-            role: 'assistant',
-            content: `Copiei todos os dados da vaga "${jobToApply.job_title}"! Só preciso confirmar alguns detalhes:\n\n1. **Quem é o gestor** responsável por esta vaga?\n2. ${localidadeInfo}\n3. **Essa vaga é afirmativa** para algum grupo (PcD, mulheres, pessoas negras, LGBTQ+, 50+)?`,
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, sensitiveFieldsMessage])
-          
-          // Open panel but stay at current stage until confirmation
-          setIsPanelOpen(true)
-        } else {
-          // fastTrackData is null - notify user
-          setAwaitingFastTrackSelection(false)
-          const errorMessage: Message = {
-            id: `fasttrack-null-${Date.now()}`,
-            role: 'assistant',
-            content: 'Não consegui carregar os dados dessa vaga. Quer tentar outra ou criar do zero?',
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, errorMessage])
-        }
-        return
-      }
-      
-      if (isNegative) {
-        // User wants to create from scratch
-        fastTrack.clearSuggestions()
-        setFastTrackMessageSent(false)
-        setAwaitingFastTrackSelection(false)
-        
-        // Analytics: Track Fast Track rejected
-        analytics.trackSuggestion('fast_track_rejected', false)
-        
-        const liaMessage: Message = {
-          id: `fasttrack-declined-${Date.now()}`,
-          role: 'assistant',
-          content: 'Tudo bem! Vamos criar uma nova vaga do zero. Me conta mais sobre a vaga que você precisa.',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, liaMessage])
-        return
-      }
-    }
-
-    // Fast Track flow handling
-    if (isInJobCreationMode && (wizardMode === 'pre_wizard' || wizardMode === 'fast_track')) {
-      const intent = detectFastTrackIntent(content)
-      
-      // Pre-wizard mode: detect user's choice
-      if (wizardMode === 'pre_wizard') {
-        if (intent === 'fast_track') {
-          setWizardMode('fast_track')
-          setFastTrackState('collecting_criteria')
-          setIsPanelOpen(false) // Hide right panel for Fast Track
-          
-          const liaMessage: Message = {
-            id: `lia-fasttrack-${Date.now()}`,
-            role: 'assistant',
-            content: '🚀 **Ótima escolha!** Vou buscar suas vagas anteriores.\n\nPara encontrar a vaga certa, me diga pelo menos 2 critérios:\n- Cargo (ex: "Desenvolvedor Python")\n- Área ou departamento\n- Gestor responsável\n- Período aproximado\n\n**Exemplo:** "Desenvolvedor Python da equipe de dados do João"',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, liaMessage])
-          return
-        } else if (intent === 'from_scratch') {
-          setWizardMode('create_from_scratch')
-          setIsPanelOpen(true) // Show right panel for regular wizard
-          
-          // Analytics: Track implicit rejection if Fast Track suggestions were shown
-          if (fastTrackSuggestionsShownTracked) {
-            analytics.trackSuggestion('fast_track_rejected', false)
-          }
-          
-          const liaMessage: Message = {
-            id: `lia-scratch-${Date.now()}`,
-            role: 'assistant',
-            content: FROM_SCRATCH_ORIENTATION_MESSAGE,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, liaMessage])
-          return
-        } else {
-          // User hasn't clearly chosen - use AI to respond conversationally
-          setIsLoading(true)
-          
-          try {
-            const conversationalResponse = await getConversationalResponse({
-              message: content,
-              mode: 'job_creation',
-              context: 'pre_wizard'
-            })
-            
-            // Check if AI understood an intent that maps to an action
-            if (conversationalResponse.suggested_action === 'from_scratch') {
-              setWizardMode('create_from_scratch')
-              setIsPanelOpen(true)
-              
-              // Analytics: Track implicit rejection if Fast Track suggestions were shown
-              if (fastTrackSuggestionsShownTracked) {
-                analytics.trackSuggestion('fast_track_rejected', false)
-              }
-              
-              const liaMessage: Message = {
-                id: `lia-scratch-ai-${Date.now()}`,
-                role: 'assistant',
-                content: FROM_SCRATCH_ORIENTATION_MESSAGE,
-                timestamp: new Date()
-              }
-              setMessages(prev => [...prev, liaMessage])
-              setIsLoading(false)
-              return
-            } else if (conversationalResponse.suggested_action === 'fast_track') {
-              setWizardMode('fast_track')
-              setFastTrackState('collecting_criteria')
-              setIsPanelOpen(false)
-              
-              const liaMessage: Message = {
-                id: `lia-fasttrack-ai-${Date.now()}`,
-                role: 'assistant',
-                content: '🚀 **Ótima escolha!** Vou buscar suas vagas anteriores.\n\nPara encontrar a vaga certa, me diga pelo menos 2 critérios:\n- Cargo (ex: "Desenvolvedor Python")\n- Área ou departamento\n- Gestor responsável\n- Período aproximado\n\n**Exemplo:** "Desenvolvedor Python da equipe de dados do João"',
-                timestamp: new Date()
-              }
-              setMessages(prev => [...prev, liaMessage])
-              setIsLoading(false)
-              return
-            }
-            
-            // No specific action - show the AI's conversational response
-            const liaMessage: Message = {
-              id: `lia-conversational-${Date.now()}`,
-              role: 'assistant',
-              content: conversationalResponse.response,
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, liaMessage])
-          } catch (error) {
-            console.error('Error getting conversational response:', error)
-            // Fallback to helpful guidance
-            const liaMessage: Message = {
-              id: `lia-guidance-fallback-${Date.now()}`,
-              role: 'assistant',
-              content: 'Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?',
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, liaMessage])
-          } finally {
-            setIsLoading(false)
-          }
-          return
-        }
-      }
-      
-      // Fast Track mode: handle various states
-      if (wizardMode === 'fast_track') {
-        if (intent === 'confirm' && fastTrackState === 'reviewing') {
-          // User confirmed, publish the vacancy
-          await handleFastTrackPublish()
-          return
-        }
-        
-        if (intent === 'adjust' && (fastTrackState === 'reviewing' || fastTrackState === 'adjusting')) {
-          // User wants to adjust something
-          const adjustments = parseFastTrackAdjustment(content)
-          if (adjustments) {
-            setFastTrackAdjustments(prev => ({ ...prev, ...adjustments }))
-            setFastTrackState('adjusting')
-            
-            // Update the vacancy with adjustments and show confirmation
-            if (fastTrackSelectedVacancy) {
-              const updatedVacancy = { ...fastTrackSelectedVacancy }
-              if (adjustments.salary_min) updatedVacancy.salary_range.min = adjustments.salary_min
-              if (adjustments.salary_max) updatedVacancy.salary_range.max = adjustments.salary_max
-              if (adjustments.work_model) updatedVacancy.work_model = adjustments.work_model
-              if (adjustments.location) updatedVacancy.location = adjustments.location
-              
-              setFastTrackSelectedVacancy(updatedVacancy)
-              
-              const liaMessage: Message = {
-                id: `lia-adjust-${Date.now()}`,
-                role: 'assistant',
-                content: `✅ **Ajuste aplicado!**\n\nAtualizei os valores conforme solicitado. Revise o resumo atualizado:\n\n• Salário: R$ ${updatedVacancy.salary_range.min.toLocaleString('pt-BR')} - R$ ${updatedVacancy.salary_range.max.toLocaleString('pt-BR')}\n• Modelo: ${updatedVacancy.work_model}\n• Local: ${updatedVacancy.location}\n\nSe quiser fazer mais ajustes, me diga. Quando estiver pronto, digite **"confirmar"** para publicar.`,
-                timestamp: new Date()
-              }
-              setMessages(prev => [...prev, liaMessage])
-              setFastTrackState('reviewing')
-            }
-          } else {
-            const liaMessage: Message = {
-              id: `lia-adjust-error-${Date.now()}`,
-              role: 'assistant',
-              content: 'Não consegui entender o ajuste solicitado. Por favor, seja mais específico.\n\n**Exemplos:**\n• "salário para 15 a 20k"\n• "modelo híbrido"\n• "local para São Paulo"',
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, liaMessage])
-          }
-          return
-        }
-        
-        if (intent === 'select' && fastTrackState === 'selecting') {
-          // User selected a vacancy by number
-          const numMatch = content.match(/(\d+)/)
-          const numberWords: Record<string, number> = { 'um': 1, 'dois': 2, 'três': 3, 'quatro': 4, 'cinco': 5, 'seis': 6, 'sete': 7, 'oito': 8, 'nove': 9, 'dez': 10 }
-          let index = -1
-          
-          if (numMatch) {
-            index = parseInt(numMatch[1]) - 1
-          } else {
-            const word = content.toLowerCase().trim()
-            if (numberWords[word]) {
-              index = numberWords[word] - 1
-            }
-          }
-          
-          if (index >= 0 && index < fastTrackSearchResults.length) {
-            const selectedVacancy = fastTrackSearchResults[index]
-            setFastTrackState('reviewing')
-            await handleFastTrackVacancySelect(selectedVacancy.id)
-          } else {
-            const liaMessage: Message = {
-              id: `lia-select-error-${Date.now()}`,
-              role: 'assistant',
-              content: `Número inválido. Por favor, escolha um número de 1 a ${fastTrackSearchResults.length}.`,
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, liaMessage])
-          }
-          return
-        }
-        
-        if (intent === 'criteria' || fastTrackState === 'collecting_criteria') {
-          // User is providing search criteria
-          const criteria: VacancySearchCriteria = {}
-          
-          // Check if user wants to list all vacancies (generic request without specific criteria)
-          const wantsToListAll = /(?:lista|listar|mostrar|ver|quais|todas|exibir|apresentar)\s*(?:as|as\s+vagas|vagas|anteriores|recentes|últimas|existentes)?/i.test(content)
-          
-          // Extract title/cargo
-          const titleMatch = content.match(/(?:desenvolvedor|analista|gerente|coordenador|engenheiro|designer|product|ux|ui|frontend|backend|fullstack|devops|data|cientista|tech lead|architect)[^\s,.]*/gi)
-          if (titleMatch) {
-            criteria.title = titleMatch[0]
-          }
-          
-          // Extract manager name
-          const managerMatch = content.match(/(?:do|da|equipe do|equipe da|gestor)\s+([A-Z][a-zà-ú]+(?:\s+[A-Z][a-zà-ú]+)?)/i)
-          if (managerMatch) {
-            criteria.manager = managerMatch[1]
-          }
-          
-          // Extract department
-          const deptMatch = content.match(/(?:área|departamento|setor|time|equipe)\s+(?:de\s+)?([A-Za-zà-ú\s]+)/i)
-          if (deptMatch) {
-            criteria.department = deptMatch[1].trim()
-          }
-          
-          setFastTrackSearchCriteria(criteria)
-          
-          // If user wants to list all OR has specific criteria, proceed with search
-          if (Object.keys(criteria).length > 0 || wantsToListAll) {
-            // Search with criteria (or empty criteria for "list all")
-            const liaMessage: Message = {
-              id: `lia-searching-${Date.now()}`,
-              role: 'assistant',
-              content: wantsToListAll && Object.keys(criteria).length === 0 
-                ? '🔍 Buscando suas vagas mais recentes...'
-                : '🔍 Buscando vagas anteriores...',
-              timestamp: new Date(),
-              isProcessing: true,
-              processingState: 'searching'
-            }
-            setMessages(prev => [...prev, liaMessage])
-            
-            await handleFastTrackSearch(criteria)
-            
-            // Remove processing message
-            setMessages(prev => prev.filter(m => m.id !== liaMessage.id))
-          } else {
-            const liaMessage: Message = {
-              id: `lia-criteria-help-${Date.now()}`,
-              role: 'assistant',
-              content: 'Preciso de mais informações para buscar. Me diga:\n\n• **Cargo** - "Desenvolvedor Python", "Analista de Dados"\n• **Gestor** - "equipe do João", "área do Ricardo"\n• **Departamento** - "área de tecnologia", "time de produto"\n\nOu digite **"listar todas"** para ver as vagas mais recentes.',
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, liaMessage])
-          }
-          return
-        }
-        
-        // Switch to create from scratch if requested
-        if (intent === 'from_scratch') {
-          setWizardMode('create_from_scratch')
-          setIsPanelOpen(true)
-          
-          const liaMessage: Message = {
-            id: `lia-switch-${Date.now()}`,
-            role: 'assistant',
-            content: FROM_SCRATCH_ORIENTATION_MESSAGE,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, liaMessage])
-          return
-        }
-      }
-    }
-
-    // Handle salary confirmation/adjustment commands when compensation analysis is active
-    const lowerContent = content.toLowerCase().trim()
-    const hasCompensationMessage = messages.some(m => m.messageType === 'compensation')
-    
-    // Use AI interpretation when compensation message is active
-    if (hasCompensationMessage) {
-      // Show thinking message while interpreting
-      const thinkingId = `thinking-interpret-${Date.now()}`
-      const thinkingMessage: Message = {
-        id: thinkingId,
-        role: 'assistant',
-        content: '',
-        timestamp: new Date(),
-        processingState: 'thinking' as const
-      }
-      setMessages(prev => [...prev, thinkingMessage])
-      
-      // Call AI interpretation
-      try {
-        const interpretation = await interpretMessage({
-          message: content,
-          current_stage: currentStage,
-          context: {
-            filled_fields: Object.keys(detectedCriteria).filter(k => (detectedCriteria as Record<string, any>)[k]),
-            has_compensation: true,
-            salary_min: salaryInfo.minSalary,
-            salary_max: salaryInfo.maxSalary
-          }
-        })
-        
-        // Remove thinking message
-        setMessages(prev => prev.filter(m => m.id !== thinkingId))
-        
-        console.log('AI Interpretation:', interpretation)
-        
-        // Only trust AI interpretation if confidence is high enough
-        const MIN_CONFIDENCE = 0.65
-        const isHighConfidence = interpretation.confidence >= MIN_CONFIDENCE
-        
-        // Handle based on AI interpretation with confidence gating
-        if (isHighConfidence && (interpretation.action === 'confirm' || interpretation.action === 'advance_stage' || interpretation.should_advance)) {
-          // Check if user wants to apply suggestions (look for entities)
-          if (interpretation.extracted_entities && Object.keys(interpretation.extracted_entities).length > 0) {
-            // User might be providing new values, apply them
-            if (interpretation.extracted_entities.salario_min) {
-              setSalaryInfo(prev => ({
-                ...prev,
-                minSalary: interpretation.extracted_entities!.salario_min.toString()
-              }))
-            }
-            if (interpretation.extracted_entities.salario_max) {
-              setSalaryInfo(prev => ({
-                ...prev,
-                maxSalary: interpretation.extracted_entities!.salario_max.toString()
-              }))
-            }
-          }
-          
-          // Validate that we have complete and valid salary data before advancing
-          const minSal = parseInt(salaryInfo.minSalary) || 0
-          const maxSal = parseInt(salaryInfo.maxSalary) || 0
-          const hasSalaryData = minSal > 0 && maxSal > 0
-          
-          if (!hasSalaryData) {
-            const askSalaryMsg: Message = {
-              id: `ask-salary-${Date.now()}`,
-              role: 'assistant',
-              content: '💰 Antes de avançar, preciso confirmar a faixa salarial. Qual é o salário mínimo e máximo para esta vaga?',
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, askSalaryMsg])
-            return
-          }
-          
-          // Validate min <= max
-          if (minSal > maxSal) {
-            const warningMsg: Message = {
-              id: `salary-order-warning-${Date.now()}`,
-              role: 'assistant',
-              content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, corrija os valores.',
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, warningMsg])
-            return
-          }
-          
-          // Remove compensation message
-          setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-          setCompensationAnalysis(null)
-          
-          const confirmMessage: Message = {
-            id: `confirm-compensation-${Date.now()}`,
-            role: 'assistant',
-            content: interpretation.lia_response || '✅ **Valores de remuneração confirmados!**\n\nAvançando para a próxima etapa...',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, confirmMessage])
-          
-          // Auto advance
-          setTimeout(() => {
-            goToNextStage()
-          }, 1500)
-          return
-        }
-        
-        if (isHighConfidence && (interpretation.action === 'update_field' || interpretation.action === 'provide_data')) {
-          // User is updating values - apply extracted entities with confidence gating
-          if (interpretation.extracted_entities) {
-            const newMin = interpretation.extracted_entities.salario_min
-            const newMax = interpretation.extracted_entities.salario_max
-            
-            // Only apply if we have valid salary data extracted
-            if (newMin || newMax) {
-              const minVal = newMin || parseInt(salaryInfo.minSalary) || 0
-              const maxVal = newMax || parseInt(salaryInfo.maxSalary) || 0
-              
-              // Validate min <= max
-              if (minVal > 0 && maxVal > 0 && minVal > maxVal) {
-                const warningMessage: Message = {
-                  id: `salary-warning-${Date.now()}`,
-                  role: 'assistant',
-                  content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, informe os valores corretos.',
-                  timestamp: new Date()
-                }
-                setMessages(prev => [...prev, warningMessage])
-                return
-              }
-              
-              if (newMin) {
-                setSalaryInfo(prev => ({
-                  ...prev,
-                  minSalary: newMin.toString()
-                }))
-              }
-              if (newMax) {
-                setSalaryInfo(prev => ({
-                  ...prev,
-                  maxSalary: newMax.toString()
-                }))
-              }
-              
-              setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-              setCompensationAnalysis(null)
-              
-              const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-                minimumFractionDigits: 0
-              }).format(value)
-              
-              const updateMessage: Message = {
-                id: `update-salary-${Date.now()}`,
-                role: 'assistant',
-                content: `✅ **Valores atualizados!**\n\n• Mínimo: ${formatCurrency(minVal)}\n• Máximo: ${formatCurrency(maxVal)}\n\nVocê pode confirmar ou ajustar novamente.`,
-                timestamp: new Date()
-              }
-              setMessages(prev => [...prev, updateMessage])
-              return
-            }
-          }
-        }
-        
-        if (interpretation.action === 'reject') {
-          const rejectMessage: Message = {
-            id: `reject-${Date.now()}`,
-            role: 'assistant',
-            content: interpretation.lia_response || 'Entendido. O que você gostaria de ajustar?',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, rejectMessage])
-          return
-        }
-        
-        if (interpretation.action === 'ask_question') {
-          // Let the question flow through to normal processing
-        }
-        
-        if (interpretation.action === 'help') {
-          const helpMessage: Message = {
-            id: `help-${Date.now()}`,
-            role: 'assistant',
-            content: interpretation.lia_response || '💡 **Ajuda - Etapa de Remuneração**\n\nVocê pode:\n• **Confirmar** os valores atuais\n• **Aceitar sugestões** de mercado\n• **Ajustar** para novos valores (ex: "quero salário de 10 a 15 mil")\n• Pedir para **avançar** para próxima etapa',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, helpMessage])
-          return
-        }
-        
-        // If AI didn't understand clearly, fall back to normal processing
-        if (interpretation.confidence < 0.6 && interpretation.action === 'other') {
-          // Continue to fallback pattern matching below
-        } else if (interpretation.clarification_needed && interpretation.clarification_question) {
-          const clarifyMessage: Message = {
-            id: `clarify-${Date.now()}`,
-            role: 'assistant',
-            content: interpretation.clarification_question,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, clarifyMessage])
-          return
-        }
-        
-      } catch (error) {
-        console.error('AI interpretation failed, using fallback:', error)
-        // Remove thinking message and fall through to fallback
-        setMessages(prev => prev.filter(m => m.id !== thinkingId))
-      }
-      
-      // Fallback: Pattern matching for specific commands when AI doesn't resolve
-      // This ensures the system still works even if AI interpretation fails or has low confidence
-      
-      // Check for confirmation/advance commands
-      const isConfirmCommand = lowerContent === 'confirmar' || lowerContent.includes('confirmo') || 
-        lowerContent.includes('manter valores') || lowerContent.includes('manter atual') ||
-        lowerContent.includes('próximo') || lowerContent.includes('proximo') || 
-        lowerContent.includes('continuar') || lowerContent.includes('avançar') || 
-        lowerContent.includes('avancar') || lowerContent.includes('próximo passo') ||
-        lowerContent.includes('proximo passo') || lowerContent.includes('prosseguir') || 
-        lowerContent.includes('vamos para') || lowerContent.includes('pode avançar') ||
-        lowerContent.includes('ok') || lowerContent === 'sim' || lowerContent === 'ok'
-      
-      if (isConfirmCommand) {
-        // Validate complete salary data exists (min and max)
-        const minSal = parseInt(salaryInfo.minSalary) || 0
-        const maxSal = parseInt(salaryInfo.maxSalary) || 0
-        const hasSalaryData = minSal > 0 && maxSal > 0
-        
-        if (!hasSalaryData) {
-          const askSalaryMsg: Message = {
-            id: `ask-salary-fallback-${Date.now()}`,
-            role: 'assistant',
-            content: '💰 Antes de continuar, preciso da faixa salarial completa. Qual é o salário mínimo e máximo para esta vaga?',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, askSalaryMsg])
-          return
-        }
-        
-        // Validate min <= max
-        if (minSal > maxSal) {
-          const warningMsg: Message = {
-            id: `salary-order-fallback-${Date.now()}`,
-            role: 'assistant',
-            content: '⚠️ O salário mínimo não pode ser maior que o máximo. Por favor, corrija os valores.',
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, warningMsg])
-          return
-        }
-        
-        setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-        setCompensationAnalysis(null)
-        
-        const confirmMessage: Message = {
-          id: `confirm-compensation-fallback-${Date.now()}`,
-          role: 'assistant',
-          content: '✅ **Valores de remuneração confirmados!**\n\nAvançando para a próxima etapa...',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, confirmMessage])
-        
-        setTimeout(() => {
-          goToNextStage()
-        }, 1500)
-        return
-      }
-      
-      // Check for apply suggestions command
-      if (lowerContent.includes('aceitar sugest') || lowerContent.includes('aplicar sugest')) {
-        const analysis = compensationAnalysis
-        if (analysis) {
-          if (analysis.salary.suggestion) {
-            setSalaryInfo(prev => ({
-              ...prev,
-              minSalary: analysis.salary.suggestion!.min.toString(),
-              maxSalary: analysis.salary.suggestion!.max.toString()
-            }))
-          }
-          if (analysis.bonus.suggestion) {
-            setSalaryInfo(prev => ({
-              ...prev,
-              minBonus: analysis.bonus.suggestion!.toString(),
-              maxBonus: analysis.bonus.suggestion!.toString()
-            }))
-          }
-          if (analysis.benefits.missingFromStandard && analysis.benefits.missingFromStandard.length > 0) {
-            const newBenefits = analysis.benefits.missingFromStandard.map(b => ({
-              id: b.id,
-              name: b.name,
-              value: b.value,
-              enabled: true
-            }))
-            setSalaryInfo(prev => ({
-              ...prev,
-              benefits: [...prev.benefits, ...newBenefits.filter(nb => !prev.benefits.some(pb => pb.id === nb.id))]
-            }))
-          }
-        }
-        
-        setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-        setCompensationAnalysis(null)
-        
-        const confirmMessage: Message = {
-          id: `apply-suggestions-${Date.now()}`,
-          role: 'assistant',
-          content: '✅ **Sugestões aplicadas!**\n\nOs valores foram atualizados conforme as recomendações de mercado.',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, confirmMessage])
-        
-        setTimeout(() => {
-          goToNextStage()
-        }, 1500)
-        return
-      }
-      
-      // Check for salary adjustment command
-      const adjustMatch = lowerContent.match(/ajust(?:ar|e)?\s*(?:para)?\s*(?:r\$?\s*)?(\d+[\d.,]*)\s*(?:a|até|-|–|\/)\s*(?:r\$?\s*)?(\d+[\d.,]*)/i)
-      if (adjustMatch) {
-        const minValue = parseInt(adjustMatch[1].replace(/[.,]/g, ''))
-        const maxValue = parseInt(adjustMatch[2].replace(/[.,]/g, ''))
-        
-        setSalaryInfo(prev => ({
-          ...prev,
-          minSalary: minValue.toString(),
-          maxSalary: maxValue.toString()
-        }))
-        
-        setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-        setCompensationAnalysis(null)
-        
-        const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-          minimumFractionDigits: 0
-        }).format(value)
-        
-        const confirmMessage: Message = {
-          id: `adjust-salary-fallback-${Date.now()}`,
-          role: 'assistant',
-          content: `✅ **Faixa salarial atualizada!**\n\n• Mínimo: ${formatCurrency(minValue)}\n• Máximo: ${formatCurrency(maxValue)}\n\nVocê pode confirmar ou ajustar novamente.`,
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, confirmMessage])
-        return
-      }
-    }
-
-    // === LOCAL COMMAND HANDLING (Navigation & Edit Commands) ===
-    // Check if the message is a local command that can be handled without backend
-    // IMPORTANT: Skip local command handling during input-evaluation stage
-    // During input-evaluation, ALL messages should go to smart-orchestrate to properly extract job fields
-    // Local command handling is only for later stages when user explicitly edits fields
-    const shouldSkipLocalCommands = currentStage === 'input-evaluation'
-    
-    if (isInJobCreationMode && wizardMode === 'create_from_scratch' && !shouldSkipLocalCommands) {
-      const parsedCommand = parseCommand(content)
-      
-      // Handle navigation commands (e.g., "voltar para salário", "ir para competências")
-      if (parsedCommand.type === 'navigate') {
-        const navCommand = parsedCommand as ParsedNavigationCommand
-        const targetStage = navCommand.target
-        const targetStageIndex = WIZARD_STAGES.findIndex(s => s.id === targetStage)
-        const currentStageIndex = WIZARD_STAGES.findIndex(s => s.id === currentStage)
-        
-        // Check if already on target stage
-        if (targetStage === currentStage) {
-          const alreadyHereMessage: Message = {
-            id: `nav-already-here-${Date.now()}`,
-            role: 'assistant',
-            content: `Você já está na etapa de **${getStageLabel(targetStage)}**. Como posso ajudar?`,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, alreadyHereMessage])
-          return
-        }
-        
-        // Can always go back to previous stages
-        if (targetStageIndex < currentStageIndex) {
-          setCurrentStage(targetStage)
-          const navSuccessMessage: Message = {
-            id: `nav-success-${Date.now()}`,
-            role: 'assistant',
-            content: `✅ Navegando para a etapa de **${getStageLabel(targetStage)}**.\n\nVocê pode revisar e ajustar os campos conforme necessário.`,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, navSuccessMessage])
-          return
-        }
-        
-        // For forward navigation, check if current stage requirements are met
-        // (Simple check - can be enhanced with full quality gates)
-        const stageConfig = WIZARD_STAGES.find(s => s.id === currentStage)
-        if (stageConfig) {
-          // Allow forward navigation with a hint about requirements
-          setCurrentStage(targetStage)
-          const navForwardMessage: Message = {
-            id: `nav-forward-${Date.now()}`,
-            role: 'assistant',
-            content: `✅ Navegando para a etapa de **${getStageLabel(targetStage)}**.\n\n💡 *Dica: Lembre-se de revisar as etapas anteriores antes de finalizar.*`,
-            timestamp: new Date()
-          }
-          setMessages(prev => [...prev, navForwardMessage])
-          return
-        }
-      }
-      
-      // Handle edit commands (e.g., "alterar salário para 15k", "adicionar Python")
-      if (parsedCommand.type === 'edit') {
-        const editCommand = parsedCommand as ParsedEditCommand
-        
-        // Handle salary edits
-        if (editCommand.field === 'salary' && editCommand.value) {
-          const salaryResult = parseSalaryValue(String(editCommand.value))
-          
-          if (salaryResult.isValid) {
-            const { updated, changes } = applySalaryUpdate(salaryInfo, salaryResult)
-            
-            // Track salary changes from chat command
-            if (updated.minSalary !== salaryInfo.minSalary) {
-              trackFieldChange({
-                field: 'minSalary',
-                oldValue: salaryInfo.minSalary,
-                newValue: updated.minSalary,
-                source: 'chat',
-              })
-            }
-            if (updated.maxSalary !== salaryInfo.maxSalary) {
-              trackFieldChange({
-                field: 'maxSalary',
-                oldValue: salaryInfo.maxSalary,
-                newValue: updated.maxSalary,
-                source: 'chat',
-              })
-            }
-            
-            setSalaryInfo(updated)
-            
-            // Clear old compensation analysis
-            setMessages(prev => prev.filter(m => m.messageType !== 'compensation'))
-            setCompensationAnalysis(null)
-            
-            const confirmMessage: Message = {
-              id: `edit-salary-${Date.now()}`,
-              role: 'assistant',
-              content: `✅ **Salário atualizado!**\n\n${changes.length > 0 ? changes.join('\n') : `Faixa salarial definida: ${salaryResult.formatted}`}\n\n*Você pode confirmar ou ajustar novamente.*`,
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, confirmMessage])
-            
-            // Navigate to salary stage if not already there
-            if (currentStage !== 'salary') {
-              setCurrentStage('salary')
-            }
-            return
-          } else {
-            const errorMessage: Message = {
-              id: `edit-salary-error-${Date.now()}`,
-              role: 'assistant',
-              content: `❌ Não consegui entender o valor do salário. Por favor, use formatos como:\n• "15k" (para R$ 15.000)\n• "R$ 10.000 a R$ 15.000"\n• "10k a 15k"`,
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, errorMessage])
-            return
-          }
-        }
-        
-        // Handle skill add/remove
-        if (editCommand.field === 'skill' && editCommand.value) {
-          const skillName = String(editCommand.value)
-          
-          if (editCommand.action === 'add') {
-            const result = addSkillIfNotExists(technicalSkills, skillName)
-            if (result.added) {
-              // Track skill addition from chat command
-              trackFieldChange({
-                field: 'technicalSkill',
-                oldValue: null,
-                newValue: { name: skillName },
-                source: 'chat',
-              })
-              setTechnicalSkills(result.skills)
-            }
-            
-            const confirmMessage: Message = {
-              id: `edit-skill-add-${Date.now()}`,
-              role: 'assistant',
-              content: result.added 
-                ? `✅ **Skill adicionada:** ${skillName}\n\n*A nova skill aparece no painel de competências.*`
-                : `ℹ️ ${result.message}`,
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, confirmMessage])
-            
-            // Navigate to competencies stage if not already there
-            if (currentStage !== 'competencies') {
-              setCurrentStage('competencies')
-            }
-            return
-          }
-          
-          if (editCommand.action === 'remove') {
-            const result = removeSkillByName(technicalSkills, skillName)
-            if (result.removed) {
-              // Track skill removal from chat command
-              trackFieldChange({
-                field: 'technicalSkill',
-                oldValue: { name: skillName },
-                newValue: null,
-                source: 'chat',
-              })
-              setTechnicalSkills(result.skills)
-            }
-            
-            const confirmMessage: Message = {
-              id: `edit-skill-remove-${Date.now()}`,
-              role: 'assistant',
-              content: result.removed 
-                ? `✅ **Skill removida:** ${skillName}`
-                : `ℹ️ ${result.message}`,
-              timestamp: new Date()
-            }
-            setMessages(prev => [...prev, confirmMessage])
-            
-            // Navigate to competencies stage if not already there
-            if (currentStage !== 'competencies') {
-              setCurrentStage('competencies')
-            }
-            return
-          }
-        }
-      }
-    }
-    // === END LOCAL COMMAND HANDLING ===
-
-    // Adicionar mensagem de processamento como histórico (estilo Manus)
+    // 4. Normal flow: processing message → API dispatch
     const processingMessageId = `processing-${Date.now()}`
     const processingMessage: Message = {
       id: processingMessageId,
@@ -7160,318 +7059,13 @@ Qual prefere?`,
     setMessages(prev => [...prev, processingMessage])
 
     if (isInJobCreationMode) {
-      console.log('[DEBUG handleSendMessage] SENDING TO BACKEND - smart-orchestrate')
-      setIsLoading(true)
-      
-      try {
-        // Atualizar para "analisando"
-        setTimeout(() => {
-          setMessages(msgs => msgs.map(m => 
-            m.id === processingMessageId 
-              ? { ...m, content: '📊 Consultando LIA...', processingState: 'analyzing' as const }
-              : m
-          ))
-        }, 300)
-
-        // Use intelligent orchestrator for all wizard interactions
-        const collectedData = buildCollectedData()
-        const conversationHistory = messages.slice(-10).map(m => ({
-          role: m.role,
-          content: m.content
-        }))
-        
-        // Include recent panel changes in LLM context for bidirectional sync
-        const panelChangesContext = generateLLMContext()
-        const enhancedMessage = panelChangesContext 
-          ? `${content}\n\n${panelChangesContext}` 
-          : content
-        
-        // Save user message to conversation memory
-        if (conversationMemory.conversationId) {
-          conversationMemory.addMessage('user', content).catch(() => {})
-        }
-        
-        const orchestratorResult = await orchestrateWizardMessage({
-          message: enhancedMessage,
-          current_stage: currentStage,
-          collected_data: collectedData,
-          conversation_history: conversationHistory,
-          conversation_id: conversationMemory.conversationId || undefined,
-          company_id: user?.company || undefined,
-          user_id: user?.email || undefined
-        })
-        
-        // Always use smart-orchestrate response (no fallback to processBackendStep or local regex)
-        console.log('[SmartOrchestrate] Using smart-orchestrate response (confidence:', orchestratorResult.confidence, ')')
-        await processOrchestratorResponse(orchestratorResult, processingMessageId)
-        setIsLoading(false)
-        
-        // After smart-orchestrate, optionally trigger evaluation step for compensation analysis
-        // The smart-orchestrate already handles most logic, but we keep evaluation for additional analysis
-        if (currentStage === 'input-evaluation' && orchestratorResult.confidence >= 0.7) {
-          const evaluationContext = {
-            job_title: basicInfoFields.cargo || detectedCriteria.cargo || undefined,
-            seniority: detectedCriteria.senioridadeIdiomas || undefined,
-            department: basicInfoFields.area || detectedCriteria.departamento || undefined,
-            location: basicInfoFields.localidade || detectedCriteria.localizacao || undefined,
-            work_model: basicInfoFields.modeloTrabalho || detectedCriteria.modeloTrabalho || undefined,
-            technical_skills: technicalSkills.filter(s => s.required).map(s => s.name),
-            behavioral_skills: behavioralCompetencies.filter(c => c.enabled).map(c => c.name),
-          }
-          
-          callEvaluationStep(content, evaluationContext).then((evalResult) => {
-            if (evalResult?.compensation_analysis) {
-              setCompensationAnalysis(evalResult.compensation_analysis)
-            }
-            
-            const evalResultAny = evalResult as any
-            if (evalResultAny?.technical_skills || evalResultAny?.behavioral_competencies) {
-              const technicalSuggestions: TechnicalSkillSuggestion[] = (evalResultAny.technical_skills || []).map((skill: any) => ({
-                name: skill.name || skill,
-                level: skill.level || 'Intermediário',
-                weight: skill.weight || 3,
-                weightJustification: skill.weight_justification || 'Baseado em análise de mercado',
-                source: skill.source || 'market_benchmark',
-                required: skill.required ?? true,
-                category: skill.category || 'tool'
-              }))
-              
-              const behavioralSuggestions: BehavioralCompetencySuggestion[] = (evalResultAny.behavioral_competencies || []).map((comp: any) => ({
-                name: comp.name || comp,
-                weight: comp.weight || 3,
-                justification: comp.justification || '',
-                weightJustification: comp.weight_justification || 'Baseado em histórico da empresa',
-                source: comp.source || 'company_history'
-              }))
-              
-              if (technicalSuggestions.length > 0 || behavioralSuggestions.length > 0) {
-                setCompetencySuggestions({
-                  technicalSkills: technicalSuggestions,
-                  behavioralCompetencies: behavioralSuggestions
-                })
-                
-                setTimeout(() => {
-                  const competenciesMessage: Message = {
-                    id: `lia-competencies-${Date.now()}`,
-                    role: 'assistant',
-                    content: '',
-                    timestamp: new Date(),
-                    messageType: 'competencies',
-                    competenciesSuggestions: {
-                      technicalSkills: technicalSuggestions,
-                      behavioralCompetencies: behavioralSuggestions
-                    }
-                  }
-                  setMessages(prev => [...prev, competenciesMessage])
-                }, 1000)
-              }
-            }
-          }).catch((err) => {
-            console.error('Error calling evaluation step:', err)
-          })
-        }
-        return
-      } catch (error) {
-        console.error('Error in wizard step:', error)
-        
-        // Fallback to local logic
-        const newCriteria = extractCriteriaFromText(content)
-        const fallbackText = generateCriteriaResponse(newCriteria)
-        
-        // Build fallback detected fields for DetectedFieldsCard
-        const fallbackFieldsData: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }> = []
-        if (newCriteria.cargo) fallbackFieldsData.push({ label: "Cargo", value: newCriteria.cargo, confidence: "high" })
-        if (newCriteria.senioridadeIdiomas) fallbackFieldsData.push({ label: "Senioridade", value: newCriteria.senioridadeIdiomas, confidence: "medium" })
-        if (newCriteria.modeloTrabalho) fallbackFieldsData.push({ label: "Modelo", value: newCriteria.modeloTrabalho, confidence: "medium" })
-        if (newCriteria.localizacao) fallbackFieldsData.push({ label: "Localização", value: newCriteria.localizacao, confidence: "medium" })
-        if (newCriteria.competenciasTecnicas?.length > 0) fallbackFieldsData.push({ label: "Skills Técnicas", value: newCriteria.competenciasTecnicas.slice(0, 5).join(", "), confidence: "medium" })
-        if (newCriteria.tipoContrato) fallbackFieldsData.push({ label: "Contrato", value: newCriteria.tipoContrato, confidence: "low" })
-        
-        // Marcar como concluído mesmo em erro
-        setMessages(msgs => msgs.map(m => 
-          m.id === processingMessageId 
-            ? { ...m, content: '✅ Mensagem processada', processingState: 'completed' as const }
-            : m
-        ))
-        
-        const fallbackMessage: Message = {
-          id: `fallback-${Date.now()}`,
-          role: 'assistant',
-          content: fallbackText,
-          timestamp: new Date(),
-          isTyping: true,
-          detectedFieldsData: fallbackFieldsData.length > 0 ? fallbackFieldsData : undefined
-        }
-        
-        setMessages(msgs => [...msgs, fallbackMessage])
-        setDisplayedText("")
-        setTimeout(() => {
-          typeText(fallbackText, fallbackMessage.id)
-        }, 300)
-        setIsLoading(false)
-      }
+      await _handleWizardAPICall(content, processingMessageId)
       return
     }
 
-    setIsLoading(true)
-
-    try {
-      let responseText = "Entendi! Estou processando as informações..."
-      
-      if (onOrchestratedMessage) {
-        const orchestratedResponse = await onOrchestratedMessage(content.trim())
-        responseText = orchestratedResponse.content
-        
-        if (orchestratedResponse.ui_action === 'start_job_wizard') {
-          setInternalJobCreationMode(true)
-          setCurrentStage('input-evaluation')
-          if (orchestratedResponse.ui_action_params?.initial_message) {
-            setDynamicInitialMessage(INITIAL_JOB_CREATION_MESSAGE)
-          }
-        }
-      } else {
-        // Use unified orchestrator for general chat (routes to 9 specialized agents)
-        // Integrate with conversation memory for context persistence
-        
-        // Initialize conversation memory for general context if not already active
-        if (!conversationMemory.conversationId && user?.email) {
-          await conversationMemory.initConversation(user.email, 'general')
-        }
-        
-        // Get conversation context for AI memory
-        const conversationContext = await conversationMemory.getContext()
-        
-        // Save user message to conversation memory first
-        if (conversationMemory.conversationId) {
-          conversationMemory.addMessage('user', content.trim()).catch(() => {})
-        }
-        
-        const orchestratorResponse = await orchestratorProcess({
-          user_id: user?.email || 'demo-user',
-          message: content.trim(),
-          conversation_id: conversationMemory.conversationId || conversationId || undefined,
-          context_type: 'general',
-          context_id: conversationMemory.conversationId || undefined,
-          conversation_context: conversationContext || undefined,
-        })
-        
-        if (orchestratorResponse.success) {
-          if (orchestratorResponse.conversation_id && !conversationId) {
-            setConversationId(orchestratorResponse.conversation_id)
-          }
-          responseText = orchestratorResponse.message || orchestratorResponse.result?.message || responseText
-          
-          // Save assistant response to conversation memory
-          if (conversationMemory.conversationId) {
-            conversationMemory.addMessage('assistant', responseText, orchestratorResponse.intent).catch(() => {})
-          }
-          
-          // Check for suggested_tool_call in the response
-          const suggestedToolCall = orchestratorResponse.suggested_tool_call || orchestratorResponse.result?.suggested_tool_call
-          if (suggestedToolCall) {
-            // Extract tool call info
-            const toolCall: ToolCall = {
-              tool_name: suggestedToolCall.tool_name,
-              parameters: suggestedToolCall.parameters || {},
-              requires_confirmation: suggestedToolCall.requires_confirmation !== false,
-              confirmation_message: suggestedToolCall.confirmation_message || responseText,
-            }
-            
-            if (toolCall.requires_confirmation) {
-              // Suggest the tool call and create confirmation message
-              toolCalling.suggestToolCall(toolCall)
-              
-              const confirmationMessageId = `tool-confirm-${Date.now()}`
-              setActiveToolConfirmationMessageId(confirmationMessageId)
-              
-              const confirmationMessage: Message = {
-                id: confirmationMessageId,
-                role: 'assistant',
-                content: responseText,
-                timestamp: new Date(),
-                messageType: 'tool-confirmation',
-                toolCall: toolCall,
-              }
-              
-              setMessages(prev => [...prev, confirmationMessage])
-              setIsLoading(false)
-              return // Don't add another message, we already added the confirmation
-            } else {
-              // Execute tool directly without confirmation
-              setIsLoading(true)
-              
-              try {
-                const result = await toolCalling.executeToolDirectly(toolCall.tool_name, toolCall.parameters)
-                
-                const feedbackMessage: Message = {
-                  id: `tool-feedback-${Date.now()}`,
-                  role: 'assistant',
-                  content: result.success 
-                    ? `✅ ${result.message}` 
-                    : `❌ ${result.error || result.message}`,
-                  timestamp: new Date(),
-                  messageType: 'tool-execution-feedback',
-                  toolExecutionResult: result,
-                }
-                setMessages(prev => [...prev, feedbackMessage])
-                setIsLoading(false)
-                return
-              } catch (error) {
-                console.error('[ToolCalling] Error executing tool directly:', error)
-                // Fall through to normal response
-              }
-            }
-          }
-        } else {
-          // Fallback to simple LIA response
-          const response = await liaApi.sendMessage({
-            content: content.trim(),
-            conversation_id: conversationId || undefined,
-            user_id: 'demo-user'
-          })
-          if (response.conversation?.id && !conversationId) {
-            setConversationId(response.conversation.id)
-          }
-          responseText = response.message?.content || responseText
-        }
-      }
-
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: responseText,
-        timestamp: new Date(),
-        isTyping: true
-      }
-
-      setMessages(prev => [...prev, assistantMessage])
-      setDisplayedText("")
-      
-      setTimeout(() => {
-        typeText(responseText, assistantMessage.id)
-      }, 300)
-
-    } catch (error) {
-      console.error('Error sending message:', error)
-      extractCriteriaFromText(content)
-      const errorText = "Entendi as informações! Detectei alguns critérios da vaga. Continue adicionando mais detalhes ou avance para a próxima etapa."
-      
-      const errorMessage: Message = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content: errorText,
-        timestamp: new Date(),
-        isTyping: true
-      }
-      setMessages(prev => [...prev, errorMessage])
-      setDisplayedText("")
-      setTimeout(() => {
-        typeText(errorText, errorMessage.id)
-      }, 300)
-    } finally {
-      setIsLoading(false)
-    }
+    await _handleGeneralAPICall(content, processingMessageId)
   }
+
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
