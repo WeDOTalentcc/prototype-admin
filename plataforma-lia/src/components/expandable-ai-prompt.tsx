@@ -96,7 +96,7 @@ const CONTEXT_COLORS: Record<string, {
   candidates: {
     border: 'var(--wedo-green-light)',
     bg: 'rgba(123, 194, 154, 0.1)',
-    headerText: '#5aa078',
+    headerText: 'var(--status-success)',
     headerBg: 'rgba(123, 194, 154, 0.15)'
   },
   jobs: {
@@ -1271,13 +1271,13 @@ export function ExpandableAIPrompt({
       case 'job_title':
         return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
       case 'location':
-        return { bg: '#F3EAFF', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)' }
+        return { bg: 'var(--gray-50)', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)' }
       case 'skills':
-        return { bg: '#E5F5EB', text: '#2D6A4F', iconBg: 'var(--wedo-green-light)' }
+        return { bg: 'var(--gray-50)', text: 'var(--status-success)', iconBg: 'var(--wedo-green-light)' }
       case 'years_experience':
-        return { bg: '#FDF4E8', text: '#B8860B', iconBg: 'var(--wedo-orange)' }
+        return { bg: 'var(--gray-50)', text: 'var(--status-warning)', iconBg: 'var(--wedo-orange)' }
       case 'industry':
-        return { bg: '#E8F1FD', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
+        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
       default:
         return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)' }
     }
@@ -3177,7 +3177,7 @@ export function ExpandableAIPrompt({
                     {similarUrls.map((url, index) => (
                       <div key={index} className="relative">
                         <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                          <Linkedin className="w-4 h-4 text-[#0077B5]" />
+                          <Linkedin className="w-4 h-4 text-gray-600" />
                         </div>
                         <input
                           type="text"
@@ -3293,7 +3293,7 @@ export function ExpandableAIPrompt({
 
                     {/* Combined Suggestions Box */}
                     {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-                      <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{ backgroundColor: "#F8FCFD" }}>
+                      <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{ backgroundColor: "var(--gray-50)" }}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -3548,7 +3548,7 @@ export function ExpandableAIPrompt({
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="text-xs" style={{ color: '#999' }}>Operadores:</span>
+                      <span className="text-xs" style={{ color: 'var(--gray-400)' }}>Operadores:</span>
                       {['AND', 'OR', 'NOT', '( )', '" "'].map((op) => (
                         <button
                           key={op}

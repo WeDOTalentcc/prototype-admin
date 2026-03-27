@@ -269,7 +269,7 @@ export function CandidatePage({
       timeframe: '2-3 dias',
       recommendation: 'Follow-up recomendado em 48h',
       icon: '📧',
-      color: '#A8D5B7' // Verde WeDo - sucesso/qualidade
+      color: 'var(--wedo-green-pastel)' // Verde WeDo - sucesso/qualidade
     },
     {
       id: 'negotiation',
@@ -278,7 +278,7 @@ export function CandidatePage({
       timeframe: '3-5 dias',
       recommendation: 'Preparar margem de negociação de até 10%',
       icon: '💰',
-      color: '#D5BFA8' // Laranja WeDo - custos/tempo
+      color: 'var(--gray-300)' // bege → gray
     },
     {
       id: 'acceptance',
@@ -287,7 +287,7 @@ export function CandidatePage({
       timeframe: '5-7 dias',
       recommendation: 'Iniciar preparação do onboarding',
       icon: '✅',
-      color: '#A8CED5' // Ciano WeDo - automação/progresso
+      color: 'var(--gray-200)' // ciano pastel → gray
     },
     {
       id: 'start-date',
@@ -296,7 +296,7 @@ export function CandidatePage({
       timeframe: '30 dias',
       recommendation: 'Agendar primeira semana de integração',
       icon: '🎯',
-      color: '#BFA8D5' // Roxo WeDo - insights premium
+      color: 'var(--gray-200)' // roxo pastel → gray
     }
   ]
 
@@ -576,7 +576,7 @@ export function CandidatePage({
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                       >
-                        <Linkedin className="w-4 h-4" style={{ color: '#0A66C2' }} />
+                        <Linkedin className="w-4 h-4" className="text-gray-600" />
                       </a>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>
@@ -591,7 +591,7 @@ export function CandidatePage({
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                       >
-                        <Github className="w-4 h-4" style={{ color: '#181717' }} />
+                        <Github className="w-4 h-4" className="text-gray-950" />
                       </a>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">GitHub</TooltipContent>
@@ -1129,7 +1129,7 @@ export function CandidatePage({
                       <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                         Português
                       </span>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: '#B8E6D3', color: 'var(--status-success)' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--gray-100)', color: 'var(--status-success)' }}>
                         Nativo
                       </Badge>
                     </div>
@@ -1145,7 +1145,7 @@ export function CandidatePage({
                       <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                         Espanhol
                       </span>
-                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: '#FFD700', color: '#856404' }}>
+                      <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: 'var(--gray-200)', color: 'var(--gray-700)' }}>
                         Intermediário
                       </Badge>
                     </div>
@@ -1289,10 +1289,10 @@ export function CandidatePage({
 
                 {/* LinkedIn Insights - Dynamic */}
                 {hasPearchData(candidate) && (
-                  <Card className="border-l-4 border-l-[#0A66C2]">
+                  <Card className="border-l-4 border-l-gray-400">
                     <CardHeader className="py-3 bg-gray-50 dark:bg-gray-800">
                       <div className="flex items-center gap-2">
-                        <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                        <Linkedin className="w-4 h-4 text-gray-600" />
                         <CardTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                           LinkedIn Insights
                         </CardTitle>
@@ -1598,8 +1598,8 @@ export function CandidatePage({
                                             <Badge
                                               className="text-xs"
                                               style={{
-                                                backgroundColor: activity.score >= 80 ? '#B8E6D3' : '#FFE4B5',
-                                                color: activity.score >= 80 ? 'var(--status-success)' : '#D2691E'
+                                                backgroundColor: 'var(--gray-100)',
+                                                color: activity.score >= 80 ? 'var(--status-success)' : 'var(--status-warning)'
                                               }}
                                             >
                                               {activity.score}%

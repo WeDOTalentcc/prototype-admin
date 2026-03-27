@@ -1034,7 +1034,10 @@
       "Bash(sed -i \"s/''#F4D03F''/var\\(--status-warning\\)/g\" /home/runner/workspace/plataforma-lia/src/components/pages/big-five-dashboard-page.tsx)",
       "Bash(sed -i \"s/: var\\(--status-warning\\)$/: ''var\\(--status-warning\\)''/g; s/color: var\\(--status-warning\\)/color: ''var\\(--status-warning\\)''/g; s/borderColor: var\\(--status-warning\\)/borderColor: ''var\\(--status-warning\\)''/g\" /home/runner/workspace/plataforma-lia/src/components/pages/big-five-dashboard-page.tsx)",
       "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,8\\\\}\" /home/runner/workspace/plataforma-lia/src/components/pages/tasks-page.tsx)",
-      "Bash(grep -n \"#[0-9a-fA-F]\\\\{6,8\\\\}\" /home/runner/workspace/plataforma-lia/src/components/pages/tasks-page.tsx)"
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{6,8\\\\}\" /home/runner/workspace/plataforma-lia/src/components/pages/tasks-page.tsx)",
+      "Bash(grep -rn \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/ --include=\"*.tsx\" --exclude-dir=\".next\")",
+      "Bash(grep -rn \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/ --include=\"*.tsx\")",
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/activity-feed.tsx)"
     ]
   }
 }
