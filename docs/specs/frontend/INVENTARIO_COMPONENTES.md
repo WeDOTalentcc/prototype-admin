@@ -1,13 +1,17 @@
 # Inventário Completo de Componentes — Plataforma LIA (React)
 
-> **Última atualização:** 2026-03-27 (Fase 0 aplicada — código morto removido)
-> **Total:** 460 componentes em 76 diretórios (era 465 — removidos 5 arquivados + sedPT8vmF + 7 stories)
-> **Localização:** `plataforma-lia/src/components/`
+> **Última atualização:** 2026-03-27 (Expansão 100% — cobertura total de componentes + infraestrutura)
+> **Componentes:** 556 em 37 diretórios (era 460 documentados — adicionados 96 não inventariados em 21 dirs)
+> **Hooks:** 120 custom hooks (93 em `src/hooks/` + 27 em subdiretórios de componentes)
+> **Infraestrutura:** 5 contexts, 17 arquivos de types/config, 13 lib utilities
+> **Rotas:** 90 page routes + 5 layouts + 424 API endpoints
+> **CSS:** 242 variáveis, 29 keyframes, 200+ classes customizadas, 169 ícones Lucide
+> **Localização:** `plataforma-lia/src/`
 > **Stack:** React 19 + Next.js 15 + Tailwind CSS + shadcn/ui (Radix UI)
 
 ---
 
-## 1. UI Base (`ui/`) — 68 componentes
+## 1. UI Base (`ui/`) — 64 componentes
 
 Componentes primitivos reutilizáveis. Base do design system.
 
@@ -98,7 +102,7 @@ Interface de conversação com a LIA.
 | 10 | `chat/resume-analysis-result` | 198 | Resultado de análise de currículo |
 | 11 | `chat/typing-indicator` | 55 | Indicador de digitação da LIA |
 | 12 | `chat/voice-chat-button` | 244 | Botão de chat por voz |
-| 13 | `expanded-chat-modal` | 11824 | Modal principal do chat expandido (maior componente) |
+| 13 | `expanded-chat-modal` | 11228 | Modal principal do chat expandido (maior componente) |
 | 14 | `expanded-chat/ExpandedChatContext` | 250 | Context provider do chat expandido |
 | 15 | `expanded-chat/components/tool-confirmation-message` | 189 | Mensagem de confirmação de tool |
 | 16 | `expanded-chat/components/tool-execution-feedback` | 165 | Feedback de execução de ferramenta |
@@ -168,59 +172,122 @@ Visualização, busca e triagem de candidatos.
 | 12 | `triagem/screening-report-export` | 429 | Exportação de relatório de triagem |
 | 13 | `triagem/triagem-detail-panel` | 764 | Painel de detalhe da triagem |
 | 14 | `triagem/triagem-table` | 577 | Tabela de triagem |
-| 15 | `triagem-details-modal` | 441 | Modal de detalhes da triagem |
+| 15 | `triagem-details-modal` | 1194 | Modal de detalhes da triagem |
 
 ---
 
-## 5. Search & Sourcing (`search/`) — 17 componentes
+## 5. Search & Sourcing (`search/`) — 40 componentes
 
-Busca inteligente e sourcing de candidatos.
+Busca inteligente e sourcing de candidatos. Inclui filtros avançados, presets geográficos e modais de configuração.
 
 | # | Componente | Linhas | Função |
 |---|-----------|--------|--------|
-| 1 | `search/BooleanBuilderModal` | 629 | Constructor de queries booleanas |
-| 2 | `search/CandidateSourceSelector` | 211 | Seletor de fontes de candidatos |
-| 3 | `search/city-suggestions-input` | 342 | Input de cidades com sugestões |
-| 4 | `search/CityPresetsModal` | 434 | Modal de presets de cidades |
-| 5 | `search/CompanyPresetsModal` | 561 | Modal de presets de empresas |
-| 6 | `search/CompanySelectInput` | 370 | Input de seleção de empresa |
-| 7 | `search/LanguagesFilterInput` | 278 | Filtro de idiomas |
-| 8 | `search/SavedSearchCard` | 266 | Card de busca salva |
-| 9 | `search/SaveSearchModal` | 183 | Modal para salvar busca |
-| 10 | `search/search-results-card` | 497 | Card de resultado de busca |
-| 11 | `search/SearchSourceSelector` | 155 | Seletor de fonte de busca |
-| 12 | `search/SimilarProfilesInput` | 246 | Input de perfis similares |
-| 13 | `search/SkillsFilterInput` | 370 | Filtro de skills |
-| 14 | `search/smart-search-input` | 5475 | Input de busca inteligente (3º maior) |
-| 15 | `search/TimezoneDropdown` | 170 | Dropdown de timezone |
-| 16 | `search/UniversitiesFilterInput` | 460 | Filtro de universidades |
-| 17 | `search/UniversityPresetsModal` | 729 | Modal de presets de universidades |
+| 1 | `search/advanced-filters-modal` | 3282 | Modal de filtros avançados (5º maior componente) |
+| 2 | `search/advanced-search` | 333 | Busca avançada com múltiplos critérios |
+| 3 | `search/ArchetypesList` | 274 | Lista de arquétipos de candidato |
+| 4 | `search/candidate-detail-sidebar` | 455 | Sidebar de detalhe do candidato nos resultados |
+| 5 | `search/CompanyFilterInput` | 566 | Input de filtro por empresa |
+| 6 | `search/CompanyHQLocationsInput` | 328 | Input de localização de HQ da empresa |
+| 7 | `search/CompanyPresetsModal` | 552 | Modal de presets de empresas |
+| 8 | `search/CompanyTagsInput` | 454 | Input de tags de empresa |
+| 9 | `search/credit-confirmation-dialog` | 153 | Dialog de confirmação de uso de créditos |
+| 10 | `search/credit-cost-display` | 199 | Display de custo em créditos |
+| 11 | `search/DegreeRequirementsInput` | 166 | Input de requisitos de grau acadêmico |
+| 12 | `search/ExcludedCompaniesInput` | 363 | Input de empresas excluídas |
+| 13 | `search/ExcludedUniversitiesInput` | 280 | Input de universidades excluídas |
+| 14 | `search/ExpertiseAreasInput` | 331 | Input de áreas de expertise |
+| 15 | `search/FieldsOfStudyInput` | 590 | Input de campos de estudo |
+| 16 | `search/filter-autocomplete` | 360 | Autocomplete genérico de filtros |
+| 17 | `search/FundingStagesInput` | 90 | Input de estágio de funding da empresa |
+| 18 | `search/GraduationYearInput` | 99 | Input de ano de graduação |
+| 19 | `search/IndustryFilterInput` | 466 | Filtro por indústria |
+| 20 | `search/IndustrySingleSelect` | 269 | Select único de indústria |
+| 21 | `search/LanguageFilterInput` | 333 | Filtro de idiomas |
+| 22 | `search/LocationFilterInput` | 410 | Filtro de localização |
+| 23 | `search/LocationPresetsModal` | 457 | Modal de presets de localização |
+| 24 | `search/PastLocationsInput` | 341 | Input de localizações anteriores |
+| 25 | `search/QualificationBadge` | 175 | Badge de qualificação do candidato |
+| 26 | `search/RadiusDropdown` | 112 | Dropdown de raio geográfico |
+| 27 | `search/save-archetype-modal` | 320 | Modal para salvar arquétipo |
+| 28 | `search/SearchFeedbackButtons` | 103 | Botões de feedback de resultado |
+| 29 | `search/search-preview-card` | 272 | Card de preview de resultado |
+| 30 | `search/SearchQualityPanel` | 96 | Painel de qualidade da busca |
+| 31 | `search/search-results-card` | 497 | Card de resultado de busca |
+| 32 | `search/SearchSourceSelector` | 155 | Seletor de fonte de busca |
+| 33 | `search/SimilarProfilesInput` | 246 | Input de perfis similares |
+| 34 | `search/SkillsFilterInput` | 370 | Filtro de skills |
+| 35 | `search/smart-search-input` | 5475 | Input de busca inteligente (3º maior componente) |
+| 36 | `search/TimezoneDropdown` | 170 | Dropdown de timezone |
+| 37 | `search/UniversitiesFilterInput` | 460 | Filtro de universidades |
+| 38 | `search/UniversityLocationsInput` | 276 | Input de localização de universidades |
+| 39 | `search/UniversityPresetsModal` | 729 | Modal de presets de universidades |
+| 40 | `search/expandable-ai-prompt.types` | 149 | Types do prompt expansível (TS) |
 
 ---
 
-## 6. Pipeline & Kanban (`kanban/`, `pipeline/`, `jobs/`) — 17 componentes
+## 6. Pipeline & Kanban (`kanban/`, `pipeline/`, `jobs/`) — 30 arquivos (11 componentes + 6 hooks + 5 utils + 4 types/config + 4 barrel)
 
-Gestão visual do pipeline de recrutamento.
+Gestão visual do pipeline de recrutamento. Estrutura modular com hooks, utils e types dedicados.
+
+**Componentes (`kanban/components/`):**
 
 | # | Componente | Linhas | Função |
 |---|-----------|--------|--------|
-| 1 | `kanban/candidate-kanban-card` | 310 | Card do candidato no kanban |
-| 2 | `kanban/column-footer` | 155 | Footer da coluna do kanban |
-| 3 | `kanban/kanban-board` | 548 | Board principal do kanban |
-| 4 | `kanban/kanban-column` | 345 | Coluna do kanban com drag & drop |
-| 5 | `kanban/kanban-header` | 146 | Header do kanban |
-| 6 | `kanban/kanban-pagination` | 118 | Paginação do kanban |
-| 7 | `kanban/stage-card` | 226 | Card de etapa do pipeline |
-| 8 | `pipeline/pipeline-analytics` | 619 | Analytics do pipeline |
-| 9 | `pipeline/pipeline-comparison` | 457 | Comparação de pipelines |
-| 10 | `pipeline/pipeline-configuration` | 590 | Configuração de etapas |
-| 11 | `pipeline/pipeline-stage-insights` | 423 | Insights por etapa |
-| 12 | `jobs/job-card-enhanced` | 365 | Card de vaga aprimorado |
-| 13 | `jobs/jobs-header` | 202 | Header da lista de vagas |
-| 14 | `jobs/jobs-page` | 423 | Página principal de vagas |
-| 15 | `jobs/jobs-stats` | 205 | Estatísticas de vagas |
-| 16 | `jobs/jobs-table` | 316 | Tabela de vagas |
-| 17 | `jobs/tab-content-with-actions` | 111 | Tab com ações contextuais |
+| 1 | `kanban/components/CandidateBadges` | 88 | Badges do candidato no kanban |
+| 2 | `kanban/components/CandidateCard` | 428 | Card do candidato no kanban |
+| 3 | `kanban/components/CandidateTableRow` | 349 | Row de candidato em modo tabela |
+| 4 | `kanban/components/ColumnContextMenu` | 260 | Menu de contexto da coluna |
+| 5 | `kanban/components/KanbanBoard` | 133 | Board principal do kanban |
+| 6 | `kanban/components/KanbanColumn` | 209 | Coluna do kanban com drag & drop |
+| 7 | `kanban/components/OverrideApproveButton` | 117 | Botão de aprovação de override |
+| 8 | `kanban/components/SaturationBadge` | 266 | Badge de saturação de etapa |
+| 9 | `kanban/components/TransitionChatPanel` | 488 | Painel de chat para transição de etapa |
+| 10 | `kanban/components/UniversalTransitionModal` | 845 | Modal universal de transição |
+
+**Hooks (`kanban/hooks/`):**
+
+| # | Hook | Linhas | Função |
+|---|------|--------|--------|
+| 1 | `use-candidate-selection` | 85 | Seleção de candidatos no kanban |
+| 2 | `use-column-config` | 136 | Configuração de colunas |
+| 3 | `use-drag-drop` | 156 | Drag & drop entre colunas |
+| 4 | `use-filters-persistence` | 140 | Persistência de filtros |
+| 5 | `use-kanban-filters` | 88 | Filtros do kanban |
+| 6 | `use-universal-transition` | 131 | Lógica de transição entre etapas |
+
+**Utils (`kanban/utils/`):**
+
+| # | Util | Linhas | Função |
+|---|------|--------|--------|
+| 1 | `action-matrix` | 130 | Matriz de ações por estágio |
+| 2 | `badge-utils` | 146 | Utilitários de badges |
+| 3 | `filter-utils` | 60 | Utilitários de filtros |
+| 4 | `stage-utils` | 217 | Utilitários de estágios |
+| 5 | `status-utils` | 131 | Utilitários de status |
+
+**Types & Config:**
+
+| # | Arquivo | Linhas | Função |
+|---|---------|--------|--------|
+| 1 | `kanban/types` | 118 | Tipos do kanban |
+| 2 | `kanban/constants` | 122 | Constantes (estágios, cores) |
+| 3 | `kanban/mock/candidates` | 1559 | Dados mock de candidatos |
+| 4 | `kanban/mock/data-generators` | 255 | Geradores de dados mock |
+
+**Pipeline & Jobs:**
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `pipeline/pipeline-analytics` | 619 | Analytics do pipeline |
+| 2 | `pipeline/pipeline-comparison` | 457 | Comparação de pipelines |
+| 3 | `pipeline/pipeline-configuration` | 590 | Configuração de etapas |
+| 4 | `pipeline/pipeline-stage-insights` | 423 | Insights por etapa |
+| 5 | `jobs/job-card-enhanced` | 365 | Card de vaga aprimorado |
+| 6 | `jobs/jobs-header` | 202 | Header da lista de vagas |
+| 7 | `jobs/jobs-page` | 423 | Página principal de vagas |
+| 8 | `jobs/jobs-stats` | 205 | Estatísticas de vagas |
+| 9 | `jobs/jobs-table` | 316 | Tabela de vagas |
+| 10 | `jobs/tab-content-with-actions` | 111 | Tab com ações contextuais |
 
 ---
 
@@ -303,8 +370,8 @@ Configurações, gestão de empresa, equipe e preferências.
 | 7 | `ml-analytics/diversity-analytics` | 1008 | Analytics de diversidade |
 | 8 | `ml-analytics/ml-analytics-dashboard` | 1106 | Dashboard de ML analytics |
 | 9 | `ml-analytics/predictive-analytics` | 871 | Analytics preditivo |
-| 10 | `ml-insights-card` | 174 | Card de insights ML |
-| 11 | `lia-metrics-dashboard` | 524 | Dashboard de métricas LIA |
+| 10 | `ml-insights-card` | 181 | Card de insights ML |
+| 11 | `lia-metrics-dashboard` | 897 | Dashboard de métricas LIA |
 
 ---
 
@@ -332,7 +399,9 @@ Configurações, gestão de empresa, equipe e preferências.
 
 ---
 
-## 13. Talent Funnel (`talent-funnel-tabs/`) — 7 componentes
+## 13. Talent Funnel (`talent-funnel-tabs/`) — 4 componentes
+
+> **Nota:** Fase 0 removeu 3 componentes arquivados (`mapping-tab`, `personas-tab`, `pipelines-tab`) — 4.027 linhas de código morto eliminadas.
 
 | # | Componente | Linhas | Função |
 |---|-----------|--------|--------|
@@ -340,9 +409,6 @@ Configurações, gestão de empresa, equipe e preferências.
 | 2 | `talent-funnel-tabs/history-tab` | 394 | Tab de histórico |
 | 3 | `talent-funnel-tabs/lists-tab` | 924 | Tab de listas de candidatos |
 | 4 | `talent-funnel-tabs/saved-searches-tab` | 633 | Tab de buscas salvas |
-| 5 | `talent-funnel-tabs/_archived/mapping-tab` | 1271 | Tab de mapeamento (arquivada) |
-| 6 | `talent-funnel-tabs/_archived/personas-tab` | 1687 | Tab de personas (arquivada) |
-| 7 | `talent-funnel-tabs/_archived/pipelines-tab` | 1069 | Tab de pipelines (arquivada) |
 
 ---
 
@@ -374,7 +440,9 @@ Configurações, gestão de empresa, equipe e preferências.
 
 ---
 
-## 16. Componentes Standalone (raiz) — 30+ componentes
+## 16. Componentes Standalone (raiz) — 62 componentes
+
+Componentes na raiz de `src/components/` sem subdiretório dedicado.
 
 | # | Componente | Linhas | Função |
 |---|-----------|--------|--------|
@@ -384,55 +452,86 @@ Configurações, gestão de empresa, equipe e preferências.
 | 4 | `big-five-modal` | 545 | Modal Big Five personality |
 | 5 | `bulk-actions-bar` | 728 | Barra de ações em massa |
 | 6 | `calibration-card` | 328 | Card de calibração |
-| 7 | `column-configuration-modal` | 346 | Modal de configuração de colunas |
-| 8 | `company-screening-settings` | 507 | Config de triagem da empresa |
-| 9 | `contextual-actions-banner` | 172 | Banner de ações contextuais |
-| 10 | `daily-briefing-card` | 564 | Card de briefing diário |
-| 11 | `disc-assessment-modal` | 557 | Modal de assessment DISC |
-| 12 | `events-section` | 440 | Seção de eventos |
-| 13 | `expandable-ai-prompt` | 4308 | Prompt expansível da IA (5º maior) |
-| 14 | `experience-highlight-card` | 247 | Card de destaque de experiência |
-| 15 | `export-tools` | 325 | Ferramentas de exportação |
-| 16 | `fairness-warning-banner` | 49 | Banner de aviso de fairness/viés |
-| 17 | `global-search-modal` | 482 | Modal de busca global |
-| 18 | `intelligence-notifications` | 404 | Notificações inteligentes |
-| 19 | `interviews-section` | 202 | Seção de entrevistas |
-| 20 | `job-actions-bar` | 116 | Barra de ações de vaga |
-| 21 | `lia-activity-feed` | 389 | Feed de atividades da LIA |
-| 22 | `lia-metrics-chart` | 284 | Gráfico de métricas LIA |
-| 23 | `lia-performance-indicators` | 421 | Indicadores de performance LIA |
-| 24 | `lia-processing-card` | 288 | Card de processamento LIA |
-| 25 | `lia-score-card` | 151 | Scorecard LIA |
-| 26 | `lia-screening-dialogue` | 487 | Diálogo de triagem LIA |
-| 27 | `lia-suggestion-cards` | 272 | Cards de sugestão da LIA |
-| 28 | `lia-tips-modal` | 288 | Modal de dicas LIA |
-| 29 | `task-modal` | 90 | Modal de tarefa |
-| 30 | `war-room` | 461 | War room de recrutamento |
-| 31 | `work-model-charts` | 415 | Gráficos de modelo de trabalho |
+| 7 | `candidate-comparison` | 590 | Comparação lado a lado de candidatos |
+| 8 | `candidate-decision-flow-modal` | 524 | Modal de fluxo de decisão |
+| 9 | `candidate-modal` | 655 | Modal completo do candidato |
+| 10 | `candidate-page` | 2504 | Página completa do candidato |
+| 11 | `candidate-preview` | 6723 | Preview expandido (2º maior componente) |
+| 12 | `column-configuration-modal` | 346 | Modal de configuração de colunas |
+| 13 | `company-screening-settings` | 507 | Config de triagem da empresa |
+| 14 | `contextual-actions-banner` | 172 | Banner de ações contextuais |
+| 15 | `daily-briefing-card` | 564 | Card de briefing diário |
+| 16 | `dashboard-app` | 187 | App principal do dashboard |
+| 17 | `disc-assessment-modal` | 557 | Modal de assessment DISC |
+| 18 | `events-section` | 440 | Seção de eventos |
+| 19 | `expandable-ai-prompt` | 4308 | Prompt expansível da IA (5º maior) |
+| 20 | `expanded-chat-modal` | 11228 | Modal do chat expandido (maior componente) |
+| 21 | `experience-highlight-card` | 247 | Card de destaque de experiência |
+| 22 | `export-tools` | 325 | Ferramentas de exportação |
+| 23 | `fairness-warning-banner` | 49 | Banner de aviso de fairness/viés |
+| 24 | `global-search-modal` | 482 | Modal de busca global |
+| 25 | `intelligence-notifications` | 404 | Notificações inteligentes |
+| 26 | `interviews-section` | 202 | Seção de entrevistas |
+| 27 | `job-actions-bar` | 116 | Barra de ações de vaga |
+| 28 | `job-report-modal` | 556 | Modal de relatório de vaga |
+| 29 | `lia-activity-feed` | 448 | Feed de atividades da LIA |
+| 30 | `lia-expanded-prompt` | 199 | Prompt expandido da LIA |
+| 31 | `lia-metrics-chart` | 181 | Gráfico de métricas LIA |
+| 32 | `lia-metrics-dashboard` | 897 | Dashboard de métricas LIA |
+| 33 | `lia-performance-indicators` | 178 | Indicadores de performance LIA |
+| 34 | `lia-processing-card` | 426 | Card de processamento LIA |
+| 35 | `lia-score-card` | 140 | Scorecard LIA |
+| 36 | `lia-screening-dialogue` | 905 | Diálogo de triagem LIA |
+| 37 | `lia-screening-guide` | 1131 | Guia de triagem LIA |
+| 38 | `lia-suggestion-cards` | 161 | Cards de sugestão da LIA |
+| 39 | `lia-tips-modal` | 447 | Modal de dicas LIA |
+| 40 | `login-page` | 458 | Página de login (componente) |
+| 41 | `ml-insights-card` | 181 | Card de insights ML |
+| 42 | `notification-system` | 449 | Sistema de notificações |
+| 43 | `page-transition` | 45 | Transição entre páginas |
+| 44 | `presentation-mode` | 422 | Modo apresentação |
+| 45 | `proactive-insight-card` | 364 | Card de insight proativo |
+| 46 | `quick-actions-modals` | 2076 | Modais de ações rápidas |
+| 47 | `quick-view-modal` | 393 | Modal de visualização rápida |
+| 48 | `react-thinking-stream` | 53 | Stream de pensamento (React) |
+| 49 | `regional-analysis` | 514 | Análise regional |
+| 50 | `reveal-credits-modal` | 124 | Modal de créditos de reveal |
+| 51 | `rubric-evaluation-card` | 368 | Card de avaliação por rubrica |
+| 52 | `rubric-evaluation-modal` | 872 | Modal de avaliação por rubrica |
+| 53 | `save-command-modal` | 398 | Modal de salvar comando |
+| 54 | `task-modal` | 90 | Modal de tarefa |
+| 55 | `tasks-section` | 186 | Seção de tarefas |
+| 56 | `template-suggestion-toast` | 252 | Toast de sugestão de template |
+| 57 | `test-status-indicators` | 77 | Indicadores de status de teste |
+| 58 | `timeline-section` | 144 | Seção de timeline |
+| 59 | `triagem-details-modal` | 1194 | Modal de detalhes da triagem |
+| 60 | `user-commands-section` | 466 | Seção de comandos do usuário |
+| 61 | `war-room` | 461 | War room de recrutamento |
+| 62 | `work-model-charts` | 415 | Gráficos de modelo de trabalho |
 
 ---
 
-## Resumo por Números
+## Resumo por Números — Seções 1-16 (Componentes por Diretório)
 
 | Categoria | Componentes | Linhas totais |
 |-----------|------------|---------------|
-| UI Base (primitivos + especializados) | 64 | ~12.300 |
-| Chat & LIA | 22 | ~16.500 |
-| Job Creation & Wizard | 28 | ~14.200 |
-| Candidatos & Triagem | 15 | ~13.900 |
-| Search & Sourcing | 17 | ~10.400 |
-| Pipeline & Kanban | 17 | ~5.800 |
-| Tables & Data | 3 | ~1.500 |
-| Settings & Admin | 32 | ~16.300 |
-| WSI | 8 | ~3.500 |
-| Dashboard & Analytics | 11 | ~6.500 |
-| Interviews & Notes | 5 | ~1.700 |
-| Email & Communication | 5 | ~2.500 |
-| Talent Funnel | 7 | ~5.500 |
-| Autonomous & Proactive | 5 | ~1.400 |
-| Layout & Navigation | 9 | ~1.400 |
-| Standalone (raiz) | 30+ | ~12.000 |
-| **TOTAL** | **~465** | **~125.000** |
+| 1. UI Base (primitivos + especializados) | 64 | ~12.300 |
+| 2. Chat & LIA | 22 | ~16.500 |
+| 3. Job Creation & Wizard | 28 | ~14.200 |
+| 4. Candidatos & Triagem | 15 | ~13.900 |
+| 5. Search & Sourcing | 40 | ~18.200 |
+| 6. Pipeline & Kanban (componentes) | 30 | ~10.400 |
+| 7. Tables & Data | 3 | ~1.500 |
+| 8. Settings & Admin | 32 | ~16.300 |
+| 9. WSI | 8 | ~3.500 |
+| 10. Dashboard & Analytics | 11 | ~6.500 |
+| 11. Interviews & Notes | 5 | ~1.700 |
+| 12. Email & Communication | 5 | ~2.500 |
+| 13. Talent Funnel | 4 | ~2.500 |
+| 14. Autonomous & Proactive | 5 | ~1.400 |
+| 15. Layout & Navigation | 9 | ~1.400 |
+| 16. Standalone (raiz) | 62 | ~38.000 |
+| **Subtotal Seções 1-16** | **~343** | **~160.400** |
 
 ---
 
@@ -440,25 +539,761 @@ Configurações, gestão de empresa, equipe e preferências.
 
 | # | Componente | Linhas | Observação |
 |---|-----------|--------|-----------|
-| 1 | `expanded-chat-modal` | 11.824 | Chat expandido — candidato a refactoring |
-| 2 | `candidate-preview` | 6.723 | Preview de candidato — muita lógica inline |
-| 3 | `smart-search-input` | 5.475 | Busca inteligente com NLP |
-| 4 | `CompanyTeamHub` | 5.235 | Gestão de equipe |
-| 5 | `expandable-ai-prompt` | 4.308 | Prompt expansível |
-| 6 | `candidate-page` | 2.504 | Página do candidato |
-| 7 | `goals-management` | 2.302 | Gestão de metas |
-| 8 | `command-palette` | 2.121 | Paleta de comandos Ctrl+K |
-| 9 | `CommunicationHub` | 1.796 | Hub de comunicações |
-| 10 | `personas-tab` (archived) | 1.687 | Tab de personas (arquivada) |
+| 1 | `expanded-chat-modal` | 11.228 | Chat expandido — candidato a refactoring |
+| 2 | `pages/job-kanban-page` | 10.377 | Página do kanban |
+| 3 | `pages/candidates-page` | 10.329 | Página de candidatos |
+| 4 | `pages/jobs-page` | 8.046 | Página de vagas |
+| 5 | `candidate-preview` | 6.723 | Preview de candidato |
+| 6 | `pages/chat-page` | 5.592 | Página do chat |
+| 7 | `smart-search-input` | 5.475 | Busca inteligente com NLP |
+| 8 | `CompanyTeamHub` | 5.235 | Gestão de equipe |
+| 9 | `pages/settings-page` | 4.449 | Configurações |
+| 10 | `expandable-ai-prompt` | 4.308 | Prompt expansível |
 
 ---
 
-## 17. Análise de Potencial de Otimização
+## 17. Modals (`modals/`) — 34 componentes
+
+Diretório dedicado de modais de ação. Maior gap de documentação anterior.
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `modals/add-candidate-modal` | 676 | Modal de adicionar candidato |
+| 2 | `modals/add-candidates-to-vacancy-modal` | 529 | Adicionar candidatos a vaga |
+| 3 | `modals/add-list-to-vacancies-modal` | 341 | Adicionar lista a vagas |
+| 4 | `modals/add-to-job-modal` | 608 | Adicionar a vaga |
+| 5 | `modals/add-to-list-modal` | 335 | Adicionar a lista |
+| 6 | `modals/bulk-action-modal` | 440 | Modal de ação em lote |
+| 7 | `modals/candidate-compare-modal` | 192 | Comparação de candidatos |
+| 8 | `modals/close-vacancy-modal` | 680 | Fechar vaga |
+| 9 | `modals/create-job-modal` | 406 | Criar vaga |
+| 10 | `modals/create-job-with-candidates-modal` | 307 | Criar vaga com candidatos |
+| 11 | `modals/data-blocking-modal` | 244 | Bloqueio de dados (LGPD) |
+| 12 | `modals/data-request-modal` | 338 | Solicitação de dados |
+| 13 | `modals/edit-job-modal` | 1989 | Editar vaga (componente gigante) |
+| 14 | `modals/english-test-modal` | 351 | Teste de inglês |
+| 15 | `modals/general-score-modal` | 267 | Score geral |
+| 16 | `modals/insufficient-data-modal` | 263 | Dados insuficientes |
+| 17 | `modals/job-assign-recruiter-modal` | 326 | Atribuir recrutador |
+| 18 | `modals/job-compare-modal` | 1059 | Comparar vagas |
+| 19 | `modals/job-duplicate-modal` | 323 | Duplicar vaga |
+| 20 | `modals/job-insights-modal` | 1496 | Insights da vaga |
+| 21 | `modals/job-publish-modal` | 597 | Publicar vaga |
+| 22 | `modals/job-status-modal` | 1151 | Status da vaga |
+| 23 | `modals/job-unpublish-modal` | 969 | Despublicar vaga |
+| 24 | `modals/lia-analysis-modal` | 332 | Análise da LIA |
+| 25 | `modals/new-candidate-unified-modal` | 1162 | Novo candidato unificado |
+| 26 | `modals/persona-creation-modal` | 531 | Criação de persona |
+| 27 | `modals/screening-media-modal` | 351 | Mídia de screening |
+| 28 | `modals/share-search-modal` | 800 | Compartilhar busca |
+| 29 | `modals/shared-search-details-modal` | 562 | Detalhes de busca compartilhada |
+| 30 | `modals/stage-transition-actions-modal` | 946 | Ações de transição de etapa |
+| 31 | `modals/technical-test-modal` | 348 | Teste técnico |
+| 32 | `modals/unified-communication-modal` | 1000 | Comunicação unificada |
+| 33 | `modals/unsaved-pearch-warning-modal` | 148 | Aviso de busca não salva |
+| 34 | `modals/bulk-action-modal-rejection-reasons.test` | 143 | Teste unitário (TS) |
+
+---
+
+## 18. UI-Actions & Side Panels (`ui-actions/`) — 16 componentes
+
+Painéis laterais e cards de ação contextual usados no fluxo de candidato/vaga.
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `ui-actions/BehavioralCompetenciesPanel` | 267 | Painel de competências comportamentais |
+| 2 | `ui-actions/CalibrationFeedbackPanel` | 405 | Painel de feedback de calibração |
+| 3 | `ui-actions/CandidateSummaryCard` | 286 | Card resumo do candidato |
+| 4 | `ui-actions/CompanyBenefitsSummaryCard` | 148 | Card resumo de benefícios |
+| 5 | `ui-actions/CompensationBenefitsPanel` | 383 | Painel de compensação e benefícios |
+| 6 | `ui-actions/CompensationSummaryCard` | 203 | Card resumo de compensação |
+| 7 | `ui-actions/InterviewConfirmationCard` | 290 | Card de confirmação de entrevista |
+| 8 | `ui-actions/InterviewSchedulingPanel` | 517 | Painel de agendamento de entrevista |
+| 9 | `ui-actions/JobSummaryCard` | 321 | Card resumo da vaga |
+| 10 | `ui-actions/LanguagesPanel` | 401 | Painel de idiomas |
+| 11 | `ui-actions/ProgressTrackerCard` | 217 | Card de acompanhamento de progresso |
+| 12 | `ui-actions/SidePanelContainer` | 183 | Container genérico de painel lateral |
+| 13 | `ui-actions/TechnicalRequirementsPanel` | 385 | Painel de requisitos técnicos |
+| 14 | `ui-actions/WSIQuestionsPanel` | 873 | Painel de perguntas WSI |
+| 15 | `ui-actions/WSIScoreCard` | 328 | Scorecard WSI |
+| 16 | `ui-actions/types` | 572 | Tipos TypeScript do módulo |
+
+---
+
+## 19. LIA Float (`lia-float/`) — 6 componentes
+
+Widget flutuante da LIA — chat contextual acessível de qualquer página.
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `lia-float/HITLConfirmCard` | 124 | Card de confirmação Human-in-the-Loop |
+| 2 | `lia-float/LiaChatButton` | 50 | Botão flutuante de chat |
+| 3 | `lia-float/LiaChatPanel` | 621 | Painel de chat flutuante |
+| 4 | `lia-float/LiaFloatConditional` | 21 | Renderização condicional do float |
+| 5 | `lia-float/LiaSplitPanel` | 378 | Painel split (chat + contexto) |
+| 6 | `lia-float/LiaSuperPrompt` | 627 | Super prompt flutuante da LIA |
+
+---
+
+## 20. Notifications (`notifications/`) — 4 componentes
+
+Sistema de notificações e toasts.
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `notifications/notification-center` | 405 | Centro de notificações |
+| 2 | `notifications/notification-context` | 149 | Context provider de notificações |
+| 3 | `notifications/proactive-alert-toast` | 265 | Toast de alerta proativo |
+| 4 | `notifications/toast-container` | 22 | Container de toasts |
+
+---
+
+## 21. Diretórios Menores — 31 componentes em 12 diretórios
+
+### 21.1 Agent Control Center (`agent-control-center/`) — 3 componentes
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `agent-control-center/index` | 590 | Dashboard principal de controle de agentes |
+| 2 | `agent-control-center/agent-detail-panel` | 411 | Painel de detalhe do agente |
+| 3 | `agent-control-center/sparkline` | 89 | Gráfico sparkline de métricas |
+
+### 21.2 Calibration (`calibration/`) — 2 componentes
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `calibration/calibration-dashboard` | 641 | Dashboard de calibração |
+| 2 | `calibration/lia-feedback-widget` | 266 | Widget de feedback da LIA |
+
+### 21.3 Onboarding (`onboarding/`) — 3 componentes
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `onboarding/first-access-manager` | 548 | Gerenciador de primeiro acesso |
+| 2 | `onboarding/onboarding-controller` | 632 | Controlador do fluxo de onboarding |
+| 3 | `onboarding/onboarding-replay-button` | 122 | Botão para replay do onboarding |
+
+> CSS próprio: `onboarding-styles.css` (264 linhas) — classes isoladas do onboarding wizard.
+
+### 21.4 AI Components (`ai/`) — 2 componentes
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `ai/agent-explainability-panel` | 329 | Painel de explicabilidade do agente |
+| 2 | `ai/AISuggestionBadge` | 165 | Badge de sugestão da IA |
+
+### 21.5 Alerts (`alerts/`) — 2 componentes
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `alerts/alert-settings-modal` | 609 | Modal de configuração de alertas |
+| 2 | `alerts/kpi-alert-system` | 899 | Sistema de alertas KPI |
+
+### 21.6 Benefits (`benefits/`) — 2 componentes
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `benefits/BenefitBadgeList` | 243 | Lista de badges de benefícios |
+| 2 | `benefits/BenefitDetailsSheet` | 303 | Sheet de detalhes do benefício |
+
+### 21.7 Screening & Config (`screening/`, `screening-config/`) — 9 componentes
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `screening/screening-notification-card` | 158 | Card de notificação de triagem |
+| 2 | `screening-config/CompanyBankQuestions` | 314 | Banco de perguntas da empresa |
+| 3 | `screening-config/CustomQuestions` | 275 | Perguntas customizadas |
+| 4 | `screening-config/ScreeningChannelsModal` | 164 | Modal de canais de triagem |
+| 5 | `screening-config/ScreeningConfigManager` | 2402 | Gerenciador de config (componente gigante) |
+| 6 | `screening-config/ScreeningSchedulingModal` | 217 | Modal de agendamento |
+| 7 | `screening-config/ScreeningScriptTab` | 618 | Tab de script de triagem |
+| 8 | `screening-config/ScreeningSettingsModal` | 188 | Modal de configurações |
+| 9 | `screening-config/ScreeningStatusModal` | 401 | Modal de status |
+
+### 21.8 Componentes Unitários (1 componente cada)
+
+| # | Componente | Linhas | Dir | Função |
+|---|-----------|--------|-----|--------|
+| 1 | `filters/robust-filters` | 429 | `filters/` | Filtros avançados robustos |
+| 2 | `lists/add-candidate-to-list-modal` | 522 | `lists/` | Modal de adicionar candidato a lista |
+| 3 | `ml/recruitment-ml-engine` | 643 | `ml/` | Engine de ML de recrutamento |
+| 4 | `module-access/module-upsell` | 299 | `module-access/` | Upsell de módulo premium |
+| 5 | `reports/advanced-report-exporter` | 517 | `reports/` | Exportador de relatórios avançado |
+| 6 | `report-scheduler/report-scheduler` | 644 | `report-scheduler/` | Agendador de relatórios |
+| 7 | `score/ScoreBreakdownBadge` | 293 | `score/` | Badge de breakdown de score |
+| 8 | `async/AsyncJobProgress` | 247 | `async/` | Progresso de jobs assíncronos |
+
+---
+
+## 22. Pages Sub-Components (`pages/`) — 15 sub-componentes + 3 hooks + 3 types + 27 páginas standalone
+
+Componentes extraídos dentro de subdiretórios de páginas.
+
+### 22.1 Candidates Module (`pages/candidates/`)
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `CandidateSearchBar` | 146 | Barra de busca de candidatos |
+| 2 | `CandidatesFilterPanel` | 1124 | Painel de filtros (componente gigante) |
+| 3 | `CandidatesHeader` | 66 | Header da lista |
+| 4 | `CandidatesTable` | 386 | Tabela de candidatos |
+| 5 | `CandidateTabs` | 53 | Tabs do candidato |
+| 6 | `SearchResultsHeader` | 233 | Header de resultados |
+| 7 | `hooks/useCandidatesQuery` | 232 | Hook de query de candidatos |
+| 8 | `hooks/useCandidatesSelection` | 121 | Hook de seleção |
+| 9 | `types` | 230 | Tipos do módulo |
+
+### 22.2 Job Kanban Module (`pages/job-kanban/`)
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `KanbanCard` | 180 | Card do kanban de página |
+| 2 | `KanbanColumn` | 95 | Coluna do kanban de página |
+| 3 | `MoveConfirmationModal` | 198 | Modal de confirmação de movimento |
+| 4 | `hooks/useKanbanState` | 207 | Hook de estado do kanban |
+| 5 | `types` | 90 | Tipos do módulo |
+
+### 22.3 Jobs Module (`pages/jobs/`)
+
+| # | Componente | Linhas | Função |
+|---|-----------|--------|--------|
+| 1 | `JobsHeader` | 119 | Header de vagas |
+| 2 | `JobsTable` | 269 | Tabela de vagas |
+| 3 | `hooks/useJobsQuery` | 206 | Hook de query de vagas |
+| 4 | `types` | 106 | Tipos do módulo |
+
+### 22.4 Páginas Standalone (`pages/`)
+
+| # | Página | Linhas | Função |
+|---|--------|--------|--------|
+| 1 | `ai-credits-page` | 276 | Créditos IA |
+| 2 | `ats-integrations-page` | 1522 | Integrações ATS |
+| 3 | `big-five-dashboard-page` | 640 | Dashboard Big Five |
+| 4 | `candidate-review-modal` | 822 | Modal de revisão de candidato |
+| 5 | `candidates-page` | 10329 | Página de candidatos (3º maior) |
+| 6 | `chat-page` | 5592 | Página de chat |
+| 7 | `dashboards-page` | 3283 | Página de dashboards |
+| 8 | `executive-dashboard-page` | 680 | Dashboard executivo |
+| 9 | `indicators-page` | 1753 | Página de indicadores |
+| 10 | `integrations-page` | 804 | Página de integrações |
+| 11 | `job-kanban-page` | 10377 | Página do kanban (2º maior) |
+| 12 | `jobs-page` | 8046 | Página de vagas (4º maior) |
+| 13 | `jobs2-page` | 569 | Página de vagas v2 |
+| 14 | `job-templates-page` | 549 | Templates de vagas |
+| 15 | `lia-library-page` | 408 | Biblioteca LIA |
+| 16 | `login-page` | 627 | Página de login |
+| 17 | `mockup-shadcn-vue-page` | 599 | Mockup shadcn/vue |
+| 18 | `onboarding-page` | 830 | Onboarding |
+| 19 | `onboarding-premium-page` | 915 | Onboarding premium |
+| 20 | `real-time-dashboard-page` | 498 | Dashboard real-time |
+| 21 | `settings-page` | 4449 | Configurações |
+| 22 | `settings-page-enhanced` | 623 | Configurações melhoradas |
+| 23 | `tasks-page` | 2192 | Tarefas |
+| 24 | `tasks-page-mvp` | 890 | Tarefas MVP |
+| 25 | `templates-page` | 492 | Templates |
+| 26 | `workflow-automation-page` | 640 | Automação de workflow |
+| 27 | `work-model-analytics-page` | 567 | Analytics de modelo de trabalho |
+
+---
+
+## 23. Custom Hooks (`src/hooks/`) — 93 hooks
+
+Hooks customizados que encapsulam lógica de negócio, state management e integrações com API.
+
+| # | Hook | Linhas | Domínio |
+|---|------|--------|---------|
+| 1 | `use-action-intent` | 172 | Intenção de ação do usuário |
+| 2 | `useAgentMemory` | 95 | Memória do agente IA |
+| 3 | `use-agent-streaming` | 310 | Streaming de respostas do agente |
+| 4 | `use-ai-consumption` | 115 | Monitoramento de consumo IA |
+| 5 | `use-ai-credits` | 130 | Créditos de IA |
+| 6 | `use-archetypes` | 427 | Gestão de arquétipos |
+| 7 | `use-bias-audit-report` | 95 | Relatório de auditoria de viés |
+| 8 | `use-bulk-selection` | 197 | Seleção em massa |
+| 9 | `use-candidate-compare` | 86 | Comparação de candidatos |
+| 10 | `use-candidate-data-requests` | 278 | Solicitações de dados de candidato |
+| 11 | `use-candidate-filters` | 227 | Filtros de candidato |
+| 12 | `use-candidate-selection` | 107 | Seleção de candidato |
+| 13 | `use-candidates-list-mapped` | 55 | Lista mapeada de candidatos |
+| 14 | `use-candidates-list` | 149 | Lista de candidatos |
+| 15 | `useCandidateSuggestions` | 107 | Sugestões de candidato |
+| 16 | `useChatLayout` | 77 | Layout do chat |
+| 17 | `use-clients` | 185 | Gestão de clientes |
+| 18 | `use-communication-templates` | 586 | Templates de comunicação |
+| 19 | `use-company-benefits` | 126 | Benefícios da empresa |
+| 20 | `useCompanyBenefits` | 141 | Benefícios da empresa (v2) |
+| 21 | `use-company-culture` | 210 | Cultura da empresa |
+| 22 | `use-company-defaults` | 103 | Defaults da empresa |
+| 23 | `use-company-eligibility-questions` | 93 | Perguntas de elegibilidade |
+| 24 | `use-company-lia-instructions` | 420 | Instruções LIA da empresa |
+| 25 | `use-company-managers` | 165 | Gestores da empresa |
+| 26 | `use-company-pipeline` | 73 | Pipeline da empresa |
+| 27 | `useCompanySkillsCatalog` | 185 | Catálogo de skills |
+| 28 | `use-company-tech-stack` | 131 | Tech stack da empresa |
+| 29 | `useCreditEstimator` | 188 | Estimador de créditos |
+| 30 | `use-current-company` | 54 | Empresa atual |
+| 31 | `use-current-scope` | 83 | Escopo atual (global/cliente) |
+| 32 | `use-daily-briefing` | 114 | Briefing diário |
+| 33 | `use-data-request-config` | 430 | Config de solicitação de dados |
+| 34 | `use-data-request-modals` | 83 | Modais de solicitação |
+| 35 | `useDynamicSuggestions` | 212 | Sugestões dinâmicas |
+| 36 | `use-edit-lock` | 116 | Lock de edição |
+| 37 | `use-empty-field-notifications` | 179 | Notificações de campos vazios |
+| 38 | `useFastTrack` | 470 | Fast track de candidato |
+| 39 | `use-float-conversation` | 150 | Conversa flutuante |
+| 40 | `use-float-streaming` | 200 | Streaming flutuante |
+| 41 | `useGlobalSearchSettings` | 88 | Configurações de busca global |
+| 42 | `useHideViewedCandidates` | 168 | Esconder candidatos visualizados |
+| 43 | `use-hiring-policies` | 261 | Políticas de contratação |
+| 44 | `use-interpret-context` | 184 | Interpretação de contexto |
+| 45 | `use-job-analytics` | 119 | Analytics de vaga |
+| 46 | `useJobColumnConfig` | 261 | Config de colunas de vaga |
+| 47 | `use-job-draft` | 231 | Rascunho de vaga |
+| 48 | `useJobFiltersPersistence` | 224 | Persistência de filtros de vaga |
+| 49 | `use-job-report` | 63 | Relatório de vaga |
+| 50 | `use-job-wizard-backend` | 495 | Backend do wizard de vaga |
+| 51 | `use-keyboard-shortcuts` | 182 | Atalhos de teclado |
+| 52 | `use-lia-suggestions` | 314 | Sugestões da LIA |
+| 53 | `use-ml-predictions` | 144 | Predições ML |
+| 54 | `use-navigation-intent` | 52 | Intenção de navegação |
+| 55 | `use-navigation-persistence` | 102 | Persistência de navegação |
+| 56 | `use-override-approve` | 78 | Override de aprovação |
+| 57 | `use-page-theme` | 55 | Tema por página |
+| 58 | `use-pipeline-inheritance` | 73 | Herança de pipeline |
+| 59 | `use-proactive-alerts` | 137 | Alertas proativos |
+| 60 | `use-proactive-insights` | 88 | Insights proativos |
+| 61 | `use-recent-items` | 86 | Itens recentes |
+| 62 | `use-recruitment-stages` | 126 | Estágios de recrutamento |
+| 63 | `use-return-events` | 233 | Eventos de retorno |
+| 64 | `use-saas-metrics` | 152 | Métricas SaaS |
+| 65 | `use-scim-config` | 93 | Config SCIM |
+| 66 | `use-score-breakdown` | 79 | Breakdown de score |
+| 67 | `useScreeningConfig` | 246 | Config de screening |
+| 68 | `use-screening-questions` | 438 | Perguntas de screening |
+| 69 | `use-search-autocomplete` | 111 | Autocomplete de busca |
+| 70 | `use-search-entities` | 436 | Entidades de busca |
+| 71 | `useSearchFlow` | 136 | Fluxo de busca |
+| 72 | `use-search-source` | 102 | Fonte de busca |
+| 73 | `useSemanticSearch` | 199 | Busca semântica |
+| 74 | `useSessionRefresh` | 66 | Refresh de sessão |
+| 75 | `use-short-list` | 165 | Short list |
+| 76 | `use-similar-profiles` | 176 | Perfis similares |
+| 77 | `use-sub-status-panel` | 76 | Painel de sub-status |
+| 78 | `useTableFeatures` | 373 | Features de tabela |
+| 79 | `use-table-features` | 228 | Features de tabela (v2) |
+| 80 | `use-talent-funnel` | 475 | Funil de talentos |
+| 81 | `use-template-suggestions` | 259 | Sugestões de template |
+| 82 | `use-toast` | 191 | Toasts |
+| 83 | `use-transition-context` | 694 | Contexto de transição (maior hook) |
+| 84 | `use-triagem-chat` | 536 | Chat de triagem |
+| 85 | `useUIActions` | 255 | Ações de UI |
+| 86 | `useUnifiedSearch` | 139 | Busca unificada |
+| 87 | `use-wizard-auto-save` | 418 | Auto-save do wizard |
+| 88 | `use-wizard-suggestions` | 226 | Sugestões do wizard |
+| 89 | `use-workforce-planning` | 212 | Planejamento de workforce |
+| 90 | `use-workos-metrics` | 31 | Métricas WorkOS |
+| 91 | `use-wsi-async` | 104 | WSI assíncrono |
+
+**Hooks em subdiretórios de componentes (27 adicionais):**
+
+| # | Hook | Dir | Linhas | Função |
+|---|------|-----|--------|--------|
+| 1 | `useChatSync` | `expanded-chat/hooks/` | 362 | Sincronização do chat |
+| 2 | `useContextSwitching` | `expanded-chat/hooks/` | 342 | Troca de contexto |
+| 3 | `useConversationMemory` | `expanded-chat/hooks/` | 425 | Memória de conversa |
+| 4 | `useFieldHighlight` | `expanded-chat/hooks/` | 87 | Highlight de campo |
+| 5 | `useLearning` | `expanded-chat/hooks/` | 401 | Aprendizado do chat |
+| 6 | `useToolCalling` | `expanded-chat/hooks/` | 323 | Chamada de tools |
+| 7 | `useWizardAnalytics` | `expanded-chat/hooks/` | 369 | Analytics do wizard |
+| 8 | `useWizardNavigation` | `expanded-chat/hooks/` | 257 | Navegação do wizard |
+| 9 | `useWizardOrchestrator` | `expanded-chat/hooks/` | 268 | Orquestrador do wizard |
+| 10 | `useWizardState` | `expanded-chat/hooks/` | 439 | Estado do wizard |
+| 11 | `useWSIQualityGates` | `expanded-chat/hooks/` | 169 | Quality gates WSI |
+| 12 | `useStageValidation` | `job-wizard/hooks/` | 183 | Validação de estágio |
+| 13 | `useWizardNavigation` | `job-wizard/hooks/` | 66 | Navegação do wizard |
+| 14-19 | *(kanban hooks)* | `kanban/hooks/` | 736 | *(documentados na seção 6)* |
+| 20 | `useCandidatesQuery` | `pages/candidates/hooks/` | 232 | Query de candidatos |
+| 21 | `useCandidatesSelection` | `pages/candidates/hooks/` | 121 | Seleção |
+| 22 | `useKanbanState` | `pages/job-kanban/hooks/` | 207 | Estado do kanban |
+| 23 | `useJobsQuery` | `pages/jobs/hooks/` | 206 | Query de vagas |
+| 24 | `use-table-columns` | `tables/hooks/` | 129 | Colunas de tabela |
+| 25 | `use-table-selection` | `tables/hooks/` | 63 | Seleção em tabela |
+| 26 | `use-table-sorting` | `tables/hooks/` | 75 | Ordenação em tabela |
+
+> **Total de hooks:** 93 (raiz) + 27 (componentes) = **120 custom hooks**
+
+---
+
+## 24. Contexts & Providers — 5 contextos
+
+> **Nota:** `auth-context` e `theme-provider` também aparecem na seção 15 (Layout & Navigation) como componentes de UI. Aqui estão documentados como providers de estado global — são os mesmos arquivos, com duplo papel.
+
+| # | Context | Localização | Linhas | Função |
+|---|---------|-------------|--------|--------|
+| 1 | `auth-context` | `src/contexts/auth-context.tsx` | ~100 | Autenticação WorkOS + sessão |
+| 2 | `lia-float-context` | `src/contexts/lia-float-context.tsx` | ~150 | Estado do widget flutuante LIA |
+| 3 | `notification-context` | `components/notifications/notification-context.tsx` | 149 | Notificações globais |
+| 4 | `theme-provider` | `components/theme-provider.tsx` | 16 | Provider de tema (next-themes) |
+| 5 | `ExpandedChatContext` | `components/expanded-chat/ExpandedChatContext.tsx` | 250 | Estado do chat expandido |
+
+> **Nota:** `auth-context.tsx` na raiz de components é um wrapper de 21 linhas que re-exporta do `src/contexts/auth-context.tsx`.
+
+---
+
+## 25. Types, Constants & Config — 3 arquivos de types + 13 arquivos lib
+
+### 25.1 Types (`src/types/`)
+
+| # | Arquivo | Linhas | Conteúdo |
+|---|---------|--------|----------|
+| 1 | `benefits.ts` | 74 | Tipos de benefícios |
+| 2 | `interview-notes.ts` | 225 | Tipos de notas de entrevista |
+| 3 | `wizard-suggestions.ts` | 113 | Tipos de sugestões do wizard |
+
+### 25.2 Lib Utilities (`src/lib/`)
+
+| # | Arquivo | Linhas | Conteúdo |
+|---|---------|--------|----------|
+| 1 | `design-tokens.ts` | 644 | Tokens TypeScript — colors, typography, spacing, shadows, textStyles, cardStyles, buttonStyles, badgeStyles, tabStyles, tailwindToVuetify mapping (512 linhas ativas) |
+| 2 | `recruitment-stages.ts` | 974 | Estágios de recrutamento — definição, cores, transições |
+| 3 | `industry-constants.ts` | 747 | Constantes de indústrias (747 linhas) |
+| 4 | `template-variables.ts` | 393 | Variáveis para templates de email |
+| 5 | `hiring-policy-utils.ts` | 193 | Utilitários de políticas de contratação |
+| 6 | `chat-format.ts` | 122 | Formatação de mensagens de chat |
+| 7 | `theme-colors.ts` | 114 | **6 temas por página (54 cores hardcoded fora do DS)** |
+| 8 | `session-crypto.ts` | 71 | Criptografia de sessão |
+| 9 | `workos.ts` | 39 | Config WorkOS |
+| 10 | `workos-session.ts` | 10 | Sessão WorkOS |
+| 11 | `workos-links.ts` | 32 | Links WorkOS |
+| 12 | `chat-commands.ts` | 14 | Comandos de chat |
+| 13 | `utils.ts` | 6 | Utilitário cn() (classnames) |
+
+> **Alerta:** `theme-colors.ts` define 6 temas de página com 54 cores hardcoded que **não usam tokens do design system**. Ver seção 28.6.
+
+---
+
+## 26. App Routes — 90 page routes + 5 layouts
+
+### 26.1 Layouts (5)
+
+| # | Layout | Caminho |
+|---|--------|---------|
+| 1 | Root Layout | `layout.tsx` |
+| 2 | Admin Layout | `admin/layout.tsx` |
+| 3 | Admin Client Layout | `admin/clientes/[clientId]/layout.tsx` |
+| 4 | Admin Compliance Layout | `admin/compliance/layout.tsx` |
+| 5 | Triagem Layout | `triagem/[token]/layout.tsx` |
+
+### 26.2 Rotas Públicas (12)
+
+| # | Rota | Função |
+|---|------|--------|
+| 1 | `/login` | Login |
+| 2 | `/login/welcome` | Boas-vindas |
+| 3 | `/register` | Registro |
+| 4 | `/forgot-password` | Esqueceu senha |
+| 5 | `/reset-password` | Reset de senha |
+| 6 | `/accept-invitation` | Aceitar convite |
+| 7 | `/aceitar-convite` | Aceitar convite (PT) |
+| 8 | `/access` | Acesso |
+| 9 | `/triagem/[token]` | Triagem pública |
+| 10 | `/shared/[token]` | Compartilhamento |
+| 11 | `/portal/data-request/[token]` | Portal de dados |
+| 12 | `/vagas/[slug]` | Vaga pública |
+
+### 26.3 Rotas Autenticadas — App Principal (13)
+
+| # | Rota | Função |
+|---|------|--------|
+| 1 | `/` (home) | Dashboard principal |
+| 2 | `/chat` | Chat com LIA |
+| 3 | `/jobs` | Lista de vagas |
+| 4 | `/jobs/[id]` | Detalhe da vaga + kanban |
+| 5 | `/funil` | Funil de talentos |
+| 6 | `/funil-de-talentos` | Funil de talentos (v2) |
+| 7 | `/funil-de-talentos/candidato/[id]` | Candidato no funil |
+| 8 | `/tasks` | Tarefas |
+| 9 | `/tasks-mvp` | Tarefas MVP |
+| 10 | `/configuracoes` | Configurações |
+| 11 | `/configuracoes/ai-credits` | Créditos IA |
+| 12 | `/configuracoes/integracoes` | Integrações |
+| 13 | `/ajuda` | Ajuda |
+
+### 26.4 Rotas Admin (56)
+
+Administração de clientes, compliance, monitoramento e configurações globais.
+
+| Grupo | Rotas | Exemplos |
+|-------|-------|---------|
+| Clientes | 22 | `/admin/clientes/[clientId]/setup`, `big-five`, `comunicacoes`, `consumo-ia`, `faturamento`, `integracoes`, `metricas`, `observabilidade`, `testes`, `usuarios`, `workforce`, `conformidade/*` |
+| Compliance | 25 | `/admin/compliance/auditoria/*`, `controles/*`, `guardrails`, `health-check`, `lgpd/*`, `monitoramento/*`, `riscos/*`, `trust-center/*` |
+| Config & Outros | 9 | `/admin/configuracoes/*`, `jornada-recrutamento`, `metricas-plataforma`, `monitoring/agents`, `onboarding-clientes`, `setup-empresa`, `sso`, `templates` |
+
+### 26.5 Rotas Utilitárias (9)
+
+| # | Rota | Função |
+|---|------|--------|
+| 1 | `/privacidade` | Política de privacidade |
+| 2 | `/trust` | Trust center |
+| 3 | `/upgrade` | Upgrade de plano |
+| 4-9 | Auth callbacks | WorkOS SSO, refresh, etc. |
+
+---
+
+## 27. API Routes — 424 endpoints
+
+Todas as rotas de API do Next.js em `src/app/api/`.
+
+| Categoria | Endpoints | Descrição |
+|-----------|-----------|-----------|
+| `backend-proxy/*` | 402 | Proxy para o backend Python (lia-agent-system) |
+| `ai/*` | 9 | Sugestões IA (empresas, skills, universidades, indústrias) |
+| `auth/workos/*` | 4 | Autenticação WorkOS (callback, refresh, session, SSO) |
+| `public-proxy/*` | 4 | Proxy público (shared links, OTP) |
+| `admin/*` | 1 | Dashboard summary admin |
+| `jira` | 1 | Integração Jira |
+| `lia/*` | 1 | Proxy LIA catch-all |
+| `portal/*` | 1 | Portal de data request |
+| `webhooks/workos` | 1 | Webhook WorkOS |
+
+> **Nota:** 95% dos endpoints são `backend-proxy/*` — o frontend Next.js funciona como BFF (Backend for Frontend) fazendo proxy para o `lia-agent-system` Python.
+
+**Principais domínios de API:**
+
+| Domínio | Endpoints | Operações |
+|---------|-----------|-----------|
+| Candidatos | ~25 | CRUD, bulk ops, favorites, hide, search |
+| Vagas (Jobs) | ~20 | CRUD, publish, duplicate, analytics |
+| WSI (Screening) | ~15 | Generate questions, evaluate, F11 report |
+| Billing | ~10 | Subscription, invoices, payment methods |
+| Agent Monitoring | ~12 | Agents, activities, metrics, health |
+| Aprovações | ~6 | CRUD, approve, reject, cancel |
+| Compliance/Audit | ~10 | Logs, retention, export |
+| Calendar | ~4 | Interviews, Google auth, reschedule |
+| Workforce | ~8 | Planning, stats, headcounts |
+| Automações | ~5 | CRUD, triggers |
+
+---
+
+## 28. CSS Infrastructure & Style System
+
+### 28.1 CSS Variables — 242 variáveis em 2 arquivos
+
+**`design-tokens.css` (:root) — 92 variáveis (fonte de verdade):**
+
+| Categoria | Variáveis | Exemplos |
+|-----------|-----------|---------|
+| Backgrounds | 4 | `--lia-bg-primary`, `--lia-bg-secondary`, `--lia-bg-tertiary`, `--lia-bg-hover` |
+| Borders | 3 | `--lia-border-subtle`, `--lia-border-default`, `--lia-border-strong` |
+| Text | 5 | `--lia-text-primary` (#111827), `--lia-text-secondary`, `--lia-text-tertiary`, `--lia-text-disabled`, `--lia-text-inverse` |
+| Interactive | 3 | `--lia-interactive-primary`, `--lia-interactive-hover`, `--lia-interactive-active` |
+| Shadows | 4 | `--lia-shadow-sm`, `--lia-shadow-default`, `--lia-shadow-md`, `--lia-shadow-lg` |
+| Brand WeDo | 4 | `--lia-brand-primary`, `--lia-brand-secondary`, `--lia-brand-accent`, `--lia-brand-light` |
+| WeDo Colors | 18 | `--wedo-cyan` (#60BED1), `--wedo-green`, `--wedo-orange`, `--wedo-purple`, `--wedo-magenta`, etc. |
+| Status | 12 | `--lia-status-success`, `--lia-status-error`, `--lia-status-warning`, `--lia-status-info`, `--lia-cat-*` |
+| Components | 15 | `--lia-card-bg`, `--lia-input-bg`, `--lia-sidebar-bg`, etc. |
+| Typography | 7 | `--font-size-xs` (11px), `--font-size-micro` (10px), `--font-size-sm-ui` (12px), `--font-size-base-ui` (13px), etc. |
+| Gray Scale | 8 | `--lia-gray-50` a `--lia-gray-900` |
+| Chart | 4 | `--lia-chart-1` a `--lia-chart-4` |
+| Text Hierarchy | 8 | `--heading-*`, `--body-*` |
+
+**`globals.css` (@layer base :root) — 150 variáveis adicionais:**
+
+| Categoria | Variáveis | Notas |
+|-----------|-----------|-------|
+| Font vars | 4 | `--font-open-sans`, `--font-inter`, `--font-jetbrains`, `--font-source-serif` |
+| ElevenLabs theme | 15+ | `--eleven-text-*`, `--eleven-surface-*` — sistema paralelo |
+| shadcn/ui vars | 23 | `--background`, `--foreground`, `--card`, `--primary`, etc. |
+| Misc | ~108 | Cores de componentes específicos |
+
+**Dark Mode:** Todas as 92 variáveis de `design-tokens.css` têm overrides em `.dark {}`. Coverage: **100%**.
+
+> **Problema identificado:** Duplicação entre `--lia-text-primary: #111827` (design-tokens.css) e `--eleven-text-primary: #2D2D2D` (globals.css) — dois sistemas concorrentes.
+
+### 28.2 Animações & Keyframes — 29 definições
+
+| Grupo | Keyframes | Status |
+|-------|-----------|--------|
+| Core (usados) | `fade-in`, `slideDown`, `slideUp`, `shimmer` | Ativos |
+| UI transitions | `fadeIn`, `slideIn`, `scaleIn`, `slideInRight`, `slideInUp`, `slideOutUp`, `slideOutLeft`, `fadeOut`, `fadeInUp`, `fadeInDown` | Ativos |
+| Especializado | `dotsPulse`, `slideInFromRight`, `scaleRotateIn`, `scaleInDelayed`, `progressShrink`, `realtimePulse`, `pulse-subtle`, `spin-smooth`, `loading-skeleton` | Ativos |
+| LIA | `searchPulse`, `sonarRing`, `sonarRing2`, `lia-glow-pulse`, `lia-sound-wave`, `lia-speaking-glow-pulse` | Ativos |
+
+> **Nota:** Muitas animações Radix são neutralizadas com `animation: none !important` no CSS. O sistema visual é majoritariamente estático.
+
+### 28.3 Z-Index — 15 valores sem escala semântica
+
+| Valor | Onde usado | Propósito |
+|-------|-----------|----------|
+| `z-0` a `z-30` | Componentes base | Camadas normais |
+| `z-40`, `z-50` | Dropdowns, popovers | Overlays leves |
+| `z-[60]` | Modais secundários | Modais sobre modais |
+| `z-[100]` | Toasts, alertas | Notificações |
+| `z-[200]` | SelectContent em modais | Dropdowns sobre modais |
+| `z-[9998]` | Dialog overlay | Backdrop de dialog |
+| `z-[9999]` | Dialog content, modais críticos | Conteúdo de dialog |
+| `z-[10000]` | Variable selector | Máximo absoluto |
+
+> **Problema:** Escala inflada (0 a 10000) sem naming semântico. Referências de mercado (Linear, Vercel) usam: `z-base`, `z-dropdown`, `z-modal`, `z-toast`, `z-max`.
+
+### 28.4 Classes CSS Customizadas — 200+ classes
+
+**`design-tokens.css` — 58 classes:**
+
+| Grupo | Classes | Exemplos |
+|-------|---------|---------|
+| Backgrounds | 3 | `.lia-bg-primary`, `.lia-bg-secondary`, `.lia-bg-tertiary` |
+| Text | 3 | `.lia-text-primary`, `.lia-text-secondary`, `.lia-text-tertiary` |
+| WeDo Text | 4 | `.wedo-text-title`, `.wedo-text-body`, `.wedo-text-secondary`, `.wedo-text-muted` |
+| Borders | 2 | `.lia-border-subtle`, `.lia-border-default` |
+| Brand | 3 | `.lia-brand-text`, `.lia-brand-bg`, `.lia-brand-border` |
+| Shadows | 4 | `.lia-shadow-sm`, `.lia-shadow`, `.lia-shadow-md`, `.lia-shadow-lg` |
+| Typography | 12 | `.lia-h1` a `.lia-h4`, `.lia-subtitle`, `.lia-body`, `.lia-caption`, `.lia-label`, etc. |
+| Cards | 3 | `.lia-card`, `.lia-card-elevated`, `.lia-card-hover` |
+| Buttons | 3 | `.lia-btn-primary`, `.lia-btn-secondary`, `.lia-btn-ghost` |
+| Badges | 6+ | `.lia-badge`, `.lia-badge-jobs`, `.lia-badge-candidates`, etc. |
+
+**`globals.css` — 142+ classes** (animações, sidebar, scrollbar, ElevenLabs, etc.)
+
+### 28.5 Breakpoints — Uso quantificado
+
+| Breakpoint | Tamanho | Usos | % |
+|-----------|---------|------|---|
+| `sm:` | 640px | 270 | 31% |
+| `md:` | 768px | 328 | 37% (mais usado) |
+| `lg:` | 1024px | 252 | 29% |
+| `xl:` | 1280px | 23 | 3% |
+| `2xl:` | 1536px | 9 | <1% |
+
+> **Insight:** App é desktop-first — 97% dos breakpoints são sm/md/lg. xl/2xl quase não usados.
+
+### 28.6 Sistema de Temas por Página — 6 temas (fora do DS)
+
+`src/lib/theme-colors.ts` define 6 temas com **54 cores hardcoded** que não usam tokens:
+
+| Página | Primary | Accent | Status |
+|--------|---------|--------|--------|
+| Chat com LIA | `#0094c6` | `#00b8d4` | Fora do DS — deveria ser `--wedo-cyan` |
+| Tarefas | `#f0b323` | `#f9a825` | Fora do DS — cor inexistente no DS |
+| Candidatos | `#8bb923` | `#7cb342` | Fora do DS — deveria ser `--wedo-green` |
+| Vagas | `#de1c31` | `#e53935` | Fora do DS — cor inexistente no DS |
+| Indicadores | `#f6a68c` | `#ff8a65` | Fora do DS — cor inexistente no DS |
+| Biblioteca LIA | `#8b5cf6` | `#7c3aed` | Fora do DS — deveria ser `--wedo-purple` |
+
+### 28.7 Sistema de Ícones — 169 ícones Lucide
+
+| Métrica | Valor |
+|---------|-------|
+| Biblioteca | `lucide-react` |
+| Ícones únicos importados | 169 |
+| Arquivos que usam ícones | 485 |
+| Ícone LIA dedicado | Sim (`lia-icon.tsx` — componente customizado) |
+
+> Não existe catálogo visual ou mapa de quais ícones representam quais conceitos.
+
+### 28.8 Tipografia — Uso quantificado completo
+
+**Tamanhos:**
+
+| Tamanho | Token | Pixels | Usos |
+|---------|-------|--------|------|
+| `text-xs` | `--font-size-xs` | 11px | 7.066 (dominante) |
+| `text-sm` | Tailwind default | 14px | 3.339 |
+| `text-micro` | `--font-size-micro` | 10px | 2.058 |
+| `text-base` | Tailwind default | 16px | 440 |
+| `text-lg` | Tailwind default | 18px | 465 |
+| `text-2xl` | Tailwind default | 24px | 380 |
+| `text-xl` | Tailwind default | 20px | 187 |
+| `text-base-ui` | `--font-size-base-ui` | 13px | 178 |
+| `text-3xl` | Tailwind default | 30px | 48 |
+| `text-sm-ui` | `--font-size-sm-ui` | 12px | 18 |
+| `text-4xl` | Tailwind default | 36px | 10 |
+
+> **Fase 1 concluída:** Zero valores arbitrários `text-[*px]` restam no código.
+
+**Fontes:**
+
+| Família | Arquivos | Papel | % |
+|---------|----------|-------|---|
+| Open Sans | 177 | Principal | 85% |
+| JetBrains Mono | 51 | Monospace/código | 5% |
+| Inter | 15 | Dados/números | 10% |
+| Source Serif | 4 | Legacy (removendo) | <1% |
+| Crimson | 3 | Legacy (removendo) | <1% |
+
+**Pesos:**
+
+| Peso | Classe | Usos |
+|------|--------|------|
+| 500 | `font-medium` | 3.939 (dominante) |
+| 600 | `font-semibold` | 1.785 |
+| 700 | `font-bold` | 758 |
+| 400 | `font-normal` | 66 |
+| 300 | `font-light` | 5 |
+
+### 28.9 Dark Mode — Cobertura
+
+| Métrica | Valor |
+|---------|-------|
+| Total de classes `dark:` | 16.058 usos |
+| Classes únicas com `dark:` | 205 |
+| Design tokens com override `.dark` | 92 (100% cobertura) |
+
+### 28.10 Gradientes — 52 ocorrências
+
+Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-*`. Poucas exceções com `linear-gradient()` inline.
+
+### 28.11 CSS Modulares — 4 arquivos, 2.663 linhas
+
+| Arquivo | Linhas | Escopo |
+|---------|--------|--------|
+| `src/styles/design-tokens.css` | 820 | Global — tokens, classes, dark mode |
+| `src/app/globals.css` | 1477 | Global — base, animações, components |
+| `src/styles/onboarding-styles.css` | 264 | Isolado — onboarding wizard |
+| `src/styles/chat-page.css` | 102 | Isolado — página de chat |
+
+### 28.12 Testes de Componentes
+
+| Arquivo | Linhas | O que testa |
+|---------|--------|-------------|
+| `__tests__/fairness-warning-banner.test.tsx` | 40 | Banner de fairness |
+| `__tests__/lia-score-card.test.tsx` | 53 | Scorecard LIA |
+| `__tests__/ml-insights-card.test.tsx` | 139 | Card de insights ML |
+| `lia-float/LiaChatPanel-p2c.test.tsx` | 227 | Painel de chat flutuante |
+| `kanban/utils/__tests__/stage-utils.test.ts` | 223 | Utilitários de estágios |
+
+> **Cobertura de testes:** 5 arquivos de teste para 556 componentes — **<1% de cobertura**.
+
+---
+
+## Resumo Expandido — Inventário 100%
+
+| Dimensão | Quantidade | Status |
+|----------|-----------|--------|
+| Componentes documentados (seções 1-22) | 556 | 100% coberto |
+| Custom hooks | 120 | 100% coberto |
+| Contexts & providers | 5 | 100% coberto |
+| Types & config files | 17 | 100% coberto |
+| Lib utilities | 13 | 100% coberto |
+| Page routes | 90 | 100% coberto |
+| API endpoints | 424 | 100% coberto |
+| CSS variables | 242 | 100% coberto |
+| Keyframe animations | 29 | 100% coberto |
+| Custom CSS classes | 200+ | 100% coberto |
+| Ícones catalogados | 169 | 100% coberto |
+| Breakpoints quantificados | 5 | 100% coberto |
+| Dark mode coverage | 16.058 usos | 100% coberto |
+| Tipografia quantificada | 11 tamanhos | 100% coberto |
+| Temas por página | 6 | 100% coberto |
+
+---
+
+## 29. Análise de Potencial de Otimização
 
 > Dados extraídos automaticamente do codebase em 2026-03-27.
 > Nenhuma das otimizações abaixo altera o visual do produto — são refatorações internas.
 
-### 17.1 Cores Hardcoded — 298 cores hex em 1.607 linhas
+### 29.1 Cores Hardcoded — 298 cores hex em 1.607 linhas
 
 O maior problema de padronização. Cores são escritas diretamente nos componentes em vez de usar tokens do `design-tokens.css` ou classes Tailwind. Isso significa que uma mudança de cor no design system **não se propaga** automaticamente.
 
@@ -522,7 +1357,7 @@ O maior problema de padronização. Cores são escritas diretamente nos componen
 | 19 | `ui/candidate-queries-guide.tsx` | 27 | Guia de queries candidatos |
 | 20 | `agent-control-center/index.tsx` | 27 | Painel de agentes |
 
-### 17.2 Valores Arbitrários Tailwind — 4.765 ocorrências
+### 29.2 Valores Arbitrários Tailwind — 4.765 ocorrências
 
 Valores como `text-[11px]`, `w-[300px]`, `h-[42px]` escritos diretamente em vez de usar classes do design system. Impossibilita mudança global de tamanhos.
 
@@ -574,7 +1409,7 @@ Valores como `text-[11px]`, `w-[300px]`, `h-[42px]` escritos diretamente em vez 
 | `h-[80px]` | 5 | `h-20` (80px — equivalente exato) |
 | `h-[56px]` | 5 | `h-14` (56px — equivalente exato) |
 
-### 17.3 Componentes Gigantes — 37 arquivos > 1.000 linhas = 118.037 linhas
+### 29.3 Componentes Gigantes — 37 arquivos > 1.000 linhas = 118.037 linhas
 
 Representam **94% de todo o código** de componentes. Cada um mistura lógica de negócio, state management, UI, e estilo. Dificulta testes, manutenção e conversão para Vue.
 
@@ -618,7 +1453,7 @@ Representam **94% de todo o código** de componentes. Cada um mistura lógica de
 | 36 | `settings/GoalsPlanningHub` | 1.050 | Settings | → PlanGrid, GoalCard (~2 sub) |
 | 37 | `settings/CompanyDataSection` | 1.036 | Settings | → DataForm, DataCards (~2 sub) |
 
-### 17.4 Código Morto — ~7.000 linhas em 8 arquivos
+### 29.4 Código Morto — ~7.000 linhas em 8 arquivos
 
 Componentes em pastas `archived/` ou `_archived/` que não são referenciados por nenhuma rota ativa.
 
@@ -639,7 +1474,7 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 - `ui/sedPT8vmF` — arquivo espúrio com nome aleatório. Deletar.
 - `ui/badge.stories.tsx`, `ui/button.stories.tsx`, `ui/card.stories.tsx`, `ui/dialog.stories.tsx`, `ui/input.stories.tsx`, `ui/select.stories.tsx` — 6 story files, Storybook instalado mas sem uso ativo. Avaliar se vale manter.
 
-### 17.5 Duplicação de Badges e Status — 7 componentes similares
+### 29.5 Duplicação de Badges e Status — 7 componentes similares
 
 | # | Componente | Linhas | Função | Problema |
 |---|-----------|--------|--------|---------|
@@ -656,7 +1491,7 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 2. `status-badge.tsx` — refatorar para usar tokens e badge.tsx como base
 3. `indicator.tsx` — estados temporários (chat, loading)
 
-### 17.6 Modais/Dialogs — 154 arquivos
+### 29.6 Modais/Dialogs — 154 arquivos
 
 154 componentes importam ou implementam Modal, Dialog, Drawer ou Sheet. Muitos reimplementam o mesmo padrão:
 - Overlay com fundo escuro
@@ -666,7 +1501,7 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 
 **Recomendação:** Criar padrão composable `FormDialog` que receba um schema de campos e gere o formulário automaticamente. Reduziria boilerplate em ~50% dos modais.
 
-### 17.7 Inline Styles — 249 arquivos
+### 29.7 Inline Styles — 249 arquivos
 
 249 dos 465 arquivos (54%) usam `style={}` inline. Problemas:
 - Não responde a dark mode via classes CSS
@@ -676,7 +1511,7 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 
 **Recomendação:** Converter gradualmente para classes Tailwind. Priorizar os componentes que aparecem em dark mode.
 
-### 17.8 Resumo Quantitativo
+### 29.8 Resumo Quantitativo
 
 | Problema | Escopo | Impacto na manutenção | Impacto na conversão Vue |
 |----------|--------|----------------------|------------------------|
@@ -690,7 +1525,7 @@ Componentes em pastas `archived/` ou `_archived/` que não são referenciados po
 
 ---
 
-## 18. Plano de Otimização em 6 Fases
+## 30. Plano de Otimização em 6 Fases
 
 > Ordenado por: menor risco primeiro, maior impacto na conversão Vue.
 > Nenhuma fase altera o visual do produto. Todas são refatorações internas.
@@ -1364,7 +2199,7 @@ extend: {
 
 ---
 
-## 19. Impacto na Conversão para Vue/Vuetify
+## 31. Impacto na Conversão para Vue/Vuetify
 
 Após completar as Fases 0-3 (~2 semanas), o benefício para conversão Vue é substancial:
 
@@ -1382,7 +2217,7 @@ Após completar as Fases 0-3 (~2 semanas), o benefício para conversão Vue é s
 
 ---
 
-## 20. Tabela-Resumo do Plano
+## 32. Tabela-Resumo do Plano
 
 | Fase | O que faz | Resultado | Impacto visual | Risco | Esforço | Benefício Vue |
 |------|----------|-----------|---------------|-------|---------|--------------|

@@ -7995,7 +7995,7 @@ Qual prefere?`,
                         "border border-gray-200/50 dark:border-gray-700/50",
                         "max-w-[80%]"
                       )}>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-wedo-green flex-shrink-0" />
                         <span 
                           className="text-micro text-gray-600 dark:text-gray-400"
                           style={{ fontFamily: '"Inter", sans-serif' }}
@@ -8304,8 +8304,8 @@ Qual prefere?`,
                           </div>
                           <div className={cn(
                             "rounded-md border-l-4 p-2.5 mb-1",
-                            message.proactiveData.severity === 'urgent' ? "border-l-red-500 bg-red-500/5" :
-                            message.proactiveData.severity === 'warning' ? "border-l-amber-500 bg-amber-500/5" :
+                            message.proactiveData.severity === 'urgent' ? "border-l-status-error bg-status-error/5" :
+                            message.proactiveData.severity === 'warning' ? "border-l-status-warning bg-status-warning/5" :
                             "border-l-chat-cyan bg-chat-cyan/5"
                           )}>
                             <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{message.content}</p>
@@ -8351,13 +8351,10 @@ Qual prefere?`,
                         className={cn(
                           "px-3 py-2 rounded-md text-xs transition-all duration-300",
                           message.processingState === 'completed'
-                            ? "bg-green-50 text-green-800"
+                            ? "bg-gray-100 text-gray-800"
                             : "bg-gray-50 text-gray-500"
                         )}
-                        style={{ 
-                          fontFamily: '"Open Sans", sans-serif',
-                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                        }}
+                        style={{ fontFamily: '"Open Sans", sans-serif' }}
                       >
                         <div className="flex items-center gap-2">
                           {message.processingState !== 'completed' && (
@@ -8921,20 +8918,17 @@ Qual prefere?`,
                             key={item.key}
                             className={cn(
                               "flex items-center gap-2.5 py-2 px-3 rounded-md transition-all duration-300",
-                              isDetected 
-                                ? "bg-teal-50" 
+                              isDetected
+                                ? "bg-gray-50"
                                 : "bg-white",
                               isItemHighlighted && "field-highlight field-pulse"
                             )}
-                            style={{ 
-                              boxShadow: isDetected ? '0 1px 3px rgba(34,197,94,0.12)' : '0 1px 2px rgba(0,0,0,0.04)'
-                            }}
                           >
                             <div 
                               className={cn(
                                 "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300",
-                                isDetected 
-                                  ? "bg-green-500" 
+                                isDetected
+                                  ? "bg-wedo-green"
                                   : "border border-gray-300"
                               )}
                             >
@@ -9325,7 +9319,7 @@ Qual prefere?`,
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                        <MessageCircle className="w-3.5 h-3.5 text-gray-500" />
                         <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Triagem WSI
                         </span>
@@ -9346,7 +9340,7 @@ Qual prefere?`,
                   <div className="p-3 bg-white border border-gray-200 rounded-md">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-3.5 h-3.5 text-[#0A66C2]" />
+                        <FileText className="w-3.5 h-3.5 text-gray-500" />
                         <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Descrição do Anúncio
                         </span>
@@ -9384,16 +9378,16 @@ Qual prefere?`,
                   </div>
 
                   {/* Ready to proceed */}
-                  <div className="p-3 bg-green-50 rounded-md border border-green-500/20">
+                  <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center">
-                        <Globe className="w-4 h-4 text-green-500" />
+                      <div className="w-8 h-8 bg-wedo-green/10 rounded-full flex items-center justify-center">
+                        <Globe className="w-4 h-4 text-wedo-green" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Pronto para escolher plataformas!
                         </h4>
-                        <p className="text-micro text-green-800/70">
+                        <p className="text-micro text-gray-500">
                           Clique em "Escolher Plataformas" para definir onde publicar
                         </p>
                       </div>
@@ -9406,9 +9400,9 @@ Qual prefere?`,
               {currentStage === 'review-publish' && publishedJobId === null && (
                 <div className="space-y-2.5">
                   {/* Header */}
-                  <div className="p-3 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-green-500/10 rounded-md border border-gray-300 dark:border-gray-600">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                         <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                       </div>
                       <div>
@@ -9465,7 +9459,7 @@ Qual prefere?`,
                           <div className="flex items-center gap-2">
                             <div className={cn(
                               "w-6 h-6 rounded flex items-center justify-center border border-gray-200",
-                              platform.id === 'linkedin' ? "bg-[#0A66C2]" : "bg-[#2557A7]"
+                              "bg-gray-800"
                             )}>
                               {platform.id === 'linkedin' ? (
                                 <span className="text-white text-micro font-bold">in</span>
@@ -9543,9 +9537,9 @@ Qual prefere?`,
                                 className={cn(
                                   "w-6 h-6 rounded text-xs font-medium transition-all",
                                   jobConfig.urgencyLevel === level
-                                    ? level <= 2 ? "bg-green-500 text-white" 
-                                      : level === 3 ? "bg-yellow-500 text-white"
-                                      : "bg-red-500 text-white"
+                                    ? level <= 2 ? "bg-wedo-green text-white"
+                                      : level === 3 ? "bg-status-warning text-white"
+                                      : "bg-status-error text-white"
                                     : "bg-gray-50 text-gray-500 hover:bg-gray-200"
                                 )}
                               >
@@ -9766,7 +9760,7 @@ Qual prefere?`,
                                 const newLanguages = jobConfig.languages.filter((_, i) => i !== idx)
                                 updateLanguages(newLanguages)
                               }}
-                              className="w-5 h-5 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                              className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-status-error hover:bg-status-error/10 rounded transition-colors"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -9785,16 +9779,16 @@ Qual prefere?`,
                   </div>
 
                   {/* Summary */}
-                  <div className="p-3 bg-green-50 rounded-md border border-green-500/20">
+                  <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center">
-                        <Rocket className="w-4 h-4 text-green-500" />
+                      <div className="w-8 h-8 bg-wedo-green/10 rounded-full flex items-center justify-center">
+                        <Rocket className="w-4 h-4 text-wedo-green" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           {publishingPlatforms.filter(p => p.enabled).length} plataforma(s) selecionada(s)
                         </h4>
-                        <p className="text-micro text-green-800/70">
+                        <p className="text-micro text-gray-500">
                           Clique em "Publicar Vaga" para ativar o recrutamento
                         </p>
                       </div>
@@ -9807,16 +9801,16 @@ Qual prefere?`,
               {currentStage === 'search-calibration' && searchPhase !== 'local-complete' && calibrationCandidates.length === 0 && (
                 <div className="space-y-2.5">
                   {/* Published Job Card */}
-                  <div className="p-3 bg-green-500/10 rounded-md">
+                  <div className="p-3 bg-wedo-green/10 rounded-md border border-wedo-green/20">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
-                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      <div className="w-8 h-8 bg-wedo-green/20 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-wedo-green" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Vaga Publicada!
                         </h4>
-                        <p className="text-micro text-green-800/70">
+                        <p className="text-micro text-gray-500">
                           {publishedJobId || 'JOB-XXXXX'} • {basicInfoFields.cargo}
                         </p>
                       </div>
@@ -9867,11 +9861,11 @@ Qual prefere?`,
                         </p>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between p-2 bg-green-50 rounded-md">
+                      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md border border-gray-200">
                         <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          <CheckCircle2 className="w-4 h-4 text-wedo-green" />
                           <span className="text-xs text-gray-800">
-                            <span className="font-semibold text-green-500">{localCandidateCount}</span> candidatos encontrados
+                            <span className="font-semibold text-wedo-green">{localCandidateCount}</span> candidatos encontrados
                           </span>
                         </div>
                         <span className="text-micro text-gray-400">Base interna</span>
@@ -9957,7 +9951,7 @@ Qual prefere?`,
 
                   {/* Search Analysis */}
                   {searchPhase === 'global-complete' && (
-                    <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-green-500/5 rounded-md border border-gray-900 dark:border-gray-50/10">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
                       <div className="flex items-center gap-2 mb-2">
                         <Brain className="w-3.5 h-3.5 text-chat-cyan" />
                         <span className="text-xs font-medium text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
@@ -9971,7 +9965,7 @@ Qual prefere?`,
                         </div>
                         <div className="flex items-center justify-between text-micro">
                           <span className="text-gray-500">Base interna:</span>
-                          <span className="font-medium text-green-500">{localCandidateCount}</span>
+                          <span className="font-medium text-wedo-green">{localCandidateCount}</span>
                         </div>
                         {globalSearchAuthorized && globalCandidateCount > 0 && (
                           <div className="flex items-center justify-between text-micro">
@@ -9994,16 +9988,16 @@ Qual prefere?`,
 
                   {/* Advance to Calibration Button */}
                   {searchPhase === 'global-complete' && (
-                    <div className="p-3 bg-green-50 rounded-md border border-green-500/20">
+                    <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center">
-                          <Target className="w-4 h-4 text-green-500" />
+                        <div className="w-8 h-8 bg-wedo-green/10 rounded-full flex items-center justify-center">
+                          <Target className="w-4 h-4 text-wedo-green" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-xs font-medium text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Próximo passo: Calibração
                           </h4>
-                          <p className="text-micro text-green-800/70">
+                          <p className="text-micro text-gray-500">
                             Vou apresentar 3 candidatos para você avaliar e calibrar minha assertividade
                           </p>
                         </div>
@@ -10012,7 +10006,7 @@ Qual prefere?`,
                         onClick={() => {
                           setShowCalibrationModal(true)
                         }}
-                        className="w-full py-2 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-2 bg-gray-900 text-white text-xs font-medium rounded-md hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                       >
                         <Users className="w-4 h-4" />
                         Iniciar Calibração de Candidatos
@@ -10047,13 +10041,13 @@ Qual prefere?`,
                     <div className="p-4 bg-gray-50 rounded-md border border-status-warning/30">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-status-warning/20 rounded-full flex items-center justify-center flex-shrink-0">
-                          <AlertTriangle className="w-4 h-4 text-amber-600" />
+                          <AlertTriangle className="w-4 h-4 text-status-warning" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-xs font-medium text-amber-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          <h4 className="text-xs font-medium text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                             Nenhum candidato encontrado
                           </h4>
-                          <p className="text-micro text-amber-800/80 mt-1">
+                          <p className="text-micro text-gray-600 mt-1">
                             Não encontrei candidatos na base que correspondam aos critérios. Você pode tentar novamente ou prosseguir diretamente para a busca ativa.
                           </p>
                           <div className="flex gap-2 mt-3">
@@ -10062,7 +10056,7 @@ Qual prefere?`,
                                 setHasAttemptedCalibrationGeneration(false)
                                 generateCalibrationCandidates()
                               }}
-                              className="flex-1 py-2 bg-white text-amber-600 text-xs font-medium rounded-md border border-status-warning/40 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
+                              className="flex-1 py-2 bg-white text-gray-800 text-xs font-medium rounded-md border border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
                             >
                               <RefreshCw className="w-3.5 h-3.5" />
                               Tentar Novamente
@@ -10071,7 +10065,7 @@ Qual prefere?`,
                               onClick={() => {
                                 setCalibrationComplete(true)
                               }}
-                              className="flex-1 py-2 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700 transition-colors flex items-center justify-center gap-1.5"
+                              className="flex-1 py-2 bg-gray-900 text-white text-xs font-medium rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5"
                             >
                               <ChevronRight className="w-3.5 h-3.5" />
                               Prosseguir Mesmo Assim
@@ -10085,7 +10079,7 @@ Qual prefere?`,
                   {/* Calibration Info Card - only show when candidates exist */}
                   {!isLoadingCalibration && calibrationCandidates.length > 0 && (
                     <>
-                      <div className="p-3 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-green-500/10 rounded-md border border-gray-300 dark:border-gray-600">
+                      <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                             <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -10134,16 +10128,16 @@ Qual prefere?`,
               {currentStage === 'search-calibration' && calibrationComplete && (
                 <div className="space-y-2.5">
                   {/* Success Header */}
-                  <div className="p-3 bg-gradient-to-r from-green-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-green-500/20">
+                  <div className="p-3 bg-wedo-green/10 rounded-md border border-wedo-green/20">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-wedo-green flex items-center justify-center">
                         <CheckCircle2 className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xs font-semibold text-green-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        <h3 className="text-xs font-semibold text-gray-900" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                           Perfeito! Vaga Configurada com Sucesso
                         </h3>
-                        <p className="text-micro text-green-800/70">
+                        <p className="text-micro text-gray-500">
                           A partir de agora os candidatos serão automaticamente adicionados na vaga.
                         </p>
                       </div>
@@ -10173,8 +10167,8 @@ Qual prefere?`,
                         </p>
                       </li>
                       <li className="flex items-start gap-2">
-                        <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Users className="w-3 h-3 text-green-500" />
+                        <div className="w-5 h-5 rounded-full bg-wedo-green/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Users className="w-3 h-3 text-wedo-green" />
                         </div>
                         <p className="text-xs text-gray-800 leading-relaxed">
                           <strong>Candidatos inscritos</strong> via website serão automaticamente triados por mim e você será notificado via <strong>Teams</strong>
@@ -10197,8 +10191,8 @@ Qual prefere?`,
                         </p>
                       </li>
                       <li className="flex items-start gap-2">
-                        <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Clock className="w-3 h-3 text-red-500" />
+                        <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Clock className="w-3 h-3 text-gray-600 dark:text-gray-400" />
                         </div>
                         <p className="text-xs text-gray-800 leading-relaxed">
                           <strong>SLAs de resposta</strong> serão monitorados para cada etapa do processo seletivo
@@ -10279,7 +10273,7 @@ Qual prefere?`,
                   )}
                 </div>
               ) : currentStage === 'search-calibration' && calibrationComplete ? (
-                <div className="text-center text-micro text-green-500 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                <div className="text-center text-micro text-wedo-green font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                   Calibração concluída! Candidatos sendo adicionados ao kanban...
                 </div>
               ) : currentStage === 'input-evaluation' ? (
@@ -10312,7 +10306,7 @@ Qual prefere?`,
                       "flex-1 h-9 rounded-md text-xs font-semibold transition-all",
                       currentStageIndex === 0 ? "w-full" : "",
                       currentStage === 'review-publish'
-                        ? "bg-green-500 text-white"
+                        ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900"
                         : canAdvanceToNextStage()
                           ? "bg-gray-900 text-white"
                           : "bg-gray-200 text-gray-400"
@@ -10530,8 +10524,8 @@ Qual prefere?`,
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-2xl w-[400px] p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 bg-status-warning/10 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-status-warning" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
@@ -10570,8 +10564,8 @@ Qual prefere?`,
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-2xl w-[400px] p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="w-5 h-5 text-red-600" />
+              <div className="w-10 h-10 bg-status-error/10 rounded-full flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-status-error" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
@@ -10595,7 +10589,7 @@ Qual prefere?`,
               </Button>
               <Button
                 onClick={handleClearDraftAndReset}
-                className="flex-1 h-10 rounded-md bg-red-500 text-white"
+                className="flex-1 h-10 rounded-md bg-status-error text-white"
               >
                 <Trash2 className="w-4 h-4 mr-1.5" />
                 Limpar tudo
@@ -10610,7 +10604,7 @@ Qual prefere?`,
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-2xl w-[500px] max-h-[80vh] flex flex-col">
             <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-200">
-              <div className="w-10 h-10 bg-gradient-to-br from-gray-100 dark:from-gray-800 to-[#4A9BAB] rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-wedo-cyan/20 rounded-full flex items-center justify-center">
                 <Brain className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -10771,7 +10765,7 @@ Qual prefere?`,
                               {candidate.name}
                             </h2>
                             {candidate.linkedinUrl && (
-                              <a href={candidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-[#0A66C2] hover:opacity-80">
+                              <a href={candidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                               </a>
                             )}
@@ -10814,18 +10808,18 @@ Qual prefere?`,
                       {candidateProfileTab === 'experience' && (
                         <div className="space-y-4">
                           {/* Highlights */}
-                          <div className="p-3 bg-amber-50 rounded-md border border-amber-200">
+                          <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
                             <h4 className="text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: '"Open Sans", sans-serif' }}>
                               Highlights <span className="text-gray-500 font-normal">Show more ({candidate.highlights.length})</span>
                             </h4>
                             <div className="flex flex-wrap gap-3">
                               {candidate.highlights.map((highlight, idx) => (
-                                <div key={idx} className="flex items-center gap-2 px-2 py-1.5 bg-white rounded-md border border-amber-200">
+                                <div key={idx} className="flex items-center gap-2 px-2 py-1.5 bg-white rounded-md border border-gray-200">
                                   <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center">
                                     {highlight.icon === 'trophy' && <Star className="w-3.5 h-3.5 text-status-warning" />}
                                     {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />}
                                     {highlight.icon === 'building' && <Building2 className="w-3.5 h-3.5 text-violet-500" />}
-                                    {highlight.icon === 'rocket' && <Rocket className="w-3.5 h-3.5 text-green-500" />}
+                                    {highlight.icon === 'rocket' && <Rocket className="w-3.5 h-3.5 text-wedo-green" />}
                                     {highlight.icon === 'globe' && <MapPin className="w-3.5 h-3.5 text-pink-500" />}
                                   </div>
                                   <div>
@@ -10974,13 +10968,13 @@ Qual prefere?`,
 
                 {/* LIA Insights Box - Scrollable with max height */}
                 <div className="shrink-0 px-4 max-h-[180px] overflow-y-auto">
-                  <div className="p-3 bg-white rounded-md border border-amber-400/30 space-y-3">
+                  <div className="p-3 bg-white rounded-md border border-gray-200 space-y-3">
                     {calibrationCandidates[currentCalibrationIndex]?.matchCriteria.map((match) => (
                       <div key={match.id} className="space-y-1">
                         <div className="flex items-start gap-2">
                           <div className={cn(
                             "px-1.5 py-0.5 rounded-full text-micro font-medium",
-                            match.isMatch ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                            match.isMatch ? "bg-wedo-green/10 text-wedo-green" : "bg-status-error/10 text-status-error"
                           )}>
                             {match.isMatch ? '✓ Match' : '✗ No Match'}
                           </div>
@@ -11056,7 +11050,7 @@ Qual prefere?`,
                   <div className="flex gap-2">
                     <button
                       onClick={handleApproveCandidate}
-                      className="flex-1 py-2.5 px-3 bg-green-500 text-white rounded-md font-medium text-xs hover:bg-green-600 transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 px-3 bg-gray-900 text-white rounded-md font-medium text-xs hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Aprovar
@@ -11064,7 +11058,7 @@ Qual prefere?`,
                     </button>
                     <button
                       onClick={handleRejectCandidate}
-                      className="flex-1 py-2.5 px-3 bg-white text-red-500 border border-red-500 rounded-md font-medium text-xs hover:bg-red-500/5 transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2.5 px-3 bg-white text-status-error border border-status-error rounded-md font-medium text-xs hover:bg-status-error/5 transition-colors flex items-center justify-center gap-1.5"
                     >
                       <X className="w-3.5 h-3.5" />
                       Reprovar
@@ -11086,7 +11080,7 @@ Qual prefere?`,
                           className={cn(
                             "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
                             approvedCandidates.length > i
-                              ? "bg-green-500 text-white"
+                              ? "bg-wedo-green text-white"
                               : "bg-gray-200 text-gray-500"
                           )}
                         >
@@ -11140,7 +11134,7 @@ Qual prefere?`,
                   </span>
                   <button
                     onClick={() => removeCalibrationCriterion(criterion.id)}
-                    className="p-1.5 rounded-md text-gray-300 hover:text-red-500 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-1.5 rounded-md text-gray-300 hover:text-status-error hover:bg-status-error/10 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <X className="w-4 h-4" />
                   </button>
