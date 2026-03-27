@@ -47,7 +47,7 @@ function ScoreCircle({ score }: { score: number }) {
   const circumference = normalizedRadius * 2 * Math.PI
   const offset = circumference - (score / 100) * circumference
 
-  const scoreColor = "text-cyan-500"
+  const scoreColor = "text-wedo-cyan"
 
   return (
     <div className="relative flex items-center justify-center w-[60px] h-[60px]">
@@ -71,7 +71,7 @@ function ScoreCircle({ score }: { score: number }) {
           r={normalizedRadius}
           cx={radius}
           cy={radius}
-          className="text-cyan-500 transition-all duration-700 ease-out"
+          className="text-wedo-cyan transition-all duration-700 ease-out"
         />
       </svg>
       <span className={cn("absolute font-['Inter',sans-serif] text-sm font-semibold tabular-nums", scoreColor)}>
@@ -82,7 +82,7 @@ function ScoreCircle({ score }: { score: number }) {
 }
 
 function CompletenessBar({ score }: { score: number }) {
-  const barColor = "bg-cyan-500"
+  const barColor = "bg-wedo-cyan"
 
   return (
     <div className="flex items-center gap-2 flex-1">
@@ -103,7 +103,7 @@ function CompletenessBar({ score }: { score: number }) {
 const sectionStatusConfig = {
   good: {
     icon: CheckCircle2,
-    iconColor: "text-cyan-500",
+    iconColor: "text-wedo-cyan",
     textColor: "text-gray-700 dark:text-gray-300",
     bg: "bg-gray-50 dark:bg-gray-800/50",
     border: "border-gray-200 dark:border-gray-700",
@@ -128,7 +128,7 @@ const sectionStatusConfig = {
 }
 
 const marketStatusColor = {
-  above: "text-cyan-600 dark:text-cyan-400",
+  above: "text-wedo-cyan-dark dark:text-wedo-cyan",
   aligned: "text-gray-600 dark:text-gray-400",
   below: "text-gray-900 dark:text-gray-100 font-semibold",
 }
@@ -138,7 +138,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
 
   return (
     <div className={cn(
-      "rounded-md border border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-transparent dark:from-cyan-500/10 p-4 mt-3",
+      "rounded-md border border-wedo-cyan/30 bg-gradient-to-br from-cyan-500/5 to-transparent dark:from-cyan-500/10 p-4 mt-3",
       className
     )}>
       <div className="flex items-start gap-3">
@@ -156,7 +156,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
 
       {!expanded && data.recommendations.length > 0 && (
         <div className="mt-3 flex items-start gap-2">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0 mt-0.5" />
+          <Sparkles className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0 mt-0.5" />
           <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 font-['Open_Sans',sans-serif]">
             {data.recommendations[0]}
           </p>
@@ -223,7 +223,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           {data.marketComparisons && data.marketComparisons.length > 0 && (
             <div className="rounded bg-white/60 dark:bg-gray-800/40 p-3">
               <div className="flex items-center gap-1.5 mb-2">
-                <BarChart3 className="w-3.5 h-3.5 text-cyan-500" />
+                <BarChart3 className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">
                   Comparativo de Mercado
                 </span>
@@ -254,7 +254,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           {data.timeToFillEstimate && (
             <div className="rounded bg-white/60 dark:bg-gray-800/40 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <Clock className="w-3.5 h-3.5 text-cyan-500" />
+                <Clock className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">
                   Tempo estimado para preenchimento
                 </span>
@@ -279,7 +279,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
 
           <div className="rounded bg-white/60 dark:bg-gray-800/40 p-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
+              <Sparkles className="w-3.5 h-3.5 text-wedo-cyan" />
               <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">
                 Recomendações
               </span>

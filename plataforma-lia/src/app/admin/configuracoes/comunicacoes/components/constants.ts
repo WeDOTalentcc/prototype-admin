@@ -13,7 +13,7 @@ export const categoryLabels: Record<string, { label: string, color: string }> = 
   rejection: { label: 'Rejeição', color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' },
   scheduling: { label: 'Agendamento', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
   followup: { label: 'Follow-up', color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' },
-  feedback: { label: 'Feedback', color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/20 dark:text-cyan-400' },
+  feedback: { label: 'Feedback', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan-dark/20 dark:text-wedo-cyan' },
   system: { label: 'Sistema', color: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' }
 }
 
@@ -59,7 +59,7 @@ export const channelConfig: Record<string, { label: string, color: string, activ
   whatsapp: { label: 'WhatsApp', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
   bell: { label: 'Bell', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' },
   teams: { label: 'Teams', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
-  chat: { label: 'Chat', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400' },
+  chat: { label: 'Chat', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-wedo-cyan/20 text-wedo-cyan-dark dark:bg-wedo-cyan-dark/30 dark:text-wedo-cyan' },
   log: { label: 'Log', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' },
   briefing: { label: 'Briefing', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400' },
   parecer: { label: 'Parecer', color: 'bg-gray-100 text-gray-500', activeColor: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' }

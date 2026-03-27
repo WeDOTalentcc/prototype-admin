@@ -323,7 +323,7 @@ export function ReviewPublishStage({
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'ats').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-cyan-50 transition-colors">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-white rounded flex items-center justify-center border border-gray-200">
                       <Building2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
@@ -355,7 +355,7 @@ export function ReviewPublishStage({
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'jobboard').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-cyan-50 transition-colors">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className={cn(
                       "w-6 h-6 rounded flex items-center justify-center border border-gray-200",
@@ -394,7 +394,7 @@ export function ReviewPublishStage({
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'website').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-cyan-50 transition-colors">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center border border-gray-300 dark:border-gray-600">
                       <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
@@ -521,7 +521,7 @@ export function ReviewPublishStage({
 
                 {/* Affirmative Criteria Selection */}
                 {jobConfig.isAffirmative && (
-                  <div className="mt-2 p-2 bg-cyan-50 rounded-md border border-gray-300 dark:border-gray-600 space-y-2">
+                  <div className="mt-2 p-2 bg-wedo-cyan/10 rounded-md border border-gray-300 dark:border-gray-600 space-y-2">
                     <div>
                       <label className="text-micro font-medium text-gray-800 block mb-1">
                         Critério Principal *

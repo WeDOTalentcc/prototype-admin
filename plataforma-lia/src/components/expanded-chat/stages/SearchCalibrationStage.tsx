@@ -145,7 +145,7 @@ export function SearchCalibrationStage({
 
           {/* Global Search Prompt */}
           {(searchPhase as string) === 'local-complete' && !globalSearchAuthorized && (
-            <div className="p-3 bg-cyan-50 rounded-md border border-gray-300 dark:border-gray-600">
+            <div className="p-3 bg-wedo-cyan/10 rounded-md border border-gray-300 dark:border-gray-600">
               <div className="flex items-start gap-2">
                 <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -207,7 +207,7 @@ export function SearchCalibrationStage({
                   Busca Global (Pearch AI)
                 </span>
               </div>
-              <div className="flex items-center justify-between p-2 bg-cyan-50 rounded-md">
+              <div className="flex items-center justify-between p-2 bg-wedo-cyan/10 rounded-md">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   <span className="text-xs text-gray-800">

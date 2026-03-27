@@ -6058,7 +6058,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                       )}
                                       <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg flex-shrink-0">
                                         {stage.liaAssisted && (
-                                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
+                                          <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                                         )}
                                         <span className="text-micro font-medium text-gray-700">{stage.stageName}</span>
                                       </div>

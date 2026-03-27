@@ -1037,7 +1037,16 @@
       "Bash(grep -n \"#[0-9a-fA-F]\\\\{6,8\\\\}\" /home/runner/workspace/plataforma-lia/src/components/pages/tasks-page.tsx)",
       "Bash(grep -rn \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/ --include=\"*.tsx\" --exclude-dir=\".next\")",
       "Bash(grep -rn \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/ --include=\"*.tsx\")",
-      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/activity-feed.tsx)"
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/activity-feed.tsx)",
+      "Bash(grep -n '#[0-9a-fA-F]\\\\{3,6\\\\}' /home/runner/workspace/plataforma-lia/src/components/modals/job-insights-modal.tsx /home/runner/workspace/plataforma-lia/src/components/email-templates/email-templates-manager.tsx)",
+      "Bash(sed -i 's|bg-wedo-cyan/20 text-wedo-cyan-dark|bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300|g' /home/runner/workspace/plataforma-lia/src/components/pages/candidates-page.tsx)",
+      "Bash(sed -i 's|hover:bg-wedo-cyan/20|hover:bg-gray-100|g' /home/runner/workspace/plataforma-lia/src/components/pages/candidates-page.tsx)",
+      "Bash(awk '/Modal: Add Behavioral/{start=NR} /Modal: Add Benefit/{if\\(start\\){print \"\"AddCompetencyModal:\"\", NR-start; start=0}}' plataforma-lia/src/components/expanded-chat-modal.tsx)",
+      "Bash(awk '/Modal: Add Benefit/{start=NR} /Modal: Skip/{if\\(start\\){print \"\"AddBenefitModal:\"\", NR-start; start=0}}' plataforma-lia/src/components/expanded-chat-modal.tsx)",
+      "Bash(awk '/Input Area - Fixo/{start=NR} /Botão para reabrir/{if\\(start\\){print \"\"InputArea:\"\", NR-start; start=0}}' plataforma-lia/src/components/expanded-chat-modal.tsx)",
+      "Bash(awk '/Messages Area/{start=NR} /Input Area/{if\\(start\\){print \"\"MessagesArea:\"\", NR-start; start=0}}' plataforma-lia/src/components/expanded-chat-modal.tsx)",
+      "Bash(head -10 grep -n \"AddSkillModal\\\\|AddCompetencyModal\\\\|AddBenefitModal\\\\|SkipCompetencies\" plataforma-lia/src/components/expanded-chat-modal.tsx)",
+      "Bash(head -5 grep -rn \"interface CalibrationCandidate\\\\|type CalibrationCandidate\" plataforma-lia/src --include=\"*.ts\" --include=\"*.tsx\")"
     ]
   }
 }

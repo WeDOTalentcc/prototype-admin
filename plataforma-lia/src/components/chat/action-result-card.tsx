@@ -52,7 +52,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
 
   const Icon = config.icon
   const colorMap: Record<string, string> = {
-    cyan: "border-cyan-500/30 bg-cyan-500/5",
+    cyan: "border-wedo-cyan/30 bg-wedo-cyan/5",
     emerald: "border-emerald-500/30 bg-emerald-500/5",
     violet: "border-violet-500/30 bg-violet-500/5",
     amber: "border-amber-500/30 bg-amber-500/5",
@@ -60,7 +60,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
     red: "border-red-500/30 bg-red-500/5",
   }
   const iconColorMap: Record<string, string> = {
-    cyan: "text-cyan-400",
+    cyan: "text-wedo-cyan",
     emerald: "text-emerald-400",
     violet: "text-violet-400",
     amber: "text-amber-400",
@@ -68,7 +68,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
     red: "text-red-400",
   }
   const badgeColorMap: Record<string, string> = {
-    cyan: "bg-cyan-500/20 text-cyan-300",
+    cyan: "bg-wedo-cyan/20 text-wedo-cyan",
     emerald: "bg-emerald-500/20 text-emerald-300",
     violet: "bg-violet-500/20 text-violet-300",
     amber: "bg-amber-500/20 text-amber-300",

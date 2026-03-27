@@ -262,7 +262,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                 )}
                 <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg flex-shrink-0">
                   {(stage as any).liaAssisted && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                   )}
                   <span className="text-micro font-medium text-gray-700">{stage.name}</span>
                   <Badge className="text-micro px-1 py-0 h-3.5 bg-gray-100 text-gray-600">
@@ -283,7 +283,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                   )}
                   <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg flex-shrink-0">
                     {stage.liaAssisted && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                     )}
                     <span className="text-micro font-medium text-gray-700">{stage.stageName}</span>
                   </div>

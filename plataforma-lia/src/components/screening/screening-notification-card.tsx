@@ -55,7 +55,7 @@ export function ScreeningNotificationCard({
     >
       <div className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="p-1.5 rounded bg-cyan-50 dark:bg-cyan-900/20">
+          <div className="p-1.5 rounded bg-wedo-cyan/10 dark:bg-wedo-cyan-dark/20">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
@@ -146,7 +146,7 @@ export function ScreeningNotificationCard({
         <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 rounded-b-md">
           <button
             onClick={onViewDetails}
-            className="flex items-center gap-1.5 text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan transition-colors"
           >
             Ver Detalhes
             <ChevronRight className="w-3.5 h-3.5" />

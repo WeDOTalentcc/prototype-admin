@@ -22,20 +22,20 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
 
   const confidenceColor = (conf?: "high" | "medium" | "low") => {
     switch (conf) {
-      case "high": return "text-cyan-500 dark:text-cyan-400"
+      case "high": return "text-wedo-cyan dark:text-wedo-cyan"
       case "medium": return "text-gray-500 dark:text-gray-400"
       case "low": return "text-gray-400 dark:text-gray-500"
-      default: return "text-cyan-500 dark:text-cyan-400"
+      default: return "text-wedo-cyan dark:text-wedo-cyan"
     }
   }
 
   return (
     <div className={cn(
-      "rounded-md border border-cyan-500/20 bg-cyan-500/5 dark:bg-cyan-500/10 p-4 mt-3",
+      "rounded-md border border-wedo-cyan/20 bg-wedo-cyan/5 dark:bg-wedo-cyan/10 p-4 mt-3",
       className
     )}>
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-4 h-4 text-cyan-500" />
+        <Sparkles className="w-4 h-4 text-wedo-cyan" />
         <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
           {title}
         </span>

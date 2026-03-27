@@ -39,7 +39,7 @@ export const QUESTION_CATEGORIES: Record<QuestionCategory, { label: string; icon
   availability: { label: 'Disponibilidade e Mobilidade', icon: '✈️', color: 'bg-green-100 text-green-700' },
   education: { label: 'Formação e Certificações', icon: '🎓', color: 'bg-purple-100 text-purple-700' },
   experience: { label: 'Experiência Específica', icon: '💼', color: 'bg-orange-100 text-orange-700' },
-  languages: { label: 'Idiomas', icon: '🌍', color: 'bg-cyan-100 text-cyan-700' },
+  languages: { label: 'Idiomas', icon: '🌍', color: 'bg-wedo-cyan/20 text-wedo-cyan-dark' },
   compensation: { label: 'Remuneração e Contrato', icon: '💰', color: 'bg-yellow-100 text-yellow-700' },
   work_model: { label: 'Modelo de Trabalho', icon: '🏠', color: 'bg-indigo-100 text-indigo-700' },
   compliance: { label: 'Compliance e Conflito de Interesses', icon: '⚠️', color: 'bg-red-100 text-red-700' },

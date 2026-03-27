@@ -127,7 +127,7 @@ function formatDateValue(value: any): string {
 function ScreeningBadge() {
   return (
     <span className="inline-flex items-center gap-0.5 ml-1.5 group/screening relative" title="Usado na triagem automática da LIA">
-      <Filter className="w-3 h-3 text-cyan-500 dark:text-cyan-400" />
+      <Filter className="w-3 h-3 text-wedo-cyan dark:text-wedo-cyan" />
       <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 text-micro font-['Open_Sans',sans-serif] text-white bg-gray-900 dark:bg-gray-700 rounded-lg whitespace-nowrap opacity-0 group-hover/screening:opacity-100 transition-opacity pointer-events-none z-50">
         Usado na triagem da LIA
       </span>
@@ -734,7 +734,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                         <label className={labelClass}>
                           Modelo de Trabalho<ScreeningBadge />
                           {companyDefaults?.workModel && !jobEditForm.workModel && (
-                            <span className="ml-1.5 text-micro text-cyan-600 dark:text-cyan-400 font-normal">(padrão: {companyDefaults.workModel})</span>
+                            <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal">(padrão: {companyDefaults.workModel})</span>
                           )}
                         </label>
                         <select
@@ -753,7 +753,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                         <label className={labelClass}>
                           Tipo de Contrato<ScreeningBadge />
                           {companyDefaults?.employmentTypes && companyDefaults.employmentTypes.length > 0 && !jobEditForm.type && (
-                            <span className="ml-1.5 text-micro text-cyan-600 dark:text-cyan-400 font-normal">(padrão: {companyDefaults.employmentTypes[0]})</span>
+                            <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal">(padrão: {companyDefaults.employmentTypes[0]})</span>
                           )}
                         </label>
                         {(() => {
@@ -882,7 +882,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                 <h3 className={groupHeaderClass}>
                   Idiomas<ScreeningBadge />
                   {companyDefaults?.defaultLanguages && companyDefaults.defaultLanguages.length > 0 && (
-                    <span className="ml-1.5 text-micro text-cyan-600 dark:text-cyan-400 font-normal normal-case tracking-normal">
+                    <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal normal-case tracking-normal">
                       (padrão empresa: {companyDefaults.defaultLanguages.join(', ')})
                     </span>
                   )}
@@ -1643,7 +1643,7 @@ export function JobEditTab({ jobEditForm, setJobEditForm, onSaveSection, savingS
                           <label className={labelClass}>
                             Benefícios da Vaga
                             {companyBenefitNames.length > 0 && (
-                              <span className="ml-1.5 text-micro text-cyan-600 dark:text-cyan-400 font-normal">
+                              <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal">
                                 ({companyBenefitNames.length} cadastrados na empresa)
                               </span>
                             )}

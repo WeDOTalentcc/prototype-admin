@@ -17,7 +17,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
       )}
     >
       <div className="flex-shrink-0">
-        <LIAIcon size="sm" className="bg-cyan-50 dark:bg-cyan-900/20" />
+        <LIAIcon size="sm" className="bg-wedo-cyan/10 dark:bg-wedo-cyan-dark/20" />
       </div>
 
       <div className="flex items-center gap-3 rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3">
@@ -25,7 +25,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="w-2 h-2 rounded-full bg-cyan-500 dark:bg-cyan-400"
+              className="w-2 h-2 rounded-full bg-wedo-cyan dark:bg-wedo-cyan"
               style={{
                 animation: "typingDot 1.4s ease-in-out infinite",
                 animationDelay: `${i * 0.2}s`,

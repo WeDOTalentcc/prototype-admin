@@ -155,14 +155,14 @@ export function AgentExplainabilityPanel({
     >
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-gray-900 px-4 py-3 transition-colors hover:bg-gray-900/80">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-cyan-400" />
+          <Sparkles className="h-4 w-4 text-wedo-cyan" />
           <span className="text-sm font-medium text-zinc-200 font-[Inter]">
             Raciocínio da LIA
           </span>
           {summary && !loading && (
             <Badge
               variant="outline"
-              className="ml-2 border-cyan-400/30 text-cyan-400 text-micro px-1.5 py-0"
+              className="ml-2 border-wedo-cyan/30 text-wedo-cyan text-micro px-1.5 py-0"
             >
               {summary.total_steps} passos
             </Badge>
@@ -180,7 +180,7 @@ export function AgentExplainabilityPanel({
         <div className="border-t border-zinc-700/50 bg-gray-900 px-4 py-3">
           {loading && (
             <div className="flex items-center justify-center gap-2 py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-wedo-cyan" />
               <span className="text-sm text-zinc-400">
                 Carregando raciocínio...
               </span>
@@ -216,7 +216,7 @@ export function AgentExplainabilityPanel({
                         className={cn(
                           "flex h-6 w-6 items-center justify-center rounded-full text-micro font-bold",
                           isLast
-                            ? "bg-cyan-400 text-zinc-900"
+                            ? "bg-wedo-cyan text-zinc-900"
                             : "bg-zinc-600 text-zinc-300"
                         )}
                       >
@@ -285,7 +285,7 @@ export function AgentExplainabilityPanel({
           {!loading && !error && summary && (
             <div className="mt-4 grid grid-cols-2 gap-2 rounded bg-gray-900 p-3 sm:grid-cols-4">
               <div className="flex flex-col items-center gap-1">
-                <BarChart3 className="h-4 w-4 text-cyan-400" />
+                <BarChart3 className="h-4 w-4 text-wedo-cyan" />
                 <span className="text-micro text-zinc-500 font-[Inter]">
                   Passos
                 </span>
@@ -316,7 +316,7 @@ export function AgentExplainabilityPanel({
                 <span className="text-micro text-zinc-500 font-[Inter]">
                   Confiança
                 </span>
-                <span className="text-sm font-semibold text-cyan-400">
+                <span className="text-sm font-semibold text-wedo-cyan">
                   {Math.round(summary.confidence * 100)}%
                 </span>
               </div>
