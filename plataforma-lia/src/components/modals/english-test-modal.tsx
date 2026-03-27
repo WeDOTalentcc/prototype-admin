@@ -44,7 +44,7 @@ const LEVEL_CONFIG: Record<string, { label: string; description: string; color: 
   'A1': { label: 'A1 - Iniciante', description: 'Nível básico inicial', color: 'var(--status-error)' },
   'A2': { label: 'A2 - Básico', description: 'Nível básico', color: 'var(--status-warning)' },
   'B1': { label: 'B1 - Intermediário', description: 'Nível intermediário', color: 'var(--status-warning)' },
-  'B2': { label: 'B2 - Intermediário Superior', description: 'Nível intermediário avançado', color: '#3B82F6' },
+  'B2': { label: 'B2 - Intermediário Superior', description: 'Nível intermediário avançado', color: 'var(--gray-600)' },
   'C1': { label: 'C1 - Avançado', description: 'Nível avançado', color: 'var(--status-success)' },
   'C2': { label: 'C2 - Proficiente', description: 'Nível de proficiência nativa', color: 'var(--status-success)' },
 }
@@ -72,7 +72,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'var(--status-success)'
-    if (score >= 60) return '#3B82F6'
+    if (score >= 60) return 'var(--gray-600)'
     if (score >= 40) return 'var(--status-warning)'
     return 'var(--status-error)'
   }
@@ -106,7 +106,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: 'rgba(59, 130, 246, 0.12)' }}
             >
-              <Globe className="w-4 h-4" style={{ color: '#3B82F6' }} />
+              <Globe className="w-4 h-4" style={{ color: 'var(--gray-600)' }} />
             </div>
             <div>
               <h2 

@@ -853,8 +853,8 @@ export function NewCandidateUnifiedModal({
       {activeTab === 'linkedin' && (
         <div className="space-y-4">
           <div className="text-center py-2">
-            <div className="w-12 h-12 rounded-full bg-[#0A66C2]/10 flex items-center justify-center mx-auto mb-3">
-              <Linkedin className="w-6 h-6 text-[#0A66C2]" />
+            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+              <Linkedin className="w-6 h-6 text-gray-600" />
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400">
               Cole a URL do perfil do LinkedIn do candidato
@@ -885,7 +885,7 @@ export function NewCandidateUnifiedModal({
           <Button
             onClick={handleSubmitLinkedin}
             disabled={!canSubmitLinkedin || isProcessing}
-            className="w-full h-9 text-xs bg-[#0A66C2] hover:bg-[#004182] text-white"
+            className="w-full h-9 text-xs bg-gray-900 hover:bg-gray-950 text-white"
           >
             {isProcessing ? (
               <>
