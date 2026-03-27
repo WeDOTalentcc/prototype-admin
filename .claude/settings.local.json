@@ -1024,7 +1024,10 @@
       "Bash(grep -n \"#[A-Fa-f0-9]\\\\{3,6\\\\}\" /home/runner/workspace/plataforma-lia/src/components/kanban/components/CandidateTableRow.tsx)",
       "Bash(grep -rl \"''#3B82F6''\" /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")",
       "Bash(grep -rl \"''#E16162''\\\\|''#60D186''\\\\|''#E85A5A''\" /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")",
-      "Bash(echo \"=== Arbitrary Tailwind [#hex] \\(non-exempt\\) ===\" grep -roh 'text-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]\\\\|bg-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]\\\\|border-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]' /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")"
+      "Bash(echo \"=== Arbitrary Tailwind [#hex] \\(non-exempt\\) ===\" grep -roh 'text-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]\\\\|bg-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]\\\\|border-\\\\[#[0-9a-fA-F]\\\\{3,6\\\\}\\\\]' /home/runner/workspace/plataforma-lia/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(git -C /home/runner/workspace/plataforma-lia diff --stat)",
+      "Bash(git -C /home/runner/workspace/plataforma-lia status --short)",
+      "Bash(git:*)"
     ]
   }
 }
