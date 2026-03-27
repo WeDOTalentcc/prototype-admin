@@ -38,7 +38,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       name: 'Abertura à Experiência',
       shortName: 'Abertura',
       icon: Lightbulb,
-      color: '#DC143C', // Vermelho vibrante
+      color: 'var(--status-error)', // Vermelho vibrante
       colorName: 'red-600',
       bgColor: 'bg-red-50',
       barColor: 'bg-red-500',
@@ -271,27 +271,27 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
             <div className="flex flex-wrap gap-1">
               <span className="text-xs text-gray-500 dark:text-gray-400">Fit:</span>
               {scores.conscientiousness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#B8E6D3', color: 'var(--status-success)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--status-success)' }}>
                   Gestão
                 </Badge>
               )}
               {scores.openness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#F8B4B4', color: '#DC143C' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--status-error)' }}>
                   Inovação
                 </Badge>
               )}
               {scores.extraversion > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#FFD700', color: 'var(--status-warning)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--status-warning)' }}>
                   Liderança
                 </Badge>
               )}
               {scores.agreeableness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#D8BFD8', color: 'var(--wedo-purple)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--wedo-purple)' }}>
                   Atendimento
                 </Badge>
               )}
               {scores.neuroticism < 30 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: '#87CEEB', color: 'var(--gray-600)' }}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{ borderColor: 'var(--gray-200)', color: 'var(--gray-600)' }}>
                   Alta Pressão
                 </Badge>
               )}

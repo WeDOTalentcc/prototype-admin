@@ -5052,7 +5052,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                             key={index}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 transition-all duration-200 hover:scale-105 text-gray-950 dark:text-gray-50 border border-gray-200" style={{ backgroundColor: '#F0F9FA' }}
+                            className="text-xs h-7 px-3 transition-all duration-200 hover:scale-105 text-gray-950 dark:text-gray-50 border border-gray-200" style={{ backgroundColor: 'var(--gray-50)' }}
                           >
                             {suggestion}
                           </Button>
@@ -5255,7 +5255,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ backgroundColor: '#F8FBFC', color: 'var(--eleven-text-primary)' }}
+                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200" style={{ backgroundColor: 'var(--gray-50)', color: 'var(--eleven-text-primary)' }}
                       rows={1}
                     />
                   </div>

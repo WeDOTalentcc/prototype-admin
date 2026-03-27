@@ -1619,7 +1619,7 @@ export function CandidatePreview({
                     className={`p-1 rounded transition-colors ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-blue-50' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.linkedin || candidate.linkedin_url) && e.preventDefault()}
                   >
-                    <Linkedin className="w-3.5 h-3.5" style={{ color: (candidate.linkedin || candidate.linkedin_url) ? '#0A66C2' : 'var(--gray-400)' }} />
+                    <Linkedin className="w-3.5 h-3.5" style={{ color: (candidate.linkedin || candidate.linkedin_url) ? 'var(--gray-600)' : 'var(--gray-400)' }} />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>
@@ -1634,7 +1634,7 @@ export function CandidatePreview({
                     className={`p-1 rounded transition-colors ${(candidate.github || candidate.github_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.github || candidate.github_url) && e.preventDefault()}
                   >
-                    <svg className="w-3.5 h-3.5" fill={(candidate.github || candidate.github_url) ? '#181717' : 'var(--gray-400)'} viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill={(candidate.github || candidate.github_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
                       <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                     </svg>
                   </a>
@@ -1651,7 +1651,7 @@ export function CandidatePreview({
                     className={`p-1 rounded transition-colors ${(candidate.stackoverflow || candidate.stackoverflow_url) ? 'hover:bg-orange-50' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.stackoverflow || candidate.stackoverflow_url) && e.preventDefault()}
                   >
-                    <svg className="w-3.5 h-3.5" fill={(candidate.stackoverflow || candidate.stackoverflow_url) ? '#F48024' : 'var(--gray-400)'} viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill={(candidate.stackoverflow || candidate.stackoverflow_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
                       <path d="M15 21h-10v-2h10v2zm6-11.665l-1.621-9.335-1.993.346 1.62 9.335 1.994-.346zm-5.964 6.937l-9.746-.975-.186 2.016 9.755.879.177-1.92zm.538-2.587l-9.276-2.608-.526 1.954 9.306 2.5.496-1.846zm1.204-2.413l-8.297-4.864-1.029 1.743 8.298 4.865 1.028-1.744zm1.866-1.467l-5.339-7.829-1.672 1.14 5.339 7.829 1.672-1.14zm-2.644 4.195v8h-12v-8h-2v10h16v-10h-2z"/>
                     </svg>
                   </a>
@@ -1668,7 +1668,7 @@ export function CandidatePreview({
                     className={`p-1 rounded transition-colors ${(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.twitter || candidate.twitter_url || candidate.x_url) && e.preventDefault()}
                   >
-                    <svg className="w-3.5 h-3.5" fill={(candidate.twitter || candidate.twitter_url || candidate.x_url) ? '#000000' : 'var(--gray-400)'} viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill={(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>
                   </a>
@@ -1685,7 +1685,7 @@ export function CandidatePreview({
                     className={`p-1 rounded transition-colors ${(candidate.behance || candidate.behance_url) ? 'hover:bg-blue-50' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.behance || candidate.behance_url) && e.preventDefault()}
                   >
-                    <svg className="w-3.5 h-3.5" fill={(candidate.behance || candidate.behance_url) ? '#1769FF' : 'var(--gray-400)'} viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill={(candidate.behance || candidate.behance_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
                       <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14h-8.027c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zm-9.574 6.988h-6.466v-14.967h6.953c5.476.081 5.58 5.444 2.72 6.906 3.461 1.26 3.577 8.061-3.207 8.061zm-3.466-8.988h3.584c2.508 0 2.906-3-.312-3h-3.272v3zm3.391 3h-3.391v3.016h3.341c3.055 0 2.868-3.016.05-3.016z"/>
                     </svg>
                   </a>
@@ -2001,7 +2001,7 @@ export function CandidatePreview({
                     {expertiseList.length > 0 && (
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <Linkedin className="w-3 h-3" style={{ color: '#0A66C2' }} />
+                          <Linkedin className="w-3 h-3" className="text-gray-600" />
                           <span className={`${textStyles.label} text-gray-700 dark:text-gray-300`}>Expertise LinkedIn</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -2150,7 +2150,7 @@ export function CandidatePreview({
                 <Card className="border-gray-100 dark:border-gray-700">
                   <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
                     <div className="flex items-center gap-1.5">
-                      <Linkedin className="w-3.5 h-3.5" style={{ color: '#0A66C2' }} />
+                      <Linkedin className="w-3.5 h-3.5" className="text-gray-600" />
                       <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
                         Perfil LinkedIn
                       </CardTitle>
