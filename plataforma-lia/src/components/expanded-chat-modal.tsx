@@ -79,7 +79,7 @@ import { FastTrackReviewPanel } from './job-wizard/FastTrackReviewPanel'
 import { useWizardAnalytics } from './expanded-chat/hooks/useWizardAnalytics'
 import { useContextSwitching, type WizardSnapshot, type GeneralChatSnapshot } from './expanded-chat/hooks/useContextSwitching'
 import { WizardHeader, WSIQualityBar, ToolConfirmationMessage, ToolExecutionFeedback, ChatMessageList } from './expanded-chat/components'
-import { SalaryStage, CompetenciesStage, WSIQuestionsStage, EnrichedJDStage, SearchCalibrationStage, SearchCalibrationNavButtons, ReviewPublishStage, type EnrichedJDData } from './expanded-chat/stages'
+import { SalaryStage, CompetenciesStage, WSIQuestionsStage, EnrichedJDStage, SearchCalibrationStage, SearchCalibrationNavButtons, ReviewPublishStage, InputEvaluationStage, type EnrichedJDData } from './expanded-chat/stages'
 import {
   parseCommand,
   isLocalCommand,
@@ -8193,121 +8193,25 @@ Qual prefere?`,
               
               {/* Stage 1: Input Evaluation - Proactive Analysis */}
               {currentStage === 'input-evaluation' && (
-                <>
-                  {/* Banner when using company config */}
-                  {configLoaded && hasConfigData && (
-                    <div className="mb-3 px-3 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md flex items-center gap-2">
-                      <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                      <span className="text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                        Usando dados das Configurações da sua empresa
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Seção: Critérios Detectados */}
-                  <div className="mb-4">
-                    <h4 className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                      Critérios Detectados
-                    </h4>
-                    <div className="space-y-2">
-                      {detectedCriteriaItems.map((item) => {
-                        const isDetected = getCriteriaStatus(item.value)
-                        const displayValue = Array.isArray(item.value) 
-                          ? item.value.join(', ')
-                          : item.value
-                        
-                        // Check if this field is highlighted (recently updated via chat)
-                        const isItemHighlighted = isHighlighted(item.key) || 
-                          (item.key === 'cargo' && isHighlighted('cargo')) ||
-                          (item.key === 'departamento' && (isHighlighted('departamento') || isHighlighted('department'))) ||
-                          (item.key === 'localizacao' && (isHighlighted('localizacao') || isHighlighted('location'))) ||
-                          (item.key === 'senioridade' && (isHighlighted('senioridade') || isHighlighted('seniority'))) ||
-                          (item.key === 'modeloTrabalho' && isHighlighted('modeloTrabalho')) ||
-                          (item.key === 'gestor' && (isHighlighted('gestor') || isHighlighted('manager')))
-
-                        return (
-                          <div
-                            key={item.key}
-                            className={cn(
-                              "flex items-center gap-2.5 py-2 px-3 rounded-md transition-all duration-300",
-                              isDetected
-                                ? "bg-gray-50"
-                                : "bg-white",
-                              isItemHighlighted && "field-highlight field-pulse"
-                            )}
-                          >
-                            <div 
-                              className={cn(
-                                "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300",
-                                isDetected
-                                  ? "bg-wedo-green"
-                                  : "border border-gray-300"
-                              )}
-                            >
-                              {isDetected && (
-                                <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p 
-                                className="text-xs font-medium text-gray-800 transition-colors duration-300"
-                                style={{ fontFamily: '"Open Sans", sans-serif' }}
-                              >
-                                {item.label}
-                              </p>
-                              {isDetected && displayValue && (
-                                <p className="text-micro mt-0.5 truncate text-gray-600 dark:text-gray-400 font-medium" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                                  {displayValue}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Progress Summary - Card flutuante */}
-                  <div className="mt-3 p-2.5 rounded-md bg-white">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-micro text-gray-600" style={{ fontFamily: '"Open Sans", sans-serif' }}>Detectando critérios...</span>
-                      <span className="text-micro font-semibold text-gray-900 dark:text-gray-50" style={{ fontFamily: '"Open Sans", sans-serif' }}>
-                        {criteriaItems.filter(item => getCriteriaStatus(item.value)).length} / {criteriaItems.length}
-                      </span>
-                    </div>
-                    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full rounded-full transition-all duration-500 bg-gray-900 dark:bg-gray-50"
-                        style={{ 
-                          width: `${(criteriaItems.filter(item => getCriteriaStatus(item.value)).length / criteriaItems.length) * 100}%`
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Fast Track Suggestions - quando há vagas similares */}
-                  {(fastTrack.hasSuggestions || fastTrack.isLoading) && (
-                    <div className="mt-4">
-                      <FastTrackSuggestions
-                        suggestions={fastTrack.suggestions}
-                        selectedJob={fastTrack.selectedJob}
-                        isLoading={fastTrack.isLoading}
-                        onSelectJob={(job) => {
-                          fastTrack.selectJob(job)
-                        }}
-                        onDismiss={() => {
-                          // Analytics: Track rejection when user dismisses Fast Track suggestions
-                          if (fastTrackSuggestionsShownTracked) {
-                            analytics.trackSuggestion('fast_track_rejected', false)
-                          }
-                          fastTrack.clearSuggestions()
-                          setAwaitingFastTrackSelection(false)
-                        }}
-                      />
-                    </div>
-                  )}
-
-                </>
+                <InputEvaluationStage
+                  configLoaded={configLoaded}
+                  hasConfigData={!!hasConfigData}
+                  criteriaItems={criteriaItems}
+                  isHighlighted={isHighlighted}
+                  hasFastTrackSuggestions={fastTrack.hasSuggestions}
+                  fastTrackIsLoading={fastTrack.isLoading}
+                  fastTrackSuggestions={fastTrack.suggestions}
+                  fastTrackSelectedJob={fastTrack.selectedJob}
+                  fastTrackSuggestionsShownTracked={fastTrackSuggestionsShownTracked}
+                  onFastTrackSelectJob={(job) => fastTrack.selectJob(job)}
+                  onFastTrackDismiss={() => {
+                    if (fastTrackSuggestionsShownTracked) {
+                      analytics.trackSuggestion('fast_track_rejected', false)
+                    }
+                    fastTrack.clearSuggestions()
+                    setAwaitingFastTrackSelection(false)
+                  }}
+                />
               )}
 
               {/* Stage: JD Enrichment - AI-powered suggestions */}

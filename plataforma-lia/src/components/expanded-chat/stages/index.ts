@@ -24,6 +24,9 @@ export { SearchCalibrationStage, SearchCalibrationNavButtons } from './SearchCal
 export { ReviewPublishStage } from './ReviewPublishStage'
 export type { ReviewPublishStageProps } from './ReviewPublishStage'
 
+export { InputEvaluationStage } from './InputEvaluationStage'
+export type { InputEvaluationStageProps } from './InputEvaluationStage'
+
 export { EnrichedJDStage } from './EnrichedJDStage'
 export type {
   EnrichedJDStageProps,
