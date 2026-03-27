@@ -3169,7 +3169,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                                     <div 
                                       className="h-6 rounded flex items-center justify-center transition-all hover:ring-2 hover:scale-105" 
                                       style={{ 
-                                        backgroundColor: '#D5BFA8',
+                                        backgroundColor: 'var(--gray-300)',
                                         width: `${getCardWidth(liaTriages.agendadas)}px`,
                                         minWidth: '24px'
                                       }}>
@@ -3259,9 +3259,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           }
                           const screeningColors: Record<string, string> = {
                             not_configured: 'var(--gray-200)',
-                            not_started: '#E8E4E0',
+                            not_started: 'var(--gray-100)',
                             active: 'var(--status-success)',
-                            paused: '#D5BFA8',
+                            paused: 'var(--gray-300)',
                             completed: 'var(--gray-400)',
                           }
                           return (
@@ -5176,9 +5176,9 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                             }
                             const scrColors: Record<string, string> = {
                               not_configured: 'var(--gray-200)',
-                              not_started: '#E8E4E0',
+                              not_started: 'var(--gray-100)',
                               active: 'var(--status-success)',
-                              paused: '#D5BFA8',
+                              paused: 'var(--gray-300)',
                               completed: 'var(--gray-400)',
                             }
                             return (

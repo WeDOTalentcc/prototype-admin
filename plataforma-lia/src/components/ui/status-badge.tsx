@@ -215,8 +215,8 @@ const variantStyles: Record<BadgeVariant, {
   },
   dark: {
     bg: 'var(--gray-950)',
-    text: '#FFFFFF',
-    icon: '#FFFFFF',
+    text: 'white',
+    icon: 'white',
     fontWeight: '700',
     darkBg: 'var(--gray-50)',
     darkText: 'var(--gray-950)',
@@ -255,7 +255,7 @@ const variantStyles: Record<BadgeVariant, {
   },
   scheduled: {
     bg: 'var(--gray-800)',
-    text: '#FFFFFF',
+    text: 'white',
     icon: 'var(--wedo-cyan)',   // ícone de calendário: único uso cyan não-LIA justificado
     border: 'var(--gray-600)', // (scheduled = ação pendente de alta relevância)
     fontWeight: '600',
@@ -265,7 +265,7 @@ const variantStyles: Record<BadgeVariant, {
   },
   hired: {
     bg: 'var(--gray-950)',
-    text: '#FFFFFF',
+    text: 'white',
     icon: 'var(--status-success)',   // Trophy verde = único indicador de contratação
     fontWeight: '700',
     darkBg: 'var(--gray-50)',

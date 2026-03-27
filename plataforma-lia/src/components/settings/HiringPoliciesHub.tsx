@@ -223,7 +223,7 @@ export function HiringPoliciesHub() {
       <div className="flex gap-4 flex-1 min-h-0">
         <div
           className="w-[60%] flex flex-col bg-white dark:bg-gray-900 rounded-md overflow-hidden"
-          style={{ border: '1px solid #E4EBEF' }}
+          style={{ border: '1px solid var(--gray-200)' }}
         >
           <div
             className="flex-shrink-0 px-4 py-3"
@@ -312,7 +312,7 @@ export function HiringPoliciesHub() {
               <Card
                 key={block.key}
                 className="bg-white dark:bg-gray-800 overflow-hidden rounded-md"
-                style={{ border: '1px solid #E4EBEF' }}
+                style={{ border: '1px solid var(--gray-200)' }}
               >
                 <button
                   onClick={() => toggleBlock(block.key)}
@@ -345,7 +345,7 @@ export function HiringPoliciesHub() {
                 </button>
 
                 {isExpanded && blockData && (
-                  <CardContent className="px-4 py-3" style={{ borderTop: '1px solid #E4EBEF' }}>
+                  <CardContent className="px-4 py-3" style={{ borderTop: '1px solid var(--gray-200)' }}>
                     <div className="space-y-1">
                       {block.fields.map((field) => {
                         const value = blockData[field]
@@ -397,7 +397,7 @@ export function HiringPoliciesHub() {
                 )}
 
                 {isExpanded && !blockData && (
-                  <CardContent className="px-4 py-3" style={{ borderTop: '1px solid #E4EBEF' }}>
+                  <CardContent className="px-4 py-3" style={{ borderTop: '1px solid var(--gray-200)' }}>
                     <p className={textStyles.description}>Nenhum dado configurado ainda.</p>
                   </CardContent>
                 )}

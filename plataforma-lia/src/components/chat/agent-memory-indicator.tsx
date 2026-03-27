@@ -140,7 +140,7 @@ export function AgentMemoryIndicator({
                 width: `${pct}%`,
                 height: "100%",
                 borderRadius: 2,
-                backgroundColor: "#06B6D4",
+                backgroundColor: "var(--wedo-cyan)",
                 transition: "width 0.3s ease",
               }}
             />
@@ -185,8 +185,8 @@ export function AgentMemoryIndicator({
                 marginTop: 4,
                 padding: "12px 14px",
                 borderRadius: 6,
-                border: "1px solid var(--eleven-border-subtle, #e5e7eb)",
-                backgroundColor: "var(--eleven-bg-card, #f9fafb)",
+                border: "1px solid var(--eleven-border-subtle, var(--gray-200))",
+                backgroundColor: "var(--eleven-bg-card, var(--gray-50))",
                 maxHeight: 280,
                 overflowY: "auto",
                 fontFamily: "Inter, sans-serif",
@@ -312,7 +312,7 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className="border border-gray-200" style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 4, backgroundColor: confirmReset ? "var(--gray-100)" : "transparent", color: confirmReset ? "var(--gray-600)" : "var(--gray-400)", borderColor: confirmReset ? "#06B6D4" : "var(--gray-200)", fontSize: 11, fontFamily: "Inter, sans-serif", cursor: "pointer", transition: "all 0.15s" }}
+                className="border border-gray-200" style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 4, backgroundColor: confirmReset ? "var(--gray-100)" : "transparent", color: confirmReset ? "var(--gray-600)" : "var(--gray-400)", borderColor: confirmReset ? "var(--wedo-cyan)" : "var(--gray-200)", fontSize: 11, fontFamily: "Inter, sans-serif", cursor: "pointer", transition: "all 0.15s" }}
               >
                 <Trash2 style={{ width: 12, height: 12 }} />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}

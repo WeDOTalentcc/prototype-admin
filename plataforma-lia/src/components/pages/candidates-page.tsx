@@ -3301,7 +3301,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           <div className="relative group flex items-center justify-center cursor-help">
             {isLocal ? (
               <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110" style={{ backgroundColor: 'rgba(180, 160, 140, 0.2)' }}>
-                <Home className="w-3.5 h-3.5" style={{ color: '#A08060' }} />
+                <Home className="w-3.5 h-3.5" style={{ color: 'var(--gray-500)' }} />
               </div>
             ) : (
               <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 bg-gray-100 dark:bg-gray-700">
@@ -3313,7 +3313,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               <div className="px-3 py-2 rounded-md text-xs min-w-[180px] text-white bg-gray-900">
                 <div className="font-semibold mb-1 flex items-center gap-1.5">
                   {isLocal ? (
-                    <Home className="w-3.5 h-3.5" style={{ color: '#E8946C' }} />
+                    <Home className="w-3.5 h-3.5" style={{ color: 'var(--wedo-orange)' }} />
                   ) : (
                     <Globe className="w-3.5 h-3.5 text-gray-300" />
                   )}
@@ -3357,7 +3357,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         const getMatchRingColor = (score: number) => {
           if (score >= 85) return 'var(--gray-600)' // teal - excelente
           if (score >= 70) return 'var(--wedo-green-light)' // verde claro - bom
-          if (score >= 50) return '#E8A07C' // coral - moderado
+          if (score >= 50) return 'var(--wedo-orange)' // coral - moderado
           return 'var(--gray-400)' // gray-400 - baixo
         }
         
@@ -3580,7 +3580,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             className="inline-flex items-center justify-center w-6 h-6 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Ver perfil no LinkedIn"
           >
-            <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+            <Linkedin className="w-4 h-4 text-gray-600" />
           </a>
         ) : (
           <span className="inline-flex items-center justify-center w-6 h-6" title="LinkedIn não informado">
@@ -8636,7 +8636,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                                     }}
                                     className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-all hover:bg-gray-100"
                                     style={{ 
-                                      backgroundColor: col.visible ? 'var(--gray-50)' : '#fafafa',
+                                      backgroundColor: col.visible ? 'var(--gray-50)' : 'var(--gray-50)',
                                       border: col.visible ? '1px solid var(--gray-300)' : '1px solid var(--gray-200)'
                                     }}
                                   >

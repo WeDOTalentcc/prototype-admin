@@ -206,7 +206,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   style={{
                     color: activeTab === tab.id ? 'var(--gray-950)' : 'var(--eleven-text-secondary)',
                     backgroundColor: activeTab === tab.id ? 'rgba(229, 231, 235, 0.2)' : 'transparent',
-                    borderBottom: activeTab === tab.id ? '2px solid #D1D5DB' : '2px solid transparent'
+                    borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'
                   }}
                 >
                   <tab.icon className="w-3.5 h-3.5" />

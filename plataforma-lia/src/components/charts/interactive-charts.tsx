@@ -136,7 +136,7 @@ export function InteractiveChart({
         datasets: [{
           data: data.map((item: any) => item[valueKey]),
           backgroundColor: data.map((_, index) => COLORS[index % COLORS.length]),
-          borderColor: '#fff',
+          borderColor: 'white',
           borderWidth: 2,
         }]
       }
@@ -239,8 +239,8 @@ export function InteractiveChart({
         },
         tooltip: {
           enabled: true,
-          backgroundColor: '#F9FAFB',
-          titleColor: '#030712',
+          backgroundColor: 'var(--gray-50)',
+          titleColor: 'var(--gray-950)',
           bodyColor: 'var(--gray-600)',
           borderColor: 'var(--gray-200)',
           borderWidth: 1,
@@ -434,7 +434,7 @@ export function ConversionFunnelChart() {
     { stage: 'Triagem', count: 1423, percentage: 50, color: 'rgba(3,7,18,0.75)' },
     { stage: 'Entrevistas', count: 512, percentage: 18, color: 'rgba(3,7,18,0.55)' },
     { stage: 'Ofertas', count: 127, percentage: 4.5, color: 'rgba(3,7,18,0.35)' },
-    { stage: 'Contratações', count: 89, percentage: 3.1, color: '#16A34A' }  // status-success
+    { stage: 'Contratações', count: 89, percentage: 3.1, color: 'var(--status-success)' }
   ]
 
   const handleDrillDown = (dataPoint: any) => {
