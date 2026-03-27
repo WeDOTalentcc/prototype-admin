@@ -138,9 +138,9 @@ export function CandidateCell({
 
 export function ScoreCell({ score, showIcon = true }: { score: number; showIcon?: boolean }) {
   const getScoreStyle = (score: number): React.CSSProperties => {
-    if (score >= 90) return { backgroundColor: 'rgba(123, 194, 154, 0.15)', color: '#5aa078' }
-    if (score >= 80) return { backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#50a3b8' }
-    if (score >= 70) return { backgroundColor: 'rgba(232, 168, 124, 0.15)', color: '#c58a5e' }
+    if (score >= 90) return { backgroundColor: 'var(--gray-100)', color: 'var(--status-success)' }
+    if (score >= 80) return { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-cyan-dark)' }
+    if (score >= 70) return { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-orange)' }
     return { color: 'var(--gray-800)' }
   }
 
@@ -236,9 +236,9 @@ export function SourceCell({ source }: { source?: string }) {
 
   const getSourceConfig = (src: string): { label: string; style: React.CSSProperties } => {
     const lower = src.toLowerCase()
-    if (lower.includes('linkedin')) return { label: 'LinkedIn', style: { backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#50a3b8' } }
-    if (lower.includes('pearch')) return { label: 'Pearch', style: { backgroundColor: 'rgba(201, 160, 220, 0.15)', color: '#a078b0' } }
-    if (lower.includes('local') || lower.includes('base')) return { label: 'Base Local', style: { backgroundColor: 'rgba(123, 194, 154, 0.15)', color: '#5aa078' } }
+    if (lower.includes('linkedin')) return { label: 'LinkedIn', style: { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-cyan-dark)' } }
+    if (lower.includes('pearch')) return { label: 'Pearch', style: { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)' } }
+    if (lower.includes('local') || lower.includes('base')) return { label: 'Base Local', style: { backgroundColor: 'var(--gray-100)', color: 'var(--status-success)' } }
     if (lower.includes('manual') || lower.includes('recruiter')) return { label: 'Manual', style: { color: 'var(--gray-800)' } }
     return { label: src, style: { color: 'var(--gray-800)' } }
   }
@@ -319,9 +319,9 @@ export function WorkModelCell({ model }: { model?: string }) {
 
   const getModelConfig = (m: string): { label: string; style: React.CSSProperties } => {
     const lower = m.toLowerCase()
-    if (lower === 'remoto') return { label: 'Remoto', style: { backgroundColor: 'rgba(123, 194, 154, 0.15)', color: '#5aa078' } }
-    if (lower === 'híbrido') return { label: 'Híbrido', style: { backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#50a3b8' } }
-    if (lower === 'presencial') return { label: 'Presencial', style: { backgroundColor: 'rgba(232, 168, 124, 0.15)', color: '#c58a5e' } }
+    if (lower === 'remoto') return { label: 'Remoto', style: { backgroundColor: 'var(--gray-100)', color: 'var(--status-success)' } }
+    if (lower === 'híbrido') return { label: 'Híbrido', style: { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-cyan-dark)' } }
+    if (lower === 'presencial') return { label: 'Presencial', style: { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-orange)' } }
     return { label: m, style: { color: 'var(--gray-800)' } }
   }
 

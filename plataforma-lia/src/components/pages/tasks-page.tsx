@@ -933,35 +933,18 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
   // Helper function para obter background pastel dos cards de atividades (tons claros ElevenLabs)
   const getTaskCardBackground = (taskType: Task['type']) => {
-    switch (taskType) {
-      case 'entrevista':
-        return '#DCE4DB' // Verde Menta Claro
-      case 'ia':
-        return '#E3DADC' // Rosa Antigo/Bege Rosado
-      case 'email':
-        return '#DDE1E9' // Azul-acinzentado Claro
-      case 'oferta':
-        return '#E5E0E2' // Lilás-acinzentado
-      case 'minha':
-        return '#EAEAEA' // Cinza Muito Claro
-      default:
-        return '#EAEAEA' // Default: Cinza Muito Claro
-    }
+    return 'var(--gray-100)'
   }
 
   // Helper function para obter cor do ícone baseado no tipo (tons mais escuros para contraste)
   const getTaskIconBackground = (taskType: Task['type']) => {
     switch (taskType) {
       case 'entrevista':
-        return '#6B9F7F' // Verde mais escuro
+        return 'var(--status-success)'
       case 'ia':
-        return '#B89BA0' // Rosa mais escuro
       case 'email':
-        return '#8FA4C4' // Azul mais escuro
       case 'oferta':
-        return '#B3A8B5' // Lilás mais escuro
-      case 'minha':
-        return 'var(--gray-400)' // Cinza mais escuro
+        return 'var(--gray-400)'
       default:
         return 'var(--gray-400)'
     }

@@ -343,8 +343,8 @@ export function DailyBriefingCard({
             <div 
               className="p-2 rounded-md border cursor-pointer hover:transition-all"
               style={{ 
-                backgroundColor: briefing.summary.urgent_count > 0 ? '#F0F9FB' : '#F3F7F9',
-                borderColor: '#C4E4EB'
+                backgroundColor: briefing.summary.urgent_count > 0 ? 'var(--gray-50)' : 'var(--gray-50)',
+                borderColor: 'var(--gray-200)'
               }}
               onClick={() => handleActionClick('view_urgent')}
             >
@@ -360,7 +360,7 @@ export function DailyBriefingCard({
             {/* Card Tarefas Hoje */}
             <div 
               className="p-2 rounded-md border cursor-pointer hover:transition-all"
-              style={{ backgroundColor: '#F3F7F9', borderColor: '#C4E4EB' }}
+              style={{ backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)' }}
               onClick={() => handleActionClick('view_tasks')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -375,7 +375,7 @@ export function DailyBriefingCard({
             {/* Card Entrevistas */}
             <div 
               className="p-2 rounded-md border cursor-pointer hover:transition-all"
-              style={{ backgroundColor: '#F3F7F9', borderColor: '#C4E4EB' }}
+              style={{ backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)' }}
               onClick={() => handleActionClick('view_interviews')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -390,7 +390,7 @@ export function DailyBriefingCard({
             {/* Card Alertas */}
             <div 
               className="p-2 rounded-md border cursor-pointer hover:transition-all"
-              style={{ backgroundColor: '#F3F7F9', borderColor: '#C4E4EB' }}
+              style={{ backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)' }}
               onClick={() => handleActionClick('view_alerts')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -415,8 +415,8 @@ export function DailyBriefingCard({
                     key={action.id}
                     className="flex items-center justify-between p-2 rounded-md border"
                     style={{ 
-                      backgroundColor: '#F3F7F9',
-                      borderColor: '#C4E4EB'
+                      backgroundColor: 'var(--gray-50)',
+                      borderColor: 'var(--gray-200)'
                     }}
                   >
                     <div className="flex-1 min-w-0">
@@ -453,12 +453,12 @@ export function DailyBriefingCard({
                   <div
                     key={item.id}
                     className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer hover:transition-all"
-                    style={{ backgroundColor: '#F3F7F9', borderColor: '#C4E4EB' }}
+                    style={{ backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)' }}
                     onClick={() => handleActionClick('view_interview', item)}
                   >
                     <div 
                       className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: '#E0F1F6' }}
+                      style={{ backgroundColor: 'var(--gray-100)' }}
                     >
                       <Clock className="w-4 h-4 text-gray-700" />
                     </div>
@@ -521,13 +521,13 @@ export function DailyBriefingCard({
           {/* Card Pipeline - Paleta Monocromática */}
           <div 
             className="p-3 rounded-md border"
-            style={{ backgroundColor: '#F1F3F5' }}
+            style={{ backgroundColor: 'var(--gray-50)' }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div 
                   className="w-8 h-8 rounded-md flex items-center justify-center"
-                  style={{ backgroundColor: '#E9ECEF' }}
+                  style={{ backgroundColor: 'var(--gray-100)' }}
                 >
                   <BarChart3 className="w-4 h-4 text-gray-700" />
                 </div>

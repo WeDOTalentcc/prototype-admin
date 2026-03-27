@@ -23,10 +23,10 @@ import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
 
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
-  vagas: { icon: 'var(--gray-600)', bg: 'var(--gray-50)', border: 'var(--gray-200)', hoverBg: '#D0EFF5' },
-  candidatos: { icon: 'var(--status-success)', bg: '#E5F5EB', border: 'var(--status-success)', hoverBg: '#D5EFE0' },
-  entrevistas: { icon: 'var(--wedo-orange)', bg: '#FDF4E8', border: 'var(--wedo-orange)', hoverBg: '#FAECD8' },
-  relatorios: { icon: 'var(--wedo-purple)', bg: '#F3EAFF', border: 'var(--wedo-purple)', hoverBg: '#EBE0FF' }
+  vagas: { icon: 'var(--gray-600)', bg: 'var(--gray-50)', border: 'var(--gray-200)', hoverBg: 'var(--gray-100)' },
+  candidatos: { icon: 'var(--status-success)', bg: 'var(--gray-50)', border: 'var(--status-success)', hoverBg: 'var(--gray-100)' },
+  entrevistas: { icon: 'var(--wedo-orange)', bg: 'var(--gray-50)', border: 'var(--wedo-orange)', hoverBg: 'var(--gray-100)' },
+  relatorios: { icon: 'var(--wedo-purple)', bg: 'var(--gray-50)', border: 'var(--wedo-purple)', hoverBg: 'var(--gray-100)' }
 }
 
 export function LiaSuperPrompt() {
@@ -252,7 +252,7 @@ export function LiaSuperPrompt() {
                     className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors"
                     style={{
                       backgroundColor: activeTab === "conversa" ? "var(--gray-50)" : "transparent",
-                      color: activeTab === "conversa" ? "#00B8B8" : "var(--gray-400)",
+                      color: activeTab === "conversa" ? "var(--chat-cyan)" : "var(--gray-400)",
                       borderRight: "1px solid var(--gray-200)"
                     }}
                   >
@@ -264,7 +264,7 @@ export function LiaSuperPrompt() {
                     className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors"
                     style={{
                       backgroundColor: activeTab === "controle" ? "var(--gray-50)" : "transparent",
-                      color: activeTab === "controle" ? "#00B8B8" : "var(--gray-400)"
+                      color: activeTab === "controle" ? "var(--chat-cyan)" : "var(--gray-400)"
                     }}
                   >
                     <LayoutDashboard className="w-3.5 h-3.5" />
@@ -480,7 +480,7 @@ export function LiaSuperPrompt() {
                   )}
 
                   {/* Input */}
-                  <div className="px-6 py-4 border-t border-gray-200 flex-shrink-0" style={{ backgroundColor: "#FAFBFC" }}>
+                  <div className="px-6 py-4 border-t border-gray-200 flex-shrink-0" style={{ backgroundColor: "var(--gray-50)" }}>
                     <div className="max-w-3xl mx-auto">
                       <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-white border border-gray-200">
                         <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">

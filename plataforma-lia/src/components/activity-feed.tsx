@@ -130,30 +130,30 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
   const getActivityCardBackground = (activityType: string) => {
     const typeMap: Record<string, string> = {
-      'interview_scheduled': '#DCE4DB',
-      'lia_suggestion': '#E3DADC',
-      'candidate_moved': '#E3DADC',
-      'email_sent': '#DDE1E9',
-      'offer_sent': '#E5E0E2',
+      'interview_scheduled': 'var(--gray-100)',
+      'lia_suggestion': 'var(--gray-100)',
+      'candidate_moved': 'var(--gray-100)',
+      'email_sent': 'var(--gray-100)',
+      'offer_sent': 'var(--gray-100)',
       'approval_pending': 'var(--gray-100)',
-      'voice_screening': '#E3DADC',
-      'rubric_evaluation': '#E0EDF0',
-      'screening_analysis': '#F0E6E0',
+      'voice_screening': 'var(--gray-100)',
+      'rubric_evaluation': 'var(--gray-100)',
+      'screening_analysis': 'var(--gray-100)',
     }
     return typeMap[activityType] || 'var(--gray-100)'
   }
 
   const getActivityIconBackground = (activityType: string) => {
     const typeMap: Record<string, string> = {
-      'interview_scheduled': '#6B9F7F',
-      'lia_suggestion': '#B89BA0',
-      'candidate_moved': '#B89BA0',
-      'email_sent': '#8FA4C4',
-      'offer_sent': '#B3A8B5',
+      'interview_scheduled': 'var(--status-success)',
+      'lia_suggestion': 'var(--gray-400)',
+      'candidate_moved': 'var(--gray-400)',
+      'email_sent': 'var(--gray-400)',
+      'offer_sent': 'var(--gray-400)',
       'approval_pending': 'var(--gray-400)',
-      'voice_screening': '#B89BA0',
+      'voice_screening': 'var(--gray-400)',
       'rubric_evaluation': 'var(--gray-400)',
-      'screening_analysis': '#9B7B6B',
+      'screening_analysis': 'var(--gray-500)',
     }
     return typeMap[activityType] || 'var(--gray-400)'
   }

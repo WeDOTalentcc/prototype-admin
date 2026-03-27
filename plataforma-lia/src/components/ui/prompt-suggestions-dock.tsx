@@ -19,25 +19,25 @@ const CATEGORY_COLORS = {
     icon: 'var(--gray-600)',
     bg: 'var(--gray-50)',
     border: 'var(--gray-200)',
-    hoverBg: '#D0EFF5'
+    hoverBg: 'var(--gray-100)'
   },
   candidatos: {
     icon: 'var(--status-success)',
-    bg: '#E5F5EB',
+    bg: 'var(--gray-50)',
     border: 'var(--status-success)',
-    hoverBg: '#D5EFE0'
+    hoverBg: 'var(--gray-100)'
   },
   entrevistas: {
     icon: 'var(--wedo-orange)',
-    bg: '#FDF4E8',
+    bg: 'var(--gray-50)',
     border: 'var(--wedo-orange)',
-    hoverBg: '#FAECD8'
+    hoverBg: 'var(--gray-100)'
   },
   relatorios: {
     icon: 'var(--wedo-purple)',
-    bg: '#F3EAFF',
+    bg: 'var(--gray-50)',
     border: 'var(--wedo-purple)',
-    hoverBg: '#EBE0FF'
+    hoverBg: 'var(--gray-100)'
   }
 }
 

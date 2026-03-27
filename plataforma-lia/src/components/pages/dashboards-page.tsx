@@ -58,7 +58,7 @@ const dashboardMenuItems: DashboardMenuItem[] = [
     icon: PieChart,
     description: "Remoto, Híbrido, Presencial - análises por região e departamento",
     count: 102,
-    color: "#D19960" // Laranja WeDo - Tempo/operação
+    color: "var(--wedo-orange)" // Laranja WeDo - Tempo/operação
   },
   {
     id: "funil-performance",
@@ -73,7 +73,7 @@ const dashboardMenuItems: DashboardMenuItem[] = [
     icon: AlertTriangle,
     description: "Alertas críticos, ações urgentes e pipelines em risco",
     count: 8,
-    color: "#D160AB" // Magenta WeDo - Urgência crítica
+    color: "var(--wedo-magenta)" // Magenta WeDo - Urgência crítica
   },
   {
     id: "competencias",
@@ -2901,7 +2901,7 @@ const agentsData: AgentInfo[] = [
     actionsToday: 23,
     successRate: 100,
     avgResponseTime: 3.2,
-    color: '#60D1C5'
+    color: 'var(--wedo-cyan)'
   },
   {
     id: 'recruiter-assistant',
