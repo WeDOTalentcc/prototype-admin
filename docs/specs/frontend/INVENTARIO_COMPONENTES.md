@@ -1166,48 +1166,165 @@ Se confirmado 0 usos:
 
 ### Fase 4 — Split de Componentes Gigantes
 
-**Esforço:** 3-4 semanas | **Risco:** Alto | **Impacto visual:** Nenhum
+**Esforço:** 4-6 semanas | **Risco:** Alto | **Impacto visual:** Nenhum
 
-> Esta é a fase mais complexa. Requer testes extensivos após cada split.
-> Recomendação: fazer 1 componente por sprint, testar completamente antes de avançar.
+> **Revisão pós-análise profunda (2026-03-27):** `expanded-chat-modal.tsx` tem 76 useState,
+> 30+ useEffect, 28 useCallback e 94 imports. Não é possível extrair componentes diretamente —
+> o acoplamento entre estados tornaria as props impossíveis de gerenciar.
+>
+> **Estratégia correta:** 3 camadas sequenciais.
+> Camada 1 (hooks): agrupar estados relacionados em custom hooks → reduz de 76 para ~8 objetos.
+> Camada 2 (componentes simples): extrair partes sem estado próprio (risco baixo).
+> Camada 3 (componentes com estado): usar hooks da Camada 1 como base (risco médio).
+> **NUNCA pular camadas — cada camada é pré-requisito da próxima.**
 
-**Sprint 1 — `expanded-chat-modal.tsx` (11.824 linhas)**
+---
 
-| Sub-componente proposto | Responsabilidade | Linhas estimadas |
-|------------------------|------------------|-----------------|
-| `ExpandedChatContainer` | Layout, state global, context | ~800 |
-| `ChatMessageList` | Renderização de mensagens | ~1.500 |
-| `ChatInputBar` | Input, upload, voz | ~800 |
-| `WizardStagePanel` | Painel lateral do wizard | ~1.200 |
-| `ToolExecutionResults` | Cards de resultado de tools | ~600 |
-| `ChatStateReducer` | Reducer de estado do chat | ~500 |
-| `FieldSyncManager` | Sync de campos wizard↔chat | ~400 |
-| `JobPreviewPanel` | Preview da vaga em criação | ~800 |
-| `ChatMessageTypes` | Tipos e interfaces TypeScript | ~200 |
-| Restante no modal principal | Orchestração | ~5.000 |
+#### Diagnóstico Real do `expanded-chat-modal.tsx`
 
-**Sprint 2 — Pages gigantes (28.752 linhas total)**
+| Métrica | Valor |
+|---------|-------|
+| Linhas totais | 11.824 |
+| `useState` | 76 variáveis |
+| `useRef` | 19 referências |
+| `useEffect` | 30+ efeitos |
+| `useCallback` | 28 funções |
+| `useMemo` | 2 |
+| Imports | 94 (30+ arquivos) |
+| Hooks customizados importados | 18 |
+| `handleSendMessage` | ~500 linhas (função monolítica) |
+| Feature flag morto | `USE_MODULAR_WIZARD = false` (linha 104) |
+| Efeitos duplicados | 3x lógica proativa idêntica (salary/input-eval/competencies) |
 
-| Arquivo | Linhas | Split proposto |
-|---------|--------|---------------|
-| `job-kanban-page` | 10.377 | KanbanHeader, KanbanBoard, KanbanColumn, CandidateKanbanCard, BulkActionsBar, StageConfig, KanbanAnalytics |
-| `candidates-page` | 10.329 | CandidateTableView, FilterPanel, BulkActions, CandidatePreviewPanel, SearchBar, Pagination |
-| `jobs-page` | 8.046 | JobsTableView, JobCardView, JobFilters, JobStats, BulkActions |
+---
 
-**Sprint 3 — Candidatos (9.227 linhas)**
+#### Sprint 4.1 — Extração de Tipos e Remoção de Código Morto (½ dia | Risco: Zero)
 
-| Arquivo | Linhas | Split proposto |
-|---------|--------|---------------|
-| `candidate-preview` | 6.723 | ProfileHeader, ExperienceTimeline, SkillsSection, WSISection, NotesSection, ActionsBar, PreviewTabs |
-| `candidate-page` | 2.504 | CandidateProfileSections, CandidateTimeline, CandidateActions |
+**Ações:**
 
-**Sprint 4 — Search e Settings (14.992 linhas)**
+| Arquivo novo | Conteúdo | Linhas extraídas |
+|-------------|----------|-----------------|
+| `expanded-chat-modal.types.ts` | Todas as interfaces/tipos (linhas 106–681) | ~575 |
+| `expanded-chat-modal.constants.ts` | `SKILLS_CATALOG`, `ROLE_AREA_MAPPING`, `CORE_SKILLS_BY_ROLE` | ~200 |
+| `expanded-chat-modal.utils.ts` | `detectAreaFromRole()`, `getSkillSuggestions()`, `inferTechnicalSkillWeight()`, `inferBehavioralSkillWeight()`, `formatTimestamp()`, `formatSalaryAnalysisText()` | ~500 |
 
-| Arquivo | Linhas | Split proposto |
-|---------|--------|---------------|
-| `smart-search-input` | 5.475 | SearchBar, FilterChips, SuggestionsList, BooleanBuilder, SearchResults |
-| `CompanyTeamHub` | 5.235 | TeamTable, InviteModal, RoleManager, Permissions, ActivityLog |
-| `expandable-ai-prompt` | 4.308 | PromptInput, SuggestionDock, AttachmentBar, ActionChips |
+**Remover:**
+- Feature flag `USE_MODULAR_WIZARD = false` e todo código condicional associado (~100 linhas de dead code)
+
+**Resultado:** Modal reduz de 11.824 → ~10.450 linhas. Zero risco de regressão.
+
+---
+
+#### Sprint 4.2 — Extração de Custom Hooks por Domínio (2-3 dias | Risco: Baixo)
+
+> Esta é a etapa mais importante. Sem ela, extrair componentes cria prop drilling impossível.
+> Cada hook agrupa estados + efeitos + callbacks de um domínio específico.
+
+| Hook | Arquivo | States agrupados | Linhas estimadas |
+|------|---------|-----------------|-----------------|
+| `useSalaryState` | `hooks/wizard/use-salary-state.ts` | `salaryInfo`, `salaryBenchmark`, `isLoadingBenchmark`, `compensationAnalysis`, `salaryStageCompletionShown` | ~200 |
+| `useCompetenciesState` | `hooks/wizard/use-competencies-state.ts` | `technicalSkills`, `behavioralCompetencies`, `showCompetenciesSuggestionsModal`, `suggestedTechnical/Behavioral`, `selected*`, `competenciesStageCompletionShown` | ~250 |
+| `useWSIState` | `hooks/wizard/use-wsi-state.ts` | `wsiQuestions`, `wsiCandidates`, `wsiGenerationBatch`, `isGeneratingWSI`, `wsiHasGenerated`, `useCompanyQuestions`, `companyDefaultQuestions`, + geração/toggle/delete | ~300 |
+| `useCalibrationState` | `hooks/wizard/use-calibration-state.ts` | `calibrationCandidates`, `currentCalibrationIndex`, `approvedCandidates`, `rejectedCandidates`, `calibrationComplete`, `isLoadingCalibration`, `showCalibrationModal`, + approve/reject handlers | ~350 |
+| `useWizardNavigation` | `hooks/wizard/use-wizard-navigation.ts` | `currentStage`, `goToNextStage`, `goToPreviousStage`, `canAdvanceToNextStage`, `awaitingStageAdvanceConfirmation` | ~150 |
+| `useProactiveMessages` | `hooks/wizard/use-proactive-messages.ts` | Consolida 3 useEffect idênticos (salary/input-eval/competencies) em 1 hook parametrizado | ~150 |
+| `useModalStates` | `hooks/wizard/use-modal-states.ts` | Todos os `show*Modal` + inputs de formulário dos modais (15+ estados) | ~100 |
+| `useJobPublishing` | `hooks/wizard/use-job-publishing.ts` | `jobConfig`, `publishingPlatforms`, `publishedJobId`, `jobDescription`, `isGeneratingDescription`, `handlePublishJob` | ~200 |
+
+**Resultado:** Modal reduz para ~8.000 linhas. Estados viram: `salary.info`, `competencies.technical`, `wsi.questions`, etc.
+
+**Padrão de interface de cada hook:**
+```typescript
+// Exemplo: useSalaryState
+export function useSalaryState(currentStage: WizardStage, basicInfoFields: BasicInfoFields) {
+  const [salaryInfo, setSalaryInfo] = useState<SalaryInfo>(DEFAULT_SALARY)
+  const [salaryBenchmark, setSalaryBenchmark] = useState<object | null>(null)
+  // ...
+  return { salaryInfo, setSalaryInfo, salaryBenchmark, isLoadingBenchmark, /* handlers */ }
+}
+// Vue equiv: composable useSalaryState() idêntico
+```
+
+---
+
+#### Sprint 4.3 — Extração de Componentes Sem Estado (1 dia | Risco: Baixo)
+
+> Pré-requisito: Sprint 4.1 concluída (tipos extraídos).
+> Estes componentes são puros ou quase-puros (recebem dados, não gerenciam estado).
+
+| Componente | Arquivo | Props | Linhas estimadas |
+|-----------|---------|-------|-----------------|
+| `QuickSuggestionsBar` | `chat/quick-suggestions-bar.tsx` | `suggestions: string[]`, `onSelect: (s: string) => void` | ~40 |
+| `ChatInput` | `chat/chat-input.tsx` | `value`, `onChange`, `onSend`, `isLoading`, `onFileSelect`, `onAudioRecord`, `inputRef` | ~120 |
+| `ChatMessageItem` | `chat/chat-message-item.tsx` | `message: Message`, `isLast: boolean`, `onProactiveAccept`, `onProactiveReject` | ~200 |
+| `WizardModals` | `chat/wizard-modals.tsx` | Props do `useModalStates` + handlers de submit | ~300 |
+| `WizardStageHeader` | `chat/wizard-stage-header.tsx` | `currentStage`, `navigation`, `stageDisplayName` | ~80 |
+
+**Regra:** Nenhum desses componentes chama `useState` interno — recebem tudo via props.
+
+---
+
+#### Sprint 4.4 — Extração de Painéis por Estágio (2 dias | Risco: Médio)
+
+> Pré-requisito: Sprint 4.2 concluída (hooks de domínio prontos).
+> Cada painel usa 1-2 hooks da Sprint 4.2 como fonte de dados.
+
+| Componente | Arquivo | Hook base | Linhas estimadas |
+|-----------|---------|-----------|-----------------|
+| `SalaryStagePanel` | `wizard-stages/salary-stage-panel.tsx` | `useSalaryState` | ~400 |
+| `CompetenciesStagePanel` | `wizard-stages/competencies-stage-panel.tsx` | `useCompetenciesState` | ~400 |
+| `WSIQuestionsPanel` | `wizard-stages/wsi-questions-panel.tsx` | `useWSIState` | ~350 |
+| `CalibrationPanel` | `wizard-stages/calibration-panel.tsx` | `useCalibrationState` | ~400 |
+| `BasicInfoPanel` | `wizard-stages/basic-info-panel.tsx` | Props simples (basicInfoFields + setter) | ~250 |
+| `ReviewPublishPanel` | `wizard-stages/review-publish-panel.tsx` | `useJobPublishing` | ~350 |
+
+**Vuetify readiness:** Cada painel = 1 componente Vue futuro. Props são simples, sem React-specific patterns.
+
+---
+
+#### Sprint 4.5 — Refatorar `handleSendMessage` (~500 linhas → funções especializadas) (1-2 dias | Risco: Alto)
+
+> Esta é a etapa mais arriscada. `handleSendMessage` tem 10 responsabilidades diferentes.
+> Abordagem: extrair helpers sem mudar a função principal primeiro, depois decompor.
+
+**Decomposição proposta:**
+```typescript
+// Funções puras extraídas (sem estado)
+function buildMessagePayload(content, context): MessagePayload
+function extractCriteriaFromText(text): DetectedCriteria | null
+async function processOrchestratorResponse(result, messageId): ProcessedResponse
+
+// Handlers especializados
+async function handleJobCreationMessage(content, ctx): Promise<void>
+async function handleGeneralChatMessage(content, ctx): Promise<void>
+
+// handleSendMessage vira um dispatcher:
+async function handleSendMessage(content) {
+  if (isJobCreationMode) return handleJobCreationMessage(content, ctx)
+  return handleGeneralChatMessage(content, ctx)
+}
+```
+
+**Resultado final após 4.5:** Modal principal: ~2.000-2.500 linhas (orchestrador), restante distribuído em ~15 arquivos.
+
+---
+
+#### Sprint 4.6 — Pages Gigantes (3-4 semanas | Risco: Alto)
+
+> Análise profunda necessária antes de cada page — replicar o mesmo processo feito com
+> `expanded-chat-modal.tsx`. As linhas abaixo são estimativas preliminares.
+
+| Arquivo | Linhas | Próxima ação |
+|---------|--------|-------------|
+| `job-kanban-page.tsx` | 10.377 | Análise profunda → hooks + painéis (KanbanBoard, CandidateCard, BulkActions, StageConfig, Analytics) |
+| `candidates-page.tsx` | 10.329 | Análise profunda → hooks + painéis (TableView, FilterPanel, PreviewPanel, SearchBar) |
+| `jobs-page.tsx` | 8.046 | Análise profunda → hooks + painéis (TableView, CardView, Filters, Stats) |
+| `candidate-preview.tsx` | 6.723 | Análise profunda → hooks + seções (ProfileHeader, Timeline, Skills, WSI, Notes) |
+| `smart-search-input.tsx` | 5.475 | Análise profunda → hooks + componentes (SearchBar, FilterChips, Suggestions, BooleanBuilder) |
+| `CompanyTeamHub.tsx` | 5.235 | Análise profunda → hooks + painéis (TeamTable, InviteModal, RoleManager) |
+| `expandable-ai-prompt.tsx` | 4.308 | Análise profunda → hooks + painéis (PromptInput, SuggestionDock, AttachmentBar) |
+
+**Regra:** Não iniciar Sprint 4.6 sem a análise profunda de cada arquivo — a lição do `expanded-chat-modal.tsx` é que planejar sem ler o código leva a planos errados.
 
 ### Fase 5 — Padronização de Dimensões
 
