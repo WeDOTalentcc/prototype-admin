@@ -1,6 +1,7 @@
 # Inventário Completo de Componentes — Plataforma LIA (React)
 
 > **Última atualização:** 2026-03-27 (Expansão 100% — cobertura total de componentes + infraestrutura)
+> **Arquitetura:** Bridge Architecture — 3 camadas de abstração (CSS vars → framework config → componentes) — ver Seção 0
 > **Componentes:** 556 em 37 diretórios (era 460 documentados — adicionados 96 não inventariados em 21 dirs)
 > **Hooks:** 120 custom hooks (93 em `src/hooks/` + 27 em subdiretórios de componentes)
 > **Infraestrutura:** 5 contexts, 17 arquivos de types/config, 13 lib utilities
@@ -8,6 +9,107 @@
 > **CSS:** 242 variáveis, 29 keyframes, 200+ classes customizadas, 169 ícones Lucide
 > **Localização:** `plataforma-lia/src/`
 > **Stack:** React 19 + Next.js 15 + Tailwind CSS + shadcn/ui (Radix UI)
+
+---
+
+## 0. Bridge Architecture — Princípio Fundacional
+
+> **Status:** Em implementação ativa (Fase 1 concluída, Fases 2-5 pendentes)
+> **Última atualização:** 2026-03-27
+
+### 0.1 O Problema
+
+A Plataforma LIA nasceu como aplicação React + Tailwind com decisões de estilo tomadas diretamente nos componentes: cores hex hardcoded, tamanhos arbitrários (`text-[11px]`), espaçamentos inline. Isso criou 3 problemas concretos:
+
+1. **Inconsistência visual** — 298 cores únicas, 4.765 valores arbitrários Tailwind, 249 arquivos com inline styles
+2. **Manutenção cara** — uma mudança de cor exige tocar dezenas de arquivos
+3. **Migração impossível** — cada valor hardcoded é um ponto de reescrita manual na conversão para Vue/Vuetify
+
+### 0.2 A Solução: 3 Camadas de Abstração
+
+A Bridge Architecture resolve isso com 3 camadas onde **cada uma só conhece a camada imediatamente abaixo:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  CAMADA 3 — Componentes (React hoje / Vue amanhã)           │
+│  Consomem apenas classes semânticas do framework            │
+│  Ex: className="text-xs text-status-success bg-wedo-cyan"  │
+├─────────────────────────────────────────────────────────────┤
+│  CAMADA 2 — Framework Config (tailwind.config.ts)           │
+│  Mapeia nomes semânticos para CSS vars                      │
+│  Ex: 'text-xs' → var(--font-size-xs)                       │
+│  Ex: 'wedo-cyan' → var(--wedo-cyan)                        │
+├─────────────────────────────────────────────────────────────┤
+│  CAMADA 1 — CSS Variables (design-tokens.css)               │
+│  Fonte única de verdade — 181 variáveis definidas           │
+│  Ex: --font-size-xs: 11px; --wedo-cyan: #60BED1            │
+│  Portável entre frameworks: React, Vue, Angular, vanilla    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Princípio:** Nenhum componente deve referenciar diretamente um valor de cor, tamanho ou espaçamento. Tudo passa pela bridge.
+
+### 0.3 Por Que Funciona
+
+| Cenário | Sem Bridge | Com Bridge |
+|---------|-----------|------------|
+| Mudar cor principal | Editar 54+ arquivos | Editar 1 variável CSS |
+| Adicionar dark mode | Reescrever cada componente | Override de variáveis por tema |
+| Migrar React → Vue | Reescrever 4.765 valores | Manter camada 1, substituir camada 2 |
+| Ajustar tipografia | Encontrar 1.287 ocorrências | Mudar 4 tokens |
+| Auditar consistência | Impossível sem varredura | Grep em design-tokens.css |
+
+### 0.4 Arquivos da Bridge
+
+| Camada | Arquivo | Linhas | Papel |
+|--------|---------|--------|-------|
+| 1 | `src/styles/design-tokens.css` | 820 | Variáveis CSS — fonte única de verdade |
+| 1 | `src/app/globals.css` | 1.477 | Variáveis compostas, keyframes, classes utilitárias |
+| 2 | `tailwind.config.ts` | ~200 | Mapeia tokens para classes Tailwind |
+| 2→3 | `src/lib/design-tokens.ts` | 644 | Tokens em TypeScript + mapeamento Tailwind→Vuetify |
+| 2→3 | `src/lib/theme-colors.ts` | ~150 | Temas por página (6 variantes) |
+
+### 0.5 O que Já Está Implementado
+
+**Fase 0 — Limpeza (concluída 2026-03-27):**
+- 16 arquivos de dead code removidos (9.820 linhas)
+- Componentes: 465 → 460
+
+**Fase 1 — Tipografia (concluída 2026-03-27):**
+- 4 tokens customizados criados: `text-xs` (11px), `text-micro` (10px), `text-sm-ui` (12px), `text-base-ui` (13px)
+- Camada 1: variáveis em `design-tokens.css` (`--font-size-xs`, `--font-size-micro`, etc.)
+- Camada 2: `tailwind.config.ts` referencia as variáveis (`fontSize: { 'xs': ['var(--font-size-xs)', ...] }`)
+- Camada 3: componentes usam classes normais (`text-xs`) que agora mapeiam para CSS vars
+- ~4.500 valores arbitrários de tipografia eliminados
+
+**Infraestrutura de Migração Vue:**
+- `design-tokens.ts` contém `tailwindToVuetify` com mapeamentos completos de cores, tipografia, espaçamento, border-radius, sombras e layout — pronto para consumo por scripts de conversão automatizada
+
+### 0.6 O que Falta (Fases 2-5)
+
+| Fase | Escopo | Impacto | Status |
+|------|--------|---------|--------|
+| 2 | Cores — tokenizar 298 hex hardcoded | Eliminar 54 arquivos com cores fora do DS | Pendente |
+| 3 | Badges & Status — unificar 7 implementações | Componente único `<StatusBadge>` | Pendente |
+| 4 | Giant Components — refatorar 37 arquivos >1.000 linhas | Reduzir 118.037 → ~60.000 linhas | Pendente |
+| 5 | Modals & Inline Styles — padronizar | 154 arquivos com modals, 249 com inline styles | Pendente |
+
+> **Detalhamento completo das fases:** seções 29-32 deste documento.
+
+### 0.7 Regra Para Novos Desenvolvimentos
+
+Qualquer componente novo ou modificado **deve** seguir a bridge:
+
+```
+✅ CORRETO — Usa token semântico:
+  className="text-xs text-status-success bg-wedo-cyan"
+
+❌ ERRADO — Valor hardcoded:
+  className="text-[11px] text-green-600"
+  style={{ color: '#60BED1', fontSize: '11px' }}
+```
+
+> **Esta seção é um documento vivo.** Será atualizada conforme as fases avançam e a arquitetura evolui.
 
 ---
 

@@ -72,7 +72,7 @@ import {
   FROM_SCRATCH_ORIENTATION_MESSAGE,
   INITIAL_GENERAL_MESSAGE,
 } from './expanded-chat'
-import { useWizardState, useWSIQualityGates, useWizardNavigation, useChatSync, useToolCalling, useFieldHighlight, type ChatNavigationResult, type GroupedChange, type ToolCall, type ToolExecutionResult } from './expanded-chat/hooks'
+import { useWizardState, useWSIQualityGates, useWizardNavigation, useChatSync, useToolCalling, useFieldHighlight, useWSIState, useCalibrationState, useSalaryState, useCompetenciesState, usePublishingState, useFastTrackState, type ChatNavigationResult, type GroupedChange, type ToolCall, type ToolExecutionResult } from './expanded-chat/hooks'
 import { useConversationMemory } from './expanded-chat/hooks/useConversationMemory'
 import { useLearning } from './expanded-chat/hooks/useLearning'
 import { useFastTrack, type FastTrackSuggestion, type FastTrackJobData } from '@/hooks/useFastTrack'
@@ -142,6 +142,23 @@ function ExpandedChatModalContent({
   const { interviewStages, sla, isLoading: isLoadingStages } = useRecruitmentStages()
   const { getBehavioralCompetencies, isLoading: isLoadingCompanyConfig } = useCompanyLiaInstructions()
   const isJobCreationMode = mode === 'job-creation'
+  // ─── Domain state hooks (Sprint 4.2) ────────────────────────────────────────
+  const wsiHook = useWSIState()
+  const calibrationHook = useCalibrationState()
+  const salaryHook = useSalaryState()
+  const competenciesHook = useCompetenciesState()
+  const publishingHook = usePublishingState()
+  const fastTrackHook = useFastTrackState()
+
+  // Destructure for backwards-compatible access throughout this component
+  const { state: wsiState, actions: wsiActions } = wsiHook
+  const { state: calibrationState, actions: calibrationActions, postCalibrationFlowStartedRef } = calibrationHook
+  const { state: salaryState, actions: salaryActions } = salaryHook
+  const { state: competenciesState, actions: competenciesActions } = competenciesHook
+  const { state: publishingState, actions: publishingActions } = publishingHook
+  const { state: fastTrackHookState, actions: fastTrackActions } = fastTrackHook
+  // ────────────────────────────────────────────────────────────────────────────
+
   const [dynamicInitialMessage, setDynamicInitialMessage] = useState<string | null>(null)
   const initialLiaMessage = dynamicInitialMessage || (isJobCreationMode ? PRE_WIZARD_MESSAGE : INITIAL_GENERAL_MESSAGE)
   const [messages, setMessages] = useState<Message[]>([])
@@ -348,38 +365,13 @@ function ExpandedChatModalContent({
     tipoContrato: ''
   })
   
-  // Technical skills (Stage 3)
-  const [technicalSkills, setTechnicalSkills] = useState<TechnicalSkill[]>([])
-  
-  // Behavioral competencies (Stage 4)
-  const [behavioralCompetencies, setBehavioralCompetencies] = useState<BehavioralCompetency[]>([
-    { id: '1', name: 'Comunicação Eficaz', weight: 4, justification: 'Colaboração com time multidisciplinar', enabled: true },
-    { id: '2', name: 'Resolução de Problemas', weight: 5, justification: 'Arquitetura de sistemas complexos', enabled: true },
-    { id: '3', name: 'Adaptabilidade', weight: 4, justification: 'Ambiente ágil com mudanças frequentes', enabled: true },
-    { id: '4', name: 'Trabalho em Equipe', weight: 4, justification: 'Projetos colaborativos', enabled: true },
-    { id: '5', name: 'Proatividade', weight: 3, justification: 'Iniciativa em melhorias técnicas', enabled: false },
-  ])
-  
-  // Salary info (Stage 5)
-  const [salaryInfo, setSalaryInfo] = useState<SalaryInfo>({
-    minSalary: '',
-    maxSalary: '',
-    minBonus: '',
-    maxBonus: '',
-    bonusCriteria: '',
-    benefits: [
-      { id: '1', name: 'Vale Refeição', value: 'R$ 35/dia', enabled: true },
-      { id: '2', name: 'Vale Transporte', enabled: true },
-      { id: '3', name: 'Plano de Saúde', enabled: true },
-      { id: '4', name: 'Plano Odontológico', enabled: true },
-      { id: '5', name: 'Seguro de Vida', enabled: true },
-      { id: '6', name: 'Stock Options', enabled: false },
-      { id: '7', name: 'Auxílio Home Office', value: 'R$ 200/mês', enabled: true },
-      { id: '8', name: 'Auxílio Educação', value: 'Até R$ 500/mês', enabled: true },
-      { id: '9', name: 'Gympass', enabled: false },
-      { id: '10', name: 'Day Off Aniversário', enabled: true },
-    ]
-  })
+  // Technical skills & Behavioral competencies (from useCompetenciesState — Sprint 4.2)
+  const { technicalSkills, behavioralCompetencies } = competenciesState
+  const { setTechnicalSkills, setBehavioralCompetencies } = competenciesActions
+
+  // Salary info (from useSalaryState — Sprint 4.2)
+  const { salaryInfo } = salaryState
+  const { setSalaryInfo } = salaryActions
   
   // Enriched JD Data (JD Enrichment Stage)
   const [enrichedJDData, setEnrichedJDData] = useState<EnrichedJDData | null>(null)
@@ -400,88 +392,22 @@ function ExpandedChatModalContent({
   const PROACTIVE_MESSAGE_DELAY = 6000
   
   // WSI Questions (Stage 6)
-  const [wsiQuestions, setWsiQuestions] = useState<WSIQuestion[]>([])
-  const [wsiCandidates, setWsiCandidates] = useState<WSIQuestionCandidate[]>([])
-  const [wsiGenerationBatch, setWsiGenerationBatch] = useState(0)
-  const [isGeneratingWSI, setIsGeneratingWSI] = useState(false)
-  const [wsiHasGenerated, setWsiHasGenerated] = useState(false)
-  const [useCompanyQuestions, setUseCompanyQuestions] = useState(false)
-  const [companyDefaultQuestions, setCompanyDefaultQuestions] = useState<{
-    id: string
-    question: string
-    type: 'yes-no' | 'numeric' | 'open' | 'multiple-choice'
-    enabled: boolean
-    fromConfig: boolean
-  }[]>([])
-  
-  // Modal states for adding new items
-  const [showAddBenefitModal, setShowAddBenefitModal] = useState(false)
-  const [newBenefitName, setNewBenefitName] = useState('')
-  const [newBenefitValue, setNewBenefitValue] = useState('')
-  const [showAddCompetencyModal, setShowAddCompetencyModal] = useState(false)
-  const [newCompetencyName, setNewCompetencyName] = useState('')
-  const [newCompetencyJustification, setNewCompetencyJustification] = useState('')
-  const [newSkillName, setNewSkillName] = useState('')
-  
-  // Edit modal states
-  const [editingCompetency, setEditingCompetency] = useState<BehavioralCompetency | null>(null)
-  const [showAddSkillModal, setShowAddSkillModal] = useState(false)
-  const [newSkillCategory, setNewSkillCategory] = useState<'language' | 'framework' | 'database' | 'tool'>('language')
-  
-  // Custom question form states
-  const [showCustomQuestionForm, setShowCustomQuestionForm] = useState(false)
-  const [customQuestionText, setCustomQuestionText] = useState('')
-  const [customQuestionType, setCustomQuestionType] = useState<'open' | 'yes-no' | 'numeric' | 'multiple-choice'>('open')
-  const [customQuestionRequired, setCustomQuestionRequired] = useState(false)
-  
-  // Calibration states (Stage 8)
-  const [calibrationCandidates, setCalibrationCandidates] = useState<CalibrationCandidate[]>([])
-  const [currentCalibrationIndex, setCurrentCalibrationIndex] = useState(0)
-  const [approvedCandidates, setApprovedCandidates] = useState<string[]>([])
-  const [rejectedCandidates, setRejectedCandidates] = useState<string[]>([])
-  const [calibrationComplete, setCalibrationComplete] = useState(false)
-  const [isLoadingCalibration, setIsLoadingCalibration] = useState(false)
-  const [showCalibrationModal, setShowCalibrationModal] = useState(false)
-  const [calibrationSessionId, setCalibrationSessionId] = useState<string | null>(null)
-  const [awaitingCalibrationChoice, setAwaitingCalibrationChoice] = useState(false)
-  const [showEditCriteriaModal, setShowEditCriteriaModal] = useState(false)
-  const [candidateProfileTab, setCandidateProfileTab] = useState<'experience' | 'education' | 'skillmap'>('experience')
-  const [competenciesTab, setCompetenciesTab] = useState<'technical' | 'behavioral'>('technical')
-  const [calibrationComment, setCalibrationComment] = useState('')
-  const [publishedJobId, setPublishedJobId] = useState<string | null>(null)
-  
-  // Calibration criteria (connected to technical and behavioral competencies)
-  const [calibrationCriteria, setCalibrationCriteria] = useState<{id: string; text: string; source: 'technical' | 'behavioral'}[]>([])
-  
-  // Post-calibration flow states
-  const [postCalibrationProcessing, setPostCalibrationProcessing] = useState(false)
-  const [localCandidateCount, setLocalCandidateCount] = useState(0)
-  const [globalSearchAuthorized, setGlobalSearchAuthorized] = useState(false)
-  const [postCalibrationComplete, setPostCalibrationComplete] = useState(false)
-  const postCalibrationFlowStartedRef = useRef(false)
-  
-  // Flag to prevent infinite loop when no calibration candidates are found
-  const [hasAttemptedCalibrationGeneration, setHasAttemptedCalibrationGeneration] = useState(false)
-  
-  // Search phase states for calibration flow
-  const [searchPhase, setSearchPhase] = useState<'idle' | 'local-searching' | 'local-complete' | 'global-searching' | 'global-complete'>('idle')
-  const [globalCandidateCount, setGlobalCandidateCount] = useState<number>(0)
-  const [preferredCandidateCount, setPreferredCandidateCount] = useState(3)
-  
-  const [showSkipCompetenciesWarning, setShowSkipCompetenciesWarning] = useState(false)
-  const [showClearDraftConfirm, setShowClearDraftConfirm] = useState(false)
-  
-  // Adaptive wizard collapsed sections - when catalog maturity is high, these fields start collapsed
-  const [salaryPanelExpanded, setSalaryPanelExpanded] = useState(true)
-  const [competenciesPanelExpanded, setCompetenciesPanelExpanded] = useState(true)
-  const [showAutoFilledNotification, setShowAutoFilledNotification] = useState(false)
-  
-  // Competencies suggestions modal state
-  const [showCompetenciesSuggestionsModal, setShowCompetenciesSuggestionsModal] = useState(false)
-  const [suggestedTechnicalSkills, setSuggestedTechnicalSkills] = useState<string[]>([])
-  const [suggestedBehavioralSkills, setSuggestedBehavioralSkills] = useState<string[]>([])
-  const [selectedSuggestedTechnical, setSelectedSuggestedTechnical] = useState<Set<string>>(new Set())
-  const [selectedSuggestedBehavioral, setSelectedSuggestedBehavioral] = useState<Set<string>>(new Set())
+  // WSI Questions state (from useWSIState — Sprint 4.2)
+  const { wsiQuestions, wsiCandidates, wsiGenerationBatch, isGeneratingWSI, wsiHasGenerated, useCompanyQuestions, companyDefaultQuestions, showCustomQuestionForm, customQuestionText, customQuestionType, customQuestionRequired } = wsiState
+  const { setWsiQuestions, setWsiCandidates, setWsiGenerationBatch, setIsGeneratingWSI, setWsiHasGenerated, setUseCompanyQuestions, setCompanyDefaultQuestions, setShowCustomQuestionForm, setCustomQuestionText, setCustomQuestionType, setCustomQuestionRequired } = wsiActions
+
+  // Competencies state — modal forms, suggestions (from useCompetenciesState — Sprint 4.2)
+  const { showAddCompetencyModal, newCompetencyName, newCompetencyJustification, newSkillName, editingCompetency, showAddSkillModal, newSkillCategory, showSkipCompetenciesWarning, competenciesPanelExpanded, showCompetenciesSuggestionsModal, suggestedTechnicalSkills, suggestedBehavioralSkills, selectedSuggestedTechnical, selectedSuggestedBehavioral, showCompetenciesInChat, competenciesChatLoading, competencySuggestions, competenciesTab } = competenciesState
+  const { setShowAddCompetencyModal, setNewCompetencyName, setNewCompetencyJustification, setNewSkillName, setEditingCompetency, setShowAddSkillModal, setNewSkillCategory, setShowSkipCompetenciesWarning, setCompetenciesPanelExpanded, setShowCompetenciesSuggestionsModal, setSuggestedTechnicalSkills, setSuggestedBehavioralSkills, setSelectedSuggestedTechnical, setSelectedSuggestedBehavioral, setShowCompetenciesInChat, setCompetenciesChatLoading, setCompetencySuggestions, setCompetenciesTab } = competenciesActions
+
+  // Salary state — benefit modal forms, benchmark (from useSalaryState — Sprint 4.2)
+  const { showAddBenefitModal, newBenefitName, newBenefitValue, salaryPanelExpanded, showAutoFilledNotification } = salaryState
+  const { setShowAddBenefitModal, setNewBenefitName, setNewBenefitValue, setSalaryPanelExpanded, setShowAutoFilledNotification } = salaryActions
+
+  // Calibration state (from useCalibrationState — Sprint 4.2)
+  const { calibrationCandidates, currentCalibrationIndex, approvedCandidates, rejectedCandidates, calibrationComplete, isLoadingCalibration, showCalibrationModal, calibrationSessionId, awaitingCalibrationChoice, showEditCriteriaModal, candidateProfileTab, calibrationComment, publishedJobId, calibrationCriteria, postCalibrationProcessing, localCandidateCount, globalSearchAuthorized, postCalibrationComplete, hasAttemptedCalibrationGeneration, searchPhase, globalCandidateCount, preferredCandidateCount, showClearDraftConfirm } = calibrationState
+  const { setCalibrationCandidates, setCurrentCalibrationIndex, setApprovedCandidates, setRejectedCandidates, setCalibrationComplete, setIsLoadingCalibration, setShowCalibrationModal, setCalibrationSessionId, setAwaitingCalibrationChoice, setShowEditCriteriaModal, setCandidateProfileTab, setCalibrationComment, setPublishedJobId, setCalibrationCriteria, setPostCalibrationProcessing, setLocalCandidateCount, setGlobalSearchAuthorized, setPostCalibrationComplete, setHasAttemptedCalibrationGeneration, setSearchPhase, setGlobalCandidateCount, setPreferredCandidateCount, setShowClearDraftConfirm } = calibrationActions
+  const { competenciesTab: _competenciesTabFromCalib } = calibrationState
   
   // Field origins state to track where each value came from (backend integration)
   const [fieldOrigins, setFieldOrigins] = useState<Record<string, { source: FieldOrigin; confidence: number }>>({})
