@@ -165,7 +165,7 @@ export function CalibrationProfileModal({
                             {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />}
                             {highlight.icon === 'building' && <Building2 className="w-3.5 h-3.5 text-wedo-purple" />}
                             {highlight.icon === 'rocket' && <Rocket className="w-3.5 h-3.5 text-wedo-green" />}
-                            {highlight.icon === 'globe' && <MapPin className="w-3.5 h-3.5 text-pink-500" />}
+                            {highlight.icon === 'globe' && <MapPin className="w-3.5 h-3.5 text-wedo-magenta" />}
                           </div>
                           <div>
                             <p className="text-xs font-semibold text-gray-800">{highlight.label}</p>

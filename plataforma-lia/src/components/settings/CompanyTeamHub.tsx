@@ -178,7 +178,7 @@ const TECH_STACK_CATEGORIES = [
     key: "ia_ml",
     label: "IA/ML",
     icon: Brain,
-    color: "bg-pink-50 text-pink-700 dark:bg-pink-900/20 dark:text-pink-300",
+    color: "bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta",
     suggestions: [
       "TensorFlow",
       "PyTorch",
@@ -209,7 +209,7 @@ const TECH_STACK_CATEGORIES = [
     key: "design",
     label: "Design",
     icon: Palette,
-    color: "bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300",
+    color: "bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta",
     suggestions: [
       "Figma",
       "Adobe XD",
@@ -225,7 +225,7 @@ const TECH_STACK_CATEGORIES = [
     label: "Mobile",
     icon: Smartphone,
     color:
-      "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300",
+      "bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple",
     suggestions: [
       "React Native",
       "Flutter",

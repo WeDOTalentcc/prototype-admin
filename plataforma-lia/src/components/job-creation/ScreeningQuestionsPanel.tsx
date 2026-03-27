@@ -159,7 +159,7 @@ const BLOOM_COLORS: Record<number, string> = {
   3: "bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30",
   4: "bg-status-error/10 text-status-error border-status-error/30",
   5: "bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30",
-  6: "bg-indigo-50 text-indigo-700 border-indigo-200"
+  6: "bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30"
 }
 
 const DREYFUS_COLORS: Record<number, string> = {

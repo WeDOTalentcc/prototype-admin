@@ -346,7 +346,7 @@ export default function PublicVacancyPage() {
         <header className="mb-10">
           <div className="flex flex-wrap gap-2 mb-4">
             {vacancy.is_affirmative && (
-              <Badge className="bg-pink-50 text-pink-700 border-pink-200 font-normal">
+              <Badge className="bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30 font-normal">
                 <Heart className="w-3 h-3 mr-1" />
                 Vaga Afirmativa
               </Badge>

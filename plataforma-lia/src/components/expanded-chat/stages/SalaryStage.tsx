@@ -382,7 +382,7 @@ export function SalaryStage({
                                   {benefit.name}
                                 </span>
                                 {benefit.is_highlighted && (
-                                  <Heart className="w-2.5 h-2.5 text-pink-500 fill-pink-500 flex-shrink-0" />
+                                  <Heart className="w-2.5 h-2.5 text-wedo-magenta fill-pink-500 flex-shrink-0" />
                                 )}
                                 {benefit.is_mandatory && (
                                   <span className="text-micro px-1 py-0 rounded bg-gray-200 text-gray-600 flex-shrink-0">obrig.</span>

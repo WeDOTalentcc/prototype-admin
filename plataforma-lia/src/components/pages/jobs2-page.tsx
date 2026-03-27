@@ -374,7 +374,7 @@ export function Jobs2Page() {
 
             {/* NPS Score */}
             <div className="flex items-center gap-2 mb-3">
-              <Heart className="w-4 h-4 text-pink-500" />
+              <Heart className="w-4 h-4 text-wedo-magenta" />
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 NPS: <span className="font-semibold text-gray-950 dark:text-gray-50">{job.nps}</span>
               </span>

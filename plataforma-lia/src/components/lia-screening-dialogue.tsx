@@ -618,7 +618,7 @@ Boa sorte com as triagens! 🚀`,
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-pink-600" />
+                  <Heart className="w-4 h-4 text-wedo-magenta" />
                   Estratégia de Feedback
                 </CardTitle>
               </CardHeader>
@@ -646,7 +646,7 @@ Boa sorte com as triagens! 🚀`,
                         "Manter relacionamento positivo"
                       ].map((guideline, index) => (
                         <div key={index} className="text-xs text-gray-600 flex items-center gap-1">
-                          <Star className="w-3 h-3 text-pink-500" />
+                          <Star className="w-3 h-3 text-wedo-magenta" />
                           {guideline}
                         </div>
                       ))}

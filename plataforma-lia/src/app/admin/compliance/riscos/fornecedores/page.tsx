@@ -140,8 +140,8 @@ const getServiceTypeColor = (serviceType: string) => {
     'Database as a Service': 'bg-status-success/15 text-status-success',
     'Email Service Provider': 'bg-status-warning/15 text-status-warning',
     'Frontend Hosting': 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50',
-    'Payment Processing': 'bg-pink-100 text-pink-700',
-    'Talent Search Provider': 'bg-indigo-100 text-indigo-700',
+    'Payment Processing': 'bg-wedo-magenta/15 text-wedo-magenta',
+    'Talent Search Provider': 'bg-wedo-purple/15 text-wedo-purple',
   }
   return colors[serviceType] || 'bg-gray-100 text-gray-800 dark:text-gray-200'
 }

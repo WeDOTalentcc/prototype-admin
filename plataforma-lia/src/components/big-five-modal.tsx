@@ -107,9 +107,9 @@ const traitDescriptions = {
   },
   "Neuroticismo": {
     icon: "⚡",
-    color: "bg-rose-500",
-    bgColor: "bg-rose-50 dark:bg-rose-900/20",
-    textColor: "text-rose-900 dark:text-rose-100",
+    color: "bg-wedo-magenta",
+    bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20",
+    textColor: "text-wedo-magenta dark:text-wedo-magenta",
     high: {
       label: "Alto",
       description: "Mais sensível emocionalmente e propenso a estresse. Pode ser mais cauteloso e vigilante.",
@@ -406,7 +406,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <div className="w-full h-1 bg-rose-500 rounded mb-1"></div>
+                    <div className="w-full h-1 bg-wedo-magenta rounded mb-1"></div>
                     <span className="text-micro text-gray-600">0-39 Baixo</span>
                   </div>
                   <div>

@@ -2077,17 +2077,17 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                     <Gauge className="w-3 h-3 mr-0.5" />{complexity.label}
                                                   </Badge>
                                                   {item.bloom_level && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:text-wedo-cyan dark:border-wedo-cyan/30">
                                                       <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
                                                     </Badge>
                                                   )}
                                                   {item.dreyfus_level && item.block_id !== 2 && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30">
                                                       {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
                                                     </Badge>
                                                   )}
                                                   {item.big_five_trait && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30 dark:bg-wedo-magenta/20 dark:text-wedo-magenta dark:border-wedo-magenta/30">
                                                       {getBigFiveLabelPTBR(item.big_five_trait)}
                                                     </Badge>
                                                   )}
@@ -2156,7 +2156,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                             <div className="flex items-start gap-3">
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'técnica' ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
+                                                  <Badge className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'comportamental' ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'técnica' ? 'bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:text-wedo-cyan dark:border-wedo-cyan/30' : 'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
                                                     {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
                                                   </Badge>
                                                   {(item.type === 'eliminatory' || item.is_eliminatory) && (
@@ -2166,17 +2166,17 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                                     <Gauge className="w-3 h-3 mr-0.5" />{genComplexity.label}
                                                   </Badge>
                                                   {item.bloom_level && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:text-wedo-cyan dark:border-wedo-cyan/30">
                                                       <GraduationCap className="w-3 h-3 mr-0.5" />{getBloomLabelPTBR(item.bloom_level) || item.bloom_label}
                                                     </Badge>
                                                   )}
                                                   {item.dreyfus_level && item.block_id !== 2 && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30">
                                                       {getDreyfusLabelPTBR(item.dreyfus_level) || item.dreyfus_label}
                                                     </Badge>
                                                   )}
                                                   {item.big_five_trait && (
-                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800">
+                                                    <Badge className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30 dark:bg-wedo-magenta/20 dark:text-wedo-magenta dark:border-wedo-magenta/30">
                                                       {getBigFiveLabelPTBR(item.big_five_trait)}
                                                     </Badge>
                                                   )}

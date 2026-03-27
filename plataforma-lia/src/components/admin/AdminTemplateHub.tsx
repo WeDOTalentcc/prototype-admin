@@ -41,9 +41,9 @@ const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
   'bell': { label: 'Bell', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   'teams': { label: 'Teams', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
  'briefing': { label: 'Briefing', color: 'bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-gray-300' },
-  'parecer': { label: 'Parecer', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400' },
-  'report': { label: 'Report', color: 'bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400' },
-  'chat_lia': { label: 'Chat LIA', color: 'bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-400' }
+  'parecer': { label: 'Parecer', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
+  'report': { label: 'Report', color: 'bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
+  'chat_lia': { label: 'Chat LIA', color: 'bg-wedo-cyan/10 text-wedo-cyan dark:bg-wedo-cyan/20 dark:text-wedo-cyan' }
 }
 
 interface EmailTemplate {

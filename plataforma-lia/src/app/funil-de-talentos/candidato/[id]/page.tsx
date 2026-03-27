@@ -1012,9 +1012,9 @@ export default function CandidateProfilePage() {
                       size="sm" 
                       variant={isFavorite ? "default" : "outline"} 
                       onClick={handleToggleFavorite} 
-                      className={`gap-1.5 ${isFavorite ? 'bg-pink-500 hover:bg-pink-600 text-white' : ''}`}
+                      className={`gap-1.5 ${isFavorite ? 'bg-wedo-magenta hover:bg-wedo-magenta text-white' : ''}`}
                     >
-                      <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current text-white' : 'text-pink-500'}`} />
+                      <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current text-white' : 'text-wedo-magenta'}`} />
                       {isFavorite ? 'Favoritado' : 'Favoritar'}
                     </Button>
                   </TooltipTrigger>

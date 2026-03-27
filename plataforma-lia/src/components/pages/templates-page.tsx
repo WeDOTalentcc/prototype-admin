@@ -321,7 +321,7 @@ export function TemplatesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-teal-600" />
+              <Users className="w-4 h-4 text-wedo-cyan" />
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Compartilhados</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.sharedTemplates}</p>

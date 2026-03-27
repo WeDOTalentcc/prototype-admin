@@ -39,7 +39,7 @@ export const BENEFIT_CATEGORIES: {
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-gray-300", bgColor: "bg-gray-50 dark:bg-gray-800" },
-  { id: "family", name: "Família", icon: Baby, color: "text-pink-500", bgColor: "bg-pink-50 dark:bg-pink-900/20" },
+  { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
   { id: "security", name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200", bgColor: "bg-gray-50 dark:bg-gray-800/50" },
 ]
 

@@ -1591,7 +1591,7 @@ function FunilPerformancePlaceholder() {
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Headhunting Especializado</p>
                   <p className={`${textStyles.description} dark:text-gray-400`}>132 candidaturas • 6 contratações</p>
                 </div>
-                <Badge className="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400 font-inter font-bold">
+                <Badge className="bg-wedo-magenta/15 text-wedo-magenta dark:bg-wedo-magenta/30 dark:text-wedo-magenta font-inter font-bold">
                   4.5%
                 </Badge>
               </div>

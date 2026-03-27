@@ -196,7 +196,7 @@ export function DailyBriefingCard({
     const hour = new Date().getHours()
     if (hour < 12) return <Sun className="w-5 h-5 text-status-warning" />
     if (hour < 18) return <Cloud className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-    return <Moon className="w-5 h-5 text-indigo-400" />
+    return <Moon className="w-5 h-5 text-wedo-purple" />
   }
 
   useEffect(() => {

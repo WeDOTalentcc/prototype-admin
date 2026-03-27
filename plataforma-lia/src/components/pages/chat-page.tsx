@@ -5494,7 +5494,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   ],
                   feedback: { approved: [], rejected: [], maybe: [] }
                 }, "Calibração de Busca")}
-                className="px-3 py-1.5 text-xs bg-pink-600 hover:bg-pink-700 text-white rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-wedo-magenta hover:bg-wedo-magenta text-white rounded transition-colors"
               >
                 🎯 Calibration
               </button>
@@ -5555,7 +5555,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                   }
                   setMessages(prev => [...prev, testMessage])
                 }}
-                className="px-3 py-1.5 text-xs bg-violet-600 hover:bg-violet-700 text-white rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-wedo-purple hover:bg-wedo-purple text-white rounded transition-colors"
               >
                 📊 WSI Score Card
               </button>

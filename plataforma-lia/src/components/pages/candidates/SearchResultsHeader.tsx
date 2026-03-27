@@ -33,7 +33,7 @@ export function SearchResultsHeader({
   // DS v4.2.1: Tailwind tokens — sem hex hardcoded
   const pillStyles: Record<string, { pill: string; icon: string }> = {
     job_title:        { pill: 'bg-gray-100 text-gray-700',      icon: 'text-gray-600' },
-    location:         { pill: 'bg-violet-50 text-violet-700',   icon: 'text-violet-500' },
+    location:         { pill: 'bg-wedo-purple/10 text-wedo-purple',   icon: 'text-wedo-purple' },
     years_experience: { pill: 'bg-status-warning/10 text-status-warning',     icon: 'text-status-warning' },
     skill:            { pill: 'bg-status-success/10 text-status-success', icon: 'text-status-success' },
     industry:         { pill: 'bg-wedo-cyan/10 text-wedo-cyan-dark',       icon: 'text-wedo-cyan-dark' },

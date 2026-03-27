@@ -354,7 +354,7 @@ function BenefitRow({
           <span className="ml-1 text-micro px-1 py-0 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">obrig.</span>
         )}
         {benefit.is_highlighted && (
-          <Heart className="inline w-3 h-3 ml-1 text-pink-500 fill-pink-500" />
+          <Heart className="inline w-3 h-3 ml-1 text-wedo-magenta fill-pink-500" />
         )}
       </Label>
       {benefit.enabled && (

@@ -1118,7 +1118,7 @@ export function CandidatePage({
                 <Card>
                   <CardHeader className="py-3 bg-gray-50 dark:bg-gray-800">
                     <div className="flex items-center gap-2">
-                      <Languages className="w-4 h-4 text-indigo-600" />
+                      <Languages className="w-4 h-4 text-wedo-purple" />
                       <CardTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
                         Idiomas
                       </CardTitle>
@@ -1458,8 +1458,8 @@ export function CandidatePage({
                       onClick={() => setActivityFilter('tests')}
                       className={`px-2 py-1 text-xs rounded transition-colors ${
                         activityFilter === 'tests'
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-200'
+                          ? 'bg-wedo-purple text-white'
+                          : 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple hover:bg-wedo-purple'
                       }`}
                     >
                       📝 Testes

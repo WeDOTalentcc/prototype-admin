@@ -1932,7 +1932,7 @@ export function CandidatePreview({
                             <p><span className="inline-block w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 mr-1"></span> Skills do CV</p>
                             <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-gray-900"></span> Expertise do LinkedIn</p>
                             <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-gray-900"></span> Soft Skills (LIA)</p>
-                            <p><span className="inline-block w-2 h-2 rounded-full bg-pink-500 mr-1"></span> Interesses</p>
+                            <p><span className="inline-block w-2 h-2 rounded-full bg-wedo-magenta mr-1"></span> Interesses</p>
                             <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-gray-900"></span> Tags</p>
                           </div>
                         </TooltipContent>
@@ -2030,11 +2030,11 @@ export function CandidatePreview({
                     {interests.length > 0 && (
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <Heart className="w-3 h-3 text-pink-600" />
-                          <span className={`${textStyles.label} text-pink-700`}>Interesses</span>
+                          <Heart className="w-3 h-3 text-wedo-magenta" />
+                          <span className={`${textStyles.label} text-wedo-magenta`}>Interesses</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-pink-300 cursor-help text-micro">ⓘ</span>
+                              <span className="text-wedo-magenta cursor-help text-micro">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Áreas de interesse declaradas pelo candidato
@@ -2045,7 +2045,7 @@ export function CandidatePreview({
                           {interests.map((interest: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-micro px-1.5 py-0 bg-pink-50 text-pink-700 border-0"
+                              className="text-micro px-1.5 py-0 bg-wedo-magenta/10 text-wedo-magenta border-0"
                             >
                               {interest}
                             </Badge>

@@ -90,7 +90,7 @@ const channelFilters = [
   { id: 'email', label: 'Email', icon: Mail, color: 'bg-wedo-orange', hoverColor: 'hover:bg-wedo-orange/10' },
   { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, color: 'bg-status-success', hoverColor: 'hover:bg-status-success' },
   { id: 'bell', label: 'Bell', icon: Bell, color: 'bg-status-warning', hoverColor: 'hover:bg-status-warning' },
-  { id: 'teams', label: 'Teams', icon: Grid3X3, color: 'bg-indigo-600', hoverColor: 'hover:bg-indigo-700' },
+  { id: 'teams', label: 'Teams', icon: Grid3X3, color: 'bg-wedo-purple', hoverColor: 'hover:bg-wedo-purple' },
   { id: 'chat_lia', label: 'Chat LIA', icon: Bot, color: 'bg-gray-900 dark:bg-gray-50', hoverColor: 'hover:bg-gray-800 dark:hover:bg-gray-200' },
   { id: 'report', label: 'Relatórios', icon: BarChart3, color: 'bg-slate-600', hoverColor: 'hover:bg-slate-700' },
   { id: 'briefing', label: 'Briefings', icon: Sun, color: 'bg-status-warning', hoverColor: 'hover:bg-status-warning/10' },

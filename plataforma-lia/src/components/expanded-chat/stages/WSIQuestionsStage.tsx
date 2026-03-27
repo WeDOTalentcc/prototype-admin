@@ -129,7 +129,7 @@ export function WSIQuestionsStage({
               "px-2 py-0.5 text-xs rounded-full",
               q.type === 'yes-no' ? "bg-wedo-cyan/15 text-wedo-cyan-dark" :
               q.type === 'numeric' ? "bg-status-warning/15 text-status-warning" :
-              q.type === 'multiple-choice' ? "bg-indigo-100 text-indigo-800" :
+              q.type === 'multiple-choice' ? "bg-wedo-purple/15 text-wedo-purple" :
               "bg-gray-100 text-gray-700"
             )}>
               {q.type === 'yes-no' ? 'Sim/Não' :

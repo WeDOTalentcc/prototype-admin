@@ -57,7 +57,7 @@ const BENEFIT_CATEGORIES = [
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success" },
   { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-gray-300" },
-  { id: "family", name: "Família", icon: Baby, color: "text-pink-500" },
+  { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta" },
   { id: "security", name: "Segurança", icon: Shield, color: "text-gray-500" },
 ]
 

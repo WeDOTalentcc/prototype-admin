@@ -54,7 +54,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
   const colorMap: Record<string, string> = {
     cyan: "border-wedo-cyan/30 bg-wedo-cyan/5",
     emerald: "border-status-success/30/30 bg-status-success/5",
-    violet: "border-violet-500/30 bg-violet-500/5",
+    violet: "border-wedo-purple/30/30 bg-wedo-purple/5",
     amber: "border-status-warning/30/30 bg-status-warning/5",
     blue: "border-wedo-cyan/30/30 bg-wedo-cyan/5",
     red: "border-status-error/30/30 bg-status-error/5",
@@ -62,7 +62,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
   const iconColorMap: Record<string, string> = {
     cyan: "text-wedo-cyan",
     emerald: "text-status-success",
-    violet: "text-violet-400",
+    violet: "text-wedo-purple",
     amber: "text-status-warning",
     blue: "text-wedo-cyan-dark",
     red: "text-status-error",
@@ -70,7 +70,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
   const badgeColorMap: Record<string, string> = {
     cyan: "bg-wedo-cyan/20 text-wedo-cyan",
     emerald: "bg-status-success/20 text-status-success",
-    violet: "bg-violet-500/20 text-violet-300",
+    violet: "bg-wedo-purple/20 text-wedo-purple",
     amber: "bg-status-warning/20 text-status-warning",
     blue: "bg-wedo-cyan/20 text-wedo-cyan-dark",
     red: "bg-status-error/20 text-status-error",

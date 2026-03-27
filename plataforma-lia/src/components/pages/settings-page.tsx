@@ -1713,7 +1713,7 @@ function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (changed: bo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-pink-500 rounded-md"></div>
+                <div className="w-5 h-5 bg-wedo-magenta rounded-md"></div>
                 Instagram
               </label>
               <input

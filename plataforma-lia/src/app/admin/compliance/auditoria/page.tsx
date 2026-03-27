@@ -80,15 +80,15 @@ const quickLinks = [
     description: 'Exportação de evidências e documentação',
     href: '/admin/compliance/auditoria/exportar',
     icon: FileArchive,
-    color: 'text-rose-600',
-    bgColor: 'bg-rose-50 dark:bg-rose-900/20',
+    color: 'text-wedo-magenta',
+    bgColor: 'bg-wedo-magenta/10 dark:bg-wedo-magenta/20',
   },
 ]
 
 const getActivityIcon = (type: string) => {
   switch (type) {
     case 'export':
-      return <Download className="w-4 h-4 text-rose-500" />
+      return <Download className="w-4 h-4 text-wedo-magenta" />
     case 'bias':
       return <Scale className="w-4 h-4 text-wedo-purple" />
     case 'training':

@@ -42,7 +42,7 @@ const categoryConfig = {
   communication: {
     icon: MessageCircle,
     label: 'Comunicação',
-    color: 'text-teal-600 dark:text-teal-400'
+    color: 'text-wedo-cyan dark:text-wedo-cyan'
   },
   predictive: {
     icon: Brain,

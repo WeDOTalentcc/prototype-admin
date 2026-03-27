@@ -41,7 +41,7 @@ export const QUESTION_CATEGORIES: Record<QuestionCategory, { label: string; icon
   experience: { label: 'Experiência Específica', icon: '💼', color: 'bg-wedo-orange/15 text-wedo-orange' },
   languages: { label: 'Idiomas', icon: '🌍', color: 'bg-wedo-cyan/20 text-wedo-cyan-dark' },
   compensation: { label: 'Remuneração e Contrato', icon: '💰', color: 'bg-status-warning/15 text-status-warning' },
-  work_model: { label: 'Modelo de Trabalho', icon: '🏠', color: 'bg-indigo-100 text-indigo-700' },
+  work_model: { label: 'Modelo de Trabalho', icon: '🏠', color: 'bg-wedo-purple/15 text-wedo-purple' },
   compliance: { label: 'Compliance e Conflito de Interesses', icon: '⚠️', color: 'bg-status-error/15 text-status-error' },
   system_default: { label: 'Perguntas Padrão do Sistema', icon: '⚙️', color: 'bg-gray-100 text-gray-700' },
 }

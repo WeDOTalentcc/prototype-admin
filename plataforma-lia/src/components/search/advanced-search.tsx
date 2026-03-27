@@ -29,8 +29,8 @@ const filterCategories = [
   { id: 'triagem', label: 'Triagem', color: 'bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success' },
   { id: 'entrevistas', label: 'Entrevistas', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   { id: 'onboarding', label: 'Onboarding', color: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange' },
-  { id: 'analytics', label: 'Analytics', color: 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300' },
-  { id: 'integracao', label: 'Integração', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300' }
+  { id: 'analytics', label: 'Analytics', color: 'bg-wedo-magenta/15 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
+  { id: 'integracao', label: 'Integração', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' }
 ]
 
 const filterTypes = [

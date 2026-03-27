@@ -243,7 +243,7 @@ export function LIAActivityFeed() {
       case 'candidate': return <Users className="w-4 h-4 text-status-success" />
       case 'interview': return <Calendar className="w-4 h-4 text-wedo-purple" />
       case 'assessment': return <BarChart3 className="w-4 h-4 text-wedo-orange" />
-      case 'report': return <FileText className="w-4 h-4 text-teal-500" />
+      case 'report': return <FileText className="w-4 h-4 text-wedo-cyan" />
       case 'automation': return <Zap className="w-4 h-4 text-status-warning" />
       default: return <CheckCircle className="w-4 h-4 text-gray-600" />
     }

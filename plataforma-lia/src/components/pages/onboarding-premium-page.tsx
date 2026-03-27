@@ -163,8 +163,8 @@ const kanbanStages = [
   { id: 'documentation', name: 'Documentação', color: 'bg-status-warning/15 text-status-warning', description: 'Coleta de documentos' },
   { id: 'equipment', name: 'Equipamentos', color: 'bg-wedo-orange/15 text-wedo-orange', description: 'Entrega de equipamentos' },
   { id: 'systems', name: 'Sistemas', color: 'bg-wedo-purple/15 text-wedo-purple', description: 'Criação de acessos' },
-  { id: 'medical', name: 'Médico', color: 'bg-pink-100 text-pink-700', description: 'Exames ocupacionais' },
-  { id: 'integration', name: 'Integração', color: 'bg-indigo-100 text-indigo-700', description: 'Primeiro dia' },
+  { id: 'medical', name: 'Médico', color: 'bg-wedo-magenta/15 text-wedo-magenta', description: 'Exames ocupacionais' },
+  { id: 'integration', name: 'Integração', color: 'bg-wedo-purple/15 text-wedo-purple', description: 'Primeiro dia' },
   { id: 'completed', name: 'Concluído', color: 'bg-status-success/15 text-status-success', description: 'Onboarding finalizado' }
 ]
 
@@ -661,7 +661,7 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
             <div className="w-2 h-2 bg-status-warning rounded-full" title="Documentos pendentes" />
           )}
           {candidate.medicalExams.length > 0 && (
-            <div className="w-2 h-2 bg-pink-500 rounded-full" title="Exames médicos" />
+            <div className="w-2 h-2 bg-wedo-magenta rounded-full" title="Exames médicos" />
           )}
           {candidate.communications.length > 0 && (
             <div className="w-2 h-2 bg-status-success rounded-full" title="Comunicações enviadas" />

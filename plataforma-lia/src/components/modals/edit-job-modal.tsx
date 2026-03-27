@@ -816,7 +816,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
       'Banco de Dados': 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30',
       'Cloud': 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30',
       'Containers': 'bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600',
-      'CI/CD': 'bg-pink-50 text-pink-700 border-pink-200',
+      'CI/CD': 'bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30',
       'Outros': 'bg-gray-50 text-gray-700 border-gray-200',
     }
     return colors[category] || colors['Outros']
@@ -1199,7 +1199,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                             </button>
                             {benefit}
                             {companyBenefits.find(cb => cb.name === benefit)?.is_highlighted && (
-                              <Heart className="w-3 h-3 text-pink-500 fill-pink-500" />
+                              <Heart className="w-3 h-3 text-wedo-magenta fill-pink-500" />
                             )}
                           </Badge>
                         ))}
@@ -1229,7 +1229,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                                   }}
                                 >
                                   {isAdded && <CheckCircle className="w-3 h-3 mr-1" />}
-                                  {benefit.is_highlighted && <Heart className="w-3 h-3 mr-1 text-pink-500" />}
+                                  {benefit.is_highlighted && <Heart className="w-3 h-3 mr-1 text-wedo-magenta" />}
                                   {benefit.name}
                                   {!isAdded && <Plus className="w-3 h-3 ml-1" />}
                                 </Badge>
@@ -1570,7 +1570,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Heart className="w-4 h-4 text-pink-500" />
+                          <Heart className="w-4 h-4 text-wedo-magenta" />
                           <span className="text-sm text-gray-700">Vaga Afirmativa</span>
                         </div>
                         <Switch

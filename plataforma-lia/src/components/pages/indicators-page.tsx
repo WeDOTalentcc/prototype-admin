@@ -1235,7 +1235,7 @@ export function IndicatorsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-pink-600" />
+                <Heart className="w-5 h-5 text-wedo-magenta" />
                 Diversidade e Inclusão
               </CardTitle>
             </CardHeader>
@@ -1249,7 +1249,7 @@ export function IndicatorsPage() {
                       <span className="font-medium">47%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-pink-500 h-2 rounded-full" style={{width: '47%'}}></div>
+                      <div className="bg-wedo-magenta h-2 rounded-full" style={{width: '47%'}}></div>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span>Masculino</span>

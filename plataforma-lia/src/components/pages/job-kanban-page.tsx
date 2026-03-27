@@ -5233,7 +5233,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                       not_started: 'bg-status-warning/10 text-status-warning border border-status-warning/30',
                       active: 'bg-status-success/10 text-status-success border border-status-success/30',
                       paused: 'bg-wedo-orange/10 text-wedo-orange border border-wedo-orange/30',
-                      completed: 'bg-sky-50 text-sky-800 border border-sky-300',
+                      completed: 'bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30',
                     }
                     const handleScreeningStatusChange = async (newStatus: string) => {
                       const jobId = currentJob.backendId || currentJob.jobId || currentJob.id
@@ -8100,7 +8100,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-900 rounded-md w-full max-w-6xl max-h-[90vh] overflow-hidden animate-fadeIn">
             {/* Header */}
-            <div className="bg-indigo-600 p-5 text-white">
+            <div className="bg-wedo-purple p-5 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/20 rounded-md">
@@ -8108,7 +8108,7 @@ export function JobKanbanPage({ job, onBack }: { job?: any, onBack?: () => void 
                   </div>
                   <div>
                     <h2 className="text-xl font-bold">Biblioteca de Testes da LIA</h2>
-                    <p className="text-indigo-100 text-sm">Testes validados e organizados por área de atuação</p>
+                    <p className="text-wedo-purple text-sm">Testes validados e organizados por área de atuação</p>
                   </div>
                 </div>
                 <button

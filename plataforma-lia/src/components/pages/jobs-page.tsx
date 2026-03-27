@@ -5043,7 +5043,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                           </Badge>
                           {previewJob.isAffirmative && (
                             <span title="Vaga Afirmativa">
-                              <Heart className="w-3 h-3 text-pink-500" />
+                              <Heart className="w-3 h-3 text-wedo-magenta" />
                             </span>
                           )}
                         </div>
@@ -5645,7 +5645,7 @@ export function JobsPage({ onNavigate, onAddRecentItem, pendingChatOpen, onChatO
                       </div>
 
                       {/* Comparação com Outras Vagas */}
-                      <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-md p-3 border border-indigo-200 dark:border-indigo-800">
+                      <div className="bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md p-3 border border-wedo-purple/30 dark:border-wedo-purple/30">
                         <h4 className={`${textStyles.title} dark:text-gray-50 mb-3 flex items-center gap-1`}>
                           <BarChart3 className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
                           Resumo do Funil

@@ -418,12 +418,12 @@ export function SearchCalibrationStage({
             <ul className="space-y-2.5">
               {[
                 { icon: <FileText className="w-3 h-3 text-gray-600 dark:text-gray-400" />, bg: 'bg-gray-100 dark:bg-gray-800', text: <><strong>O plano de trabalho</strong> será enviado por e-mail para todos os envolvidos na vaga</> },
-                { icon: <BarChart3 className="w-3 h-3 text-violet-500" />, bg: 'bg-violet-500/10', text: <><strong>Relatórios de progresso</strong> serão enviados automaticamente a cada 5 dias por e-mail</> },
+                { icon: <BarChart3 className="w-3 h-3 text-wedo-purple" />, bg: 'bg-wedo-purple/10', text: <><strong>Relatórios de progresso</strong> serão enviados automaticamente a cada 5 dias por e-mail</> },
                 { icon: <Users className="w-3 h-3 text-wedo-green" />, bg: 'bg-wedo-green/10', text: <><strong>Candidatos inscritos</strong> via website serão automaticamente triados por mim e você será notificado via <strong>Teams</strong></> },
-                { icon: <Calendar className="w-3 h-3 text-pink-500" />, bg: 'bg-pink-500/10', text: <>Vou cuidar da sua <strong>agenda</strong>, avisando sobre tarefas pendentes como sua assistente de recrutamento inteligente</> },
+                { icon: <Calendar className="w-3 h-3 text-wedo-magenta" />, bg: 'bg-wedo-magenta/10', text: <>Vou cuidar da sua <strong>agenda</strong>, avisando sobre tarefas pendentes como sua assistente de recrutamento inteligente</> },
                 { icon: <Bell className="w-3 h-3 text-status-warning" />, bg: 'bg-status-warning/10', text: <><strong>Lembretes de feedback</strong> serão enviados quando candidatos estiverem aguardando resposta há muito tempo</> },
                 { icon: <Clock className="w-3 h-3 text-gray-600 dark:text-gray-400" />, bg: 'bg-gray-100 dark:bg-gray-800', text: <><strong>SLAs de resposta</strong> serão monitorados para cada etapa do processo seletivo</> },
-                { icon: <MessageSquare className="w-3 h-3 text-sky-500" />, bg: 'bg-sky-500/10', text: <><strong>Comunicação automática</strong> com candidatos sobre o status do processo será gerenciada por mim</> },
+                { icon: <MessageSquare className="w-3 h-3 text-wedo-cyan" />, bg: 'bg-wedo-cyan/10', text: <><strong>Comunicação automática</strong> com candidatos sobre o status do processo será gerenciada por mim</> },
                 { icon: <Rocket className="w-3 h-3 text-gray-600 dark:text-gray-400" />, bg: 'bg-gray-100 dark:bg-gray-800', text: <>Quando houver candidatos aprovados, seguirei com a <strong>triagem</strong> e posteriormente com os <strong>agendamentos de entrevistas</strong>!</> },
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start gap-2">

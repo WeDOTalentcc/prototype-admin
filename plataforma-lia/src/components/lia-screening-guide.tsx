@@ -732,7 +732,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm flex items-center gap-2">
-                      <Heart className="w-4 h-4 text-pink-600" />
+                      <Heart className="w-4 h-4 text-wedo-magenta" />
                       Benefícios e Vantagens
                     </CardTitle>
                   </CardHeader>

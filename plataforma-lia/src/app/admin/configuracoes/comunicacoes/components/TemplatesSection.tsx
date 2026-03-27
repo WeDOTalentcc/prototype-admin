@@ -96,7 +96,7 @@ export function TemplatesSection({
             variant={templateChannelFilter === 'teams' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setTemplateChannelFilter('teams')}
-            className={templateChannelFilter === 'teams' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : ''}
+            className={templateChannelFilter === 'teams' ? 'bg-wedo-purple hover:bg-wedo-purple text-white' : ''}
           >
             <Grid3X3 className="w-4 h-4 mr-2" />
             Teams

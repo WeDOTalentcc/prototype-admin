@@ -106,8 +106,8 @@ export function OnboardingReplayButton({
         <DropdownMenuSeparator />
 
         <DropdownMenuItem className="gap-3 cursor-pointer">
-          <div className="w-8 h-8 bg-pink-100 rounded-md flex items-center justify-center">
-            <Heart className="w-4 h-4 text-pink-600" />
+          <div className="w-8 h-8 bg-wedo-magenta/15 rounded-md flex items-center justify-center">
+            <Heart className="w-4 h-4 text-wedo-magenta" />
           </div>
           <div className="flex-1">
             <div className="font-medium">Feedback</div>

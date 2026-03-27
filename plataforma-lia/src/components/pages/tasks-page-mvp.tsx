@@ -86,7 +86,7 @@ function getGreetingIcon() {
   const hour = new Date().getHours()
   if (hour < 12) return <Sun className="w-5 h-5 text-status-warning" />
   if (hour < 18) return <Sunset className="w-5 h-5 text-wedo-orange" />
-  return <Moon className="w-5 h-5 text-indigo-400" />
+  return <Moon className="w-5 h-5 text-wedo-purple" />
 }
 
 function getFormattedDate(): string {

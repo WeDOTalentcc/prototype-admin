@@ -203,7 +203,7 @@ const getCategoryColor = (category: string) => {
     'Segurança': 'bg-status-error/15 text-status-error',
     'Operacional': 'bg-status-warning/15 text-status-warning',
     'Compliance': 'bg-wedo-purple/15 text-wedo-purple',
-    'Privacidade': 'bg-violet-100 text-violet-700',
+    'Privacidade': 'bg-wedo-purple/15 text-wedo-purple',
     'Legal': 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
     'Financeiro': 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50',
   }

@@ -27,7 +27,7 @@ const CATEGORY_MAP: Record<string, { name: string; icon: LucideIcon; color: stri
   education: { name: "Educação", icon: GraduationCap, color: "text-wedo-purple" },
   financial: { name: "Financeiro", icon: Wallet, color: "text-status-success" },
   quality_life: { name: "Qualidade", icon: Home, color: "text-gray-700 dark:text-gray-300" },
-  family: { name: "Família", icon: Baby, color: "text-pink-500" },
+  family: { name: "Família", icon: Baby, color: "text-wedo-magenta" },
   security: { name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200" },
 }
 

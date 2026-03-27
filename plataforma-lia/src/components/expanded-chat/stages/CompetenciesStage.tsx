@@ -235,7 +235,7 @@ export function CompetenciesStage({
             )}
             {skill.source === 'tech_stack' && (
               <span
-                className="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0"
+                className="w-1.5 h-1.5 rounded-full bg-wedo-purple flex-shrink-0"
                 title="Pré-preenchido do Tech Stack da empresa"
               />
             )}
@@ -381,15 +381,15 @@ export function CompetenciesStage({
       )}
 
       {hasSkillsFromTechStack && !hasSkillsFromCatalog && (
-        <div className="p-3 bg-gradient-to-r from-violet-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-violet-500/30">
+        <div className="p-3 bg-gradient-to-r from-violet-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-wedo-purple/30/30">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0">
-              <Laptop className="w-3.5 h-3.5 text-violet-500" />
+            <div className="w-6 h-6 rounded-full bg-wedo-purple/20 flex items-center justify-center flex-shrink-0">
+              <Laptop className="w-3.5 h-3.5 text-wedo-purple" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-violet-800 flex items-center gap-1.5">
+              <span className="text-xs font-medium text-wedo-purple flex items-center gap-1.5">
                 Competências pré-preenchidas do Tech Stack
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-wedo-purple flex-shrink-0" />
               </span>
               <p className="text-micro text-gray-500 mt-0.5">
                 Essas competências foram automaticamente sugeridas com base no perfil tecnológico da sua empresa.

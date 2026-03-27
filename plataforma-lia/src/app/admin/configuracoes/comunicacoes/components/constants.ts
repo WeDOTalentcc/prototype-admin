@@ -49,9 +49,9 @@ export const recipientLabels: Record<string, { label: string, color: string }> =
   recruiter: { label: 'Recrutador', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   manager: { label: 'Gestor', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   admin: { label: 'Admin', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
-  rh: { label: 'RH', color: 'bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-400' },
-  interviewer: { label: 'Entrevistador', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400' },
-  stakeholders: { label: 'Stakeholders', color: 'bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400' }
+  rh: { label: 'RH', color: 'bg-wedo-cyan/10 text-wedo-cyan dark:bg-wedo-cyan/20 dark:text-wedo-cyan' },
+  interviewer: { label: 'Entrevistador', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
+  stakeholders: { label: 'Stakeholders', color: 'bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' }
 }
 
 export const channelConfig: Record<string, { label: string, color: string, activeColor: string }> = {

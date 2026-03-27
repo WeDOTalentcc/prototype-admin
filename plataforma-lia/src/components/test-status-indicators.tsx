@@ -38,7 +38,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
       >
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
           candidate.englishTestScore
-            ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
+            ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600'
         }`}>
           <Globe className="w-4 h-4" />
@@ -59,7 +59,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
       >
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
           candidate.bigFiveScores
-            ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400'
+            ? 'bg-wedo-magenta/15 dark:bg-wedo-magenta/30 text-wedo-magenta dark:text-wedo-magenta'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600'
         }`}>
           <User className="w-4 h-4" />

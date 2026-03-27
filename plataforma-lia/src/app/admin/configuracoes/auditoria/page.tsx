@@ -79,7 +79,7 @@ const CATEGORY_CONFIG: Record<ActionCategoryUI, { label: string; icon: React.Ele
   user_management: {
     label: 'Gestão de Usuários',
     icon: Users,
-    color: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400',
+    color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple',
   },
   system: {
     label: 'Sistema',
